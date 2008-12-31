@@ -1,47 +1,47 @@
-// MapMapSelectLayer.tjs - ƒ}ƒbƒv‘I‘ğˆƒŒƒCƒ„
-// Copyright (C)2001-2008, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
+// MapMapSelectLayer.tjs - ï¿½}ï¿½bï¿½vï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
+// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
 
 
 class MapSelectButtonLayer extends Layer
 {
-    var pos; // êŠw’è‚Ì‹L˜^—p
+    var pos; // ï¿½êŠï¿½wï¿½ï¿½Ì‹Lï¿½^ï¿½p
 
-    var onenter; // ƒ}ƒEƒX‚ª“ü‚Á‚Ä‚«‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
-    var onleave; // ƒ}ƒEƒX‚ªo‚Ä‚¢‚Á‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
-    var onclick; // ƒNƒŠƒbƒN‚ÉÀs‚·‚é‚à‚Ì
-    var storage; // ˆ—I—¹Œã‚ÌƒWƒƒƒ“ƒvæ
-    var target;  // ˆ—I—¹Œã‚ÌƒWƒƒƒ“ƒvæ
+    var onenter; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    var onleave; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    var onclick; // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    var storage; // ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ÌƒWï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½
+    var target;  // ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ÌƒWï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½
     
-    var Butt_mouseOn = false; // ƒŒƒCƒ„“à‚Éƒ}ƒEƒX‚ª‚ ‚é‚©
+    var Butt_mouseOn = false; // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Éƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½é‚©
     var Butt_keyPressed = false;
 
-    var baseCount; // ƒAƒjƒ[ƒVƒ‡ƒ“ƒpƒ^[ƒ“‚Ì”
+    var baseCount; // ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½pï¿½^ï¿½[ï¿½ï¿½ï¿½Ìï¿½
     
     /**
-     * ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-     * @param win ƒEƒCƒ“ƒhƒE
-     * @param par eƒŒƒCƒ„
-     * @param elm ‰Šú‰»—pƒpƒ‰ƒ[ƒ^
+     * ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+     * @param win ï¿½Eï¿½Cï¿½ï¿½ï¿½hï¿½E
+     * @param par ï¿½eï¿½ï¿½ï¿½Cï¿½ï¿½
+     * @param elm ï¿½ï¿½ï¿½ï¿½pï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^
      */
     function MapSelectButtonLayer(win, par, elm) {
         
         super.Layer(win, par);
 
-        // ƒEƒCƒ“ƒhƒE‚©‚çƒJ[ƒ\ƒ‹‚ğƒRƒs[
+        // ï¿½Eï¿½Cï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½ï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[
         if (typeof win.cursorPointed !== "undefined") {
             cursor = win.cursorPointed;
         }
         
         hitType = htMask;
         hitThreshold = 1;
-        focusable = true; // ƒtƒH[ƒJƒX‚ğ“¾‚ç‚ê‚é
+        focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½ï¿½ï¿½
 
-        // ‰æ‘œ‚Ìƒ[ƒh
+        // ï¿½æ‘œï¿½Ìƒï¿½ï¿½[ï¿½h
         loadImages(elm.image);
         setSize(elm.width === void ? imageWidth / 2 : elm.width, elm.count !== void ? imageHeight / elm.count : elm.height);
-        //dm("ƒ{ƒ^ƒ“¶¬:" + elm.image + " size:" + width + "," + height);
+        //dm("ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:" + elm.image + " size:" + width + "," + height);
         
-        // ƒAƒjƒ[ƒVƒ‡ƒ“ƒpƒ^[ƒ“”ic•ûŒüj
+        // ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½pï¿½^ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½iï¿½cï¿½ï¿½ï¿½j
         baseCount = (int)(imageHeight / height);
 
         update();
@@ -52,7 +52,7 @@ class MapSelectButtonLayer extends Layer
     }
     
     /**
-     * ƒŒƒCƒ„•`‰æˆ—
+     * ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½`ï¿½æˆï¿½ï¿½
      */
 	function onPaint() {
         super.onPaint(...);
@@ -80,7 +80,7 @@ class MapSelectButtonLayer extends Layer
     }
 
 	function onMouseEnter()	{
-        // ƒ}ƒEƒX‚ªƒŒƒCƒ„—Ìˆæ“à‚É“ü‚Á‚½
+        // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆï¿½ï¿½ï¿½É“ï¿½ï¿½ï¿½ï¿½
         if(onenter !== void) Scripts.eval(onenter);
 		update();
 		Butt_mouseOn = true;
@@ -89,7 +89,7 @@ class MapSelectButtonLayer extends Layer
 	}
 
 	function onMouseLeave()	{
-        // ƒ}ƒEƒX‚ªƒŒƒCƒ„—Ìˆæ‚©‚ço‚Ä‚¢‚Á‚½
+        // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆæ‚©ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½
         if(onleave !== void) Scripts.eval(onleave);
 		update();
 		Butt_mouseOn = false;
@@ -98,7 +98,7 @@ class MapSelectButtonLayer extends Layer
 
 	function onKeyDown(key, shift, process)
 	{
-        // ƒL[‚ª‰Ÿ‚³‚ê‚½
+        // ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
         if(window.preProcessKeys(key, shift)) return;
         if (enabled && (key == VK_SPACE || key == VK_RETURN)) {
             parent.onButtonClick(this);
@@ -108,7 +108,7 @@ class MapSelectButtonLayer extends Layer
 
 	function onFocus(prevfocused, direction)
 	{
-        // ƒL[‘€ì‚É‚æ‚éƒtƒH[ƒJƒX•Ï“®‚Ìê‡‚Éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚àˆÚ“®
+        // ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½Ï“ï¿½ï¿½Ìê‡ï¿½Éƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½
         var sgks = window.getKeyState;
         var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
             sgks(VK_DOWN) || sgks(VK_TAB);
@@ -120,38 +120,38 @@ class MapSelectButtonLayer extends Layer
 }
 
 /**
- * ‘I‘ğˆˆ——pƒƒWƒbƒN
- * KAG—p‚É“Á‰»‚µ‚Ä‚¢‚Ü‚·
+ * ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½Wï¿½bï¿½N
+ * KAGï¿½pï¿½É“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½
  */
 class MapSelectLayer extends KAGLayer {
 
     var msgoff = true;
 
-    // ƒx[ƒX‚Ì‰æ‘œ
-    var frameGraphic = ""; // ƒtƒŒ[ƒ€‰æ‘œƒtƒ@ƒCƒ‹–¼
-    var frameKey = clNone; // ƒtƒŒ[ƒ€‰æ‘œƒL[
-    var frameColor = 0x000000; // ƒtƒŒ[ƒ€‚ÌF
-    var frameOpacity = 128; // ƒtƒŒ[ƒ€‚Ì•s“§–¾“x
+    // ï¿½xï¿½[ï¿½Xï¿½Ì‰æ‘œ
+    var frameGraphic = ""; // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
+    var frameKey = clNone; // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œï¿½Lï¿½[
+    var frameColor = 0x000000; // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÌF
+    var frameOpacity = 128; // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ì•sï¿½ï¿½ï¿½ï¿½ï¿½x
     
-    // ƒ}ƒbƒv—pƒ{ƒ^ƒ“‚ÌƒAƒjƒƒpƒ^[ƒ“‚ÌƒCƒ“ƒ^[ƒoƒ‹
+    // ï¿½}ï¿½bï¿½vï¿½pï¿½{ï¿½^ï¿½ï¿½ï¿½ÌƒAï¿½jï¿½ï¿½ï¿½pï¿½^ï¿½[ï¿½ï¿½ï¿½ÌƒCï¿½ï¿½ï¿½^ï¿½[ï¿½oï¿½ï¿½
     var baseInterval = 100;
     var buttonWidth  = 100;
 
-    // Œø‰Ê‰¹
+    // ï¿½ï¿½Ê‰ï¿½
     var enterse;
     var leavese;
     var clickse;
 
-    // ƒ^ƒCƒ}
+    // ï¿½^ï¿½Cï¿½}
     var timer;
     
     /**
-     * ƒŒƒCƒ„‚Ì“à—eÁ‹
+     * ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì“ï¿½ï¿½eï¿½ï¿½ï¿½ï¿½
      */
 	function clearLayer()
 	{
         if (frameGraphic == "") {
-            // ƒtƒŒ[ƒ€‰æ‘œ‚ªw’è‚³‚ê‚Ä‚¢‚È‚¢ê‡
+            // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
             face = dfAuto;
             if(type == ltAddAlpha) {
                 fillRect(0, 0, imageWidth, imageHeight, (frameOpacity << 24) +
@@ -165,15 +165,15 @@ class MapSelectLayer extends KAGLayer {
             //yoff = 0;
             
         } else {
-            // ƒZƒ“ƒ^ƒŠƒ“ƒO•\¦
+            // ï¿½Zï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½\ï¿½ï¿½
             var layer = new global.Layer(window, this);
             layer.loadImages(frameGraphic, frameKey);
             layer.setSizeToImageSize();
             
-            // Á‹
+            // ï¿½ï¿½ï¿½ï¿½
             fillRect(0, 0, imageWidth, imageHeight, 0);
             
-            // ‰æ‘œƒRƒs[
+            // ï¿½æ‘œï¿½Rï¿½sï¿½[
             var xoff = ((width  - layer.width)>>1)  + left;
             var yoff = ((height - layer.height)>>1) + top;
             operateRect(xoff, yoff, layer, 0, 0, layer.width, layer.height);
@@ -181,45 +181,45 @@ class MapSelectLayer extends KAGLayer {
             invalidate layer;
         }
         face = dfProvince;
-        colorRect(0, 0, imageWidth, imageHeight, 0); // —Ìˆæ‚àƒNƒŠƒA
+        colorRect(0, 0, imageWidth, imageHeight, 0); // ï¿½Ìˆï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½A
         face = dfAuto;
     }
 
     /**
-     * ƒIƒvƒVƒ‡ƒ“‚Ìİ’è
+     * ï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ìİ’ï¿½
      */
 	function setOptions(elm) {
 
         super.setOptions(elm);
 
-        // ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌƒCƒ“ƒ^[ƒoƒ‹
+        // ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ÌƒCï¿½ï¿½ï¿½^ï¿½[ï¿½oï¿½ï¿½
         baseInterval = elm.interval if elm.interval !== void;
         buttonWidth  = elm.buttonwidth if elm.btnwidth !== void;
         
-        // Œø‰Ê‰¹w’è
+        // ï¿½ï¿½Ê‰ï¿½ï¿½wï¿½ï¿½
         enterse = elm.enterse if elm.enterse !== void;
         leavese = elm.leavese if elm.leavese !== void;
         clickse = elm.clickse if elm.clickse !== void;
 
-        // ”wŒiƒOƒ‰ƒtƒBƒbƒNw’è
+        // ï¿½wï¿½iï¿½Oï¿½ï¿½ï¿½tï¿½Bï¿½bï¿½Nï¿½wï¿½ï¿½
         frameGraphic  = elm.frame    if elm.frame !== void;
         frameKey      = elm.framekey if elm.framekey !== void;
         frameColor    = +elm.color   if elm.color !== void;
         frameOpacity  = +elm.opacity if elm.opacity !== void;
         clearLayer();
 
-        // ƒƒbƒZ[ƒW‘‹‚ğÁ‹‚·‚é‚©‚Ç‚¤‚©
+        // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
         msgoff = elm.msgoff if elm.msgoff !== void;
     }
 
-    // “o˜^Ï‚İƒ{ƒ^ƒ“î•ñ
+    // ï¿½oï¿½^ï¿½Ï‚İƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½
     var buttons = %[];
 
-    // “o˜^Ï‚İêŠî•ñ
+    // ï¿½oï¿½^ï¿½Ï‚İêŠï¿½ï¿½ï¿½
     var positions = %[];
     
     /**
-     * ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+     * ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
      */
     function MapSelectLayer(window) {
         super.Layer(window, window.primaryLayer);
@@ -230,7 +230,7 @@ class MapSelectLayer extends KAGLayer {
         focusable    = false;
         cursor = window.cursorDefault;
         
-        // ƒ^ƒCƒ}[‚ğì¬
+        // ï¿½^ï¿½Cï¿½}ï¿½[ï¿½ï¿½ï¿½ì¬
         timer = new Timer(onTimer, '');
     }
 
@@ -244,7 +244,7 @@ class MapSelectLayer extends KAGLayer {
     }
 
     function onTimer() {
-        // ƒ^ƒCƒ}[‚ÌüŠú‚²‚Æ‚ÉŒÄ‚Î‚ê‚é
+        // ï¿½^ï¿½Cï¿½}ï¿½[ï¿½Ìï¿½ï¿½Æ‚ÉŒÄ‚Î‚ï¿½ï¿½
         for (var i=selects.count-1;i>=0;i--) {
             selects[i].update();
         }
@@ -252,7 +252,7 @@ class MapSelectLayer extends KAGLayer {
 
     
     /**
-     * ƒ{ƒ^ƒ“î•ñ‚Ì’Ç‰Á
+     * ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Ì’Ç‰ï¿½
      */
     function addButton(elm) {
         if (elm.name !== void) {
@@ -266,7 +266,7 @@ class MapSelectLayer extends KAGLayer {
     }
 
     /**
-     * êŠî•ñ‚Ì’Ç‰Á
+     * ï¿½êŠï¿½ï¿½ï¿½Ì’Ç‰ï¿½
      */
     function addPosition(elm) {
         if (elm.name !== void) {
@@ -278,18 +278,18 @@ class MapSelectLayer extends KAGLayer {
     }
 
     /**
-     * ƒ{ƒ^ƒ“î•ñ‚ÆêŠî•ñ‚ÌÁ‹
+     * ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ÆêŠï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½
      */
     function init() {
         (Dictionary.clear incontextof buttons)(); 
         (Dictionary.clear incontextof positions)(); 
     }
     
-    // “o˜^Ï‚İ‘I‘ğˆ
+    // ï¿½oï¿½^ï¿½Ï‚İ‘Iï¿½ï¿½ï¿½ï¿½
     var selects = [];
     
     /**
-     * ‘I‘ğÁ‹
+     * ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
      */
     function clear() {
         for (var i=selects.count-1;i>=0;i--) {
@@ -300,13 +300,13 @@ class MapSelectLayer extends KAGLayer {
     }
 
     /**
-     * ‘I‘ğˆ‚ğ’Ç‰Á
+     * ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‰ï¿½
      */
     function addSelect(elm) {
 
         var info = buttons[elm.text];
         if (info === void) {
-            throw new Exception("w’è‚³‚ê‚½‘I‘ğˆ‚ª’Ç‰Á‚Å‚«‚Ü‚¹‚ñ:" + elm.text);
+            throw new Exception("ï¿½wï¿½è‚³ï¿½ê‚½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‰ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½:" + elm.text);
         }
         
         var enterse  = elm.enterse !== void ? elm.enterse : enterse;
@@ -330,7 +330,7 @@ class MapSelectLayer extends KAGLayer {
     }
 
     /*
-     * e‚Ì·‚µ‘Ö‚¦
+     * ï¿½eï¿½Ìï¿½ï¿½ï¿½ï¿½Ö‚ï¿½
      */
     function setParent(parent, absolute) {
         this.parent = parent;
@@ -338,7 +338,7 @@ class MapSelectLayer extends KAGLayer {
     }
     
     /**
-     * ‘I‘ğˆ—ŠJn
+     * ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½n
      */
     function start(parent, absolute) {
 
@@ -347,7 +347,7 @@ class MapSelectLayer extends KAGLayer {
         
         var posall   = %[];
         
-        // ‘I‘ğˆ‚ğêŠ‚²‚Æ‚É•ª—Ş
+        // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½êŠï¿½ï¿½ï¿½Æ‚É•ï¿½ï¿½ï¿½
         for (var i=0; i<selects.count;i++) {
             var select = selects[i];
             if (posall[select.pos] === void) {
@@ -356,7 +356,7 @@ class MapSelectLayer extends KAGLayer {
             posall[select.pos].add(select);
         }
 
-        // êŠ‚²‚Æ‚Éƒ{ƒ^ƒ“‚ğÄ”z’u‚·‚é
+        // ï¿½êŠï¿½ï¿½ï¿½Æ‚Éƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Ä”zï¿½uï¿½ï¿½ï¿½ï¿½
         foreach(posall, function(posname,selects,posall,self) {
             
             var pos = self.positions[posname];
@@ -365,16 +365,16 @@ class MapSelectLayer extends KAGLayer {
             }
             if (pos !== void) {
 
-                // êŠ‚Ì’²®ˆ—
+                // ï¿½êŠï¿½Ì’ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 var left = pos.left - (selects.count * self.buttonWidth) / 2;
                 for (var i=0; i<selects.count;i++) {
                     var select = selects[i];
                     select.setPos(left + i * self.buttonWidth + ((self.buttonWidth - select.width) / 2),
                                   pos.top - select.height / 2);
-                    // ‚xÀ•W‚ª‘å‚«‚¢‚Ù‚¤‚ªãA¶‚É‚¢‚é‚Ù‚¤‚ªã
+                    // ï¿½xï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½å‚«ï¿½ï¿½ï¿½Ù‚ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½Ù‚ï¿½ï¿½ï¿½ï¿½ï¿½
                     select.absolute = pos.top * 1000 + select.left;
                     select.visible = true;
-                    //dm("•\¦:" + select.left  +"," + select.top);
+                    //dm("ï¿½\ï¿½ï¿½:" + select.left  +"," + select.top);
                 }
             }
         },this);
@@ -385,7 +385,7 @@ class MapSelectLayer extends KAGLayer {
     }
 
     /**
-     * Š®—¹
+     * ï¿½ï¿½ï¿½ï¿½
      */
     function done() {
         visible = false;
@@ -394,17 +394,17 @@ class MapSelectLayer extends KAGLayer {
     }
     
     /**
-     * ˆ—I—¹
+     * ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½
      */
     function onButtonClick(select) {
         if (select !== void) {
             Scripts.eval(select.onclick) if select.onclick != '';
             if (select isvalid) {
                 if (select.storage != '' || select.target != '')	{
-                    window.lockMessageLayerSelProcess(); // ‘I‘ğ‚ğƒƒbƒN
+                    window.lockMessageLayerSelProcess(); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½N
                     if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
                         window.hideMouseCursor();
-                    // ƒL[ƒ{[ƒh‚É‚æ‚é‘€ì‚Ìê‡‚Íƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğ‰B‚·
+                    // ï¿½Lï¿½[ï¿½{ï¿½[ï¿½hï¿½É‚ï¿½é‘€ï¿½ï¿½Ìê‡ï¿½Íƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½
                     window.process(select.storage, select.target);
                 } else {
                     window.processGo();
@@ -414,21 +414,21 @@ class MapSelectLayer extends KAGLayer {
         }
     }
 
-    var invisibleByUser = false; // ƒ†[ƒU‚É‚æ‚èˆê“I‚É•s‰Â‹
+    var invisibleByUser = false; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½ï¿½êï¿½Iï¿½É•sï¿½Âï¿½
 	var visibleBeforeUserInvisible  = false;
 	function setHiddenStateByUser(b)
 	{
-		// ƒ†[ƒU‚ª‰EƒNƒŠƒbƒN‚È‚Ç‚ÅƒƒbƒZ[ƒWƒŒƒCƒ„‚ğˆê“I‚É‰B‚·‚Æ‚«‚É
-		// ŒÄ‚Î‚ê‚é
+		// ï¿½ï¿½ï¿½[ï¿½Uï¿½ï¿½ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½È‚Ç‚Åƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½êï¿½Iï¿½É‰Bï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
+		// ï¿½Ä‚Î‚ï¿½ï¿½
 		if(b)
 		{
 			visibleBeforeUserInvisible = visible;
-			invisibleByUser = true; // ƒ†[ƒU‚É‚æ‚èˆê“I‚É•s‰Â‹
+			invisibleByUser = true; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½ï¿½êï¿½Iï¿½É•sï¿½Âï¿½
 			visible = false;
 		}
 		else
 		{
-			invisibleByUser = false; // ‰Â‹
+			invisibleByUser = false; // ï¿½Âï¿½
 			visible = visibleBeforeUserInvisible;
 		}
 	}
