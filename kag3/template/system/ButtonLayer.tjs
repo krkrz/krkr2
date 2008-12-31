@@ -1,27 +1,27 @@
-// ButtonLayer.tjs - ƒ{ƒ^ƒ“ƒŒƒCƒ„
-// Copyright (C)2001-2008, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
+// ButtonLayer.tjs - ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
+// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
 
 /*
-ƒ{ƒ^ƒ“‚Æ‚µ‚Ä“®ì‚·‚éƒŒƒCƒ„‚Å‚·B
-‰Ÿ‚µ‚Ü‚ê‚½‚Ì‰æ‘œAƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ªƒŒƒCƒ„“à‚É‚ ‚é‚Æ‚«‚Ì‰æ‘œA’Êí‚Ì‰æ‘œ
-‚ğ‚»‚ê‚¼‚ê•Ï‚¦‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+ï¿½{ï¿½^ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä“ï¿½ï¿½ì‚·ï¿½éƒŒï¿½Cï¿½ï¿½ï¿½Å‚ï¿½ï¿½B
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ê‚½ï¿½ï¿½ï¿½Ì‰æ‘œï¿½Aï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ì‰æ‘œï¿½Aï¿½Êï¿½Ì‰æ‘œ
+ï¿½ï¿½ï¿½ï¿½ï¿½ê‚¼ï¿½ï¿½Ï‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
 
-‘®  new ButtonLayer(<window>, <parent>)
+ï¿½ï¿½ï¿½ï¿½  new ButtonLayer(<window>, <parent>)
 
-<window> : ‚±‚ÌƒŒƒCƒ„‚ğì¬‚·‚éƒEƒBƒ“ƒhƒE
-<parent> : eƒŒƒCƒ„
+<window> : ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½E
+<parent> : ï¿½eï¿½ï¿½ï¿½Cï¿½ï¿½
 
 */
 
 
 class ButtonLayer extends KAGLayer
 {
-	var Butt_imageLoaded = false; // ‰æ‘œ‚ª“Ç‚İ‚Ü‚ê‚½‚©
-	var Butt_mouseOn = false; // ƒŒƒCƒ„“à‚Éƒ}ƒEƒX‚ª‚ ‚é‚©
-	var Butt_mouseDown = false; // ƒ}ƒEƒXƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©
+	var Butt_imageLoaded = false; // ï¿½æ‘œï¿½ï¿½ï¿½Ç‚İï¿½ï¿½Ü‚ê‚½ï¿½ï¿½
+	var Butt_mouseOn = false; // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Éƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½é‚©
+	var Butt_mouseDown = false; // ï¿½}ï¿½Eï¿½Xï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©
 	var Butt_color = clNone;
-	var Butt_caption = ''; // ƒ{ƒ^ƒ“‚ÌƒLƒƒƒvƒVƒ‡ƒ“
-	var Butt_captionColor = 0x000000; // ƒLƒƒƒvƒVƒ‡ƒ“‚ÌF
+	var Butt_caption = ''; // ï¿½{ï¿½^ï¿½ï¿½ï¿½ÌƒLï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½
+	var Butt_captionColor = 0x000000; // ï¿½Lï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ÌF
 	var Butt_keyPressed = false;
 	var Butt_showFocusImage = false;
 
@@ -34,7 +34,7 @@ class ButtonLayer extends KAGLayer
 
 		hitType = htMask;
 		hitThreshold = 0;
-		focusable = true; // ƒtƒH[ƒJƒX‚ğ“¾‚ç‚ê‚é
+		focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½ï¿½ï¿½
 	}
 
 	function finalize()
@@ -44,7 +44,7 @@ class ButtonLayer extends KAGLayer
 
 	function assign(src)
 	{
-		// src ‚Ìî•ñ‚ğ‚±‚Ìƒ{ƒ^ƒ“ƒŒƒCƒ„‚ÉƒRƒs[
+		// src ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÉƒRï¿½sï¿½[
 		assignImages(src, true);
 		Butt_imageLoaded = src.Butt_imageLoaded;
 		Butt_color = src.Butt_color;
@@ -56,40 +56,40 @@ class ButtonLayer extends KAGLayer
 
 	function drawState(s)
 	{
-		// ó‘Ô s ‚É‘Î‰‚·‚é‰æ‘œ‚ğ•`‰æ
-		// s :  0 : •’Ê‚Ìó‘Ô
-		//      1 : ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½ó‘Ô
-		//      2 : ƒ{ƒ^ƒ“‚Ìã‚Éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ª‚ ‚éó‘Ô
-		//     (3): ƒtƒH[ƒJƒX‚ª‚ ‚éê‡
+		// ï¿½ï¿½ï¿½ s ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½æ‘œï¿½ï¿½`ï¿½ï¿½
+		// s :  0 : ï¿½ï¿½ï¿½Ê‚Ìï¿½ï¿½
+		//      1 : ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½
+		//      2 : ï¿½{ï¿½^ï¿½ï¿½ï¿½Ìï¿½Éƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		//     (3): ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡
 		if(!enabled)
 		{
-			s = 0; // –³Œøó‘Ô
+			s = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		}
 
 		if(Butt_imageLoaded)
 		{
-			// ƒ{ƒ^ƒ“ƒCƒ[ƒW‚ª“Ç‚İ‚Ü‚ê‚Ä‚¢‚é
+			// ï¿½{ï¿½^ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½Ç‚İï¿½ï¿½Ü‚ï¿½Ä‚ï¿½ï¿½ï¿½
 			// TODO: keyboard focus
 			imageLeft = -s * width;
 		}
 		else
 		{
-			if(Butt_keyPressed) s = 1; // ‰Ÿ‚³‚ê‚Ä‚¢‚é
+			if(Butt_keyPressed) s = 1; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 
-			// ˜g‚ÆƒLƒƒƒvƒVƒ‡ƒ“‚ğ•`‰æ
-			// ƒNƒŠƒA
+			// ï¿½gï¿½ÆƒLï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½
+			// ï¿½Nï¿½ï¿½ï¿½A
 			face = dfAlpha;
 			colorRect(0, 0, width, height, 0, -255);
-			// ‰º’n‚ğ“h‚é
+			// ï¿½ï¿½ï¿½nï¿½ï¿½hï¿½ï¿½
 			if(Butt_color != clNone)
 				colorRect(0, 0, width, height, Butt_color, 128);
-			// •¶š‚ÌƒTƒCƒY‚ğ“¾‚é
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ğ“¾‚ï¿½
 			var tw, th;
 			tw = font.getTextWidth(Butt_caption);
 			th = font.getTextHeight(Butt_caption);
 			if(s == 0 || s == 2)
 			{
-				// ’Êí‚ ‚é‚¢‚Íƒ}ƒEƒX‚ªã‚É‚ ‚é
+				// ï¿½Êí‚ ï¿½é‚¢ï¿½Íƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
 				colorRect(0, 0, width, 1, 0xffffff, 128);
 				colorRect(0, 1, 1, height-2, 0xffffff, 128);
 				colorRect(width-1, 1, 1, height-1, 0x000000, 128);
@@ -99,7 +99,7 @@ class ButtonLayer extends KAGLayer
 			}
 			else
 			{
-				// ‰Ÿ‚³‚ê‚Ä‚¢‚é
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 				colorRect(0, 0, width, 1, 0x000000, 128);
 				colorRect(0, 1, 1, height-2, 0x000000, 128);
 				colorRect(width-1, 1, 1, height-1, 0xffffff, 128);
@@ -109,11 +109,11 @@ class ButtonLayer extends KAGLayer
 			}
 
 			if(s != 0)
-				colorRect(2, 2, width-4, height-4, clHighlight, 64); // ƒnƒCƒ‰ƒCƒg‚·‚é
+				colorRect(2, 2, width-4, height-4, clHighlight, 64); // ï¿½nï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½
 
 			if(focused)
 			{
-				// ƒtƒH[ƒJƒX‚ª‚ ‚é‚Ì‚ÅƒnƒCƒ‰ƒCƒg‚·‚é
+				// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Åƒnï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½
 				colorRect(2, 2, width-4, 1, clHighlight, 128);
 				colorRect(2, 3, 1, height-5, clHighlight, 128);
 				colorRect(3, height-3, width-5, 1, clHighlight, 128);
@@ -124,7 +124,7 @@ class ButtonLayer extends KAGLayer
 
 	function loadImages(storage, key)
 	{
-		// ‰æ‘œ‚ğ“Ç‚İ‚Ş
+		// ï¿½æ‘œï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 		super.loadImages(storage, key);
 		super.width = imageWidth \ (Butt_showFocusImage ? 4 : 3);
 		super.height = imageHeight;
@@ -134,7 +134,7 @@ class ButtonLayer extends KAGLayer
 
 	function discardImage()
 	{
-		// ‰æ‘œ‚ğ”jŠü‚µA•¶šƒ{ƒ^ƒ“ƒŒƒCƒ„‚Æ‚µ‚Ä“®ì‚·‚é‚æ‚¤‚É‚·‚é
+		// ï¿½æ‘œï¿½ï¿½jï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä“ï¿½ï¿½ì‚·ï¿½ï¿½æ‚¤ï¿½É‚ï¿½ï¿½ï¿½
 		Butt_imageLoaded = false;
 		imageLeft = imageTop = 0;
 		update();
@@ -142,15 +142,15 @@ class ButtonLayer extends KAGLayer
 
 	function onExecute(x, y, button, shift)
 	{
-		// ƒ}ƒEƒXƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚ÄA•ú‚³‚ê‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
-		// ‰½‚©‚±‚Ìƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚±‚Æ‚É‚æ‚èƒRƒ}ƒ“ƒh‚È‚Ç‚ğÀ‘•‚µ‚½‚¢ê‡‚Í
-		// onMouseUp ‚â onClick ‚ğƒI[ƒo[ƒ‰ƒCƒh‚·‚é‚æ‚è‚à
-		// ‚±‚Ìƒƒ\ƒbƒh‚ğƒI[ƒo[ƒ‰ƒCƒh‚·‚é‚±‚Æ‚ğ„§‚·‚é
+		// ï¿½}ï¿½Eï¿½Xï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄAï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½Æ‚É‚ï¿½ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½È‚Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
+		// onMouseUp ï¿½ï¿½ onClick ï¿½ï¿½ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½hï¿½ï¿½ï¿½é‚±ï¿½Æ‚ğ„ï¿½ï¿½ï¿½ï¿½ï¿½
 	}
 
 	function onMouseDown()
 	{
-		// onMouseDown ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
+		// onMouseDown ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
 		Butt_mouseDown = true;
 		focus();
 		update();
@@ -159,7 +159,7 @@ class ButtonLayer extends KAGLayer
 
 	function onMouseUp()
 	{
-		// onMouseUp ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
+		// onMouseUp ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
 		if(Butt_mouseDown) onExecute(...);
 		Butt_mouseDown = false;
 		update();
@@ -168,13 +168,13 @@ class ButtonLayer extends KAGLayer
 
 	function onClick()
 	{
-		// onClick ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
+		// onClick ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
 		super.onClick(...);
 	}
 
 	function draw()
 	{
-		// Œ»İ‚Ìó‘Ô‚É‚ ‚í‚¹‚Ä•`‰æ‚ğs‚¤
+		// ï¿½ï¿½ï¿½İ‚Ìï¿½Ô‚É‚ï¿½ï¿½í‚¹ï¿½Ä•`ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
 		if(Butt_mouseDown) drawState(1);
 		else if(Butt_mouseOn) drawState(2);
 		else if(Butt_showFocusImage && focused) drawState(3);
@@ -183,14 +183,14 @@ class ButtonLayer extends KAGLayer
 
 	function onPaint()
 	{
-		// •`‰æ‚Ì’¼‘O‚ÉŒÄ‚Î‚ê‚é
+		// ï¿½`ï¿½ï¿½Ì’ï¿½ï¿½Oï¿½ÉŒÄ‚Î‚ï¿½ï¿½
 		super.onPaint(...);
 		draw();
 	}
 
 	function onMouseEnter()
 	{
-		// ƒ}ƒEƒX‚ªƒŒƒCƒ„—Ìˆæ“à‚É“ü‚Á‚½
+		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆï¿½ï¿½ï¿½É“ï¿½ï¿½ï¿½ï¿½
 		update();
 		Butt_mouseOn = true;
 		super.onMouseEnter(...);
@@ -198,7 +198,7 @@ class ButtonLayer extends KAGLayer
 
 	function onMouseLeave()
 	{
-		// ƒ}ƒEƒX‚ªƒŒƒCƒ„—Ìˆæ‚©‚ço‚Ä‚¢‚Á‚½
+		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆæ‚©ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½
 		update();
 		Butt_mouseOn = false;
 		Butt_mouseDown = false;
@@ -207,7 +207,7 @@ class ButtonLayer extends KAGLayer
 
 	function onNodeDisabled()
 	{
-		// ƒŒƒCƒ„‚Ìƒm[ƒh‚ª•s‰Â‚É‚È‚Á‚½
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒmï¿½[ï¿½hï¿½ï¿½ï¿½sï¿½Â‚É‚È‚ï¿½ï¿½ï¿½
 		super.onNodeDisabled(...);
 		Butt_mouseDown = false;
 		update();
@@ -215,21 +215,21 @@ class ButtonLayer extends KAGLayer
 
 	function onNodeEnabled()
 	{
-		// ƒŒƒCƒ„‚Ìƒm[ƒh‚ª—LŒø‚É‚È‚Á‚½
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒmï¿½[ï¿½hï¿½ï¿½ï¿½Lï¿½ï¿½É‚È‚ï¿½ï¿½ï¿½
 		super.onNodeEnabled(...);
 		update();
 	}
 
 	function onFocus()
 	{
-		// ƒtƒH[ƒJƒX‚ğ“¾‚½
+		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½
 		super.onFocus(...);
 		update();
 	}
 
 	function onBlur()
 	{
-		// ƒtƒH[ƒJƒX‚ğ¸‚Á‚½
+		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		super.onBlur(...);
 		Butt_mouseDown = false;
 		update();
@@ -237,15 +237,15 @@ class ButtonLayer extends KAGLayer
 
 	function onKeyDown(key, shift, process)
 	{
-		// ƒL[‚ª‰Ÿ‚³‚ê‚½
+		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
 		if(process)
 		{
 			if(key == VK_RETURN || key == VK_SPACE)
 			{
-				// ƒXƒy[ƒXƒL[‚Ü‚½‚ÍƒGƒ“ƒ^[ƒL[
+				// ï¿½Xï¿½yï¿½[ï¿½Xï¿½Lï¿½[ï¿½Ü‚ï¿½ï¿½ÍƒGï¿½ï¿½ï¿½^ï¿½[ï¿½Lï¿½[
 				Butt_keyPressed = true;
 				update();
-				super.onKeyDown(key, shift, false); // ˆ—‚ğ‚µ‚½‚Ì‚Åprocess‚Éfalse‚ğ“n‚·
+				super.onKeyDown(key, shift, false); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½processï¿½ï¿½falseï¿½ï¿½nï¿½ï¿½
 			}
 			else
 			{
@@ -254,24 +254,24 @@ class ButtonLayer extends KAGLayer
 		}
 		else
 		{
-			// process ‚ª false ‚Ìê‡‚Íˆ—‚Ís‚í‚È‚¢
+			// process ï¿½ï¿½ false ï¿½Ìê‡ï¿½Íï¿½ï¿½ï¿½ï¿½Ísï¿½ï¿½È‚ï¿½
 			super.onKeyDown(...);
 		}
 	}
 
 	function onKeyUp(key, shift, process)
 	{
-		// ƒL[‚ª—£‚³‚ê‚½
+		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
 		if(process)
 		{
 			if(key == VK_RETURN || key == VK_SPACE)
 			{
-				// ƒXƒy[ƒXƒL[‚Ü‚½‚ÍƒGƒ“ƒ^[ƒL[
+				// ï¿½Xï¿½yï¿½[ï¿½Xï¿½Lï¿½[ï¿½Ü‚ï¿½ï¿½ÍƒGï¿½ï¿½ï¿½^ï¿½[ï¿½Lï¿½[
 				var flag = Butt_keyPressed;
 				Butt_keyPressed = false;
 				update();
 				super.onKeyUp(key, shift, false);
-				if(flag) onClick(width \ 2, height \ 2); // ƒNƒŠƒbƒN“®ì
+				if(flag) onClick(width \ 2, height \ 2); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
 			}
 			else
 			{

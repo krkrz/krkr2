@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	fgconvert   (graphic converter for transparent images)
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -19,7 +19,7 @@ void __fastcall ShowJPEGQualityForm(TForm *parent, int & quality);
 //---------------------------------------------------------------------------
 class TJPEGQualityForm : public TForm
 {
-__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
+__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TLabel *Label1;
 	TTrackBar *TrackBar;
 	TLabel *Label2;
@@ -32,8 +32,8 @@ __published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TButton *CancelButton;
 	void __fastcall TrackBarChange(TObject *Sender);
 	void __fastcall RestoreDefaultButtonClick(TObject *Sender);
-private:	// ƒ†[ƒU[éŒ¾
-public:		// ƒ†[ƒU[éŒ¾
+private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	__fastcall TJPEGQualityForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------

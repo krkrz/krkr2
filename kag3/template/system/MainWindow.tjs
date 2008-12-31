@@ -1,272 +1,272 @@
-//;# MainWindow.tjs - KAG ƒƒCƒ“ƒEƒBƒ“ƒhƒE
-//;# Copyright (C)2001-2008, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
+//;# MainWindow.tjs - KAG ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½E
+//;# Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
 //;<<'END_OF_TJS_SCRIPT';
 
-// ‚±‚ÌƒXƒNƒŠƒvƒg‚Í—LŒø‚È perl5 ƒXƒNƒŠƒvƒg‚Å‚à‚ ‚é
+// ï¿½ï¿½ï¿½ÌƒXï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Í—Lï¿½ï¿½ï¿½ perl5 ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½
 
 class KAGWindow extends Window
 {
-	// KAG ‚ÌƒEƒBƒ“ƒhƒE ƒNƒ‰ƒX
-	// KAG ‚Ì“®ì‚ÌƒƒCƒ“‚È•”•ª‚Í‚±‚±‚É‹Lq‚µ‚Ä‚ ‚é
+	// KAG ï¿½ÌƒEï¿½Bï¿½ï¿½ï¿½hï¿½E ï¿½Nï¿½ï¿½ï¿½X
+	// KAG ï¿½Ì“ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½È•ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ï¿½É‹Lï¿½qï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 
-	// ˆÈ‰º‚Ì‚¤‚¿A/*C*/ ‚Ì‚Â‚­•Ï”‚ÍA––’[‚Ì perl ƒXƒNƒŠƒvƒg‚É‚æ‚Á‚Ä
-	// ©“®“I‚Éx‚ÉƒRƒs[‚³‚ê‚éƒR[ƒh‚ª¶¬‚³‚ê‚é•Ï”
+	// ï¿½È‰ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½A/*C*/ ï¿½Ì‚Â‚ï¿½ï¿½Ïï¿½ï¿½ÍAï¿½ï¿½ï¿½[ï¿½ï¿½ perl ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½É‚ï¿½ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½Éxï¿½ÉƒRï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½
 
-	var scWidth = 640; // ‰æ–Ê‰¡•
-	var scHeight = 480; // ‰æ–Êc•
+	var scWidth = 640; // ï¿½ï¿½Ê‰ï¿½ï¿½ï¿½
+	var scHeight = 480; // ï¿½ï¿½Êcï¿½ï¿½
 
-	var aboutWidth = 320; // u‚±‚Ìƒ\ƒtƒg‚É‚Â‚¢‚ÄvƒEƒBƒ“ƒhƒE‚Ì‰¡•
-	var aboutHeight = 200; // “¯c•
+	var aboutWidth = 320; // ï¿½uï¿½ï¿½ï¿½Ìƒ\ï¿½tï¿½gï¿½É‚Â‚ï¿½ï¿½Ävï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ì‰ï¿½ï¿½ï¿½
+	var aboutHeight = 200; // ï¿½ï¿½ï¿½cï¿½ï¿½
 
-	var isFirstProcess = true; // ˆê”ÔÅ‰‚Ì process ‚ÌŒÄ‚Ño‚µ‚©‚Ç‚¤‚©
+	var isFirstProcess = true; // ï¿½ï¿½ÔÅï¿½ï¿½ï¿½ process ï¿½ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var freeSaveDataMode = false; // x‚ğƒƒjƒ…[ƒo[‚È‚Ç‚ÅŠÇ—‚¹‚¸‚ÉAŒÂ•Ê‚Ìƒtƒ@ƒCƒ‹‚Æ‚µ‚ÄŠÇ—‚·‚é
-	var saveThumbnail = false; // ƒTƒ€ƒlƒCƒ‹‚ğ•Û‘¶‚·‚é‚©‚Ç‚¤‚©
-	var thumbnailWidth = 133; // ƒTƒ€ƒlƒCƒ‹‚Ì‰¡•
-	var thumbnailDepth = 8; // ƒTƒ€ƒlƒCƒ‹‚ÌBMPƒ‚[ƒhB8‚©24
-		// ƒTƒ€ƒlƒCƒ‹‚Ì ƒtƒ‹ƒJƒ‰[‰»‚¨‚æ‚ÑƒTƒCƒYƒtƒŠ[‰»‚Ìƒpƒbƒ`‚Í
-		// ‚ä‚ñ‚©‚ç‚¢‚½‚¾‚«‚Ü‚µ‚½B
-		// ‚±‚Ìê‚ğØ‚è‚Ä‚¨—ç\‚µã‚°‚Ü‚·B
+	var freeSaveDataMode = false; // ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½oï¿½[ï¿½È‚Ç‚ÅŠÇ—ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉAï¿½Â•Ê‚Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÄŠÇ—ï¿½ï¿½ï¿½ï¿½ï¿½
+	var saveThumbnail = false; // ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+	var thumbnailWidth = 133; // ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ï¿½
+	var thumbnailDepth = 8; // ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ï¿½BMPï¿½ï¿½ï¿½[ï¿½hï¿½B8ï¿½ï¿½24
+		// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ï¿½ ï¿½tï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÑƒTï¿½Cï¿½Yï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ìƒpï¿½bï¿½`ï¿½ï¿½
+		// ï¿½ï¿½ñ‚ï¿½ï¿½ç‚¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B
+		// ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½Ø‚ï¿½Ä‚ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ã‚°ï¿½Ü‚ï¿½ï¿½B
 
 
-	var snapshotLayer = void; // ‰æ‘œ‚ÌƒXƒiƒbƒvƒVƒ‡ƒbƒg‚ğˆê“I‚É•Û‘¶‚·‚éƒŒƒCƒ„
-	var snapshotLockCount = 0; // ƒƒbƒNƒJƒEƒ“ƒg
+	var snapshotLayer = void; // ï¿½æ‘œï¿½ÌƒXï¿½iï¿½bï¿½vï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½ï¿½ï¿½êï¿½Iï¿½É•Û‘ï¿½ï¿½ï¿½ï¿½éƒŒï¿½Cï¿½ï¿½
+	var snapshotLockCount = 0; // ï¿½ï¿½ï¿½bï¿½Nï¿½Jï¿½Eï¿½ï¿½ï¿½g
 
-	var lastSaveDataNameGlobal = ""; // ÅŒã‚É•Û‘¶‚µ‚½ƒtƒŠ[ƒZ[ƒuƒ‚[ƒh‚Å‚Ìƒtƒ@ƒCƒ‹–¼
-	/*C*/var lastSaveDataName = ""; // ÅŒã‚É•Û‘¶‚µ‚½ƒtƒŠ[ƒZ[ƒuƒ‚[ƒh‚Å‚Ìƒtƒ@ƒCƒ‹–¼
+	var lastSaveDataNameGlobal = ""; // ï¿½ÅŒï¿½É•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½[ï¿½hï¿½Å‚Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
+	/*C*/var lastSaveDataName = ""; // ï¿½ÅŒï¿½É•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½[ï¿½hï¿½Å‚Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
 
-	var saveDataLocation = System.dataPath; // ƒZ[ƒuƒf[ƒ^•Û‘¶êŠ
+	var saveDataLocation = System.dataPath; // ï¿½Zï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½Û‘ï¿½ï¿½êŠ
 
-	var saveDataID = "00000000-0000-0000-0000-000000000000"; // ƒZ[ƒuƒf[ƒ^‚Ì ID
+	var saveDataID = "00000000-0000-0000-0000-000000000000"; // ï¿½Zï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ï¿½ ID
 
-	var readOnlyMode = false; // “Ç‚İ‚İê—pƒ‚[ƒh(ƒf[ƒ^‚ğƒfƒBƒXƒN‚É‘‚©‚È‚¢)
-	var dataName = "data"; // ƒZ[ƒuƒf[ƒ^–¼
-	var saveDataMode = ""; // ƒf[ƒ^•Û‘¶ƒ‚[ƒh( "c" ‚ÅˆÃ†‰» )
+	var readOnlyMode = false; // ï¿½Ç‚İï¿½ï¿½İï¿½pï¿½ï¿½ï¿½[ï¿½h(ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½fï¿½Bï¿½Xï¿½Nï¿½Éï¿½ï¿½ï¿½ï¿½È‚ï¿½)
+	var dataName = "data"; // ï¿½Zï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ï¿½
+	var saveDataMode = ""; // ï¿½fï¿½[ï¿½^ï¿½Û‘ï¿½ï¿½ï¿½ï¿½[ï¿½h( "c" ï¿½ÅˆÃï¿½ï¿½ï¿½ )
 
-	var recordHistoryOfStore = 0; // ’Ê‰ß—š—ğ‚ğ‹L˜^‚·‚é‚©‚Ç‚¤‚©
-		// 0 = ©“®“I‚É‚Í‹L˜^‚µ‚È‚¢  1 = •Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹‚²‚Æ
-		// 2 = ‘I‘ğˆ ( @s ƒ^ƒO ) ‚²‚Æ
-	var maxHistoryOfStore = 5; // ’Ê‰ß‹L˜^‚ÌÅ‘å”
-	var historyOfStore = []; // ’Ê‰ß—š—ğƒf[ƒ^
+	var recordHistoryOfStore = 0; // ï¿½Ê‰ß—ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½^ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+		// 0 = ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É‚Í‹Lï¿½^ï¿½ï¿½ï¿½È‚ï¿½  1 = ï¿½Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// 2 = ï¿½Iï¿½ï¿½ï¿½ï¿½ ( @s ï¿½^ï¿½O ) ï¿½ï¿½ï¿½ï¿½
+	var maxHistoryOfStore = 5; // ï¿½Ê‰ß‹Lï¿½^ï¿½ÌÅ‘å”
+	var historyOfStore = []; // ï¿½Ê‰ß—ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^
 	var nextRecordHistory = false;
-		// Ÿ‚Ì•Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹’Ê‰ß‚ÉŒ»İ‚Ìî•ñ‚ğ•Û‘¶‚·‚é‚©‚Ç‚¤‚©
+		// ï¿½ï¿½ï¿½Ì•Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½Ê‰ßï¿½ï¿½ÉŒï¿½ï¿½İ‚Ìï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
 
 	var stablePosibility = false;
-		// x‚ğ•Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹ŠÔ‚Å stable ‚É‚È‚é‰Â”\«‚ª‚ ‚é‚©‚Ç‚¤‚©
+		// ï¿½xï¿½ï¿½Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½Ô‚ï¿½ stable ï¿½É‚È‚ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var fullScreened = false; // Œ»İƒtƒ‹ƒXƒNƒŠ[ƒ“‚©‚Ç‚¤‚©
+	var fullScreened = false; // ï¿½ï¿½ï¿½İƒtï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var isMain = true; // ‚±‚ê‚ªƒƒCƒ“ƒEƒBƒ“ƒhƒE‚©‚Ç‚¤‚©
+	var isMain = true; // ï¿½ï¿½ï¿½ê‚ªï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var askOnClose = true; // I—¹‚ÉI—¹‚·‚é‚©‚ğƒ†[ƒU‚É•·‚­‚©‚Ç‚¤‚©
+	var askOnClose = true; // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ÉIï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Uï¿½É•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var helpFile = ""; // uƒwƒ‹ƒv > –ÚŸv‚ÅŠJ‚­ƒtƒ@ƒCƒ‹
+	var helpFile = ""; // ï¿½uï¿½wï¿½ï¿½ï¿½v > ï¿½Úï¿½ï¿½vï¿½ÅŠJï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½
 
-	var quakeTimer; // quake —p‚Ìƒ^ƒCƒ}
+	var quakeTimer; // quake ï¿½pï¿½Ìƒ^ï¿½Cï¿½}
 	var defaultQuakeTimeInChUnit = false;
-	/*C*/var quaking = false; // —h‚ê‚Ä‚¢‚é‚©
-	/*C*/var quakeEndTick = 0; // —h‚ê‚ğI—¹‚³‚¹‚é tick
-	/*C*/var quakeHorzMax = 0; // ‰¡U•
-	/*C*/var quakeVertMax = 0; // cU•
+	/*C*/var quaking = false; // ï¿½hï¿½ï¿½Ä‚ï¿½ï¿½é‚©
+	/*C*/var quakeEndTick = 0; // ï¿½hï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ tick
+	/*C*/var quakeHorzMax = 0; // ï¿½ï¿½ï¿½Uï¿½ï¿½
+	/*C*/var quakeVertMax = 0; // ï¿½cï¿½Uï¿½ï¿½
 	/*C*/var quakePhase = 0;
 
-	var chDefaultAntialiased; // •¶š‚ÉƒAƒ“ƒ`ƒGƒCƒŠƒAƒX‚ğ‚©‚¯‚é‚©‚Ç‚¤‚©
-	var chDefaultFace; // •¶š‚ÌƒfƒtƒHƒ‹ƒg‚ÌƒtƒHƒ“ƒg
+	var chDefaultAntialiased; // ï¿½ï¿½ï¿½ï¿½ï¿½ÉƒAï¿½ï¿½ï¿½`ï¿½Gï¿½Cï¿½ï¿½ï¿½Aï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+	var chDefaultFace; // ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒfï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒtï¿½Hï¿½ï¿½ï¿½g
 
 	var initialMessageLayerVisible = true;
 
-	var historyLayer; // ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„
-	/*C*/var historyWriteEnabled = true; // ƒƒbƒZ[ƒWƒŒƒCƒ„‚É•¶š‚ğo—Í‚·‚é‚©
-	/*C*/var historyEnabled = true; // ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚ğ•\¦‰Â”\‚©
-	var historyShowing = false; // ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚ğ•\¦’†‚©
-	var lastHistoryHiddenTick = 0; // ÅŒã‚É—š—ğƒŒƒCƒ„‚ª”ñ•\¦‚É‚È‚Á‚½‚Æ‚«‚Ì tick
+	var historyLayer; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
+	/*C*/var historyWriteEnabled = true; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½É•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½Í‚ï¿½ï¿½é‚©
+	/*C*/var historyEnabled = true; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Â”\ï¿½ï¿½
+	var historyShowing = false; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	var lastHistoryHiddenTick = 0; // ï¿½ÅŒï¿½É—ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½É‚È‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ tick
 
-	/*C*/var numCharacterLayers = 0; // ‘OŒiƒŒƒCƒ„‚Ì”
-	/*C*/var numMessageLayers = 1; // ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì”
-	var fore = %[]; // •\ƒŒƒCƒ„
-	var back = %[]; // — ƒŒƒCƒ„
+	/*C*/var numCharacterLayers = 0; // ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½
+	/*C*/var numMessageLayers = 1; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½
+	var fore = %[]; // ï¿½\ï¿½ï¿½ï¿½Cï¿½ï¿½
+	var back = %[]; // ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
 
-	var scPositionX = %[]; // —§‚¿ŠG‚Ì’†SÀ•W(X)
+	var scPositionX = %[]; // ï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½Ì’ï¿½ï¿½Sï¿½ï¿½ï¿½W(X)
 
-	var tempLayer = void; // ˆê“I‚ÈƒŒƒCƒ„
+	var tempLayer = void; // ï¿½êï¿½Iï¿½Èƒï¿½ï¿½Cï¿½ï¿½
 
-	var lineBreak; // s‘Ò‚¿—pƒAƒjƒ[ƒVƒ‡ƒ“ƒŒƒCƒ„
-	var pageBreak; // ƒy[ƒW‘Ò‚¿—pƒOƒŠƒt‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒŒƒCƒ„
-	var clickWaiting = false; // ƒNƒŠƒbƒN‘Ò‚¿‚©‚Ç‚¤‚©
+	var lineBreak; // ï¿½sï¿½Ò‚ï¿½ï¿½pï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
+	var pageBreak; // ï¿½yï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½pï¿½Oï¿½ï¿½ï¿½tï¿½ÌƒAï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
+	var clickWaiting = false; // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var mainConductor; // ƒƒCƒ“‚ÌƒRƒ“ƒ_ƒNƒ^
-	var extraConductor; // —\”õ‚ÌƒRƒ“ƒ_ƒNƒ^
-	var conductor; // Œ»İ‚ÌƒRƒ“ƒ_ƒNƒ^
-	var usingExtraConductor = false; // —\”õ‚ÌƒRƒ“ƒ_ƒNƒ^‚ğg—p’†‚©‚Ç‚¤‚©
-	var onExtraConductorReturn; // extraConductor ‚©‚ç’Êí‚ÌƒRƒ“ƒ_ƒNƒ^‚É–ß‚é‚Æ‚«‚É‚æ‚ÔŠÖ”
+	var mainConductor; // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½_ï¿½Nï¿½^
+	var extraConductor; // ï¿½\ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½_ï¿½Nï¿½^
+	var conductor; // ï¿½ï¿½ï¿½İ‚ÌƒRï¿½ï¿½ï¿½_ï¿½Nï¿½^
+	var usingExtraConductor = false; // ï¿½\ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	var onExtraConductorReturn; // extraConductor ï¿½ï¿½ï¿½ï¿½Êï¿½ÌƒRï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½É–ß‚ï¿½Æ‚ï¿½ï¿½É‚ï¿½ÔŠÖï¿½
 
-	var tagHandlers; // ƒ^ƒO‚Ìƒnƒ“ƒhƒ‰ŒQ«‘”z—ñ
+	var tagHandlers; // ï¿½^ï¿½Oï¿½Ìƒnï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Qï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½
 
-	var saveMacros = true; // ƒ}ƒNƒ‚ğx‚É•Û‘¶‚·‚é‚©‚Ç‚¤‚©
+	var saveMacros = true; // ï¿½}ï¿½Nï¿½ï¿½ï¿½ï¿½xï¿½É•Û‘ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var current; // Œ»İ‘€ì’†‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„
-	/*C*/var currentNum; // Œ»İ‘€ì’†‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„”Ô†
-	/*C*/var currentPage; // Œ»İ‘€ì’†‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Ìƒy[ƒW(•\0/— 1)
-	/*C*/var currentWithBack = false; // — ‰æ–Ê‚É‚à•¶š‚ğ•`‰æ‚·‚é‚©‚Ç‚¤‚©
+	var current; // ï¿½ï¿½ï¿½İ‘ï¿½ï¿½ì’†ï¿½Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½
+	/*C*/var currentNum; // ï¿½ï¿½ï¿½İ‘ï¿½ï¿½ì’†ï¿½Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôï¿½
+	/*C*/var currentPage; // ï¿½ï¿½ï¿½İ‘ï¿½ï¿½ì’†ï¿½Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒyï¿½[ï¿½W(ï¿½\0/ï¿½ï¿½1)
+	/*C*/var currentWithBack = false; // ï¿½ï¿½ï¿½ï¿½Ê‚É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½æ‚·ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var bgm; // BGM ƒIƒuƒWƒFƒNƒg
+	var bgm; // BGM ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
 
-	var numSEBuffers = 1; // Œø‰Ê‰¹ƒoƒbƒtƒ@‚Ì”
-	var se = []; // Œø‰Ê‰¹ƒoƒbƒtƒ@ƒIƒuƒWƒFƒNƒg
+	var numSEBuffers = 1; // ï¿½ï¿½Ê‰ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½Ìï¿½
+	var se = []; // ï¿½ï¿½Ê‰ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
 
-	var numMovies = 1; // ƒ€[ƒr[ƒIƒuƒWƒFƒNƒg”
-//	var movie; // ƒ€[ƒr[ƒIƒuƒWƒFƒNƒg
-	var movies = []; // ƒ€[ƒr[ƒIƒuƒWƒFƒNƒg
+	var numMovies = 1; // ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½
+//	var movie; // ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
+	var movies = []; // ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
 
-	var transCount; // Œ»İis’†‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Ì”
-	var moveCount; // Œ»İis’†‚Ì©“®ˆÚ“®‚Ì”
+	var transCount; // ï¿½ï¿½ï¿½İiï¿½sï¿½ï¿½ï¿½Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½
+	var moveCount; // ï¿½ï¿½ï¿½İiï¿½sï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½Ìï¿½
 
 	var chSpeeds = %[
-		fast: 10, // u‚‘¬v•¶š•\¦ƒXƒs[ƒh
-		normal: 30, // u•’Êv•¶š•\¦ƒXƒs[ƒh
-		slow: 50, // u’x‚¢v•¶š•\¦ƒXƒs[ƒh
+		fast: 10, // ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
+		normal: 30, // ï¿½uï¿½ï¿½ï¿½Êvï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
+		slow: 50, // ï¿½uï¿½xï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
 		];
 
-	var userChSpeed = 30; // ƒ†[ƒU‚Ì‘I‚ñ‚¾•¶š•\¦ƒXƒs[ƒh
-	var userCh2ndSpeed = -1; // ƒ†[ƒU‚Ì‘I‚ñ‚¾ Šù“Ç•”•ª‚Ì•¶š•\¦ƒXƒs[ƒh
-	var chNonStopToPageBreak = false; // ƒy[ƒW––‚Ü‚Åˆê‹C‚É“Ç‚İi‚Ş‚© ( l ƒ^ƒO‚ğ–³‹‚·‚é‚© )
-	var ch2ndNonStopToPageBreak = false; // Šù“Ç‚Ì•”•ª‚Åƒy[ƒW––‚Ü‚Åˆê‹C‚É“Ç‚İi‚Ş‚©
-	/*C*/var chUserMode = true; // •¶š•\¦‘¬“x‚ÍŒ»İƒ†[ƒU‚Ì‘I‚ñ‚¾‚à‚Ì‚©
-	/*C*/var chSpeed = 30; // Œ»İ‚Ì•¶š•\¦ƒXƒs[ƒh
-	/*C*/var actualChSpeed = chSpeed; // ÀÛ‚Ì•¶š•\¦ƒXƒs[ƒh
+	var userChSpeed = 30; // ï¿½ï¿½ï¿½[ï¿½Uï¿½Ì‘Iï¿½ñ‚¾•ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
+	var userCh2ndSpeed = -1; // ï¿½ï¿½ï¿½[ï¿½Uï¿½Ì‘Iï¿½ï¿½ ï¿½ï¿½Ç•ï¿½ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
+	var chNonStopToPageBreak = false; // ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Ü‚Åˆï¿½Cï¿½É“Ç‚İiï¿½Ş‚ï¿½ ( l ï¿½^ï¿½Oï¿½ğ–³ï¿½ï¿½ï¿½ï¿½é‚© )
+	var ch2ndNonStopToPageBreak = false; // ï¿½ï¿½Ç‚Ì•ï¿½ï¿½ï¿½ï¿½Åƒyï¿½[ï¿½Wï¿½ï¿½ï¿½Ü‚Åˆï¿½Cï¿½É“Ç‚İiï¿½Ş‚ï¿½
+	/*C*/var chUserMode = true; // ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ÍŒï¿½ï¿½İƒï¿½ï¿½[ï¿½Uï¿½Ì‘Iï¿½ñ‚¾‚ï¿½ï¿½Ì‚ï¿½
+	/*C*/var chSpeed = 30; // ï¿½ï¿½ï¿½İ‚Ì•ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
+	/*C*/var actualChSpeed = chSpeed; // ï¿½ï¿½ï¿½Û‚Ì•ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
 
-	/*C*/var beforeNoWaitActualChSpeed; // nowait ‚É“ü‚é‘O‚Ì actualChSpeed
-	/*C*/var beforeNoWaitChUserMode; // nowait ‚É“ü‚é‘O‚Ì chUserMode
+	/*C*/var beforeNoWaitActualChSpeed; // nowait ï¿½É“ï¿½ï¿½Oï¿½ï¿½ actualChSpeed
+	/*C*/var beforeNoWaitChUserMode; // nowait ï¿½É“ï¿½ï¿½Oï¿½ï¿½ chUserMode
 
-	/*C*/var clickSkipEnabled = true; // ƒNƒŠƒbƒNƒXƒLƒbƒv‚ª—LŒø‚©
-	/*C*/var nextSkipEnabled = true; // Ÿ‚Ì‘I‘ğˆ(/–¢“Ç)‚Ü‚Åi‚Ş‚ª—LŒø‚©
-	var skipMode = 0; // ƒXƒLƒbƒv‚Ìƒ‚[ƒh
-		// 0=ƒXƒLƒbƒv‚È‚µ, 1=ƒNƒŠƒbƒN‘Ò‚¿‹L†‚Ü‚Å, 2=‰üƒy[ƒW‘Ò‚¿‹L†‚Ü‚Å, 3=Ÿ‚Ì’â~‚Ü‚Å
-		// 4=‘‘—‚è
-	var autoMode = false; // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚©‚Ç‚¤‚©
-	var autoModePageWait = 350; // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ì‰üƒy[ƒW‚ÌƒEƒFƒCƒg
-	var autoModeLineWait = 50; // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚ÌsƒNƒŠƒbƒN‘Ò‚¿‚ÌƒEƒFƒCƒg
-		// ã‚Ì“ñ‚Â‚ÍAƒm[ƒEƒFƒCƒg‚É‚µ‚½‚¢ê‡‚Í 0 ‚Å‚Í‚È‚­‚Ä -4 ‚ğw’è‚·‚é‚±‚Æ
+	/*C*/var clickSkipEnabled = true; // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Lï¿½ï¿½
+	/*C*/var nextSkipEnabled = true; // ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½(/ï¿½ï¿½ï¿½ï¿½)ï¿½Ü‚Åiï¿½Ş‚ï¿½ï¿½Lï¿½ï¿½
+	var skipMode = 0; // ï¿½Xï¿½Lï¿½bï¿½vï¿½Ìƒï¿½ï¿½[ï¿½h
+		// 0=ï¿½Xï¿½Lï¿½bï¿½vï¿½È‚ï¿½, 1=ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ü‚ï¿½, 2=ï¿½ï¿½yï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ü‚ï¿½, 3=ï¿½ï¿½ï¿½Ì’ï¿½~ï¿½Ü‚ï¿½
+		// 4=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	var autoMode = false; // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	var autoModePageWait = 350; // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Ì‰ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½ÌƒEï¿½Fï¿½Cï¿½g
+	var autoModeLineWait = 50; // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Ìsï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½ï¿½ï¿½ÌƒEï¿½Fï¿½Cï¿½g
+		// ï¿½ï¿½Ì“ï¿½Â‚ÍAï¿½mï¿½[ï¿½Eï¿½Fï¿½Cï¿½gï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ 0 ï¿½Å‚Í‚È‚ï¿½ï¿½ï¿½ -4 ï¿½ï¿½ï¿½wï¿½è‚·ï¿½é‚±ï¿½ï¿½
 
-	var skipKeyRepressed = false; // return ‚ ‚é‚¢‚Í space ƒL[ ( f ƒL[‚È‚Ç‚Å‚Í‚È‚¢ )
-								// ‚ª‰Ÿ‚³‚ê‚é‚Æ true ‚É‚È‚é ( ƒXƒLƒbƒv‰ğœ‚É false
+	var skipKeyRepressed = false; // return ï¿½ï¿½ï¿½é‚¢ï¿½ï¿½ space ï¿½Lï¿½[ ( f ï¿½Lï¿½[ï¿½È‚Ç‚Å‚Í‚È‚ï¿½ )
+								// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ true ï¿½É‚È‚ï¿½ ( ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ false
 
 	var autoModePageWaits = %[
-		fast: 400,  // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ì‰üƒy[ƒW ƒEƒFƒCƒgu’Z‚¢v
-		faster: 700,  // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ì‰üƒy[ƒW ƒEƒFƒCƒgu‚â‚â’Z‚¢v
-		medium: 1000,  // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ì‰üƒy[ƒW ƒEƒFƒCƒgu•’Êv
-		slower: 1300, // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ì‰üƒy[ƒW ƒEƒFƒCƒgu‚â‚â’x‚¢v
-		slow: 2000, // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ì‰üƒy[ƒW ƒEƒFƒCƒgu’x‚¢v
+		fast: 400,  // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ì‰ï¿½yï¿½[ï¿½Wï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½Zï¿½ï¿½ï¿½v
+		faster: 700,  // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ì‰ï¿½yï¿½[ï¿½Wï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½v
+		medium: 1000,  // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ì‰ï¿½yï¿½[ï¿½Wï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½ï¿½ï¿½Êv
+		slower: 1300, // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ì‰ï¿½yï¿½[ï¿½Wï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½ï¿½ï¿½xï¿½ï¿½ï¿½v
+		slow: 2000, // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ì‰ï¿½yï¿½[ï¿½Wï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½xï¿½ï¿½ï¿½v
 		];
 
 	var autoModeLineWaits = %[
-		fast: 180,  // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ìs–– ƒEƒFƒCƒgu’Z‚¢v
-		faster: 240,  // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ìs–– ƒEƒFƒCƒgu‚â‚â’Z‚¢v
-		medium: 300,  // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ìs–– ƒEƒFƒCƒgu•’Êv
-		slower: 360, // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ìs–– ƒEƒFƒCƒgu‚â‚â’x‚¢v
-		slow: 500, // ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚Ìs–– ƒEƒFƒCƒgu’x‚¢v
+		fast: 180,  // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ìsï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½Zï¿½ï¿½ï¿½v
+		faster: 240,  // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ìsï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½v
+		medium: 300,  // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ìsï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½ï¿½ï¿½Êv
+		slower: 360, // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ìsï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½ï¿½ï¿½xï¿½ï¿½ï¿½v
+		slow: 500, // ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½Ìsï¿½ï¿½ ï¿½Eï¿½Fï¿½Cï¿½gï¿½uï¿½xï¿½ï¿½ï¿½v
 		];
 
-	/*C*/var canCancelSkipByClick = true; // ƒNƒŠƒbƒN‚É‚æ‚èƒXƒLƒbƒvó‘Ô‚ÌƒLƒƒƒ“ƒZƒ‹‚ª‚Å‚«‚é‚©
+	/*C*/var canCancelSkipByClick = true; // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½É‚ï¿½ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½Ô‚ÌƒLï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½é‚©
 
-	/*C*/var autoWCEnabled = false; // ©“®ƒEƒFƒCƒg‚ª—LŒø‚©‚Ç‚¤‚©
-	/*C*/var autoWCChars = ""; // ©“®ƒEƒFƒCƒg‚ğ‚©‚¯‚é•¶š
-	var autoWCWaits = []; // ©“®ƒEƒFƒCƒg‚ÌƒEƒFƒCƒg
+	/*C*/var autoWCEnabled = false; // ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½gï¿½ï¿½ï¿½Lï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	/*C*/var autoWCChars = ""; // ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é•¶ï¿½ï¿½
+	var autoWCWaits = []; // ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½gï¿½ÌƒEï¿½Fï¿½Cï¿½g
 
-	var timeOrigin; // resetWait ‚Åİ’è‚³‚ê‚½ŠÔŒ´“_
-	var lastWaitTime; // wait mode=until ‚ÅÀÛ‚É‘Ò‚Á‚½ŠÔ
+	var timeOrigin; // resetWait ï¿½Åİ’è‚³ï¿½ê‚½ï¿½ï¿½ï¿½ÔŒï¿½ï¿½_
+	var lastWaitTime; // wait mode=until ï¿½Åï¿½ï¿½Û‚É‘Ò‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-	var stableHandlers = []; // ƒVƒXƒeƒ€‚ªˆÀ’è(ƒNƒŠƒbƒN‘Ò‚¿/’â~)‚µ‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
-	var runHandlers = []; // ƒVƒXƒeƒ€‚ª‘–‚èn‚ß‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
-	var inStable = true; // ˆÀ’è‚µ‚Ä‚¢‚é‚Æ‚«(‘–s’†‚Å‚È‚¢‚Æ‚«) true
-	var inSleep = false; // s ƒ^ƒO‚Å’â~‚µ‚Ä‚¢‚é‚Æ‚« true
+	var stableHandlers = []; // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½/ï¿½ï¿½~)ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+	var runHandlers = []; // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½ß‚ï¿½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+	var inStable = true; // ï¿½ï¿½ï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½Æ‚ï¿½(ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½Æ‚ï¿½) true
+	var inSleep = false; // s ï¿½^ï¿½Oï¿½Å’ï¿½~ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Æ‚ï¿½ true
 
-	var updateBeforeCh = 0; // •¶š‚ğ•`‰æ‚·‚é‘O‚É‚¢‚Á‚½‚ñ‰æ–Ê•`‰æ‚É“ü‚é‚©‚Ç‚¤‚©‚ÌƒJƒEƒ“ƒg
+	var updateBeforeCh = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½æ‚·ï¿½ï¿½Oï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê•`ï¿½ï¿½É“ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ÌƒJï¿½Eï¿½ï¿½ï¿½g
 
-	var messageLayerHiding = false; // ƒ†[ƒU‚É‚æ‚èƒƒbƒZ[ƒWƒŒƒCƒ„‚ª‰B‚³‚ê‚Ä‚¢‚é‚©
+	var messageLayerHiding = false; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½èƒï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©
 
-	/*C*/var rightClickEnabled = true; // ‰EƒNƒŠƒbƒN‚ª—LŒø‚©
-	/*C*/var rightClickCall = false; // ‰EƒNƒŠƒbƒN‚Å“Á’è‚Ìƒ‹[ƒ`ƒ“‚ğŒÄ‚Ô‚©
-	/*C*/var rightClickJump = false; // ‰EƒNƒŠƒbƒN‚©‚Å“Á’è‚Ìƒ‰ƒxƒ‹‚ÉƒWƒƒƒ“ƒv‚·‚é‚©
-	/*C*/var rightClickTarget = ""; // ‰EƒNƒŠƒbƒN‚Å‚ÌŒÄ‚Ño‚µæ
-	/*C*/var rightClickStorage = ""; // ‰EƒNƒŠƒbƒN‚Å‚ÌŒÄ‚Ño‚µæ
-	/*C*/var rightClickName = "default"; // ‰EƒNƒŠƒbƒN‚Ìƒƒjƒ…[•\¦–¼
-	/*C*/var rightClickCurrentMenuName = ""; // ‰EƒNƒŠƒbƒN‚Ìƒƒjƒ…[‚ÉŒ»İİ’è‚³‚ê‚Ä‚¢‚é–¼‘O
-	var rightClickDefaultName = ""; // ‰EƒNƒŠƒbƒN‚ÌƒfƒtƒHƒ‹ƒg‚Ìƒƒjƒ…[•\¦–¼
+	/*C*/var rightClickEnabled = true; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Lï¿½ï¿½
+	/*C*/var rightClickCall = false; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Å“ï¿½ï¿½ï¿½Ìƒï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Ô‚ï¿½
+	/*C*/var rightClickJump = false; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Å“ï¿½ï¿½ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½ÉƒWï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½é‚©
+	/*C*/var rightClickTarget = ""; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Å‚ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½
+	/*C*/var rightClickStorage = ""; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Å‚ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½
+	/*C*/var rightClickName = "default"; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½
+	/*C*/var rightClickCurrentMenuName = ""; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ÉŒï¿½ï¿½İİ’è‚³ï¿½ï¿½Ä‚ï¿½ï¿½é–¼ï¿½O
+	var rightClickDefaultName = ""; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ìƒfï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½
 
-	/*C*/var lastClickGlyphVisible; // extraConductor ‚ğg—p‚·‚é’¼‘O‚ÉƒNƒŠƒbƒN‘Ò‚¿‹L†‚ª‰Â‹‚¾‚Á‚½‚©‚Ç‚¤‚©
+	/*C*/var lastClickGlyphVisible; // extraConductor ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½é’¼ï¿½Oï¿½ÉƒNï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Âï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 	var lastClickGlyphMessagePage;
-		// extraConductor ‚ğg—p‚·‚é’¼‘O‚ÌƒNƒŠƒbƒN‘Ò‚¿‹L†‚Ì•\¦‚³‚ê‚Ä‚¢‚éƒƒbƒZ[ƒWƒŒƒCƒ„‚Ìƒy[ƒW
-	var lastClickGlyphMessageNum; // V ”Ô†
-	var lastClickGlyphWhich; // V "page" ‚© "line" ‚©
-	var inSleepBeforeExtraConductor; // extraConductor ‚ğg—p‚·‚é’¼‘O‚ª inSleep ‚¾‚Á‚½‚©
+		// extraConductor ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½é’¼ï¿½Oï¿½ÌƒNï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ì•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½éƒï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒyï¿½[ï¿½W
+	var lastClickGlyphMessageNum; // ï¿½V ï¿½Ôï¿½
+	var lastClickGlyphWhich; // ï¿½V "page" ï¿½ï¿½ "line" ï¿½ï¿½
+	var inSleepBeforeExtraConductor; // extraConductor ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½é’¼ï¿½Oï¿½ï¿½ inSleep ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-	// ’Êí‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹
-	/*C*/var cursorDefault = crArrow;  // ’Êí‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹
-	/*C*/var cursorPointed = crHandPoint;  // ƒ{ƒ^ƒ“AƒŠƒ“ƒN“™‚ğƒ|ƒCƒ“ƒg‚µ‚½‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹
-	/*C*/var cursorWaitingClick = crArrow;  // ƒNƒŠƒbƒN‘Ò‚¿‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹
-	/*C*/var cursorDraggable = crSizeAll; // ƒhƒ‰ƒbƒO‰Â”\‚ÈêŠ—p‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹
+	// ï¿½Êï¿½Ìƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½
+	/*C*/var cursorDefault = crArrow;  // ï¿½Êï¿½Ìƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½
+	/*C*/var cursorPointed = crHandPoint;  // ï¿½{ï¿½^ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½
+	/*C*/var cursorWaitingClick = crArrow;  // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Ìƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½
+	/*C*/var cursorDraggable = crSizeAll; // ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½Â”\ï¿½ÈêŠï¿½pï¿½Ìƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½
 
-	/*C*/var supportReadingKey = VK_SPACE; // ’Ç‰Á‚Ì“Ç‚İi‚İƒL[
+	/*C*/var supportReadingKey = VK_SPACE; // ï¿½Ç‰ï¿½ï¿½Ì“Ç‚İiï¿½İƒLï¿½[
 
-	/*C*/var startAnchorEnabled = false; // uÅ‰‚É–ß‚év‚ªg—p‰Â”\‚©‚Ç‚¤‚©
+	/*C*/var startAnchorEnabled = false; // ï¿½uï¿½Åï¿½ï¿½É–ß‚ï¿½vï¿½ï¿½ï¿½gï¿½pï¿½Â”\ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	/*C*/var storeEnabled = true; // ƒ†[ƒU‚ªux‚ğ‚Í‚³‚Şvƒƒjƒ…[‚ÉƒAƒNƒZƒX‰Â”\‚©‚Ç‚¤‚©
-	/*C*/var restoreEnabled = true; // ƒ†[ƒU‚ªux‚ğ‚½‚Ç‚évƒƒjƒ…[‚ÉƒAƒNƒZƒX‰Â”\‚©‚Ç‚¤‚©
-	var storeLabelPassed = false; // •Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹‚ğ’Ê‰ß‚µ‚½‚©‚Ç‚¤‚©
-	/*C*/var currentLabel = ""; // Œ»İ‚Ìƒ‰ƒxƒ‹
-	/*C*/var currentPageName = ""; // Œ»İ‚Ìƒy[ƒW–¼
-	var currentRecordName = ""; // Œ»İ‚Ì‹L˜^–¼ ( trail_ƒXƒgƒŒ[ƒW_ƒ‰ƒxƒ‹ )
-	var autoRecordPageShowing = false; // ƒ‰ƒxƒ‹’Ê‰ß‹L˜^‚ğ‚·‚é‚©
+	/*C*/var storeEnabled = true; // ï¿½ï¿½ï¿½[ï¿½Uï¿½ï¿½ï¿½uï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½Şvï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ÉƒAï¿½Nï¿½Zï¿½Xï¿½Â”\ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	/*C*/var restoreEnabled = true; // ï¿½ï¿½ï¿½[ï¿½Uï¿½ï¿½ï¿½uï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½vï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ÉƒAï¿½Nï¿½Zï¿½Xï¿½Â”\ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	var storeLabelPassed = false; // ï¿½Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½Ê‰ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	/*C*/var currentLabel = ""; // ï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½xï¿½ï¿½
+	/*C*/var currentPageName = ""; // ï¿½ï¿½ï¿½İ‚Ìƒyï¿½[ï¿½Wï¿½ï¿½
+	var currentRecordName = ""; // ï¿½ï¿½ï¿½İ‚Ì‹Lï¿½^ï¿½ï¿½ ( trail_ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½W_ï¿½ï¿½ï¿½xï¿½ï¿½ )
+	var autoRecordPageShowing = false; // ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
 
-	var numBookMarks = 10; // ƒƒjƒ…[‚É—pˆÓ‚·‚éx‚ÌƒTƒuƒƒjƒ…[€–Ú‚Ì”
-	var showBookMarkDate = false; // ƒƒjƒ…[‚Éx‚ğ‚Í‚³‚ñ‚¾“ú•t‚ğ•\¦‚·‚é‚©
+	var numBookMarks = 10; // ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½É—pï¿½Ó‚ï¿½ï¿½ï¿½xï¿½ÌƒTï¿½uï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚Ìï¿½
+	var showBookMarkDate = false; // ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Éxï¿½ï¿½ï¿½Í‚ï¿½ï¿½ñ‚¾“ï¿½tï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
 
-	var bookMarkNames = []; // ƒƒjƒ…[‚Éİ’è‚³‚ê‚Ä‚¢‚éx‚Ì–¼‘O
-	var bookMarkDates = []; // x‚Ì“ú•t
-	var bookMarkProtectedStates = []; // x‚ª•ÛŒì‚³‚ê‚Ä‚¢‚é‚©‚Ìî•ñ
+	var bookMarkNames = []; // ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Éİ’è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½xï¿½Ì–ï¿½ï¿½O
+	var bookMarkDates = []; // ï¿½xï¿½Ì“ï¿½t
+	var bookMarkProtectedStates = []; // ï¿½xï¿½ï¿½ï¿½ÛŒì‚³ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½Ìï¿½ï¿½
 
-	var showFixedPitchOnlyInFontSelector = false; // ƒtƒHƒ“ƒg‘I‘ğ‚ÅŒÅ’èƒsƒbƒgƒtƒHƒ“ƒg‚Ì‚İ‚ğ•\¦‚·‚é‚©
+	var showFixedPitchOnlyInFontSelector = false; // ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Iï¿½ï¿½ï¿½ÅŒÅ’ï¿½sï¿½bï¿½gï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì‚İ‚ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
 
-	var flags = %[]; // ƒtƒ‰ƒO(ƒ†[ƒU)
-	var pflags = %[]; // u•Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹v‚ğ’Ê‰ß‚µ‚½“_‚Å‚Ìƒtƒ‰ƒO(ƒ†[ƒU)
-	var pcflags = %[]; // V (ƒRƒA)
-	var sflags = %[]; // ƒVƒXƒeƒ€•Ï”—Ìˆæ(ƒ†[ƒU)
-	var scflags = %[]; // ƒVƒXƒeƒ€•Ï”—Ìˆæ(ƒRƒA)
-	var tflags = %[]; // ˆêƒtƒ‰ƒO
+	var flags = %[]; // ï¿½tï¿½ï¿½ï¿½O(ï¿½ï¿½ï¿½[ï¿½U)
+	var pflags = %[]; // ï¿½uï¿½Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½vï¿½ï¿½Ê‰ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½Å‚Ìƒtï¿½ï¿½ï¿½O(ï¿½ï¿½ï¿½[ï¿½U)
+	var pcflags = %[]; // ï¿½V (ï¿½Rï¿½A)
+	var sflags = %[]; // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½Ìˆï¿½(ï¿½ï¿½ï¿½[ï¿½U)
+	var scflags = %[]; // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½Ìˆï¿½(ï¿½Rï¿½A)
+	var tflags = %[]; // ï¿½êï¿½tï¿½ï¿½ï¿½O
 
-	var tempBookMarks = []; // ˆê“I‚É•Û‘¶‚µ‚½x
+	var tempBookMarks = []; // ï¿½êï¿½Iï¿½É•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½x
 
-	var clickCount = 0; // ¶ƒNƒŠƒbƒNƒJƒEƒ“ƒg
-	var lastMouseDownX; // ÅŒã‚ÉƒNƒŠƒbƒN‚³‚ê‚½ X À•W
-	var lastMouseDownY; // ÅŒã‚ÉƒNƒŠƒbƒN‚³‚ê‚½ Y À•W
+	var clickCount = 0; // ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Jï¿½Eï¿½ï¿½ï¿½g
+	var lastMouseDownX; // ï¿½ÅŒï¿½ÉƒNï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ X ï¿½ï¿½ï¿½W
+	var lastMouseDownY; // ï¿½ÅŒï¿½ÉƒNï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ Y ï¿½ï¿½ï¿½W
 
-	var mouseKeyEnabledCount = 0; // ƒ}ƒEƒXƒL[‚ª—LŒø‚©‚Ç‚¤‚©
+	var mouseKeyEnabledCount = 0; // ï¿½}ï¿½Eï¿½Xï¿½Lï¿½[ï¿½ï¿½ï¿½Lï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	var kagPlugins = []; // KAG ƒvƒ‰ƒOƒCƒ“
+	var kagPlugins = []; // KAG ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½
 
-	var keyDownHook = []; // ƒL[‚ª‰Ÿ‚³‚ê‚½‚Æ‚«‚ÉŒÄ‚Ño‚³‚ê‚é•¨
-	var leftClickHook = []; // ¶ƒNƒŠƒbƒN‚³‚ê‚½‚Æ‚«‚ÉŒÄ‚Ño‚³‚ê‚é•¨
-	var rightClickHook = []; // ‰EƒNƒŠƒbƒN‚³‚ê‚½‚Æ‚«‚ÉŒÄ‚Ño‚³‚ê‚é•¨
+	var keyDownHook = []; // ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½é•¨
+	var leftClickHook = []; // ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½é•¨
+	var rightClickHook = []; // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½é•¨
 
-	var padKeyMap; // ƒpƒbƒhƒ{ƒ^ƒ“ -> ƒnƒ“ƒhƒ‰(ƒL[ƒR[ƒh)BƒRƒ“ƒXƒgƒ‰ƒNƒ^“à‚Åİ’è
-	var padKeyMapReverse; // ƒL[ƒR[ƒh -> ƒpƒbƒhƒ{ƒ^ƒ“BƒRƒ“ƒXƒgƒ‰ƒNƒ^“à‚Åİ’è
+	var padKeyMap; // ï¿½pï¿½bï¿½hï¿½{ï¿½^ï¿½ï¿½ -> ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½(ï¿½Lï¿½[ï¿½Rï¿½[ï¿½h)ï¿½Bï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½ï¿½ï¿½Åİ’ï¿½
+	var padKeyMapReverse; // ï¿½Lï¿½[ï¿½Rï¿½[ï¿½h -> ï¿½pï¿½bï¿½hï¿½{ï¿½^ï¿½ï¿½ï¿½Bï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½ï¿½ï¿½Åİ’ï¿½
 
 
-	var holdPeriodEventQueue = [];	// •Û—¯‚É‚³‚ê‚½ƒ€[ƒr[‚ÌƒsƒŠƒIƒhƒCƒxƒ“ƒgƒLƒ…[
-	var isLeavePeriodEvent = false;	// ƒ€[ƒr[‚ÌƒsƒŠƒIƒhƒCƒxƒ“ƒg‚ğ•Û—¯‚É‚·‚é‚©‚Ç‚¤‚©
-	var isWaitPeriodEvent = false;	// ƒ€[ƒr[‚ÌƒsƒŠƒIƒhƒCƒxƒ“ƒg‘Ò‚¿ó‘Ô‚©‚Ç‚¤‚©
-	var waitedPeriodEventStorageName = void;	// ƒsƒŠƒIƒhƒCƒxƒ“ƒg‘Ò‚¿‚ğƒR[ƒ‹‚µ‚½ƒXƒgƒŒ[ƒW–¼
+	var holdPeriodEventQueue = [];	// ï¿½Û—ï¿½ï¿½É‚ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ìƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Lï¿½ï¿½ï¿½[
+	var isLeavePeriodEvent = false;	// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ìƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½Û—ï¿½ï¿½É‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+	var isWaitPeriodEvent = false;	// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ìƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Ò‚ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	var waitedPeriodEventStorageName = void;	// ï¿½sï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Ò‚ï¿½ï¿½ï¿½ï¿½Rï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½
 
-	//------------------------------------------------------ ƒRƒ“ƒXƒgƒ‰ƒNƒ^ --
+	//------------------------------------------------------ ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ --
 
 	function KAGWindow(ismain = true, width = 0, height = 0)
 	{
-		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-		// ˆø” : ismain : ƒƒCƒ“ƒEƒBƒ“ƒhƒE‚Æ‚µ‚Äì¬‚³‚ê‚é‚Ì‚©‚Ç‚¤‚©
-		super.Window(); // eƒNƒ‰ƒX‚ÌƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ğŒÄ‚Ô
+		// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+		// ï¿½ï¿½ : ismain : ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Æ‚ï¿½ï¿½Äì¬ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+		super.Window(); // ï¿½eï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒRï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½ï¿½ï¿½Ä‚ï¿½
 
-		// ƒRƒ“ƒtƒBƒMƒ…ƒŒ[ƒVƒ‡ƒ“
+		// ï¿½Rï¿½ï¿½ï¿½tï¿½Bï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½
 		isMain = ismain;
 		if(ismain)
 		{
@@ -281,15 +281,15 @@ class KAGWindow extends Window
 
 		askOnClose = false if !ismain;
 
-		// saveDataLocation ‚ªƒtƒ‹ƒpƒX‚Å‚È‚¢‚æ‚¤‚È‚ç‚Î System.exePath ‚ğ
-		// •t‚¯‰Á‚¦‚é
+		// saveDataLocation ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½pï¿½Xï¿½Å‚È‚ï¿½ï¿½æ‚¤ï¿½È‚ï¿½ï¿½ System.exePath ï¿½ï¿½
+		// ï¿½tï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(saveDataLocation.indexOf(":") == -1)
 			saveDataLocation = System.exePath + saveDataLocation;
 
-		// ƒƒO‚Ìo—Íæ‚ğ saveDataLocation ‚É‚·‚é
+		// ï¿½ï¿½ï¿½Oï¿½Ìoï¿½Íï¿½ï¿½ saveDataLocation ï¿½É‚ï¿½ï¿½ï¿½
 		if(ismain) Debug.logLocation = saveDataLocation;
 
-		// ƒƒjƒ…[ƒAƒCƒeƒ€‚Ìì¬
+		// ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½Ìì¬
 		if(ismain) (KAGWindow_createMenus incontextof this)();
 		if(typeof this.rightClickMenuItem != "undefined")
 			rightClickDefaultName = rightClickCurrentMenuName = rightClickMenuItem.caption;
@@ -307,7 +307,7 @@ class KAGWindow extends Window
 
 		createBookMarkSubMenus();
 
-		// ƒEƒBƒ“ƒhƒEŠOŒ©‚Ì’²®
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Oï¿½ï¿½ï¿½Ì’ï¿½ï¿½ï¿½
 		if(ismain)
 		{
 			borderStyle = bsSingle;
@@ -321,33 +321,33 @@ class KAGWindow extends Window
 		showScrollBars = false;
 		if(ismain) caption = System.title;
 
-		// ƒVƒXƒeƒ€ƒ^ƒCƒgƒ‹‚ğƒLƒƒƒvƒVƒ‡ƒ“‚Æ“¯‚¶‚É
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½^ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Æ“ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(ismain) System.title = caption;
 
-		// ƒEƒBƒ“ƒhƒEƒTƒCƒY‚Ì’²®
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Tï¿½Cï¿½Yï¿½Ì’ï¿½ï¿½ï¿½
 		if(width != 0 && height != 0)
 		{
-			// —^‚¦‚ç‚ê‚½ƒTƒCƒY‚ğ“K—p
+			// ï¿½^ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½Tï¿½Cï¿½Yï¿½ï¿½Kï¿½p
 			scWidth = width;
 			scHeight = height;
 		}
 		setInnerSize(scWidth, scHeight);
 
-		// quake —pƒ^ƒCƒ}‚Ìì¬
+		// quake ï¿½pï¿½^ï¿½Cï¿½}ï¿½Ìì¬
 		quakeTimer = new Timer(onQuakeTimerInterval, '');
 		add(quakeTimer);
 		quakeTimer.interval = 50;
 
-		// ”wŒiƒŒƒCƒ„‚Ìì¬
+		// ï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìì¬
 		fore.messages = [];
 		back.messages = [];
 		fore.layers = [];
 		back.layers = [];
-		fore.base = new BaseLayer(this, null, "•\-”wŒi");
+		fore.base = new BaseLayer(this, null, "ï¿½\-ï¿½wï¿½i");
 		add(fore.base);
 		fore.base.setImageSize(scWidth, scHeight);
 		fore.base.setSizeToImageSize();
-		back.base = new BaseLayer(this, fore.base, "— -”wŒi");
+		back.base = new BaseLayer(this, fore.base, "ï¿½ï¿½-ï¿½wï¿½i");
 		add(back.base);
 		back.base.setImageSize(scWidth, scHeight);
 		back.base.setSizeToImageSize();
@@ -359,14 +359,14 @@ class KAGWindow extends Window
 		fore.base.setDefaultCursor(cursorDefault);
 		back.base.setDefaultCursor(cursorDefault);
 
-		// ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚Ìì¬
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìì¬
 		historyLayer = new HistoryLayer(this, fore.base);
 		add(historyLayer);
 
-		// ‘OŒiƒŒƒCƒ„‚Ìì¬
+		// ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìì¬
 		allocateCharacterLayers(numCharacterLayers);
 
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ìì¬
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìì¬
 		allocateMessageLayers(numMessageLayers, false);
 		current = fore.messages[0];
 		currentNum = 0;
@@ -379,22 +379,22 @@ class KAGWindow extends Window
 		}
 
 		chDefaultAntialiased = fore.messages[0].defaultAntialiased;
-			// •¶š‚ÉƒAƒ“ƒ`ƒGƒCƒŠƒAƒX‚ğ‚©‚¯‚é‚©‚Ç‚¤‚©
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ÉƒAï¿½ï¿½ï¿½`ï¿½Gï¿½Cï¿½ï¿½ï¿½Aï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
 		chDefaultFace = fore.messages[0].userFace;
-			// •¶š‚ÌƒfƒtƒHƒ‹ƒg‚ÌƒtƒHƒ“ƒg
+			// ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒfï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒtï¿½Hï¿½ï¿½ï¿½g
 
 		if(typeof this.chAntialiasMenuItem != "undefined")
 			chAntialiasMenuItem.checked = chDefaultAntialiased;
 
-		// s‘Ò‚¿/ƒy[ƒW‘Ò‚¿ƒAƒjƒ[ƒVƒ‡ƒ“ƒŒƒCƒ„‚Ìì¬
+		// ï¿½sï¿½Ò‚ï¿½/ï¿½yï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìì¬
 		lineBreak = new ClickGlyphLayer(this, fore.base);
 		add(lineBreak);
-		lineBreak.name = "sƒNƒŠƒbƒN‘Ò‚¿‹L†";
+		lineBreak.name = "ï¿½sï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½";
 		pageBreak = new ClickGlyphLayer(this, fore.base);
 		add(pageBreak);
-		pageBreak.name = "ƒy[ƒW––ƒNƒŠƒbƒN‘Ò‚¿‹L†";
+		pageBreak.name = "ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½";
 
-		// ƒ^ƒOƒnƒ“ƒhƒ‰/ƒRƒ“ƒ_ƒNƒ^‚ğì¬
+		// ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½/ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½ì¬
 		tagHandlers = getHandlers();
 		mainConductor = new Conductor(this, tagHandlers);
 		add(mainConductor);
@@ -402,67 +402,67 @@ class KAGWindow extends Window
 		extraConductor = new Conductor(this, tagHandlers);
 		add(extraConductor);
 
-		// BGM ƒIƒuƒWƒFƒNƒg‚ğì¬
+		// BGM ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ì¬
 		bgm = new BGM(this);
 		add(bgm);
 
-		// Œø‰Ê‰¹ƒIƒuƒWƒFƒNƒg‚ğì¬
+		// ï¿½ï¿½Ê‰ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ì¬
 		for(var i = 0; i < numSEBuffers; i++)
 			add(se[i] = new SESoundBuffer(this, i));
 
-		// ƒ€[ƒr[ƒIƒuƒWƒFƒNƒg‚ğì¬
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ì¬
 		if(ismain)
 		{
 			for( var i = 0; i < numMovies; i++)
 				add(movies[i] = new Movie(this,i));
 		}
 
-		// ƒfƒtƒHƒ‹ƒg‚Ìƒnƒ“ƒhƒ‰‚ğ’Ç‰Á
+		// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒnï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½Ç‰ï¿½
 		stableHandlers.add(defaultStableHandler);
 		runHandlers.add(defaultRunHandler);
 
-		// ƒVƒXƒeƒ€•Ï”‚Ì“Ç‚İ‚İ
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½Ì“Ç‚İï¿½ï¿½ï¿½
 		if(ismain) loadSystemVariables();
 
-		// ƒVƒXƒeƒ€•Ï”‚ğ”½‰f
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½ğ”½‰f
 		if(ismain)
 		{
 			setSystemStateFromSystemVariables();
 			setBookMarkMenuCaptions();
 		}
 
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌƒNƒŠƒA
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½A
 		clearMessageLayers(false);
 
-		// ƒEƒBƒ“ƒhƒEˆÊ’u‚Ì’²ß
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ê’uï¿½Ì’ï¿½ï¿½ï¿½
 		if(this.width + this.left > System.desktopLeft + System.desktopWidth)
 			left = ((System.desktopWidth - this.width) >>1) + System.desktopLeft;
 		if(this.height + this.top > System.desktopTop + System.desktopHeight)
 			top = ((System.desktopHeight - this.height) >>1) + System.desktopTop;
 
-		// ƒpƒbƒhƒ{ƒ^ƒ“ƒnƒ“ƒhƒ‰‚Ìì¬
+		// ï¿½pï¿½bï¿½hï¿½{ï¿½^ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ìì¬
 		createPadKeyMap();
 
 
-		// ƒEƒBƒ“ƒhƒE‚ğ•\¦
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½\ï¿½ï¿½
 		if(ismain) visible = true;
 
-		// ‰æ–ÊƒTƒCƒY‚ªƒEƒBƒ“ƒhƒEƒTƒCƒY‚æ‚è‚à¬‚³‚¢ê‡‚Í
-		// ƒtƒ‹ƒXƒNƒŠ[ƒ“‚É‚µ‚Ä‚İ‚é
+		// ï¿½ï¿½ÊƒTï¿½Cï¿½Yï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
+		// ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½É‚ï¿½ï¿½Ä‚İ‚ï¿½
 		if(ismain)
 		{
 			if(System.screenWidth <= scWidth && System.screenHeight <= scHeight)
 				onFullScreenMenuItemClick(this);
 		}
 
-		// ‘O‰ñ‹N“®‚Éƒtƒ‹ƒXƒNƒŠ[ƒ“‚¾‚Á‚½ê‡‚Íƒtƒ‹ƒXƒNƒŠ[ƒ“‚É‚µ‚Ä‚İ‚é
+		// ï¿½Oï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Éƒtï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Íƒtï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½É‚ï¿½ï¿½Ä‚İ‚ï¿½
 		if(ismain)
 		{
 			if(scflags.fullScreen !== void && +scflags.fullScreen)
 				onFullScreenMenuItemClick(this);
 		}
 
-		// ‚¢‚Á‚½‚ñƒVƒXƒeƒ€•Ï”‚ğ‘‚«o‚·
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½
 		if(ismain) saveSystemVariables();
 	}
 
@@ -470,26 +470,26 @@ class KAGWindow extends Window
 
 	function finalize()
 	{
-		// finalize ƒƒ\ƒbƒh
+		// finalize ï¿½ï¿½ï¿½\ï¿½bï¿½h
         clearBgmStop();
         clearBgmLabel();
 
-		// ƒvƒ‰ƒOƒCƒ“‚Ì–³Œø‰»
+		// ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Ì–ï¿½ï¿½ï¿½
 		for(var i = 0; i < kagPlugins.count; i++) invalidate kagPlugins[i];
 
-		// ‘OŒiAƒƒbƒZ[ƒWƒŒƒCƒ„‚ğ–³Œø‰»
+		// ï¿½Oï¿½iï¿½Aï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ğ–³Œï¿½
 		for(var i = 0; i< fore.layers.count; i++) invalidate fore.layers[i];
 		for(var i = 0; i< back.layers.count; i++) invalidate back.layers[i];
 		for(var i = 0; i< fore.messages.count; i++) invalidate fore.messages[i];
 		for(var i = 0; i< back.messages.count; i++) invalidate back.messages[i];
 
-		// snapshotLayer ‚ğ–³Œø‰»
+		// snapshotLayer ï¿½ğ–³Œï¿½
 		invalidate snapshotLayer if snapshotLayer !== void;
 
-		// tempLayer ‚ğ–³Œø‰»
+		// tempLayer ï¿½ğ–³Œï¿½
 		invalidate tempLayer if tempLayer !== void;
 
-		// ƒX[ƒp[ƒNƒ‰ƒX‚Ì finalize ‚ğŒÄ‚Ô
+		// ï¿½Xï¿½[ï¿½pï¿½[ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ finalize ï¿½ï¿½ï¿½Ä‚ï¿½
 		super.finalize(...);
 	}
 
@@ -499,39 +499,39 @@ class KAGWindow extends Window
 	{
 		saveSystemVariables();
 		if(!askOnClose) { super.onCloseQuery(true); return; }
-		super.onCloseQuery(askYesNo("I—¹‚µ‚Ü‚·‚©H"));
+		super.onCloseQuery(askYesNo("ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½H"));
 	}
 
 	function close()
 	{
-		// ƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚é
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½Â‚ï¿½ï¿½ï¿½
 		saveSystemVariables();
 		super.close(...);
 	}
 
 	function shutdown()
 	{
-		// ƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚é‚ªAI—¹Šm”F‚ğs‚í‚È‚¢
-		// ‚±‚Ìƒƒ\ƒbƒh“à‚Å close ‚ğ‚·‚é‚ÆA—lX‚È
-		// ƒIƒuƒWƒFƒNƒg‚ª–³Œø‰»‚³‚ê‚Ä‚µ‚Ü‚¢A‚±‚Ì
-		// ŠÖ”‚©‚ç–ß‚Á‚½æ‚ÅƒGƒ‰[‚ª”­¶‚·‚éB
-		// ‚»‚Ì‚½‚ßA‚¢‚Á‚½‚ñ AsyncTrigger ‚ğ‰î‚µ‚ÄA
-		// ‘S‚Ä‚Ìƒƒ\ƒbƒh‚©‚ç‹A‚Á‚½‚ ‚Æ‚ÉƒVƒƒƒbƒgƒ_ƒEƒ“
-		// ˆ—‚ğs‚¤B
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½Â‚ï¿½ï¿½é‚ªï¿½Aï¿½Iï¿½ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½sï¿½ï¿½È‚ï¿½
+		// ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½ï¿½ close ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆAï¿½lï¿½Xï¿½ï¿½
+		// ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½
+		// ï¿½Öï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ÅƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+		// ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ßAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ AsyncTrigger ï¿½ï¿½ï¿½î‚µï¿½ÄA
+		// ï¿½Sï¿½Ä‚Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ÉƒVï¿½ï¿½ï¿½bï¿½gï¿½_ï¿½Eï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½B
 		global.shutdownTrigger =
 			new AsyncTrigger(handleShutdown, '');
 		global.shutdownTrigger.cached = true;
 		global.shutdownTrigger.trigger();
 		if(conductor.status == conductor.mRun)
 			conductor.interrupt();
-			// ƒRƒ“ƒ_ƒNƒ^‚ª‘–s’†‚Ì‚Í
-			// ƒRƒ“ƒ_ƒNƒ^‚É’†’f‚ğ“`‚¦‚é
+			// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½
+			// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½É’ï¿½ï¿½fï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½
 	}
 
 	function handleShutdown()
 	{
-		// shutdown() ‚©‚ç‚ÌƒVƒƒƒbƒgƒ_ƒEƒ“—v‹‚ğ
-		// ÀÛ‚Éˆ—‚·‚éƒƒ\ƒbƒh
+		// shutdown() ï¿½ï¿½ï¿½ï¿½ÌƒVï¿½ï¿½ï¿½bï¿½gï¿½_ï¿½Eï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½Û‚Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½éƒï¿½\ï¿½bï¿½h
 		var askOnClose_save = askOnClose;
 		askOnClose = false;
 		close();
@@ -540,11 +540,11 @@ class KAGWindow extends Window
 
 	function closeByScript(elm)
 	{
-		// ƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚é
-		// ‚¿‚å‚Á‚Æ–Ê“|‚­‚³‚¢‚Æ‚ğ‚â‚Á‚Ä‚¢‚é‚Ì‚Í
-		// shutdown ‚Æ“¯‚¶——R
-		// u‚¢‚¢‚¦v‚ª‘I‘ğ‚³‚ê‚ÄƒEƒBƒ“ƒhƒE‚ª•Â‚¶‚È‚©‚Á‚½ê‡‚Í
-		// 'not_closed' ƒgƒŠƒK‚ª”­s‚³‚êAÀs‚ÍÄŠJ‚·‚éB
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½Â‚ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ–Ê“|ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ï¿½
+		// shutdown ï¿½Æ“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½R
+		// ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄƒEï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½Â‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
+		// 'not_closed' ï¿½gï¿½ï¿½ï¿½Kï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½sï¿½ÍÄŠJï¿½ï¿½ï¿½ï¿½B
 		var askOnClose_save = askOnClose;
 		if(elm.ask !== void && !(+elm.ask)) askOnClose = false;
 		global.shutdownTrigger =
@@ -552,16 +552,16 @@ class KAGWindow extends Window
 		global.shutdownTrigger.cached = true;
 		global.shutdownTrigger.trigger();
 
-		// closeByScript ‚ÍA‚±‚Ìƒnƒ“ƒhƒ‰‚ªI‚í‚Á‚½’¼Œã‚É
-		// uI—¹‚µ‚Ü‚·‚©Hv‚Ìƒ_ƒCƒAƒƒO‚ğ•\¦‚·‚éB
-		// I—¹‚·‚éê‡‚Í‚»‚Ì‚Ü‚ÜI—¹‚·‚éB
-		// I—¹‚µ‚È‚¢ê‡‚Í 'not_closed' ƒgƒŠƒK‚ª”­s‚³‚êA
-		// Às‚ÍŒp‘±‚·‚éB
+		// closeByScript ï¿½ÍAï¿½ï¿½ï¿½Ìƒnï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½uï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Hï¿½vï¿½Ìƒ_ï¿½Cï¿½Aï¿½ï¿½ï¿½Oï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+		// ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Í‚ï¿½ï¿½Ì‚Ü‚ÜIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+		// ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ 'not_closed' ï¿½gï¿½ï¿½ï¿½Kï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½A
+		// ï¿½ï¿½ï¿½sï¿½ÍŒpï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 		conductor.wait(%[
 			not_closed : askOnClose_save
 			? (function
 			{
-				// ÀÛ‚É‚±‚ê‚ªŒÄ‚Î‚ê‚é‚±‚Æ‚Í‚È‚¢‚ªAˆê‰
+				// ï¿½ï¿½ï¿½Û‚É‚ï¿½ï¿½ê‚ªï¿½Ä‚Î‚ï¿½é‚±ï¿½Æ‚Í‚È‚ï¿½ï¿½ï¿½ï¿½Aï¿½ê‰
 				askOnClose = true;
 			} incontextof this)
 			: (function
@@ -572,24 +572,24 @@ class KAGWindow extends Window
 
 	function handleCloseByScript()
 	{
-		// shutdown() ‚©‚ç‚ÌƒVƒƒƒbƒgƒ_ƒEƒ“—v‹‚ğ
-		// ÀÛ‚Éˆ—‚·‚éƒƒ\ƒbƒh
+		// shutdown() ï¿½ï¿½ï¿½ï¿½ÌƒVï¿½ï¿½ï¿½bï¿½gï¿½_ï¿½Eï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½Û‚Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½éƒï¿½\ï¿½bï¿½h
 		close();
-		if(this isvalid) // ‚¢‚¢‚¦ ‚ª‘I‘ğ‚³‚ê‚½ê‡
+		if(this isvalid) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ê‡
 			conductor.trigger('not_closed');
 	}
 
-	//------------------------------------------------------ ƒvƒ‰ƒOƒCƒ“ˆ— --
+	//------------------------------------------------------ ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ --
 
 	function forEachEventHook(method, func, arg)
 	{
-		// ‚·‚×‚Ä‚Ìƒvƒ‰ƒOƒCƒ“ƒIƒuƒWƒFƒNƒg‚Ì method ‚É‚½‚¢‚µ‚Ä
-		// func ‚ğÀs‚·‚é
-		// func ‚Ìˆø”‚É‚ÍŠe—v‘f‚Æ arg ‚ª“n‚³‚ê‚é
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìƒvï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ method ï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// func ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+		// func ï¿½Ìˆï¿½É‚ÍŠeï¿½vï¿½fï¿½ï¿½ arg ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½ï¿½ï¿½
 		if(kagPlugins.count)
 		{
 			var array = [];
-			array.assign(kagPlugins); // ‚¢‚Á‚½‚ñƒRƒs[‚µAƒRƒs[‚µ‚½•¨‚É‘Î‚µ‚ÄÀs‚·‚é
+			array.assign(kagPlugins); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½Aï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½Äï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
 			var arraycount = array.count;
 			for(var i =0; i<arraycount; i++)
 			{
@@ -602,17 +602,17 @@ class KAGWindow extends Window
 
 	function addPlugin(plugin)
 	{
-		// ƒvƒ‰ƒOƒCƒ“ƒIƒuƒWƒFƒNƒg‚ğ’Ç‰Á
+		// ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½Ç‰ï¿½
 		kagPlugins.add(plugin);
 	}
 
 	function removePlugin(plugin)
 	{
-		// ƒvƒ‰ƒOƒCƒ“ƒIƒuƒWƒFƒNƒg‚ğíœ
+		// ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½íœ
 		kagPlugins.remove(plugin);
 	}
 
-	//---------------------------------------------------------- ƒtƒbƒNˆ— --
+	//---------------------------------------------------------- ï¿½tï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ --
 
 	function callHook(array, arg1, arg2, arg3)
 	{
@@ -636,15 +636,15 @@ class KAGWindow extends Window
 		}
 	}
 
-	//------------------------------------------ ƒpƒbƒh‚ÌƒL[ƒ}ƒbƒsƒ“ƒOì¬ --
+	//------------------------------------------ ï¿½pï¿½bï¿½hï¿½ÌƒLï¿½[ï¿½}ï¿½bï¿½sï¿½ï¿½ï¿½Oï¿½ì¬ --
 
 	function createPadKeyMap()
 	{
-		// ƒpƒbƒh“ü—Í‚Æ‚»‚ê‚É‘Î‰‚·‚é“®ì‚Ìƒ}ƒbƒsƒ“ƒOB
-		// •W€‚Å‚Í\šƒL[‚ÍƒL[ƒ{[ƒh‚ÌƒJ[ƒ\ƒ‹ƒL[‚Éƒ}ƒbƒsƒ“ƒOA
-		// ƒ{ƒ^ƒ“1 ‚Í ReturnAƒ{ƒ^ƒ“2 ‚Í ESCAƒ{ƒ^ƒ“3 ‚Í ƒƒbƒZ[ƒW—š—ğ‚Ì•\¦
-		// ‚Éƒ}ƒbƒsƒ“ƒO‚³‚ê‚éB
-		// ŠÖ”‚ğw’è‚µ‚½ê‡‚Íƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚É‚Í‚»‚ÌŠÖ”‚ªŒÄ‚Î‚ê‚éB
+		// ï¿½pï¿½bï¿½hï¿½ï¿½Í‚Æ‚ï¿½ï¿½ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½é“®ï¿½ï¿½Ìƒ}ï¿½bï¿½sï¿½ï¿½ï¿½Oï¿½B
+		// ï¿½Wï¿½ï¿½ï¿½Å‚Í\ï¿½ï¿½ï¿½Lï¿½[ï¿½ÍƒLï¿½[ï¿½{ï¿½[ï¿½hï¿½ÌƒJï¿½[ï¿½\ï¿½ï¿½ï¿½Lï¿½[ï¿½Éƒ}ï¿½bï¿½sï¿½ï¿½ï¿½Oï¿½A
+		// ï¿½{ï¿½^ï¿½ï¿½1 ï¿½ï¿½ Returnï¿½Aï¿½{ï¿½^ï¿½ï¿½2 ï¿½ï¿½ ESCï¿½Aï¿½{ï¿½^ï¿½ï¿½3 ï¿½ï¿½ ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Ì•\ï¿½ï¿½
+		// ï¿½Éƒ}ï¿½bï¿½sï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½B
+		// ï¿½Öï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½ï¿½ê‡ï¿½Íƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½É‚Í‚ï¿½ï¿½ÌŠÖï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½B
 
 		padKeyMap = %[
 			VK_PADLEFT =>		VK_LEFT,
@@ -659,7 +659,7 @@ class KAGWindow extends Window
 				},
 			];
 
-		// padKeyMapReverse ‚ğì¬
+		// padKeyMapReverse ï¿½ï¿½ï¿½ì¬
 		padKeyMapReverse = %[];
 		var ar = [];
 		ar.assign(padKeyMap);
@@ -674,15 +674,15 @@ class KAGWindow extends Window
 
 	function getKeyState(key)
 	{
-		// System.getKeyState ŠÖ”‚Æ“¯“™‚¾‚ªAƒpƒbƒh‚ÌƒL[‚ÉŠÖ‚µ‚Ä‚à
-		// ”½‰‚ğ•Ô‚·
+		// System.getKeyState ï¿½Öï¿½ï¿½Æ“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½pï¿½bï¿½hï¿½ÌƒLï¿½[ï¿½ÉŠÖ‚ï¿½ï¿½Ä‚ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
 		var sg = System.getKeyState;
 		var state = sg(key);
 		if(state) return true;
 		var pad_key = padKeyMapReverse[key];
 		if(pad_key !== void)
 		{
-			// ƒL[ƒR[ƒh -> ƒpƒbƒh‚ÌƒL[ƒR[ƒh‚Ì•ÏŠ·‚ªŒ©‚Â‚©‚Á‚½
+			// ï¿½Lï¿½[ï¿½Rï¿½[ï¿½h -> ï¿½pï¿½bï¿½hï¿½ÌƒLï¿½[ï¿½Rï¿½[ï¿½hï¿½Ì•ÏŠï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½
 			return sg(pad_key);
 		}
 		return false;
@@ -694,19 +694,19 @@ class KAGWindow extends Window
 	{
 		if(ev.type == 'onKeyDown' && ev.target === this)
 		{
-			// ƒpƒbƒh“ü—Í‚É‘Î‰‚·‚éˆ—
+			// ï¿½pï¿½bï¿½hï¿½ï¿½Í‚É‘Î‰ï¿½ï¿½ï¿½ï¿½éˆï¿½ï¿½
 			var handler = padKeyMap[ev.key];
 			if(handler !== void)
 			{
-				// ƒnƒ“ƒhƒ‰‚ªŒ©‚Â‚©‚Á‚½
+				// ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½
 				if(typeof(handler) == "Object")
 				{
-					// ƒnƒ“ƒhƒ‰‚ÍŠÖ”
+					// ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ÍŠÖï¿½
 					(handler incontextof this)(ev);
 				}
 				else
 				{
-					// ƒnƒ“ƒhƒ‰‚ÍƒL[ƒR[ƒh
+					// ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ÍƒLï¿½[ï¿½Rï¿½[ï¿½h
 					postInputEvent('onKeyDown', %[key: handler]);
 					postInputEvent('onKeyUp', %[key: handler]);
 				}
@@ -714,23 +714,23 @@ class KAGWindow extends Window
 		}
 	}
 
-	//------------------------------------------------------ tempLayer ŠÖ˜A --
+	//------------------------------------------------------ tempLayer ï¿½Ö˜A --
 
 	property temporaryLayer
 	{
-		// ƒ[ƒNƒGƒŠƒA‚Æ‚µ‚Äˆê“I‚Ég—p‚Å‚«‚éƒŒƒCƒ„‚ğ•Ô‚·
+		// ï¿½ï¿½ï¿½[ï¿½Nï¿½Gï¿½ï¿½ï¿½Aï¿½Æ‚ï¿½ï¿½Äˆêï¿½Iï¿½Égï¿½pï¿½Å‚ï¿½ï¿½éƒŒï¿½Cï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
 		getter()
 		{
 			if(tempLayer === void)
 			{
 				tempLayer = new KAGLayer(this, primaryLayer);
-				tempLayer.name = "ˆêƒ[ƒNƒŒƒCƒ„";
+				tempLayer.name = "ï¿½êï¿½ï¿½ï¿½[ï¿½Nï¿½ï¿½ï¿½Cï¿½ï¿½";
 			}
 			return tempLayer;
 		}
 	}
 
-	//------------------------------------------------ ƒƒjƒ…[ƒAƒCƒeƒ€ŠÖ˜A --
+	//------------------------------------------------ ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½Ö˜A --
 
 	function onExitMenuItemClick(sender)
 	{
@@ -739,7 +739,7 @@ class KAGWindow extends Window
 
 	function onRightClickMenuItemClick(sender)
 	{
-		onPrimaryRightClick(); // ‰EƒNƒŠƒbƒN‚Ì“®ì
+		onPrimaryRightClick(); // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ì“ï¿½ï¿½ï¿½
 	}
 
 	function onShowHistoryMenuItemClick(sender)
@@ -843,7 +843,7 @@ class KAGWindow extends Window
 			}
 			catch(e)
 			{
-				Debug.notice("ƒEƒBƒ“ƒhƒEƒ‚[ƒh‚ÉˆÚs‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½ : " + e.message);
+				Debug.notice("ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½[ï¿½hï¿½ÉˆÚsï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ : " + e.message);
 			}
 			fullScreened = fullScreen;
 			if(fullScreened)
@@ -864,7 +864,7 @@ class KAGWindow extends Window
 			}
 			catch(e)
 			{
-				Debug.notice("ƒtƒ‹ƒXƒNƒŠ[ƒ“ƒ‚[ƒh‚ÉˆÚs‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½ : " + e.message);
+				Debug.notice("ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½ÉˆÚsï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ : " + e.message);
 			}
 			fullScreened = fullScreen;
 			if(fullScreened)
@@ -877,17 +877,17 @@ class KAGWindow extends Window
 
 	function onHelpIndexMenuItemClick(sender)
 	{
-		// ƒwƒ‹ƒvƒtƒ@ƒCƒ‹‚ğŠJ‚­
+		// ï¿½wï¿½ï¿½ï¿½vï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½ï¿½
 		System.shellExecute(Storages.getLocalName(System.exePath) + helpFile);
 	}
 
 	function onHelpAboutMenuItemClick(sender)
 	{
-		// u‚±‚Ìƒ\ƒtƒg‚É‚Â‚¢‚ÄvƒEƒBƒ“ƒhƒE‚ğ•\¦
+		// ï¿½uï¿½ï¿½ï¿½Ìƒ\ï¿½tï¿½gï¿½É‚Â‚ï¿½ï¿½Ävï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½\ï¿½ï¿½
 		var win = new global.KAGWindow(false, aboutWidth, aboutHeight);
 		win.setPos(left + ((width - win.width)>>1), top + ((height - win.height)>>1));
-		win.process('about.ks' ,,, true); // about.ks ‚ğ immediate ‚Å•\¦
-		win.showModal(); // ƒ‚[ƒh•t‚«‚Å•\¦
+		win.process('about.ks' ,,, true); // about.ks ï¿½ï¿½ immediate ï¿½Å•\ï¿½ï¿½
+		win.showModal(); // ï¿½ï¿½ï¿½[ï¿½hï¿½tï¿½ï¿½ï¿½Å•\ï¿½ï¿½
 		invalidate win;
 	}
 
@@ -909,15 +909,15 @@ class KAGWindow extends Window
 
 	function internalSetMenuAccessibleAll(menu, state)
 	{
-		// autoEnable ‚ª true ‚Ì‚·‚×‚Ä‚Ìƒƒjƒ…[€–Ú‚Ì accessible ‚É’l state ‚ğ
-		// İ’è‚·‚é
+		// autoEnable ï¿½ï¿½ true ï¿½Ì‚ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚ï¿½ accessible ï¿½É’l state ï¿½ï¿½
+		// ï¿½İ’è‚·ï¿½ï¿½
 		if(typeof menu.autoEnable != "undefined" && menu.autoEnable)
 			menu.accessible = state;
 		if(typeof menu.stopRecur == "undefined" || !menu.stopRecur)
 		{
 			var children = menu.children;
 			for(var i = children.count -1; i >= 0; i--)
-				internalSetMenuAccessibleAll(children[i], state); // Ä‹A
+				internalSetMenuAccessibleAll(children[i], state); // ï¿½Ä‹A
 		}
 	}
 
@@ -933,15 +933,15 @@ class KAGWindow extends Window
 
 	function setMenuAccessibleAll()
 	{
-		// ƒƒjƒ…[€–Ú‚Ìg—p‰Â/•s‰Â‚ğİ’è‚·‚é
+		// ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚Ìgï¿½pï¿½ï¿½/ï¿½sï¿½Â‚ï¿½İ’è‚·ï¿½ï¿½
 
-		// autoEnable ‚ª true ‚Ì‚·‚×‚Ä‚Ìƒƒjƒ…[€–Ú‚Ì accessible ‚Ì
-		// ’l‚ğİ’è‚·‚é
+		// autoEnable ï¿½ï¿½ true ï¿½Ì‚ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚ï¿½ accessible ï¿½ï¿½
+		// ï¿½lï¿½ï¿½İ’è‚·ï¿½ï¿½
 		var notmodal = !historyLayer.visible && !messageLayerHiding;
 		var state = inStable && notmodal;
 		internalSetMenuAccessibleAll(menu, state);
 
-		// ‚»‚Ì‘¼‚Ìƒƒjƒ…[‚Ìg—p‰Â/•s‰Â
+		// ï¿½ï¿½ï¿½Ì‘ï¿½ï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Ìgï¿½pï¿½ï¿½/ï¿½sï¿½ï¿½
 		if(typeof this.skipToNextStopMenuItem != "undefined")
 			skipToNextStopMenuItem.enabled = state && !inSleep && nextSkipEnabled;
 
@@ -986,31 +986,31 @@ class KAGWindow extends Window
 		}
 	}
 
-	//----------------------------------------------- ƒ}ƒEƒXƒL[‚ğ—LŒø‚É‚·‚é --
+	//----------------------------------------------- ï¿½}ï¿½Eï¿½Xï¿½Lï¿½[ï¿½ï¿½Lï¿½ï¿½É‚ï¿½ï¿½ï¿½ --
 
 	function enableMouseKey()
 	{
-		// ƒ}ƒEƒXƒL[‚ğ—LŒø‚É‚·‚é
+		// ï¿½}ï¿½Eï¿½Xï¿½Lï¿½[ï¿½ï¿½Lï¿½ï¿½É‚ï¿½ï¿½ï¿½
 		if(mouseKeyEnabledCount == 0)
 		{
 			useMouseKey = true;
 			mouseCursorState = mcsVisible;
 		}
-		mouseKeyEnabledCount++; // QÆƒJƒEƒ“ƒ^•û®
+		mouseKeyEnabledCount++; // ï¿½Qï¿½ÆƒJï¿½Eï¿½ï¿½ï¿½^ï¿½ï¿½
 	}
 
 	function disableMouseKey()
 	{
-		// ƒ}ƒEƒXƒL[‚ğ–³Œø‚É‚·‚é
+		// ï¿½}ï¿½Eï¿½Xï¿½Lï¿½[ï¿½ğ–³Œï¿½É‚ï¿½ï¿½ï¿½
 		mouseKeyEnabledCount --;
 		if(mouseKeyEnabledCount == 0) useMouseKey = false;
 	}
 
-	//----------------------------------------------------- ƒVƒXƒeƒ€•Ï”ŠÖ˜A --
+	//----------------------------------------------------- ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½Ö˜A --
 
 	function loadSystemVariables()
 	{
-		// ƒVƒXƒeƒ€•Ï”‚Ì“Ç‚İ‚İ
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½Ì“Ç‚İï¿½ï¿½ï¿½
 		try
 		{
 			var fn = saveDataLocation + "/" + dataName +
@@ -1039,15 +1039,15 @@ class KAGWindow extends Window
 		}
 		catch(e)
 		{
-			throw new Exception("ƒVƒXƒeƒ€•Ï”ƒf[ƒ^‚ğ“Ç‚İ‚ß‚È‚¢‚©A"
-				"‚ ‚é‚¢‚ÍƒVƒXƒeƒ€•Ï”ƒf[ƒ^‚ª‰ó‚ê‚Ä‚¢‚Ü‚·(" + e.message + ")");
+			throw new Exception("ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½Ç‚İï¿½ï¿½ß‚È‚ï¿½ï¿½ï¿½ï¿½A"
+				"ï¿½ï¿½ï¿½é‚¢ï¿½ÍƒVï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½(" + e.message + ")");
 		}
 	}
 
 	function setSystemStateFromSystemVariables()
 	{
-		// ƒVƒXƒeƒ€•Ï”‚ÉŠî‚Ã‚¢‚ÄƒVƒXƒeƒ€‚ğİ’è
-		// (ƒtƒ‹ƒXƒNƒŠ[ƒ“ŠÖ˜A‚ğ‚Ì‚¼‚­)
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½ÉŠï¿½Ã‚ï¿½ï¿½ÄƒVï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½İ’ï¿½
+		// (ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ö˜Aï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½)
 		if(scflags.autoModePageWait !== void)
 		{
 			if(typeof this.autoModeWaitMenu !== "undefined")
@@ -1137,23 +1137,23 @@ class KAGWindow extends Window
 
 	function clearSystemVariables()
 	{
-		// ƒVƒXƒeƒ€•Ï”‚ÌƒNƒŠƒA
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½ÌƒNï¿½ï¿½ï¿½A
 		(Dictionary.clear incontextof sflags)();
 	}
 
 	function saveSystemVariables()
 	{
-		// ƒVƒXƒeƒ€•Ï”‚Ì•Û‘¶
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½Ì•Û‘ï¿½
 		if(!isMain) return;
 
-		// ƒvƒ‰ƒOƒCƒ“‚ğŒÄ‚Ô
+		// ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
 		forEachEventHook('onSaveSystemVariables',
 			function(handler, f) { handler(); } incontextof this);
 
-		// ƒtƒ‹ƒXƒNƒŠ[ƒ“
+		// ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½
 		scflags.fullScreen = fullScreened;
 
-		// •¶š•\¦‘¬“x
+		// ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½x
 		scflags.autoModePageWait = autoModePageWait;
 		scflags.autoModeLineWait = autoModeLineWait;
 		scflags.userChSpeed = userChSpeed;
@@ -1163,14 +1163,14 @@ class KAGWindow extends Window
 		scflags.chNonStopToPageBreak = chNonStopToPageBreak;
 		scflags.ch2ndNonStopToPageBreak = ch2ndNonStopToPageBreak;
 
-		// ƒuƒbƒNƒ}[ƒN–¼
-		scflags.bookMarkNames = bookMarkNames; // (ƒRƒs[‚Å‚Í‚È‚­‚Ä)QÆ‚Å\•ª
+		// ï¿½uï¿½bï¿½Nï¿½}ï¿½[ï¿½Nï¿½ï¿½
+		scflags.bookMarkNames = bookMarkNames; // (ï¿½Rï¿½sï¿½[ï¿½Å‚Í‚È‚ï¿½ï¿½ï¿½)ï¿½Qï¿½Æ‚Å\ï¿½ï¿½
 		scflags.bookMarkDates = bookMarkDates;
 		scflags.bookMarkProtectedStates = bookMarkProtectedStates;
 
 		scflags.lastSaveDataNameGlobal = lastSaveDataNameGlobal;
 
-		// ƒtƒ@ƒCƒ‹‚É‘‚«‚Ş
+		// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(!readOnlyMode)
 		{
 			var fn = saveDataLocation + "/" + dataName +
@@ -1183,17 +1183,17 @@ class KAGWindow extends Window
 		}
 	}
 
-	//------------------------------------------------------- ƒQ[ƒ€•Ï”ŠÖ˜A --
+	//------------------------------------------------------- ï¿½Qï¿½[ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö˜A --
 
 	function internalStoreFlags(f)
 	{
-		// f ‚ÉŒ»İ‚Ìó‘Ô‚ğ‹L˜^‚·‚é
+		// f ï¿½ÉŒï¿½ï¿½İ‚Ìï¿½Ô‚ï¿½ï¿½Lï¿½^ï¿½ï¿½ï¿½ï¿½
 
-		// KAGWindow ‚ÉŠÖ‚·‚é‚à‚Ì
-		(Dictionary.clear incontextof f)(); // ƒNƒŠƒA
-		// ‚±‚±‚Ì [start_store_vars] ‚©‚ç [end_store_vars] ‚ÅˆÍ‚Ü‚ê‚½•”•ª‚Í
-		// ––’[‚Ì perl ƒXƒNƒŠƒvƒg‚É‚æ‚Á‚Ä©“®“I‚Éˆ—‚³‚ê‚é‚Ì‚ÅA‚±‚Ìƒ}[ƒN‚ğÁ‚µ‚½‚è
-		// ‚±‚Ìƒ}[ƒN‚ÌŠÔ‚ğ•ÒW‚µ‚½‚è‚µ‚È‚¢‚±‚ÆB
+		// KAGWindow ï¿½ÉŠÖ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		(Dictionary.clear incontextof f)(); // ï¿½Nï¿½ï¿½ï¿½A
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ [start_store_vars] ï¿½ï¿½ï¿½ï¿½ [end_store_vars] ï¿½ÅˆÍ‚Ü‚ê‚½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½[ï¿½ï¿½ perl ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½É‚ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½Iï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½ï¿½ï¿½Ìƒ}ï¿½[ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½Ìƒ}ï¿½[ï¿½Nï¿½ÌŠÔ‚ï¿½ÒWï¿½ï¿½ï¿½ï¿½ï¿½è‚µï¿½È‚ï¿½ï¿½ï¿½ï¿½ÆB
 		// [start_store_vars]
 		f.lastSaveDataName = lastSaveDataName;
 		f.quaking = quaking;
@@ -1238,22 +1238,22 @@ class KAGWindow extends Window
 		f.currentPageName = currentPageName;
 		// [end_store_vars]
 
-		// perl ƒXƒNƒŠƒvƒg‚É‚æ‚Á‚Ä©“®“I‚Éˆ—‚³‚ê‚È‚¢‚à‚ÌA‚¢‚­‚Â‚©B
-		// ©“®ƒEƒFƒCƒg
+		// perl ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½É‚ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½Iï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ÌAï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½B
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½g
 		f.autoWCWaits = [];
-		f.autoWCWaits.assign(autoWCWaits); // ©“®ƒEƒFƒCƒg‚ÌƒEƒFƒCƒg
+		f.autoWCWaits.assign(autoWCWaits); // ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½gï¿½ÌƒEï¿½Fï¿½Cï¿½g
 
 		// bgm
 		f.bgm = bgm.store();
 
-		// Œø‰Ê‰¹
+		// ï¿½ï¿½Ê‰ï¿½
 		f.se = [];
 		for(var i = 0; i<numSEBuffers; i++)
 		{
 			f.se[i] = se[i].store();
 		}
 
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½
 		f.foreMessageLayers = [];
 		f.backMessageLayers = [];
 		for(var i = 0; i < numMessageLayers; i++)
@@ -1262,7 +1262,7 @@ class KAGWindow extends Window
 			f.backMessageLayers[i] = back.messages[i].store();
 		}
 
-		// ‘OŒiƒŒƒCƒ„
+		// ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½
 		f.foreCharacterLayers = [];
 		f.backCharacterLayers = [];
 		for(var i = 0; i < numCharacterLayers; i++)
@@ -1271,25 +1271,25 @@ class KAGWindow extends Window
 			f.backCharacterLayers[i] = back.layers[i].store();
 		}
 
-		// ”wŒiƒŒƒCƒ„
+		// ï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½
 		f.foreBaseLayer = fore.base.store();
 		f.backBaseLayer = back.base.store();
 
-		// ƒEƒBƒ“ƒhƒEƒLƒƒƒvƒVƒ‡ƒ“
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Lï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½
 		f.caption = caption;
 
-		// ƒRƒ“ƒ_ƒNƒ^
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^
 		f.mainConductor = mainConductor.store();
 		if(!saveMacros) f.mainConductor.macros = void;
-			// ƒ}ƒNƒî•ñ‚ğ void ‚Åã‘‚«‚·‚é‚Æx’†‚Ìƒ}ƒNƒî•ñ‚Í–³Œø‚É‚È‚é
+			// ï¿½}ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ void ï¿½Åã‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æxï¿½ï¿½ï¿½Ìƒ}ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Í–ï¿½ï¿½ï¿½É‚È‚ï¿½
 
-		// ƒƒbƒZ[ƒW—š—ğ
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½
 		if(historyLayer.storeState)
 		{
 			f.historyData = historyLayer.save();
 		}
 
-		// ƒ€[ƒr[
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[
 		if( isMain )
 		{
 			f.movies = [];
@@ -1305,7 +1305,7 @@ class KAGWindow extends Window
 
 	function storeFlags()
 	{
-		// pcflags, pflags ‚É’l‚ğ‘‚«‚Ş
+		// pcflags, pflags ï¿½É’lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 		// flags -> pflags
 		(Dictionary.assignStruct incontextof pflags)(flags);
@@ -1315,14 +1315,14 @@ class KAGWindow extends Window
 
 	function internalRestoreFlags(f, clear = true, elm = void)
 	{
-		// f ‚©‚çî•ñ‚ğ“Ç‚İo‚·
-		// clear ‚ª true ‚È‚ç‚ÎƒƒbƒZ[ƒWƒŒƒCƒ„‚ğƒNƒŠƒA‚·‚é
-		// se, bgm ‚ª‚»‚ê‚¼‚ê true ‚È‚ç‚Î‚»‚Ìî•ñ‚à”½‰f‚³‚¹‚é
-		// backlay ‚ª true ‚Ìê‡‚ÍA•\‰æ–Ê‚Éƒ[ƒh‚·‚×‚«‚à‚Ì‚ğ— ‰æ–Ê‚Éƒ[ƒh‚·‚é
+		// f ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İoï¿½ï¿½
+		// clear ï¿½ï¿½ true ï¿½È‚ï¿½Îƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½
+		// se, bgm ï¿½ï¿½ï¿½ï¿½ï¿½ê‚¼ï¿½ï¿½ true ï¿½È‚ï¿½Î‚ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// backlay ï¿½ï¿½ true ï¿½Ìê‡ï¿½ÍAï¿½\ï¿½ï¿½Ê‚Éƒï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½×‚ï¿½ï¿½ï¿½ï¿½Ì‚ğ— ‰ï¿½Ê‚Éƒï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½
 
-		// KAGWindow ‚ÉŠÖ‚·‚é‚à‚Ì
-		// ‚±‚±‚Ì [start_restore_vars] ‚©‚ç [end_restore_vars] ‚ÅˆÍ‚Ü‚ê‚½•”•ª‚Í
-		// (—ª)
+		// KAGWindow ï¿½ÉŠÖ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ [start_restore_vars] ï¿½ï¿½ï¿½ï¿½ [end_restore_vars] ï¿½ÅˆÍ‚Ü‚ê‚½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// (ï¿½ï¿½)
 		// [start_restore_vars]
 		lastSaveDataName = f.lastSaveDataName if f.lastSaveDataName !== void;
 		quaking = f.quaking if f.quaking !== void;
@@ -1367,19 +1367,19 @@ class KAGWindow extends Window
 		currentPageName = f.currentPageName if f.currentPageName !== void;
 		// [end_restore_vars]
 
-		// perl ƒXƒNƒŠƒvƒg‚É‚æ‚Á‚Ä©“®“I‚Éˆ—‚³‚ê‚È‚¢‚à‚ÌA‚¢‚­‚Â‚©B
+		// perl ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½É‚ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½Iï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ÌAï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½B
 
-		// ©“®ƒEƒFƒCƒg
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½g
 		autoWCWaits.assign(f.autoWCWaits) if f.autoWCWaits !== void;
 
-		// ƒ€[ƒr[
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[
 		if( isMain )
 		{
 			for( var i = 0; i < numMovies; i++)
 				movies[i].restore(f.movies[i]);
 		}
 
-		// ”wŒiƒŒƒCƒ„
+		// ï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½
 		var backlay = elm != void && elm.backlay != void && +elm.backlay;
 		if(backlay)
 		{
@@ -1391,7 +1391,7 @@ class KAGWindow extends Window
 			back.base.restore(f.backBaseLayer);
 		}
 
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½
 		allocateMessageLayers(numMessageLayers);
 		if(backlay)
 		{
@@ -1433,7 +1433,7 @@ class KAGWindow extends Window
 			}
 		}
 
-		// ‘OŒiƒŒƒCƒ„
+		// ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½
 		allocateCharacterLayers(numCharacterLayers);
 		if(backlay)
 		{
@@ -1451,7 +1451,7 @@ class KAGWindow extends Window
 			}
 		}
 
-		// quake ŠÖ˜A
+		// quake ï¿½Ö˜A
 		restoreQuake();
 
 		// bgm
@@ -1460,7 +1460,7 @@ class KAGWindow extends Window
 			bgm.restore(f.bgm);
 		}
 
-		// Œø‰Ê‰¹
+		// ï¿½ï¿½Ê‰ï¿½
 		if(elm === void || elm.se === void || +elm.se)
 		{
 			for(var i = 0; i<numSEBuffers; i++)
@@ -1469,14 +1469,14 @@ class KAGWindow extends Window
 			}
 		}
 
-		// ƒEƒBƒ“ƒhƒEƒLƒƒƒvƒVƒ‡ƒ“
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Lï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½
 		caption = f.caption;
 		System.title = caption;
 
-		// current ‚Ìİ’è‚µ’¼‚µ
+		// current ï¿½Ìİ’è‚µï¿½ï¿½ï¿½ï¿½
 		current = (currentPage?back:fore).messages[currentNum];
 
-		// ‰EƒNƒŠƒbƒNƒƒjƒ…[–¼
+		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½
 		if(typeof this.rightClickMenuItem != "undefined")
 			rightClickMenuItem.caption = rightClickCurrentMenuName;
 
@@ -1489,85 +1489,85 @@ class KAGWindow extends Window
 
 	function restoreFlags()
 	{
-		// pcflags, pflags ‚©‚çî•ñ‚ğ“Ç‚İo‚·
+		// pcflags, pflags ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İoï¿½ï¿½
 
-		// ƒ[ƒhAƒ€[ƒr[‚ÌƒsƒŠƒIƒhƒCƒxƒ“ƒgî•ñ‚ğƒNƒŠƒA‚·‚é
+		// ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ìƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½
 		purgeMoviePeriod();
 
-		// ƒXƒiƒbƒvƒVƒ‡ƒbƒg‚Ì”jŠü
+		// ï¿½Xï¿½iï¿½bï¿½vï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½Ì”jï¿½ï¿½
 		freeSnapshot();
 
-		// ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“A©“®ˆÚ“®‚Ì’â~
+		// ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½Ì’ï¿½~
 		stopAllTransitions();
 		stopAllMoves();
 
-		// ƒNƒŠƒbƒN‘Ò‚¿‹L†‚ğ‰B‚·
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½
 		hideClickGlyphs();
 
-		// ƒƒbƒZ[ƒW—š—ğ‚ğ‰B‚·
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½
 		hideHistory();
 
-		// ƒXƒLƒbƒv‚ÌƒLƒƒƒ“ƒZƒ‹
+		// ï¿½Xï¿½Lï¿½bï¿½vï¿½ÌƒLï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½
 		cancelSkip();
 
 		// pflags -> flags
 		(Dictionary.assignStruct incontextof flags)(pflags);
 
-		// xŠÇ—ŠÖ˜A
+		// ï¿½xï¿½Ç—ï¿½ï¿½Ö˜A
 		storeLabelPassed = true;
 		nextRecordHistory = false;
 		stablePosibility = false;
 
-		// ƒRƒ“ƒ_ƒNƒ^
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^
 		currentRecordName = "";
 		mainConductor.restore(pcflags.mainConductor);
 		extraConductor.clear();
 		setConductorToMain();
 
-		// “Ç‚İ‚İ
+		// ï¿½Ç‚İï¿½ï¿½ï¿½
 		internalRestoreFlags(pcflags);
 
-		// ƒƒjƒ…[ŠÖ˜A
+		// ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Ö˜A
 		setMenuAccessibleAll();
 
-		// ÀsŠJn
+		// ï¿½ï¿½ï¿½sï¿½Jï¿½n
 		processGo();
 	}
 
 	function clearVariables()
 	{
-		// ƒQ[ƒ€•Ï”‚ÌƒNƒŠƒA
+		// ï¿½Qï¿½[ï¿½ï¿½ï¿½Ïï¿½ï¿½ÌƒNï¿½ï¿½ï¿½A
 		(Dictionary.clear incontextof flags)();
 	}
 
-	//--------------------------------------------------------- ’Ê‰ß‹L˜^ŠÇ— --
+	//--------------------------------------------------------- ï¿½Ê‰ß‹Lï¿½^ï¿½Ç—ï¿½ --
 
 	function pushHistoryOfStore()
 	{
-		// ’Ê‰ß‹L˜^‚ğs‚¤
-		// pflags, pcflags ‚Éî•ñ‚ğŠi”[‚µ‚½Œã‚ÉŒÄ‚Ô‚±‚Æ
+		// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½
+		// pflags, pcflags ï¿½Éï¿½ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉŒÄ‚Ô‚ï¿½ï¿½ï¿½
 
 		if(nextRecordHistory)
 		{
 			if(stablePosibility)
 			{
-				// stablePosibility ‚ª false ‚Ìê‡‚ÍA
-				// ‚»‚±‚Ìƒ‰ƒxƒ‹‚Å’Ê‰ß‹L˜^‚ğs‚Á‚Ä‚à
-				// ‚»‚±‚æ‚è‚à‘O‚É–ß‚é‚·‚×‚ª‚È‚¢‚Ì‚Å’Ê‰ß‹L˜^‚ğ‚µ‚È‚¢
+				// stablePosibility ï¿½ï¿½ false ï¿½Ìê‡ï¿½ÍA
+				// ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½Å’Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ä‚ï¿½
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½É–ß‚é‚·ï¿½×‚ï¿½ï¿½È‚ï¿½ï¿½Ì‚Å’Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 
-				// «‘”z—ñ‚ğì¬
+				// ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½ì¬
 				var dic = %[];
 
-				// user ‚Æ core ‚ğ‹L˜^
+				// user ï¿½ï¿½ core ï¿½ï¿½ï¿½Lï¿½^
 				dic.user = %[];
 				(Dictionary.assignStruct incontextof dic.user)(pflags);
 				dic.core = %[];
 				(Dictionary.assignStruct incontextof dic.core)(pcflags);
 
-				// dic ‚ğ historyOfStore ‚Ìæ“ª‚É‘}“ü
+				// dic ï¿½ï¿½ historyOfStore ï¿½Ìæ“ªï¿½É‘}ï¿½ï¿½
 				historyOfStore.insert(0, dic);
 
-				// ‚Í‚İo‚½•ª‚ğíœ
+				// ï¿½Í‚İoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½íœ
 				if(historyOfStore.count > maxHistoryOfStore)
 					historyOfStore.count = maxHistoryOfStore;
 			}
@@ -1578,21 +1578,21 @@ class KAGWindow extends Window
 
 	function setToRecordHistory()
 	{
-		// Ÿ‚Ìu•Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹v’Ê‰ß‚É
-		// ’Ê‰ß‹L˜^‚ğs‚¤‚æ‚¤‚Éİ’è‚·‚é
-		// ( ‚½‚¾‚µA‚»‚Ì‚Æ‚«‚É‹L˜^‚³‚ê‚é‚Ì‚ÍAŒ»İ‚Ìó‘Ô )
+		// ï¿½ï¿½ï¿½Ìuï¿½Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½vï¿½Ê‰ßï¿½ï¿½ï¿½
+		// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½æ‚¤ï¿½Éİ’è‚·ï¿½ï¿½
+		// ( ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ì‚Æ‚ï¿½ï¿½É‹Lï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÍAï¿½ï¿½ï¿½İ‚Ìï¿½ï¿½ )
 		nextRecordHistory = true;
 	}
 
 	function isHistoryOfStoreAlive()
 	{
-		// ’Ê‰ß‹L˜^‚ª—˜—p‰Â”\‚©‚Ç‚¤‚©‚ğ•Ô‚·
+		// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½Â”\ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
 		return historyOfStore.count;
 	}
 
 	function goBackHistory(ask = true)
 	{
-		// ’Ê‰ß‹L˜^‚ğ‚½‚Ç‚èA–ß‚é
+		// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½Aï¿½ß‚ï¿½
 
 		if(!isHistoryOfStoreAlive())
 			return false;
@@ -1600,7 +1600,7 @@ class KAGWindow extends Window
 		var result;
 		if(ask)
 		{
-			var prompt = "u"+ historyOfStore[0].core.currentPageName + "v‚Ü‚Å–ß‚è‚Ü‚·‚©?";
+			var prompt = "ï¿½u"+ historyOfStore[0].core.currentPageName + "ï¿½vï¿½Ü‚Å–ß‚ï¿½Ü‚ï¿½ï¿½ï¿½?";
 			result = askYesNo(prompt);
 		}
 		else
@@ -1610,14 +1610,14 @@ class KAGWindow extends Window
 
 		if(result)
 		{
-			// user ‚Æ core ‚ğ pflags, pcflags ‚É–ß‚·
+			// user ï¿½ï¿½ core ï¿½ï¿½ pflags, pcflags ï¿½É–ß‚ï¿½
 			(Dictionary.assignStruct incontextof pflags)(historyOfStore[0].user);
 			(Dictionary.assignStruct incontextof pcflags)(historyOfStore[0].core);
 
-			// ‹L˜^‚Ìæ“ª‚ğíœ‚·‚é
+			// ï¿½Lï¿½^ï¿½Ìæ“ªï¿½ï¿½ï¿½íœï¿½ï¿½ï¿½ï¿½
 			historyOfStore.erase(0);
 
-			// ƒf[ƒ^‚ğŒ³‚ÉAx‚ğ‚½‚Ç‚é“®ì‚ğ‚·‚é
+			// ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ÉAï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚é“®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			restoreFlags();
 
 			return true;
@@ -1625,12 +1625,12 @@ class KAGWindow extends Window
 		return false;
 	}
 
-	//--------------------------------------------------------------- xŠÇ— --
+	//--------------------------------------------------------------- ï¿½xï¿½Ç—ï¿½ --
 
 	function createBookMarkSubMenus()
 	{
-		// ux‚ğ‚½‚Ç‚évux‚ğ‚Í‚³‚ŞvˆÈ‰º‚ÉƒTƒuƒƒjƒ…[€–Ú‚ğ’Ç‰Á
-		if(freeSaveDataMode) return; // ƒtƒŠ[ƒZ[ƒuƒ‚[ƒh‚Å‚Í‚È‚É‚à‚µ‚È‚¢
+		// ï¿½uï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½vï¿½uï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½Şvï¿½È‰ï¿½ï¿½ÉƒTï¿½uï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚ï¿½Ç‰ï¿½
+		if(freeSaveDataMode) return; // ï¿½tï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½[ï¿½hï¿½Å‚Í‚È‚É‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 		if(typeof this.storeMenu !== "undefined" && storeMenu.visible)
 		{
 			for(var i = 0; i<numBookMarks; i++)
@@ -1657,18 +1657,18 @@ class KAGWindow extends Window
 
 	function setBookMarkMenuCaptions()
 	{
-		// ux‚ğ‚½‚Ç‚évux‚ğ‚Í‚³‚ŞvˆÈ‰º‚ÌƒTƒuƒƒjƒ…[‚É
-		// ƒLƒƒƒvƒVƒ‡ƒ“‚ğİ’è
+		// ï¿½uï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½vï¿½uï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½Şvï¿½È‰ï¿½ï¿½ÌƒTï¿½uï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½
+		// ï¿½Lï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½
 
-		// x‚ğ‹²‚Ş
+		// ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(typeof this.storeMenu !== "undefined")
 		{
 			var children = storeMenu.children;
 			for(var i = children.count - 1; i >= 0; i--)
 			{
-				if(bookMarkDates[i] != '') // ‹ó•¶š—ñ‚Ìê‡‚Íx‚ª‚È‚¢‚Æ‚¢‚¤‚±‚Æ
+				if(bookMarkDates[i] != '') // ï¿½ó•¶ï¿½ï¿½ï¿½Ìê‡ï¿½Íxï¿½ï¿½ï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
-					// x‚ª‘¶İ‚·‚é
+					// ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½ï¿½
 					var caption;
 					if(showBookMarkDate) caption = bookMarkDates[i] + " ";
 					caption += bookMarkNames[i];
@@ -1679,24 +1679,24 @@ class KAGWindow extends Window
 				}
 				else
 				{
-					// x‚ª‘¶İ‚µ‚È‚¢
+					// ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½È‚ï¿½
 					var item = children[i];
-					item.caption = "(–¢İ’è)";
+					item.caption = "(ï¿½ï¿½ï¿½İ’ï¿½)";
 					item.enabled = false;
 					item.orgEnabled = !bookMarkProtectedStates[i];
 				}
 			}
 		}
 
-		// x‚ğ‚½‚Ç‚é
+		// ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½
 		if(typeof this.restoreMenu !== "undefined")
 		{
 			var children = restoreMenu.children;
 			for(var i = children.count - 1; i >= 0; i--)
 			{
-				if(bookMarkDates[i] != '') // ‹ó•¶š—ñ‚Ìê‡‚Íx‚ª‚È‚¢‚Æ‚¢‚¤‚±‚Æ
+				if(bookMarkDates[i] != '') // ï¿½ó•¶ï¿½ï¿½ï¿½Ìê‡ï¿½Íxï¿½ï¿½ï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				{
-					// x‚ª‘¶İ‚·‚é
+					// ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½ï¿½
 					var caption;
 					if(showBookMarkDate) caption = bookMarkDates[i] + " ";
 					caption += bookMarkNames[i];
@@ -1708,7 +1708,7 @@ class KAGWindow extends Window
 				else
 				{
 					var item = restoreMenu.children[i];
-					item.caption = "(–¢İ’è)";
+					item.caption = "(ï¿½ï¿½ï¿½İ’ï¿½)";
 					item.enabled = false;
 					item.orgEnabled = false;
 				}
@@ -1719,43 +1719,43 @@ class KAGWindow extends Window
 
 	function setBookMarkProtectedState(num, s)
 	{
-		// n ”Ô‚Ìx‚Ì•ÛŒìƒtƒ‰ƒO‚ğİ’è‚·‚é
-		// s = true ‚È‚ç‚Îx‚É‘‚«‚İ•ÛŒì‚ğ‚·‚é
+		// n ï¿½Ô‚Ìxï¿½Ì•ÛŒï¿½tï¿½ï¿½ï¿½Oï¿½ï¿½İ’è‚·ï¿½ï¿½
+		// s = true ï¿½È‚ï¿½Îxï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ•ÛŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		bookMarkProtectedStates[num] = s;
 		setBookMarkMenuCaptions();
 	}
 
 	function onBookMarkStore(sender)
 	{
-		// x‚ğ‚Í‚³‚Şƒƒjƒ…[‚ª‘I‘ğ‚³‚ê‚½
+		// ï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½Şƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
 //		if(!sender.parent.accessEnabled) return;
 		saveBookMarkWithAsk(sender.bmNum);
 	}
 
 	function onBookMarkRestore(sender)
 	{
-		// x‚ğ‚½‚Ç‚éƒƒjƒ…[‚ª‘I‘ğ‚³‚ê‚½
+		// ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚éƒï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
 //		if(!sender.parent.accessEnabled) return;
 		loadBookMarkWithAsk(sender.bmNum);
 	}
 
 	function getBookMarkPageName(num)
 	{
-		// x”Ô† num ‚ÌƒuƒbƒNƒ}[ƒN–¼‚ğ“¾‚é
-		if(bookMarkDates[num] != '') // ‹ó•¶š—ñ‚Ìê‡‚Íx‚ª‚È‚¢‚Æ‚¢‚¤‚±‚Æ
+		// ï¿½xï¿½Ôï¿½ num ï¿½Ìƒuï¿½bï¿½Nï¿½}ï¿½[ï¿½Nï¿½ï¿½ï¿½ğ“¾‚ï¿½
+		if(bookMarkDates[num] != '') // ï¿½ó•¶ï¿½ï¿½ï¿½Ìê‡ï¿½Íxï¿½ï¿½ï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			return bookMarkNames[num];
-		return "(–¢İ’è)";
+		return "(ï¿½ï¿½ï¿½İ’ï¿½)";
 	}
 
 	function getBookMarkDate(num)
 	{
-		// x”Ô† num ‚Ì“ú•t‚ğ“¾‚é
+		// ï¿½xï¿½Ôï¿½ num ï¿½Ì“ï¿½tï¿½ğ“¾‚ï¿½
 		return bookMarkDates[num];
 	}
 
 	function getBookMarkFileNameAtNum(num)
 	{
-		if(num >= 999) // 999 ”ÔˆÈ~‚Í“Áê‚Èƒf[ƒ^‚É—p‚¢‚é‚Ì‚Å
+		if(num >= 999) // 999 ï¿½ÔˆÈ~ï¿½Í“ï¿½ï¿½ï¿½Èƒfï¿½[ï¿½^ï¿½É—pï¿½ï¿½ï¿½ï¿½Ì‚ï¿½
 			return saveDataLocation + "/" + dataName + num + ".ksd";
 		else
 			return saveDataLocation + "/" + dataName + num + (saveThumbnail?".bmp":".kdt");
@@ -1763,8 +1763,8 @@ class KAGWindow extends Window
 
 	function lockSnapshot()
 	{
-		// ƒXƒiƒbƒvƒVƒ‡ƒbƒg‚ğƒƒbƒN‚·‚é
-		// ‰‚ß‚ÄƒXƒiƒbƒvƒVƒ‡ƒbƒg‚ªƒƒbƒN‚³‚ê‚½“_‚Å‚Ì‰æ–Ê‚ğ•Û‘¶‚·‚é
+		// ï¿½Xï¿½iï¿½bï¿½vï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ß‚ÄƒXï¿½iï¿½bï¿½vï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½_ï¿½Å‚Ì‰ï¿½Ê‚ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(snapshotLockCount == 0)
 		{
 			if(snapshotLayer === void)
@@ -1778,9 +1778,9 @@ class KAGWindow extends Window
 
 	function unlockSnapshot()
 	{
-		// ƒXƒiƒbƒvƒVƒ‡ƒbƒg‚ÌƒƒbƒN‚ğ‰ğœ‚·‚é
+		// ï¿½Xï¿½iï¿½bï¿½vï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½Ìƒï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(snapshotLockCount == 0)
-			throw new Exception("snapshotLockCount ‚ªƒAƒ“ƒ_[ƒtƒ[‚µ‚Ü‚µ‚½");
+			throw new Exception("snapshotLockCount ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½_ï¿½[ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 		snapshotLockCount --;
 		if(snapshotLockCount == 0)
 		{
@@ -1791,14 +1791,14 @@ class KAGWindow extends Window
 
 	function calcThumbnailSize()
 	{
-		// ƒTƒ€ƒlƒCƒ‹‚ÌƒTƒCƒY‚ğŒvZ‚·‚é
-		// ‰¡•‚Í 133 ‚É
+		// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 133 ï¿½ï¿½
 		var ratio = scHeight / scWidth;
 		var w = thumbnailWidth;
 		var h = (int)(w * ratio);
 
-		// ƒTƒ€ƒlƒCƒ‹—pƒrƒbƒgƒ}ƒbƒv‚ÌƒTƒCƒY‚ğŒvZ
-		// ƒTƒ€ƒlƒCƒ‹—p‰æ‘œ‚Í 256 F BMP ‚Ü‚½‚Í 24bit ƒtƒ‹ƒJƒ‰[ BMP
+		// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½pï¿½rï¿½bï¿½gï¿½}ï¿½bï¿½vï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½vï¿½Z
+		// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½pï¿½æ‘œï¿½ï¿½ 256 ï¿½F BMP ï¿½Ü‚ï¿½ï¿½ï¿½ 24bit ï¿½tï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½[ BMP
 		var size;
 		if (thumbnailDepth == 8)
 		  size = ((((w - 1) >> 2) + 1) << 2) * h + 1024 + 54;
@@ -1810,7 +1810,7 @@ class KAGWindow extends Window
 
 	function freeSnapshot()
 	{
-		// ƒXƒiƒbƒvƒVƒ‡ƒbƒg‚ğ‹­§“I‚É”jŠü‚µAsnapshotLockCount ‚ğ 0 ‚Éİ’è‚·‚é
+		// ï¿½Xï¿½iï¿½bï¿½vï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É”jï¿½ï¿½AsnapshotLockCount ï¿½ï¿½ 0 ï¿½Éİ’è‚·ï¿½ï¿½
 		snapshotLockCount = 0;
 		if(snapshotLayer !== void)
 			invalidate snapshotLayer, snapshotLayer = void;
@@ -1818,11 +1818,11 @@ class KAGWindow extends Window
 
 	function saveBookMarkToFile(fn, savehist = true)
 	{
-		// ƒtƒ@ƒCƒ‹ fn ‚Éx‚ğ•Û‘¶‚·‚é
+		// ï¿½tï¿½@ï¿½Cï¿½ï¿½ fn ï¿½Éxï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(readOnlyMode) return false;
-		pcflags.storeTime = (new Date()).getTime(); // “ú•t‚ğ•Û‘¶
+		pcflags.storeTime = (new Date()).getTime(); // ï¿½ï¿½tï¿½ï¿½Û‘ï¿½
 
-		// ƒZ[ƒuƒf[ƒ^‚ğ‚Ü‚Æ‚ß‚é
+		// ï¿½Zï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½Ü‚Æ‚ß‚ï¿½
 		var data = %[];
 		data.id = saveDataID;
 		data.core = pcflags;
@@ -1831,11 +1831,11 @@ class KAGWindow extends Window
 
 		if(saveThumbnail)
 		{
-			// ƒTƒ€ƒlƒCƒ‹‚ğ•Û‘¶
+			// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ï¿½Û‘ï¿½
 			lockSnapshot();
 			try
 			{
-				// ƒTƒ€ƒlƒCƒ‹‚ÌƒTƒCƒY‚Ü‚Åk¬
+				// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½Ü‚Åkï¿½ï¿½
 				var size = calcThumbnailSize();
 				var tmp = new Layer(this, primaryLayer);
 				try
@@ -1845,7 +1845,7 @@ class KAGWindow extends Window
 					tmp.stretchCopy(0, 0, size.width, size.height, snapshotLayer,
 						0, 0, snapshotLayer.imageWidth, snapshotLayer.imageHeight, stLinear);
 					/*
-					// ƒTƒ€ƒlƒCƒ‹‰æ‘œ‚ğƒZƒsƒA’²‚É‚µ‚Ä•Û‘¶‚·‚éê‡‚ÍƒRƒƒ“ƒgƒAƒEƒg‚ğ‰ğœ
+					// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½æ‘œï¿½ï¿½ï¿½Zï¿½sï¿½Aï¿½ï¿½ï¿½É‚ï¿½ï¿½Ä•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍƒRï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					tmp.doGrayScale();
 					tmp.adjustGamma(
 									1.3, 0, 255,  // R gamma, floor, ceil
@@ -1854,20 +1854,20 @@ class KAGWindow extends Window
 					*/
 					try
 					{
-						// ƒTƒ€ƒlƒCƒ‹‚ğ•Û‘¶
+						// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ï¿½Û‘ï¿½
 						tmp.saveLayerImage(fn, "bmp" + thumbnailDepth);
 
-						// ƒf[ƒ^‚ğ•Û‘¶
+						// ï¿½fï¿½[ï¿½^ï¿½ï¿½Û‘ï¿½
 						var mode = saveDataMode;
-						mode += "o" + size.size; // ƒ‚[ƒh•¶š—ñ‚É ‘‚«‚İƒIƒtƒZƒbƒg‚ğw’è
+						mode += "o" + size.size; // ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İƒIï¿½tï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½wï¿½ï¿½
 						(Dictionary.saveStruct incontextof data)(fn, mode);
 					}
 					catch(e)
 					{
 						invalidate tmp;
 						unlockSnapshot();
-						System.inform("ƒtƒ@ƒCƒ‹‚É•Û‘¶‚Å‚«‚Ü‚¹‚ñ (ƒtƒ@ƒCƒ‹‚ğŠJ‚¯‚È‚¢‚©A"
-							"‘‚«‚İ‹Ö~‚Å‚·)");
+						System.inform("ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½É•Û‘ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ (ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½A"
+							"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ‹Ö~ï¿½Å‚ï¿½)");
 						return false;
 					}
 				}
@@ -1887,15 +1887,15 @@ class KAGWindow extends Window
 		}
 		else
 		{
-			// ’Êí‚Ìƒtƒ@ƒCƒ‹‚É•Û‘¶
+			// ï¿½Êï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½É•Û‘ï¿½
 			try
 			{
 				(Dictionary.saveStruct incontextof data)(fn, saveDataMode);
 			}
 			catch(e)
 			{
-				System.inform("ƒtƒ@ƒCƒ‹‚É•Û‘¶‚Å‚«‚Ü‚¹‚ñ (ƒtƒ@ƒCƒ‹‚ğŠJ‚¯‚È‚¢‚©A"
-					"‘‚«‚İ‹Ö~‚Å‚·)");
+				System.inform("ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½É•Û‘ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ (ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½A"
+					"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ‹Ö~ï¿½Å‚ï¿½)");
 				return false;
 			}
 		}
@@ -1905,14 +1905,14 @@ class KAGWindow extends Window
 
 	function saveBookMark(num, savehist = true)
 	{
-		// x”Ô† num ‚Éx‚ğ•Û‘¶‚·‚é
+		// ï¿½xï¿½Ôï¿½ num ï¿½Éxï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(readOnlyMode) return false;
 		if(bookMarkProtectedStates[num]) return false;
 
 		var ret = saveBookMarkToFile(getBookMarkFileNameAtNum(num), savehist);
 		if(ret)
 		{
-			// ƒƒjƒ…[ / bookMarkNames / bookMarkDates ‚ğXV
+			// ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ / bookMarkNames / bookMarkDates ï¿½ï¿½ï¿½Xï¿½V
 			getBookMarkInfoFromData(pcflags, num);
 		}
 		return ret;
@@ -1920,8 +1920,8 @@ class KAGWindow extends Window
 
 	function getBookMarkInfoFromData(dic, num)
 	{
-		// «‘”z—ñ dic ‚©‚çx‚Ìƒy[ƒW–¼‚Æ“ú•t‚ğ“Ç‚İo‚µA
-		// bookMarkDates[num] ‚â bookMarkNames[num] ‚Éİ’è‚·‚é
+		// ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½ dic ï¿½ï¿½ï¿½ï¿½xï¿½Ìƒyï¿½[ï¿½Wï¿½ï¿½ï¿½Æ“ï¿½tï¿½ï¿½Ç‚İoï¿½ï¿½ï¿½A
+		// bookMarkDates[num] ï¿½ï¿½ bookMarkNames[num] ï¿½Éİ’è‚·ï¿½ï¿½
 		if(num < numBookMarks)
 		{
 			bookMarkNames[num] = dic.currentPageName;
@@ -1938,11 +1938,11 @@ class KAGWindow extends Window
 
 	function loadBookMarkFromFile(fn, loaduser = true)
 	{
-		// ƒtƒ@ƒCƒ‹ fn ‚©‚çx‚ğ“Ç‚İ‚Ş
-		// loaduser ‚ª false ‚Ì‚Í user ‚ğ“Ç‚İ‚Ü‚È‚¢
+		// ï¿½tï¿½@ï¿½Cï¿½ï¿½ fn ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
+		// loaduser ï¿½ï¿½ false ï¿½Ìï¿½ï¿½ï¿½ user ï¿½ï¿½Ç‚İï¿½ï¿½Ü‚È‚ï¿½
 		try
 		{
-			if(!Storages.isExistentStorage(fn)) return false; //ƒtƒ@ƒCƒ‹‚ª‚È‚¢
+			if(!Storages.isExistentStorage(fn)) return false; //ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 
 			var data;
 
@@ -1950,7 +1950,7 @@ class KAGWindow extends Window
 
 			if(saveThumbnail)
 			{
-				// w’èƒIƒtƒZƒbƒg‚©‚çƒf[ƒ^‚ğ“Ç‚İ‚Ş
+				// ï¿½wï¿½ï¿½Iï¿½tï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 				modestr += "o" + calcThumbnailSize().size;
 			}
 
@@ -1958,7 +1958,7 @@ class KAGWindow extends Window
 
 			if(data.id != saveDataID)
 			{
-				System.inform("‘¼‚ÌƒVƒXƒeƒ€‚Ìƒf[ƒ^‚ğ“Ç‚İ‚à‚¤‚Æ‚µ‚Ü‚µ‚½", "ƒGƒ‰[");
+				System.inform("ï¿½ï¿½ï¿½ÌƒVï¿½Xï¿½eï¿½ï¿½ï¿½Ìƒfï¿½[ï¿½^ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½", "ï¿½Gï¿½ï¿½ï¿½[");
 				return false;
 			}
 
@@ -1978,9 +1978,9 @@ class KAGWindow extends Window
 		}
 		catch(e)
 		{
-			System.inform("x‚ğ“Ç‚İ‚ß‚È‚¢‚©Ax‚ª"
-				"‰ó‚ê‚Ä‚¢‚é‚©A‚ ‚é‚¢‚Í‘¼‚ÌŒ`®‚Ìxƒf[ƒ^"
-				"‚Å‚·(" + e.message + ")", "ƒGƒ‰[");
+			System.inform("ï¿½xï¿½ï¿½Ç‚İï¿½ï¿½ß‚È‚ï¿½ï¿½ï¿½ï¿½Aï¿½xï¿½ï¿½"
+				"ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½Í‘ï¿½ï¿½ÌŒ`ï¿½ï¿½ï¿½Ìxï¿½fï¿½[ï¿½^"
+				"ï¿½Å‚ï¿½(" + e.message + ")", "ï¿½Gï¿½ï¿½ï¿½[");
 			return false;
 		}
 
@@ -1990,21 +1990,21 @@ class KAGWindow extends Window
 
 	function loadBookMark(num, loaduser = true)
 	{
-		// x”Ô† num ‚©‚çƒf[ƒ^‚ğ“Ç‚İo‚·
+		// ï¿½xï¿½Ôï¿½ num ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½Ç‚İoï¿½ï¿½
 		return loadBookMarkFromFile(getBookMarkFileNameAtNum(num), loaduser);
 	}
 
 	function saveBookMarkWithAsk(num)
 	{
-		// x”Ô† num ‚Éx‚ğİ’è‚·‚é
-		// ‚»‚Ì‚Æ‚«Aİ’è‚·‚é‚©‚Ç‚¤‚©‚ğ‚½‚¸‚Ë‚é
+		// ï¿½xï¿½Ôï¿½ num ï¿½Éxï¿½ï¿½İ’è‚·ï¿½ï¿½
+		// ï¿½ï¿½ï¿½Ì‚Æ‚ï¿½ï¿½Aï¿½İ’è‚·ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë‚ï¿½
 		if(readOnlyMode) return false;
 		if(bookMarkProtectedStates[num]) return false;
-		var prompt = "x ";
+		var prompt = "ï¿½x ";
 		if(num < numBookMarks) prompt += (num + 1);
-		if(bookMarkDates[num] != "") // bookMarkDates ‚ª‹ó•¶š‚Ìê‡‚Íx‚Í‘¶İ‚µ‚È‚¢
-			prompt += "u" + bookMarkNames[num] + "v";
-		prompt += "‚Éu"+ pcflags.currentPageName + "v‚ğ‚Í‚³‚İ‚Ü‚·‚©?";
+		if(bookMarkDates[num] != "") // bookMarkDates ï¿½ï¿½ï¿½ó•¶ï¿½ï¿½Ìê‡ï¿½Íxï¿½Í‘ï¿½ï¿½İ‚ï¿½ï¿½È‚ï¿½
+			prompt += "ï¿½u" + bookMarkNames[num] + "ï¿½v";
+		prompt += "ï¿½Éu"+ pcflags.currentPageName + "ï¿½vï¿½ï¿½ï¿½Í‚ï¿½ï¿½İ‚Ü‚ï¿½ï¿½ï¿½?";
 		var result = askYesNo(prompt);
 		if(result) return saveBookMark(num);
 		return false;
@@ -2012,13 +2012,13 @@ class KAGWindow extends Window
 
 	function loadBookMarkWithAsk(num)
 	{
-		// x”Ô† num ‚©‚çx‚ğ“Ç‚İo‚·
-		// ‚»‚Ì‚Æ‚«A“Ç‚İo‚·‚©‚Ç‚¤‚©‚ğ‚½‚¸‚Ë‚é
-		if(num < numBookMarks && bookMarkDates[num] == "") // bookMarkDates ‚ª‹ó•¶š‚Ìê‡‚Íx‚Í‘¶İ‚µ‚È‚¢
+		// ï¿½xï¿½Ôï¿½ num ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½Ç‚İoï¿½ï¿½
+		// ï¿½ï¿½ï¿½Ì‚Æ‚ï¿½ï¿½Aï¿½Ç‚İoï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë‚ï¿½
+		if(num < numBookMarks && bookMarkDates[num] == "") // bookMarkDates ï¿½ï¿½ï¿½ó•¶ï¿½ï¿½Ìê‡ï¿½Íxï¿½Í‘ï¿½ï¿½İ‚ï¿½ï¿½È‚ï¿½
 			return false;
-		var prompt = "x ";
+		var prompt = "ï¿½x ";
 		if(num < numBookMarks) prompt += (num + 1);
-		prompt += "u"+ bookMarkNames[num] + "v‚ğ‚½‚Ç‚è‚Ü‚·‚©?";
+		prompt += "ï¿½u"+ bookMarkNames[num] + "ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½Ü‚ï¿½ï¿½ï¿½?";
 		var result = askYesNo(prompt);
 		if(result) return loadBookMark(num);
 		return false;
@@ -2026,11 +2026,11 @@ class KAGWindow extends Window
 
 	function saveBookMarkToFileWithAsk()
 	{
-		// ”CˆÓ‚Ìƒtƒ@ƒCƒ‹‚Éx‚ğ•Û‘¶‚·‚é
-		// currentPageName ‚ğƒtƒ@ƒCƒ‹–¼‚Æ‚µ‚Ä“K‡‚·‚é‚æ‚¤‚É
-		// •ÏŒ`‚·‚é
+		// ï¿½Cï¿½Ó‚Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Éxï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½
+		// currentPageName ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä“Kï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½ï¿½
+		// ï¿½ÏŒ`ï¿½ï¿½ï¿½ï¿½
 		var invalid = "\\/:,;*?\"<>!.";
-		var valid = "^FCG–Hhƒ„ID";
+		var valid = "ï¿½ï¿½ï¿½^ï¿½Fï¿½Cï¿½Gï¿½ï¿½ï¿½Hï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½D";
 
 		var initialname = saveDataLocation + "/";
 		var through = false;
@@ -2050,9 +2050,9 @@ class KAGWindow extends Window
 
 		if(orgname == "")
 		{
-			// x‚ÌŒ©o‚µ‚ª‚È‚¢‚Ì‚Å
+			// ï¿½xï¿½ÌŒï¿½ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Ì‚ï¿½
 			if(lastSaveDataName == "")
-				orgname = System.title; // System.title ‚ğ‘ã‚í‚è‚Ég‚¤
+				orgname = System.title; // System.title ï¿½ï¿½ï¿½ï¿½ï¿½Égï¿½ï¿½
 			else
 				initialname = lastSaveDataName, through = true;
 		}
@@ -2071,12 +2071,12 @@ class KAGWindow extends Window
 			}
 		}
 
-		// •Û‘¶‚·‚éƒtƒ@ƒCƒ‹–¼‚ğ“¾‚é
+		// ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ğ“¾‚ï¿½
 		var selectdata = %[
-			title:"x‚ğ‚Í‚³‚Ş",
+			title:"ï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½",
 			filter: [saveThumbnail ?
-					"ƒTƒ€ƒlƒCƒ‹‰æ‘œ•t‚«xƒf[ƒ^(*.bmp)|*.bmp" :
-					"xƒf[ƒ^(*.kdt)|*.kdt"],
+					"ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½æ‘œï¿½tï¿½ï¿½ï¿½xï¿½fï¿½[ï¿½^(*.bmp)|*.bmp" :
+					"ï¿½xï¿½fï¿½[ï¿½^(*.kdt)|*.kdt"],
 			filterIndex : 1,
 			name : initialname,
 			initialDir : "",
@@ -2085,7 +2085,7 @@ class KAGWindow extends Window
 		];
 		if(Storages.selectFile(selectdata))
 		{
-			// •Û‘¶
+			// ï¿½Û‘ï¿½
 			saveBookMarkToFile(lastSaveDataName = lastSaveDataNameGlobal = selectdata.name);
 			lastSaveDataName = Storages.chopStorageExt(lastSaveDataName);
 		}
@@ -2093,16 +2093,16 @@ class KAGWindow extends Window
 
 	function loadBookMarkFromFileWithAsk()
 	{
-		// ”CˆÓ‚Ìƒtƒ@ƒCƒ‹‚©‚çx‚ğ“Ç‚İ‚Ş
+		// ï¿½Cï¿½Ó‚Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 		var initialdir = "";
 		if(lastSaveDataNameGlobal == "")
 			initialdir = saveDataLocation + "/";
 
 		var selectdata = %[
-			title:"x‚ğ‚½‚Ç‚é",
+			title:"ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½",
 			filter: [saveThumbnail ?
-					"ƒTƒ€ƒlƒCƒ‹‰æ‘œ•t‚«xƒf[ƒ^(*.bmp)|*.bmp" :
-					"xƒf[ƒ^(*.kdt)|*.kdt"],
+					"ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½æ‘œï¿½tï¿½ï¿½ï¿½xï¿½fï¿½[ï¿½^(*.bmp)|*.bmp" :
+					"ï¿½xï¿½fï¿½[ï¿½^(*.kdt)|*.kdt"],
 			filterIndex : 1,
 			name : lastSaveDataNameGlobal,
 			initialDir : initialdir,
@@ -2119,13 +2119,13 @@ class KAGWindow extends Window
 
 	function copyBookMark(from, to)
 	{
-		// x”Ô† from ‚©‚çx”Ô† to ‚Éx‚ğƒRƒs[‚·‚é
+		// ï¿½xï¿½Ôï¿½ from ï¿½ï¿½ï¿½ï¿½xï¿½Ôï¿½ to ï¿½Éxï¿½ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
 		if(readOnlyMode) return false;
 		if(bookMarkProtectedStates[to]) return;
 
 		var fn = getBookMarkFileNameAtNum(from);
 
-		if(!Storages.isExistentStorage(fn)) return; //ƒtƒ@ƒCƒ‹‚ª‚È‚¢
+		if(!Storages.isExistentStorage(fn)) return; //ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 
 		var data = Scripts.evalStorage(fn);
 
@@ -2137,8 +2137,8 @@ class KAGWindow extends Window
 
 	function eraseBookMark(num)
 	{
-		// x‚ğÁ‚·
-		// num < numBookMarks ‚Ì‚É‚µ‚©“®ì‚µ‚È‚¢‚æ‚¤‚É‚È‚Á‚½‚Ì‚Å’ˆÓ
+		// ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// num < numBookMarks ï¿½Ìï¿½ï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì‚µï¿½È‚ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½ï¿½ï¿½ï¿½Ì‚Å’ï¿½ï¿½ï¿½
 		if(num < numBookMarks)
 		{
 			if(!bookMarkProtectedStates[num])
@@ -2151,7 +2151,7 @@ class KAGWindow extends Window
 
 	function tempDisableStore(elm)
 	{
-		// x‚ğˆê“I‚É•Û‘¶•s‰Â”\‚É‚·‚é
+		// ï¿½xï¿½ï¿½ï¿½êï¿½Iï¿½É•Û‘ï¿½ï¿½sï¿½Â”\ï¿½É‚ï¿½ï¿½ï¿½
 		storeEnabled = true;
 		if(elm.store === void)
 			storeLabelPassed = false;
@@ -2166,7 +2166,7 @@ class KAGWindow extends Window
 
 	function setStoreEnabled(enabled)
 	{
-		// xƒƒjƒ…[‚Ì—LŒø/–³Œø‚Ìİ’è
+		// ï¿½xï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Ì—Lï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½Ìİ’ï¿½
 		storeEnabled = enabled;
 		restoreEnabled = enabled;
 		setMenuAccessibleAll();
@@ -2174,42 +2174,42 @@ class KAGWindow extends Window
 
 	function setStartAnchorEnabled(enabled)
 	{
-		// uÅ‰‚É–ß‚év‚Ì—LŒø/–³Œø‚Ìİ’è
+		// ï¿½uï¿½Åï¿½ï¿½É–ß‚ï¿½vï¿½Ì—Lï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½Ìİ’ï¿½
 		startAnchorEnabled = enabled;
-		if(enabled) saveBookMark(999, false); // 999 ”Ô‚É•Û‘¶
+		if(enabled) saveBookMark(999, false); // 999 ï¿½Ô‚É•Û‘ï¿½
 		setMenuAccessibleAll();
 	}
 
 	function goToStart()
 	{
-		// Å‰‚É–ß‚é
+		// ï¿½Åï¿½ï¿½É–ß‚ï¿½
 		if(!startAnchorEnabled) return;
-		loadBookMark(999, false); // x‚ğ“Ç‚İ‚Ş
+		loadBookMark(999, false); // ï¿½xï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 	}
 
 	function goToStartWithAsk()
 	{
-		// Å‰‚É–ß‚é(Šm”F‚ ‚è)
-		var result = askYesNo("Å‰‚É–ß‚è‚Ü‚·B‚æ‚ë‚µ‚¢‚Å‚·‚© ?");
+		// ï¿½Åï¿½ï¿½É–ß‚ï¿½(ï¿½mï¿½Fï¿½ï¿½ï¿½ï¿½)
+		var result = askYesNo("ï¿½Åï¿½ï¿½É–ß‚ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ë‚µï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ ?");
 		if(result) goToStart();
 	}
 
 	function tempSave(num)
 	{
-		// tempBookMarks[num] ‚ÉŒ»İ‚Ìó‘Ô‚ğ•Û‘¶‚·‚é
+		// tempBookMarks[num] ï¿½ÉŒï¿½ï¿½İ‚Ìï¿½Ô‚ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½
 		tempBookMarks[num] = %[];
 		internalStoreFlags(tempBookMarks[num]);
 	}
 
 	function tempLoad(num, elm)
 	{
-		// tempBookMarks[num] ‚©‚çó‘Ô‚ğ“Ç‚İ‚Ş
+		// tempBookMarks[num] ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½Ç‚İï¿½ï¿½ï¿½
 		internalRestoreFlags(tempBookMarks[num], false, elm);
 	}
 
 	function restoreBookMark(num, ask = true)
 	{
-		// KAG 2.x ŒİŠ·—p
+		// KAG 2.x ï¿½İŠï¿½ï¿½p
 		if(ask)
 			return loadBookMarkWithAsk(num);
 		else
@@ -2218,24 +2218,24 @@ class KAGWindow extends Window
 
 	function storeBookMark(num, ask = true)
 	{
-		// KAG 2.x ŒİŠ·—p
+		// KAG 2.x ï¿½İŠï¿½ï¿½p
 		if(ask)
 			return saveBookMarkWithAsk(num);
 		else
 			return saveBookMark(num);
 	}
 
-	//------------------------------------------------- –¢“Ç/Šù“Ç/ƒ‰ƒxƒ‹‹L˜^ --
+	//------------------------------------------------- ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Lï¿½^ --
 
 	function setRecordLabel(storage, label)
 	{
-		// Œ»İ‚Ìƒ‰ƒxƒ‹‚ğİ’è‚·‚é
+		// ï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½İ’è‚·ï¿½ï¿½
 		if(autoRecordPageShowing)
 		{
 			if(label != '')
 			{
 				if(label[0] == '*') label = label.substring(1);
-				if(label[1] == '-') return; // ƒ[ƒJƒ‹ƒ‰ƒxƒ‹
+				if(label[1] == '-') return; // ï¿½ï¿½ï¿½[ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½
 			}
 			currentRecordName = 'trail_' + Storages.chopStorageExt(
 				Storages.extractStorageName(storage)) + '_' + label;
@@ -2260,18 +2260,18 @@ class KAGWindow extends Window
 		}
 	}
 
-	//------------------------------------------- ƒVƒXƒeƒ€‘S‘Ì‚ÉŠÖŒW‚·‚é‚à‚Ì --
+	//------------------------------------------- ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Sï¿½Ì‚ÉŠÖŒWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ --
 
 	function setTitle(title)
 	{
-		// ƒ^ƒCƒgƒ‹‚ğİ’è
+		// ï¿½^ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½İ’ï¿½
 		if(isMain) System.title = title;
 		caption = title;
 	}
 
 	function setCursor(elm)
 	{
-		// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚Ìİ’è
+		// ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½Ìİ’ï¿½
 		var conv = function(variable, value)
 		{
 			if(value !== void)
@@ -2291,19 +2291,19 @@ class KAGWindow extends Window
 		back.base.setDefaultCursor(cursorDefault);
 	}
 
-	//---------------------------------------------------- ƒgƒŠƒKŠÇ—(TJS—p) --
+	//---------------------------------------------------- ï¿½gï¿½ï¿½ï¿½Kï¿½Ç—ï¿½(TJSï¿½p) --
 
 	function waitTrigger(elm)
 	{
-		// elm.name ‚Å¦‚³‚ê‚½ƒgƒŠƒK‚ğ‘Ò‚Â
+		// elm.name ï¿½Åï¿½ï¿½ï¿½ï¿½ê‚½ï¿½gï¿½ï¿½ï¿½Kï¿½ï¿½Ò‚ï¿½
 		if((elm.canskip !== void && +elm.canskip) && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv“®ì’†
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½ì’†
 				if(elm.onskip !== void) Scripts.eval(elm.onskip);
-				return 0; // ‚·‚®‚É•Ô‚é
+				return 0; // ï¿½ï¿½ï¿½ï¿½ï¿½É•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function(arg)
@@ -2329,16 +2329,16 @@ class KAGWindow extends Window
 
 	function trigger(name)
 	{
-		// name ‚Å¦‚µ‚½ƒgƒŠƒK‚ğ”­“®‚·‚é
+		// name ï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Kï¿½ğ”­“ï¿½ï¿½ï¿½ï¿½ï¿½
 		conductor.trigger(name);
 	}
 
-	//------------------------------------------------------- ƒƒbƒZ[ƒW—š—ğ --
+	//------------------------------------------------------- ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ --
 
 	function showHistory()
 	{
-		// ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚ğ•\¦‚·‚é
-		historyLayer.parent = fore.base; // ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚Ìe‚àÄİ’è
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		historyLayer.parent = fore.base; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìeï¿½ï¿½ï¿½Äİ’ï¿½
 		historyLayer.absolute = 2000000;
 		historyLayer.dispInit();
 		historyShowing = true;
@@ -2349,35 +2349,35 @@ class KAGWindow extends Window
 
 	function hideHistory()
 	{
-		// ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚ğ”ñ•\¦‚É‚·‚é
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
 		historyLayer.dispUninit();
 		historyShowing = false;
 		if(typeof this.showHistoryMenuItem != "undefined")
 			showHistoryMenuItem.checked = false;
 		setMenuAccessibleAll();
 		lastHistoryHiddenTick = System.getTickCount();
-		conductor.trigger('history'); // 'history' ‚ğ‘—‚é
+		conductor.trigger('history'); // 'history' ï¿½ğ‘—‚ï¿½
 	}
 
 	function setHistoryOptions(elm)
 	{
-		// elm ‚©‚çƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚ÌƒIƒvƒVƒ‡ƒ“‚ğİ’è‚·‚é
+		// elm ï¿½ï¿½ï¿½çƒï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’è‚·ï¿½ï¿½
 		historyWriteEnabled = +elm.output if elm.output !== void;
 		historyEnabled = +elm.enabled if elm.enabled !== void;
 		if(elm.enabled !== void && !historyEnabled)
 			historyLayer.clearAction();
-		historyLayer.setOptions(elm); // ‚»‚Ì‘¼‚ÌƒIƒvƒVƒ‡ƒ“
+		historyLayer.setOptions(elm); // ï¿½ï¿½ï¿½Ì‘ï¿½ï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½
 		setMenuAccessibleAll();
 	}
 
 	function showHistoryByScenario(elm)
 	{
-		// ƒƒbƒZ[ƒW—š—ğ‚ğƒVƒiƒŠƒI’†‚©‚ç•\¦‚³‚¹‚é
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		showHistory();
-		conductor.wait(%[ // ƒRƒ“ƒ_ƒNƒ^‚ğ‘Ò‚¿‚É
+		conductor.wait(%[ // ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½Ò‚ï¿½ï¿½ï¿½
 			history : function
 			{
-				// ‚â‚é‚±‚Æ‚È‚µ
+				// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 			} incontextof this
 			]);
 		return -2; // break
@@ -2387,86 +2387,86 @@ class KAGWindow extends Window
 
 	function process(file, label, countpage = true, immediate = false)
 	{
-		// w’èƒtƒ@ƒCƒ‹Aw’èƒ‰ƒxƒ‹‚©‚çÀs‚ğŠJn‚·‚é
+		// ï¿½wï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Aï¿½wï¿½èƒ‰ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½
 		if(!usingExtraConductor) incRecordLabel(countpage);
 		setUserSpeed();
 
 		if(file != '')
 		{
-			// ƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ
+			// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 			conductor.loadScenario(file);
 		}
 
 		if(label != '')
 		{
-			// ƒ‰ƒxƒ‹‚ÉˆÚ“®‚·‚é
+			// ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ÉˆÚ“ï¿½ï¿½ï¿½ï¿½ï¿½
 			conductor.goToLabel(label);
 		}
 
 		if(isFirstProcess)
 		{
-			storeFlags(); // ˆê”ÔÅ‰‚Ìó‘Ô‚ğƒXƒgƒA
+			storeFlags(); // ï¿½ï¿½ÔÅï¿½ï¿½Ìï¿½Ô‚ï¿½ï¿½Xï¿½gï¿½A
 			isFirstProcess = false;
 		}
 
 
-		dm("ˆ—‚ğŠJn‚µ‚Ü‚·");
+		dm("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½Ü‚ï¿½");
 		inSleep = false;
 		notifyRun();
-		if(conductor.status != conductor.mRun) conductor.run(immediate); // ÀsŠJn
+		if(conductor.status != conductor.mRun) conductor.run(immediate); // ï¿½ï¿½ï¿½sï¿½Jï¿½n
 	}
 
 	function processGo()
 	{
-		// ƒRƒ“ƒ_ƒNƒ^‚ğŒ»İˆÊ’u‚©‚çÀsŠJn‚³‚¹‚é
-		dm("ˆ—‚ğŠJn‚µ‚Ü‚·");
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½İˆÊ’uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		dm("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½Ü‚ï¿½");
 		inSleep = false;
 		notifyRun();
-		conductor.run(false); // ÀsŠJn
+		conductor.run(false); // ï¿½ï¿½ï¿½sï¿½Jï¿½n
 	}
 
 	function processCall(file, label)
 	{
-		// w’èƒtƒ@ƒCƒ‹Aw’èƒ‰ƒxƒ‹‚ğŒÄ‚Ô
-		// incRecordLabel(); ‚ÍŒÄ‚Î‚È‚¢‚Ì‚Å’ˆÓ
+		// ï¿½wï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Aï¿½wï¿½èƒ‰ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
+		// incRecordLabel(); ï¿½ÍŒÄ‚Î‚È‚ï¿½ï¿½Ì‚Å’ï¿½ï¿½ï¿½
 
 		if(file != '')
 		{
-			// ƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ
+			// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 			conductor.loadScenario(file);
 		}
 
 		inSleep = false;
 		notifyRun();
-		conductor.callLabel(label); // ÀsŠJn
-		dm("ˆ—‚ğŠJn‚µ‚Ü‚·");
+		conductor.callLabel(label); // ï¿½ï¿½ï¿½sï¿½Jï¿½n
+		dm("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½Ü‚ï¿½");
 		if(conductor.status != conductor.mRun) conductor.run();
 	}
 
-	//------------------------------------------------- ƒRƒ“ƒ_ƒNƒ^‚ÌƒCƒxƒ“ƒg --
+	//------------------------------------------------- ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ÌƒCï¿½xï¿½ï¿½ï¿½g --
 
 	function onConductorScenarioLoad(name)
 	{
-		// ƒRƒ“ƒ_ƒNƒ^‚ªV‚µ‚¢ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş‘O‚É‚æ‚Î‚ê‚éB
-		// name ‚Í“Ç‚İ‚à‚¤‚Æ‚µ‚½ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹B
-		// –ß‚è’l‚É•¶š—ñ‚ğ•Ô‚·‚ÆA‚»‚ê‚ğƒVƒiƒŠƒI‚Æ‚µ‚Ä
-		// ƒtƒ@ƒCƒ‹‚Ì‘ã‚í‚è‚Ég‚¤‚æ‚¤‚É‚È‚é‚Ì‚ÅA‚±‚±‚ÉƒtƒBƒ‹ƒ^‚ğ‘‚­‚±
-		// ‚Æ‚ª‚Å‚«‚éB
-		// true ‚ğ•Ô‚·‚Æ’Êí‚ÌƒVƒiƒŠƒIƒtƒ@ƒCƒ‹“Ç‚İ‚İ‚Æ‚È‚éB
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½Ç‚İï¿½ï¿½Ş‘Oï¿½É‚ï¿½Î‚ï¿½ï¿½B
+		// name ï¿½Í“Ç‚İï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½B
+		// ï¿½ß‚ï¿½lï¿½É•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ÆAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½Æ‚ï¿½ï¿½ï¿½
+		// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ì‘ï¿½ï¿½ï¿½Égï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½Ì‚ÅAï¿½ï¿½ï¿½ï¿½ï¿½Éƒtï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½B
+		// true ï¿½ï¿½Ô‚ï¿½ï¿½Æ’Êï¿½ÌƒVï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ç‚İï¿½ï¿½İ‚Æ‚È‚ï¿½B
 		return true;
 	}
 
 
 	function onConductorScenarioLoaded(name)
 	{
-		// ƒRƒ“ƒ_ƒNƒ^‚ªV‚µ‚¢ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚ñ‚¾
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 //		if(!usingExtraConductor) incRecordLabel(true);
 		return true;
 	}
 
 	function onConductorLabel(label, page)
 	{
-		// ƒRƒ“ƒ_ƒNƒ^‚ªƒ‰ƒxƒ‹‚ğ’Ê‰ß‚µ‚½
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½Ê‰ß‚ï¿½ï¿½ï¿½
 		if(!usingExtraConductor)
 		{
 			incRecordLabel(true);
@@ -2476,7 +2476,7 @@ class KAGWindow extends Window
 		if(!usingExtraConductor)
 		{
 			if(!getCurrentRead() && skipMode != 4)
-				cancelSkip(); // –¢“Ç‚È‚Ì‚ÅƒXƒLƒbƒv‚ğ’â~
+				cancelSkip(); // ï¿½ï¿½ï¿½Ç‚È‚Ì‚ÅƒXï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½~
 			currentLabel = label;
 		}
 		if(page !== void && page !== '')
@@ -2488,11 +2488,11 @@ class KAGWindow extends Window
 		{
 			pushHistoryOfStore();
 			stablePosibility = false;
-			dm(conductor.curStorage + " : ƒ‰ƒxƒ‹/ƒy[ƒW : " + label + "/" + currentPageName);
-			if(usingExtraConductor) throw new Exception("‰EƒNƒŠƒbƒNƒTƒuƒ‹[ƒ`ƒ““à/extraCondutor"
-				"ƒTƒuƒ‹[ƒ`ƒ““à‚Å‚Í•Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹‚ğ‹Lq‚Å‚«‚Ü‚¹‚ñ");
+			dm(conductor.curStorage + " : ï¿½ï¿½ï¿½xï¿½ï¿½/ï¿½yï¿½[ï¿½W : " + label + "/" + currentPageName);
+			if(usingExtraConductor) throw new Exception("ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½/extraCondutor"
+				"ï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½Å‚Í•Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½qï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 			storeFlags(), storeLabelPassed = true, setMenuAccessibleAll();
-			if(recordHistoryOfStore == 1) // 1 : •Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹‚²‚Æ
+			if(recordHistoryOfStore == 1) // 1 : ï¿½Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				setToRecordHistory();
 		}
 		return true;
@@ -2500,29 +2500,29 @@ class KAGWindow extends Window
 
 	function onConductorJump(elm)
 	{
-		// ƒRƒ“ƒ_ƒNƒ^‚Å jump ƒ^ƒO‚ğˆ—‚·‚é‚Æ‚«
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ jump ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½
 		if(!usingExtraConductor) incRecordLabel(elm.countpage === void || +elm.countpage);
 		return true;
 	}
 
 	function onConductorCall(elm)
 	{
-		// ƒRƒ“ƒ_ƒNƒ^‚ª call ƒ^ƒO‚ğˆ—‚·‚é‚Æ‚«
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ call ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½
 		if(!usingExtraConductor) incRecordLabel(elm.countpage !== void && +elm.countpage);
 		return true;
 	}
 
 	function onConductorReturn(elm)
 	{
-		// ƒRƒ“ƒ_ƒNƒ^‚ª return ƒ^ƒO‚ğˆ—‚·‚é‚Æ‚«
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ return ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½
 		if(!usingExtraConductor) incRecordLabel(elm.countpage === void || +elm.countpage);
 		if(conductor === extraConductor)
 		{
-			// extraConductor ƒTƒuƒ‹[ƒ`ƒ“—p‚ÌƒRƒ“ƒ_ƒNƒ^‚©‚çŒÄ‚Î‚ê‚Ä‚¢‚é
+			// extraConductor ï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½pï¿½ÌƒRï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½Ä‚ï¿½ï¿½ï¿½
 			if(conductor.callStackDepth == 1)
 			{
-				// ‚Â‚Ü‚èAÅI‚Ì return ‚ªÀs‚³‚ê‚½‚ÆŒ¾‚¤‚±‚Æ
-				dm("extraConductor ƒTƒuƒ‹[ƒ`ƒ“‚©‚ç–ß‚è‚Ü‚· ...");
+				// ï¿½Â‚Ü‚ï¿½Aï¿½ÅIï¿½ï¿½ return ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ê‚½ï¿½ÆŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+				dm("extraConductor ï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½Ü‚ï¿½ ...");
 				var run;
 				if(elm.storage !== void || elm.target !== void) run = true; else run = false;
 				returnExtraConductor(run);
@@ -2536,15 +2536,15 @@ class KAGWindow extends Window
 				}
 				isLeavePeriodEvent = false;
 				if(elm.storage !== void || elm.target !== void)
-				{	// return‚ÅŒ³‚ÌˆÊ’uˆÈŠO‚É–ß‚é‚ÍƒsƒŠƒIƒhƒCƒxƒ“ƒg‚ğƒNƒŠƒA‚·‚éB
+				{	// returnï¿½ÅŒï¿½ï¿½ÌˆÊ’uï¿½ÈŠOï¿½É–ß‚éï¿½Íƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½B
 					holdPeriodEventQueue.clear();
 					isWaitPeriodEvent = false;
 				}
 				if( isWaitPeriodEvent == true )
-				{	// [wp]‚ÅƒsƒŠƒIƒhƒCƒxƒ“ƒg‘Ò‚¿‚ğ‚µ‚Ä‚¢‚é‚Ì‚İAƒgƒŠƒK[‚·‚é
+				{	// [wp]ï¿½Åƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Ò‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½éï¿½Ì‚İAï¿½gï¿½ï¿½ï¿½Kï¿½[ï¿½ï¿½ï¿½ï¿½
 					fireMoviePeriodFromQueue();
 				}
-				return false; // return ‚ÍÀs‚µ‚È‚¢
+				return false; // return ï¿½Íï¿½ï¿½sï¿½ï¿½ï¿½È‚ï¿½
 			}
 		}
 		return true;
@@ -2576,7 +2576,7 @@ class KAGWindow extends Window
 
 	function onConductorAfterReturn()
 	{
-		// ƒRƒ“ƒ_ƒNƒ^‚ª return ƒ^ƒO‚ğÀs‚µ‚½Œã
+		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ return ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(!usingExtraConductor)
 		{
 			setRecordLabel(conductor.curStorage, currentLabel = conductor.curLabel);
@@ -2585,39 +2585,39 @@ class KAGWindow extends Window
 		if(!usingExtraConductor)
 		{
 			if(!getCurrentRead() && skipMode != 4)
-				cancelSkip(); // –¢“Ç‚È‚Ì‚ÅƒXƒLƒbƒv‚ğ’â~
+				cancelSkip(); // ï¿½ï¿½ï¿½Ç‚È‚Ì‚ÅƒXï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½~
 		}
 	}
 
 
 	function onConductorScript(script, scriptname, lineofs)
 	{
-		// iscript ƒ^ƒO
+		// iscript ï¿½^ï¿½O
 		try
 		{
 			Scripts.exec(script, scriptname, lineofs);
 		}
 		catch(e)
 		{
-			throw new Exception(scriptname + " ‚Ì s " + lineofs + " ‚©‚çn‚Ü‚é"
-				" iscript ƒuƒƒbƒN‚ÅƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½B"
-				"\n( Ú×‚ÍƒRƒ“ƒ\[ƒ‹‚ğQÆ‚µ‚Ä‚­‚¾‚³‚¢ )\n" + e.message);
+			throw new Exception(scriptname + " ï¿½ï¿½ ï¿½s " + lineofs + " ï¿½ï¿½ï¿½ï¿½nï¿½Ü‚ï¿½"
+				" iscript ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÅƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B"
+				"\n( ï¿½Ú×‚ÍƒRï¿½ï¿½ï¿½\ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )\n" + e.message);
 		}
 		return true;
 	}
 
 	function onConductorUnknownTag(tagname, elm)
 	{
-		// •s–¾‚Èƒ^ƒO‚ª‚ ‚Á‚½ê‡
-		throw new Exception("ƒ^ƒO/ƒ}ƒNƒ \"" + tagname + "\" ‚Í‘¶İ‚µ‚Ü‚¹‚ñ");
-		return 0; // ‚±‚Ì–ß‚è’l‚ÍAŠeƒ^ƒOƒnƒ“ƒhƒ‰‚ª•Ô‚·•¨‚Æ‚¨‚È‚¶
+		// ï¿½sï¿½ï¿½ï¿½Èƒ^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡
+		throw new Exception("ï¿½^ï¿½O/ï¿½}ï¿½Nï¿½ï¿½ \"" + tagname + "\" ï¿½Í‘ï¿½ï¿½İ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		return 0; // ï¿½ï¿½ï¿½Ì–ß‚ï¿½lï¿½ÍAï¿½eï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½È‚ï¿½
 	}
 
 	//----------------------------------------------------------- stable/run --
 
 	function notifyStable()
 	{
-		// ƒVƒXƒeƒ€‚ªˆÀ’è(ƒNƒŠƒbƒN‘Ò‚¿/’â~)‚µ‚½‚Æ‚«‚ÉAƒnƒ“ƒhƒ‰‚ğŒÄ‚Ô
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½/ï¿½ï¿½~)ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉAï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
 		if(!inStable)
 		{
 			inStable = true;
@@ -2634,7 +2634,7 @@ class KAGWindow extends Window
 
 	function notifyRun()
 	{
-		// ƒVƒXƒeƒ€‚ª‘–‚èn‚ß‚½‚Æ‚«‚ÉAƒnƒ“ƒhƒ‰‚ğŒÄ‚Ô
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½ß‚ï¿½ï¿½Æ‚ï¿½ï¿½ÉAï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
 		if(inStable)
 		{
 			inStable = false;
@@ -2653,89 +2653,89 @@ class KAGWindow extends Window
 
 	function defaultStableHandler()
 	{
-		// ƒfƒtƒHƒ‹ƒg‚Ì stable ƒnƒ“ƒhƒ‰
+		// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ stable ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
 		setMenuAccessibleAll();
 	}
 
 	function defaultRunHandler()
 	{
-		// ƒfƒtƒHƒ‹ƒg‚Ì run ƒnƒ“ƒhƒ‰
+		// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ run ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
 		hideHistory();
 		hideClickGlyphs();
 		showMessageLayerByUser();
 		setMenuAccessibleAll();
 	}
 
-	//----------------------------------------------------------- •¶š—ñ“ü—Í --
+	//----------------------------------------------------------- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ --
 
 	var inputTemp;
 	function inputString(elm)
 	{
-		// •¶š—ñ‚ğ“ü—Í‚·‚é
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½
 		var name = elm.name;
 		var initial = Scripts.eval(name);
 		var res = System.inputString(elm.title, elm.prompt, initial);
 		if(res !== void)
 		{
-			// name ‚É res ‚ğ‘ã“ü‚·‚é
+			// name ï¿½ï¿½ res ï¿½ï¿½ï¿½ï¿½ï¿½
 			inputTemp = res;
 			Scripts.eval(("(" + name + ") = kag.inputTemp"));
 		}
 	}
 
-	//-------------------------------------------------- extraConductor ˆ— --
+	//-------------------------------------------------- extraConductor ï¿½ï¿½ï¿½ï¿½ --
 
 	function callExtraConductor(storage, label, onreturn)
 	{
-		// extraConductor ‚ğg‚Á‚ÄƒTƒuƒ‹[ƒ`ƒ“‚ğŒÄ‚Ño‚·
+		// extraConductor ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ÄƒTï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½
 		onExtraConductorReturn = onreturn;
-		inSleepBeforeExtraConductor = inSleep; // inSleep •Û‘¶
-		storeMessageLayerSelProcessLock(); // ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì storeSelProcessLock ‚ğŒÄ‚Ô
-		conductor = extraConductor; // ƒRƒ“ƒ_ƒNƒ^‚ğØ‚è‘Ö‚¦‚é
+		inSleepBeforeExtraConductor = inSleep; // inSleep ï¿½Û‘ï¿½
+		storeMessageLayerSelProcessLock(); // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ storeSelProcessLock ï¿½ï¿½ï¿½Ä‚ï¿½
+		conductor = extraConductor; // ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½Ø‚ï¿½Ö‚ï¿½ï¿½ï¿½
 		(Dictionary.assign incontextof extraConductor.macros)(mainConductor.macros);
-			// ƒ}ƒNƒ‚ÍƒRƒs[
+			// ï¿½}ï¿½Nï¿½ï¿½ï¿½ÍƒRï¿½sï¿½[
 		usingExtraConductor = true;
 		if(storage == '')
 		{
-			// ƒXƒgƒŒ[ƒWw’è‚ª‚È‚¢‚Ì‚ÅŒ»İ‚ÌƒXƒgƒŒ[ƒW‚ğ“Ç‚İ‚Ü‚¹‚é
+			// ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½Wï¿½wï¿½è‚ªï¿½È‚ï¿½ï¿½Ì‚ÅŒï¿½ï¿½İ‚ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½Ç‚İï¿½ï¿½Ü‚ï¿½ï¿½ï¿½
 			storage = mainConductor.curStorage;
 		}
 
-		// ŒÄ‚Ño‚·
+		// ï¿½Ä‚Ñoï¿½ï¿½
 		conductor.clearCallStack();
 		processCall(storage, label);
 	}
 
 	function returnExtraConductor(run)
 	{
-		// extraConductor ‚ÌƒTƒuƒ‹[ƒ`ƒ“‚©‚ç–ß‚é
-		// run ‚ª true ‚Ìê‡‚Í ‘Ò‹@ó‘Ô‚Ì•œ‹A‚Ís‚í‚È‚¢
+		// extraConductor ï¿½ÌƒTï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½
+		// run ï¿½ï¿½ true ï¿½Ìê‡ï¿½ï¿½ ï¿½Ò‹@ï¿½ï¿½Ô‚Ì•ï¿½ï¿½Aï¿½Ísï¿½ï¿½È‚ï¿½
 
-		conductor.sleep(); // ’â~
+		conductor.sleep(); // ï¿½ï¿½~
 		conductor.interrupt();
-			// interrupt ‚Í ƒRƒ“ƒ_ƒNƒ^‚ÌƒCƒxƒ“ƒg“à‚ÅƒRƒ“ƒ_ƒNƒ^‚ÌÀs‚ğ
-			// ’â~‚³‚¹‚é‚½‚ß‚Ìƒƒ\ƒbƒh
-		conductor = mainConductor; // ƒRƒ“ƒ_ƒNƒ^‚ğØ‚è‘Ö‚¦
+			// interrupt ï¿½ï¿½ ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ÌƒCï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ÅƒRï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½Ìï¿½ï¿½sï¿½ï¿½
+			// ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ìƒï¿½ï¿½\ï¿½bï¿½h
+		conductor = mainConductor; // ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½Ø‚ï¿½Ö‚ï¿½
 		(Dictionary.assign incontextof mainConductor.macros)(extraConductor.macros);
-			// ƒ}ƒNƒ‚ÍƒRƒs[
+			// ï¿½}ï¿½Nï¿½ï¿½ï¿½ÍƒRï¿½sï¿½[
 		usingExtraConductor = false;
 		if(!run)
-		{	restoreClickGlyphState(); // ƒNƒŠƒbƒN‘Ò‚¿‹L†‚Ì•œ‹A
-			inSleep = inSleepBeforeExtraConductor; // inSleep •œ‹A
+		{	restoreClickGlyphState(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ì•ï¿½ï¿½A
+			inSleep = inSleepBeforeExtraConductor; // inSleep ï¿½ï¿½ï¿½A
 			notifyStable();
 		}
-		restoreMessageLayerSelProcessLock(); // ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì restoreSelProcessLock ‚ğŒÄ‚Ô
+		restoreMessageLayerSelProcessLock(); // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ restoreSelProcessLock ï¿½ï¿½ï¿½Ä‚ï¿½
 		setMenuAccessibleAll();
 		cancelSkip();
 
 		if(onExtraConductorReturn !== void) onExtraConductorReturn();
 	}
 
-	//------------------------------------------------------- ‰EƒNƒŠƒbƒNˆ— --
+	//------------------------------------------------------- ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ --
 
 	function setRightClickOptions(elm)
 	{
-		// ‰EƒNƒŠƒbƒN‚ÌƒIƒvƒVƒ‡ƒ“‚ğİ’è‚·‚é
+		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’è‚·ï¿½ï¿½
 		rightClickEnabled = +elm.enabled if elm.enabled !== void;
 		if(elm.call !== void)
 		{
@@ -2766,7 +2766,7 @@ class KAGWindow extends Window
 	{
 		isLeavePeriodEvent = true;
 
-		// ‰EƒNƒŠƒbƒNƒTƒuƒ‹[ƒ`ƒ“‚ğŒÄ‚Ô
+		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
 		if(typeof this.rightClickMenuItem != "undefined")
 		{
 			rightClickMenuItem.caption = rightClickCurrentMenuName = rightClickDefaultName;
@@ -2774,12 +2774,12 @@ class KAGWindow extends Window
 
 		callExtraConductor(rightClickStorage, rightClickTarget, restoreFromRightClick);
 
-		lockMessageLayerSelProcess(); // ‘I‘ğˆƒƒbƒN
+		lockMessageLayerSelProcess(); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½N
 	}
 
 	function restoreFromRightClick()
 	{
-		// ‰EƒNƒŠƒbƒNƒTƒuƒ‹[ƒ`ƒ“‚©‚ç”²‚¯‚é‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
+		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ç”²ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
 		if(typeof this.rightClickMenuItem != "undefined")
 		{
 			if(rightClickName == "default")
@@ -2791,7 +2791,7 @@ class KAGWindow extends Window
 
 	function setConductorToMain()
 	{
-		// restore ‚Ì‚ÉŒÄ‚Î‚êAƒRƒ“ƒ_ƒNƒ^‚ğ main ‚ÉØ‚è‘Ö‚¦‚é
+		// restore ï¿½Ìï¿½ï¿½ÉŒÄ‚Î‚ï¿½Aï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ main ï¿½ÉØ‚ï¿½Ö‚ï¿½ï¿½ï¿½
 		if(usingExtraConductor)
 		{
 			extraConductor.sleep();
@@ -2808,7 +2808,7 @@ class KAGWindow extends Window
 
 	function onPrimaryRightClick()
 	{
-		// ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚Å‰EƒNƒŠƒbƒN‚³‚ê‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
+		// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Å‰Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
 		if(!callHook(rightClickHook))
 		{
 			if(getKeyState(VK_LBUTTON))
@@ -2830,14 +2830,14 @@ class KAGWindow extends Window
 		}
 	}
 
-	//------------------------------------------------------- ‘OŒiƒŒƒCƒ„ˆ— --
+	//------------------------------------------------------- ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ --
 
 	function allocateCharacterLayers(num)
 	{
-		// ‘OŒiƒŒƒCƒ„”‚ğ num ‚Éİ’è‚·‚é
+		// ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ num ï¿½Éİ’è‚·ï¿½ï¿½
 		if(fore.layers.count > num)
 		{
-			// ƒŒƒCƒ„‚ªŒ¸‚é
+			// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			for(var i = num; i<fore.layers.count; i++)
 			{
 				invalidate fore.layers[i];
@@ -2848,11 +2848,11 @@ class KAGWindow extends Window
 		}
 		else if(fore.layers.count < num)
 		{
-			// ƒŒƒCƒ„‚ª‘‚¦‚é
+			// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			for(var i = fore.layers.count; i<num; i++)
 			{
-				fore.layers[i] = new CharacterLayer(this, fore.base, "•\‘OŒiƒŒƒCƒ„" + i, i);
-				back.layers[i] = new CharacterLayer(this, back.base, "— ‘OŒiƒŒƒCƒ„" + i, i);
+				fore.layers[i] = new CharacterLayer(this, fore.base, "ï¿½\ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½" + i, i);
+				back.layers[i] = new CharacterLayer(this, back.base, "ï¿½ï¿½ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½" + i, i);
 				fore.layers[i].setCompLayer(back.layers[i]);
 				back.layers[i].setCompLayer(fore.layers[i]);
 			}
@@ -2861,14 +2861,14 @@ class KAGWindow extends Window
 		numCharacterLayers = num;
 	}
 
-	//------------------------------------------------- ƒƒbƒZ[ƒWƒŒƒCƒ„ˆ— --
+	//------------------------------------------------- ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ --
 
 	function allocateMessageLayers(num, setdefaultfont = true)
 	{
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„”‚ğ num ‚Éİ’è‚·‚é
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ num ï¿½Éİ’è‚·ï¿½ï¿½
 		if(fore.messages.count > num)
 		{
-			// ƒŒƒCƒ„‚ªŒ¸‚é
+			// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			for(var i = num; i<fore.messages.count; i++)
 			{
 				if(current == fore.messages[i] || current == back.messages[i])
@@ -2881,11 +2881,11 @@ class KAGWindow extends Window
 		}
 		else if(fore.messages.count < num)
 		{
-			// ƒŒƒCƒ„‚ª‘‚¦‚é
+			// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			for(var i = fore.messages.count; i<num; i++)
 			{
-				fore.messages[i] = new MessageLayer(this, fore.base, "•\ƒƒbƒZ[ƒWƒŒƒCƒ„" + i, i, true);
-				back.messages[i] = new MessageLayer(this, back.base, "— ƒƒbƒZ[ƒWƒŒƒCƒ„" + i, i, true);
+				fore.messages[i] = new MessageLayer(this, fore.base, "ï¿½\ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½" + i, i, true);
+				back.messages[i] = new MessageLayer(this, back.base, "ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½" + i, i, true);
 				fore.messages[i].setCompLayer(back.messages[i]);
 				back.messages[i].setCompLayer(fore.messages[i]);
 				fore.messages[i].clear();
@@ -2899,7 +2899,7 @@ class KAGWindow extends Window
 
 	function setCurrentMessageLayer(elm)
 	{
-		// Œ»İ‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚ğİ’è
+		// ï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½İ’ï¿½
 		var page = getMessageLayerPageFromElm(elm);
 		var num = getMessageLayerNumberFromElm(elm);
 		currentNum = num;
@@ -2910,17 +2910,17 @@ class KAGWindow extends Window
 
 	function setMessageLayerPosition(elm)
 	{
-		// Œ»İ‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌˆÊ’uA‘®«‚ğİ’è
+		// ï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌˆÊ’uï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½
 		var layer = getMessageLayerObjectFromElm(elm);
 		elm.setPosition(elm);
 	}
 
 	function clearMessageLayers(resetcurrent)
 	{
-		// ‚·‚×‚Ä‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌƒNƒŠƒA
-		// ct ƒ^ƒO‚©‚çŒÄ‚Î‚ê‚é
-		// resetcurrent ‚ª true ‚Ìê‡‚ÍŒ»İ‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚ğ
-		// •\0‚Éİ’è‚·‚é
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½A
+		// ct ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½
+		// resetcurrent ï¿½ï¿½ true ï¿½Ìê‡ï¿½ÍŒï¿½ï¿½İ‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½
+		// ï¿½\0ï¿½Éİ’è‚·ï¿½ï¿½
 
 		var messages;
 		messages = fore.messages;
@@ -2938,7 +2938,7 @@ class KAGWindow extends Window
 
 	function lockMessageLayerSelProcess()
 	{
-		// ‚·‚×‚Ä‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚É ‘I‘ğ‚Æprocess‚ğ‹Ö~‚³‚¹‚é
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ ï¿½Iï¿½ï¿½ï¿½ï¿½processï¿½ï¿½ï¿½Ö~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		var messages;
 		messages = fore.messages;
 		for(var i = messages.count-1; i >= 0; i--) messages[i].setSelProcessLock(true);
@@ -2948,7 +2948,7 @@ class KAGWindow extends Window
 
 	function unlockMessageLayerSelProcess()
 	{
-		// ‚·‚×‚Ä‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì‘I‘ğ‚ğ‹–‰Â‚·‚é
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½
 		var messages;
 		messages = fore.messages;
 		for(var i = messages.count-1; i >= 0; i--) messages[i].setSelProcessLock(false);
@@ -2958,8 +2958,8 @@ class KAGWindow extends Window
 
 	function setMessageLayerUserFont()
 	{
-		// ‚·‚×‚Ä‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì defaultAntialiased ‚Æ
-		// userFace ‚ğİ’è‚·‚é
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ defaultAntialiased ï¿½ï¿½
+		// userFace ï¿½ï¿½İ’è‚·ï¿½ï¿½
 		var messages;
 		messages = fore.messages;
 		for(var i = messages.count-1; i >= 0; i--)
@@ -2973,7 +2973,7 @@ class KAGWindow extends Window
 
 	function storeMessageLayerSelProcessLock()
 	{
-		// ‚·‚×‚Ä‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì storeSelProcessLock ‚ğŒÄ‚Ño‚·
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ storeSelProcessLock ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½
 		var messages;
 		messages = fore.messages;
 		for(var i = messages.count-1; i >= 0; i--) messages[i].storeSelProcessLock();
@@ -2983,7 +2983,7 @@ class KAGWindow extends Window
 
 	function restoreMessageLayerSelProcessLock()
 	{
-		// ‚·‚×‚Ä‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì restoreSelProcessLock ‚ğŒÄ‚Ño‚·
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ restoreSelProcessLock ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½
 		var messages;
 		messages = fore.messages;
 		for(var i = messages.count-1; i >= 0; i--) messages[i].restoreSelProcessLock();
@@ -2999,7 +2999,7 @@ class KAGWindow extends Window
 		layers = fore.layers;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].setHiddenStateByUser(b);
 
-		// ƒvƒ‰ƒOƒCƒ“‚ğŒÄ‚Ô
+		// ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
 		forEachEventHook('onMessageHiddenStateChanged',
 			function(handler, f) { handler(f.hidden); } incontextof this,
 			%[hidden:b]);
@@ -3007,7 +3007,7 @@ class KAGWindow extends Window
 
 	function hideMessageLayerByUser()
 	{
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ğˆê“I‚É‰B‚·
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½êï¿½Iï¿½É‰Bï¿½ï¿½
 		if(messageLayerHiding) return;
 		setMessageLayerHiddenState(true);
 		if(typeof this.rightClickMenuItem !== "undefined")
@@ -3019,13 +3019,13 @@ class KAGWindow extends Window
 
 	function showMessageLayerByUser()
 	{
-		// ˆê“I‚É‰B‚³‚ê‚Ä‚¢‚½ƒƒbƒZ[ƒWƒŒƒCƒ„‚ğŒ³‚É–ß‚·
+		// ï¿½êï¿½Iï¿½É‰Bï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É–ß‚ï¿½
 		if(!messageLayerHiding) return;
 		setMessageLayerHiddenState(false);
 		if(typeof this.rightClickMenuItem !== "undefined")
 			rightClickMenuItem.checked = false;
 		messageLayerHiding = false;
-		conductor.trigger('message'); // 'message' ‚ğ‘—‚é
+		conductor.trigger('message'); // 'message' ï¿½ğ‘—‚ï¿½
 		if(clickWaiting)
 			fore.base.cursor = cursorWaitingClick;
 		else
@@ -3035,18 +3035,18 @@ class KAGWindow extends Window
 
 	function switchMessageLayerHiddenByUser()
 	{
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì”ñ•\¦/•\¦‚ğØ‚è‘Ö‚¦‚é
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì”ï¿½\ï¿½ï¿½/ï¿½\ï¿½ï¿½ï¿½ï¿½Ø‚ï¿½Ö‚ï¿½ï¿½ï¿½
 		if(messageLayerHiding) showMessageLayerByUser(); else hideMessageLayerByUser();
 	}
 
 	function hideMessageLayerByScenario(elm)
 	{
-		// ƒVƒiƒŠƒI‚©‚çƒƒbƒZ[ƒW‚ğˆê“I‚É‰B‚·
+		// ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½çƒï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½êï¿½Iï¿½É‰Bï¿½ï¿½
 		hideMessageLayerByUser();
-		conductor.wait(%[ // ƒRƒ“ƒ_ƒNƒ^‚ğ‘Ò‚¿‚É
+		conductor.wait(%[ // ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½Ò‚ï¿½ï¿½ï¿½
 			message : function
 			{
-				// ‚â‚é‚±‚Æ‚È‚µ
+				// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 			} incontextof this
 			]);
 		return -2; // break
@@ -3054,13 +3054,13 @@ class KAGWindow extends Window
 
 	function selectFont()
 	{
-		// ƒtƒHƒ“ƒg‚ğ‘I‘ğ‚·‚é
+		// ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		fore.base.font.face = chDefaultFace;
 		fore.base.font.height = -20;
 		var flags = fsfSameCharSet | fsfNoVertical | fsfTrueTypeOnly | fsfUseFontFace;
 		if(showFixedPitchOnlyInFontSelector) flags |= fsfFixedPitch;
-		if(fore.base.font.doUserSelect(flags, "ƒtƒHƒ“ƒg‚Ì‘I‘ğ",
-			"ƒtƒHƒ“ƒg‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢", "ABCDEFGHI‚ ‚¢‚¤‚¦‚¨ˆŸˆİ‰FŠGŒä"))
+		if(fore.base.font.doUserSelect(flags, "ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì‘Iï¿½ï¿½",
+			"ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", "ABCDEFGHIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ‰Fï¿½Gï¿½ï¿½"))
 		{
 			chDefaultFace = fore.base.font.face;
 			setMessageLayerUserFont();
@@ -3069,17 +3069,17 @@ class KAGWindow extends Window
 
 	function mapPrerenderedFont(storage)
 	{
-		// ƒŒƒ“ƒ_ƒŠƒ“ƒOÏ‚İƒtƒHƒ“ƒg‚ğŒ»İ‚Ì‘€ì‘ÎÛ‚ÌƒŒƒCƒ„‚É‘I‘ğ
-		// ‚³‚ê‚Ä‚¢‚éƒtƒHƒ“ƒg‚Éƒ}ƒbƒsƒ“ƒO‚·‚é
+		// ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Ï‚İƒtï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½İ‚Ì‘ï¿½ï¿½ï¿½ÎÛ‚Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½É‘Iï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Éƒ}ï¿½bï¿½sï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½
 		current.decideSizeChange();
 		current.lineLayer.font.mapPrerenderedFont(storage);
 	}
 
-	//------------------------------------------------- ƒŒƒCƒ„‚ğ³‚µ‚¢‡˜‚É --
+	//------------------------------------------------- ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ğ³‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ --
 
 	function reorderLayers()
 	{
-		// ƒŒƒCƒ„‚ğ³‚µ‚¢‡˜‚É•À‚Ñ‘Ö‚¦‚é
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ğ³‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É•ï¿½ï¿½Ñ‘Ö‚ï¿½ï¿½ï¿½
 		var index = 1000;
 		for(var i = 0; i<fore.layers.count; i++)
 		{
@@ -3099,21 +3099,21 @@ class KAGWindow extends Window
 
 	}
 
-	//--------------------------------------------- ‘®«->ƒŒƒCƒ„ƒIƒuƒWƒFƒNƒg --
+	//--------------------------------------------- ï¿½ï¿½ï¿½ï¿½->ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g --
 
 	function getLayerFromElm(elm, prefix = '')
 	{
-		// elm ‚Éw’è‚³‚ê‚Ä‚¢‚é page ‚Æ layer ‘®«‚©‚çAŠY“–‚·‚é
-		// ƒIƒuƒWƒFƒNƒg‚ğ•Ô‚·
-		// prefix ‚É‚ÍA‘®«–¼‚Ì‘O‚É‚Â‚¯‚éƒvƒŒƒtƒBƒNƒX‚ğw’è‚·‚é
+		// elm ï¿½Éwï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ page ï¿½ï¿½ layer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½Ô‚ï¿½
+		// prefix ï¿½É‚ÍAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‘Oï¿½É‚Â‚ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½tï¿½Bï¿½Nï¿½Xï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½
 		var base;
 		if(elm[prefix + 'page'] == 'back') base = back; else base = fore;
 		var layer = elm[prefix + 'layer'];
-		if(layer == 'base') return base.base; // ”wŒi
+		if(layer == 'base') return base.base; // ï¿½wï¿½i
 		if(layer[0] == 'm')
 		{
-			// message? ( ? = ”’l )
-			// ‚±‚±‚Å‚Í‚ ‚Ü‚èŒµ–§‚ÉƒGƒ‰[ƒ`ƒFƒbƒN‚Í‚µ‚È‚¢
+			// message? ( ? = ï¿½ï¿½ï¿½l )
+			// ï¿½ï¿½ï¿½ï¿½ï¿½Å‚Í‚ï¿½ï¿½Ü‚èŒµï¿½ï¿½ï¿½ÉƒGï¿½ï¿½ï¿½[ï¿½`ï¿½Fï¿½bï¿½Nï¿½Í‚ï¿½ï¿½È‚ï¿½
 			if(layer == 'message') return base.messages[currentNum];
 			return base.messages[+layer.substr(7)];
 		}
@@ -3122,12 +3122,12 @@ class KAGWindow extends Window
 
 	function getLayerPageFromElm(elm, backlay)
 	{
-		// getLayerFromElm ‚Æ—‚Ä‚¢‚é‚ªApage ‘®«‚Ü‚Å‚Í‚İ‚È‚¢B
-		// backlay ‚ª true ‚Ì‚Æ‚«‚Í— Afalse ‚Ì‚Í•\‚ÌƒŒƒCƒ„‚ğ•Ô‚·B
-		// elm.layer ‚ª void ‚Ì‚Í”wŒiƒŒƒCƒ„‚ğ‹A‚·
+		// getLayerFromElm ï¿½Æï¿½ï¿½Ä‚ï¿½ï¿½é‚ªï¿½Apage ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Å‚Í‚İ‚È‚ï¿½ï¿½B
+		// backlay ï¿½ï¿½ true ï¿½Ì‚Æ‚ï¿½ï¿½Í—ï¿½ï¿½Afalse ï¿½Ìï¿½ï¿½Í•\ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½B
+		// elm.layer ï¿½ï¿½ void ï¿½Ìï¿½ï¿½Í”wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½
 		var base = backlay?back:fore;
 		var layer = elm.layer;
-		if(layer === void || layer == 'base') return base.base; // ”wŒi
+		if(layer === void || layer == 'base') return base.base; // ï¿½wï¿½i
 		if(layer[0] == 'm')
 		{
 			if(layer == 'message') return base.messages[currentNum];
@@ -3138,13 +3138,13 @@ class KAGWindow extends Window
 
 	function getMessageLayerPageFromElm(elm)
 	{
-		// elm ‚©‚çŠY“–‚·‚é•\/— ‰æ–Ê‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„”z—ñ‚ğ•Ô‚·
+		// elm ï¿½ï¿½ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\/ï¿½ï¿½ï¿½ï¿½Ê‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½zï¿½ï¿½ï¿½Ô‚ï¿½
 		if(elm.page == 'back') return 1; else return 0;
 	}
 
 	function getMessageLayerNumberFromElm(elm)
 	{
-		// elm ‚Ì layer ‘®«‚Ì¦‚·ƒƒbƒZ[ƒWƒŒƒCƒ„”Ô†‚ğ•Ô‚·
+		// elm ï¿½ï¿½ layer ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ôï¿½ï¿½ï¿½Ô‚ï¿½
 		var layer = elm.layer;
 		if(layer === void || layer == 'message') return currentNum;
 		return +layer.substr(7);
@@ -3152,7 +3152,7 @@ class KAGWindow extends Window
 
 	function getMessageLayerObjectFromElm(elm)
 	{
-		// elm ‚Ì layer ‘®«‚Ì¦‚·ƒƒbƒZ[ƒWƒŒƒCƒ„‚ğ•Ô‚·
+		// elm ï¿½ï¿½ layer ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
 		var page = elm.page;
 		var layer = elm.layer;
 		if(page === void && layer === void) return current;
@@ -3167,20 +3167,20 @@ class KAGWindow extends Window
 		return (page?back:fore).messages[num];
 	}
 
-	//----------------------------------------------------- ƒŒƒCƒ„ƒRƒs[ŠÖ˜A --
+	//----------------------------------------------------- ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Rï¿½sï¿½[ï¿½Ö˜A --
 
 	function backupLayer(elm, toback)
 	{
-		// ƒŒƒCƒ„‚Ì•\©¨— ŠÔ‚ÌƒRƒs[‚ğs‚¤
-		// toback = true ‚Ìê‡‚Í•\¨— Afalse ‚Ìê‡‚Í— ¨•\
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ÌƒRï¿½sï¿½[ï¿½ï¿½ï¿½sï¿½ï¿½
+		// toback = true ï¿½Ìê‡ï¿½Í•\ï¿½ï¿½ï¿½ï¿½ï¿½Afalse ï¿½Ìê‡ï¿½Í—ï¿½ï¿½ï¿½ï¿½\
 		if(elm.layer !== void)
 		{
-			// ƒŒƒCƒ„w’è‚ª‚ ‚é
-			getLayerPageFromElm(elm, toback).assignComp(); // ‘Î‚ÌƒŒƒCƒ„‚Ì“à—e‚ğƒRƒs[
+			// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½wï¿½è‚ªï¿½ï¿½ï¿½ï¿½
+			getLayerPageFromElm(elm, toback).assignComp(); // ï¿½Î‚Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½Ì“ï¿½ï¿½eï¿½ï¿½ï¿½Rï¿½sï¿½[
 		}
 		else
 		{
-			// ƒŒƒCƒ„w’è‚ª–³‚¢‚Ì‚Å‘S•”‚ÌƒŒƒCƒ„‚ğƒRƒs[
+			// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½wï¿½è‚ªï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Å‘Sï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[
 			var base = toback ? back:fore;
 			base.base.assignComp();
 			var layers = base.layers, messages = base.messages;
@@ -3195,26 +3195,26 @@ class KAGWindow extends Window
 
 	function copyLayer(elm)
 	{
-		// elm ‚É]‚Á‚Ä“¯í‚ÌƒŒƒCƒ„ŠÔ‚ÌƒRƒs[‚ğs‚¤
+		// elm ï¿½É]ï¿½ï¿½ï¿½Ä“ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½Ô‚ÌƒRï¿½sï¿½[ï¿½ï¿½ï¿½sï¿½ï¿½
 		var src = getLayerFromElm(elm, 'src');
 		var dest = getLayerFromElm(elm, 'dest');
 		dest.assign(src);
 	}
 
-	//--------------------------------------------------- ƒAƒjƒ[ƒVƒ‡ƒ“ŠÖ˜A --
+	//--------------------------------------------------- ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ö˜A --
 
 	function onAnimationStopped(name, segment)
 	{
-		// ƒAƒjƒ[ƒVƒ‡ƒ“‚ª’â~‚µ‚½
+		// ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½
 		conductor.trigger('anim:' + name + ':' + segment);
 	}
 
 	function waitAnimation(elm)
 	{
-		// ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì’â~‚ğ‚Ü‚Â
+		// ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ì’ï¿½~ï¿½ï¿½ï¿½Ü‚ï¿½
 		var layer = getLayerFromElm(elm);
 		var seg = +elm.seg;
-		if(!layer.canWaitAnimStop(seg)) return 0; // ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì’â~‚ğ‘Ò‚Â
+		if(!layer.canWaitAnimStop(seg)) return 0; // ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ì’ï¿½~ï¿½ï¿½Ò‚ï¿½
 		conductor.wait(%[
 			'anim:' + layer.name + ':' + seg => function
 			{
@@ -3223,32 +3223,32 @@ class KAGWindow extends Window
 		return -2;
 	}
 
-	//--------------------------------------------------- ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ŠÖ˜A --
+	//--------------------------------------------------- ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ö˜A --
 
 	function onLayerTransitionCompleted(layer, dest, src)
 	{
-		// ƒŒƒCƒ„‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ªI—¹‚µ‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
-		conductor.trigger('trans'); // 'trans' ‚ğ‘—‚é
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		conductor.trigger('trans'); // 'trans' ï¿½ğ‘—‚ï¿½
 	}
 
 	function waitTransition(elm)
 	{
-		// ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ğ‘Ò‚Â
-		if(transCount == 0) return 0; // ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ğ‘Ò‚Ä‚È‚¢
+		// ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò‚ï¿½
+		if(transCount == 0) return 0; // ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò‚Ä‚È‚ï¿½
 		if((elm.canskip === void || +elm.canskip) && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv“®ì’†
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½ì’†
 				stopAllTransitions();
-				return 0; // ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ğ’â~‚³‚¹‚Ä‚·‚®‚É•Ô‚é
+				return 0; // ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½É•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function
 				{
 					updateBeforeCh = 1;
-					stopAllTransitions(); // ‚·‚×‚Ä‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Í’â~
+					stopAllTransitions(); // ï¿½ï¿½ï¿½×‚Ä‚Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Í’ï¿½~
 				} incontextof this,
 				trans : function
 				{
@@ -3270,7 +3270,7 @@ class KAGWindow extends Window
 
 	function stopAllTransitions()
 	{
-		// ‚·‚×‚Ä‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ğ’â~‚³‚¹‚é
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		var layers, messages;
 		fore.base.stopTransition();
 		layers = fore.layers, messages = fore.messages;
@@ -3280,13 +3280,13 @@ class KAGWindow extends Window
 		layers = back.layers, messages = back.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].stopTransition();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].stopTransition();
-		transCount = 0; // ˆê‰
+		transCount = 0; // ï¿½ê‰
 	}
 
 	function callExchangeInfo()
 	{
-		// ‚·‚×‚Ä‚Ì”wŒiƒŒƒCƒ„‚ğ‚Ì‚¼‚­•\ƒŒƒCƒ„‚É‘Î‚µ‚Ä
-		// exchangeInfo ‚ğŒÄ‚Ô
+		// ï¿½ï¿½ï¿½×‚Ä‚Ì”wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½ï¿½
+		// exchangeInfo ï¿½ï¿½ï¿½Ä‚ï¿½
 		var layers = fore.layers, messages = fore.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].exchangeInfo();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].exchangeInfo();
@@ -3294,8 +3294,8 @@ class KAGWindow extends Window
 
 	function callAssignTransSrc()
 	{
-		// ‚·‚×‚Ä‚Ì”wŒiƒŒƒCƒ„‚ğ‚Ì‚¼‚­•\ƒŒƒCƒ„‚É‘Î‚µ‚Ä
-		// assignTransSrc ‚ğŒÄ‚Ô
+		// ï¿½ï¿½ï¿½×‚Ä‚Ì”wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½ï¿½
+		// assignTransSrc ï¿½ï¿½ï¿½Ä‚ï¿½
 		var layers = fore.layers, messages = fore.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].assignTransSrc();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].assignTransSrc();
@@ -3306,27 +3306,27 @@ class KAGWindow extends Window
 
 	function exchangeForeBack()
 	{
-		// ƒŒƒCƒ„‚Ì— ‚Æ•\‚ğæ‚è‘Ö‚¦‚é
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì—ï¿½ï¿½Æ•\ï¿½ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
 		var tmp = fore;
 		fore = back;
 		back = tmp;
-		current = (currentPage?back:fore).messages[currentNum]; // current ‚Íİ’è‚µ’¼‚µ
+		current = (currentPage?back:fore).messages[currentNum]; // current ï¿½Íİ’è‚µï¿½ï¿½ï¿½ï¿½
 		forEachEventHook('onExchangeForeBack',
 				function(handler, f) { handler(); } incontextof this);
 	}
 
 	function swapBaseLayer()
 	{
-		// ”wŒiƒŒƒCƒ„‚Ì‚İ‚ğæ‚è‘Ö‚¦‚é
+		// ï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì‚İ‚ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
 		var tmp = fore.base;
 		fore.base = back.base;
 		back.base = tmp;
-		current = (currentPage?back:fore).messages[currentNum]; // current ‚Íİ’è‚µ’¼‚µ
+		current = (currentPage?back:fore).messages[currentNum]; // current ï¿½Íİ’è‚µï¿½ï¿½ï¿½ï¿½
 	}
 
 	function swapCharacterLayer(id)
 	{
-		// ‘OŒiƒŒƒCƒ„‚Ì•\‚Æ— ‚ğæ‚è‘Ö‚¦‚é
+		// ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì•\ï¿½Æ—ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
 		var fl = fore.layers, bl = back.layers;
 		var tmp = fl[id];
 		fl[id] = bl[id];
@@ -3335,40 +3335,40 @@ class KAGWindow extends Window
 
 	function swapMessageLayer(id)
 	{
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì•\‚Æ— ‚ğæ‚è‘Ö‚¦‚é
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì•\ï¿½Æ—ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
 		var fl = fore.messages, bl = back.messages;
 		var tmp = fl[id];
 		fl[id] = bl[id];
 		bl[id] = tmp;
-		current = (currentPage?back:fore).messages[currentNum]; // current ‚Íİ’è‚µ’¼‚µ
+		current = (currentPage?back:fore).messages[currentNum]; // current ï¿½Íİ’è‚µï¿½ï¿½ï¿½ï¿½
 	}
 
-	//--------------------------------------------------------- ©“®ˆÚ“®ŠÖ˜A --
+	//--------------------------------------------------------- ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½Ö˜A --
 
 	function onLayerMoveStop()
 	{
-		// ƒŒƒCƒ„‚Ì©“®ˆÚ“®‚ªI—¹‚µ‚½
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		conductor.trigger('move');
 	}
 
 	function waitMove(elm)
 	{
-		// ©“®ˆÚ“®‚ğ‘Ò‚Â
-		if(moveCount == 0) return 0; // ©“®ˆÚ“®‚ğ‘Ò‚Ä‚È‚¢
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½Ò‚ï¿½
+		if(moveCount == 0) return 0; // ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½Ò‚Ä‚È‚ï¿½
 		if((elm.canskip === void || +elm.canskip) && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv“®ì’†
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½ì’†
 				stopAllMoves();
-				return 0; // ©“®ˆÚ“®‚ğ’â~‚³‚¹‚Ä‚·‚®‚É•Ô‚é
+				return 0; // ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½É•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function
 				{
 					updateBeforeCh = 1;
-					stopAllMoves(); // ‚·‚×‚Ä‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Í’â~
+					stopAllMoves(); // ï¿½ï¿½ï¿½×‚Ä‚Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Í’ï¿½~
 				} incontextof this,
 				move : function
 				{
@@ -3390,7 +3390,7 @@ class KAGWindow extends Window
 
 	function stopAllMoves()
 	{
-		// ‚·‚×‚Ä‚Ì©“®ˆÚ“®‚ğ’â~‚³‚¹‚é
+		// ï¿½ï¿½ï¿½×‚Ä‚Ìï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		var layers, messages;
 		fore.base.stopMove();
 		back.base.stopMove();
@@ -3400,14 +3400,14 @@ class KAGWindow extends Window
 		layers = back.layers, messages = back.messages;
 		for(var i = layers.count-1; i >= 0; i--) layers[i].stopMove();
 		for(var i = messages.count-1; i >= 0; i--) messages[i].stopMove();
-		moveCount = 0; // ˆê‰
+		moveCount = 0; // ï¿½ê‰
 	}
 
-	//------------------------------------------------ ƒfƒBƒŒƒC/ƒXƒLƒbƒvŠÖ˜A --
+	//------------------------------------------------ ï¿½fï¿½Bï¿½ï¿½ï¿½C/ï¿½Xï¿½Lï¿½bï¿½vï¿½Ö˜A --
 
 	function setDelay(elm)
 	{
-		// delay ƒ^ƒO‚Ìˆ—
+		// delay ï¿½^ï¿½Oï¿½Ìï¿½ï¿½ï¿½
 		var speed = elm.speed;
 		if(speed == 'nowait')
 		{
@@ -3429,53 +3429,53 @@ class KAGWindow extends Window
 
 	function getCurrentRead()
 	{
-		// Œ»İ‚ÌƒVƒiƒŠƒI•”•ª‚ªŠù“Ç‚©‚Ç‚¤‚©‚ğ”»’è‚·‚é
+		// ï¿½ï¿½ï¿½İ‚ÌƒVï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ğ”»’è‚·ï¿½ï¿½
 		return autoRecordPageShowing && currentRecordName != "" &&
 				+sflags[currentRecordName] || !autoRecordPageShowing;
 	}
 
 	function setUserSpeed()
 	{
-		// ƒ†[ƒU‚Ì‘I‘ğ‚µ‚½•¶š•\¦ƒXƒs[ƒh‚ğİ’è
-		// ‚±‚ÌŠÖ”‚ğ“Ç‚ñ‚¾“_‚Å‚·‚Å‚É userChSpeed ‚É‚Í
-		// ‚ ‚½‚ç‚µ‚¢’l‚ªİ’è‚³‚ê‚Ä‚¢‚é‚Æ‚İ‚È‚·B
-		// ‚ ‚é‚¢‚ÍAƒ‰ƒxƒ‹‚²‚Æ‚ÉA‚»‚Ì‹æˆæ‚ªŠù“Ç‚©–¢“Ç‚©‚Å
-		// •\¦ƒXƒs[ƒh‚ğ•Ï‚¦‚é–Ú“I‚ÅŒÄ‚Î‚ê‚é
+		// ï¿½ï¿½ï¿½[ï¿½Uï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½hï¿½ï¿½İ’ï¿½
+		// ï¿½ï¿½ï¿½ÌŠÖï¿½ï¿½ï¿½Ç‚ñ‚¾ï¿½ï¿½_ï¿½Å‚ï¿½ï¿½Å‚ï¿½ userChSpeed ï¿½É‚ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ç‚µï¿½ï¿½ï¿½lï¿½ï¿½ï¿½İ’è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Æ‚İ‚È‚ï¿½ï¿½B
+		// ï¿½ï¿½ï¿½é‚¢ï¿½ÍAï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ÉAï¿½ï¿½ï¿½Ì‹ï¿½æ‚ªï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+		// ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½hï¿½ï¿½Ï‚ï¿½ï¿½ï¿½Ú“Iï¿½ÅŒÄ‚Î‚ï¿½ï¿½
 		if(chUserMode)
 		{
 			if(getCurrentRead())
-				chSpeed = userCh2ndSpeed==-1?userChSpeed:userCh2ndSpeed; // Šù“Ç
+				chSpeed = userCh2ndSpeed==-1?userChSpeed:userCh2ndSpeed; // ï¿½ï¿½ï¿½
 			else
-				chSpeed = userChSpeed; // –¢“Ç
+				chSpeed = userChSpeed; // ï¿½ï¿½ï¿½ï¿½
 		}
 		if(!skipMode) actualChSpeed = chSpeed;
 	}
 
 	function skipToClick()
 	{
-		// ƒNƒŠƒbƒN‘Ò‚¿‹L†‚Ü‚ÅƒXƒLƒbƒv
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ü‚ÅƒXï¿½Lï¿½bï¿½v
 		skipMode = 1;
 		actualChSpeed = 0;
 	}
 
 	function skipToPage()
 	{
-		// ‰üƒy[ƒW‘Ò‚¿‹L†‚Ü‚ÅƒXƒLƒbƒv
+		// ï¿½ï¿½yï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ü‚ÅƒXï¿½Lï¿½bï¿½v
 		skipMode = 2;
 		actualChSpeed = 0;
 	}
 
 	function skipToStop()
 	{
-		// Ÿ‚Ì’â~‚Ü‚ÅƒXƒLƒbƒv
-		onPrimaryClick(); // ƒNƒŠƒbƒN‚Ì“®ì‚ğƒGƒ~ƒ…ƒŒ[ƒg‚·‚é
+		// ï¿½ï¿½ï¿½Ì’ï¿½~ï¿½Ü‚ÅƒXï¿½Lï¿½bï¿½v
+		onPrimaryClick(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ì“ï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½gï¿½ï¿½ï¿½ï¿½
 		skipMode = 3;
 		actualChSpeed = 0;
 	}
 
 	function skipToStop2()
 	{
-		// Ÿ‚Ì’â~‚Ü‚ÅƒXƒLƒbƒv(‘‘—‚èƒ‚[ƒh)
+		// ï¿½ï¿½ï¿½Ì’ï¿½~ï¿½Ü‚ÅƒXï¿½Lï¿½bï¿½v(ï¿½ï¿½ï¿½ï¿½ï¿½èƒ‚ï¿½[ï¿½h)
 		onPrimaryClick();
 		skipMode = 4;
 		actualChSpeed = 0;
@@ -3483,7 +3483,7 @@ class KAGWindow extends Window
 
 	function cancelSkip()
 	{
-		// ƒXƒLƒbƒv“®ì‚ğƒLƒƒƒ“ƒZƒ‹
+		// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½
 		if(skipMode == 4) skipKeyRepressed = false;
 		skipMode = 0;
 		actualChSpeed = chSpeed;
@@ -3491,7 +3491,7 @@ class KAGWindow extends Window
 
 	function enterNoWait()
 	{
-		// nowait ƒ^ƒO‚Ìˆ—
+		// nowait ï¿½^ï¿½Oï¿½Ìï¿½ï¿½ï¿½
 		beforeNoWaitActualChSpeed = actualChSpeed;
 		beforeNoWaitChUserMode = chUserMode;
 		actualChSpeed = 0;
@@ -3499,14 +3499,14 @@ class KAGWindow extends Window
 
 	function leaveNoWait()
 	{
-		// endnowait ƒ^ƒO‚Ìˆ—
+		// endnowait ï¿½^ï¿½Oï¿½Ìï¿½ï¿½ï¿½
 		actualChSpeed = beforeNoWaitActualChSpeed;
 		chUserMode = beforeNoWaitChUserMode;
 	}
 
 	function setAutoWait(elm)
 	{
-		// ©“®ƒEƒFƒCƒg‚ğİ’è‚·‚é
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½gï¿½ï¿½İ’è‚·ï¿½ï¿½
 		autoWCEnabled = +elm.enabled if elm.enabled !== void;
 		autoWCChars = elm.ch if elm.ch !== void;
 		autoWCWaits = [].split(",", elm.time) if elm.time !== void;
@@ -3514,7 +3514,7 @@ class KAGWindow extends Window
 
 	function cancelAutoMode()
 	{
-		// ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚ÌƒLƒƒƒ“ƒZƒ‹
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½ÌƒLï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½
 		if(autoMode)
 		{
 			autoMode = false;
@@ -3532,7 +3532,7 @@ class KAGWindow extends Window
 
 	function enterAutoMode()
 	{
-		// ©“®“Ç‚İ‚·‚·‚İƒ‚[ƒh‚É“ü‚é
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İƒï¿½ï¿½[ï¿½hï¿½É“ï¿½ï¿½
 		if(typeof this.autoModeMenuItem !== "undefined")
 			autoModeMenuItem.checked = true;
 		if(inStable)
@@ -3540,45 +3540,45 @@ class KAGWindow extends Window
 		autoMode = true;
 	}
 
-	//--------------------------------------------------------- ƒEƒFƒCƒgŠÖ˜A --
+	//--------------------------------------------------------- ï¿½Eï¿½Fï¿½Cï¿½gï¿½Ö˜A --
 
 	function resetWait()
 	{
-		// ŠÔŒ´“_‚ÌƒŠƒZƒbƒg
+		// ï¿½ï¿½ï¿½ÔŒï¿½ï¿½_ï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g
 		timeOrigin = System.getTickCount();
 	}
 
 	function waitTime(waittime, canskip)
 	{
-		// waittime •ª‘Ò‚Â
+		// waittime ï¿½ï¿½ï¿½Ò‚ï¿½
 		if(waittime == 0) return 0;
 		if(canskip)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv’†‚Ìê‡
-				return 0; // ƒXƒLƒbƒv’†‚Ìê‡‚Í‚È‚É‚à‚¹‚¸‚É•Ô‚é
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡
+				return 0; // ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡ï¿½Í‚È‚É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É•Ô‚ï¿½
 			}
 			conductor.waitWithTimeOut(%[
 				click : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this,
 
 				timeout : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this
 				], waittime);
 		}
 		else
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚È‚¢ê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
 			conductor.waitWithTimeOut(%[
 				timeout : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this
 				], waittime);
 		}
@@ -3588,15 +3588,15 @@ class KAGWindow extends Window
 
 	function doWait(elm)
 	{
-		// wait ƒ^ƒO‚Ìˆ—
+		// wait ï¿½^ï¿½Oï¿½Ìï¿½ï¿½ï¿½
 		var waittime;
 		if(elm.mode == 'until')
 		{
-			// until ƒ‚[ƒh
+			// until ï¿½ï¿½ï¿½[ï¿½h
 			waittime = timeOrigin + +elm.time - System.getTickCount();
-			if(waittime < 0) { lastWaitTime = 0; return 0; } // ‚·‚Å‚ÉŠÔ‚ªŒo‰ß‚µ‚Ä‚¢‚é
+			if(waittime < 0) { lastWaitTime = 0; return 0; } // ï¿½ï¿½ï¿½Å‚Éï¿½ï¿½Ô‚ï¿½ï¿½oï¿½ß‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 			lastWaitTime = waittime;
-			if(waittime < 6) return 0; // ‚ ‚Ü‚è‚É‘Ò‚¿ŠÔ‚ª’Z‚¢‚Ì‚Å‘Ò‚½‚È‚¢
+			if(waittime < 6) return 0; // ï¿½ï¿½ï¿½Ü‚ï¿½É‘Ò‚ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½Zï¿½ï¿½ï¿½Ì‚Å‘Ò‚ï¿½ï¿½È‚ï¿½
 		}
 		else
 		{
@@ -3607,17 +3607,17 @@ class KAGWindow extends Window
 
 	function doWaitCh(elm)
 	{
-		// +elm.time ‚ÌƒJƒEƒ“ƒg•ªA‘Ò‚Â
+		// +elm.time ï¿½ÌƒJï¿½Eï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Aï¿½Ò‚ï¿½
 		var t = elm.time;
 		return waitTime(actualChSpeed * (t === void ? 1 : +t),
 			(elm.canskip === void || +elm.canskip) && clickSkipEnabled);
 	}
 
-	//------------------------------------------------------------ quakeŠÖ˜A --
+	//------------------------------------------------------------ quakeï¿½Ö˜A --
 
 	function doQuake(elm)
 	{
-		// elm ‚É]‚Á‚Ä quake ‚ğŠJn
+		// elm ï¿½É]ï¿½ï¿½ï¿½ï¿½ quake ï¿½ï¿½ï¿½Jï¿½n
 		if(elm.time !== void)
 		{
 			if(defaultQuakeTimeInChUnit)
@@ -3649,14 +3649,14 @@ class KAGWindow extends Window
 
 	function restoreQuake()
 	{
-		// restore ‚©‚çŒÄ‚Î‚êAx‚ğ•Û‘¶‚µ‚½‚Æ‚«‚É—h‚ê‚Ä‚¢‚½ê‡‚Í—h‚ç‚·
+		// restore ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½Aï¿½xï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½É—hï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Í—hï¿½ç‚·
 		if(quaking && quakeEndTick == -1)
 			quakeTimer.enabled =true;
 	}
 
 	function stopQuake()
 	{
-		// —h‚ê‚ğ’â~
+		// ï¿½hï¿½ï¿½ï¿½ï¿½~
 		setLayerPos(0, 0);
 		quakeTimer.enabled = false;
 		quaking = false;
@@ -3665,30 +3665,30 @@ class KAGWindow extends Window
 
 	function onQuakeTimerInterval()
 	{
-		// quakeTimer ‚É‚æ‚èŒÄ‚Î‚ê‚é
+		// quakeTimer ï¿½É‚ï¿½ï¿½Ä‚Î‚ï¿½ï¿½
 		if(quakeEndTick != -1 && System.getTickCount() > quakeEndTick) { stopQuake(); return; }
 		if(historyShowing)
 		{
-			// ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„•\¦’†‚Í‚³‚·‚ª‚É—h‚ê‚Ä‚¢‚ç‚ê‚È‚¢
+			// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É—hï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 			setLayerPos(0, 0);
 			return;
 		}
 		var x, y;
 		if(quakeHorzMax == quakeVertMax)
 		{
-			// ‚¾‚¢‚½‚¢“¯‚¶
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			x = int(Math.random() * quakeHorzMax - quakeHorzMax);
 			y = int(Math.random() * quakeVertMax - quakeVertMax);
 		}
 		else if(quakeHorzMax < quakeVertMax)
 		{
-			// c—h‚ê
+			// ï¿½cï¿½hï¿½ï¿½
 			x = int(Math.random() * quakeHorzMax - quakeHorzMax);
 			y = int((quakePhase ? Math.random() : -Math.random()) * quakeVertMax);
 		}
 		else
 		{
-			// ‰¡—h‚ê
+			// ï¿½ï¿½ï¿½hï¿½ï¿½
 			x = int((quakePhase ? Math.random() : -Math.random()) * quakeHorzMax);
 			y = int(Math.random() * quakeVertMax - quakeVertMax);
 		}
@@ -3698,54 +3698,54 @@ class KAGWindow extends Window
 
 	function waitQuake(elm)
 	{
-		// —h‚ê‚ªI—¹‚·‚é‚Ü‚Å‚Ü‚Â
-		if(!quaking || quakeEndTick == -1) return 0; // —h‚ê‚Ä‚¢‚È‚¯‚ê‚Î‘Ò‚½‚È‚¢
+		// ï¿½hï¿½ê‚ªï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Å‚Ü‚ï¿½
+		if(!quaking || quakeEndTick == -1) return 0; // ï¿½hï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‘Ò‚ï¿½ï¿½È‚ï¿½
 		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv’†‚Ìê‡
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡
 				stopQuake();
-				return 0; // ƒXƒLƒbƒv’†‚Ìê‡‚Í—h‚ê‚ğ’â~‚³‚¹‚Ä•Ô‚é
+				return 0; // ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡ï¿½Í—hï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function
 				{
-					stopQuake(); // —h‚ê‚Í’â~‚·‚é
+					stopQuake(); // ï¿½hï¿½ï¿½Í’ï¿½~ï¿½ï¿½ï¿½ï¿½
 				} incontextof this,
 
 				quake : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this
 				]);
 		}
 		else
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚È‚¢ê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
 			conductor.wait(%[
 				quake : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this
 				]);
 		}
 		return -2;
 	}
 
-	//------------------------------------------------------------- ƒNƒŠƒbƒN --
+	//------------------------------------------------------------- ï¿½Nï¿½ï¿½ï¿½bï¿½N --
 
 	function onPrimaryClick()
 	{
-		// ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚ÅuƒNƒŠƒbƒN‚Ì“®ìv‚ª‚È‚É‚àƒtƒBƒ‹ƒ^ƒŠƒ“ƒO‚³‚ê‚È‚©‚Á‚½
-		// ‚Æ‚«Aƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚©‚çŒÄ‚Î‚ê‚éB
+		// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Åuï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ì“ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½È‚É‚ï¿½ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½Æ‚ï¿½ï¿½Aï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½B
 		clickCount ++;
 		if(!callHook(leftClickHook))
 		{
 			if(messageLayerHiding)
 			{
-				showMessageLayerByUser(); // ƒƒbƒZ[ƒWƒŒƒCƒ„‚ğ•\¦‚·‚é
+				showMessageLayerByUser(); // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			}
 			else
 			{
@@ -3755,25 +3755,25 @@ class KAGWindow extends Window
 
 				if(st != stopst && autoMode)
 				{
-					// ©“®“Ç‚İ‚·‚·‚İ‚Ìê‡
+					// ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İ‚Ìê‡
 					cancelAutoMode();
 				}
 				else if(st != stopst && canCancelSkipByClick && skipMode && skipMode != 4)
 				{
-					// ƒNƒŠƒbƒN‚É‚æ‚éƒXƒLƒbƒv‚Ì‰ğœ‚ª‰Â”\
+					// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½É‚ï¿½ï¿½Xï¿½Lï¿½bï¿½vï¿½Ì‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â”\
 					cancelSkip();
 				}
 				else
 				{
-					// ‚±‚Ì“_‚ÅƒtƒBƒ‹ƒ^ƒŠƒ“ƒO‚³‚ê‚È‚¢ƒƒbƒZ[ƒW‚Í‘Ò‚¿ó‘Ô‚ÌƒNƒŠƒA‚È‚Ì‚Å
-					// conductor ‚É 'click' ‚ğ‘—‚è‰ğœ‚ğ“`‚¦‚éB
+					// ï¿½ï¿½ï¿½Ìï¿½ï¿½_ï¿½Åƒtï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Í‘Ò‚ï¿½ï¿½ï¿½Ô‚ÌƒNï¿½ï¿½ï¿½Aï¿½È‚Ì‚ï¿½
+					// conductor ï¿½ï¿½ 'click' ï¿½ğ‘—‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½B
 
-					if(!conductor.trigger('click')) // ‘Ò‚¿ó‘Ô‚Å‚È‚¢ê‡‚Í’P‚É–³‹‚³‚ê‚é
+					if(!conductor.trigger('click')) // ï¿½Ò‚ï¿½ï¿½ï¿½Ô‚Å‚È‚ï¿½ï¿½ê‡ï¿½Í’Pï¿½É–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					{
-						// ƒnƒ“ƒhƒ‰‚ªŒ©‚Â‚©‚ç‚È‚¢‚È‚ÇAˆ—‚³‚ê‚È‚©‚Á‚½ê‡
+						// ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½È‚ï¿½ï¿½È‚ÇAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡
 						if(st == runst && clickSkipEnabled && skipMode == 0)
 						{
-							// ƒNƒŠƒbƒN‚É‚æ‚éƒXƒLƒbƒv‚ª‰Â”\
+							// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½É‚ï¿½ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Â”\
 							skipToClick();
 						}
 					}
@@ -3784,15 +3784,15 @@ class KAGWindow extends Window
 
 	function onPrimaryClickByKey()
 	{
-		// ƒL[‚ª‰Ÿ‚³‚ê‚½‚Æ‚«ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚ğƒNƒŠƒbƒN‚µ‚½‚Ì‚Æ
-		// “¯‚¶“®ì‚ğ‚·‚é‚ªA‚³‚ç‚Éˆê“I‚Éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğ‰B‚·
+		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚ªï¿½Aï¿½ï¿½ï¿½ï¿½Éˆêï¿½Iï¿½Éƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½
 		onPrimaryClick();
 		hideMouseCursor();
 	}
 
 	function waitClick(elm)
 	{
-		// ƒNƒŠƒbƒN‚ğ‘Ò‚Â
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½Ò‚ï¿½
 		conductor.wait(%[
 			click : function
 			{
@@ -3807,7 +3807,7 @@ class KAGWindow extends Window
 		super.onMouseDown(...);
 	}
 
-	//------------------------------------------------------- ƒL[ƒ{[ƒh‘€ì --
+	//------------------------------------------------------- ï¿½Lï¿½[ï¿½{ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ --
 
 	function processKeys(key, shift)
 	{
@@ -3815,21 +3815,21 @@ class KAGWindow extends Window
 
 		if(key == #'F')
 		{
-			// Ÿ‚Ì‘I‘ğˆ/–¢“Ç‚Ü‚Åi‚Ş
+			// ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Ç‚Ü‚Åiï¿½ï¿½
 			skipToNextStopByKey();
 			return;
 		}
 
 		if(key == #'B')
 		{
-			// ‘O‚É–ß‚é
+			// ï¿½Oï¿½É–ß‚ï¿½
 			goBackByKey();
 			return;
 		}
 
 		if(key == #'A')
 		{
-			// ©“®“I‚É“Ç‚İi‚ß‚é
+			// ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚İiï¿½ß‚ï¿½
 			switchAutoModeByKey();
 			return;
 		}
@@ -3838,7 +3838,7 @@ class KAGWindow extends Window
 		{
 			if(key == #'S')
 			{
-				// x‚ğ‚Í‚³‚Ş
+				// ï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½
 				if(typeof this.storeMenu != "undefined" && storeMenu.enabled)
 					storeMenu.click();
 				return;
@@ -3846,7 +3846,7 @@ class KAGWindow extends Window
 
 			if(key == #'L')
 			{
-				// x‚ğ‚½‚Ç‚é
+				// ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½
 				if(typeof this.restoreMenu != "undefined" && restoreMenu.enabled)
 					restoreMenu.click();
 				return;
@@ -3855,18 +3855,18 @@ class KAGWindow extends Window
 
 		if(key == #'R' || (key == VK_UP && (shift & ssShift)))
 		{
-			// ƒƒbƒZ[ƒW—š—ğ‚ğ•\¦
+			// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½
 			showHistoryByKey();
 			return;
 		}
 
 		if(key == VK_ESCAPE)
 		{
-			// ƒƒbƒZ[ƒW‚ğÁ‚·
+			// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			if(typeof this.rightClickMenuItem != "undefined" &&
 				rightClickMenuItem.enabled)
 			{
-				rightClickMenuItem.click(); // ƒNƒŠƒbƒN‚ğƒGƒ~ƒ…ƒŒ[ƒg
+				rightClickMenuItem.click(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Gï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½g
 				return;
 			}
 		}
@@ -3884,25 +3884,25 @@ class KAGWindow extends Window
 
 	function checkProceedingKey(key, shift)
 	{
-		// key ‚ª“Ç‚İ‚·‚·‚İ‚ÌƒL[ ( ƒXƒy[ƒXƒL[‚©ReturnƒL[ ) ‚Ìê‡‚Í
-		// ƒL[‚ğˆ—‚µAtrue ‚ğ•Ô‚·B‚»‚¤‚Å‚È‚¯‚ê‚Î false ‚ğ•Ô‚·
+		// key ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İ‚ÌƒLï¿½[ ( ï¿½Xï¿½yï¿½[ï¿½Xï¿½Lï¿½[ï¿½ï¿½Returnï¿½Lï¿½[ ) ï¿½Ìê‡ï¿½ï¿½
+		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Atrue ï¿½ï¿½Ô‚ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½ï¿½ï¿½ false ï¿½ï¿½Ô‚ï¿½
 		if(key == VK_RETURN || key == supportReadingKey)
 		{
-			// ƒL[‚ªƒƒbƒZ[ƒWƒLƒ…[‚É—­‚Ü‚Á‚Ä‚éê‡‚ª‚ ‚é‚Ì‚Å
-			// ÀÛ‚É‚»‚ÌƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚Ì‚©‚Ç‚¤‚©‚ğ
-			// getKeyState ‚ğ—p‚¢‚Ä’²‚×‚é
+			// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Lï¿½ï¿½ï¿½[ï¿½É—ï¿½ï¿½Ü‚ï¿½ï¿½Ä‚ï¿½ê‡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½
+			// ï¿½ï¿½ï¿½Û‚É‚ï¿½ï¿½ÌƒLï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½
+			// getKeyState ï¿½ï¿½pï¿½ï¿½ï¿½Ä’ï¿½ï¿½×‚ï¿½
 			var sg = getKeyState;
 			if(sg(VK_RETURN) || sg(supportReadingKey))
 			{
-				// ƒL[‚ª‰Ÿ‚³‚ê‚Ä‚½
+				// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
 				if((shift & ssRepeat) && clickSkipEnabled)
 				{
-					// ƒL[ƒŠƒs[ƒg
+					// ï¿½Lï¿½[ï¿½ï¿½ï¿½sï¿½[ï¿½g
 					if(skipMode != 4 && skipKeyRepressed)
-						skipToStop2(); // ‚Ü‚¾skipMode 4‚É“ü‚Á‚Ä‚¢‚È‚¢ê‡‚Í‘‘—‚èƒ‚[ƒh‚É“ü‚é
-					// skipKeyRepressed ‚ğƒ`ƒFƒbƒN‚·‚é‚Ì‚Í
-					// ˜A‘±‚µ‚ÄƒL[ƒŠƒs[ƒg‚ª”­¶‚µ‚Ä‚¢‚é‚Æ‚«‚É
-					// cancelSkip Œã‚ÉƒXƒLƒbƒv‚É“Ë“ü‚·‚é‚Ì‚ğ–h‚®‚½‚ß
+						skipToStop2(); // ï¿½Ü‚ï¿½skipMode 4ï¿½É“ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Í‘ï¿½ï¿½ï¿½ï¿½èƒ‚ï¿½[ï¿½hï¿½É“ï¿½ï¿½
+					// skipKeyRepressed ï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½Ì‚ï¿½
+					// ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ÄƒLï¿½[ï¿½ï¿½ï¿½sï¿½[ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
+					// cancelSkip ï¿½ï¿½ÉƒXï¿½Lï¿½bï¿½vï¿½É“Ë“ï¿½ï¿½Ì‚ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				}
 				else
 				{
@@ -3918,14 +3918,14 @@ class KAGWindow extends Window
 
 	function skipCancelKeyPressing()
 	{
-		// ƒXƒLƒbƒv‚ğ‰ğœ‚·‚é—vˆö‚Æ‚È‚éƒL[‚ ‚é‚¢‚Íƒ}ƒEƒXƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©
+		// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½Æ‚È‚ï¿½Lï¿½[ï¿½ï¿½ï¿½é‚¢ï¿½Íƒ}ï¿½Eï¿½Xï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©
 		var sg = getKeyState;
 		return sg(VK_RETURN) || sg(supportReadingKey) || sg(VK_LBUTTON);
 	}
 
 	function skipKeyPressing()
 	{
-		// VK_RETURN ‚ ‚é‚¢‚Í supportReadingKey ‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©
+		// VK_RETURN ï¿½ï¿½ï¿½é‚¢ï¿½ï¿½ supportReadingKey ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
 		var sg = getKeyState;
 		return sg(VK_RETURN) || sg(supportReadingKey);
 	}
@@ -3934,28 +3934,28 @@ class KAGWindow extends Window
 	{
 		if(typeof this.goBackMenuItem != "undefined" &&
 			goBackMenuItem.enabled)
-			goBackMenuItem.click(); // ƒNƒŠƒbƒN‚ğƒGƒ~ƒ…ƒŒ[ƒg
+			goBackMenuItem.click(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Gï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½g
 	}
 
 	function skipToNextStopByKey()
 	{
 		if(typeof this.skipToNextStopMenuItem != "undefined" &&
 			skipToNextStopMenuItem.enabled)
-			skipToNextStopMenuItem.click(); // ƒNƒŠƒbƒN‚ğƒGƒ~ƒ…ƒŒ[ƒg
+			skipToNextStopMenuItem.click(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Gï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½g
 	}
 
 	function showHistoryByKey()
 	{
 		if(typeof this.showHistoryMenuItem != "undefined" &&
 			showHistoryMenuItem.enabled)
-			showHistoryMenuItem.click(); // ƒNƒŠƒbƒN‚ğƒGƒ~ƒ…ƒŒ[ƒg
+			showHistoryMenuItem.click(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Gï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½g
 	}
 
 	function switchAutoModeByKey()
 	{
 		if(typeof this.autoModeMenuItem != "undefined" &&
 			autoModeMenuItem.enabled)
-			autoModeMenuItem.click(); // ƒNƒŠƒbƒN‚ğƒGƒ~ƒ…ƒŒ[ƒg
+			autoModeMenuItem.click(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Gï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½g
 	}
 
 	function onKeyDown(key, shift)
@@ -3967,9 +3967,9 @@ class KAGWindow extends Window
 
 	function onMouseWheel(shift, delta, x, y)
 	{
-		// ƒzƒC[ƒ‹‚ª‰ñ“]‚µ‚½
+		// ï¿½zï¿½Cï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½
 		super.onMouseWheel(...);
-        // ƒƒbƒZ[ƒW‘‹‚ÌƒzƒC[ƒ‹ˆ—
+        // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Ìƒzï¿½Cï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (inSleep && current.hasWheel()) {
             current.processWheel(shift, delta, x, y);
             return;
@@ -3977,37 +3977,37 @@ class KAGWindow extends Window
 		if(!historyLayer.visible)
 		{
 			if(delta > 0)
-				showHistoryByKey(); // ƒƒbƒZ[ƒW—š—ğ‚ğ•\¦
+				showHistoryByKey(); // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½
 			else if(System.getTickCount() - lastHistoryHiddenTick > 150) 
-					onPrimaryClick(); // ƒNƒŠƒbƒN‚ğƒGƒ~ƒ…ƒŒ[ƒg
-			// ª tick ‚ğ”äŠr‚µ‚Ä‚¢‚é‚Ì‚ÍAƒƒbƒZ[ƒW—š—ğ‚ğ‰B‚·‘€ì‚ÆƒzƒC[ƒ‹‚ğ
-			// è‘O‚É‰ñ‚·‘€ì‚ª˜A‘±‚µ‚½ê‡‚ÉŸè‚É“Ç‚İi‚Ş‚Ì‚ğ‚ ‚é’ö“x–h‚®dŠ|‚¯
+					onPrimaryClick(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Gï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½g
+			// ï¿½ï¿½ tick ï¿½ï¿½ï¿½rï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ÍAï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æƒzï¿½Cï¿½[ï¿½ï¿½ï¿½ï¿½
+			// ï¿½ï¿½Oï¿½É‰ñ‚·‘ï¿½ï¿½ì‚ªï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Éï¿½ï¿½ï¿½É“Ç‚İiï¿½Ş‚Ì‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½hï¿½ï¿½ï¿½dï¿½|ï¿½ï¿½
 		}
 		else
 		{
-			// ƒƒbƒZ[ƒW—š—ğ‚ÉƒCƒxƒ“ƒg‚ğ‚‚ê—¬‚·
+			// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ÉƒCï¿½xï¿½ï¿½ï¿½gï¿½ğ‚‚ê—¬ï¿½ï¿½
 			historyLayer.windowMouseWheel(shift, delta, x, y);
 		}
 	}
 
-	//------------------------------------------------- ƒNƒŠƒbƒN‘Ò‚¿‹L†ˆ— --
+	//------------------------------------------------- ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ --
 
 	function hideClickGlyphs()
 	{
-		// ƒNƒŠƒbƒN‘Ò‚¿‹L†‚ğ”ñ•\¦‚É
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½
 		lineBreak.visible = false;
 		pageBreak.visible = false;
 		if(conductor == mainConductor)
 		{
-			// ƒNƒŠƒbƒN‘Ò‚¿‹L†‚Ìó‘Ô‚ğ‹L˜^
+			// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ìï¿½Ô‚ï¿½ï¿½Lï¿½^
 			lastClickGlyphVisible = false;
 		}
 	}
 
 	function storeClickGlyphState(which)
 	{
-		// ƒNƒŠƒbƒN‘Ò‚¿‹L†‚Ìî•ñ‚ğˆê“I‚É‘Ò”ğ
-		// ‚±‚Ìƒf[ƒ^‚Í‰EƒNƒŠƒbƒNƒTƒuƒ‹[ƒ`ƒ“‚âextraConductorƒTƒuƒ‹[ƒ`ƒ“‚©‚ç–ß‚é‚Æ‚«‚ÉQÆ‚·‚é
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½êï¿½Iï¿½É‘Ò”ï¿½
+		// ï¿½ï¿½ï¿½Ìƒfï¿½[ï¿½^ï¿½Í‰Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½extraConductorï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½Æ‚ï¿½ï¿½ÉQï¿½Æ‚ï¿½ï¿½ï¿½
 		if(conductor == mainConductor)
 		{
 			lastClickGlyphVisible = true;
@@ -4019,8 +4019,8 @@ class KAGWindow extends Window
 
 	function restoreClickGlyphState()
 	{
-		// lastClickGlyph *** ‚Éˆê“I‚É‘Ò”ğ‚µ‚½ƒNƒŠƒbƒN‘Ò‚¿‹L†‚Ìî•ñ
-		// ‚ÉŠî‚Ã‚¢‚ÄƒNƒŠƒbƒN‘Ò‚¿‹L†‚ğİ’è‚·‚é
+		// lastClickGlyph *** ï¿½Éˆêï¿½Iï¿½É‘Ò”ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½Ìï¿½ï¿½
+		// ï¿½ÉŠï¿½Ã‚ï¿½ï¿½ÄƒNï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½İ’è‚·ï¿½ï¿½
 		if(lastClickGlyphVisible)
 		{
 			var layer = getMessageLayerObjectFromPageAndNumber
@@ -4042,43 +4042,43 @@ class KAGWindow extends Window
 
 	function canIgnoreL()
 	{
-		// L ƒ^ƒO‚ğ–³‹‚Å‚«‚é‚©‚Ç‚¤‚©
+		// L ï¿½^ï¿½Oï¿½ğ–³ï¿½ï¿½Å‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
 		return chNonStopToPageBreak || (getCurrentRead() && ch2ndNonStopToPageBreak);
 	}
 
 	function showLineBreak(elm)
 	{
-		// Œ»İ‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚És‘Ò‚¿‹L†‚ğ•\¦‚·‚é
+		// ï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ésï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		stablePosibility = true;
 		if(canIgnoreL())
 		{
-			// l ƒ^ƒO‚Ì–³‹
+			// l ï¿½^ï¿½Oï¿½Ì–ï¿½ï¿½ï¿½
 			if(elm.canskip === void || !+elm.canskip)
 				return (skipMode==3 || skipMode==4) ? 0 : -4;
 		}
 		if(autoMode)
 		{
-			// ©“®“Ç‚İ‚·‚·‚İ‚Ìê‡
+			// ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İ‚Ìê‡
 			return autoModeLineWait;
 		}
 		if(skipMode == 1) cancelSkip();
 		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
 		if(skipMode == 4) return -4;
 		if(skipMode) return skipCancelKeyPressing()?-4:0;
-			// ƒXƒLƒbƒv’†(ƒXƒLƒbƒv‚ğƒLƒƒƒ“ƒZƒ‹‚·‚é‚æ‚¤‚ÈƒL[‚ª‚ ‚ê‚ÎƒXƒLƒbƒv‰ğœ
-			// ‚Ì‚½‚ß‚ÌƒCƒxƒ“ƒgˆ—‚Ì‹@‰ï‚ğ—^‚¦‚é)
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½(ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½ÈƒLï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎƒXï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½ï¿½
+			// ï¿½Ì‚ï¿½ï¿½ß‚ÌƒCï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Ì‹@ï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½)
 
 		current.showLineBreakGlyph(lineBreak);
 		storeClickGlyphState("line");
 
 		if(!current.nodeVisible)
 		{
-			dm("Œx : ”ñ•\¦‚É‚È‚Á‚Ä‚¢‚é" +
-				(currentPage ? "— " : "•\") + "ƒƒbƒZ[ƒWƒŒƒCƒ„" + currentNum +
-				"‚ÅsƒNƒŠƒbƒN‘Ò‚¿‚É‚È‚è‚Ü‚µ‚½");
+			dm("ï¿½xï¿½ï¿½ : ï¿½ï¿½\ï¿½ï¿½ï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½" +
+				(currentPage ? "ï¿½ï¿½" : "ï¿½\") + "ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½" + currentNum +
+				"ï¿½Åsï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½ï¿½");
 		}
 
-		// conductor ‚ğ 'click' ‚Ü‚Å‘Ò‚¿ó‘Ô‚É
+		// conductor ï¿½ï¿½ 'click' ï¿½Ü‚Å‘Ò‚ï¿½ï¿½ï¿½Ô‚ï¿½
 		conductor.wait(%[
 			click : function
 			{
@@ -4095,14 +4095,14 @@ class KAGWindow extends Window
 
 	function showPageBreak(elm)
 	{
-		// Œ»İ‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Éƒy[ƒW‘Ò‚¿‹L†‚ğ•\¦‚·‚é
+		// ï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Éƒyï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		stablePosibility = true;
 		if(skipMode == 1 || skipMode == 2) cancelSkip();
 		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
-		if(skipMode) return -4; // ‚¢‚Á‚½‚ñƒCƒxƒ“ƒg‚ğˆ—
+		if(skipMode) return -4; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(autoMode)
 		{
-			// ©“®“Ç‚İ‚·‚·‚İ‚Ìê‡
+			// ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İ‚ï¿½ï¿½ï¿½ï¿½İ‚Ìê‡
 			return autoModePageWait;
 		}
 
@@ -4111,12 +4111,12 @@ class KAGWindow extends Window
 
 		if(!current.nodeVisible)
 		{
-			dm("Œx : ”ñ•\¦‚É‚È‚Á‚Ä‚¢‚é" +
-				(currentPage ? "— " : "•\") + "ƒƒbƒZ[ƒWƒŒƒCƒ„" + currentNum +
-				"‚Åƒy[ƒWƒNƒŠƒbƒN‘Ò‚¿‚É‚È‚è‚Ü‚µ‚½");
+			dm("ï¿½xï¿½ï¿½ : ï¿½ï¿½\ï¿½ï¿½ï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½" +
+				(currentPage ? "ï¿½ï¿½" : "ï¿½\") + "ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½" + currentNum +
+				"ï¿½Åƒyï¿½[ï¿½Wï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½ï¿½");
 		}
 
-		// conductor ‚ğ 'click' ‚Ü‚Å‘Ò‚¿ó‘Ô‚É
+		// conductor ï¿½ï¿½ 'click' ï¿½Ü‚Å‘Ò‚ï¿½ï¿½ï¿½Ô‚ï¿½
 		conductor.wait(%[
 			click : function
 			{
@@ -4133,35 +4133,35 @@ class KAGWindow extends Window
 
 	function showPageBreakAndClear()
 	{
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ªÅIs‚Ü‚Å’B‚µ‚Ä©“®‰üƒy[ƒW‚ª‚³‚ê‚é‚Æ‚«‚É
-		// ŒÄ‚Î‚ê‚éBŒ»İ‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Éƒy[ƒW‘Ò‚¿‹L†‚ğ•\¦‚µA
-		// ÀsÄŠJ‚É‚Í MessageLayer.clear2 ‚ğŒÄ‚Ô
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ÅIï¿½sï¿½Ü‚Å’Bï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
+		// ï¿½Ä‚Î‚ï¿½ï¿½Bï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Éƒyï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½A
+		// ï¿½ï¿½ï¿½sï¿½ÄŠJï¿½ï¿½ï¿½É‚ï¿½ MessageLayer.clear2 ï¿½ï¿½ï¿½Ä‚ï¿½
 		stablePosibility = true;
 		if(skipMode == 1 || skipMode == 2) cancelSkip();
 		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
 		var lasttagname = conductor.lastTagName;
 		if(!autoMode && ((!canIgnoreL() && lasttagname == 'l') || lasttagname == 'p'))
-			{ current.clear2(); return -5; }// ‚¢‚Á‚½‚ñƒCƒxƒ“ƒg‚ğˆ—(ƒ^ƒO‚ÍŒã‰ñ‚µ)
-		if(skipMode) { current.clear2(); return -5; }// ‚¢‚Á‚½‚ñƒCƒxƒ“ƒg‚ğˆ—(ƒ^ƒO‚ÍŒã‰ñ‚µ)
+			{ current.clear2(); return -5; }// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½^ï¿½Oï¿½ÍŒï¿½ï¿½)
+		if(skipMode) { current.clear2(); return -5; }// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½^ï¿½Oï¿½ÍŒï¿½ï¿½)
 
 		if(!current.nodeVisible)
 		{
-			dm("Œx : ”ñ•\¦‚É‚È‚Á‚Ä‚¢‚é" +
-				(currentPage ? "— " : "•\") + "ƒƒbƒZ[ƒWƒŒƒCƒ„" + currentNum +
-				"‚Å©“®‰üƒy[ƒWƒNƒŠƒbƒN‘Ò‚¿‚É‚È‚è‚Ü‚µ‚½");
+			dm("ï¿½xï¿½ï¿½ : ï¿½ï¿½\ï¿½ï¿½ï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½" +
+				(currentPage ? "ï¿½ï¿½" : "ï¿½\") + "ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½" + currentNum +
+				"ï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½yï¿½[ï¿½Wï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½ï¿½");
 		}
 
 		if(autoMode)
 		{
-			conductor.waitWithTimeOut(%[ // ƒ^ƒCƒ€ƒAƒEƒg•t‚«ƒEƒFƒCƒg
+			conductor.waitWithTimeOut(%[ // ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½tï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½g
 				click : function
 				{
-					current.clear2(); // clear2 ‚ğŒÄ‚Ô
+					current.clear2(); // clear2 ï¿½ï¿½ï¿½Ä‚ï¿½
 					cancelAutoMode();
 				} incontextof this,
 				timeout : function
 				{
-					current.clear2(); // clear2 ‚ğŒÄ‚Ô
+					current.clear2(); // clear2 ï¿½ï¿½ï¿½Ä‚ï¿½
 				} incontextof this
 				], autoModePageWait <= 0 ? 1 : autoModePageWait);
 			return -3;
@@ -4171,13 +4171,13 @@ class KAGWindow extends Window
 			current.showPageBreakGlyph(pageBreak);
 			storeClickGlyphState("page");
 
-			// conductor ‚ğ 'click' ‚Ü‚Å‘Ò‚¿ó‘Ô‚É
+			// conductor ï¿½ï¿½ 'click' ï¿½Ü‚Å‘Ò‚ï¿½ï¿½ï¿½Ô‚ï¿½
 			conductor.wait(%[
 				click : function
 				{
 					clickWaiting = false;
 					fore.base.cursor = cursorDefault;
-					current.clear2(); // clear2 ‚ğŒÄ‚Ô
+					current.clear2(); // clear2 ï¿½ï¿½ï¿½Ä‚ï¿½
 					notifyRun();
 				} incontextof this
 				]);
@@ -4188,29 +4188,29 @@ class KAGWindow extends Window
 		}
 	}
 
-	//------------------------------------------------------------- BGM ˆ— --
+	//------------------------------------------------------------- BGM ï¿½ï¿½ï¿½ï¿½ --
 
 	function onBGMFadeCompleted()
 	{
-		// BGM ‚ÌƒtƒF[ƒh‚ªŠ®—¹‚µ‚½
+		// BGM ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		conductor.trigger('bgmfade');
 	}
 
-    // BGM’â~ˆ—
+    // BGMï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½
     var bgmStopExp;
     var bgmStopStorage;
     var bgmStopTarget;
 
     function handleBgmStop() {
-        // BGM’â~ƒnƒ“ƒhƒ‰
+        // BGMï¿½ï¿½~ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
 
-        // ƒpƒ‰ƒ[ƒ^‚ğ•Û‚µ‚Ä”jŠü
+        // ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½ï¿½Ûï¿½ï¿½ï¿½ï¿½Ä”jï¿½ï¿½
         var exp     = bgmStopExp;
         var storage = bgmStopStorage;
         var target  = bgmStopTarget;
         clearBgmStop();
         
-        // ˆ—Às
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½s
         if (exp !== void) {
             Scripts.eval(exp);
         }
@@ -4220,14 +4220,14 @@ class KAGWindow extends Window
     }
 	
     function setBgmStop(elm) {
-        // BGM’â~ˆ—‚Ì“o˜^
+        // BGMï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì“oï¿½^
         bgmStopExp     = elm.exp;
         bgmStopStorage = elm.storage;
         bgmStopTarget  = elm.target;
     }
     
     function clearBgmStop() {
-        // BGM’â~ˆ—‚Ì‰ğœ
+        // BGMï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ï¿½
         bgmStopExp     = void;
         bgmStopStorage = void;
         bgmStopTarget  = void;
@@ -4235,7 +4235,7 @@ class KAGWindow extends Window
     
 	function onBGMStop()
 	{
-		// BGM ‚ª’â~‚µ‚½
+		// BGM ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½
 		conductor.trigger('bgmstop');
         if (bgmStopExp !== void || bgmStopStorage !== void || bgmStopTarget !== void) {
             global.stopBgmTrigger = new AsyncTrigger(handleBgmStop, '');
@@ -4260,7 +4260,7 @@ class KAGWindow extends Window
     }
 
     function onBGMLabel(label) {
-        // BGM ‚Ìƒ‰ƒxƒ‹’Ê‰ßˆ—
+        // BGM ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½Ê‰ßï¿½ï¿½ï¿½
         conductor.trigger('bgmlabel_' + label);
         var obj = bgmLabelInfos[label];
         if (obj !== void) {
@@ -4272,7 +4272,7 @@ class KAGWindow extends Window
     }
 
     /**
-     * BGM ƒ‰ƒxƒ‹ˆ—‚Ì“o˜^
+     * BGM ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì“oï¿½^
      */
     function setBgmLabel(elm) {
         if (elm.name !== void) {
@@ -4285,7 +4285,7 @@ class KAGWindow extends Window
     }
 
     /**
-     * BGM ƒ‰ƒxƒ‹ˆ—‚Ì‰ğœ
+     * BGM ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ï¿½
      */
     function clearBgmLabel() {
         bgmLabelInfos = %[];
@@ -4296,36 +4296,36 @@ class KAGWindow extends Window
     
 	function waitBGMFade(elm)
 	{
-		// BGM ‚ÌƒtƒF[ƒhI—¹‚ğ‘Ò‚Â
-		if(!bgm.inFading) return 0; // ƒtƒF[ƒh’†‚Å‚È‚¯‚ê‚Î‘Ò‚½‚È‚¢
+		// BGM ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½Iï¿½ï¿½ï¿½ï¿½Ò‚ï¿½
+		if(!bgm.inFading) return 0; // ï¿½tï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½ï¿½Î‘Ò‚ï¿½ï¿½È‚ï¿½
 		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv’†‚Ìê‡
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡
 				bgm.stopFade();
-				return 0; // ƒXƒLƒbƒv’†‚Ìê‡‚ÍƒtƒF[ƒh‚ğ’â~‚³‚¹‚Ä•Ô‚é
+				return 0; // ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡ï¿½Íƒtï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function
 				{
-					bgm.stopFade(); // ƒtƒF[ƒfƒBƒ“ƒO‚Í’â~‚·‚é
+					bgm.stopFade(); // ï¿½tï¿½Fï¿½[ï¿½fï¿½Bï¿½ï¿½ï¿½Oï¿½Í’ï¿½~ï¿½ï¿½ï¿½ï¿½
 				} incontextof this,
 
 				bgmfade : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this
 				]);
 		}
 		else
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚È‚¢ê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
 			conductor.wait(%[
 				bgmfade : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this
 				]);
 		}
@@ -4334,53 +4334,53 @@ class KAGWindow extends Window
 
 	function waitBGMStop(elm)
 	{
-		// BGM ‚ÌÄ¶I—¹‚ğ‘Ò‚Â
-		if(!bgm.canWaitStop) return 0; // BGM Ä¶I—¹‚ğ‘Ò‚Ä‚È‚¯‚ê‚Î‚»‚Ì‚Ü‚Ü–ß‚é
+		// BGM ï¿½ÌÄï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½Ò‚ï¿½
+		if(!bgm.canWaitStop) return 0; // BGM ï¿½Äï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½Ò‚Ä‚È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½Ì‚Ü‚Ü–ß‚ï¿½
 		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv’†‚Ìê‡
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡
 				bgm.stop();
-				return 0; // ƒXƒLƒbƒv’†‚Ìê‡‚ÍÄ¶‚ğ’â~‚³‚¹‚Ä•Ô‚é
+				return 0; // ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡ï¿½ÍÄï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function
 				{
-					bgm.stop(); // Ä¶‚ğI—¹‚·‚é
+					bgm.stop(); // ï¿½Äï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				} incontextof this,
 
 				bgmstop : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this
 				]);
 		}
 		else
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚È‚¢ê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
 			conductor.wait(%[
 				bgmstop : function
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this
 				]);
 		}
 		return -2;
 	}
 
-	//----------------------------------------------------------- Œø‰Ê‰¹ˆ— --
+	//----------------------------------------------------------- ï¿½ï¿½Ê‰ï¿½ï¿½ï¿½ï¿½ï¿½ --
 
 	function onSESoundBufferFadeCompleted(id)
 	{
-		// Œø‰Ê‰¹‚ÌƒtƒF[ƒh‚ªI—¹‚µ‚½
+		// ï¿½ï¿½Ê‰ï¿½ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		conductor.trigger('sefade' + id);
 	}
 
 	function onSESoundBufferStop(id)
 	{
-		// Œø‰Ê‰¹‚ÌÄ¶‚ªI—¹‚µ‚½
+		// ï¿½ï¿½Ê‰ï¿½ï¿½ÌÄï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		conductor.trigger('sestop' + id);
 	}
 
@@ -4388,44 +4388,44 @@ class KAGWindow extends Window
 	{
 		var id = +elm.buf;
 		var buf = se[id];
-		if(!buf.inFading) return 0; // ƒtƒF[ƒh’†‚Å‚È‚¯‚ê‚Î‚»‚Ì‚Ü‚Ü–ß‚é
+		if(!buf.inFading) return 0; // ï¿½tï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½Ì‚Ü‚Ü–ß‚ï¿½
 		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv’†‚Ìê‡
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡
 				buf.stopFade();
-				return 0; // ƒXƒLƒbƒv’†‚Ìê‡‚ÍƒtƒF[ƒh‚ğ’â~‚³‚¹‚Ä•Ô‚é
+				return 0; // ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡ï¿½Íƒtï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function (id)
 				{
-					se[id].stopFade(); // ƒtƒF[ƒh‚ğI—¹‚·‚é
+					se[id].stopFade(); // ï¿½tï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				} incontextof this,
 
-				click_arg : id, // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				click_arg : id, // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 
 				'sefade'+id =>
 				function (id)
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this,
 
-				'sefade'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'sefade'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 				]);
 		}
 		else
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚È‚¢ê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
 			conductor.wait(%[
 				'sefade'+id =>
 					function (id)
 					{
-						// ‚â‚é‚±‚Æ‚È‚µ
+						// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 					} incontextof this,
 
-				'sefade'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'sefade'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 				]);
 		}
 		return -2;
@@ -4435,54 +4435,54 @@ class KAGWindow extends Window
 	{
 		var id = +elm.buf;
 		var buf = se[id];
-		if(!buf.canWaitStop()) return 0; // I—¹‚ğ‘Ò‚Ä‚È‚¯‚ê‚Î‚»‚Ì‚Ü‚Ü•Ô‚é
+		if(!buf.canWaitStop()) return 0; // ï¿½Iï¿½ï¿½ï¿½ï¿½Ò‚Ä‚È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½Ì‚Ü‚Ü•Ô‚ï¿½
 		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv’†‚Ìê‡
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡
 				buf.stop();
-				return 0; // ƒXƒLƒbƒv’†‚Ìê‡‚ÍÄ¶‚ğ’â~‚³‚¹‚Ä•Ô‚é
+				return 0; // ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡ï¿½ÍÄï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function (id)
 				{
-					se[id].stop(); // Ä¶‚ğI—¹‚·‚é
+					se[id].stop(); // ï¿½Äï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				} incontextof this,
 
-				'click_arg' => id, // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'click_arg' => id, // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 
 				'sestop'+id =>
 				function (id)
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this,
 
-				'sestop'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'sestop'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 				]);
 		}
 		else
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚È‚¢ê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
 			conductor.wait(%[
 				'sestop'+id =>
 				function (id)
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this,
 
-				'sestop'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'sestop'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 				]);
 		}
 		return -2;
 	}
 
-	//--------------------------------------------------------- ƒ€[ƒr[ŠÖ˜A --
+	//--------------------------------------------------------- ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ö˜A --
 
 	function onMovieStop(id)
 	{
-		// ƒ€[ƒr[‚ÌÄ¶‚ªI—¹‚µ‚½
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ÌÄï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		conductor.trigger('moviestop'+id);
 	}
 
@@ -4490,45 +4490,45 @@ class KAGWindow extends Window
 	{
 		var id = +elm.slot;
 
-		// ƒ€[ƒr[‚ÌÄ¶I—¹‚ğ‘Ò‚Â
-		if(!movies[id].canWaitStop) return 0; // ƒ€[ƒr[Ä¶I—¹‚ğ‘Ò‚Ä‚È‚¯‚ê‚Î‚»‚Ì‚Ü‚Ü–ß‚é
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ÌÄï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½Ò‚ï¿½
+		if(!movies[id].canWaitStop) return 0; // ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Äï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½Ò‚Ä‚È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½Ì‚Ü‚Ü–ß‚ï¿½
 		if(elm.canskip !== void && +elm.canskip && clickSkipEnabled)
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚éê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½ï¿½ê‡
 			if(skipMode)
 			{
-				// ƒXƒLƒbƒv’†‚Ìê‡
+				// ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡
 				movies[id].stop();
-				return 0; // ƒXƒLƒbƒv’†‚Ìê‡‚ÍÄ¶‚ğ’â~‚³‚¹‚Ä•Ô‚é
+				return 0; // ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½Ìê‡ï¿½ÍÄï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä•Ô‚ï¿½
 			}
 			conductor.wait(%[
 				click : function (id)
 				{
-					movies[id].stop(); // Ä¶‚ğI—¹‚·‚é
+					movies[id].stop(); // ï¿½Äï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				} incontextof this,
 
-				'click_arg' => id, // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'click_arg' => id, // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 
 				'moviestop'+id =>
 				function (id)
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this,
 
-				'moviestop'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'moviestop'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 				]);
 		}
 		else
 		{
-			// ƒXƒLƒbƒv‚Å‚«‚È‚¢ê‡
+			// ï¿½Xï¿½Lï¿½bï¿½vï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
 			conductor.wait(%[
 				'moviestop'+id =>
 				function (id)
 				{
-					// ‚â‚é‚±‚Æ‚È‚µ
+					// ï¿½ï¿½é‚±ï¿½Æ‚È‚ï¿½
 				} incontextof this,
 
-				'moviestop'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'moviestop'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 				]);
 		}
 		return -2;
@@ -4536,7 +4536,7 @@ class KAGWindow extends Window
 
 	function onMoviePeriod(id,type)
 	{
-		// ƒ€[ƒr[‚ÌƒsƒŠƒIƒhƒCƒxƒ“ƒg‚ª”­¶‚µ‚½
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ìƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if( isLeavePeriodEvent != false )
 		{
 			holdPeriodEventQueue.add( 'movieperiod'+id+'_'+type );
@@ -4601,41 +4601,41 @@ class KAGWindow extends Window
 			}
 		}
 
-		// ƒ€[ƒr[‚ÌƒsƒŠƒIƒhƒCƒxƒ“ƒg‚ğ‘Ò‚Â
-		if(!movies[id].canWaitStop) return 0; // ƒ€[ƒr[‚ªÄ¶’†‚Å‚È‚¯‚ê‚Î‚»‚Ì‚Ü‚Ü–ß‚é
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ìƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½Ò‚ï¿½
+		if(!movies[id].canWaitStop) return 0; // ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½Ì‚Ü‚Ü–ß‚ï¿½
 		if( elm.for !== void )
 		{
 			if( elm.for == 'loop' )
 			{
 				conductor.wait(%[
 					'movieperiod'+id+'_'+perLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
-					'movieperiod'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+					'movieperiod'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 					]);
 			}
 			else if( elm.for == 'period' )
 			{
 				conductor.wait(%[
 					'movieperiod'+id+'_'+perPeriod => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
-					'movieperiod'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+					'movieperiod'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 					]);
 			}
 			else if( elm.for == 'prepare' )
 			{
 				conductor.wait(%[
 					'movieperiod'+id+'_'+perPrepare => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
-					'movieperiod'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+					'movieperiod'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 					]);
 			}
 			else if( elm.for == 'segLoop' )
 			{
 				conductor.wait(%[
 					'movieperiod'+id+'_'+perSegLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
-					'movieperiod'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+					'movieperiod'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 					]);
 			}
 			else
 			{
-				return 0; // ˆø”‚ª•Ï
+				return 0; // ï¿½ï¿½ï¿½ï¿½
 			}
 		}
 		else
@@ -4645,36 +4645,36 @@ class KAGWindow extends Window
 				'movieperiod'+id+'_'+perPeriod => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
 				'movieperiod'+id+'_'+perPrepare => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
 				'movieperiod'+id+'_'+perSegLoop => function (id) { notifyRun(); isWaitPeriodEvent = false;} incontextof this,
-				'movieperiod'+id+'_arg' => id // ƒnƒ“ƒhƒ‰‚Ö‚Ìˆø”
+				'movieperiod'+id+'_arg' => id // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ö‚Ìˆï¿½
 				]);
 		}
 		notifyStable();
 		return -2;
 	}
 
-	//------------------------------------------------------- ƒ^ƒOƒnƒ“ƒhƒ‰ŒQ --
+	//------------------------------------------------------- ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Q --
 
 	function getHandlers()
 	{
-		return %[ // «‘”z—ñƒIƒuƒWƒFƒNƒg
+		return %[ // ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
 
 		/*
-			ƒ^ƒOƒnƒ“ƒhƒ‰ŒQ‚ÍA–¼‘O‚Æ‚»‚ê‚É‘Î‰‚·‚éŠÖ”‚ÌƒyƒA‚ğ—ñ‹“‚·‚é‚à‚Ì‚ÅA
-			ŠÖ”–¼ : function(elm)
+			ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Qï¿½ÍAï¿½ï¿½ï¿½Oï¿½Æ‚ï¿½ï¿½ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½Ìƒyï¿½Aï¿½ï¿½ñ‹“‚ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅA
+			ï¿½Öï¿½ï¿½ï¿½ : function(elm)
 			{
-				// ŠÖ”‚Ì’†g
+				// ï¿½Öï¿½ï¿½Ì’ï¿½ï¿½g
 			} incontextof this,
-			‚Ì‘®‚ğ—p‚¢‚éB‚½‚¾‚µAŠÖ”–¼‚ª—\–ñŒê‚Ìê‡‚ÍAuŠÖ”–¼ : v‚Å‚Í‚È‚­
-			u"ŠÖ”–¼" => v‚ğ—p‚¢‚éB
-			incontextof this ‚ÍAŠÖ”‚ª³‚µ‚­ ‚±‚ÌƒNƒ‰ƒX‚Ì
-			ƒIƒuƒWƒFƒNƒg‚ÌƒRƒ“ƒeƒLƒXƒgã‚Å“®‚­‚æ‚¤‚É‚·‚é‚½‚ß‚É•K—vB
+			ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Öï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Ìê‡ï¿½ÍAï¿½uï¿½Öï¿½ï¿½ï¿½ : ï¿½vï¿½Å‚Í‚È‚ï¿½
+			ï¿½u"ï¿½Öï¿½ï¿½ï¿½" => ï¿½vï¿½ï¿½pï¿½ï¿½ï¿½ï¿½B
+			incontextof this ï¿½ÍAï¿½Öï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½Xï¿½ï¿½
+			ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÌƒRï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½gï¿½ï¿½Å“ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É‚ï¿½ï¿½é‚½ï¿½ß‚É•Kï¿½vï¿½B
 		*/
 
-	//--------------------------------------- ƒ^ƒOƒnƒ“ƒhƒ‰ŒQ(ƒƒbƒZ[ƒW‘€ì) --
+	//--------------------------------------- ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Q(ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½) --
 
 	ch : function(elm)
 	{
-		// •¶š•\¦
+		// ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½
 		var acs = actualChSpeed;
 		if(updateBeforeCh)
 		{
@@ -4689,7 +4689,7 @@ class KAGWindow extends Window
 		if(historyWriteEnabled) historyLayer.store(text);
 		if(autoWCEnabled)
 		{
-			// ©“®ƒEƒFƒCƒg
+			// ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½g
 			var ind;
 			if((ind = autoWCChars.indexOf(text)) != -1)
 			{
@@ -4701,7 +4701,7 @@ class KAGWindow extends Window
 
 	graph : function(elm)
 	{
-		// ƒOƒ‰ƒtƒBƒbƒN‚ğ•¶š‚Æ‚µ‚Ä•\¦
+		// ï¿½Oï¿½ï¿½ï¿½tï¿½Bï¿½bï¿½Nï¿½ğ•¶ï¿½ï¿½Æ‚ï¿½ï¿½Ä•\ï¿½ï¿½
 		var acs = actualChSpeed;
 		if(updateBeforeCh)
 		{
@@ -4718,7 +4718,7 @@ class KAGWindow extends Window
 
 	hch : function(elm)
 	{
-		// c’†‰¡
+		// ï¿½cï¿½ï¿½ï¿½ï¿½
 		var acs = actualChSpeed;
 		if(updateBeforeCh)
 		{
@@ -4737,13 +4737,13 @@ class KAGWindow extends Window
 
 	r : function(elm)
 	{
-		// ‰üs
+		// ï¿½ï¿½s
 		if(historyWriteEnabled) historyLayer.reline();
 		if(currentWithBack) current.comp.processReturn();
 		if(current.processReturn())
 		{
 			var ret = showPageBreakAndClear();
-			// ‰üs‚Ípending‚µ‚È‚¢
+			// ï¿½ï¿½sï¿½ï¿½pendingï¿½ï¿½ï¿½È‚ï¿½
 			if(ret == -5)
 				ret = -4;
 			else if(ret == -3)
@@ -4755,7 +4755,7 @@ class KAGWindow extends Window
 
 	ruby : function(elm)
 	{
-		// Ÿ‚Ì•¶š‚É‘Î‚·‚éƒ‹ƒrİ’è
+		// ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½éƒ‹ï¿½rï¿½İ’ï¿½
 		if(currentWithBack) current.comp.setRuby(elm.text);
 		current.setRuby(elm.text);
 		return 0;
@@ -4763,7 +4763,7 @@ class KAGWindow extends Window
 
 	font : function(elm)
 	{
-		// ƒtƒHƒ“ƒgİ’è
+		// ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½İ’ï¿½
 		if(currentWithBack) current.comp.setFont(elm);
 		current.setFont(elm);
 		return 0;
@@ -4771,7 +4771,7 @@ class KAGWindow extends Window
 
 	deffont : function(elm)
 	{
-		// ƒfƒtƒHƒ‹ƒg‚ÌƒtƒHƒ“ƒgİ’è
+		// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒtï¿½Hï¿½ï¿½ï¿½gï¿½İ’ï¿½
 		if(currentWithBack) current.comp.setDefaultFont(elm);
 		current.setDefaultFont(elm);
 		return 0;
@@ -4779,7 +4779,7 @@ class KAGWindow extends Window
 
 	resetfont : function(elm)
 	{
-		// ƒtƒHƒ“ƒg‚ÌƒŠƒZƒbƒg
+		// ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g
 		if(currentWithBack) current.comp.resetFont();
 		current.resetFont();
 		return 0;
@@ -4787,7 +4787,7 @@ class KAGWindow extends Window
 
 	style : function(elm)
 	{
-		// ƒXƒ^ƒCƒ‹İ’è
+		// ï¿½Xï¿½^ï¿½Cï¿½ï¿½ï¿½İ’ï¿½
 		if(currentWithBack) current.comp.setStyle(elm);
 		current.setStyle(elm);
 		return 0;
@@ -4795,7 +4795,7 @@ class KAGWindow extends Window
 
 	defstyle : function(elm)
 	{
-		// ƒfƒtƒHƒ‹ƒg‚ÌƒXƒ^ƒCƒ‹İ’è
+		// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÌƒXï¿½^ï¿½Cï¿½ï¿½ï¿½İ’ï¿½
 		if(currentWithBack) current.comp.setDefaultStyle(elm);
 		current.setDefaultStyle(elm);
 		return 0;
@@ -4803,7 +4803,7 @@ class KAGWindow extends Window
 
 	resetstyle : function(elm)
 	{
-		// ƒXƒ^ƒCƒ‹‚ÌƒŠƒZƒbƒg
+		// ï¿½Xï¿½^ï¿½Cï¿½ï¿½ï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g
 		if(currentWithBack) current.comp.resetStyle();
 		current.resetStyle();
 		return 0;
@@ -4811,7 +4811,7 @@ class KAGWindow extends Window
 
 	link : function(elm)
 	{
-		// ƒnƒCƒp[ƒŠƒ“ƒN‚ÌŠJn
+		// ï¿½nï¿½Cï¿½pï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ÌŠJï¿½n
 		if(currentWithBack) current.comp.beginHyperLink(elm);
 		current.beginHyperLink(elm);
 		return 0;
@@ -4819,7 +4819,7 @@ class KAGWindow extends Window
 
 	endlink : function(elm)
 	{
-		// ƒnƒCƒp[ƒŠƒ“ƒN‚ÌI—¹
+		// ï¿½nï¿½Cï¿½pï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ÌIï¿½ï¿½
 		if(currentWithBack) current.comp.endHyperLink(elm);
 		current.endHyperLink(elm);
 		return 0;
@@ -4827,7 +4827,7 @@ class KAGWindow extends Window
 
 	button : function(elm)
 	{
-		// ƒOƒ‰ƒtƒBƒJƒ‹ƒ{ƒ^ƒ“
+		// ï¿½Oï¿½ï¿½ï¿½tï¿½Bï¿½Jï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½
 		if(currentWithBack) current.comp.addButton(elm);
 		current.addButton(elm);
 		return 0;
@@ -4835,7 +4835,7 @@ class KAGWindow extends Window
 
 	edit : function(elm)
 	{
-		// ’Pˆês•ÒW
+		// ï¿½Pï¿½ï¿½sï¿½ÒW
 		if(currentWithBack) current.comp.addEdit(elm);
 		current.addEdit(elm);
 		return 0;
@@ -4843,7 +4843,7 @@ class KAGWindow extends Window
 
 	checkbox : function(elm)
 	{
-		// ’Pˆês•ÒW
+		// ï¿½Pï¿½ï¿½sï¿½ÒW
 		if(currentWithBack) current.comp.addCheckBox(elm);
 		current.addCheckBox(elm);
 		return 0;
@@ -4851,84 +4851,84 @@ class KAGWindow extends Window
 
 	commit : function(elm)
 	{
-		// ƒtƒH[ƒ€—v‘f‚ÌƒRƒ~ƒbƒg
+		// ï¿½tï¿½Hï¿½[ï¿½ï¿½ï¿½vï¿½fï¿½ÌƒRï¿½~ï¿½bï¿½g
 		current.commit();
 		return 0;
 	} incontextof this,
 
     timeout : function(elm)
     {
-        // ƒ^ƒCƒ€ƒAƒEƒgˆ—‚Ì“o˜^(ƒJƒŒƒ“ƒg‚Ì‚İ)
+        // ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Ì“oï¿½^(ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì‚ï¿½)
         current.addTimeout(elm);
         return 0;
     } incontextof this,
 
     ctimeout : function(elm)
     {
-        // ƒ^ƒCƒ€ƒAƒEƒgˆ—‚Ì‰ğœiƒJƒŒƒ“ƒg‚Ì‚İj
+        // ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ï¿½ï¿½iï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì‚İj
         current.clearTimeout();
         return 0;
     } incontextof this,
 
     wheel : function(elm)
     {
-        // ƒzƒC[ƒ‹ˆ—‚Ì“o˜^(ƒJƒŒƒ“ƒg‚Ì‚İ)
+        // ï¿½zï¿½Cï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì“oï¿½^(ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì‚ï¿½)
         current.addWheel(elm);
         return 0;
     } incontextof this,
 
     cwheel : function(elm)
     {
-        // ƒzƒC[ƒ‹ˆ—‚Ì‰ğœiƒJƒŒƒ“ƒg‚Ì‚İj
+        // ï¿½zï¿½Cï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ï¿½ï¿½iï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì‚İj
         current.clearWheel();
         return 0;
     } incontextof this,
                   
     click : function(elm)
     {
-        // ƒNƒŠƒbƒNˆ—‚Ì“o˜^(ƒJƒŒƒ“ƒg‚Ì‚İ)
+        // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Ì“oï¿½^(ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì‚ï¿½)
         current.addClick(elm);
         return 0;
     } incontextof this,
 
     cclick : function(elm)
     {
-        // ƒNƒŠƒbƒNˆ—‚Ì“o˜^(ƒJƒŒƒ“ƒg‚Ì‚İ)
+        // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Ì“oï¿½^(ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì‚ï¿½)
         current.clearClick(elm);
         return 0;
     } incontextof this,
 
 	l : function(elm)
 	{
-		// sƒNƒŠƒbƒN‘Ò‚¿
+		// ï¿½sï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½
 		return showLineBreak(elm);
 	} incontextof this,
 
 	p : function(elm)
 	{
-		// ƒy[ƒWƒNƒŠƒbƒN‘Ò‚¿
+		// ï¿½yï¿½[ï¿½Wï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½
 		if(historyWriteEnabled) historyLayer.reline();
 		return showPageBreak(elm);
 	} incontextof this,
 
 	current : function(elm)
 	{
-		// ‘€ì‘ÎÛ‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Ìw’è
+		// ï¿½ï¿½ï¿½ï¿½ÎÛ‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìwï¿½ï¿½
 		setCurrentMessageLayer(elm);
 		return 0;
 	} incontextof this,
 
 	position : function(elm)
 	{
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌˆÊ’uA‘®«‚ğİ’è
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌˆÊ’uï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½
 		getMessageLayerObjectFromElm(elm).setPosition(elm);
 		return 0;
 	} incontextof this,
 
 	ct : function(elm)
 	{
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌƒŠƒZƒbƒg(‚·‚×‚Ä‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌƒNƒŠƒA‚Æ
-		// current ‚ÌƒŠƒZƒbƒg)
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g(ï¿½ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½Aï¿½ï¿½
+		// current ï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g)
 		if(historyWriteEnabled) historyLayer.repage();
 		clearMessageLayers(true);
 		return 0;
@@ -4936,8 +4936,8 @@ class KAGWindow extends Window
 
 	cm : function(elm)
 	{
-		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌƒŠƒZƒbƒg‚ğs‚¤‚ªAct ‚Ì‚æ‚¤‚É
-		// current ‚ÌƒŠƒZƒbƒg‚Ís‚í‚È‚¢‚à‚Ì
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒï¿½ï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Act ï¿½Ì‚æ‚¤ï¿½ï¿½
+		// current ï¿½Ìƒï¿½ï¿½Zï¿½bï¿½gï¿½Ísï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½
 		if(historyWriteEnabled) historyLayer.repage();
 		clearMessageLayers(false);
 		return 0;
@@ -4945,7 +4945,7 @@ class KAGWindow extends Window
 
 	er : function(elm)
 	{
-		// Œ»İ‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌƒNƒŠƒA
+		// ï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½A
 		if(historyWriteEnabled) historyLayer.repage();
 		if(currentWithBack) current.comp.clear();
 		current.clear();
@@ -4954,7 +4954,7 @@ class KAGWindow extends Window
 
 	indent : function(elm)
 	{
-		// ƒCƒ“ƒfƒ“ƒg‚Ìİ’è
+		// ï¿½Cï¿½ï¿½ï¿½fï¿½ï¿½ï¿½gï¿½Ìİ’ï¿½
 		if(currentWithBack) current.comp.setIndent();
 		current.setIndent();
 		if(historyWriteEnabled) historyLayer.beginIndent();
@@ -4963,7 +4963,7 @@ class KAGWindow extends Window
 
 	endindent : function(elm)
 	{
-		// ƒCƒ“ƒfƒ“ƒg‚Ì‰ğœ
+		// ï¿½Cï¿½ï¿½ï¿½fï¿½ï¿½ï¿½gï¿½Ì‰ï¿½ï¿½ï¿½
 		if(currentWithBack) current.comp.resetIndent();
 		current.resetIndent();
 		if(historyWriteEnabled) historyLayer.endIndent();
@@ -4972,28 +4972,28 @@ class KAGWindow extends Window
 
 	delay : function(elm)
 	{
-		// •¶š•\¦‘¬“x‚Ìw’è
+		// ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Ìwï¿½ï¿½
 		setDelay(elm);
 		return 0;
 	} incontextof this,
 
 	nowait : function(elm)
 	{
-		// ˆê“I‚Éƒm[ƒEƒFƒCƒg‚ÅÀs
+		// ï¿½êï¿½Iï¿½Éƒmï¿½[ï¿½Eï¿½Fï¿½Cï¿½gï¿½Åï¿½ï¿½s
 		enterNoWait();
 		return 0;
 	} incontextof this,
 
 	endnowait : function(elm)
 	{
-		// nowait ‚Ì‰ğœ
+		// nowait ï¿½Ì‰ï¿½ï¿½ï¿½
 		leaveNoWait();
 		return 0;
 	} incontextof this,
 
 	locate : function(elm)
 	{
-		// •¶š•\¦ˆÊ’u‚ğw’è
+		// ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Ê’uï¿½ï¿½ï¿½wï¿½ï¿½
 		if(currentWithBack) current.comp.locate(elm.x, elm.y);
 		current.locate(elm.x, elm.y);
 		return 0;
@@ -5001,54 +5001,54 @@ class KAGWindow extends Window
 
 	glyph : function(elm)
 	{
-		// ƒNƒŠƒbƒN‘Ò‚¿‹L†‚ğw’è
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½
 		current.setGlyph(elm);
 		return 0;
 	} incontextof this,
 
 	locklink : function(elm)
 	{
-		// ƒŠƒ“ƒN‚ÌƒƒbƒN
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ìƒï¿½ï¿½bï¿½N
 		lockMessageLayerSelProcess();
 		return 0;
 	} incontextof this,
 
 	unlocklink : function(elm)
 	{
-		// ƒŠƒ“ƒN‚ÌƒAƒ“ƒƒbƒN
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ÌƒAï¿½ï¿½ï¿½ï¿½ï¿½bï¿½N
 		unlockMessageLayerSelProcess();
 		return 0;
 	} incontextof this,
 
-	//----------------------------------------- ƒ^ƒOƒnƒ“ƒhƒ‰ŒQ(ƒVƒXƒeƒ€‘€ì) --
+	//----------------------------------------- ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Q(ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½) --
 
 	loadplugin : function(elm)
 	{
-		// ƒvƒ‰ƒOƒCƒ“‚Ì“Ç‚İ‚İ
+		// ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Ì“Ç‚İï¿½ï¿½ï¿½
 		Plugins.link(elm.module);
-		dm("ƒvƒ‰ƒOƒCƒ“‚ğ“Ç‚İ‚İ‚Ü‚µ‚½ : " + elm.module);
+		dm("ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½Ç‚İï¿½ï¿½İ‚Ü‚ï¿½ï¿½ï¿½ : " + elm.module);
 		return 0;
 	} incontextof this,
 
 	title : function(elm)
 	{
-		// ƒ^ƒCƒgƒ‹‚Ìİ’è
+		// ï¿½^ï¿½Cï¿½gï¿½ï¿½ï¿½Ìİ’ï¿½
 		setTitle(elm.name);
 		return 0;
 	} incontextof this,
 
 	s : function(elm)
 	{
-		// Às’â~
+		// ï¿½ï¿½ï¿½sï¿½ï¿½~
 		stablePosibility = true;
 		cancelSkip();
 		if(!usingExtraConductor) incRecordLabel(true);
 		inSleep = true;
-		if(recordHistoryOfStore == 2) // 2 : ‘I‘ğˆ ( @s ƒ^ƒO ) ‚²‚Æ
+		if(recordHistoryOfStore == 2) // 2 : ï¿½Iï¿½ï¿½ï¿½ï¿½ ( @s ï¿½^ï¿½O ) ï¿½ï¿½ï¿½ï¿½
 			setToRecordHistory();
 		notifyStable();
 
-        // ƒƒbƒZ[ƒWƒŒƒCƒ„ƒ^ƒCƒ€ƒAƒEƒgŒÄ‚Ño‚µŠJn
+        // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½Ä‚Ñoï¿½ï¿½ï¿½Jï¿½n
         current.startTimeout();
 
 		return -1;
@@ -5056,80 +5056,80 @@ class KAGWindow extends Window
 
 	clickskip : function(elm)
 	{
-		// ƒNƒŠƒbƒNƒXƒLƒbƒv‚Ìİ’è
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Xï¿½Lï¿½bï¿½vï¿½Ìİ’ï¿½
 		clickSkipEnabled = +elm.enabled;
 		return 0;
 	} incontextof this,
 
 	nextskip : function(elm)
 	{
-		// Ÿ‚Ì‘I‘ğˆ(/–¢“Ç)‚Ü‚Åi‚Ş‚Ìİ’è
+		// ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½(/ï¿½ï¿½ï¿½ï¿½)ï¿½Ü‚Åiï¿½Ş‚Ìİ’ï¿½
 		nextSkipEnabled = +elm.enabled;
 		return 0;
 	} incontextof this,
 
 	cancelskip : function(elm)
 	{
-		// ƒXƒLƒbƒv‚Ì‰ğœ
+		// ï¿½Xï¿½Lï¿½bï¿½vï¿½Ì‰ï¿½ï¿½ï¿½
 		cancelSkip();
 		return 0;
 	} incontextof this,
 
 	cancelautomode : function(elm)
 	{
-		// u©“®“I‚É“Ç‚İi‚Şv‚Ì‰ğœ
+		// ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚İiï¿½Şvï¿½Ì‰ï¿½ï¿½ï¿½
 		cancelAutoMode();
 		return 0;
 	} incontextof this,
 
 	resetwait : function(elm)
 	{
-		// ŠÔŒ´“_‚Ìİ’è
+		// ï¿½ï¿½ï¿½ÔŒï¿½ï¿½_ï¿½Ìİ’ï¿½
 		resetWait();
 		return 0;
 	} incontextof this,
 
 	wait : function(elm)
 	{
-		// ƒEƒFƒCƒg
+		// ï¿½Eï¿½Fï¿½Cï¿½g
 		return doWait(elm);
 	} incontextof this,
 
 	wc : function(elm)
 	{
-		// w’è•¶š•ª‚ÌƒEƒFƒCƒg
+		// ï¿½wï¿½è•¶ï¿½ï¿½ï¿½ï¿½ï¿½ÌƒEï¿½Fï¿½Cï¿½g
 		return doWaitCh(elm);
 	} incontextof this,
 
 	waitclick : function(elm)
 	{
-		// ƒNƒŠƒbƒN‚ğ‘Ò‚Â
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½Ò‚ï¿½
 		return waitClick(elm);
 	} incontextof this,
 
 	rclick : function(elm)
 	{
-		// ‰EƒNƒŠƒbƒN‚Ì“®ìİ’è
+		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ì“ï¿½ï¿½ï¿½İ’ï¿½
 		setRightClickOptions(elm);
 		return 0;
 	} incontextof this,
 
 	history : function(elm)
 	{
-		// ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚Ìİ’è
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìİ’ï¿½
 		setHistoryOptions(elm);
 		return 0;
 	} incontextof this,
 
 	showhistory : function(elm)
 	{
-		// ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚Ì•\¦
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì•\ï¿½ï¿½
 		return showHistoryByScenario(elm);
 	} incontextof this,
 
 	hr : function(elm)
 	{
-		// ƒƒbƒZ[ƒW—š—ğƒŒƒCƒ„‚É‰üs‚ğo—Í
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½É‰ï¿½sï¿½ï¿½ï¿½oï¿½ï¿½
 		if(historyWriteEnabled)
 		{
 			if(elm.repage !== void && +elm.repage)
@@ -5142,7 +5142,7 @@ class KAGWindow extends Window
 
 	hact : function(elm)
 	{
-		// ƒƒbƒZ[ƒW—š—ğ‚ÉƒAƒNƒVƒ‡ƒ“‚ğİ’è
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ÉƒAï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½
 		if(historyWriteEnabled)
 			historyLayer.setNewAction(elm.exp);
 		return 0;
@@ -5150,7 +5150,7 @@ class KAGWindow extends Window
 
 	endhact : function(elm)
 	{
-		// ƒƒbƒZ[ƒW—š—ğ‚ÌƒAƒNƒVƒ‡ƒ“‚ğƒNƒŠƒA
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ÌƒAï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½A
 		if(historyWriteEnabled)
 			historyLayer.clearAction();
 		return 0;
@@ -5158,82 +5158,82 @@ class KAGWindow extends Window
 
 	hidemessage : function(elm)
 	{
-		// ƒƒbƒZ[ƒW‚ğˆê“I‚É‰B‚·
+		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½êï¿½Iï¿½É‰Bï¿½ï¿½
 		return hideMessageLayerByScenario(elm);
 	} incontextof this,
 
 	quake : function(elm)
 	{
-		// —h‚ê
+		// ï¿½hï¿½ï¿½
 		doQuake(elm);
 		return 0;
 	} incontextof this,
 
 	stopquake : function(elm)
 	{
-		// —h‚ê‚Ì’â~
+		// ï¿½hï¿½ï¿½Ì’ï¿½~
 		stopQuake();
 		return 0;
 	} incontextof this,
 
 	wq : function(elm)
 	{
-		// —h‚ê‚Ì’â~‚ğ‘Ò‚Â
+		// ï¿½hï¿½ï¿½Ì’ï¿½~ï¿½ï¿½Ò‚ï¿½
 		return waitQuake(elm);
 	} incontextof this,
 
 	autowc : function(elm)
 	{
-		// ©“®ƒEƒFƒCƒg
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½g
 		setAutoWait(elm);
 		return 0;
 	} incontextof this,
 
 	cursor : function(elm)
 	{
-		// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚Ì•ÏX
+		// ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½Ì•ÏX
 		setCursor(elm);
 		return 0;
 	} incontextof this,
 
 	close : function(elm)
 	{
-		// ƒEƒBƒ“ƒhƒE‚ğ•Â‚¶‚é
+		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½Â‚ï¿½ï¿½ï¿½
 		closeByScript(elm);
 		return -2;
 	} incontextof this,
 
 	copybookmark : function(elm)
 	{
-		// x‚ğƒRƒs[
+		// ï¿½xï¿½ï¿½ï¿½Rï¿½sï¿½[
 		copyBookMark(+elm.from, +elm.to);
 		return 0;
 	} incontextof this,
 
 	erasebookmark : function(elm)
 	{
-		// x‚ğíœ
+		// ï¿½xï¿½ï¿½ï¿½íœ
 		eraseBookMark(+elm.place);
 		return 0;
 	} incontextof this,
 
 	disablestore : function(elm)
 	{
-		// x‚ğˆê“I‚Ég—p•s‰Â‚É
+		// ï¿½xï¿½ï¿½ï¿½êï¿½Iï¿½Égï¿½pï¿½sï¿½Â‚ï¿½
 		tempDisableStore(elm);
 		return 0;
 	} incontextof this,
 
 	store : function(elm)
 	{
-		// x‚Ìg—p•s‰ÂEg—p‰Â‚ğİ’è‚·‚é
+		// ï¿½xï¿½Ìgï¿½pï¿½sï¿½ÂEï¿½gï¿½pï¿½Â‚ï¿½İ’è‚·ï¿½ï¿½
 		setStoreEnabled(+elm.enabled);
 		return 0;
 	} incontextof this,
 
 	load : function(elm)
 	{
-		// x‚Ì“Ç‚İ‚İ
+		// ï¿½xï¿½Ì“Ç‚İï¿½ï¿½ï¿½
 		if(elm.ask !== void && +elm.ask)
 			loadBookMarkWithAsk(+elm.place);
 		else
@@ -5243,7 +5243,7 @@ class KAGWindow extends Window
 
 	save : function(elm)
 	{
-		// x‚Ì“Ç‚İ‚İ
+		// ï¿½xï¿½Ì“Ç‚İï¿½ï¿½ï¿½
 		if(elm.ask !== void && +elm.ask)
 			saveBookMarkWithAsk(+elm.place);
 		else
@@ -5253,14 +5253,14 @@ class KAGWindow extends Window
 
 	startanchor : function(elm)
 	{
-		// uÅ‰‚É–ß‚év‚Ìg—p•s‰ÂEg—p‰Â‚ğİ’è‚·‚é
+		// ï¿½uï¿½Åï¿½ï¿½É–ß‚ï¿½vï¿½Ìgï¿½pï¿½sï¿½ÂEï¿½gï¿½pï¿½Â‚ï¿½İ’è‚·ï¿½ï¿½
 		setStartAnchorEnabled(elm.enabled === void || +elm.enabled);
 		return 0;
 	} incontextof this,
 
 	gotostart : function(elm)
 	{
-		// uÅ‰‚É–ß‚év
+		// ï¿½uï¿½Åï¿½ï¿½É–ß‚ï¿½v
 		if(elm.ask !== void && +elm.ask)
 			goToStartWithAsk();
 		else
@@ -5270,7 +5270,7 @@ class KAGWindow extends Window
 
 	goback : function(elm)
 	{
-		// ’Ê‰ß‹L˜^‚ğ–ß‚é
+		// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ß‚ï¿½
 		if(elm.ask !== void && +elm.ask)
 			goBackHistory(true);
 		else
@@ -5280,21 +5280,21 @@ class KAGWindow extends Window
 
 	record : function(elm)
 	{
-		// ’Ê‰ß‹L˜^‚ğ‚·‚é
+		// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		setToRecordHistory();
 		return 0;
 	} incontextof this,
 
 	tempsave : function(elm)
 	{
-		// ó‘Ô‚Ìƒƒ‚ƒŠ‚Ö‚Ì•Û‘¶
+		// ï¿½ï¿½Ô‚Ìƒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö‚Ì•Û‘ï¿½
 		tempSave(+elm.place);
 		return 0;
 	} incontextof this,
 
 	tempload : function(elm)
 	{
-		// ó‘Ô‚Ìƒƒ‚ƒŠ‚Ö‚Ì•Û‘¶
+		// ï¿½ï¿½Ô‚Ìƒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö‚Ì•Û‘ï¿½
 		tempLoad(+elm.place, elm);
 			//elm.se === void || +elm.se, elm.bgm === void || +elm.bgm,
 			//elm.backlay !== void && +elm.backlay);
@@ -5303,64 +5303,64 @@ class KAGWindow extends Window
 
 	mappfont : function(elm)
 	{
-		// ƒŒƒ“ƒ_ƒŠƒ“ƒOÏ‚İƒtƒHƒ“ƒg‚ğŒ»İ‚ÌƒtƒHƒ“ƒg‚Éƒ}ƒbƒsƒ“ƒO
+		// ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Ï‚İƒtï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½İ‚Ìƒtï¿½Hï¿½ï¿½ï¿½gï¿½Éƒ}ï¿½bï¿½sï¿½ï¿½ï¿½O
 		mapPrerenderedFont(elm.storage);
 		return 0;
 	} incontextof this,
 
 	locksnapshot : function(elm)
 	{
-		// ‰æ–Ê‚ÌƒXƒiƒbƒvƒVƒ‡ƒbƒg‚ğƒƒbƒN‚·‚é
+		// ï¿½ï¿½Ê‚ÌƒXï¿½iï¿½bï¿½vï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
 		lockSnapshot();
 		return 0;
 	} incontextof this,
 
 	unlocksnapshot : function(elm)
 	{
-		// ‰æ–Ê‚ÌƒXƒiƒbƒvƒVƒ‡ƒbƒg‚ÌƒƒbƒN‚ğ‰ğœ‚·‚é
+		// ï¿½ï¿½Ê‚ÌƒXï¿½iï¿½bï¿½vï¿½Vï¿½ï¿½ï¿½bï¿½gï¿½Ìƒï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		unlockSnapshot();
 		return 0;
 	} incontextof this,
 
-	//------------------------------------------- ƒ^ƒOƒnƒ“ƒhƒ‰ŒQ(ƒŒƒCƒ„‘€ì) --
+	//------------------------------------------- ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Q(ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½) --
 
 	image : function(elm)
 	{
-		// ‰æ‘œ“Ç‚İ‚İ
+		// ï¿½æ‘œï¿½Ç‚İï¿½ï¿½ï¿½
 		updateBeforeCh = 1;
 		var start = System.getTickCount();
 		getLayerFromElm(elm).loadImages(elm);
-		dm(elm.storage + " ‚Ì“Ç‚İ‚İ‚É " + (System.getTickCount() - start) + "ms ‚©‚©‚è‚Ü‚µ‚½");
+		dm(elm.storage + " ï¿½Ì“Ç‚İï¿½ï¿½İ‚ï¿½ " + (System.getTickCount() - start) + "ms ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 		return 0;
 	} incontextof this,
 
 	img : function(elm)
 	{
-		// ‰æ‘œ“Ç‚İ‚İ(image‚Æ‚¨‚È‚¶)
+		// ï¿½æ‘œï¿½Ç‚İï¿½ï¿½ï¿½(imageï¿½Æ‚ï¿½ï¿½È‚ï¿½)
 		updateBeforeCh = 1;
 		var start = System.getTickCount();
 		getLayerFromElm(elm).loadImages(elm);
-		dm(elm.storage + " ‚Ì“Ç‚İ‚İ‚É " + (System.getTickCount() - start) + "ms ‚©‚©‚è‚Ü‚µ‚½");
+		dm(elm.storage + " ï¿½Ì“Ç‚İï¿½ï¿½İ‚ï¿½ " + (System.getTickCount() - start) + "ms ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 		return 0;
 	} incontextof this,
 
 	pimage : function(elm)
 	{
-		// •”•ª’Ç‰Á‰æ‘œ“Ç‚İ‚İ
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ç‰ï¿½ï¿½æ‘œï¿½Ç‚İï¿½ï¿½ï¿½
 		getLayerFromElm(elm).loadPartialImage(elm);
 		return 0;
 	} incontextof this,
 
 	ptext : function(elm)
 	{
-		// ”wŒi/‘OŒiƒŒƒCƒ„‚Ö‚Ì•¶š•`‰æ
+		// ï¿½wï¿½i/ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ö‚Ì•ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½
 		getLayerFromElm(elm).drawReconstructibleText(elm);
 		return 0;
 	} incontextof this,
 
 	freeimage : function(elm)
 	{
-		// ‰æ‘œ‚ÌƒNƒŠƒA
+		// ï¿½æ‘œï¿½ÌƒNï¿½ï¿½ï¿½A
 		updateBeforeCh = 1;
 		getLayerFromElm(elm).freeImage(elm);
 		return 0;
@@ -5368,7 +5368,7 @@ class KAGWindow extends Window
 
 	animstart : function(elm)
 	{
-		// ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌŠJn
+		// ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ÌŠJï¿½n
 		updateBeforeCh = 1;
 		getLayerFromElm(elm).startAnim(elm);
 		return 0;
@@ -5376,7 +5376,7 @@ class KAGWindow extends Window
 
 	animstop : function(elm)
 	{
-		// ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì’â~
+		// ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ì’ï¿½~
 		updateBeforeCh = 1;
 		getLayerFromElm(elm).stopAnim(+elm.seg);
 		return 0;
@@ -5384,34 +5384,34 @@ class KAGWindow extends Window
 
 	wa : function(elm)
 	{
-		// ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì’â~‘Ò‚¿
+		// ï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Ì’ï¿½~ï¿½Ò‚ï¿½
 		return waitAnimation(elm);
 	} incontextof this,
 
 	mapimage : function(elm)
 	{
-		// ƒNƒŠƒbƒJƒuƒ‹ƒ}ƒbƒv‚Ì—Ìˆæ‰æ‘œ‚ğ“Ç‚İ‚Ş
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Jï¿½uï¿½ï¿½ï¿½}ï¿½bï¿½vï¿½Ì—Ìˆï¿½æ‘œï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 		getLayerFromElm(elm).loadProvinceImage(elm.storage);
 		return 0;
 	} incontextof this,
 
 	mapaction : function(elm)
 	{
-		// ƒNƒŠƒbƒJƒuƒ‹ƒ}ƒbƒv‚Ì—ÌˆæƒAƒNƒVƒ‡ƒ“’è‹`‚ğ“Ç‚İ‚Ş
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Jï¿½uï¿½ï¿½ï¿½}ï¿½bï¿½vï¿½Ì—Ìˆï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 		getLayerFromElm(elm).loadProvinceActions(elm.storage);
 		return 0;
 	} incontextof this,
 
 	mapdisable : function(elm)
 	{
-		// ƒNƒŠƒbƒJƒuƒ‹ƒ}ƒbƒv‚ğ–³Œø‚É‚·‚é
+		// ï¿½Nï¿½ï¿½ï¿½bï¿½Jï¿½uï¿½ï¿½ï¿½}ï¿½bï¿½vï¿½ğ–³Œï¿½É‚ï¿½ï¿½ï¿½
 		getLayerFromElm(elm).clearProvinceActions();
 		return 0;
 	} incontextof this,
 
 	backlay : function(elm)
 	{
-		// ƒŒƒCƒ„‚ğ— ‰æ–Ê‚ÉƒRƒs[
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ğ— ‰ï¿½Ê‚ÉƒRï¿½sï¿½[
 		updateBeforeCh = 1;
 		backupLayer(elm, true);
 		return 0;
@@ -5419,7 +5419,7 @@ class KAGWindow extends Window
 
 	forelay : function(elm)
 	{
-		// ƒŒƒCƒ„‚ğ•\‰æ–Ê‚ÉƒRƒs[
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½Ê‚ÉƒRï¿½sï¿½[
 		updateBeforeCh = 1;
 		backupLayer(elm, false);
 		return 0;
@@ -5427,7 +5427,7 @@ class KAGWindow extends Window
 
 	copylay : function(elm)
 	{
-		// “¯í‚ÌƒŒƒCƒ„“¯m‚ÌƒRƒs[
+		// ï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ÌƒRï¿½sï¿½[
 		updateBeforeCh = 1;
 		copyLayer(elm);
 		return 0;
@@ -5435,7 +5435,7 @@ class KAGWindow extends Window
 
 	layopt : function(elm)
 	{
-		// ƒŒƒCƒ„‚ÌƒIƒvƒVƒ‡ƒ“‚ğİ’è
+		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½
 		updateBeforeCh = 1;
 		getLayerFromElm(elm).setOptions(elm);
 		return 0;
@@ -5443,27 +5443,27 @@ class KAGWindow extends Window
 
 	trans : function(elm)
 	{
-		// ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÌŠJn
+		// ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ÌŠJï¿½n
 		getLayerPageFromElm(elm, false).beginTransition(elm);
 		return 0;
 	} incontextof this,
 
 	wt : function(elm)
 	{
-		// ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ğ‘Ò‚Â
+		// ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò‚ï¿½
 		return waitTransition(elm);
 	} incontextof this,
 
 	stoptrans : function(elm)
 	{
-		// ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ğ’â~‚·‚é
+		// ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½
 		stopAllTransitions();
 		return 0;
 	} incontextof this,
 
 	move : function(elm)
 	{
-		// ©“®ˆÚ“®‚ÌŠJn
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ÌŠJï¿½n
 		getLayerFromElm(elm).beginMove(elm);
 		return 0;
 	} incontextof this,
@@ -5471,20 +5471,20 @@ class KAGWindow extends Window
 	// layer, page, fps, ox, oy
 	framemove : function(elm)
 	{
-		// ƒtƒŒ[ƒ€w’è©“®ˆÚ“®‚ÌŠJn
+		// ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½wï¿½è©ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ÌŠJï¿½n
 		getLayerFromElm(elm).beginFrameMove(elm);
 		return 0;
 	} incontextof this,
 
 	wm : function(elm)
 	{
-		//  ©“®ˆÚ“®‚ğ‘Ò‚Â
+		//  ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½Ò‚ï¿½
 		return waitMove(elm);
 	} incontextof this,
 
 	stopmove : function(elm)
 	{
-		// ©“®ˆÚ“®‚ğ’â~‚·‚é
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½
 		stopAllMoves();
 		return 0;
 	} incontextof this,
@@ -5497,11 +5497,11 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
-	//------------------------------ ƒ^ƒOƒnƒ“ƒhƒ‰ŒQ(Œø‰Ê‰¹EBGMEƒrƒfƒI‘€ì) --
+	//------------------------------ ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Q(ï¿½ï¿½Ê‰ï¿½ï¿½EBGMï¿½Eï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½ï¿½) --
 
 	playbgm : function(elm)
 	{
-		// BGM ‚Ì‰‰‘t
+		// BGM ï¿½Ì‰ï¿½ï¿½t
 		bgm.play(elm);
         clearBgmStop();
         clearBgmLabel();
@@ -5510,56 +5510,56 @@ class KAGWindow extends Window
 
 	stopbgm : function(elm)
 	{
-		// BGM ‚Ì’â~
+		// BGM ï¿½Ì’ï¿½~
 		bgm.stop();
 		return 0;
 	} incontextof this,
 
 	pausebgm : function(elm)
 	{
-		// BGM ‚Ìˆê’â~
+		// BGM ï¿½Ìˆêï¿½ï¿½~
 		bgm.pause();
 		return 0;
 	} incontextof this,
 
 	resumebgm : function(elm)
 	{
-		// BGM ‚ÌÄŠJ
+		// BGM ï¿½ÌÄŠJ
 		bgm.resume();
 		return 0;
 	} incontextof this,
 
 	fadeinbgm : function(elm)
 	{
-		// BGM ‚ÌƒtƒF[ƒhƒCƒ“
+		// BGM ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½Cï¿½ï¿½
 		bgm.fadeIn(elm);
 		return 0;
 	} incontextof this,
 
 	fadeoutbgm : function(elm)
 	{
-		// BGM ‚ÌƒtƒF[ƒhƒAƒEƒg
+		// BGM ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½Aï¿½Eï¿½g
 		bgm.fadeOut(elm);
 		return 0;
 	} incontextof this,
 
 	fadepausebgm : function(elm)
 	{
-		// BGM ‚ÌƒtƒF[ƒhƒ|[ƒY
+		// BGM ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½|ï¿½[ï¿½Y
 		bgm.fadePause(elm);
 		return 0;
 	} incontextof this,
 
 	fadebgm : function(elm)
 	{
-		// BGM ‚Ìw’è‰¹—Ê‚Ü‚Å‚ÌƒtƒF[ƒh
+		// BGM ï¿½Ìwï¿½è‰¹ï¿½Ê‚Ü‚Å‚Ìƒtï¿½Fï¿½[ï¿½h
 		bgm.fade(elm);
 		return 0;
 	} incontextof this,
 
 	xchgbgm : function(elm)
 	{
-		// BGM ‚Ì“ü‚ê‘Ö‚¦/ƒNƒƒXƒtƒF[ƒh
+		// BGM ï¿½Ì“ï¿½ï¿½Ö‚ï¿½/ï¿½Nï¿½ï¿½ï¿½Xï¿½tï¿½Fï¿½[ï¿½h
 		bgm.exchange(elm);
         clearBgmStop();
         clearBgmLabel();
@@ -5568,141 +5568,141 @@ class KAGWindow extends Window
 
 	bgmopt : function(elm)
 	{
-		// BGM ‚ÌƒIƒvƒVƒ‡ƒ“İ’è
+		// BGM ï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½
 		bgm.setOptions(elm);
 		return 0;
 	} incontextof this,
     setbgmstop : function(elm)
 	{
-		// BGM ‚ÌI—¹ƒR[ƒ‹ƒoƒbƒN‚Ì“o˜^
+		// BGM ï¿½ÌIï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½[ï¿½ï¿½ï¿½oï¿½bï¿½Nï¿½Ì“oï¿½^
         setBgmStop(elm);
         return 0;
 	} incontextof this,
 
     clearbgmstop : function(elm)
 	{
-		// BGM ‚ÌI—¹ƒR[ƒ‹ƒoƒbƒN‚Ìíœ
+		// BGM ï¿½ÌIï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½[ï¿½ï¿½ï¿½oï¿½bï¿½Nï¿½Ìíœ
         clearBgmStop();
         return 0;
 	} incontextof this,
 
     setbgmlabel : function(elm) {
-        // BGM ‚Ìƒ‰ƒxƒ‹ƒR[ƒ‹ƒoƒbƒN‚Ì“o˜^
+        // BGM ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½[ï¿½ï¿½ï¿½oï¿½bï¿½Nï¿½Ì“oï¿½^
         setBgmLabel(elm);
         return 0;
     } incontextof this,
 
     clearbgmlabel : function(elm)
 	{
-        // BGM ‚Ìƒ‰ƒxƒ‹ƒR[ƒ‹ƒoƒbƒN‚Ìíœ
+        // BGM ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½[ï¿½ï¿½ï¿½oï¿½bï¿½Nï¿½Ìíœ
         clearBgmLabel();
         return 0;
 	} incontextof this,
 
 	wb : function(elm)
 	{
-		// BGM ‚ÌƒtƒF[ƒhI—¹‘Ò‚¿
+		// BGM ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½Iï¿½ï¿½ï¿½Ò‚ï¿½
 		return waitBGMFade(elm);
 	} incontextof this,
 
 	wl : function(elm)
 	{
-		// BGM ‚ÌÄ¶I—¹‘Ò‚¿
+		// BGM ï¿½ÌÄï¿½ï¿½Iï¿½ï¿½ï¿½Ò‚ï¿½
 		return waitBGMStop(elm);
 	} incontextof this,
 
 	playse : function(elm)
 	{
-		// Œø‰Ê‰¹‚ÌÄ¶
+		// ï¿½ï¿½Ê‰ï¿½ï¿½ÌÄï¿½
 		se[+elm.buf].play(elm);
 		return 0;
 	} incontextof this,
 
 	stopse : function(elm)
 	{
-		// Œø‰Ê‰¹‚Ì’â~
+		// ï¿½ï¿½Ê‰ï¿½ï¿½Ì’ï¿½~
 		se[+elm.buf].stop();
 		return 0;
 	} incontextof this,
 
 	fadeinse : function(elm)
 	{
-		// Œø‰Ê‰¹‚ÌƒtƒF[ƒhƒCƒ“Ä¶
+		// ï¿½ï¿½Ê‰ï¿½ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½Cï¿½ï¿½ï¿½Äï¿½
 		se[+elm.buf].fadeIn(elm);
 		return 0;
 	} incontextof this,
 
 	fadeoutse : function(elm)
 	{
-		// Œø‰Ê‰¹‚ÌƒtƒF[ƒhƒAƒEƒg
+		// ï¿½ï¿½Ê‰ï¿½ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½Aï¿½Eï¿½g
 		se[+elm.buf].fadeOut(elm);
 		return 0;
 	} incontextof this,
 
 	fadese : function(elm)
 	{
-		// Œø‰Ê‰¹‚ÌƒtƒF[ƒh
+		// ï¿½ï¿½Ê‰ï¿½ï¿½Ìƒtï¿½Fï¿½[ï¿½h
 		se[+elm.buf].fade(elm);
 		return 0;
 	} incontextof this,
 
 	seopt : function(elm)
 	{
-		// Œø‰Ê‰¹‚ÌƒtƒF[ƒh
+		// ï¿½ï¿½Ê‰ï¿½ï¿½Ìƒtï¿½Fï¿½[ï¿½h
 		se[+elm.buf].setOptions(elm);
 		return 0;
 	} incontextof this,
 
 	wf : function(elm)
 	{
-		// Œø‰Ê‰¹‚ÌƒtƒF[ƒhI—¹‘Ò‚¿
+		// ï¿½ï¿½Ê‰ï¿½ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½Iï¿½ï¿½ï¿½Ò‚ï¿½
 		return waitSEFade(elm);
 	} incontextof this,
 
 	ws : function(elm)
 	{
-		// Œø‰Ê‰¹‚ÌÄ¶I—¹‘Ò‚¿
+		// ï¿½ï¿½Ê‰ï¿½ï¿½ÌÄï¿½ï¿½Iï¿½ï¿½ï¿½Ò‚ï¿½
 		return waitSEStop(elm);
 	} incontextof this,
 
 	video : function(elm)
 	{
-		// ƒ€[ƒr[‚ÌƒIƒvƒVƒ‡ƒ“‚ğİ’è‚·‚é
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’è‚·ï¿½ï¿½
 		movies[+elm.slot].setOptions(elm);
 		return 0;
 	} incontextof this,
 
 	playvideo : function(elm)
 	{
-		// ƒ€[ƒr[‚ğÄ¶‚·‚é
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½
 		movies[+elm.slot].play(elm.storage);
 		return 0;
 	} incontextof this,
 
 	stopvideo : function(elm)
 	{
-		// ƒ€[ƒr[‚ğ’â~‚·‚é
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½
 		movies[+elm.slot].stop();
 		return 0;
 	} incontextof this,
 
 	openvideo : function(elm)
 	{
-		// ƒ€[ƒr[Ä¶‚Ì€”õ‚ğ‚·‚é
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Äï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		movies[+elm.slot].open(elm.storage);
 		return 0;
 	} incontextof this,
 
 	wv : function(elm)
 	{
-		// ƒ€[ƒr[‚ÌÄ¶I—¹‚ğ‘Ò‚Â
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ÌÄï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½Ò‚ï¿½
 		return waitMovieStop(elm);
 	} incontextof this,
 
 // Start: Add: T.Imoto
 	wp : function(elm)
 	{
-		// ƒ€[ƒr[‚ÌƒsƒŠƒIƒhƒCƒxƒ“ƒg‚ğ‘Ò‚Â
+		// ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ìƒsï¿½ï¿½ï¿½Iï¿½hï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½Ò‚ï¿½
 		return waitMoviePeriod(elm);
 	} incontextof this,
 
@@ -5769,53 +5769,53 @@ class KAGWindow extends Window
 	} incontextof this,
 // End: Add: T.Imoto
 
-	//--------------------------------------- ƒ^ƒOƒnƒ“ƒhƒ‰ŒQ(•Ï”ETJS ‘€ì) --
+	//--------------------------------------- ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Q(ï¿½Ïï¿½ï¿½ETJS ï¿½ï¿½ï¿½ï¿½) --
 
 	eval : function(elm)
 	{
-		// ®‚Ì•]‰¿
+		// ï¿½ï¿½ï¿½Ì•]ï¿½ï¿½
 		Scripts.eval(elm.exp);
 		return 0;
 	} incontextof this,
 
 	trace : function(elm)
 	{
-		// ®‚ÌƒgƒŒ[ƒX•\¦
+		// ï¿½ï¿½ï¿½Ìƒgï¿½ï¿½ï¿½[ï¿½Xï¿½\ï¿½ï¿½
 		var exp = elm.exp;
 		var result = Scripts.eval(exp);
-		dm("¥[trace] expression=\"" + exp + "\" type of result=" + typeof result + 
+		dm("ï¿½ï¿½[trace] expression=\"" + exp + "\" type of result=" + typeof result + 
 			" result=" + result);
 		return 0;
 	} incontextof this,
 
 	input : function(elm)
 	{
-		// •¶š—ñ‚Ì“ü—Í
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì“ï¿½ï¿½
 		inputString(elm);
 		return 0;
 	} incontextof this,
 
 	clearsysvar : function(elm)
 	{
-		// ƒVƒXƒeƒ€•Ï”‚ÌƒNƒŠƒA
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½ÌƒNï¿½ï¿½ï¿½A
 		clearSystemVariables();
 		return 0;
 	} incontextof this,
 
 	clearvar : function(elm)
 	{
-		// ƒQ[ƒ€•Ï”‚ÌƒNƒŠƒA
+		// ï¿½Qï¿½[ï¿½ï¿½ï¿½Ïï¿½ï¿½ÌƒNï¿½ï¿½ï¿½A
 		clearVariables();
 		return 0;
 	} incontextof this,
 
 	waittrig : function(elm)
 	{
-		// ƒgƒŠƒK‚ğ‘Ò‚Â
+		// ï¿½gï¿½ï¿½ï¿½Kï¿½ï¿½Ò‚ï¿½
 		return waitTrigger(elm);
 	} incontextof this,
 
-	//----------------------------------------------- ƒ^ƒOƒnƒ“ƒhƒ‰ŒQ‚ÌI‚í‚è --
+	//----------------------------------------------- ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Qï¿½ÌIï¿½ï¿½ï¿½ --
 
 		interrupt : function(elm) { return -2; } incontextof this ];
 	}
@@ -5823,12 +5823,12 @@ class KAGWindow extends Window
 
 
 
-// TJS ƒXƒNƒŠƒvƒg‚Í‚±‚±‚ÅI‚í‚è
+// TJS ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Í‚ï¿½ï¿½ï¿½ï¿½ÅIï¿½ï¿½ï¿½
 "
 END_OF_TJS_SCRIPT
 # "; /*
 
-# assign ‚ÅƒRƒs[‚·‚×‚«•Ï”‚ÌÄ¶¬‚ğs‚¤ perl ƒXƒNƒŠƒvƒg
+# assign ï¿½ÅƒRï¿½sï¿½[ï¿½ï¿½ï¿½×‚ï¿½ï¿½Ïï¿½ï¿½ÌÄï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ perl ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½g
 
 open FH, "MainWindow.tjs" or die;
 undef($/);

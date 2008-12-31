@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -13,7 +13,7 @@
 //---------------------------------------------------------------------------
 #include "WaveLoopManager.h"
 //---------------------------------------------------------------------------
-// ÉvÉçÉgÉ^ÉCÉv
+// ÔøΩvÔøΩÔøΩÔøΩgÔøΩ^ÔøΩCÔøΩv
 typedef DWORD __fastcall (__closure *TGetPCMDataEvent)
 	(__int16 * Buffer, DWORD Offset, DWORD Samples);
 void __fastcall InitDirectSound(HWND wnd);

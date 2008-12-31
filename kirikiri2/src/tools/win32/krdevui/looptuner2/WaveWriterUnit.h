@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -20,7 +20,7 @@
 class TWaveReader;
 class TWaveWriterForm : public TForm
 {
-__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
+__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TProgressBar *ProgressBar;
 	TButton *CancelButton;
 	TLabel *Label;
@@ -30,14 +30,14 @@ __published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
-private:	// ƒ†[ƒU[éŒ¾
+private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	bool CloseLock;
 	bool UserBreak;
 	void __fastcall WriteWaveData(TWaveReader *reader, int start, int length,
 		AnsiString filename);
 
 
-public:		// ƒ†[ƒU[éŒ¾
+public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	TWaveReader * WaveReader;
 	int Start;
 	int Length;

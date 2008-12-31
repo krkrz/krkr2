@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -683,7 +683,7 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							if( Layer1 == NULL && Layer2 == NULL )	// nothing to do.
 								return;
 
-							// 2ƒtƒŒ[ƒ€ˆÈã·‚ª‚ ‚é‚Æ‚«‚ÍGetFrame() ‚ğŒ»İ‚ÌƒtƒŒ[ƒ€‚Æ‚·‚é
+							// 2ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Èã·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½GetFrame() ï¿½ï¿½ï¿½ï¿½ï¿½İ‚Ìƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
 							int frame = GetFrame();
 							if( (frame+1) < curFrame || (frame-1) > curFrame )
 								curFrame = frame;
@@ -691,7 +691,7 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 							if( (!IsPrepare) && (SegLoopEndFrame > 0) && (frame >= SegLoopEndFrame) ) {
 								SetFrame( SegLoopStartFrame > 0 ? SegLoopStartFrame : 0 );
 								FirePeriodEvent(perSegLoop); // fire period event by segment loop rewind
-								return; // Update‚ğs‚í‚È‚¢
+								return; // Updateï¿½ï¿½ï¿½sï¿½ï¿½È‚ï¿½
 							}
 
 							// get video image size
@@ -723,7 +723,7 @@ void __fastcall tTJSNI_VideoOverlay::WndProc(Messages::TMessage &Msg)
 								if( l1 ) l1->AssignMainImage( Bitmap[0] );
 								if( l2 ) l2->AssignMainImage( Bitmap[0] );
 							}
-							else	// 0‚¶‚á‚È‚©‚Á‚½‚çA1‚Æ‚İ‚È‚·B
+							else	// 0ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½A1ï¿½Æ‚İ‚È‚ï¿½ï¿½B
 							{
 								if( l1 ) l1->AssignMainImage( Bitmap[1] );
 								if( l2 ) l2->AssignMainImage( Bitmap[1] );
@@ -885,7 +885,7 @@ void tTJSNI_VideoOverlay::SetLayer2( tTJSNI_BaseLayer *l )
 }
 void tTJSNI_VideoOverlay::SetMode( tTVPVideoOverlayMode m )
 {
-	// ƒrƒfƒIƒI[ƒvƒ“Œã‚Ìƒ‚[ƒh•ÏX‚Í‹Ö~
+	// ï¿½rï¿½fï¿½Iï¿½Iï¿½[ï¿½vï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½[ï¿½hï¿½ÏXï¿½Í‹Ö~
 	if( !VideoOverlay )
 	{
 		Mode = m;
@@ -1020,11 +1020,11 @@ void tTJSNI_VideoOverlay::SetMixingLayer( tTJSNI_BaseLayer *l )
 				{
 					HDC hdc;
 					if( (hdc = bmp->GetBitmapDC()) != NULL )
-					{	// ‚·‚Å‚ÉHDC‚ª‚ ‚é‚Ì‚Å‚»‚ê‚ğg‚¤
+					{	// ï¿½ï¿½ï¿½Å‚ï¿½HDCï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Å‚ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½
 						VideoOverlay->SetMixingBitmap( hdc, &dest, alpha );
 					}
 					else
-					{	// ©‘O‚ÅDC‚ğì‚é
+					{	// ï¿½ï¿½ï¿½Oï¿½ï¿½DCï¿½ï¿½ï¿½ï¿½ï¿½
 						HDC			ref = GetDC(0);
 						HBITMAP		myDIB = CreateDIBitmap( ref, bmp->GetBITMAPINFOHEADER(), CBM_INIT, bmp->GetBits(), bmp->GetBITMAPINFO(), bmp->Is8bit() ? DIB_PAL_COLORS : DIB_RGB_COLORS );
 						hdc = CreateCompatibleDC( NULL );

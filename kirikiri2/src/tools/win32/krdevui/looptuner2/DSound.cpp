@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -29,7 +29,7 @@ static void __fastcall ResetSoundBuffer();
 static void __fastcall FillSecondaryBuffer(void);
 //---------------------------------------------------------------------------
 static TCriticalSection *WriteLock = NULL;
-class TBufferWriteLock // ƒƒbƒN—pƒNƒ‰ƒX
+class TBufferWriteLock // ï¿½ï¿½ï¿½bï¿½Nï¿½pï¿½Nï¿½ï¿½ï¿½X
 {
 public:
 	__fastcall TBufferWriteLock(void) { if(WriteLock) WriteLock->Enter(); };
@@ -88,12 +88,12 @@ void __fastcall InitDirectSound(HWND wnd)
 {
 	if(!Sound)
 	{
-		// DLL ‚Ìƒ[ƒh
+		// DLL ï¿½Ìƒï¿½ï¿½[ï¿½h
 
 		if(DirectSoundDLLHandle==NULL)
 		{
 			DirectSoundDLLHandle = LoadLibrary("dsound.dll");
-			if(!DirectSoundDLLHandle) throw Exception("dsound.dll ‚ðƒ[ƒh‚Å‚«‚Ü‚¹‚ñ");
+			if(!DirectSoundDLLHandle) throw Exception("dsound.dll ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 		}
 
 		if(procDirectSoundCreate==NULL)
@@ -104,35 +104,35 @@ void __fastcall InitDirectSound(HWND wnd)
 			{
 				FreeLibrary(DirectSoundDLLHandle);
 				DirectSoundDLLHandle=NULL;
-				throw Exception("dsound.dll ‚ªˆÙí‚Å‚·");
+				throw Exception("dsound.dll ï¿½ï¿½ï¿½Ùï¿½Å‚ï¿½");
 			}
 		}
-		// ƒIƒuƒWƒFƒNƒgì¬
+		// ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ì¬
 		HRESULT hr;
 		hr=procDirectSoundCreate(NULL,&Sound,NULL);
 		if(FAILED(hr))
 		{
 			throw Exception(
-				AnsiString("DirectSound ‚ð‰Šú‰»‚Å‚«‚Ü‚¹‚ñ(‘¼‚ÅWave‚ðÄ¶’†?)/HRESULT:")+
+				AnsiString("DirectSound ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Waveï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½?)/HRESULT:")+
 					IntToHex((int)hr,8));
-				// ì¬‚ÉŽ¸”s@‘¼‚É WAVE output ‚ªŽg‚í‚ê‚Ä‚¢‚½ê‡‚È‚ÇA
-				// ‚±‚¤‚È‚é
+				// ï¿½ì¬ï¿½ÉŽï¿½ï¿½sï¿½@ï¿½ï¿½ï¿½ï¿½ WAVE output ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ê‡ï¿½È‚ÇA
+				// ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
 		}
 
-		// ‹¦’²ƒŒƒxƒ‹‚ÌÝ’è
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ÌÝ’ï¿½
 		hr=Sound->SetCooperativeLevel(wnd, DSSCL_PRIORITY);
 		if(FAILED(hr))
 		{
-			Sound->Release(); // ƒTƒEƒ“ƒhƒIƒuƒWƒFƒNƒg‚ðƒŠƒŠ[ƒX
+			Sound->Release(); // ï¿½Tï¿½Eï¿½ï¿½ï¿½hï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½X
 			Sound=NULL;
-			throw Exception(AnsiString("DirectSound ‚Ì‹¦’²ƒŒƒxƒ‹‚ÌÝ’è‚ÉŽ¸”s‚µ‚Ü‚µ‚½(phase1)/HRESULT:")+
+			throw Exception(AnsiString("DirectSound ï¿½Ì‹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ÌÝ’ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½(phase1)/HRESULT:")+
 				IntToHex((int)hr,8));
 		}
 
 //--
-		// ƒvƒ‰ƒCƒ}ƒŠƒoƒbƒtƒ@‚Ìì¬
+		// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½Ìì¬
 
-		SoundPrimaryBuffer= NULL; // •Ê‚Éì¬‚Å‚«‚È‚«‚á‚»‚ê‚Å‚à‚¢‚¢
+		SoundPrimaryBuffer= NULL; // ï¿½Ê‚Éì¬ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½á‚»ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½
 
 		ZeroMemory(&SoundBufferDesc,sizeof(DSBUFFERDESC));
 		SoundBufferDesc.dwSize=sizeof(DSBUFFERDESC);
@@ -142,13 +142,13 @@ void __fastcall InitDirectSound(HWND wnd)
 
 		if(FAILED(hr) || SoundPrimaryBuffer == NULL)
 		{
-			// DbgMsgAdd("Œx:DirectSound ƒvƒ‰ƒCƒ}ƒŠƒoƒbƒtƒ@‚ðì¬‚Å‚«‚Ü‚¹‚ñ");
+			// DbgMsgAdd("ï¿½xï¿½ï¿½:DirectSound ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ì¬ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 			hr=Sound->SetCooperativeLevel(wnd, DSSCL_NORMAL);
 			if(FAILED(hr))
 			{
-				Sound->Release(); // ƒTƒEƒ“ƒhƒIƒuƒWƒFƒNƒg‚ðƒŠƒŠ[ƒX
+				Sound->Release(); // ï¿½Tï¿½Eï¿½ï¿½ï¿½hï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½X
 				Sound = NULL;
-				throw Exception(AnsiString("DirectSound ‚Ì‹¦’²ƒŒƒxƒ‹‚ÌÝ’è‚ÉŽ¸”s‚µ‚Ü‚µ‚½(phase2)/HRESULT:")+
+				throw Exception(AnsiString("DirectSound ï¿½Ì‹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ÌÝ’ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½(phase2)/HRESULT:")+
 					IntToHex((int)hr,8));
 			}
 		}
@@ -175,7 +175,7 @@ void __fastcall InitDirectSound(HWND wnd)
 //---------------------------------------------------------------------------
 void __fastcall FreeDirectSound(void)
 {
-	// ƒTƒEƒ“ƒhƒoƒbƒtƒ@‚Ì”jŠü
+	// ï¿½Tï¿½Eï¿½ï¿½ï¿½hï¿½oï¿½bï¿½tï¿½@ï¿½Ì”jï¿½ï¿½
 	if(PlayerThread)
 	{
 		delete PlayerThread;
@@ -194,7 +194,7 @@ void __fastcall FreeDirectSound(void)
 		SoundPrimaryBuffer=NULL;
 		Sound=NULL;
 
-		// DLL ‚Ì‰ð•ú
+		// DLL ï¿½Ì‰ï¿½ï¿½
 		if(DirectSoundDLLHandle)
 		{
 			FreeLibrary(DirectSoundDLLHandle);
@@ -215,10 +215,10 @@ void __fastcall SetPrimaryBufferFormat(WAVEFORMATEX *wfx)
 //---------------------------------------------------------------------------
 void __fastcall CreateSoundBuffer(const WAVEFORMATEXTENSIBLE * wfx)
 {
-	// 0.25 •bŠÔ‚ÌƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@‚ðì¬‚·‚é
+	// 0.25 ï¿½bï¿½Ô‚ÌƒZï¿½Jï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½ï¿½
 
-	/* wfx.Format ‚Ì nAvgBytesPerSec ‚â nBlockAlign ‚Í•Ï‚È’l‚É‚È‚Á‚Ä‚¢‚È‚¢‚©‚Ç‚¤‚©
-	   ƒ`ƒFƒbƒN‚ª•K—v */
+	/* wfx.Format ï¿½ï¿½ nAvgBytesPerSec ï¿½ï¿½ nBlockAlign ï¿½Í•Ï‚È’lï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	   ï¿½`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½Kï¿½v */
 
 	if(SoundBuffer)
 	{
@@ -226,13 +226,13 @@ void __fastcall CreateSoundBuffer(const WAVEFORMATEXTENSIBLE * wfx)
 		SoundBuffer = NULL;
 	}
 
-	// ƒvƒ‰ƒCƒ}ƒŠƒoƒbƒtƒ@‚ÌƒtƒH[ƒ}ƒbƒg‚ðÄÝ’è
+	// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½Ìƒtï¿½Hï¿½[ï¿½}ï¿½bï¿½gï¿½ï¿½ï¿½ÄÝ’ï¿½
 	if(SoundPrimaryBuffer)
 	{
 		SoundPrimaryBuffer->SetFormat((const WAVEFORMATEX *)wfx);
 	}
 
-	// ƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@‚Ìì¬
+	// ï¿½Zï¿½Jï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½Ìì¬
 	memset(&SoundBufferDesc,0,sizeof(DSBUFFERDESC));
 	SoundBufferDesc.dwSize=sizeof(DSBUFFERDESC);
 	SoundBufferDesc.dwFlags=
@@ -251,15 +251,15 @@ void __fastcall CreateSoundBuffer(const WAVEFORMATEXTENSIBLE * wfx)
 	SoundBufferDesc.lpwfxFormat = (WAVEFORMATEX*)wfx;
 
 
-	// ƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@‚ðì¬‚·‚é
+	// ï¿½Zï¿½Jï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½ï¿½
 	HRESULT hr = Sound->CreateSoundBuffer(&SoundBufferDesc,&SoundBuffer,NULL);
 	if(FAILED(hr))
 	{
 		SoundBuffer=NULL;
-		throw Exception("ƒZƒJƒ“ƒ_ƒŠƒoƒbƒtƒ@‚Ìì¬‚ÉŽ¸”s‚µ‚Ü‚µ‚½"
-			"/Žü”g”:"+AnsiString(wfx->Format.nSamplesPerSec)+
-			"/ƒ`ƒƒƒlƒ‹”:"+AnsiString(wfx->Format.nChannels)+
-			"/ƒrƒbƒg”:"+AnsiString(16)+
+		throw Exception("ï¿½Zï¿½Jï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½Ìì¬ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"
+			"/ï¿½ï¿½gï¿½ï¿½:"+AnsiString(wfx->Format.nSamplesPerSec)+
+			"/ï¿½`ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½:"+AnsiString(wfx->Format.nChannels)+
+			"/ï¿½rï¿½bï¿½gï¿½ï¿½:"+AnsiString(16)+
 			"/HRESULT:"+IntToHex((int)hr,8));
 	}
 
@@ -354,18 +354,18 @@ static void __fastcall FillSecondaryBuffer(void)
 
 		wp-=pp;
 		if(wp<0) wp+=2;
-			// ‚±‚ÌŽž“_‚Å wp =pp ‚Æ wp ‚Ì·
+			// ï¿½ï¿½ï¿½ÌŽï¿½ï¿½_ï¿½ï¿½ wp =pp ï¿½ï¿½ wp ï¿½Ìï¿½
 
 		if(d <= wp)
 		{
-			// pp ‚Æ wp ‚ÌŠÔ‚ÍŒ»Ý‰‰‘t’†‚Ì‚½‚ßA‚»‚±‚É‘‚«ž‚Þ‚±‚Æ‚Í‚Å‚«‚È‚¢
+			// pp ï¿½ï¿½ wp ï¿½ÌŠÔ‚ÍŒï¿½ï¿½Ý‰ï¿½ï¿½tï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ßAï¿½ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ‚ï¿½ï¿½Æ‚Í‚Å‚ï¿½ï¿½È‚ï¿½
 			return;
 		}
 
 		writepos = SoundBufferWritePos?SoundBufferBytesHalf:0;
 		SoundBufferWritePos ^= 1;
 
-		// pp ‚Æ wp ‚Ì‹æŠÔ‚Í‰‰‘t’†‚Ì‚½‚ßA‚»‚±‚É‘‚«ž‚ñ‚Å‚Í‚È‚ç‚È‚¢
+		// pp ï¿½ï¿½ wp ï¿½Ì‹ï¿½Ô‚Í‰ï¿½ï¿½tï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ßAï¿½ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚Í‚È‚ï¿½È‚ï¿½
 	}
 
 	if(DecodeEnded)
@@ -393,7 +393,7 @@ static void __fastcall FillSecondaryBuffer(void)
 		written *= SampleSize;
 		if(written < SoundBufferBytesHalf)
 		{
-			// ‘«‚è‚È‚¢•ª‚Í 0 ‚Å–ž‚½‚·
+			// ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ 0 ï¿½Å–ï¿½ï¿½ï¿½ï¿½ï¿½
 			if(!DecodeEnded)
 			{
 				DecodeEnded = true;
@@ -407,7 +407,7 @@ static void __fastcall FillSecondaryBuffer(void)
 //---------------------------------------------------------------------------
 DWORD __fastcall GetCurrentPlayingPos(void)
 {
-	// Œ»Ý‚Ì‰‰‘tˆÊ’u‚ð“¾‚é
+	// ï¿½ï¿½ï¿½Ý‚Ì‰ï¿½ï¿½tï¿½Ê’uï¿½ð“¾‚ï¿½
     if(!Playing) return -1;
 
 	TBufferWriteLock lock;

@@ -2,7 +2,7 @@ KAGLoadScript("MyHistoryLayer.tjs");
 KAGLoadScript("MyYesNoDialog.tjs");
 
 /**
- * Œ»İƒVƒXƒeƒ€ƒƒjƒ…[‚ğÀs’†‚©‚Ç‚¤‚©‚Ì”»’è
+ * ï¿½ï¿½ï¿½İƒVï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½Ì”ï¿½ï¿½ï¿½
  */
 function inSystemMenu(kag)
 {
@@ -16,10 +16,10 @@ function inSystemMenu(kag)
 };
 
 /**
- * ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ìƒ{ƒ^ƒ“‚Ì—LŒø§Œä
- * @param layer ƒƒbƒZ[ƒWƒŒƒCƒ„
- * @param name ƒ{ƒ^ƒ“–¼
- * @param enabled —LŒø‚È‚ç true
+ * ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½Ì—Lï¿½ï¿½ï¿½
+ * @param layer ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½
+ * @param name ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½
+ * @param enabled ï¿½Lï¿½ï¿½È‚ï¿½ true
  */
 function setLayerButtonEnabled(layer, name, enabled)
 {
@@ -29,10 +29,10 @@ function setLayerButtonEnabled(layer, name, enabled)
 }
 
 /**
- * ƒƒbƒZ[ƒWƒŒƒCƒ„‚O‚Ìƒ{ƒ^ƒ“‚Ì—LŒø§Œä
- * @param kag KAG‚ÌƒEƒCƒ“ƒhƒE
- * @param name ƒ{ƒ^ƒ“–¼
- * @param enabled —LŒø‚È‚ç true
+ * ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Oï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½Ì—Lï¿½ï¿½ï¿½
+ * @param kag KAGï¿½ÌƒEï¿½Cï¿½ï¿½ï¿½hï¿½E
+ * @param name ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½
+ * @param enabled ï¿½Lï¿½ï¿½È‚ï¿½ true
  */
 function setButtonEnabled(kag, name, enabled)
 {
@@ -41,11 +41,11 @@ function setButtonEnabled(kag, name, enabled)
 }
 
 /**
- * ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ìƒ{ƒ^ƒ“‚Ìƒ‚[ƒh (ON/’Êí) ‚ÌØ‚è‘Ö‚¦
- * ‰æ‘œƒtƒ@ƒCƒ‹–¼‚Æ‚µ‚Ä ’Êí:msg_–¼‘O_normal / ƒI[ƒo[:msg_–¼‘O_over / ‚n‚m:msg_–¼‘O_on ‚ğŠú‘Ò‚µ‚Ä‚¢‚é
- * @param layer ƒƒbƒZ[ƒWƒŒƒCƒ„
- * @param name ƒ{ƒ^ƒ“–¼
- * @param mode ON ‚È‚ç true
+ * ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½Ìƒï¿½ï¿½[ï¿½h (ON/ï¿½Êï¿½) ï¿½ÌØ‚ï¿½Ö‚ï¿½
+ * ï¿½æ‘œï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ ï¿½Êï¿½:msg_ï¿½ï¿½ï¿½O_normal / ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½:msg_ï¿½ï¿½ï¿½O_over / ï¿½nï¿½m:msg_ï¿½ï¿½ï¿½O_on ï¿½ï¿½ï¿½ï¿½Ò‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+ * @param layer ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½
+ * @param name ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½
+ * @param mode ON ï¿½È‚ï¿½ true
  */
 function setLayerButtonMode(layer, name, mode)
 {
@@ -59,10 +59,10 @@ function setLayerButtonMode(layer, name, mode)
 }
 
 /**
- * ƒƒbƒZ[ƒWƒŒƒCƒ„‚O‚Ìƒ{ƒ^ƒ“‚Ìƒ‚[ƒh (ON/’Êí) ‚ğØ‚è‘Ö‚¦‚é
- * @param kag KAG‚ÌƒEƒCƒ“ƒhƒE
- * @param name ƒ{ƒ^ƒ“–¼
- * @param mode ON ‚È‚ç true
+ * ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Oï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½Ìƒï¿½ï¿½[ï¿½h (ON/ï¿½Êï¿½) ï¿½ï¿½Ø‚ï¿½Ö‚ï¿½ï¿½ï¿½
+ * @param kag KAGï¿½ÌƒEï¿½Cï¿½ï¿½ï¿½hï¿½E
+ * @param name ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½
+ * @param mode ON ï¿½È‚ï¿½ true
  */
 function setButtonMode(kag, name, mode)
 {
@@ -71,30 +71,30 @@ function setButtonMode(kag, name, mode)
 }
 
 /**
- * ƒ‚[ƒh•ÏX
- * ƒVƒXƒeƒ€ó‘Ô‚ª•Ï‚í‚Á‚½‚Æ‚«‚É MainWindow ‚©‚çŒÄ‚Ño‚³‚ê‚Ü‚·
- * @param kag KAGƒEƒCƒ“ƒhƒE
- * @param autoMode ƒI[ƒgƒ‚[ƒh‚Ìó‘Ô
- * @param skipMode ƒXƒLƒbƒvƒ‚[ƒh‚Ìó‘Ô
- * @param canAuto ƒI[ƒgƒ‚[ƒh‚ª—LŒø
- * @param canSkip ƒXƒLƒbƒvƒ‚[ƒh‚ª—LŒø
- * @param selectShowing ‘I‘ğ‘‹‚ª•\¦‚³‚ê‚Ä‚¢‚é
+ * ï¿½ï¿½ï¿½[ï¿½hï¿½ÏX
+ * ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½Ï‚ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ MainWindow ï¿½ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½Ü‚ï¿½
+ * @param kag KAGï¿½Eï¿½Cï¿½ï¿½ï¿½hï¿½E
+ * @param autoMode ï¿½Iï¿½[ï¿½gï¿½ï¿½ï¿½[ï¿½hï¿½Ìï¿½ï¿½
+ * @param skipMode ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½[ï¿½hï¿½Ìï¿½ï¿½
+ * @param canAuto ï¿½Iï¿½[ï¿½gï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Lï¿½ï¿½
+ * @param canSkip ï¿½Xï¿½Lï¿½bï¿½vï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Lï¿½ï¿½
+ * @param selectShowing ï¿½Iï¿½ğ‘‹‚ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
  * @param modal
  */
 function onModeChange(kag, autoMode, skipMode, canAuto, canSkip, selectShowing, modal)
 {
-    // auto / skip ‚Ìƒ‚[ƒh’²®
+    // auto / skip ï¿½Ìƒï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½
     setButtonMode(kag, "msg_auto", autoMode);
     setButtonMode(kag, "msg_skip", skipMode);
 
-    // ƒƒbƒZ[ƒW‘‹‚Ìƒ{ƒ^ƒ“‚Ì’²®
+    // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½Ì’ï¿½ï¿½ï¿½
     setButtonEnabled(kag, "msg_save", kag.storeMenu.enabled);
     setButtonEnabled(kag, "msg_load", kag.restoreMenu.enabled);
     setButtonEnabled(kag, "msg_log",  kag.showHistoryMenuItem.enabled);
     setButtonEnabled(kag, "msg_auto", kag.autoModeMenuItem.enabled);
     setButtonEnabled(kag, "msg_skip", kag.skipToNextStopMenuItem.enabled);
 
-    // ƒRƒ“ƒtƒBƒOƒƒjƒ…[‚à“¯Šú
+    // ï¿½Rï¿½ï¿½ï¿½tï¿½Bï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     if (typeof kag.configMenuItem != "undefined") {
         kag.configMenuItem.enabled = !inSystemMenu(kag) && !modal && kag.inStable;
         setButtonEnabled(kag, "config", kag.configMenuItem.enabled);
@@ -102,15 +102,15 @@ function onModeChange(kag, autoMode, skipMode, canAuto, canSkip, selectShowing, 
 }
 
 /**
- * ƒƒjƒ…[‚Ì‚Á‚Æ‚è
+ * ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Ì‚ï¿½ï¿½Æ‚ï¿½
  */
 
-// Menus.tjs - ƒƒjƒ…[ì¬ŠÖ”‚Ì’è‹`
-// Copyright (C)2001-2008, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
+// Menus.tjs - ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ì¬ï¿½Öï¿½ï¿½Ì’ï¿½`
+// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
 
 function KAGWindow_createMenus()
 {
-	// ‚±‚ÌŠÖ”‚Í MainWindow ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg‚ÌƒRƒ“ƒeƒLƒXƒgã‚ÅÀs‚³‚ê‚Ü‚·
+	// ï¿½ï¿½ï¿½ÌŠÖï¿½ï¿½ï¿½ MainWindow ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÌƒRï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½gï¿½ï¿½Åï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Ü‚ï¿½
 
 	menu.add(this.systemMenu = new KAGMenuItem(this, "SYSTEM(&S)", 0, "", false));
 
@@ -124,14 +124,14 @@ function KAGWindow_createMenus()
 	systemMenu.add(new MenuItem(this, "-"));
 	systemMenu.add(this.exitMenuItem = new KAGMenuItem(this, "EXIT(&X)", 0, onExitMenuItemClick, false));
 
-	systemMenu.add(this.rightClickMenuItem = new KAGMenuItem(this, "ƒƒbƒZ[ƒW‚ğÁ‚·(&S)", 0,
+	systemMenu.add(this.rightClickMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(&S)", 0,
 		onRightClickMenuItemClick, false));
 
 	systemMenu.add(this.skipToNextStopMenuItem = new KAGMenuItem(this,
-		autoRecordPageShowing?"Ÿ‚Ì‘I‘ğˆ/–¢“Ç‚Ü‚Åi‚Ş(&F)":"Ÿ‚Ì‘I‘ğˆ‚Ü‚Åi‚Ş(&F)", 0,
+		autoRecordPageShowing?"ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Ç‚Ü‚Åiï¿½ï¿½(&F)":"ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Åiï¿½ï¿½(&F)", 0,
 		onSkipToNextStopMenuItemClick, false));
 
-	systemMenu.add(this.autoModeMenuItem = new KAGMenuItem(this, "©“®“I‚É“Ç‚İi‚Ş(&A)", 0,
+	systemMenu.add(this.autoModeMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚İiï¿½ï¿½(&A)", 0,
 		onAutoModeMenuItemClick, false));
 
 	menu.add(this.displayMenu = new KAGMenuItem(this, "DISPLAY(F5)", 0, void, false));
@@ -152,78 +152,78 @@ function KAGWindow_createMenus()
 		helpMenu.add(this.helpAboutMenuItem = new KAGMenuItem(this, "ABOUT(F1) ", 0,
 		onHelpAboutMenuItemClick, false));
 
-	menu.add(this.debugMenu = new KAGMenuItem(this, "ƒfƒoƒbƒO(&D)", 0, void, false));
+	menu.add(this.debugMenu = new KAGMenuItem(this, "ï¿½fï¿½oï¿½bï¿½O(&D)", 0, void, false));
 
-		debugMenu.add(this.loadScenarioMenuItem = new KAGMenuItem(this, "ƒVƒiƒŠƒI‚Ì“Ç‚İ(&R)", 1,
+		debugMenu.add(this.loadScenarioMenuItem = new KAGMenuItem(this, "ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½Ì“Çï¿½ï¿½ï¿½(&R)", 1,
 			onExecDialogMenuItemClick, false));
-		debugMenu.add(this.reloadScenarioMenuItem = new KAGMenuItem(this, "ƒVƒiƒŠƒI‚ÌÄ“Ç‚İ(&R)", 1,
+		debugMenu.add(this.reloadScenarioMenuItem = new KAGMenuItem(this, "ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½ÌÄ“Çï¿½ï¿½ï¿½(&R)", 1,
 			onReloadScenarioMenuItemClick, false));
-		debugMenu.add(this.showConsoleMenuItem = new KAGMenuItem(this, "ƒRƒ“ƒ\[ƒ‹(&C)\tShift+F4", 1,
+		debugMenu.add(this.showConsoleMenuItem = new KAGMenuItem(this, "ï¿½Rï¿½ï¿½ï¿½\ï¿½[ï¿½ï¿½(&C)\tShift+F4", 1,
 			onShowConsoleMenuItemClick, false));
-		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "ƒRƒ“ƒgƒ[ƒ‰(&S)\tShift+F1", 1,
+		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "ï¿½Rï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½(&S)\tShift+F1", 1,
 			onShowContollerMenuItemClick, false));
 
         debugMenu.add(new MenuItem(this, "-"));
 
-		debugMenu.add(this.debugLevelNoneMenuItem = new KAGMenuItem(this, "ƒfƒoƒbƒOƒŒƒxƒ‹:‚È‚µ", 2,
+		debugMenu.add(this.debugLevelNoneMenuItem = new KAGMenuItem(this, "ï¿½fï¿½oï¿½bï¿½Oï¿½ï¿½ï¿½xï¿½ï¿½:ï¿½È‚ï¿½", 2,
 			onDebugLevelNoneMenuItemClick, false));
-		debugMenu.add(this.debugLevelSimpleMenuItem = new KAGMenuItem(this, "ƒfƒoƒbƒOƒŒƒxƒ‹:ƒVƒ“ƒvƒ‹", 2,
+		debugMenu.add(this.debugLevelSimpleMenuItem = new KAGMenuItem(this, "ï¿½fï¿½oï¿½bï¿½Oï¿½ï¿½ï¿½xï¿½ï¿½:ï¿½Vï¿½ï¿½ï¿½vï¿½ï¿½", 2,
 			onDebugLevelSimpleMenuItemClick, false));
-		debugMenu.add(this.debugLevelVerboseMenuItem = new KAGMenuItem(this, "ƒfƒoƒbƒOƒŒƒxƒ‹:Ú×", 2,
+		debugMenu.add(this.debugLevelVerboseMenuItem = new KAGMenuItem(this, "ï¿½fï¿½oï¿½bï¿½Oï¿½ï¿½ï¿½xï¿½ï¿½:ï¿½Úï¿½", 2,
 			onDebugLevelVerboseMenuItemClick, false));
 
         debugMenu.add(new MenuItem(this, "-"));
 
-		debugMenu.add(this.debugWinMenuItem = new KAGMenuItem(this, "ƒfƒoƒbƒO‘‹•\¦", 0,
+		debugMenu.add(this.debugWinMenuItem = new KAGMenuItem(this, "ï¿½fï¿½oï¿½bï¿½Oï¿½ï¿½ï¿½\ï¿½ï¿½", 0,
 			onDebugWinMenuItemClick, false));
     
         debugMenu.add(new MenuItem(this, "-"));
 
-        debugMenu.add(this.autoLabelSaveModeMenuItem = new KAGMenuItem(this, "©“®ƒ‰ƒxƒ‹ƒZ[ƒu", 0,
+        debugMenu.add(this.autoLabelSaveModeMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Zï¿½[ï¿½u", 0,
 			onAutoLabelSaveModeMenuItemClick, false));
 
-		debugMenu.add(this.skipToPrevLabelMenuItem = new KAGMenuItem(this, "‘O‚Ìƒ‰ƒxƒ‹‚É–ß‚é\tAlt+©", 0,
+		debugMenu.add(this.skipToPrevLabelMenuItem = new KAGMenuItem(this, "ï¿½Oï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½É–ß‚ï¿½\tAlt+ï¿½ï¿½", 0,
 			onSkipToPrevLabelMenuItemClick, false));
     
-		debugMenu.add(this.skipToNextLabelMenuItem = new KAGMenuItem(this, "Ÿ‚Ìƒ‰ƒxƒ‹‚Éi‚Ş\tAlt+¨", 0,
+		debugMenu.add(this.skipToNextLabelMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½Éiï¿½ï¿½\tAlt+ï¿½ï¿½", 0,
 			onSkipToNextLabelMenuItemClick, false));
 
         debugMenu.add(new MenuItem(this, "-"));
 
     
-		debugMenu.add(this.chDebugLogMenuItem = new KAGMenuItem(this, "KAGEXƒƒOƒ‚[ƒh", 0,
+		debugMenu.add(this.chDebugLogMenuItem = new KAGMenuItem(this, "KAGEXï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½[ï¿½h", 0,
 			onChDebugLogMenuItemClick, false));
 
-        debugMenu.add(this.outputDebugLogMenuItem = new KAGMenuItem(this, "KAGEXƒƒO‚ğo—Í‚·‚é", 0,
+        debugMenu.add(this.outputDebugLogMenuItem = new KAGMenuItem(this, "KAGEXï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½oï¿½Í‚ï¿½ï¿½ï¿½", 0,
 			onOutputDebugLogMenuItemClick, false));
 
         debugMenu.add(new MenuItem(this, "-"));
     
-		debugMenu.add(this.voiceSpeedMenu = new KAGMenuItem(this, "ƒ{ƒCƒX‘¬“x(&V)", 0, void, false));
-			voiceSpeedMenu.add(this.voiceNormalSpeedMenuItem = new KAGMenuItem(this, "’Êí(&N)", 1,
+		debugMenu.add(this.voiceSpeedMenu = new KAGMenuItem(this, "ï¿½{ï¿½Cï¿½Xï¿½ï¿½ï¿½x(&V)", 0, void, false));
+			voiceSpeedMenu.add(this.voiceNormalSpeedMenuItem = new KAGMenuItem(this, "ï¿½Êï¿½(&N)", 1,
 				onVoiceSpeedMenuItemClick, false));
 			voiceNormalSpeedMenuItem.speed = 1.0;
-			voiceSpeedMenu.add(this.voiceOneHalfSpeedMenuItem = new KAGMenuItem(this, "1.5”{‘¬(&F)", 1,
+			voiceSpeedMenu.add(this.voiceOneHalfSpeedMenuItem = new KAGMenuItem(this, "1.5ï¿½{ï¿½ï¿½(&F)", 1,
 				onVoiceSpeedMenuItemClick, false));
 			voiceOneHalfSpeedMenuItem.speed = 1.5;
-			voiceSpeedMenu.add(this.voiceDoubleSpeedMenuItem = new KAGMenuItem(this, "2”{‘¬(&D)", 1,
+			voiceSpeedMenu.add(this.voiceDoubleSpeedMenuItem = new KAGMenuItem(this, "2ï¿½{ï¿½ï¿½(&D)", 1,
 				onVoiceSpeedMenuItemClick, false));
 			voiceDoubleSpeedMenuItem.speed = 2.0;
-			voiceSpeedMenu.add(this.voiceDoubleHalfSpeedMenuItem = new KAGMenuItem(this, "2.5”{‘¬(&E)", 1,
+			voiceSpeedMenu.add(this.voiceDoubleHalfSpeedMenuItem = new KAGMenuItem(this, "2.5ï¿½{ï¿½ï¿½(&E)", 1,
 				onVoiceSpeedMenuItemClick, false));
 			voiceDoubleHalfSpeedMenuItem.speed = 2.5;
-			voiceSpeedMenu.add(this.voiceTripleSpeedMenuItem = new KAGMenuItem(this, "3”{‘¬(&T)", 1,
+			voiceSpeedMenu.add(this.voiceTripleSpeedMenuItem = new KAGMenuItem(this, "3ï¿½{ï¿½ï¿½(&T)", 1,
 				onVoiceSpeedMenuItemClick, false));
 			voiceTripleSpeedMenuItem.speed = 3.0;
 }
 
 // ---------------------------------------------------------
-// Šî–{‹@”\ƒƒ\ƒbƒh
-// ƒƒbƒZ[ƒW‘‹‚Ìƒƒjƒ…[‚âƒƒjƒ…[‚È‚Ç‚©‚çŒÄ‚Ño‚³‚ê‚é
+// ï¿½ï¿½{ï¿½@ï¿½\ï¿½ï¿½ï¿½\ï¿½bï¿½h
+// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½âƒï¿½jï¿½ï¿½ï¿½[ï¿½È‚Ç‚ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½
 // ---------------------------------------------------------
 
 /**
- * ƒ[ƒhÀs
+ * ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½s
  * @param work
  */
 function loadFunction(work)
@@ -233,7 +233,7 @@ function loadFunction(work)
 }
 
 /**
- * ƒZ[ƒuˆ—Às
+ * ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½s
  * @param work
  */
 function saveFunction(work)
@@ -242,7 +242,7 @@ function saveFunction(work)
 }
 
 /**
- * ƒZ[ƒu‰æ–ÊŒÄ‚Ño‚µ
+ * ï¿½Zï¿½[ï¿½uï¿½ï¿½ÊŒÄ‚Ñoï¿½ï¿½
  */
 function startSave()
 {
@@ -253,7 +253,7 @@ function startSave()
 }
 
 /**
- * ƒ[ƒh‰æ–ÊŒÄ‚Ño‚µ
+ * ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ÊŒÄ‚Ñoï¿½ï¿½
  */
 function startLoad()
 {
@@ -270,7 +270,7 @@ function startLoad()
 }
 
 /**
- * ƒVƒXƒeƒ€‰æ–ÊŒÄ‚Ño‚µ
+ * ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ÊŒÄ‚Ñoï¿½ï¿½
  */
 function startConfig()
 {
@@ -288,18 +288,18 @@ function startConfig()
 }
 
 /**
- * ƒNƒCƒbƒNƒ[ƒhÀs
+ * ï¿½Nï¿½Cï¿½bï¿½Nï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½s
  */
 function quickloadAction()
 {
     var work = kag.numBookMarks - 1;
     if (Storages.isExistentStorage(kag.getBookMarkFileNameAtNum(work))) {
-        askYesNo("ƒNƒCƒbƒNƒ[ƒh‚µ‚Ü‚·‚©H", "Šm”F", loadFunction, void, work);
+        askYesNo("ï¿½Nï¿½Cï¿½bï¿½Nï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½H", "ï¿½mï¿½F", loadFunction, void, work);
     }
 }
 
 /**
- * ƒNƒCƒbƒNƒZ[ƒu‚ğÀs
+ * ï¿½Nï¿½Cï¿½bï¿½Nï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½s
  */
 function quicksaveAction(map=false)
 {
@@ -310,21 +310,21 @@ function quicksaveAction(map=false)
 }
 
 /**
- * –¼‘O•\¦ˆ——pƒtƒBƒ‹ƒ^
+ * ï¿½ï¿½ï¿½Oï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½tï¿½Bï¿½ï¿½ï¿½^
  */
 function dispNameFilter(dispName)
 {
     if (dispName.length <= 1) {
-        dispName = "@" + dispName + "@";
+        dispName = "ï¿½@" + dispName + "ï¿½@";
     }
-    return "y" + dispName + "z";
+    return "ï¿½y" + dispName + "ï¿½z";
 }
 
 
 /**
- * ƒJƒŒƒ“ƒgƒƒbƒZ[ƒWƒŒƒCƒ„‚Ìƒ{ƒ^ƒ“‚Ìó‘Ôİ’è(normal/over)‚ğs‚¤
- * @param name ƒ{ƒ^ƒ“–¼
- * @param mode true ‚È‚ç over ó‘Ô‚É‚È‚é
+ * ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½Ìï¿½Ôİ’ï¿½(normal/over)ï¿½ï¿½ï¿½sï¿½ï¿½
+ * @param name ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½
+ * @param mode true ï¿½È‚ï¿½ over ï¿½ï¿½Ô‚É‚È‚ï¿½
  */
 function setButtonOver(name, mode)
 {
@@ -335,13 +335,13 @@ function setButtonOver(name, mode)
 }
 
 // ---------------------------------------------------------
-// ƒZ[ƒuˆ—ŠÖŒW
+// ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ÖŒW
 // ---------------------------------------------------------
 
 /**
- * ƒ{ƒ^ƒ“‚Ì•`‰æˆ—
- * @param name "save" ‚Ü‚½‚Í "load"
- * @param work ƒ{ƒ^ƒ“”Ô†
+ * ï¿½{ï¿½^ï¿½ï¿½ï¿½Ì•`ï¿½æˆï¿½ï¿½
+ * @param name "save" ï¿½Ü‚ï¿½ï¿½ï¿½ "load"
+ * @param work ï¿½{ï¿½^ï¿½ï¿½ï¿½Ôï¿½
  */
 function fileDataButton(name, work) 
 {
@@ -349,11 +349,11 @@ function fileDataButton(name, work)
     var savefilename = kag.getBookMarkFileNameAtNum(savedatanum);
     var target = kag.current.names[name + work];
 
-    // ƒ{ƒ^ƒ“Ä•`‰æ
+    // ï¿½{ï¿½^ï¿½ï¿½ï¿½Ä•`ï¿½ï¿½
     target.holdAlpha = false;
     target.loadButtons("sl_win_base", name + "_win_over");
 
-    // ƒTƒ€ƒl[ƒ‹Ø‚è”²‚«—pƒ}ƒXƒN
+    // ï¿½Tï¿½ï¿½ï¿½lï¿½[ï¿½ï¿½ï¿½Ø‚è”²ï¿½ï¿½ï¿½pï¿½}ï¿½Xï¿½N
     var layer = new global.Layer(kag, kag.fore.base);
     layer.loadImages("sl_win_base", name + "_win_over");
 
@@ -363,14 +363,14 @@ function fileDataButton(name, work)
     
     if (Storages.isExistentStorage(savefilename)) {
         
-        // •¶š•`‰æ
+        // ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½
         var savedatadate = kag.getBookMarkDate(savedatanum);
         var savedatatitle = kag.getBookMarkPageName(savedatanum);
         savedatatitle = savedatatitle.substring(0,9);
         target.font.height=24;
-        target.font.face = "‚l‚r ƒSƒVƒbƒN";
+        target.font.face = "ï¿½lï¿½r ï¿½Sï¿½Vï¿½bï¿½N";
 
-        // ƒTƒ€ƒl[ƒ‹‰æ‘œ‚«‚è‚Ê‚«
+        // ï¿½Tï¿½ï¿½ï¿½lï¿½[ï¿½ï¿½ï¿½æ‘œï¿½ï¿½ï¿½ï¿½Ê‚ï¿½
         var thum = new global.Layer(kag, kag.fore.base);
         thum.loadImages(savefilename);
         layer.operateRect(7,7,thum,0,0,thum.imageWidth, thum.imageHeight,omPsNormal);
@@ -381,11 +381,11 @@ function fileDataButton(name, work)
             layer.operateRect(82,62,thum2,0,0,thum2.imageWidth, thum2.imageHeight,omPsNormal);
         }
 
-        // ƒ{ƒ^ƒ“‚É‡¬
+        // ï¿½{ï¿½^ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½
         target.holdAlpha = true;	
         target.operateRect(w,  0,layer,0,0,w,h,omPsNormal); // over
         target.operateRect(w*2,0,layer,0,0,w,h,omPsNormal); // on
-        layer.colorRect(0,0,layer.imageWidth,layer.imageHeight,0xffffff,64); // ”’‚ğ‚©‚Ô‚¹‚é
+        layer.colorRect(0,0,layer.imageWidth,layer.imageHeight,0xffffff,64); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½
         target.operateRect(0,  0,layer,0,0,w,h,omPsNormal); // normal
 
         target.drawText( 123,16,savedatatitle,  0x000000,255,true);
@@ -399,12 +399,12 @@ function fileDataButton(name, work)
         
     } else {
 
-        // ƒTƒ€ƒl[ƒ‹‰æ‘œ‚«‚è‚Ê‚«
+        // ï¿½Tï¿½ï¿½ï¿½lï¿½[ï¿½ï¿½ï¿½æ‘œï¿½ï¿½ï¿½ï¿½Ê‚ï¿½
         var thum = new global.Layer(kag, kag.fore.base);
         thum.loadImages("sl_win_base");
         layer.operateRect(0,0,thum,0,0,thum.imageWidth, thum.imageHeight,omPsNormal);
 
-        // ƒ{ƒ^ƒ“‚É‡¬
+        // ï¿½{ï¿½^ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½
         target.holdAlpha = true;
         target.operateRect(w,  0,layer,0,0,w,h,omPsNormal); // over
         target.operateRect(w*2,0,layer,0,0,w,h,omPsNormal); // on
@@ -417,7 +417,7 @@ function fileDataButton(name, work)
 }
 
 /**
- * ƒy[ƒWƒ{ƒ^ƒ“‚Ì•`‰æˆ—
+ * ï¿½yï¿½[ï¿½Wï¿½{ï¿½^ï¿½ï¿½ï¿½Ì•`ï¿½æˆï¿½ï¿½
  */
 function setSavePageButton(work=void)
 {
@@ -431,7 +431,7 @@ function setSavePageButton(work=void)
 }
 
 /**
- * ƒZ[ƒuˆ——p
+ * ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½p
  */
 function saveFunction2(work)
 {
@@ -442,24 +442,24 @@ function saveFunction2(work)
 }
 
 /**
- * ƒZ[ƒu‚ğÀs
+ * ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½s
  */
 function saveAction(work)
 {
     var savedatanum = (sf.loadpage - 1) * 10 + work;
     if (Storages.isExistentStorage(kag.getBookMarkFileNameAtNum(savedatanum))) {
-        askYesNo("ã‘‚«‚µ‚Ä‚æ‚ë‚µ‚¢‚Å‚·‚©H", "Šm”F", saveFunction2, void, work);
+        askYesNo("ï¿½ã‘ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ë‚µï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½H", "ï¿½mï¿½F", saveFunction2, void, work);
     } else {
         saveFunction2(work);
     }
 }
 
 // ---------------------------------------------------------
-// ƒ[ƒhˆ—ŠÖŒW
+// ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ÖŒW
 // ---------------------------------------------------------
 
 /**
- * ƒy[ƒWƒ{ƒ^ƒ“‚Ì•`‰æˆ—
+ * ï¿½yï¿½[ï¿½Wï¿½{ï¿½^ï¿½ï¿½ï¿½Ì•`ï¿½æˆï¿½ï¿½
  */
 function setLoadPageButton(work=void)
 {
@@ -473,22 +473,22 @@ function setLoadPageButton(work=void)
 }
 
 /**
- * ƒ[ƒh‚ğÀs
+ * ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½s
  */
 function loadAction(work)
 {
     var loaddatanum = (sf.loadpage - 1) * 10 + work;
     if (Storages.isExistentStorage(kag.getBookMarkFileNameAtNum(loaddatanum))) {
-        askYesNo("ƒ[ƒh‚µ‚Ü‚·‚©H", "Šm”F", loadFunction, void, loaddatanum);
+        askYesNo("ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½H", "ï¿½mï¿½F", loadFunction, void, loaddatanum);
     }
 }
 
 // ---------------------------------------------------------
-// ƒRƒ“ƒtƒBƒOˆ—ŠÖŒW
+// ï¿½Rï¿½ï¿½ï¿½tï¿½Bï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ÖŒW
 // ---------------------------------------------------------
 
 /**
- * ƒEƒCƒ“ƒhƒE/ƒtƒ‹ƒXƒNƒŠ[ƒ“@ƒ{ƒ^ƒ“ó‘Ô‚Ìİ’è
+ * ï¿½Eï¿½Cï¿½ï¿½ï¿½hï¿½E/ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½@ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½Ô‚Ìİ’ï¿½
  */
 function setScreenButton(work=void) 
 {
@@ -504,7 +504,7 @@ function setScreenButton(work=void)
 }
 
 /**
- * ƒGƒtƒFƒNƒgON/ƒGƒtƒFƒNƒgOFF ƒ{ƒ^ƒ“ó‘Ô‚Ìİ’è
+ * ï¿½Gï¿½tï¿½Fï¿½Nï¿½gON/ï¿½Gï¿½tï¿½Fï¿½Nï¿½gOFF ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½Ô‚Ìİ’ï¿½
  */
 function setNoEffectButton(work=void) 
 {
@@ -514,7 +514,7 @@ function setNoEffectButton(work=void)
 }
 
 /**
- * ‚·‚×‚ÄƒXƒLƒbƒv/Šù“ÇƒXƒLƒbƒv ƒ{ƒ^ƒ“ó‘Ô‚Ìİ’è
+ * ï¿½ï¿½ï¿½×‚ÄƒXï¿½Lï¿½bï¿½v/ï¿½ï¿½ÇƒXï¿½Lï¿½bï¿½v ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½Ô‚Ìİ’ï¿½
  */
 function setSkipButton(work=void)
 {
@@ -524,9 +524,9 @@ function setSkipButton(work=void)
 }
 
 /**
- * ƒLƒƒƒ‰•Êƒ{ƒCƒX‰¹—Êİ’è
- * @paran name ƒLƒƒƒ‰–¼
- * @param init ‰Šú‰»‚Í true
+ * ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Êƒ{ï¿½Cï¿½Xï¿½ï¿½ï¿½Êİ’ï¿½
+ * @paran name ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @param init ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ true
  */
 function setVoiceOnButton(name, init=void)
 {
@@ -541,26 +541,26 @@ function setVoiceOnButton(name, init=void)
 }
 
 /**
- * •Ï”‚Ì‰Šú‰»
+ * ï¿½Ïï¿½ï¿½Ìï¿½ï¿½ï¿½
  */
 function initial()
 {
-    askYesNo('‰Šú‰»', 'Šm”F', function() {
+    askYesNo('ï¿½ï¿½ï¿½ï¿½', 'ï¿½mï¿½F', function() {
         initialEnvironment();
         kag.process("", "*buttons");
     });
 }
 
 /**
- * ƒ^ƒCƒgƒ‹‚Ö–ß‚é
+ * ï¿½^ï¿½Cï¿½gï¿½ï¿½ï¿½Ö–ß‚ï¿½
  */
 function gotoTitle()
 {
-    askYesNo("Å‰‚É–ß‚è‚Ü‚·B‚æ‚ë‚µ‚¢‚Å‚·‚© ?", "Šm”F", kag.goToStart);
+    askYesNo("ï¿½Åï¿½ï¿½É–ß‚ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ë‚µï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ ?", "ï¿½mï¿½F", kag.goToStart);
 }
 
 /**
- * ƒRƒ“ƒtƒBƒO‰æ–Ê‰Šú‰»ˆ—
+ * ï¿½Rï¿½ï¿½ï¿½tï¿½Bï¿½Oï¿½ï¿½Êï¿½ï¿½ï¿½ï¿½ï¿½
  */
 function configInit()
 {
@@ -576,18 +576,18 @@ function configInit()
 }
 
 // --------------------------------------------------------
-// CGƒ‚[ƒh—pˆ—
+// CGï¿½ï¿½ï¿½[ï¿½hï¿½pï¿½ï¿½ï¿½ï¿½
 // --------------------------------------------------------
 
 class CgListParser extends CSVParser {
 
-    // Œ‹‰Ê•Û—p
+    // ï¿½ï¿½ï¿½Ê•Ûï¿½ï¿½p
     var result;
 
     /**
-     * s–ˆ‚ÉŒÄ‚Ño‚³‚ê‚é
-     * @param columns ƒJƒ‰ƒ€ƒf[ƒ^(Array)
-     * @param lineNo ˜_—s”Ô†(1`)
+     * ï¿½sï¿½ï¿½ï¿½ÉŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½
+     * @param columns ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^(Array)
+     * @param lineNo ï¿½_ï¿½ï¿½ï¿½sï¿½Ôï¿½(1ï¿½`)
      */
     function doLine(columns, lineNo) {
         if (columns[0].charAt(0) != '#') {
@@ -613,7 +613,7 @@ class CgListParser extends CSVParser {
 };
 
 /**
- * CGƒ‚[ƒh‰Šú‰»ˆ—
+ * CGï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 function cgInit()
 {
@@ -628,9 +628,9 @@ function cgInit()
 }
 
 /**
- * CG‚ğ‚İ‚½‚©H
- * @param num ‚b‚f”Ô†
- * @param i ·•ª”Ô†
+ * CGï¿½ï¿½ï¿½İ‚ï¿½ï¿½ï¿½ï¿½H
+ * @param num ï¿½bï¿½fï¿½Ôï¿½
+ * @param i ï¿½ï¿½ï¿½ï¿½ï¿½Ôï¿½
  */
 function isCgSeenOne(num, i)
 {
@@ -647,8 +647,8 @@ function isCgSeenOne(num, i)
 }
 
 /**
- * CG‚ğ‚İ‚½‚©H
- * @param num ‚b‚f”Ô†
+ * CGï¿½ï¿½ï¿½İ‚ï¿½ï¿½ï¿½ï¿½H
+ * @param num ï¿½bï¿½fï¿½Ôï¿½
  */
 function isCgSeen(num)
 {
@@ -663,7 +663,7 @@ function isCgSeen(num)
     return false;
 }
 
-// ƒ{ƒ^ƒ“‰æ‘œ‚Ì·‚µ‘Ö‚¦
+// ï¿½{ï¿½^ï¿½ï¿½ï¿½æ‘œï¿½Ìï¿½ï¿½ï¿½ï¿½Ö‚ï¿½
 function setCGImage(target, filename)
 {
     var layer = new global.Layer(kag, kag.fore.base);
@@ -689,7 +689,7 @@ function setCGImage(target, filename)
     target.operateRect(target.width*2+2,  2,layer2,0,0,layer2.imageWidth,layer2.imageHeight,omPsNormal);
 
     if (tf.viewcgfilename) {
-	    target.font.face = "MS ƒSƒVƒbƒN";
+	    target.font.face = "MS ï¿½Sï¿½Vï¿½bï¿½N";
 	    target.font.height = 14;
 	    target.drawText(2,2,filename,0x000000,255,true,255,0x000000,2,2);
     }
@@ -697,13 +697,13 @@ function setCGImage(target, filename)
 }
 
 /**
- * CGƒ‚[ƒh—pƒy[ƒWXV
+ * CGï¿½ï¿½ï¿½[ï¿½hï¿½pï¿½yï¿½[ï¿½Wï¿½Xï¿½V
  */
 function setCgmodePageButton(work=void)
 {
     tf.cgmodepage = work if work !== void;
 
-    // ƒy[ƒWƒ{ƒ^ƒ“‚Ì•\¦•ÏX
+    // ï¿½yï¿½[ï¿½Wï¿½{ï¿½^ï¿½ï¿½ï¿½Ì•\ï¿½ï¿½ï¿½ÏX
     for (var i=0; i<tf.cgpagenum; i++) {
         var pagename = "cgmode_page" + i;
         var button = kag.current.names[pagename];
@@ -712,7 +712,7 @@ function setCgmodePageButton(work=void)
         }
     }
 
-    // ‚¢‚Á‚½‚ñƒ{ƒ^ƒ“‚ğ‘S•””ñ•\¦‚É‚·‚é
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
     for (var i=0;i<tf.cgbtnnum;i++) {
         var button = kag.current.names["cg" + i];
         if (button !== void) {
@@ -721,7 +721,7 @@ function setCgmodePageButton(work=void)
         }
     }
 
-    // ƒŠƒXƒg‚Åƒy[ƒW‚ÉŠY“–‚·‚é‚à‚Ì‚ğ’Tõ
+    // ï¿½ï¿½ï¿½Xï¿½gï¿½Åƒyï¿½[ï¿½Wï¿½ÉŠYï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½Tï¿½ï¿½
     tf.cgviewlist = [];
     var pagename = "page" + tf.cgmodepage;
     var cgnum = 0;
@@ -746,8 +746,8 @@ function setCgmodePageButton(work=void)
 }
 
 /**
- * ‰{———pƒŠƒXƒg‰Šú‰»
- * tf.cgnum ‚É CG”Ô†‚ğİ’è‚µ‚Ä‚¨‚­
+ * ï¿½{ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½ï¿½
+ * tf.cgnum ï¿½ï¿½ CGï¿½Ôï¿½ï¿½ï¿½İ’è‚µï¿½Ä‚ï¿½ï¿½ï¿½
  */
 function cgViewInit()
 {
@@ -763,7 +763,7 @@ function cgViewInit()
 }
 
 /**
- * ‚Ü‚¾‰{——ƒŠƒXƒg‚Ì‰æ‘œ‚ª‚ ‚é‚©H
+ * ï¿½Ü‚ï¿½ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½gï¿½Ì‰æ‘œï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½H
  */
 function isCgView()
 {
@@ -771,8 +771,8 @@ function isCgView()
 }
 
 /**
- * CG‚ğ•\¦
- * –{“–‚Íê—pƒp[ƒc‚Â‚©‚¤‚×‚«‚©‚È
+ * CGï¿½ï¿½\ï¿½ï¿½
+ * ï¿½{ï¿½ï¿½ï¿½Íï¿½pï¿½pï¿½[ï¿½cï¿½Â‚ï¿½ï¿½ï¿½ï¿½×‚ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 function cgView()
 {
@@ -780,18 +780,18 @@ function cgView()
 }
 
 // --------------------------------------------------------
-// ƒŠƒvƒŒƒCƒ‚[ƒh
+// ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½h
 // --------------------------------------------------------
 
 class ReplayListParser extends CSVParser {
 
-    // Œ‹‰Ê•Û—p
+    // ï¿½ï¿½ï¿½Ê•Ûï¿½ï¿½p
     var result;
 
     /**
-     * s–ˆ‚ÉŒÄ‚Ño‚³‚ê‚é
-     * @param columns ƒJƒ‰ƒ€ƒf[ƒ^(Array)
-     * @param lineNo ˜_—s”Ô†(1`)
+     * ï¿½sï¿½ï¿½ï¿½ÉŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½
+     * @param columns ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^(Array)
+     * @param lineNo ï¿½_ï¿½ï¿½ï¿½sï¿½Ôï¿½(1ï¿½`)
      */
     function doLine(columns, lineNo) {
         if (columns[0].charAt(0) != '#') {
@@ -839,7 +839,7 @@ function setReplaymodePageButton(work=void)
         }
     }
 
-    // ‚¢‚Á‚½‚ñƒ{ƒ^ƒ“‚ğ‘S•””ñ•\¦‚É‚·‚é
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
     for (var i=0;i<tf.cgbtnnum;i++) {
         var button = kag.current.names["cg" + i];
         if (button !== void) {
@@ -877,7 +877,7 @@ function setReplaymodePageButton(work=void)
 }
 
 /**
- * ‰ñ‘zˆ—‹N“®
+ * ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½
  */
 function recollect(index)
 {
@@ -885,7 +885,7 @@ function recollect(index)
     tf.recollect = 1;
     kag.process('loadinit.ks', '', true, true);
     var elm = %[];
-    elm.doneStorage = 'title.ks'; // I—¹‚Íƒ^ƒCƒgƒ‹‚É–ß‚·
+    elm.doneStorage = 'title.ks'; // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Íƒ^ï¿½Cï¿½gï¿½ï¿½ï¿½É–ß‚ï¿½
     elm.doneTarget  = '*start';
     elm.storage = info.scene + ".ks";
     elm.target  = "*" + info.target if info.target !== void;
@@ -894,13 +894,13 @@ function recollect(index)
 
 class MusicListParser extends CSVParser {
 
-    // Œ‹‰Ê•Û—p
+    // ï¿½ï¿½ï¿½Ê•Ûï¿½ï¿½p
     var result;
 
     /**
-     * s–ˆ‚ÉŒÄ‚Ño‚³‚ê‚é
-     * @param columns ƒJƒ‰ƒ€ƒf[ƒ^(Array)
-     * @param lineNo ˜_—s”Ô†(1`)
+     * ï¿½sï¿½ï¿½ï¿½ÉŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½
+     * @param columns ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^(Array)
+     * @param lineNo ï¿½_ï¿½ï¿½ï¿½sï¿½Ôï¿½(1ï¿½`)
      */
     function doLine(columns, lineNo) {
         if (columns[0].charAt(0) != '#') {
@@ -923,11 +923,11 @@ class MusicListParser extends CSVParser {
 };
 
 // --------------------------------------------------------
-// ƒ~ƒ…[ƒWƒbƒNƒ‚[ƒh—pˆ—
+// ï¿½~ï¿½ï¿½ï¿½[ï¿½Wï¿½bï¿½Nï¿½ï¿½ï¿½[ï¿½hï¿½pï¿½ï¿½ï¿½ï¿½
 // --------------------------------------------------------
 
 /**
- * ƒ~ƒ…[ƒWƒbƒNƒ‚[ƒh‰Šú‰»
+ * ï¿½~ï¿½ï¿½ï¿½[ï¿½Wï¿½bï¿½Nï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½
  */
 function musicInit()
 {
@@ -942,7 +942,7 @@ function musicInit()
     tf.musicrepeat  = true;
     tf.musicplaying = false;
     
-    // Šù‚ÉÄ¶‚³‚ê‚½‚©‚Ìƒ`ƒFƒbƒN—pƒtƒ‰ƒO
+    // ï¿½ï¿½ÉÄï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½Ìƒ`ï¿½Fï¿½bï¿½Nï¿½pï¿½tï¿½ï¿½ï¿½O
     tf.bgmplayflag = [];
     for (var i=0;i<tf.musicmodelist.count;i++) {
         var name = tf.musicmodelist[i].filename.toUpperCase();
@@ -955,7 +955,7 @@ function musicInit()
 }
 
 /**
- * ƒ~ƒ…[ƒWƒbƒNƒ‚[ƒhI—¹
+ * ï¿½~ï¿½ï¿½ï¿½[ï¿½Wï¿½bï¿½Nï¿½ï¿½ï¿½[ï¿½hï¿½Iï¿½ï¿½
  */
 function musicEnd()
 {
@@ -964,7 +964,7 @@ function musicEnd()
 }
 
 /**
- * ƒŠƒs[ƒgƒ{ƒ^ƒ“ˆ—
+ * ï¿½ï¿½ï¿½sï¿½[ï¿½gï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 function setRepeat(work=void)
 {
@@ -975,11 +975,11 @@ function setRepeat(work=void)
 }
 
 /**
- * ƒy[ƒW•\¦w’è
+ * ï¿½yï¿½[ï¿½Wï¿½\ï¿½ï¿½ï¿½wï¿½ï¿½
  */
 function setMusicmodePageButton()
 {
-    // Ä¶ƒ{ƒ^ƒ“‚Ì•ÏX
+    // ï¿½Äï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½Ì•ÏX
     for (var i=0;i<tf.musicbtnnum;i++) {
         var name = "track%02d".sprintf(i + 1);
         var target = kag.current.names[name];
@@ -1003,12 +1003,12 @@ function setMusicmodePageButton()
         }
     }
 
-    // Ä¶ó‘Ô
+    // ï¿½Äï¿½ï¿½ï¿½ï¿½
     setButtonOver("musicmode_play", tf.musicplaying);
 }
 
 /**
- * BGM ‚Ìó‘ÔXV
+ * BGM ï¿½Ìï¿½ÔXï¿½V
  */
 function updateBgm()
 {
@@ -1044,7 +1044,7 @@ function playBgm(work)
 }
 
 /**
- * ‹È‚ÌÄ¶‚ªI—¹‚µ‚½ê‡‚Ìˆ—
+ * ï¿½È‚ÌÄï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Ìï¿½ï¿½ï¿½
  */
 function playNext()
 {

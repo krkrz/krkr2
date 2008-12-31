@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// “ú–{Œê resources
+// ï¿½ï¿½{ï¿½ï¿½ resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 #ifdef _WIN32
@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileDescription", "TVP Movie Playback Support DLL\0"
             VALUE "FileVersion", "1, 4, 0, 3\0"
             VALUE "InternalName", "krmovie\0"
-            VALUE "LegalCopyright", "Copyright (C)2001-2008 W.Dee / T.Imoto All rights reserved.\0"
+            VALUE "LegalCopyright", "Copyright (C)2001-2009 W.Dee / T.Imoto All rights reserved.\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "krmovie.dll\0"
             VALUE "PrivateBuild", "\0"
@@ -92,7 +92,7 @@ END
 
 #endif    // !_MAC
 
-#endif    // “ú–{Œê resources
+#endif    // ï¿½ï¿½{ï¿½ï¿½ resources
 /////////////////////////////////////////////////////////////////////////////
 
 

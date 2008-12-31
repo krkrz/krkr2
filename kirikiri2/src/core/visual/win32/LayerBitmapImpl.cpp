@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -1475,7 +1475,7 @@ void * tTVPBitmap::GetScanLine(tjs_uint l) const
 //---------------------------------------------------------------------------
 // default LOGFONT retrieve function
 //---------------------------------------------------------------------------
-static const char * const TVPDefaultFontName = TJS_N("‚l‚r ‚oƒSƒVƒbƒN"); // TODO: i18n
+static const char * const TVPDefaultFontName = TJS_N("ï¿½lï¿½r ï¿½oï¿½Sï¿½Vï¿½bï¿½N"); // TODO: i18n
 static LOGFONT TVPDefaultLOGFONT;
 static tTVPFont TVPDefaultFont;
 static bool TVPDefaultLOGFONTCreated = false;
