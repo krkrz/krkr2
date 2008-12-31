@@ -331,15 +331,17 @@ IrrlichtWindow::destroyWindow()
 void
 IrrlichtWindow::sendMessage(UINT message, WPARAM wParam, LPARAM lParam, bool convPosition)
 {
-	if (convPosition) {
-		POINT ps = {0,0}, pp = {0,0};
-		ClientToScreen(hwnd, &ps);
-		ClientToScreen(parent, &pp);
-		DWORD x = LOWORD(lParam) + ps.x - pp.x;
-		DWORD y = HIWORD(lParam) + ps.y - pp.y;
-		lParam = (LPARAM)((DWORD)y << 16 | (DWORD)x);
+	if (parent) {
+		if (convPosition) {
+			POINT ps = {0,0}, pp = {0,0};
+			ClientToScreen(hwnd, &ps);
+			ClientToScreen(parent, &pp);
+			DWORD x = LOWORD(lParam) + ps.x - pp.x;
+			DWORD y = HIWORD(lParam) + ps.y - pp.y;
+			lParam = (LPARAM)((DWORD)y << 16 | (DWORD)x);
+		}
+		SendMessage(parent, message, wParam, lParam);
 	}
-	SendMessage(parent, message, wParam, lParam);
 }
 
 /**
@@ -404,7 +406,9 @@ IrrlichtWindow::~IrrlichtWindow()
 void TJS_INTF_METHOD
 IrrlichtWindow::OnContinuousCallback(tjs_uint64 tick)
 {
-	InvalidateRect(hwnd, NULL, false);
+	if (hwnd) {
+		InvalidateRect(hwnd, NULL, false);
+	}
 }
 
 // -----------------------------------------------------------------------
