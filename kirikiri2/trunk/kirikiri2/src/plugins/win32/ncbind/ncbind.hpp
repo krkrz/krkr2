@@ -706,6 +706,28 @@ struct ncbPropAccessor {
 	bool IsValid() const { return _obj != 0; }
 	iTJSDispatch2* GetDispatch() const { return _obj; }
 	operator iTJSDispatch2*   () const { return _obj; }
+
+#undef  FOREACH_START
+#define FOREACH_START 1
+#undef  FOREACH_END
+#define FOREACH_END   FOREACH_MAX
+#define FCALL_PRM_EXT(num) tTJSVariant      param ## num
+#define FCALL_ARG_EXT(num)                  param ## num
+#define FCALL_SET_EXT(num) params[ num ] = &param ## num;
+	// FuncCall‚ð”CˆÓŒÂ”‚ÌtTJSVariant‚ðˆø”‚ÅŽó‚¯‚é‚æ‚¤‚Èƒƒ\ƒbƒh‚ð“WŠJ
+#undef  FOREACH
+#define FOREACH \
+	tjs_error TJS_INTF_METHOD FuncCall(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, tTJSVariant *result, FOREACH_COMMA_EXT(FCALL_PRM_EXT) ) { \
+		tTJSVariant *params[FOREACH_COUNT]; FOREACH_SPACE_EXT(FCALL_SET_EXT) \
+		return _obj->FuncCall(flag, membername, hint, result, FOREACH_COUNT, params, _obj); \
+	}
+#include FOREACH_INCLUDE
+#undef  FCALL_PRM_EXT
+#undef  FCALL_ARG_EXT
+	// ˆø”‚È‚µ‚Ìê‡‚¾‚¯“ÁŽê
+	tjs_error TJS_INTF_METHOD FuncCall(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, tTJSVariant *result) {
+		return _obj->FuncCall(flag, membername, hint, result, 0, NULL, _obj);
+	}
 protected:
 	iTJSDispatch2 *_obj;
 
