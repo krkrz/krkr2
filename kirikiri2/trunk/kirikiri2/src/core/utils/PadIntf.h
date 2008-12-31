@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -30,7 +30,7 @@ public:
 
 //---------------------------------------------------------------------------
 // font ralated constants
-// core/visual/tvpfontstruc.h Ç∆ìØÇ∂Ç‡ÇÃÇ≈Ç∑ÅB
+// core/visual/tvpfontstruc.h ÔøΩ∆ìÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÃÇ≈ÇÔøΩÔøΩB
 //---------------------------------------------------------------------------
 #define TVP_TF_ITALIC    0x01
 #define TVP_TF_BOLD      0x02

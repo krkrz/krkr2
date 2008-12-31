@@ -1,11 +1,11 @@
-// Plugin.tjs - KAG ƒvƒ‰ƒOƒCƒ“ŠÖ˜A
-// Copyright (C)2001-2008, W.Dee and contributors  ‰ü•ÏE”z•z‚ÍŽ©—R‚Å‚·
+// Plugin.tjs - KAG ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Ö˜A
+// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½ÍŽï¿½ï¿½Rï¿½Å‚ï¿½
 
 class KAGPlugin
 {
-	// KAG —pƒvƒ‰ƒOƒCƒ“‚ÌŠî–{ƒNƒ‰ƒX
-	// onXXXX ‚ÅŽn‚Ü‚éŠeƒnƒ“ƒhƒ‰‚ÍAƒI[ƒo[ƒ‰ƒCƒh‚µ‚Ä‚à
-	// ‚±‚ÌƒNƒ‰ƒX‚Ìƒnƒ“ƒhƒ‰‚ðŒÄ‚Ô•K—v‚Í‚È‚¢ ( ‚È‚É‚à‚µ‚È‚¢‚½‚ß )
+	// KAG ï¿½pï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ÌŠï¿½{ï¿½Nï¿½ï¿½ï¿½X
+	// onXXXX ï¿½ÅŽnï¿½Ü‚ï¿½eï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ÍAï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½hï¿½ï¿½ï¿½Ä‚ï¿½
+	// ï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½Xï¿½Ìƒnï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Ô•Kï¿½vï¿½Í‚È‚ï¿½ ( ï¿½È‚É‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ )
 
 	function KAGPlugin()
 	{
@@ -18,61 +18,61 @@ class KAGPlugin
 
 	function onStore(f, elm)
 	{
-		// žx‚ð•Û‘¶‚·‚éÛ‚ÉŒÄ‚Î‚ê‚é
-		// f = •Û‘¶æ‚Ìžxƒf[ƒ^ ( Dictionary ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg )
-		// elm = tempsave Žž‚ÌƒIƒvƒVƒ‡ƒ“ ( Œ»Ý‚Íí‚É void )
+		// ï¿½xï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½Û‚ÉŒÄ‚Î‚ï¿½ï¿½
+		// f = ï¿½Û‘ï¿½ï¿½ï¿½Ìžxï¿½fï¿½[ï¿½^ ( Dictionary ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½g )
+		// elm = tempsave ï¿½ï¿½ï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ ( ï¿½ï¿½ï¿½Ý‚Íï¿½ï¿½ void )
 	}
 
 	function onRestore(f, clear, elm)
 	{
-		// žx‚ð“Ç‚Ýo‚·‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
-		// f = “Ç‚Ýž‚Þžxƒf[ƒ^ ( Dictionary ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg )
-		// clear = ƒƒbƒZ[ƒWƒŒƒCƒ„‚ðƒNƒŠƒA‚·‚é‚© ( tempload ‚ÌŽž‚Ì‚Ý false )
-		// elm = tempload Žž‚ÌƒIƒvƒVƒ‡ƒ“ ( tempload ‚Å‚È‚¢ê‡‚Í í‚É void,
-		//                                 tempload ‚ÌŽž‚Í Dictionary ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg )
+		// ï¿½xï¿½ï¿½Ç‚Ýoï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// f = ï¿½Ç‚Ýï¿½ï¿½Þžxï¿½fï¿½[ï¿½^ ( Dictionary ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½g )
+		// clear = ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚© ( tempload ï¿½ÌŽï¿½ï¿½Ì‚ï¿½ false )
+		// elm = tempload ï¿½ï¿½ï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ ( tempload ï¿½Å‚È‚ï¿½ï¿½ê‡ï¿½ï¿½ ï¿½ï¿½ï¿½ void,
+		//                                 tempload ï¿½ÌŽï¿½ï¿½ï¿½ Dictionary ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½g )
 	}
 
 	function onStableStateChanged(stable)
 	{
-		// ˆÀ’è ( s l p ƒ^ƒO‚Å’âŽ~’† ) ‚Ü‚½‚Í ‘–s’† ( ‚»‚êˆÈŠO )
-		// ‚Ìó‘Ô‚ª•Ï‰»‚µ‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
-		// stable = ˆÀ’è‚Ìó‘Ô‚É true, ‚»‚êˆÈŠO‚Ìê‡‚É false
+		// ï¿½ï¿½ï¿½ï¿½ ( s l p ï¿½^ï¿½Oï¿½Å’ï¿½~ï¿½ï¿½ ) ï¿½Ü‚ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½sï¿½ï¿½ ( ï¿½ï¿½ï¿½ï¿½ÈŠO )
+		// ï¿½Ìï¿½Ô‚ï¿½ï¿½Ï‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// stable = ï¿½ï¿½ï¿½ï¿½Ìï¿½Ô‚ï¿½ true, ï¿½ï¿½ï¿½ï¿½ÈŠOï¿½Ìê‡ï¿½ï¿½ false
 	}
 
 	function onMessageHiddenStateChanged(hidden)
 	{
-		// ‰EƒNƒŠƒbƒN‚È‚Ç‚ÅƒƒbƒZ[ƒWƒŒƒCƒ„‚ª‰B‚³‚ê‚½‚èA‚Ü‚½‚Í
-		// ‚»‚Ìó‘Ô‚©‚ç”²‚¯‚éŽž‚ÉŒÄ‚Î‚ê‚é
-		// hidden = ƒƒbƒZ[ƒW‚ª‰B‚³‚ê‚½ê‡‚É true, Œ»‚ê‚½ê‡‚É false
+		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½È‚Ç‚Åƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ê‚½ï¿½ï¿½Aï¿½Ü‚ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½Ìï¿½Ô‚ï¿½ï¿½ç”²ï¿½ï¿½ï¿½éŽžï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// hidden = ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ê‚½ï¿½ê‡ï¿½ï¿½ true, ï¿½ï¿½ï¿½ê‚½ï¿½ê‡ï¿½ï¿½ false
 	}
 
 	function onCopyLayer(toback)
 	{
-		// backlay ƒ^ƒO / forelay ƒ^ƒO‚ª‚·‚×‚Ä‚ÌƒŒƒCƒ„‚É‘Î‚µ‚ÄŽÀs‚³‚ê‚éŽžA
-		// ‚ ‚é‚¢‚Í layer=base chidlren=true exchange=false ‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÌI—¹Žž‚ÉA
-		// — ‰æ–Ê‚Ì“à—e‚ð•\‰æ–Ê‚ÉƒRƒs[‚·‚é
-		// •K—v‚ª”­¶‚·‚é‚ÆŒÄ‚Ño‚³‚ê‚é
-		// toback = •\‰æ–Ê‚Ì“à—e‚ð— ‰æ–Ê‚ÉƒRƒs[‚·‚éŽž‚É true,
-		//          — ‰æ–Ê‚Ì“à—e‚ð•\‰æ–Ê‚ÉƒRƒs[‚·‚é‚Æ‚«‚É false
-		// layer=base children=true ‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“I—¹Žž‚É‚Í toback = false ‚ÅŒÄ‚Î‚ê‚éB
+		// backlay ï¿½^ï¿½O / forelay ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½ÄŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½éŽžï¿½A
+		// ï¿½ï¿½ï¿½é‚¢ï¿½ï¿½ layer=base chidlren=true exchange=false ï¿½Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ÌIï¿½ï¿½ï¿½ï¿½ï¿½ÉA
+		// ï¿½ï¿½ï¿½ï¿½Ê‚Ì“ï¿½ï¿½eï¿½ï¿½\ï¿½ï¿½Ê‚ÉƒRï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
+		// ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½
+		// toback = ï¿½\ï¿½ï¿½Ê‚Ì“ï¿½ï¿½eï¿½ð— ‰ï¿½Ê‚ÉƒRï¿½sï¿½[ï¿½ï¿½ï¿½éŽžï¿½ï¿½ true,
+		//          ï¿½ï¿½ï¿½ï¿½Ê‚Ì“ï¿½ï¿½eï¿½ï¿½\ï¿½ï¿½Ê‚ÉƒRï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ false
+		// layer=base children=true ï¿½Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ toback = false ï¿½ÅŒÄ‚Î‚ï¿½ï¿½B
 	}
 
 	function onExchangeForeBack()
 	{
-		// layer=base children=true ‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÌI—¹Žž‚ÉŒÄ‚Î‚êA
-		// •\ƒŒƒCƒ„‚Æ— ƒŒƒCƒ„‚Ìî•ñ‚ðŒðŠ·‚·‚é–Ú“I‚ÅŒÄ‚Î‚ê‚é
-		// ‚±‚ÌŽž“_‚Å‚·‚Å‚ÉƒŒƒCƒ„‚ÌƒcƒŠ[\‘¢‚Í“ü‚ê‘Ö‚í‚Á‚Ä‚¢‚é‚Ì‚ÅA
-		// ’ÊíA‚±‚±‚Å‚ÍAƒcƒŠ[\‘¢‚Ì“ü‚ê‘Ö‚¦‚ðs‚¤‚Æî•ñ‚ª–µ‚‚·‚é‚à‚Ì
-		// ( ƒŒƒCƒ„‚Ì–¼‘O‚Æ‚©AƒŒƒCƒ„‚Ö‚ÌŽQÆ‚Æ‚© ) ‚ð— ‰æ–Ê‚Æ–Ê‰æ–Ê‚ÌŠÔ‚Å“ü‚ê‘Ö‚¦‚é
-		// ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“I—¹Žž‚Ì onCopyLayer ‚Í‚±‚ÌƒCƒxƒ“ƒg‚æ‚è‘O‚ÉŒÄ‚Î‚ê‚é‚Ì‚Å
-		// ’ˆÓ
+		// layer=base children=true ï¿½Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ÌIï¿½ï¿½ï¿½ï¿½ï¿½ÉŒÄ‚Î‚ï¿½A
+		// ï¿½\ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Æ—ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú“Iï¿½ÅŒÄ‚Î‚ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ÌŽï¿½ï¿½_ï¿½Å‚ï¿½ï¿½Å‚Éƒï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒcï¿½ï¿½ï¿½[ï¿½\ï¿½ï¿½ï¿½Í“ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ÅA
+		// ï¿½Êï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Å‚ÍAï¿½cï¿½ï¿½ï¿½[ï¿½\ï¿½ï¿½ï¿½Ì“ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Æï¿½ñ‚ª–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ( ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì–ï¿½ï¿½Oï¿½Æ‚ï¿½ï¿½Aï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ö‚ÌŽQï¿½Æ‚Æ‚ï¿½ ) ï¿½ð— ‰ï¿½Ê‚Æ–Ê‰ï¿½Ê‚ÌŠÔ‚Å“ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
+		// ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ onCopyLayer ï¿½Í‚ï¿½ï¿½ÌƒCï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Oï¿½ÉŒÄ‚Î‚ï¿½ï¿½Ì‚ï¿½
+		// ï¿½ï¿½ï¿½ï¿½
 	}
 
 	function onSaveSystemVariables()
 	{
-		// ƒVƒXƒeƒ€•Ï”‚Éî•ñ‚ª•Û‘¶‚³‚êŽž‚ÉŒÄ‚Î‚ê‚é
-		// ‚±‚Ìƒ^ƒCƒ~ƒ“ƒO‚Å kag.scflags ‚Éî•ñ‚ð‘‚«ž‚ß‚Î
-		// ŠmŽÀ‚ÉƒVƒXƒeƒ€•Ï”‚Éî•ñ‚ð‘‚­‚±‚Æ‚ª‚Å‚«‚é
+		// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½Éï¿½ñ‚ª•Û‘ï¿½ï¿½ï¿½ï¿½êŽžï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// ï¿½ï¿½ï¿½Ìƒ^ï¿½Cï¿½~ï¿½ï¿½ï¿½Oï¿½ï¿½ kag.scflags ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½
+		// ï¿½mï¿½ï¿½ï¿½ÉƒVï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½
 	}
 }
 

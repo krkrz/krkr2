@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -26,7 +26,7 @@ typedef void __fastcall (__closure *TCDPExecEvent)(System::TObject* Sender,
 //---------------------------------------------------------------------------
 class TTVPPadForm : public TForm
 {
-__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
+__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TStatusBar *StatusBar;
 	TToolBar *ToolBar;
 	TToolButton *ExecuteButton;
@@ -74,12 +74,12 @@ __published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	void __fastcall CopyImportantLogMenuItemClick(TObject *Sender);
 	void __fastcall ShowOnTopMenuItemClick(TObject *Sender);
 	void __fastcall ShowScriptEditorMenuItemClick(TObject *Sender);
-private:	// ƒ†[ƒU[éŒ¾
+private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	TCDPExecEvent FOnExecute;
 	bool FFreeOnTerminate;
 	bool FIsMainCDP;
 
-public:		// ƒ†[ƒU[éŒ¾
+public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	__fastcall TTVPPadForm(TComponent* Owner, bool ismain = false);
 
 	void __fastcall GoToLine(int line);

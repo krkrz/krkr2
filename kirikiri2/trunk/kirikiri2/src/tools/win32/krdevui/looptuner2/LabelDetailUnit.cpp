@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -68,12 +68,12 @@ void __fastcall TLabelDetailForm::FormCloseQuery(TObject *Sender,
 		EditLabelAttribFrame->SetLabelInfo(FLabel);
 		if(FLabel.Name.c_str()[0] == ':' && !tTVPWaveLoopManager::GetLabelExpression(FLabel.Name))
 		{
-			Application->MessageBox("Ž®‚Ì•¶–@‚ªŠÔˆá‚Á‚Ä‚¢‚Ü‚·", "ƒGƒ‰[", MB_OK|MB_ICONEXCLAMATION);
+			Application->MessageBox("ï¿½ï¿½ï¿½Ì•ï¿½ï¿½@ï¿½ï¿½ï¿½Ôˆï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½", "ï¿½Gï¿½ï¿½ï¿½[", MB_OK|MB_ICONEXCLAMATION);
 			CanClose = false;
 		}
 		if(FLabel.Name.AnsiPos("'") != 0)
 		{
-			Application->MessageBox("ƒ‰ƒxƒ‹–¼‚ÉƒAƒ|ƒXƒgƒƒtƒB[ (') ‚ðŠÜ‚ß‚éŽ–‚Í‚Å‚«‚Ü‚¹‚ñ", "ƒGƒ‰[", MB_OK|MB_ICONEXCLAMATION);
+			Application->MessageBox("ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ÉƒAï¿½|ï¿½Xï¿½gï¿½ï¿½ï¿½tï¿½Bï¿½[ (') ï¿½ï¿½ï¿½Ü‚ß‚éŽ–ï¿½Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½", "ï¿½Gï¿½ï¿½ï¿½[", MB_OK|MB_ICONEXCLAMATION);
 			CanClose = false;
 		}
 	}

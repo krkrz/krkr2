@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -20,14 +20,14 @@
 //---------------------------------------------------------------------------
 class TEditLabelAttribFrame : public TFrame
 {
-__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
+__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TLabel *Label1;
 	TEdit *LabelNameEdit;
 	void __fastcall LabelNameEditExit(TObject *Sender);
 	void __fastcall LabelNameEditKeyDown(TObject *Sender, WORD &Key,
           TShiftState Shift);
 	void __fastcall LabelNameEditChange(TObject *Sender);
-private:	// ƒ†[ƒU[éŒ¾
+private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	tTVPWaveLabel FLabel;
 	bool InLoading;
 	TNotifyEvent FOnInfoChanged;
@@ -35,7 +35,7 @@ private:	// ƒ†[ƒU[éŒ¾
 
 	void __fastcall AttribChanged();
 	void __fastcall CommitChanges();
-public:		// ƒ†[ƒU[éŒ¾
+public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	__fastcall TEditLabelAttribFrame(TComponent* Owner);
 	void __fastcall SetLabel(const tTVPWaveLabel &label);
 	void __fastcall SetLabelInfo(tTVPWaveLabel &label);

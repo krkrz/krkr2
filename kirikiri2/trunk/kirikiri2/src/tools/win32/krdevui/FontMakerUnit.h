@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -36,7 +36,7 @@ public:
 //---------------------------------------------------------------------------
 class TFontMakerForm : public TForm
 {
-__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
+__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TGroupBox *FontGroupBox;
 	TLabel *Label1;
 	TComboBox *FontSelectComboBox;
@@ -68,7 +68,7 @@ __published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	void __fastcall AntialiasedCheckBoxClick(TObject *Sender);
 	void __fastcall IncludeAllFontCharsCheckBoxClick(TObject *Sender);
 	void __fastcall IncludePrivateCharsCheckBoxClick(TObject *Sender);
-private:	// ƒ†[ƒU[éŒ¾
+private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	TFontPreviewForm *FontPreviewForm;
 	void __fastcall EnumFonts();
 	bool CharacterListInvalidated;
@@ -77,7 +77,7 @@ private:	// ƒ†[ƒU[éŒ¾
 	TPrivRefControl * PrivRefControl;
 
 
-public:		// ƒ†[ƒU[éŒ¾
+public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	__fastcall TFontMakerForm(TComponent* Owner);
 private:
 	void __fastcall SetFontToCanvas(LOGFONT & font);

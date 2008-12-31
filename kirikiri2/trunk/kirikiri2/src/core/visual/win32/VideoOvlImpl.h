@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -42,21 +42,21 @@ class tTJSNI_VideoOverlay : public tTJSNI_BaseVideoOverlay
 // Start:	Add:	T.Imoto
 	class tTJSNI_BaseLayer	*Layer1;
 	class tTJSNI_BaseLayer	*Layer2;
-	tTVPVideoOverlayMode	Mode;	//!< Mode‚Ì“®“I‚È•ÏX‚Ío—ˆ‚È‚¢Bopen‘O‚ÉƒZƒbƒg‚µ‚Ä‚¨‚­‚±‚Æ
+	tTVPVideoOverlayMode	Mode;	//!< Modeï¿½Ì“ï¿½ï¿½Iï¿½È•ÏXï¿½Íoï¿½ï¿½ï¿½È‚ï¿½ï¿½Bopenï¿½Oï¿½ÉƒZï¿½bï¿½gï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	bool	Loop;
 
-	class tTVPBaseBitmap	*Bitmap[2];	//!< Layer•`‰æ—pƒoƒbƒtƒ@—pBitmap
+	class tTVPBaseBitmap	*Bitmap[2];	//!< Layerï¿½`ï¿½ï¿½pï¿½oï¿½bï¿½tï¿½@ï¿½pBitmap
 	BYTE			*BmpBits[2];
 
-	bool	IsPrepare;			//!< €”õƒ‚[ƒh‚©‚Ç‚¤‚©
+	bool	IsPrepare;			//!< ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 
-	int		SegLoopStartFrame;	//!< ƒZƒOƒƒ“ƒgƒ‹[ƒvŠJŽnƒtƒŒ[ƒ€
-	int		SegLoopEndFrame;	//!< ƒZƒOƒƒ“ƒgƒ‹[ƒvI—¹ƒtƒŒ[ƒ€
+	int		SegLoopStartFrame;	//!< ï¿½Zï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½vï¿½Jï¿½nï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½
+	int		SegLoopEndFrame;	//!< ï¿½Zï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½vï¿½Iï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½
 
-	//! ƒCƒxƒ“ƒg‚ªÝ’è‚³‚ê‚½ŽžAŒ»ÝƒtƒŒ[ƒ€‚Ì•û‚ªi‚ñ‚Å‚¢‚½‚©‚Ç‚¤‚©B
-	//! ƒCƒxƒ“ƒg‚ªÝ’è‚³‚ê‚Ä‚¢‚éƒtƒŒ[ƒ€‚æ‚è‘O‚ÉŒ»ÝƒtƒŒ[ƒ€‚ªˆÚ“®‚µ‚½ŽžA‚±‚Ìƒtƒ‰ƒO‚Í‰ðœ‚³‚ê‚éB
+	//! ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ý’è‚³ï¿½ê‚½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ýƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ì•ï¿½iï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½B
+	//! ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ý’è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ÉŒï¿½ï¿½Ýƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ìƒtï¿½ï¿½ï¿½Oï¿½Í‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 	bool	IsEventPast;
-	int		EventFrame;		//!< ƒCƒxƒ“ƒg‚ð”­¶‚³‚¹‚éƒtƒŒ[ƒ€
+	int		EventFrame;		//!< ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ð”­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½
 // End:		Add:	T.Imoto
 
 public:

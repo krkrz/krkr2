@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	fgconvert   (graphic converter for transparent images)
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -14,7 +14,7 @@
 //---------------------------------------------------------------------------
 extern void __fastcall SetGrayscalePalette(Graphics::TBitmap *dib, int bit);
 //---------------------------------------------------------------------------
-// —áŠOƒNƒ‰ƒX
+// ï¿½ï¿½Oï¿½Nï¿½ï¿½ï¿½X
 class EDeePNG : public Exception
 {
 public:
@@ -41,7 +41,7 @@ public:
 
 };
 //---------------------------------------------------------------------------
-// TDeePNG ƒNƒ‰ƒX
+// TDeePNG ï¿½Nï¿½ï¿½ï¿½X
 class TDeePNG : public Graphics::TBitmap
 {
 private:
@@ -56,15 +56,15 @@ protected:
 	int vpag_unit;
 
 public:
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ÆƒfƒXƒgƒ‰ƒNƒ^
+	// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½Æƒfï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	__fastcall TDeePNG(void);
 	__fastcall ~TDeePNG(void);
 
-	// Stream I/O  ‚ÌƒI[ƒo[ƒ‰ƒCƒh
+	// Stream I/O  ï¿½ÌƒIï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 	void __fastcall LoadFromStream(Classes::TStream * Stream);
 	void __fastcall SaveToStream(Classes::TStream * Stream);
 
-	// ƒIƒtƒZƒbƒg
+	// ï¿½Iï¿½tï¿½Zï¿½bï¿½g
 	void SetOffset(int ofs_x, int ofs_y, int ofs_unit)
 	{
 		this->ofs_x = ofs_x;
@@ -80,7 +80,7 @@ public:
 		ofs_unit = this->ofs_unit;
 		return true;
 	}
-	// ‰¼‘zƒy[ƒWƒTƒCƒY
+	// ï¿½ï¿½ï¿½zï¿½yï¿½[ï¿½Wï¿½Tï¿½Cï¿½Y
 	void SetVirtualPage(int vpag_w, int vpag_h, int vpag_unit)
 	{
 		this->vpag_w = vpag_w;
@@ -96,7 +96,7 @@ public:
 		vpag_unit = this->vpag_unit;
 		return true;
 	}
-	// ƒ^ƒO
+	// ï¿½^ï¿½O
 	void SetTags(TStringList *tags); // set tag information from tags
 	void AppendTags(TStringList *tags); // append tag information to tags
 

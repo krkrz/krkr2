@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TJS2 Script Engine
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -107,7 +107,7 @@ void tTJSLocalSymbolList::Remove(const tjs_char *name)
 // tTJSLocalNamespace
 //---------------------------------------------------------------------------
 /*
-Å@a class for compile-time local variables look-up
+ÔøΩ@a class for compile-time local variables look-up
 */
 #ifdef TJS_DEBUG_PROFILE_TIME
 tjs_uint time_ns_Push = 0;

@@ -1,96 +1,96 @@
 Title: Squirrel Plugin
-Author: ‚í‚½‚È‚×‚²‚¤
+Author: ï¿½í‚½ï¿½È‚×‚ï¿½ï¿½ï¿½
 
-œ‚±‚ê‚Í‚È‚ÉH
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í‚È‚ÉH
 
-Squirrel (http://squirrel-lang.org/) ‚Ì‹g—¢‹g—¢ƒoƒCƒ“ƒh‚Å‚·B
+Squirrel (http://squirrel-lang.org/) ï¿½Ì‹gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½oï¿½Cï¿½ï¿½ï¿½hï¿½Å‚ï¿½ï¿½B
 
-Squirrel ‘g‚Ýž‚Ý—pƒIƒuƒWƒFƒNƒgŽwŒüŒ¾Œê‚Å‚·B
-•¶–@“I‚É‚Í C Œ¾Œê•—‚ÅATJS2 ‚Æ\‘¢‚àŠT”O‚à‚æ‚­Ž—‚Ä‚¢‚Ü‚·B
+Squirrel ï¿½gï¿½Ýï¿½ï¿½Ý—pï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½wï¿½ï¿½ï¿½Å‚ï¿½ï¿½B
+ï¿½ï¿½ï¿½@ï¿½Iï¿½É‚ï¿½ C ï¿½ï¿½ï¿½ê•—ï¿½ÅATJS2 ï¿½Æ\ï¿½ï¿½ï¿½ï¿½ï¿½Tï¿½Oï¿½ï¿½ï¿½æ‚­ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B
 
-Squirrel ‚ÍA‹¦’²ƒXƒŒƒbƒhiƒRƒ‹[ƒ`ƒ“j‚ðƒTƒ|[ƒg‚µ‚Ä‚¨‚èA
-ƒXƒNƒŠƒvƒg‚ÌŽÀsˆ—‚ð”CˆÓ‚Ìƒ^ƒCƒ~ƒ“ƒO‚Å’†’f‚Å‚«‚é‚½‚ßA
-ƒQ[ƒ€—p‚ÌƒƒWƒbƒN‚ð‘g‚Þ‚Ì‚É”ñí‚É“K‚µ‚Ä‚¢‚Ü‚·B
+Squirrel ï¿½ÍAï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½bï¿½hï¿½iï¿½Rï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½Tï¿½|ï¿½[ï¿½gï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½A
+ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ÌŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½Ó‚Ìƒ^ï¿½Cï¿½~ï¿½ï¿½ï¿½Oï¿½Å’ï¿½ï¿½fï¿½Å‚ï¿½ï¿½é‚½ï¿½ßA
+ï¿½Qï¿½[ï¿½ï¿½ï¿½pï¿½Ìƒï¿½ï¿½Wï¿½bï¿½Nï¿½ï¿½gï¿½Þ‚Ì‚É”ï¿½ï¿½É“Kï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B
 
-œƒVƒXƒeƒ€ŠT—v
+ï¿½ï¿½ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Tï¿½v
 
-ESquirrel ‚ÌƒOƒ[ƒoƒ‹‹óŠÔ‚Í‹g—¢‹g—¢‘S‘Ì‚É‘Î‚µ‚Ä‚P‚Â‚¾‚¯‘¶Ý‚µ‚Ü‚·B
-@
-@Squirrel —p‚ÌƒXƒNƒŠƒvƒg‚ÌŽÀs‚Í‚±‚ÌƒOƒ[ƒoƒ‹‹óŠÔã‚Å‚¨‚±‚È‚í‚êA
-@’è‹`‚³‚ê‚½ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚âƒNƒ‰ƒX‚à‚±‚ÌƒOƒ[ƒoƒ‹‹óŠÔ‚É“o˜^‚³‚ê‚Ä‚¢‚«‚Ü‚·B
+ï¿½ESquirrel ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚Í‹gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Sï¿½Ì‚É‘Î‚ï¿½ï¿½Ä‚Pï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+ï¿½@
+ï¿½@Squirrel ï¿½pï¿½ÌƒXï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ÌŽï¿½ï¿½sï¿½Í‚ï¿½ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ôï¿½Å‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½A
+ï¿½@ï¿½ï¿½`ï¿½ï¿½ï¿½ê‚½ï¿½tï¿½@ï¿½ï¿½ï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚É“oï¿½^ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
 
-ETJS2 ©¨ Squirrel ŠÔ‚Å•Ï”‚ðŽQÆ‚Å‚«‚Ü‚·
+ï¿½ETJS2 ï¿½ï¿½ï¿½ï¿½ Squirrel ï¿½Ô‚Å•Ïï¿½ï¿½ï¿½ï¿½Qï¿½Æ‚Å‚ï¿½ï¿½Ü‚ï¿½
 
-  ®”AŽÀ”A•¶Žš—ñ‚È‚Ç‚ÌƒvƒŠƒ~ƒeƒBƒu’l‚Í’l“n‚µ‚É‚È‚è‚Ü‚·B
+  ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚Ç‚Ìƒvï¿½ï¿½ï¿½~ï¿½eï¿½Bï¿½uï¿½lï¿½Í’lï¿½nï¿½ï¿½ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
 
-  TJS2 ƒIƒuƒWƒFƒNƒg(iTJSDispatch2*) ‚ÍASquirrel ‚Å‚Í UserData ‚Æ‚µ‚Ä
-  ŽQÆ‰Â”\‚ÅAƒƒ^ƒƒ\ƒbƒh get/set/call ‚ð’Ê‚¶‚Ä‘€ì‰Â”\‚Å‚·B
-  ƒNƒ‰ƒX‚àŽQÆ‚Å‚«‚Ü‚·‚ª‚±‚ê‚ð squirrel ‚ÅŒp³‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB
-@ƒNƒ‰ƒX‚ð call ‚µ‚½ê‡‚ÍATJS2 ‘¤‚ÅƒCƒ“ƒXƒ^ƒ“ƒX‚ªì¬‚³‚êA
-@‚»‚ê‚ð UserData ‚ÅŽQÆ‚µ‚½‚à‚Ì‚ª‹A‚è‚Ü‚·B
+  TJS2 ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g(iTJSDispatch2*) ï¿½ÍASquirrel ï¿½Å‚ï¿½ UserData ï¿½Æ‚ï¿½ï¿½ï¿½
+  ï¿½Qï¿½Æ‰Â”\ï¿½ÅAï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½\ï¿½bï¿½h get/set/call ï¿½ï¿½Ê‚ï¿½ï¿½Ä‘ï¿½ï¿½ï¿½Â”\ï¿½Å‚ï¿½ï¿½B
+  ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½Qï¿½Æ‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ squirrel ï¿½ÅŒpï¿½ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
+ï¿½@ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ call ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍATJS2 ï¿½ï¿½ï¿½ÅƒCï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½ï¿½A
+ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ UserData ï¿½ÅŽQï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½Aï¿½ï¿½Ü‚ï¿½ï¿½B
 
-  squirrel ƒIƒuƒWƒFƒNƒg‚ÍATJS2 ‘¤‚Å‚Í iTJSDispatch2 ‚Æ‚µ‚ÄŽQÆ‰Â”\‚ÅA
-@PropGet/PropSet/FuncCall/CreateNew ‚ð’Ê‚¶‚Ä‘€ì‰Â”\‚Å‚·B
-  incontextof Žw’è‚Í–³Ž‹‚³‚ê‚Ü‚·B
+  squirrel ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÍATJS2 ï¿½ï¿½ï¿½Å‚ï¿½ iTJSDispatch2 ï¿½Æ‚ï¿½ï¿½ÄŽQï¿½Æ‰Â”\ï¿½ÅA
+ï¿½@PropGet/PropSet/FuncCall/CreateNew ï¿½ï¿½Ê‚ï¿½ï¿½Ä‘ï¿½ï¿½ï¿½Â”\ï¿½Å‚ï¿½ï¿½B
+  incontextof ï¿½wï¿½ï¿½Í–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
 
-  Scripts.registSQ() ‚Å TJS2 ‚Ì’l‚ð squirrel ‘¤‚É“o˜^‚Å‚«‚Ü‚·B
+  Scripts.registSQ() ï¿½ï¿½ TJS2 ï¿½Ì’lï¿½ï¿½ squirrel ï¿½ï¿½ï¿½É“oï¿½^ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
 
-  Scripts.registClassSQ() ‚ÅATJS2‚ÌƒNƒ‰ƒX‚Æ‘Î‰ž‚µ‚½ squirrel ƒNƒ‰ƒX‚ð
-  ì‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B‚±‚ê‚Å“o˜^‚µ‚½ƒNƒ‰ƒX‚Í Objecti“à•”ƒNƒ‰ƒX) ‚ð
-@Œp³‚µ‚½ó‘Ô‚Æ‚È‚è‚³‚ç‚É‚±‚ê‚ðŒp³‚µ‚ÄV‚½‚ÈƒNƒ‰ƒX‚ðì‚é‚±‚Æ‚ª‰Â”\‚Å‚·B
+  Scripts.registClassSQ() ï¿½ÅATJS2ï¿½ÌƒNï¿½ï¿½ï¿½Xï¿½Æ‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½ squirrel ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½
+  ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½Å“oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ Objectï¿½iï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½X) ï¿½ï¿½
+ï¿½@ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚Æ‚È‚è‚³ï¿½ï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ÄVï¿½ï¿½ï¿½ÈƒNï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Â”\ï¿½Å‚ï¿½ï¿½B
   
-ETJS2 ‚ÌƒOƒ[ƒoƒ‹‹óŠÔ‚ð Squirrel ‘¤‚©‚ç "::krkr" ‚ÅŽQÆ‚Å‚«‚Ü‚·B
+ï¿½ETJS2 ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ Squirrel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ "::krkr" ï¿½ÅŽQï¿½Æ‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
 
-ESquirrel ‚ÌƒOƒ[ƒoƒ‹‹óŠÔ‚ð TJS2 ‘¤‚©‚ç "sqglobal" ‚ÅŽQÆ‚Å‚«‚Ü‚·B
+ï¿½ESquirrel ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ TJS2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ "sqglobal" ï¿½ÅŽQï¿½Æ‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
 
-ESquirrel •W€ƒ‰ƒCƒuƒ‰ƒŠ‚Ì‚¤‚¿ˆÈ‰º‚Ì‚à‚Ì‚ª—˜—p‰Â”\‚Å‚·
+ï¿½ESquirrel ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½uï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½È‰ï¿½ï¿½Ì‚ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½pï¿½Â”\ï¿½Å‚ï¿½
 
   - I/O
   - blob
   - math
   - string
 
-@I/O ŠÖŒW‚Í OS’¼Ú‚Å‚Í‚È‚­ATJS ‚ÌƒXƒgƒŒ[ƒW‹óŠÔ‚ªŽQÆ‚³‚ê‚Ü‚·B
-@‚Ü‚½Aƒtƒ@ƒCƒ‹–¼‚à TJS ‚ÌƒXƒgƒŒ[ƒW–¼‚É‚È‚è‚Ü‚·B
-@stdin/stdout/stderr ‚Í—˜—p‚Å‚«‚Ü‚¹‚ñ
+ï¿½@I/O ï¿½ÖŒWï¿½ï¿½ OSï¿½ï¿½ï¿½Ú‚Å‚Í‚È‚ï¿½ï¿½ATJS ï¿½ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½Ô‚ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
+ï¿½@ï¿½Ü‚ï¿½ï¿½Aï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ TJS ï¿½ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
+ï¿½@stdin/stdout/stderr ï¿½Í—ï¿½ï¿½pï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½
 
-œŽg—p•û–@
+ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½@
 
-žScripts Šg’£
+ï¿½ï¿½Scripts ï¿½gï¿½ï¿½
 
-Squirrel ƒXƒNƒŠƒvƒg‚ÌŽÀs‹@”\‚âAƒIƒuƒWƒFƒNƒg‚ð Squirrel ‚Ì‘Ž®‚Å
-•¶Žš—ñ‰»‚µ‚½‚èAƒtƒ@ƒCƒ‹‚É•Û‘¶‚µ‚½‚è‚·‚éƒƒ\ƒbƒh‚ª Scripts ƒNƒ‰ƒX
-‚ÉŠg’£‚³‚ê‚Ü‚·BÚ×‚Í manual.tjs ‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢
+Squirrel ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ÌŽï¿½ï¿½sï¿½@ï¿½\ï¿½ï¿½Aï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ Squirrel ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ñ‰»‚ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½É•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚·ï¿½éƒï¿½\ï¿½bï¿½hï¿½ï¿½ Scripts ï¿½Nï¿½ï¿½ï¿½X
+ï¿½ÉŠgï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½Ú×‚ï¿½ manual.tjs ï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-žSQFunction Šg’£
+ï¿½ï¿½SQFunction ï¿½gï¿½ï¿½
 
-Squirrel ‚Ìglobalƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚ð’¼ÚŒÄ‚Ño‚¹‚é‚æ‚¤‚É•ÛŽ‚·‚éƒNƒ‰ƒX‚Å‚·B
-TJS2 ƒ‰ƒbƒsƒ“ƒO‚É‚æ‚é—]•ª‚È•‰‰×‚È‚µ‚ÉŒÄ‚Ño‚µˆ—‚ðs‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-Ú×‚Í manual.tjs ‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+Squirrel ï¿½ï¿½globalï¿½tï¿½@ï¿½ï¿½ï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ð’¼ÚŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É•ÛŽï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Xï¿½Å‚ï¿½ï¿½B
+TJS2 ï¿½ï¿½ï¿½bï¿½sï¿½ï¿½ï¿½Oï¿½É‚ï¿½ï¿½]ï¿½ï¿½ï¿½È•ï¿½ï¿½×‚È‚ï¿½ï¿½ÉŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+ï¿½Ú×‚ï¿½ manual.tjs ï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 
-žSQContinous Šg’£
+ï¿½ï¿½SQContinous ï¿½gï¿½ï¿½
 
-Squirrel ‚Ìglobalƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚ð’¼ÚŒÄ‚Ño‚· Continuous Handler ‚ð
-•ÛŽ‚·‚éƒNƒ‰ƒX‚Å‚·B
-TJS2 ƒ‰ƒbƒsƒ“ƒO‚É‚æ‚é—]•ª‚È•‰‰×‚È‚µ‚ÉŒÄ‚Ño‚µˆ—‚ðs‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·B
-Ú×‚Í manual.tjs ‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+Squirrel ï¿½ï¿½globalï¿½tï¿½@ï¿½ï¿½ï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ð’¼ÚŒÄ‚Ñoï¿½ï¿½ Continuous Handler ï¿½ï¿½
+ï¿½ÛŽï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Xï¿½Å‚ï¿½ï¿½B
+TJS2 ï¿½ï¿½ï¿½bï¿½sï¿½ï¿½ï¿½Oï¿½É‚ï¿½ï¿½]ï¿½ï¿½ï¿½È•ï¿½ï¿½×‚È‚ï¿½ï¿½ÉŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+ï¿½Ú×‚ï¿½ manual.tjs ï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 
-žƒXƒŒƒbƒhŠg’£
+ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½bï¿½hï¿½gï¿½ï¿½
 
-squirrel‚É‚æ‚é•¡”‚ÌƒXƒŒƒbƒh‚Ì•À—ñŽÀsˆ—‚ªŽÀ‘•‚³‚ê‚Ä‚¢‚Ü‚·B
-‚±‚Ì‚½‚ß‚É—˜—p‚Å‚«‚é“à•”ƒNƒ‰ƒX Object / Thread ‚ª’è‹`‚³‚ê‚Ä‚¢‚Ü‚·B
-Ú×‚Í manual.nut ‚ðŽQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+squirrelï¿½É‚ï¿½é•¡ï¿½ï¿½ï¿½ÌƒXï¿½ï¿½ï¿½bï¿½hï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ß‚É—ï¿½ï¿½pï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½X Object / Thread ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+ï¿½Ú×‚ï¿½ manual.nut ï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 
-‚±‚ÌƒXƒŒƒbƒh‚ÌŽÀs‚ÍAContinuous Handler ‚É‚æ‚Á‚ÄŽÀs‚³‚ê‚Ä‚¢‚Ü‚·B
-‚Ü‚½Aˆ—‚Ì‹­§’†’f‚Í‚È‚¢‚½‚ßAŒÂ•Ê‚ÌƒXƒŒƒbƒh‚Å’èŠú“I‚É wait() ‚ð
-s‚í‚È‚¢‚©‚¬‚èƒtƒŠ[ƒYó‘Ô‚Æ‚È‚é‚Ì‚Å’ˆÓ‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
-¦TJS“¯—lA—eˆÕ‚É busy loop ‚ðˆø‚«‹N‚±‚µ‚Ü‚·
+ï¿½ï¿½ï¿½ÌƒXï¿½ï¿½ï¿½bï¿½hï¿½ÌŽï¿½ï¿½sï¿½ÍAContinuous Handler ï¿½É‚ï¿½ï¿½ï¿½ÄŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+ï¿½Ü‚ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ì‹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fï¿½Í‚È‚ï¿½ï¿½ï¿½ï¿½ßAï¿½Â•Ê‚ÌƒXï¿½ï¿½ï¿½bï¿½hï¿½Å’ï¿½ï¿½Iï¿½ï¿½ wait() ï¿½ï¿½
+ï¿½sï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½Yï¿½ï¿½Ô‚Æ‚È‚ï¿½Ì‚Å’ï¿½ï¿½Ó‚ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
+ï¿½ï¿½TJSï¿½ï¿½ï¿½lï¿½Aï¿½eï¿½Õ‚ï¿½ busy loop ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½
 
-œƒ‰ƒCƒZƒ“ƒX
+ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½Zï¿½ï¿½ï¿½X
 
-Squirrel ‚Í ‚¢‚í‚ä‚é zlib/libpngƒXƒ^ƒCƒ‹ƒ‰ƒCƒZƒ“ƒX‚Å‚·B
+Squirrel ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ zlib/libpngï¿½Xï¿½^ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½Zï¿½ï¿½ï¿½Xï¿½Å‚ï¿½ï¿½B
 
-Copyright (c) 2003-2008 Alberto Demichelis
+Copyright (c) 2003-2009 Alberto Demichelis
 
 This software is provided 'as-is', without any 
 express or implied warranty. In no event will the 
@@ -120,4 +120,4 @@ to the following restrictions:
 -----------------------------------------------------
 END OF COPYRIGHT
 
-‚±‚Ìƒvƒ‰ƒOƒCƒ“Ž©‘Ì‚Ìƒ‰ƒCƒZƒ“ƒX‚Í‹g—¢‹g—¢–{‘Ì‚É€‹’‚µ‚Ä‚­‚¾‚³‚¢B
+ï¿½ï¿½ï¿½Ìƒvï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ìƒï¿½ï¿½Cï¿½Zï¿½ï¿½ï¿½Xï¿½Í‹gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½{ï¿½Ì‚Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B

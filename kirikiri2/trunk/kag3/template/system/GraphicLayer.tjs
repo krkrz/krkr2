@@ -1,9 +1,9 @@
-// GraphicLayer.tjs - ƒOƒ‰ƒtƒBƒbƒNŒnƒŒƒCƒ„(”wŒi,ƒLƒƒƒ‰ƒNƒ^)
-// Copyright (C)2001-2008, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
+// GraphicLayer.tjs - ï¿½Oï¿½ï¿½ï¿½tï¿½Bï¿½bï¿½Nï¿½nï¿½ï¿½ï¿½Cï¿½ï¿½(ï¿½wï¿½i,ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½^)
+// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
 
 class ProvinceContext
 {
-	// —ÌˆæƒAƒNƒVƒ‡ƒ“—pƒRƒ“ƒeƒLƒXƒg
+	// ï¿½Ìˆï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½pï¿½Rï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½g
 	var target;
 	var storage;
 	var onenter;
@@ -20,29 +20,29 @@ class ProvinceContext
 
 class GraphicLayer extends AnimationLayer
 {
-	// ”wŒi/‘OŒiƒŒƒCƒ„‚ÌŠî–{ƒNƒ‰ƒX
+	// ï¿½wï¿½i/ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌŠï¿½{ï¿½Nï¿½ï¿½ï¿½X
 
-	var comp; // ‘Î‚ÌƒŒƒCƒ„
+	var comp; // ï¿½Î‚Ìƒï¿½ï¿½Cï¿½ï¿½
 	var id; // ID
-	var provinceActions = void; // ƒNƒŠƒbƒJƒuƒ‹ƒ}ƒbƒv‚Ì—Ìˆæ‚²‚Æ‚ÌƒAƒNƒVƒ‡ƒ“’è‹`
-	var pointingProvince = 0; // Œ»İw‚µ¦‚µ‚Ä‚¢‚é—Ìˆæ”Ô†
-	var loadedProvinceImage = ""; // loadImages Œã‚É“Ç‚İ‚Ü‚ê‚½—Ìˆæ‰æ‘œ
-	var loadedProvinceActions = ""; // loadImages Œã‚É“Ç‚İ‚Ü‚ê‚½—ÌˆæƒAƒNƒVƒ‡ƒ“
-	var defaultCursor = crDefault; // ƒfƒtƒHƒ‹ƒg‚ÌƒJ[ƒ\ƒ‹
-	var lastMouseDownX; // ÅŒã‚Éƒ}ƒEƒX‚ªƒNƒŠƒbƒN‚³‚ê‚½ X À•W
-	var lastMouseDownY; // ÅŒã‚Éƒ}ƒEƒX‚ªƒNƒŠƒbƒN‚³‚ê‚½ Y À•W
+	var provinceActions = void; // ï¿½Nï¿½ï¿½ï¿½bï¿½Jï¿½uï¿½ï¿½ï¿½}ï¿½bï¿½vï¿½Ì—Ìˆæ‚²ï¿½Æ‚ÌƒAï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`
+	var pointingProvince = 0; // ï¿½ï¿½ï¿½İwï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ìˆï¿½Ôï¿½
+	var loadedProvinceImage = ""; // loadImages ï¿½ï¿½É“Ç‚İï¿½ï¿½Ü‚ê‚½ï¿½Ìˆï¿½æ‘œ
+	var loadedProvinceActions = ""; // loadImages ï¿½ï¿½É“Ç‚İï¿½ï¿½Ü‚ê‚½ï¿½Ìˆï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½
+	var defaultCursor = crDefault; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÌƒJï¿½[ï¿½\ï¿½ï¿½
+	var lastMouseDownX; // ï¿½ÅŒï¿½Éƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ X ï¿½ï¿½ï¿½W
+	var lastMouseDownY; // ï¿½ÅŒï¿½Éƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ Y ï¿½ï¿½ï¿½W
 
 	function GraphicLayer(win, par, name, id)
 	{
-		// GraphicLayer ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-		// win    : ƒEƒBƒ“ƒhƒEƒIƒuƒWƒFƒNƒg
-		// par    : eƒŒƒCƒ„
-		// name   : ƒŒƒCƒ„‚Ì–¼‘O
+		// GraphicLayer ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+		// win    : ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
+		// par    : ï¿½eï¿½ï¿½ï¿½Cï¿½ï¿½
+		// name   : ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì–ï¿½ï¿½O
 		super.AnimationLayer(win, par);
 
 		this.name = name;
 		this.id = id;
-		/* ‘Î‚ÌƒŒƒCƒ„ ‚ÍA‚±‚ÌƒIƒuƒWƒFƒNƒg‚ğì¬Œã‚É setCompLayer ‚Åİ’è‚·‚é‚±‚Æ */
+		/* ï¿½Î‚Ìƒï¿½ï¿½Cï¿½ï¿½ ï¿½ÍAï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½ setCompLayer ï¿½Åİ’è‚·ï¿½é‚±ï¿½ï¿½ */
 	}
 
 	function finalize()
@@ -60,22 +60,22 @@ class GraphicLayer extends AnimationLayer
 
 	function loadImages(elm)
 	{
-		// elm ‚É‹Lq‚³‚ê‚Ä‚¢‚é“à—e‚É]‚Á‚Ä‚±‚ÌƒŒƒCƒ„‚É‰æ‘œ‚ğ“Ç‚İ‚Ş
+		// elm ï¿½É‹Lï¿½qï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½É]ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½É‰æ‘œï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 		clearProvinceActions();
 		loadedProvinceImage = "";
 		super.loadImages(elm);
 		if(elm !== void)
 		{
-			if(elm.mapimage !== void) super.loadProvinceImage(elm.mapimage); // —Ìˆæ‰æ‘œ‚ğ“Ç‚Ş
+			if(elm.mapimage !== void) super.loadProvinceImage(elm.mapimage); // ï¿½Ìˆï¿½æ‘œï¿½ï¿½Ç‚ï¿½
 			if(elm.mapaction !== void)
 			{
-				internalLoadProvinceActions(elm.mapaction); // —ÌˆæƒAƒNƒVƒ‡ƒ“‚ğ“Ç‚Ş
+				internalLoadProvinceActions(elm.mapaction); // ï¿½Ìˆï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½
 			}
 			else
 			{
 				var name;
 				var storage = Storages.getPlacedPath(
-					name = (Storages.chopStorageExt(elm.storage) + ".ma")); // Šg’£q‚ª .ma ‚Ìƒtƒ@ƒCƒ‹
+					name = (Storages.chopStorageExt(elm.storage) + ".ma")); // ï¿½gï¿½ï¿½ï¿½qï¿½ï¿½ .ma ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½
 				if(storage != '')
 					loadProvinceActions(name);
 			}
@@ -84,14 +84,14 @@ class GraphicLayer extends AnimationLayer
 
 	function loadProvinceImage(fn)
 	{
-		// —Ìˆæ‰æ‘œ fn ‚ğ“Ç‚İ‚Ş
+		// ï¿½Ìˆï¿½æ‘œ fn ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 		super.loadProvinceImage(fn);
 		loadedProvinceImage = fn;
 	}
 
 	function assignComp()
 	{
-		// ‘Î‚É‚È‚éƒŒƒCƒ„‚Ì“à—e‚ğƒRƒs[
+		// ï¿½Î‚É‚È‚éƒŒï¿½Cï¿½ï¿½ï¿½Ì“ï¿½ï¿½eï¿½ï¿½ï¿½Rï¿½sï¿½[
 		assign(comp);
 	}
 
@@ -119,17 +119,17 @@ class GraphicLayer extends AnimationLayer
 
 	function beginTransition(elm)
 	{
-		// elm ‚É]‚Á‚Äƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ğs‚¤
-		comp.stopTransition(); // comp ‚Ås‚í‚ê‚Ä‚¢‚½ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚à’â~
+		// elm ï¿½É]ï¿½ï¿½ï¿½Äƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
+		comp.stopTransition(); // comp ï¿½Åsï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~
 		super.beginTransition(elm, comp);
 	}
 
 	function exchangeInfo()
 	{
-		// comp ‚Æî•ñ‚ğæ‚è‘Ö‚¦‚é
-		// ‚·‚Å‚É ‰æ‘œ‚Ì“à—eAƒcƒŠ[\‘¢‚Íæ‚è•Ï‚í‚Á‚Ä‚¢‚é‚Ì‚Å
-		// –¼‘O‚È‚Ç‚ğæ‚è‘Ö‚¦‚é
-		// ‚Ü‚½AƒEƒBƒ“ƒhƒE‚ÌŠÇ—î•ñ‚àXV‚·‚é‚æ‚¤‚É‚·‚é
+		// comp ï¿½Æï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½Å‚ï¿½ ï¿½æ‘œï¿½Ì“ï¿½ï¿½eï¿½Aï¿½cï¿½ï¿½ï¿½[ï¿½\ï¿½ï¿½ï¿½Íï¿½ï¿½Ï‚ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ï¿½
+		// ï¿½ï¿½ï¿½Oï¿½È‚Ç‚ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
+		// ï¿½Ü‚ï¿½ï¿½Aï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ÌŠÇ—ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½Vï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É‚ï¿½ï¿½ï¿½
 		var src = comp;
 		var tmp = src.name;
 		src.name = name;
@@ -141,7 +141,7 @@ class GraphicLayer extends AnimationLayer
 
 	function clearImage(process = true)
 	{
-		// AnimationLayer.clearImage ƒI[ƒo[ƒ‰ƒCƒh
+		// AnimationLayer.clearImage ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.clearImage(process);
 		loadedProvinceImage = "";
 		clearProvinceActions();
@@ -164,14 +164,14 @@ class GraphicLayer extends AnimationLayer
 
 	function internalLoadProvinceActions(fn)
 	{
-		// ƒtƒ@ƒCƒ‹–¼ fn ‚ğ—ÌˆæƒAƒNƒVƒ‡ƒ“’è‹`ƒtƒ@ƒCƒ‹‚Æ‚µ‚Ä“Ç‚İ‚Ş
+		// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ fn ï¿½ï¿½Ìˆï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä“Ç‚İï¿½ï¿½ï¿½
 		clearProvinceActions();
 
 		var file = [];
 		file.load(fn);
 		var filelines = file.count;
 
-		// ƒtƒ@ƒCƒ‹‚É]‚Á‚ÄƒXƒNƒŠƒvƒg‚ğ“®“I‚É¶¬
+		// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½É]ï¿½ï¿½ï¿½ÄƒXï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ğ“®“Iï¿½Éï¿½ï¿½ï¿½
 		var body = "function { var a = provinceActions; \n";
 		for(var i = 0; i<filelines; i++)
 		{
@@ -185,7 +185,7 @@ class GraphicLayer extends AnimationLayer
 		body += "}\n";
 
 		provinceActions = [];
-		(Scripts.eval(body) incontextof this) (); // body ‚ÌƒRƒ“ƒpƒCƒ‹‚ğ‚µ‚Ä‚±‚ÌƒRƒ“ƒeƒLƒXƒgã‚ÅÀs
+		(Scripts.eval(body) incontextof this) (); // body ï¿½ÌƒRï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½gï¿½ï¿½Åï¿½ï¿½s
 
 		window.enableMouseKey();
 	}
@@ -198,15 +198,15 @@ class GraphicLayer extends AnimationLayer
 
 	function queryProvinceAction(n, checkzero = true)
 	{
-		// —Ìˆæ”Ô† n ‚ÉŠÖ‚·‚éƒAƒNƒVƒ‡ƒ“‚ğ•Ô‚·
-		// ƒAƒNƒVƒ‡ƒ“‚ª‚È‚É‚à’è‹`‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Î void ‚ğ•Ô‚·
+		// ï¿½Ìˆï¿½Ôï¿½ n ï¿½ÉŠÖ‚ï¿½ï¿½ï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
+		// ï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚É‚ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ void ï¿½ï¿½Ô‚ï¿½
 //		dm(n, provinceActions, provinceActions[n]);
 		if(provinceActions === void) return void;
 		if(checkzero) { if(n == 0) return void; }
 		var action = provinceActions[n];
 		if(action === void) return void;
 		var ar = new ProvinceContext();
-		(action incontextof ar) (); // ar ‚ÌƒRƒ“ƒeƒLƒXƒgã‚ÅƒAƒNƒVƒ‡ƒ“‚ğÀs
+		(action incontextof ar) (); // ar ï¿½ÌƒRï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½gï¿½ï¿½ÅƒAï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½s
 		if(ar.target === void && ar.storage === void && ar.onenter === void &&
 			ar.onleave === void && ar.hint === void && ar.exp === void &&
 			ar.cursor === void && ar.countpage === void && ar.autodisable === void)
@@ -216,14 +216,14 @@ class GraphicLayer extends AnimationLayer
 
 	function onMouseMove(x, y)
 	{
-		// onMouseMove ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
+		// onMouseMove ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
 		super.onMouseMove(...);
 		if(provinceActions !== void)
 		{
 			var n = window.messageLayerHiding ? 0 : getProvincePixel(x - imageLeft, y - imageTop);
 			if(n != pointingProvince)
 			{
-				// ˆÙ‚È‚é—Ìˆæ‚Ìã‚ğ“®‚¢‚½ê‡
+				// ï¿½Ù‚È‚ï¿½Ìˆï¿½Ìï¿½ğ“®‚ï¿½ï¿½ï¿½ï¿½ê‡
 				if(pointingProvince != 0) onProvinceLeave(pointingProvince);
 				if(n != 0) onProvinceEnter(n);
 				pointingProvince = n;
@@ -239,7 +239,7 @@ class GraphicLayer extends AnimationLayer
 
 	function onMouseLeave()
 	{
-		// onMouseLeave ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
+		// onMouseLeave ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
 		super.onMouseLeave(...);
 		if(pointingProvince != 0)
 		{
@@ -250,14 +250,14 @@ class GraphicLayer extends AnimationLayer
 
 	function onProvinceEnter(n)
 	{
-		// —Ìˆæ”Ô† n ‚Éƒ}ƒEƒX‚ªˆÚ“®‚µ‚½
+		// ï¿½Ìˆï¿½Ôï¿½ n ï¿½Éƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½
 		var action = queryProvinceAction(n);
 		if(action !== void)
 		{
 			if(action.onenter !== void) Scripts.eval(action.onenter);
 			if(action.hint !== void) hint = action.hint;
 			if(action.cursor !== void)
-				cursor = action.cursor; // ƒJ[ƒ\ƒ‹w’è‚Ì•û–@‚É’ˆÓ(&‚Í‚Â‚¯‚È‚¢)
+				cursor = action.cursor; // ï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½wï¿½ï¿½Ì•ï¿½@ï¿½É’ï¿½ï¿½ï¿½(&ï¿½Í‚Â‚ï¿½ï¿½È‚ï¿½)
 			else
 				cursor = window.cursorPointed;
 		}
@@ -271,7 +271,7 @@ class GraphicLayer extends AnimationLayer
 
 	function onProvinceLeave(n)
 	{
-		// —Ìˆæ”Ô† n ‚©‚çƒ}ƒEƒX‚ª—£‚ê‚½
+		// ï¿½Ìˆï¿½Ôï¿½ n ï¿½ï¿½ï¿½ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
 		var action = queryProvinceAction(n);
 		if(action !== void && action.onleave !== void) Scripts.eval(action.onleave);
 		hint = "";
@@ -280,8 +280,8 @@ class GraphicLayer extends AnimationLayer
 
 	function processProvince(x, y)
 	{
-		// x, y ˆÊ’u‚Ì—Ìˆæ‚Åw’è‚³‚ê‚½ƒVƒiƒŠƒI‚ÉƒWƒƒƒ“ƒv‚·‚é
-		// ˆ—‚³‚ê‚½ê‡‚Í true, ‚³‚ê‚È‚©‚Á‚½ê‡‚Í false ‚ğ•Ô‚·
+		// x, y ï¿½Ê’uï¿½Ì—Ìˆï¿½Åwï¿½è‚³ï¿½ê‚½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½ÉƒWï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ê‡ï¿½ï¿½ true, ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ false ï¿½ï¿½Ô‚ï¿½
 		var n = window.messageLayerHiding ? 0 : getProvincePixel(x - imageLeft, y - imageTop);
 		var action = queryProvinceAction(n);
 		if(action === void) return false;
@@ -304,7 +304,7 @@ class GraphicLayer extends AnimationLayer
 
 	function store()
 	{
-		// î•ñ‚ğ«‘”z—ñ‚É‹L˜^
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½É‹Lï¿½^
 		var dic = super.store();
 		dic.loadedProvinceImage = loadedProvinceImage;
 		dic.loadedProvinceActions = loadedProvinceActions;
@@ -313,7 +313,7 @@ class GraphicLayer extends AnimationLayer
 
 	function restore(dic)
 	{
-		// dic ‚©‚çî•ñ‚ğ“Ç‚İo‚·
+		// dic ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İoï¿½ï¿½
 		super.restore(dic);
 		if(dic.loadedProvinceImage !== void && dic.loadedProvinceImage !== '')
 			loadProvinceImage(dic.loadedProvinceImage);
@@ -328,7 +328,7 @@ class GraphicLayer extends AnimationLayer
 
 class BaseLayer extends GraphicLayer
 {
-	// ”wŒiƒŒƒCƒ„
+	// ï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½
 
 	function BaseLayer(win, par, name, id)
 	{
@@ -345,23 +345,23 @@ class BaseLayer extends GraphicLayer
 
 	function assign(src)
 	{
-		// assign ƒI[ƒo[ƒ‰ƒCƒh
+		// assign ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.assign(src);
-		// eƒNƒ‰ƒX‚Ì assign ‚Í‰Â‹E•s‰Â‹‚È‚Ç‚ğƒRƒs[‚µ‚È‚¢‚ªA
-		// ”wŒiƒŒƒCƒ„‚È‚Ì‚Å‚»‚ê‚Å‚æ‚¢
+		// ï¿½eï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ assign ï¿½Í‰Âï¿½ï¿½Eï¿½sï¿½Âï¿½ï¿½È‚Ç‚ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½A
+		// ï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½È‚Ì‚Å‚ï¿½ï¿½ï¿½Å‚æ‚¢
 	}
 
 	function loadImages(elm)
 	{
-		// loadImages ƒI[ƒo[ƒ‰ƒCƒh
+		// loadImages ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		if(elm !== void)
 		{
-			elm.mode = "opaque"; // ƒŒƒCƒ„ƒ‚[ƒh‚ğ•Ï‚¦‚ç‚ê‚é‚Æ¢‚é‚Ì‚Å
-			delete elm.index; // ƒCƒ“ƒfƒbƒNƒX‚ğ•Ï‚¦‚ç‚ê‚é‚Æ¢‚é‚Ì‚Å
+			elm.mode = "opaque"; // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½Ï‚ï¿½ï¿½ï¿½ï¿½ï¿½Æï¿½ï¿½ï¿½Ì‚ï¿½
+			delete elm.index; // ï¿½Cï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½ï¿½Ï‚ï¿½ï¿½ï¿½ï¿½ï¿½Æï¿½ï¿½ï¿½Ì‚ï¿½
 
 			if(elm.visible !== void)
 			{
-				// visible ‚Ìó‘Ô‚ğ•Ï‚¦‚ç‚ê‚é‚Æ¢‚é‚Ì‚Å
+				// visible ï¿½Ìï¿½Ô‚ï¿½Ï‚ï¿½ï¿½ï¿½ï¿½ï¿½Æï¿½ï¿½ï¿½Ì‚ï¿½
 				if(isPrimary) elm.visible = true; else elm.visible = false;
 			}
 		}
@@ -370,7 +370,7 @@ class BaseLayer extends GraphicLayer
 
 	function restore(dic)
 	{
-		// restore ƒI[ƒo[ƒ‰ƒCƒh
+		// restore ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		if(isPrimary) dic.visible = true; else dic.visible = false;
 		dic.absolute = 0;
 		super.restore(dic);
@@ -378,7 +378,7 @@ class BaseLayer extends GraphicLayer
 
 	function setOptions(elm)
 	{
-		// setOptions ƒI[ƒo[ƒ‰ƒCƒh
+		// setOptions ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		if(elm.visible !== void)
 		{
 			if(isPrimary) elm.visible = true; else elm.visible = false;
@@ -388,34 +388,34 @@ class BaseLayer extends GraphicLayer
 
 	function internalOnMouseDown(x, y, button, processprovince = true)
 	{
-		// “à•”ŠÖ”
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½
 		var provinceprocessed = false;
 		if(button == mbLeft && processprovince && !window.messageLayerHiding)
 			provinceprocessed = processProvince(x, y);
 		if(button == mbLeft && !provinceprocessed)
 		{
-			// ©g‚ªƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚È‚ç‚ÎAƒEƒBƒ“ƒhƒE‚Ì
-			// onPrimaryClick ‚ğŒÄ‚Ô
+			// ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½È‚ï¿½ÎAï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½
+			// onPrimaryClick ï¿½ï¿½ï¿½Ä‚ï¿½
 			if(isPrimary) window.onPrimaryClick();
 		}
 		else if(button == mbRight)
 		{
-			// ©g‚ªƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚È‚ç‚ÎAƒEƒBƒ“ƒhƒE‚Ì
-			// onPrimaryRightClick ‚ğŒÄ‚Ô
+			// ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½È‚ï¿½ÎAï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½
+			// onPrimaryRightClick ï¿½ï¿½ï¿½Ä‚ï¿½
 			if(isPrimary) window.onPrimaryRightClick();
 		}
 	}
 
 	function onMouseDown(x, y, button)
 	{
-		// ƒ}ƒEƒX‚ª‰Ÿ‚³‚ê‚½
+		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
 		super.onMouseDown(...);
 		internalOnMouseDown(x, y, button);
 	}
 
 	function clearImage()
 	{
-		// GraphicLayer.clearImage ƒI[ƒo[ƒ‰ƒCƒh
+		// GraphicLayer.clearImage ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.clearImage(false);
 		setImageSize(window.scWidth, window.scHeight);
 		setSizeToImageSize();
@@ -425,24 +425,24 @@ class BaseLayer extends GraphicLayer
 
 	function atEndOfTransition(src, withchildren, exchange)
 	{
-		// atEndOfTransition ƒI[ƒo[ƒ‰ƒCƒh
+		// atEndOfTransition ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.atEndOfTransition(...);
 		if(src == null)
 		{
-			//E”wŒiƒŒƒCƒ„‚ªsrc‚È‚µ‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“(children=true)
-			//@‰½‚à‚µ‚È‚­‚Ä‚æ‚¢‚ªAI—¹‚ÉqƒŒƒCƒ„‚Í”ñ•\¦‚É‚È‚éB
-			//E”wŒiƒŒƒCƒ„‚ªsrc‚È‚µ‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“(children=false)
-			//@–{“–‚É‰½‚à‚µ‚È‚¢B
+			//ï¿½Eï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½srcï¿½È‚ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½(children=true)
+			//ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Ä‚æ‚¢ï¿½ï¿½ï¿½Aï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Éqï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Í”ï¿½\ï¿½ï¿½ï¿½É‚È‚ï¿½B
+			//ï¿½Eï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½srcï¿½È‚ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½(children=false)
+			//ï¿½@ï¿½{ï¿½ï¿½ï¿½É‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
 		}
 		else
 		{
 			if(withchildren)
 			{
-				//E”wŒiƒŒƒCƒ„‚ªsrc‚ ‚è‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“(children=true)
-				//@d—v‚Èî•ñ‚ğƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚ÆŒğŠ·A‚µ‚©‚àqƒŒƒCƒ„‚É‘Î‚µ‚Ä‚à‚±‚Ì
-				//@ud—v‚Èî•ñ‚ğ‘Šè‚ÆŒğŠ·v‚Ìw¦‚ğo‚·Bexchange=false ‚Ìê‡‚Í‚³‚ç‚É
-				//@ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚Ìî•ñ‚ğƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“æ‚ÉƒRƒs[B‚±‚ê‚àAqƒŒƒCƒ„‚·‚×‚Ä
-				//@‚É‘Î‚µ‚Ä‚àw¦‚·‚éB
+				//ï¿½Eï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½srcï¿½ï¿½ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½(children=true)
+				//ï¿½@ï¿½dï¿½vï¿½Èï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆŒï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½qï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½
+				//ï¿½@ï¿½uï¿½dï¿½vï¿½Èï¿½ï¿½ğ‘Šï¿½ÆŒï¿½ï¿½ï¿½ï¿½vï¿½Ìwï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½Bexchange=false ï¿½Ìê‡ï¿½Í‚ï¿½ï¿½ï¿½ï¿½
+				//ï¿½@ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉƒRï¿½sï¿½[ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½qï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½×‚ï¿½
+				//ï¿½@ï¿½É‘Î‚ï¿½ï¿½Ä‚ï¿½ï¿½wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 				if(!exchange)
 				{
 					assign(src);
@@ -454,11 +454,11 @@ class BaseLayer extends GraphicLayer
 			}
 			else
 			{
-				//E”wŒiƒŒƒCƒ„‚ªsrc‚ ‚è‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“(children=false)
-				//@d—v‚Èî•ñ‚ğƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚ÆŒğŠ·BqƒŒƒCƒ„‚É‘Î‚µ‚Ä‚Í
-				//@ud—v‚Èî•ñ‚ğ‘Šè‚ÆŒğŠ·v‚Ìw¦‚ğ‚¾‚³‚È‚¢Bexchange=false ‚Ìê‡‚Í
-				//@‚³‚ç‚Éƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚Ìî•ñ‚ğƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“æ‚ÉƒRƒs[B
-				//@‚±‚ê‚àqƒŒƒCƒ„‚É‘Î‚µ‚Ä‚Íw¦‚µ‚È‚¢B
+				//ï¿½Eï¿½wï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½srcï¿½ï¿½ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½(children=false)
+				//ï¿½@ï¿½dï¿½vï¿½Èï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆŒï¿½ï¿½ï¿½ï¿½Bï¿½qï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½Ä‚ï¿½
+				//ï¿½@ï¿½uï¿½dï¿½vï¿½Èï¿½ï¿½ğ‘Šï¿½ÆŒï¿½ï¿½ï¿½ï¿½vï¿½Ìwï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Bexchange=false ï¿½Ìê‡ï¿½ï¿½
+				//ï¿½@ï¿½ï¿½ï¿½ï¿½Éƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉƒRï¿½sï¿½[ï¿½B
+				//ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½qï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½Ä‚Íwï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
 				if(!exchange)
 				{
 					assign(src);
@@ -470,7 +470,7 @@ class BaseLayer extends GraphicLayer
 
 	function exchangeInfo()
 	{
-		// exchangeInfo ƒI[ƒo[ƒ‰ƒCƒh
+		// exchangeInfo ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.exchangeInfo();
 		window.swapBaseLayer();
 	}
@@ -478,9 +478,9 @@ class BaseLayer extends GraphicLayer
 
 class CharacterLayer extends GraphicLayer
 {
-	// ‘OŒiƒŒƒCƒ„
-	var autoHide = false; // ƒƒbƒZ[ƒWƒŒƒCƒ„‚Æˆê‚É‰B‚ê‚é‚±‚Æ‚ª‚Å‚«‚é‚©
-	var invisibleByUser = false; // ƒ†[ƒU‚É‚æ‚èˆê“I‚É•s‰Â‹
+	// ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½
+	var autoHide = false; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Æˆêï¿½É‰Bï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½é‚©
+	var invisibleByUser = false; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½ï¿½êï¿½Iï¿½É•sï¿½Âï¿½
 	var visibleBeforeUserInvisible  = false;
 
 	function CharacterLayer(win, par, name, id)
@@ -499,15 +499,15 @@ class CharacterLayer extends GraphicLayer
 
 	function onHitTest(x, y, hit)
 	{
-		// onHitTest ƒI[ƒo[ƒ‰ƒCƒh
+		// onHitTest ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		if(!hit || provinceActions === void)
 		{
-			// hit==false ‚Ü‚½‚Í—ÌˆæƒAƒNƒVƒ‡ƒ“‚ª’è‹`‚³‚ê‚Ä‚¢‚È‚¢ê‡
+			// hit==false ï¿½Ü‚ï¿½ï¿½Í—Ìˆï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
 			super.onHitTest(x, y, false);
 		}
 		else
 		{
-			// hit==true ‚©‚Â —ÌˆæƒAƒNƒVƒ‡ƒ“‚ª’è‹`‚³‚ê‚Ä‚¢‚éê‡
+			// hit==true ï¿½ï¿½ï¿½ï¿½ ï¿½Ìˆï¿½Aï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ê‡
 			super.onHitTest(x, y, !window.messageLayerHiding);
 		}
 		return;
@@ -515,36 +515,36 @@ class CharacterLayer extends GraphicLayer
 
 	function assign(src)
 	{
-		// assign ƒI[ƒo[ƒ‰ƒCƒh
+		// assign ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.assign(src);
 		assignVisibleState(src);
-		// eƒNƒ‰ƒX‚Ì assign ‚Í‰Â‹E•s‰Â‹‚È‚Ç‚Ìî•ñ‚ğƒRƒs[‚µ‚È‚¢‚½‚ß
-		// ‚±‚±‚Å assignVisibleState ‚ğŒÄ‚Ô•K—v‚ª‚ ‚é
+		// ï¿½eï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ assign ï¿½Í‰Âï¿½ï¿½Eï¿½sï¿½Âï¿½ï¿½È‚Ç‚Ìï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ assignVisibleState ï¿½ï¿½ï¿½Ä‚Ô•Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		autoHide = src.autoHide;
 	}
 
 	function setOptions(elm)
 	{
-		// setOptions ƒI[ƒo[ƒ‰ƒCƒh
+		// setOptions ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.setOptions(elm);
 		autoHide = +elm.autohide if elm.autohide !== void;
 	}
 
 	function atEndOfTransition(src, withchildren, exchange)
 	{
-		// atEndOfTransition ƒI[ƒo[ƒ‰ƒCƒh
+		// atEndOfTransition ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.atEndOfTransition(...);
 		if(src == null)
 		{
-			//EƒƒbƒZ[ƒWƒŒƒCƒ„A‘OŒiƒŒƒCƒ„‚ªAsrc‚È‚µ‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ (children=true)
-			//@‰½‚à‚µ‚È‚­‚Ä‚æ‚¢‚ªAI—¹Œã‚»‚ê‚ç‚ÌqƒŒƒCƒ„‚Í©“®“I‚É”ñ•\¦‚É‚È‚éB
+			//ï¿½Eï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Aï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Asrcï¿½È‚ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ (children=true)
+			//ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Ä‚æ‚¢ï¿½ï¿½ï¿½Aï¿½Iï¿½ï¿½ï¿½ã‚»ï¿½ï¿½ï¿½Ìqï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Íï¿½ï¿½ï¿½ï¿½Iï¿½É”ï¿½\ï¿½ï¿½ï¿½É‚È‚ï¿½B
 		}
 		else
 		{
-			//EƒƒbƒZ[ƒWƒŒƒCƒ„A‘OŒiƒŒƒCƒ„‚ªAsrc‚ ‚è‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ (children=true)
-			//@d—v‚Èî•ñ‚ğƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚ÆŒğŠ·Aexchange=false ‚Ìê‡‚Í‚³‚ç‚É
-			//@ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚Ìî•ñ‚ğƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“æ‚ÉƒRƒs[B‚½‚¾‚µA‚±‚ÌƒRƒs[‚ÌÛ‚É
-			//@ƒEƒBƒ“ƒhƒE‚Ì‰Â‹E•s‰Â‹‚Ìî•ñ‚ÍƒRƒs[‚µ‚È‚¢B
+			//ï¿½Eï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Aï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Asrcï¿½ï¿½ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ (children=true)
+			//ï¿½@ï¿½dï¿½vï¿½Èï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆŒï¿½ï¿½ï¿½ï¿½Aexchange=false ï¿½Ìê‡ï¿½Í‚ï¿½ï¿½ï¿½ï¿½
+			//ï¿½@ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉƒRï¿½sï¿½[ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ÌƒRï¿½sï¿½[ï¿½ÌÛ‚ï¿½
+			//ï¿½@ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ì‰Âï¿½ï¿½Eï¿½sï¿½Âï¿½ï¿½Ìï¿½ï¿½ÍƒRï¿½sï¿½[ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
 			super.assign(src);
 			exchangeInfo();
 			window.swapCharacterLayer(id);
@@ -553,25 +553,25 @@ class CharacterLayer extends GraphicLayer
 
 	function assignTransSrc()
 	{
-		// ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚à‚Æ(comp)‚ğƒRƒs[‚·‚é
+		// ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(comp)ï¿½ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
 		assign(comp);
 	}
 
 	function setHiddenStateByUser(b)
 	{
-		// ƒ†[ƒU‚ª‰EƒNƒŠƒbƒN‚È‚Ç‚ÅƒƒbƒZ[ƒWƒŒƒCƒ„‚ğˆê“I‚É‰B‚·‚Æ‚«‚É
-		// ŒÄ‚Î‚ê‚é
+		// ï¿½ï¿½ï¿½[ï¿½Uï¿½ï¿½ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½È‚Ç‚Åƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½êï¿½Iï¿½É‰Bï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
+		// ï¿½Ä‚Î‚ï¿½ï¿½
 		if(autoHide)
 		{
 			if(b)
 			{
 				visibleBeforeUserInvisible = visible;
-				invisibleByUser = true; // ƒ†[ƒU‚É‚æ‚èˆê“I‚É•s‰Â‹
+				invisibleByUser = true; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½ï¿½êï¿½Iï¿½É•sï¿½Âï¿½
 				visible = false;
 			}
 			else
 			{
-				invisibleByUser = false; // ‰Â‹
+				invisibleByUser = false; // ï¿½Âï¿½
 				visible = visibleBeforeUserInvisible;
 			}
 		}
@@ -579,18 +579,18 @@ class CharacterLayer extends GraphicLayer
 
 	function onMouseDown(x, y, button)
 	{
-		// ƒ}ƒEƒX‚ª‰Ÿ‚³‚ê‚½
+		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
 		super.onMouseDown(...);
 		if(button == mbLeft)
 			processProvince(x, y);
 		else if(button == mbRight)
 			window.onPrimaryRightClick();
-			// ‰Eƒ{ƒ^ƒ“‚Í window.onPrimaryRightClick() ‚ğŒÄ‚Ô
+			// ï¿½Eï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ window.onPrimaryRightClick() ï¿½ï¿½ï¿½Ä‚ï¿½
 	}
 
 	function store()
 	{
-		// store ƒI[ƒo[ƒ‰ƒCƒh
+		// store ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		var dic = super.store();
 		dic.autoHide = autoHide;
 		return dic;
@@ -598,7 +598,7 @@ class CharacterLayer extends GraphicLayer
 
 	function restore(dic)
 	{
-		// restore ƒI[ƒo[ƒ‰ƒCƒh
+		// restore ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		autoHide = +dic.autoHide if dic.autoHide !== void;
 		super.restore(dic);
 	}

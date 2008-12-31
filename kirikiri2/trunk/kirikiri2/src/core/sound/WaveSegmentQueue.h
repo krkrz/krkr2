@@ -1,14 +1,14 @@
 //---------------------------------------------------------------------------
 /*
-	Risa [‚è‚³]      alias ‹g—¢‹g—¢3 [kirikiri-3]
+	Risa [ï¿½è‚³]      alias ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½3 [kirikiri-3]
 	 stands for "Risa Is a Stagecraft Architecture"
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
 //! @file
-//! @brief WaveƒZƒOƒƒ“ƒg/ƒ‰ƒxƒ‹ƒLƒ…[ŠÇ—
+//! @brief Waveï¿½Zï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½g/ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½Ç—ï¿½
 //---------------------------------------------------------------------------
 #ifndef WAVESEGMENTH
 #define WAVESEGMENTH
@@ -18,32 +18,32 @@
 
 
 //---------------------------------------------------------------------------
-//! @brief Ä¶ƒZƒOƒƒ“ƒgî•ñ
+//! @brief ï¿½Äï¿½ï¿½Zï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½
 //---------------------------------------------------------------------------
 struct tTVPWaveSegment
 {
-	//! @brief ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	//! @brief ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	tTVPWaveSegment(tjs_int64 start, tjs_int64 length)
 		{ Start = start; Length = FilteredLength = length; }
 	tTVPWaveSegment(tjs_int64 start, tjs_int64 length, tjs_int64 filteredlength)
 		{ Start = start; Length = length; FilteredLength = filteredlength; }
-	tjs_int64 Start; //!< ƒIƒŠƒWƒiƒ‹ƒfƒR[ƒ_ã‚Å‚ÌƒZƒOƒƒ“ƒg‚ÌƒXƒ^[ƒgˆÊ’u (PCM ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”’PˆÊ)
-	tjs_int64 Length; //!< ƒIƒŠƒWƒiƒ‹ƒfƒR[ƒ_ã‚Å‚ÌƒZƒOƒƒ“ƒg‚Ì’·‚³ (PCM ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”’PˆÊ)
-	tjs_int64 FilteredLength; //!< ƒtƒBƒ‹ƒ^Œã‚Ì’·‚³ (PCM ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”’PˆÊ)
+	tjs_int64 Start; //!< ï¿½Iï¿½ï¿½ï¿½Wï¿½iï¿½ï¿½ï¿½fï¿½Rï¿½[ï¿½_ï¿½ï¿½Å‚ÌƒZï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ÌƒXï¿½^ï¿½[ï¿½gï¿½Ê’u (PCM ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Pï¿½ï¿½)
+	tjs_int64 Length; //!< ï¿½Iï¿½ï¿½ï¿½Wï¿½iï¿½ï¿½ï¿½fï¿½Rï¿½[ï¿½_ï¿½ï¿½Å‚ÌƒZï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì’ï¿½ï¿½ï¿½ (PCM ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Pï¿½ï¿½)
+	tjs_int64 FilteredLength; //!< ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½Ì’ï¿½ï¿½ï¿½ (PCM ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Pï¿½ï¿½)
 };
 //---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
-//! @brief Ä¶ƒ‰ƒxƒ‹î•ñ
+//! @brief ï¿½Äï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½
 //---------------------------------------------------------------------------
 struct tTVPWaveLabel
 {
-	//! @brief ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	tjs_int64 Position; //!< ƒIƒŠƒWƒiƒ‹ƒfƒR[ƒ_ã‚Å‚Ìƒ‰ƒxƒ‹ˆÊ’u (PCM ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”’PˆÊ)
-	ttstr Name; //!< ƒ‰ƒxƒ‹–¼
+	//! @brief ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	tjs_int64 Position; //!< ï¿½Iï¿½ï¿½ï¿½Wï¿½iï¿½ï¿½ï¿½fï¿½Rï¿½[ï¿½_ï¿½ï¿½Å‚Ìƒï¿½ï¿½xï¿½ï¿½ï¿½Ê’u (PCM ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Pï¿½ï¿½)
+	ttstr Name; //!< ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½
 	tjs_int Offset;
-		/*!< ƒIƒtƒZƒbƒg
+		/*!< ï¿½Iï¿½tï¿½Zï¿½bï¿½g
 			@note
 			This member will be set in tTVPWaveLoopManager::Render,
 			and will contain the sample granule offset from first decoding
@@ -88,7 +88,7 @@ struct tTVPWaveLabel
 	};
 #endif
 
-	//! @brief ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	//! @brief ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	tTVPWaveLabel()
 	{
 		Position = 0;
@@ -99,7 +99,7 @@ struct tTVPWaveLabel
 #endif
 	}
 
-	//! @brief ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	//! @brief ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	tTVPWaveLabel(tjs_int64 position, const ttstr & name, tjs_int offset)
 		: Position(position), Name(name), Offset(offset)
 	{
@@ -120,66 +120,66 @@ bool inline operator < (const tTVPWaveLabel & lhs, const tTVPWaveLabel & rhs)
 
 
 //---------------------------------------------------------------------------
-//! @brief Wave‚ÌƒZƒOƒƒ“ƒgEƒ‰ƒxƒ‹‚ÌƒLƒ…[‚ğŠÇ—‚·‚éƒNƒ‰ƒX
+//! @brief Waveï¿½ÌƒZï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Eï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ÌƒLï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ç—ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½X
 //---------------------------------------------------------------------------
 class tTVPWaveSegmentQueue
 {
-	// deque ‚É‚æ‚é Segments ‚Æ Labels ‚Ì”z—ñB
-	// À—pã‚ÍA‚±‚ê‚ç‚Ì”z—ñ‚É‘å—Ê‚Ìƒf[ƒ^‚ª“ü‚é‚±‚Æ‚Í‚Ü‚¸‚È‚¢‚Ì‚Å
-	// vector ‚Å\•ª‚È‚Ì‚©‚à‚µ‚ê‚È‚¢‚ª ...
-	std::deque<tTVPWaveSegment> Segments; //!< ƒZƒOƒƒ“ƒg‚Ì”z—ñ
-	std::deque<tTVPWaveLabel> Labels; //!< ƒ‰ƒxƒ‹‚Ì”z—ñ
+	// deque ï¿½É‚ï¿½ï¿½ Segments ï¿½ï¿½ Labels ï¿½Ì”zï¿½ï¿½B
+	// ï¿½ï¿½ï¿½pï¿½ï¿½ÍAï¿½ï¿½ï¿½ï¿½ï¿½Ì”zï¿½ï¿½É‘ï¿½Ê‚Ìƒfï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚Í‚Ü‚ï¿½ï¿½È‚ï¿½ï¿½Ì‚ï¿½
+	// vector ï¿½Å\ï¿½ï¿½ï¿½È‚Ì‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ ...
+	std::deque<tTVPWaveSegment> Segments; //!< ï¿½Zï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì”zï¿½ï¿½
+	std::deque<tTVPWaveLabel> Labels; //!< ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ì”zï¿½ï¿½
 
 public:
-	//! @brief		“à—e‚ğƒNƒŠƒA‚·‚é
+	//! @brief		ï¿½ï¿½ï¿½eï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½
 	void Clear();
 
-	//! @brief		ƒZƒOƒƒ“ƒg‚Ì”z—ñ‚ğ“¾‚é
-	//! @return		ƒZƒOƒƒ“ƒg‚Ì”z—ñ
+	//! @brief		ï¿½Zï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì”zï¿½ï¿½ğ“¾‚ï¿½
+	//! @return		ï¿½Zï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì”zï¿½ï¿½
 	const std::deque<tTVPWaveSegment> & GetSegments() const { return Segments; }
 
-	//! @brief		ƒ‰ƒxƒ‹‚Ì”z—ñ‚ğ“¾‚é
-	//! @return		ƒ‰ƒxƒ‹‚Ì”z—ñ
+	//! @brief		ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ì”zï¿½ï¿½ğ“¾‚ï¿½
+	//! @return		ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ì”zï¿½ï¿½
 	const std::deque<tTVPWaveLabel> & GetLabels() const { return Labels; }
 
-	//! @brief		tTVPWaveSegmentQueue‚ğƒGƒ“ƒLƒ…[‚·‚é
-	//! @param		queue		ƒGƒ“ƒLƒ…[‚µ‚½‚¢tTVPWaveSegmentQueueƒIƒuƒWƒFƒNƒg
+	//! @brief		tTVPWaveSegmentQueueï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
+	//! @param		queue		ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tTVPWaveSegmentQueueï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
 	void Enqueue(const tTVPWaveSegmentQueue & queue);
 
-	//! @brief		tTVPWaveSegment‚ğƒGƒ“ƒLƒ…[‚·‚é
-	//! @param		queue		ƒGƒ“ƒLƒ…[‚µ‚½‚¢tTVPWaveSegmentƒIƒuƒWƒFƒNƒg
+	//! @brief		tTVPWaveSegmentï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
+	//! @param		queue		ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tTVPWaveSegmentï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
 	void Enqueue(const tTVPWaveSegment & segment);
 
-	//! @brief		tTVPWaveLabel‚ğƒGƒ“ƒLƒ…[‚·‚é
-	//! @param		queue		ƒGƒ“ƒLƒ…[‚µ‚½‚¢tTVPWaveLabelƒIƒuƒWƒFƒNƒg
-	//! @note		Offset ‚ÍC³‚³‚ê‚È‚¢‚Ì‚Å’ˆÓ
+	//! @brief		tTVPWaveLabelï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
+	//! @param		queue		ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tTVPWaveLabelï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
+	//! @note		Offset ï¿½ÍCï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Ì‚Å’ï¿½ï¿½ï¿½
 	void Enqueue(const tTVPWaveLabel & Label);
 
-	//! @brief		tTVPWaveSegment‚Ì”z—ñ‚ğƒGƒ“ƒLƒ…[‚·‚é
-	//! @param		queue		ƒGƒ“ƒLƒ…[‚µ‚½‚¢ std::dequeue<tTVPWaveSegment>ƒIƒuƒWƒFƒNƒg
+	//! @brief		tTVPWaveSegmentï¿½Ì”zï¿½ï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
+	//! @param		queue		ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ std::dequeue<tTVPWaveSegment>ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
 	void Enqueue(const std::deque<tTVPWaveSegment> & segments);
 
-	//! @brief		tTVPWaveLabel‚Ì”z—ñ‚ğƒGƒ“ƒLƒ…[‚·‚é
-	//! @param		queue		ƒGƒ“ƒLƒ…[‚µ‚½‚¢ std::dequeue<tTVPWaveLabel>ƒIƒuƒWƒFƒNƒg
+	//! @brief		tTVPWaveLabelï¿½Ì”zï¿½ï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
+	//! @param		queue		ï¿½Gï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ std::dequeue<tTVPWaveLabel>ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
 	void Enqueue(const std::deque<tTVPWaveLabel> & Labels);
 
-	//! @brief		æ“ª‚©‚çw’è’·‚³•ª‚ğƒfƒLƒ…[‚·‚é
-	//! @param		dest		Ši”[æƒLƒ…[(“à—e‚ÍƒNƒŠƒA‚³‚ê‚é)
-	//! @param		length		Ø‚èo‚·’·‚³(ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹’PˆÊ)
+	//! @brief		ï¿½æ“ªï¿½ï¿½ï¿½ï¿½wï¿½è’·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
+	//! @param		dest		ï¿½iï¿½[ï¿½ï¿½Lï¿½ï¿½ï¿½[(ï¿½ï¿½ï¿½eï¿½ÍƒNï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½)
+	//! @param		length		ï¿½Ø‚ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Pï¿½ï¿½)
 	void Dequeue(tTVPWaveSegmentQueue & dest, tjs_int64 length);
 
-	//! @brief		‚±‚ÌƒLƒ…[‚Ì‘S‘Ì‚Ì’·‚³‚ğ“¾‚é
-	//! @return		‚±‚ÌƒLƒ…[‚Ì’·‚³ (ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹’PˆÊ)
+	//! @brief		ï¿½ï¿½ï¿½ÌƒLï¿½ï¿½ï¿½[ï¿½Ì‘Sï¿½Ì‚Ì’ï¿½ï¿½ï¿½ï¿½ğ“¾‚ï¿½
+	//! @return		ï¿½ï¿½ï¿½ÌƒLï¿½ï¿½ï¿½[ï¿½Ì’ï¿½ï¿½ï¿½ (ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Pï¿½ï¿½)
 	tjs_int64 GetFilteredLength() const;
 
-	//! @brief		‚±‚ÌƒLƒ…[‚Ì’·‚³‚ğ•Ï‰»‚³‚¹‚é
-	//! @param		new_total_filtered_length V‚µ‚¢ƒLƒ…[‚Ì’·‚³ (ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹’PˆÊ)
-	//! @note		ƒLƒ…[’†‚ÌSegments ‚È‚Ç‚Ì’·‚³‚â Labels‚ÌˆÊ’u‚ÍüŒ`•âŠÔ‚³‚ê‚é
+	//! @brief		ï¿½ï¿½ï¿½ÌƒLï¿½ï¿½ï¿½[ï¿½Ì’ï¿½ï¿½ï¿½ï¿½ï¿½Ï‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//! @param		new_total_filtered_length ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½[ï¿½Ì’ï¿½ï¿½ï¿½ (ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Pï¿½ï¿½)
+	//! @note		ï¿½Lï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½Segments ï¿½È‚Ç‚Ì’ï¿½ï¿½ï¿½ï¿½ï¿½ Labelsï¿½ÌˆÊ’uï¿½Íï¿½`ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½
 	void Scale(tjs_int64 new_total_length);
 
-	//! @brief		ƒtƒBƒ‹ƒ^‚³‚ê‚½ˆÊ’u‚©‚çƒfƒR[ƒhˆÊ’u‚Ö•ÏŠ·‚ğs‚¤
-	//! @param		pos ƒtƒBƒ‹ƒ^‚³‚ê‚½ˆÊ’u
-	//! @note		ƒfƒR[ƒhˆÊ’u
+	//! @brief		ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ê‚½ï¿½Ê’uï¿½ï¿½ï¿½ï¿½fï¿½Rï¿½[ï¿½hï¿½Ê’uï¿½Ö•ÏŠï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
+	//! @param		pos ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ê‚½ï¿½Ê’u
+	//! @note		ï¿½fï¿½Rï¿½[ï¿½hï¿½Ê’u
 	tjs_int64 FilteredPositionToDecodePosition(tjs_int64 pos) const;
 };
 //---------------------------------------------------------------------------

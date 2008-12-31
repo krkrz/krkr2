@@ -1,48 +1,48 @@
-// Conductor.tjs - KAG ƒVƒiƒŠƒIisˆ—
-// Copyright (C)2001-2008, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
+// Conductor.tjs - KAG ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½iï¿½sï¿½ï¿½ï¿½ï¿½
+// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
 
 
 class ConductorException extends Exception
 {
-	// ConductorException - Conductor ‚ªƒ^ƒOƒnƒ“ƒhƒ‰‚ğˆ—’†‚É”­¶‚µ‚½—áŠO‚ğ
-	// “Š‚°‚é‚Ég‚í‚ê‚é—áŠOƒNƒ‰ƒX
+	// ConductorException - Conductor ï¿½ï¿½ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É”ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½éï¿½Égï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Nï¿½ï¿½ï¿½X
 	function ConductorException() { super.Exception(...); }
 	function finalize() { super.finalize(...); }
 };
 
 class BaseConductor extends KAGParser
 {
-	// BaseConductor - ƒVƒiƒŠƒIisˆ—‚Ìƒx[ƒXƒNƒ‰ƒX
+	// BaseConductor - ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½iï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Ìƒxï¿½[ï¿½Xï¿½Nï¿½ï¿½ï¿½X
 	var timer;
 	var oneshot;
-	var _interrupted = false; // ’†’f’†‚©
-	var timerEnabled = false; // ƒ^ƒCƒ}‚ª‹N“®’†‚©
-	var pendings; // Œã‰ñ‚µ‚É‚³‚ê‚½ƒ^ƒO
-	var inProcessing = false; // timerCallback ‚ğˆ—’†‚©‚Ç‚¤‚©
-	var reentered = false; // timerCallback ’†‚É Ä“ü‚µ‚½‚©
-	var nextTimerTick = 0; // Ÿ‚Éƒ^ƒCƒ}[‚ª”­“®‚³‚ê‚é‚Í‚¸‚Ì tick
+	var _interrupted = false; // ï¿½ï¿½ï¿½fï¿½ï¿½ï¿½ï¿½
+	var timerEnabled = false; // ï¿½^ï¿½Cï¿½}ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	var pendings; // ï¿½ï¿½ñ‚µ‚É‚ï¿½ï¿½ê‚½ï¿½^ï¿½O
+	var inProcessing = false; // timerCallback ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+	var reentered = false; // timerCallback ï¿½ï¿½ï¿½ï¿½ ï¿½Ä“ï¿½ï¿½
+	var nextTimerTick = 0; // ï¿½ï¿½ï¿½Éƒ^ï¿½Cï¿½}ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ tick
 
-	// sÀsƒ‚[ƒh—pŠg’£
-	var runLine;           // ’Ê‰ß’†‚Ìs”Ô†
-	var runCount;          // ’Ê‰ß’†‚ÌƒRƒ}ƒ“ƒh”Ô†
-	var runLineStr;        // ’Ê‰ß’†‚ÌƒeƒLƒXƒgî•ñ
-	var runLabel;          // ÅŒã‚É’Ê‰ß‚µ‚½ƒ‰ƒxƒ‹
-	var runLabelLine = 0;  // ÅŒã‚É’Ê‰ß‚µ‚½ƒ‰ƒxƒ‹‚Ìs”Ô†
-	var targetLabel;       // ƒ[ƒhˆ—ƒ^[ƒQƒbƒgs‚Ì‘O‚ÌŠî€ƒ‰ƒxƒ‹
-	var targetLine;        // ƒ[ƒhˆ—ƒ^[ƒQƒbƒgs
-	var targetCount;       // ƒ[ƒhˆ—ƒ^[ƒQƒbƒgƒRƒ}ƒ“ƒh
+	// ï¿½sï¿½ï¿½ï¿½sï¿½ï¿½ï¿½[ï¿½hï¿½pï¿½gï¿½ï¿½
+	var runLine;           // ï¿½Ê‰ß’ï¿½ï¿½Ìsï¿½Ôï¿½
+	var runCount;          // ï¿½Ê‰ß’ï¿½ï¿½ÌƒRï¿½}ï¿½ï¿½ï¿½hï¿½Ôï¿½
+	var runLineStr;        // ï¿½Ê‰ß’ï¿½ï¿½Ìƒeï¿½Lï¿½Xï¿½gï¿½ï¿½ï¿½
+	var runLabel;          // ï¿½ÅŒï¿½É’Ê‰ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½
+	var runLabelLine = 0;  // ï¿½ÅŒï¿½É’Ê‰ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ìsï¿½Ôï¿½
+	var targetLabel;       // ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½sï¿½Ì‘Oï¿½ÌŠî€ï¿½ï¿½ï¿½xï¿½ï¿½
+	var targetLine;        // ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½s
+	var targetCount;       // ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½Rï¿½}ï¿½ï¿½ï¿½h
 
 	function BaseConductor()
 	{
-		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+		// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 		super.KAGParser(...);
 
 		timer = new Timer(timerCallback, '');
-			// Timer‚Ì‘æ“ñˆø”‚É‹ó•¶š—ñ‚ğw’è‚·‚é‚Æ
-			// ‘æ‚Pˆø”‚Éw’è‚µ‚½ŠÖ”‚ğ’¼ÚŒÄ‚Ño‚·‚æ‚¤‚É‚È‚é
+			// Timerï¿½Ì‘ï¿½ï¿½ï¿½É‹ó•¶ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ï¿½
+			// ï¿½ï¿½Pï¿½ï¿½Éwï¿½è‚µï¿½ï¿½ï¿½Öï¿½ï¿½ğ’¼ÚŒÄ‚Ñoï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½
 		oneshot = new AsyncTrigger(timerCallback, '');
-			// ‚±‚ê‚à“¯—l
-		oneshot.cached = true; // ƒCƒxƒ“ƒg‚ÌƒLƒƒƒbƒVƒ…‚ğ—LŒø‚É
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½l
+		oneshot.cached = true; // ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ÌƒLï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½
 
 		pendings = [];
 	}
@@ -57,7 +57,7 @@ class BaseConductor extends KAGParser
 
 	function clear()
 	{
-		// clear ƒI[ƒo[ƒ‰ƒCƒh
+		// clear ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		if (kag.autoLabelMode && kag.autoLabelType == 1) {
 			runLine = 0;
 			runCount = 0;
@@ -69,20 +69,20 @@ class BaseConductor extends KAGParser
 	}
 
     function checkTagExtract(cd, elm, voiceMode) {
-        // “Áêƒ^ƒO“WŠJˆ——pƒtƒbƒN
+        // ï¿½ï¿½ï¿½ï¿½^ï¿½Oï¿½Wï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½pï¿½tï¿½bï¿½N
         return false;
     }
 
     function timerCallback()
 	{
-		// Ÿ‚Ì—v‘f‚ğ“¾‚é
+		// ï¿½ï¿½ï¿½Ì—vï¿½fï¿½ğ“¾‚ï¿½
 		nextTimerTick = timer.interval + System.getTickCount();
 		var obj;
 		try
 		{
 			if(inProcessing)
 			{
-				// Ä“ü
+				// ï¿½Ä“ï¿½
 				reentered = true;
 				timer.interval = 0;
 				return;
@@ -92,7 +92,7 @@ class BaseConductor extends KAGParser
 			{
 				if(pendings.count > 0)
 				{
-					// Œã‰ñ‚µ‚É‚³‚ê‚½ƒ^ƒO‚ª‚ ‚éê‡
+					// ï¿½ï¿½ñ‚µ‚É‚ï¿½ï¿½ê‚½ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡
 
 					if (targetLine !== void) {
 						
@@ -106,14 +106,14 @@ class BaseConductor extends KAGParser
 							} else if (obj.tagname == "count") {
 								runCount++;
 							}
-							//dm("pending s•œ‹Aˆ—’†:" + runLine + "/" + runCount + ":" + obj.tagname);
+							//dm("pending ï¿½sï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:" + runLine + "/" + runCount + ":" + obj.tagname);
 							if (runLine > targetLine || (runLine >= targetLine && runCount >= targetCount)) {
-								//dm("•œ‹AŠ®—¹");
+								//dm("ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½");
 								targetLine = void;
 							}
 						} while (i<pendings.count && targetLine != void);
 
-						// c‚è‚ğƒRƒs[
+						// ï¿½cï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[
 						var newp = [];
 						while (i <pendings.count) {
 							newp.add(pendings[i]);
@@ -128,7 +128,7 @@ class BaseConductor extends KAGParser
 						obj = pendings[0];
 						pendings.erase(0);
 						if (obj.tagname == "line") {
-							// ƒp[ƒT“Áêˆ—
+							// ï¿½pï¿½[ï¿½Tï¿½ï¿½ï¿½êˆï¿½ï¿½
 							if (runLine != obj.line) {
 								runLine    = obj.line;
 								runCount   = 0;
@@ -143,7 +143,7 @@ class BaseConductor extends KAGParser
 							runCount++;
 							continue;
 						} else if (obj.tagname == "label") {
-							//dm("ƒp[ƒX’†‚Éƒ‰ƒxƒ‹”­Œ©:" + runLabel + ":" + runLabelLine);
+							//dm("ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½Éƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:" + runLabel + ":" + runLabelLine);
 							runLabel     = obj.label;
 							runLabelLine = obj.line;
 							owner.onConductorLabel(obj.label, obj.page);
@@ -153,8 +153,8 @@ class BaseConductor extends KAGParser
 				}
 				else
 				{
-					// Œã‰ñ‚µ‚É‚³‚ê‚½ƒ^ƒO‚ª‚È‚¢‚Ì‚ÅŸ‚Ìƒ^ƒO‚ğ“¾‚é
-					obj = getNextTag(); // Ÿ‚Ìƒ^ƒO‚ğ“¾‚é
+					// ï¿½ï¿½ñ‚µ‚É‚ï¿½ï¿½ê‚½ï¿½^ï¿½Oï¿½ï¿½ï¿½È‚ï¿½ï¿½Ì‚Åï¿½ï¿½Ìƒ^ï¿½Oï¿½ğ“¾‚ï¿½
+					obj = getNextTag(); // ï¿½ï¿½ï¿½Ìƒ^ï¿½Oï¿½ğ“¾‚ï¿½
 
 					if (obj !== void) {
 
@@ -165,19 +165,19 @@ class BaseConductor extends KAGParser
 								runLineStr = curLineStr;
 								kag.updateDebugInfo();
 							}
-							// ƒ^ƒO‚ğƒJƒEƒ“ƒg
+							// ï¿½^ï¿½Oï¿½ï¿½ï¿½Jï¿½Eï¿½ï¿½ï¿½g
 							runCount++;
 						}
 
-						// ƒ^ƒO“WŠJ
+						// ï¿½^ï¿½Oï¿½Wï¿½J
 						if (checkTagExtract(this, obj)) {
 							continue;
 						} 
 
 						if (targetLine !== void) {
-							//dm("normal s•œ‹Aˆ—’†:" + runLine + "/" + runCount + ":" + obj.tagname);
+							//dm("normal ï¿½sï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:" + runLine + "/" + runCount + ":" + obj.tagname);
 							if (runLine > targetLine || (runLine >= targetLine && runCount >= targetCount)) {
-								//dm("•œ‹AŠ®—¹");
+								//dm("ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½");
 								kag.setUserSpeed();
 								pendings.insert(0, obj);
 								//pendings.insert(0, %[tagname:"autolabel"]);
@@ -186,7 +186,7 @@ class BaseConductor extends KAGParser
 							continue;
 						}
 						
-						// getNextTag() ‚Ì’†‚ÅApendings ‚É’Ç‰Á‚³‚ê‚½ (iscript ‚È‚Ç)
+						// getNextTag() ï¿½Ì’ï¿½ï¿½ÅApendings ï¿½É’Ç‰ï¿½ï¿½ï¿½ï¿½ê‚½ (iscript ï¿½È‚ï¿½)
 						if(pendings.count > 0) {
 							pendings.add(obj);
 							continue;
@@ -196,7 +196,7 @@ class BaseConductor extends KAGParser
 
 				if(obj === void)
 				{
-					// ƒVƒiƒŠƒII—¹
+					// ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½Iï¿½ï¿½
 					timer.enabled = false;
 					timerEnabled =false;
 					onStop();
@@ -205,9 +205,9 @@ class BaseConductor extends KAGParser
 					return;
 				} else {
 
-					//if (this === kag.mainConductor) {dm(runLine + "/" + runCount +  " ƒ^ƒOÀs:" +  obj.tagname);}
+					//if (this === kag.mainConductor) {dm(runLine + "/" + runCount +  " ï¿½^ï¿½Oï¿½ï¿½ï¿½s:" +  obj.tagname);}
 					
-					// Às”»’è‚³‚ê‚é cond
+					// ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½è‚³ï¿½ï¿½ï¿½ cond
 					if (obj.condex !== void) {
 						if (!Scripts.eval(obj.condex)) {
 							continue;
@@ -215,15 +215,15 @@ class BaseConductor extends KAGParser
 						delete obj.condex;
 					}
 
-					// onTag ‚ğŒÄ‚Ô
+					// onTag ï¿½ï¿½ï¿½Ä‚ï¿½
 					var step = onTag(obj);
 					if(step === void)
-						throw new Exception("onTag ‚ª void ‚ğ•Ô‚µ‚Ü‚µ‚½ (" + obj.tagname + ")"
-							"( ‚¨‚»‚ç‚­ƒ^ƒOƒnƒ“ƒhƒ‰‚Ì–ß‚è’l‚ğ•Ô‚µ–Y‚ê‚½ )");
-					step = int step; // step ‚ğ”’l‚É
+						throw new Exception("onTag ï¿½ï¿½ void ï¿½ï¿½Ô‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ (" + obj.tagname + ")"
+							"( ï¿½ï¿½ï¿½ï¿½ï¿½ç‚­ï¿½^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ì–ß‚ï¿½lï¿½ï¿½Ô‚ï¿½ï¿½Yï¿½ê‚½ )");
+					step = int step; // step ï¿½ğ”’lï¿½ï¿½
 					if(step == 0)
 					{
-						// ƒEƒFƒCƒg‚ğŠ|‚¯‚¸‚ÉŸ‚Ö
+						// ï¿½Eï¿½Fï¿½Cï¿½gï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½
 						timer.interval = 0;
 						continue;
 					}
@@ -231,33 +231,33 @@ class BaseConductor extends KAGParser
 					{
 						switch(step)
 						{
-						case -5: // ‚¢‚Á‚½‚ñƒCƒxƒ“ƒg‚ğˆ—(Œ»İ‚Ìƒ^ƒO‚ÍŒã‰ñ‚µ)
+						case -5: // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½İ‚Ìƒ^ï¿½Oï¿½ÍŒï¿½ï¿½)
 							pendings.insert(0, obj);
 							oneshot.mode = atmAtIdle;
-							oneshot.trigger(); // ƒgƒŠƒK
-							timer.interval = 0; // ƒ^ƒCƒ}‚Í’â~
+							oneshot.trigger(); // ï¿½gï¿½ï¿½ï¿½K
+							timer.interval = 0; // ï¿½^ï¿½Cï¿½}ï¿½Í’ï¿½~
 							inProcessing = false;
 							reentered = false;
 							return;
-						case -4: // ‚¢‚Á‚½‚ñƒCƒxƒ“ƒg‚ğˆ—
+						case -4: // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 							oneshot.mode = atmAtIdle;
-							oneshot.trigger(); // ƒgƒŠƒK
-							timer.interval = 0; // ƒ^ƒCƒ}‚Í’â~
+							oneshot.trigger(); // ï¿½gï¿½ï¿½ï¿½K
+							timer.interval = 0; // ï¿½^ï¿½Cï¿½}ï¿½Í’ï¿½~
 							inProcessing = false;
 							reentered = false;
 							return;
-						case -3: // Œã‰ñ‚µ‚µ‚ÄƒuƒŒ[ƒN
+						case -3: // ï¿½ï¿½ñ‚µ‚ï¿½ï¿½Äƒuï¿½ï¿½ï¿½[ï¿½N
 							pendings.insert(0, obj);
-							timer.interval = 0; // ƒ^ƒCƒ}‚Í’â~
+							timer.interval = 0; // ï¿½^ï¿½Cï¿½}ï¿½Í’ï¿½~
 							inProcessing = false;
 							reentered = false;
 							return;
-						case -2: // ƒuƒŒ[ƒN
-							timer.interval = 0; // ƒ^ƒCƒ}‚Í’â~
+						case -2: // ï¿½uï¿½ï¿½ï¿½[ï¿½N
+							timer.interval = 0; // ï¿½^ï¿½Cï¿½}ï¿½Í’ï¿½~
 							inProcessing = false;
 							reentered = false;
 							return;
-						case -1: // ƒVƒiƒŠƒII—¹
+						case -1: // ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½Iï¿½ï¿½
 							timer.interval = 0; 
 							timer.enabled = false;
 							timerEnabled = false;
@@ -269,7 +269,7 @@ class BaseConductor extends KAGParser
 					}
 					else
 					{
-						// Ÿ‚Ö
+						// ï¿½ï¿½ï¿½ï¿½
 						if(timer.interval != step)
 						{
 							timer.interval = step;
@@ -293,53 +293,53 @@ class BaseConductor extends KAGParser
 			inProcessing = false;
 			
 			if (kag.autoLabelMode && kag.autoLabelType == 1) {
-				if (e.message.substring(0,17) == "ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹‚É•ÏX‚ª‚ ‚Á‚½‚½‚ß") {
-					askYesNo("ƒZ[ƒuƒf[ƒ^‚Ì•s®‡‚ªŒŸo‚³‚ê‚Ü‚µ‚½B³í“®ì‚Í•Ûá‚³‚ê‚Ü‚¹‚ñ‚ªAŠY“–ƒVƒiƒŠƒI‚Ì–`“ª‚©‚çÄŠJ‚µ‚Ü‚·‚©H",
-							 "Šm”F", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
+				if (e.message.substring(0,17) == "ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½É•ÏXï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½") {
+					askYesNo("ï¿½Zï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½Ì•sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½í“®ï¿½ï¿½Í•Ûá‚³ï¿½ï¿½Ü‚ï¿½ï¿½ñ‚ªAï¿½Yï¿½ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½Ì–`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄŠJï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½H",
+							 "ï¿½mï¿½F", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
 					return;
 				}
 			}
 
-			var msg = "’v–½“I‚ÈƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½B\n"
-				"ƒtƒ@ƒCƒ‹ : " + curStorage + "   s : " + (curLine+1) + "\n"
-				"ƒ^ƒO : " + (obj === void ? "•s–¾" : obj.tagname)
-				+ " ( © ƒGƒ‰[‚Ì”­¶‚µ‚½‘OŒã‚Ìƒ^ƒO‚ğ¦‚µ‚Ä‚¢‚éê‡‚à‚ ‚è‚Ü‚· )\n"
+			var msg = "ï¿½vï¿½ï¿½ï¿½Iï¿½ÈƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B\n"
+				"ï¿½tï¿½@ï¿½Cï¿½ï¿½ : " + curStorage + "   ï¿½s : " + (curLine+1) + "\n"
+				"ï¿½^ï¿½O : " + (obj === void ? "ï¿½sï¿½ï¿½" : obj.tagname)
+				+ " ( ï¿½ï¿½ ï¿½Gï¿½ï¿½ï¿½[ï¿½Ì”ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½Ìƒ^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ )\n"
 				+ e.message;
                 if((typeof e.trace) != "undefined") dm("trace : " + e.trace);
                 dm(msg);
                 throw new ConductorException(msg);
-//              System.inform(msg, "ƒGƒ‰[");
+//              System.inform(msg, "ï¿½Gï¿½ï¿½ï¿½[");
 		}
 	}
 
 	function onTag()
 	{
-		// ƒI[ƒo[ƒ‰ƒCƒh‚·‚é‚±‚Æ
+		// ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½hï¿½ï¿½ï¿½é‚±ï¿½ï¿½
 		return -1;
 	}
 
 	function onStop()
 	{
-		// (ƒVƒiƒŠƒI‚Ì)’â~‚ÉŒÄ‚Î‚ê‚éB
-		// stop() ‚©‚çŒÄ‚Î‚ê‚é‚í‚¯‚Å‚Í‚È‚¢B
-		// ƒI[ƒo[ƒ‰ƒCƒh‚·‚é‚±‚ÆB
+		// (ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½)ï¿½ï¿½~ï¿½ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½B
+		// stop() ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½í‚¯ï¿½Å‚Í‚È‚ï¿½ï¿½B
+		// ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½hï¿½ï¿½ï¿½é‚±ï¿½ÆB
 	}
 
 	function startProcess(immediate = false)
 	{
-		// ƒVƒiƒŠƒIisŠJn
-		// immediate = false ‚Ìê‡‚Í”ñ“¯Šú‚ÅÀs‚ğŠJn‚·‚é‚Ì‚ÅA
-		// ‚±‚Ìƒƒ\ƒbƒh“à‚Åƒ^ƒOƒnƒ“ƒhƒ‰‚ªŒÄ‚Î‚ê‚é‚±‚Æ‚Í‚È‚¢
-		// Ÿ‚ÌƒCƒxƒ“ƒg”zM‚Ìƒ^ƒCƒ~ƒ“ƒO‚ÅÅ‰‚Ìƒ^ƒOƒnƒ“ƒhƒ‰‚ªŒÄ‚Î‚ê‚éB
-		// immediate = true ‚Ìê‡‚ÍA‚±‚Ìƒƒ\ƒbƒh“à‚Å‰‰ñ‚Ìƒ^ƒOƒnƒ“ƒhƒ‰‚ª
-		// ˆ—‚³‚ê‚é‚½‚ßAŒÄ‚Ño‚µ‘¤‚Í‚±‚Ìƒƒ\ƒbƒh‚ÌÀs‚ªI‚í‚Á‚½‚ç
-		// ‚·‚®‚É‹g—¢‹g—¢‚É§Œä‚ğ–ß‚·(‚·‚×‚Ä‚ÌŠÖ”‚©‚ç”²‚¯‚é)‚æ‚¤‚É‚·‚é‚×‚«B
+		// ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½iï¿½sï¿½Jï¿½n
+		// immediate = false ï¿½Ìê‡ï¿½Í”ñ“¯Šï¿½Åï¿½ï¿½sï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½Ì‚ÅA
+		// ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½Åƒ^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½é‚±ï¿½Æ‚Í‚È‚ï¿½
+		// ï¿½ï¿½ï¿½ÌƒCï¿½xï¿½ï¿½ï¿½gï¿½zï¿½Mï¿½Ìƒ^ï¿½Cï¿½~ï¿½ï¿½ï¿½Oï¿½ÅÅï¿½ï¿½Ìƒ^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½B
+		// immediate = true ï¿½Ìê‡ï¿½ÍAï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½Åï¿½ï¿½ï¿½Ìƒ^ï¿½Oï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ßAï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½Ìï¿½ï¿½sï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½É‹gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ß‚ï¿½(ï¿½ï¿½ï¿½×‚Ä‚ÌŠÖï¿½ï¿½ï¿½ï¿½ç”²ï¿½ï¿½ï¿½ï¿½)ï¿½æ‚¤ï¿½É‚ï¿½ï¿½ï¿½×‚ï¿½ï¿½B
 		resetInterrupt();
-		timer.interval = 0; // ‰ŠúƒCƒ“ƒ^[ƒoƒ‹
+		timer.interval = 0; // ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½oï¿½ï¿½
 		timerEnabled = true;
 		if(!_interrupted)
 		{
-			timer.enabled = true; // ƒ^ƒCƒ}[ŠJn
+			timer.enabled = true; // ï¿½^ï¿½Cï¿½}ï¿½[ï¿½Jï¿½n
 			if(immediate)
 			{
 				timerCallback();
@@ -347,22 +347,22 @@ class BaseConductor extends KAGParser
 			else
 			{
 				oneshot.mode = atmExclusive;
-					// ƒCƒxƒ“ƒg‚ª”zM‚³‚ê‚é‚Ü‚Å‘¼‚Ì”ñ“¯ŠúƒCƒxƒ“ƒg‚ğƒuƒƒbƒN
-				oneshot.trigger(); // ƒgƒŠƒK
+					// ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½zï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Å‘ï¿½ï¿½Ì”ñ“¯Šï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½N
+				oneshot.trigger(); // ï¿½gï¿½ï¿½ï¿½K
 			}
 		}
 	}
 
 	function start()
 	{
-		// ƒ^ƒCƒ}ŠJn
+		// ï¿½^ï¿½Cï¿½}ï¿½Jï¿½n
 		timerEnabled = true;
 		timer.enabled = true;
 	}
 
 	function stop()
 	{
-		// ƒ^ƒCƒ}’â~
+		// ï¿½^ï¿½Cï¿½}ï¿½ï¿½~
 		timer.enabled = false;
 		timerEnabled = false;
 	}
@@ -380,8 +380,8 @@ class BaseConductor extends KAGParser
 					timer.interval = 0;
 					timer.enabled = true;
 					oneshot.mode = atmExclusive;
-						// ƒCƒxƒ“ƒg‚ª”zM‚³‚ê‚é‚Ü‚Å‘¼‚Ì”ñ“¯ŠúƒCƒxƒ“ƒg‚ğƒuƒƒbƒN
-					oneshot.trigger(); // ƒgƒŠƒK
+						// ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½zï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Å‘ï¿½ï¿½Ì”ñ“¯Šï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½N
+					oneshot.trigger(); // ï¿½gï¿½ï¿½ï¿½K
 				}
 			}
 			else
@@ -396,7 +396,7 @@ class BaseConductor extends KAGParser
 
 	function assign(src)
 	{
-		// src ‚Ìó‘Ô‚ğ‚±‚ÌƒIƒuƒWƒFƒNƒg‚ÉƒRƒs[
+		// src ï¿½Ìï¿½Ô‚ï¿½ï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÉƒRï¿½sï¿½[
 		var t = timer;
 		var st = src.timer;
 		t.enabled = false;
@@ -404,7 +404,7 @@ class BaseConductor extends KAGParser
 		nextTimerTick = src.nextTimerTick;
 		if(st.enabled && st.interval != 0)
 		{
-			// ƒ^ƒCƒ} interval ‚Ì’²®
+			// ï¿½^ï¿½Cï¿½} interval ï¿½Ì’ï¿½ï¿½ï¿½
 			var delta = nextTimerTick - System.getTickCount();
 			if(delta > 0) t.interval = delta; else t.interval = 1;
 		}
@@ -420,10 +420,10 @@ class BaseConductor extends KAGParser
 
 	function store()
 	{
-		// store ƒI[ƒo[ƒ‰ƒCƒh
+		// store ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		if (kag.autoLabelMode && kag.autoLabelType == 1) {
-			//dm("ƒRƒ“ƒ_ƒNƒ^•Û‘¶ˆ—:" + runLine + "/" + runCount + ":" + runLabel + ":" + runLabelLine);
-			// store ƒI[ƒo[ƒ‰ƒCƒh
+			//dm("ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½:" + runLine + "/" + runCount + ":" + runLabel + ":" + runLabelLine);
+			// store ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 			var ret = super.store(...);
 			ret.parseMode    = parseMode;
 			ret.runLine      = runLine;
@@ -438,49 +438,49 @@ class BaseConductor extends KAGParser
 	function restore(dic)
 	{
 		if (kag.autoLabelMode && kag.autoLabelType == 1) {
-			// Œ»İ‚Ìƒ‰ƒxƒ‹ˆÊ’u‚Ü‚Å•œ‹A
-			dm("ƒRƒ“ƒ_ƒNƒ^•œ‹Aˆ—:" + dic.runLine + "/" + runCount + ":" + dic.runLabel + ":" + dic.runLabelLine);
+			// ï¿½ï¿½ï¿½İ‚Ìƒï¿½ï¿½xï¿½ï¿½ï¿½Ê’uï¿½Ü‚Å•ï¿½ï¿½A
+			dm("ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½:" + dic.runLine + "/" + runCount + ":" + dic.runLabel + ":" + dic.runLabelLine);
 			loadScenario(dic.storageName);
 			if (dic.parseMode) {
 				parseAll();
 			}
 			if (dic.runLabel != "") {
 				goToLabel(dic.runLabel);
-				dm("w’è‚Ìƒ‰ƒxƒ‹ˆÊ’u‚É•œ‹A:" + dic.runLabel);
+				dm("ï¿½wï¿½ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½Ê’uï¿½É•ï¿½ï¿½A:" + dic.runLabel);
 				kag.setRecordLabel(curStorage, dic.runLabel);
 			}
-			dm("Œ»İs:" + runLine + " •œ‹A—\’èˆÊ’u:" + dic.runLabelLine);
+			dm("ï¿½ï¿½ï¿½İs:" + runLine + " ï¿½ï¿½ï¿½Aï¿½\ï¿½ï¿½Ê’u:" + dic.runLabelLine);
 			if (dic.lineSaveMode) {
 				//targetLine  = runLine + dic.runLine - dic.runLabelLine;
 				targetLine  = dic.runLine;
 				targetCount = dic.runCount;
 				targetLabel = dic.runLabel;
-				//dm("s•œ‹AÀs:" + targetLine + "/" + targetCount);
+				//dm("ï¿½sï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½s:" + targetLine + "/" + targetCount);
 				if (runLine != dic.runLabelLine) {
-					askYesNo("ƒVƒiƒŠƒI‚Ìƒ‰ƒxƒ‹ˆÊ’u•ÏX‚ªŒŸo‚³‚ê‚Ü‚µ‚½B•s®‡‚Ì‰Â”\«‚ª‚ ‚è‚Ü‚·‚ª‚»‚Ì‚Ü‚ÜÄŠJ‚µ‚Ü‚·‚©H",
-							 "Šm”F", function(self) {}, function(self) { self.targetLine = void; kag.goToStart(); }, this);
+					askYesNo("ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½Ê’uï¿½ÏXï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Ì‰Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ü‚ÜÄŠJï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½H",
+							 "ï¿½mï¿½F", function(self) {}, function(self) { self.targetLine = void; kag.goToStart(); }, this);
 				}
 			}
 			return;
 		}
 
-		// restore ƒI[ƒo[ƒ‰ƒCƒh
+		// restore ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.restore(...);
 		pendings.clear();
 	}
 
-    // ƒp[ƒXˆ—Às’†
+    // ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
     var parseMode;
 
 	/**
-	 * ‘Sƒp[ƒXˆ—Às
+	 * ï¿½Sï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½s
 	 */
 	function parseAll() {
-		//dm("‘Sƒp[ƒXˆ—:" + curStorage);
+		//dm("ï¿½Sï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½:" + curStorage);
 		if (kag.autoLabelMode && kag.autoLabelType == 1) {
 			parseMode = true;
 			var obj;
-			while ((obj = getNextTag()) !== void) { // Ÿ‚Ìƒ^ƒO‚ğ“¾‚é
+			while ((obj = getNextTag()) !== void) { // ï¿½ï¿½ï¿½Ìƒ^ï¿½Oï¿½ğ“¾‚ï¿½
 				if (runLine !== curLine) {
 					enqueueTag(%[tagname:"line", line:curLine, lineStr:curLineStr]);
 					runLine = curLine;
@@ -494,13 +494,13 @@ class BaseConductor extends KAGParser
 			}
 			for (var i=0;i<pendings.count;i++) {
 				if (pendings[i].tagname == "line") {
-					dm("ƒp[ƒXŒ‹‰Ê:" + pendings[i].tagname + ":" + pendings[i].line);
+					dm("ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½:" + pendings[i].tagname + ":" + pendings[i].line);
 				} else {
-					dm("ƒp[ƒXŒ‹‰Ê:" + pendings[i].tagname);
+					dm("ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½:" + pendings[i].tagname);
 				}
 			}
 		} else {
-			throw new ConductorException("parse ƒRƒ}ƒ“ƒh‚Ís‹L˜^ƒ‚[ƒh‚Å‚È‚¢‚Æg‚¦‚Ü‚¹‚ñ");
+			throw new ConductorException("parse ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½Ísï¿½Lï¿½^ï¿½ï¿½ï¿½[ï¿½hï¿½Å‚È‚ï¿½ï¿½Ægï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 		}
     }
 	
@@ -527,21 +527,21 @@ class BaseConductor extends KAGParser
 			runLabelLine = 0;
 			targetLine = void;
 			
-			// goToLabel ƒI[ƒo[ƒ‰ƒCƒh
+			// goToLabel ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 			if (parseMode) {
 				var reload = false;
 				for (;;) {
-					dm("“Ç‚İo‚µˆ—");
+					dm("ï¿½Ç‚İoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
 					for (var i=0;i<pendings.count;i++) {
 						var obj = pendings[i];
 						if (obj.tagname == "label" && obj.label == label) {
-							// ƒ‰ƒxƒ‹”­Œ©
+							// ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 							runLine      = obj.line;
 							runCount     = 0;
 							runLabel     = obj.label;
 							runLabelLine = runLine;
 							
-							// ‚»‚±‚Ü‚Å‚ğÁ‹
+							// ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Å‚ï¿½ï¿½ï¿½ï¿½ï¿½
 							var newp = [];
 							while (i <pendings.count) {
 								newp.add(pendings[i]);
@@ -551,17 +551,17 @@ class BaseConductor extends KAGParser
 							return;
 						}
 					}
-					// ˆê“x“Ç‚İ’¼‚µ‚Ä“ª‚©‚ç‚â‚è‚È‚¨‚µ
+					// ï¿½ï¿½xï¿½Ç‚İ’ï¿½ï¿½ï¿½ï¿½Ä“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½
 					if (reload) {
 						break;
 					} else {
-						dm("“Ç‚İ’¼‚µ");
+						dm("ï¿½Ç‚İ’ï¿½ï¿½ï¿½");
 						reload = true;
 						super.loadScenario(curStorage);
 						parseAll();
 					}
 				}
-				// ‚ ‚«‚ç‚ß‚Ä“ª‚©‚ç
+				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚Ä“ï¿½ï¿½ï¿½ï¿½ï¿½
 				loadScenario(curStorage);
 				parseMode = false;
 			}
@@ -572,7 +572,7 @@ class BaseConductor extends KAGParser
 			runCount = 0;
 			return;
 		}
-		// goToLabel ƒI[ƒo[ƒ‰ƒCƒh
+		// goToLabel ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		pendings.clear();
 		super.goToLabel(...);
 	}
@@ -586,21 +586,21 @@ class BaseConductor extends KAGParser
 
 class Conductor extends BaseConductor
 {
-	// Conductor - ƒVƒiƒŠƒIisˆ—
-	/*const*/ var mStop = 0; // ’â~
-	/*const*/ var mRun = 1; // “®ì’†
-	/*const*/ var mWait = 2; // ‘Ò‚¿
+	// Conductor - ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½iï¿½sï¿½ï¿½ï¿½ï¿½
+	/*const*/ var mStop = 0; // ï¿½ï¿½~
+	/*const*/ var mRun = 1; // ï¿½ï¿½ï¿½ì’†
+	/*const*/ var mWait = 2; // ï¿½Ò‚ï¿½
 
 	var owner;
 	var handlers;
 	var status = mStop;
 	var timeOutTimer;
 	var waitUntil = %[];
-	var lastTagName = ''; // ’¼‘O‚Ìƒ^ƒO–¼
+	var lastTagName = ''; // ï¿½ï¿½ï¿½Oï¿½Ìƒ^ï¿½Oï¿½ï¿½
 
 	function Conductor(owner, handlers)
 	{
-		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+		// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 		super.BaseConductor();
 		ignoreCR = global.ignoreCR;
 		debugLevel = tkdlVerbose;
@@ -622,26 +622,26 @@ class Conductor extends BaseConductor
 
 	function run(immediate = false)
 	{
-		// Às‚ÌŠJn
-		// immediate=true ‚Ìê‡‚ÍA
-		// ‚±‚Ìƒƒ\ƒbƒh‚ğÀs‚µ‚½‚ç‚·‚®‚É‹g—¢‹g—¢‚É§Œä‚ğ–ß‚·
-		// (‚·‚×‚Ä‚ÌŠÖ”‚©‚ç–ß‚é)‚±‚Æ
+		// ï¿½ï¿½ï¿½sï¿½ÌŠJï¿½n
+		// immediate=true ï¿½Ìê‡ï¿½ÍA
+		// ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ç‚·ï¿½ï¿½ï¿½É‹gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ß‚ï¿½
+		// (ï¿½ï¿½ï¿½×‚Ä‚ÌŠÖï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½)ï¿½ï¿½ï¿½ï¿½
 		status = mRun;
 		startProcess(immediate);
 	}
 
 	function sleep()
 	{
-		// Às‚Ì’â~
+		// ï¿½ï¿½ï¿½sï¿½Ì’ï¿½~
 		status = mStop;
 		stop();
 	}
 
 	function wait(until)
 	{
-		// ‘Ò‚¿
-		// until = trigger ‚Å—p‚¢‚éƒVƒOƒiƒ‹–¼‚ÆƒR[ƒ‹ƒoƒbƒNŠÖ”‚Ì
-		// «‘”z—ñ
+		// ï¿½Ò‚ï¿½
+		// until = trigger ï¿½Å—pï¿½ï¿½ï¿½ï¿½Vï¿½Oï¿½iï¿½ï¿½ï¿½ï¿½ï¿½ÆƒRï¿½[ï¿½ï¿½ï¿½oï¿½bï¿½Nï¿½Öï¿½ï¿½ï¿½
+		// ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½
 		status = mWait;
 		stop();
 		(Dictionary.assign incontextof waitUntil)(until);
@@ -649,10 +649,10 @@ class Conductor extends BaseConductor
 
 	function waitWithTimeOut(until, timeout)
 	{
-		// ‘Ò‚¿‚ğs‚¤‚ªAƒ^ƒCƒ€ƒAƒEƒg‚ª‚ ‚é
-		// ƒ^ƒCƒ€ƒAƒEƒg‚É‚Í 'timeout' ‚ªƒgƒŠƒK‚³‚ê‚é‚Ì‚Å
-		// ƒnƒ“ƒhƒ‰‚ğ’è‹`‚·‚é‚±‚ÆB
-		if(timeout == 0) timeout = 1; // timeout ‚ª 0 ‚Ìê‡‚Í 1 ‚É
+		// ï¿½Ò‚ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½É‚ï¿½ 'timeout' ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Kï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½
+		// ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½é‚±ï¿½ÆB
+		if(timeout == 0) timeout = 1; // timeout ï¿½ï¿½ 0 ï¿½Ìê‡ï¿½ï¿½ 1 ï¿½ï¿½
 		status = mWait;
 		stop();
 		(Dictionary.assign incontextof waitUntil)(until);
@@ -662,18 +662,18 @@ class Conductor extends BaseConductor
 
 	function onTimeOut()
 	{
-		// timeOutTimer ‚ªƒ^ƒCƒ€ƒAƒEƒg‚µ‚½
+		// timeOutTimer ï¿½ï¿½ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½
 		timeOutTimer.enabled = false;
-		trigger('timeout'); // ©•ª©g‚Å timeout ‚ğƒgƒŠƒK‚·‚é
+		trigger('timeout'); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ timeout ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Kï¿½ï¿½ï¿½ï¿½
 	}
 
 	function trigger(name)
 	{
-		// waitUntil “à‚ÉƒVƒOƒiƒ‹–¼ name ‚ª‘¶İ‚·‚ê‚ÎAÀsÄŠJA
-		// “¯‚É waitUntil ‚É“o˜^‚³‚ê‚½ƒƒ\ƒbƒh(ƒŠƒXƒ^[ƒgƒnƒ“ƒhƒ‰)‚ğŒÄ‚Ô
-		// ƒVƒOƒiƒ‹–¼‚É _arg ‚ª‚Â‚¢‚½‚à‚Ì‚ª waitUntil “à‚É‚ ‚ê‚ÎA
-		// ‚»‚ê‚ğˆø”‚Æ‚µ‚Äƒnƒ“ƒhƒ‰‚É“n‚·
-		// waitUntil ‚ÍƒNƒŠƒA‚³‚ê‚é
+		// waitUntil ï¿½ï¿½ï¿½ÉƒVï¿½Oï¿½iï¿½ï¿½ï¿½ï¿½ name ï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½ï¿½ÎAï¿½ï¿½ï¿½sï¿½ÄŠJï¿½A
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ waitUntil ï¿½É“oï¿½^ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½\ï¿½bï¿½h(ï¿½ï¿½ï¿½Xï¿½^ï¿½[ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½)ï¿½ï¿½ï¿½Ä‚ï¿½
+		// ï¿½Vï¿½Oï¿½iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ _arg ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ waitUntil ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½ÎA
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Äƒnï¿½ï¿½ï¿½hï¿½ï¿½ï¿½É“nï¿½ï¿½
+		// waitUntil ï¿½ÍƒNï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½
 		if(status != mWait) return false;
 		var func = waitUntil[name];
 		if(func !== void)
@@ -692,7 +692,7 @@ class Conductor extends BaseConductor
 
 	function onTag(elm)
 	{
-		// ƒ^ƒO‚Ìˆ—
+		// ï¿½^ï¿½Oï¿½Ìï¿½ï¿½ï¿½
 		var tagname = elm.tagname;
 		var handler = handlers[tagname];
 		if(handler !== void)
@@ -706,37 +706,37 @@ class Conductor extends BaseConductor
 
 	function onStop()
 	{
-		// BaseConductor.onStop ƒI[ƒo[ƒ‰ƒCƒh
-		// ’â~‚ÉŒÄ‚Î‚ê‚é‚Ì‚ÅƒXƒe[ƒ^ƒX‚ğ mStop ‚É‚·‚é
+		// BaseConductor.onStop ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
+		// ï¿½ï¿½~ï¿½ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½Ì‚ÅƒXï¿½eï¿½[ï¿½^ï¿½Xï¿½ï¿½ mStop ï¿½É‚ï¿½ï¿½ï¿½
 		status = mStop;
-		if(owner.conductor == this) handlers.s(); // ƒnƒ“ƒhƒ‰‚Ì s (’â~) ‚ğŒÄ‚Ô
+		if(owner.conductor == this) handlers.s(); // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ s (ï¿½ï¿½~) ï¿½ï¿½ï¿½Ä‚ï¿½
 	}
 
 	function onScript(script, scriptname, lineofs)
 	{
-		// scirpt ‚ğÀs‚·‚é
+		// scirpt ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
 		try
 		{
 			Scripts.exec(script, scriptname, lineofs);
 		}
 		catch(e)
 		{
-			throw new Exception(scriptname + " ‚Ì s " + lineofs + " ‚©‚çn‚Ü‚é"
-				" iscript ƒuƒƒbƒN‚ÅƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½B"
-				"\n( Ú×‚ÍƒRƒ“ƒ\[ƒ‹‚ğQÆ‚µ‚Ä‚­‚¾‚³‚¢ )\n" + e.message);
+			throw new Exception(scriptname + " ï¿½ï¿½ ï¿½s " + lineofs + " ï¿½ï¿½ï¿½ï¿½nï¿½Ü‚ï¿½"
+				" iscript ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÅƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B"
+				"\n( ï¿½Ú×‚ÍƒRï¿½ï¿½ï¿½\ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )\n" + e.message);
 		}
 		return true;
 	}
 
 	function store()
 	{
-		// store ƒI[ƒo[ƒ‰ƒCƒh
+		// store ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		return super.store(...);
 	}
 
 	function restore(dic)
 	{
-		// restore ƒI[ƒo[ƒ‰ƒCƒh
+		// restore ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 		super.restore(...);
 		lastTagName = '';
 	}
@@ -755,8 +755,8 @@ class Conductor extends BaseConductor
 	{
 		if (kag.autoLabelMode && kag.autoLabelType == 1) {
 			if (parseMode) {
-				// ƒRƒ}ƒ“ƒh‚Ì“o˜^
-				//dm("ƒ‰ƒxƒ‹“o˜^:" + label + ":" + curLine);
+				// ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½Ì“oï¿½^
+				//dm("ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½oï¿½^:" + label + ":" + curLine);
 				enqueueTag(%[tagname:"label", label:label, page:page, line:curLine]);
 				return true;
 			} else {
@@ -766,8 +766,8 @@ class Conductor extends BaseConductor
 				runLabelLine = runLine;
 				if (targetLine !== void) {
 					if (label !== targetLabel) {
-						askYesNo("ƒVƒiƒŠƒI‚Ìƒ‰ƒxƒ‹•s®‡‚ªŒŸo‚³‚ê‚Ü‚µ‚½B³í“®ì‚Í•Ûá‚³‚ê‚Ü‚¹‚ñ‚ªAŠY“–ƒVƒiƒŠƒI‚Ì–`“ª‚©‚çÄŠJ‚µ‚Ü‚·‚©H",
-								 "Šm”F", function(param) { kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
+						askYesNo("ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½í“®ï¿½ï¿½Í•Ûá‚³ï¿½ï¿½Ü‚ï¿½ï¿½ñ‚ªAï¿½Yï¿½ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½Ì–`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄŠJï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½H",
+								 "ï¿½mï¿½F", function(param) { kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
 					}
 					return true;
 				}
@@ -780,7 +780,7 @@ class Conductor extends BaseConductor
 	{
 		if (kag.autoLabelMode && kag.autoLabelType == 1) {
 			if (parseMode) {
-				// ƒp[ƒX’†‚Å‚ÍƒGƒ‰[ˆµ‚¢‚·‚×‚µ XXX
+				// ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½Å‚ÍƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×‚ï¿½ XXX
 				return false;
 			} else {
 				return targetLine === void ? owner.onConductorJump(...) : true;
@@ -793,7 +793,7 @@ class Conductor extends BaseConductor
 	{
 		if (kag.autoLabelMode && kag.autoLabelType == 1) {
 			if (parseMode) {
-				// ƒp[ƒX’†‚Å‚ÍƒGƒ‰[ˆµ‚¢‚·‚×‚µ XXX
+				// ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½Å‚ÍƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×‚ï¿½ XXX
 				return false;
 			} else {
 				return targetLine === void ? owner.onConductorCall(...) : true;
@@ -822,7 +822,7 @@ class Conductor extends BaseConductor
 	{
 		if (kag.autoLabelMode && kag.autoLabelType == 1) {
 			if (parseMode) {
-				// ƒp[ƒX’†‚Å‚ÍƒGƒ‰[ˆµ‚¢‚·‚×‚µ XXX
+				// ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½Å‚ÍƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×‚ï¿½ XXX
 				return false;
 			} else {
 				return targetLine === void ? owner.onConductorScript(...) : true;
