@@ -1,155 +1,155 @@
-// Menus.tjs - ƒƒjƒ…[ì¬ŠÖ”‚Ì’è‹`
-// Copyright (C)2001-2008, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
+// Menus.tjs - ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ì¬ï¿½Öï¿½ï¿½Ì’ï¿½`
+// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
 
 function KAGWindow_createMenus()
 {
-	// ‚±‚ÌŠÖ”‚Í MainWindow ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg‚ÌƒRƒ“ƒeƒLƒXƒgã‚ÅÀs‚³‚ê‚Ü‚·
+	// ï¿½ï¿½ï¿½ÌŠÖï¿½ï¿½ï¿½ MainWindow ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÌƒRï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½gï¿½ï¿½Åï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Ü‚ï¿½
 
-	menu.add(this.systemMenu = new KAGMenuItem(this, "ƒVƒXƒeƒ€(&S)", 0, "", false));
+	menu.add(this.systemMenu = new KAGMenuItem(this, "ï¿½Vï¿½Xï¿½eï¿½ï¿½(&S)", 0, "", false));
 
-	systemMenu.add(this.rightClickMenuItem = new KAGMenuItem(this, "ƒƒbƒZ[ƒW‚ğÁ‚·(&S)", 0,
+	systemMenu.add(this.rightClickMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(&S)", 0,
 		onRightClickMenuItemClick, false));
 
-	systemMenu.add(this.showHistoryMenuItem = new KAGMenuItem(this, "ƒƒbƒZ[ƒW—š—ğ‚Ì•\¦(&H)", 0,
+	systemMenu.add(this.showHistoryMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Ì•\ï¿½ï¿½(&H)", 0,
 		onShowHistoryMenuItemClick, false));
 
 	systemMenu.add(this.skipToNextStopMenuItem = new KAGMenuItem(this,
-		autoRecordPageShowing?"Ÿ‚Ì‘I‘ğˆ/–¢“Ç‚Ü‚Åi‚Ş(&F)":"Ÿ‚Ì‘I‘ğˆ‚Ü‚Åi‚Ş(&F)", 0,
+		autoRecordPageShowing?"ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Ç‚Ü‚Åiï¿½ï¿½(&F)":"ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Åiï¿½ï¿½(&F)", 0,
 		onSkipToNextStopMenuItemClick, false));
 
-	systemMenu.add(this.autoModeMenuItem = new KAGMenuItem(this, "©“®“I‚É“Ç‚İi‚Ş(&A)", 0,
+	systemMenu.add(this.autoModeMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚İiï¿½ï¿½(&A)", 0,
 		onAutoModeMenuItemClick, false));
 
-	systemMenu.add(this.autoModeWaitMenu = new KAGMenuItem(this, "©“®“I‚É“Ç‚İi‚ŞƒEƒFƒCƒg(&D)", 0,
+	systemMenu.add(this.autoModeWaitMenu = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚İiï¿½ŞƒEï¿½Fï¿½Cï¿½g(&D)", 0,
 		void, false));
 
-		autoModeWaitMenu.add(this.autoModeFastMenuItem = new KAGMenuItem(this, "’Z‚¢(&1)", 1,
+		autoModeWaitMenu.add(this.autoModeFastMenuItem = new KAGMenuItem(this, "ï¿½Zï¿½ï¿½(&1)", 1,
 			onAutoModeWaitMenuClick, false));
 		autoModeFastMenuItem.wait = autoModePageWaits.fast;
 		autoModeFastMenuItem.lwait = autoModeLineWaits.fast;
-		autoModeWaitMenu.add(this.autoModeFasterMenuItem = new KAGMenuItem(this, "‚â‚â’Z‚¢(&2)", 1,
+		autoModeWaitMenu.add(this.autoModeFasterMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½Zï¿½ï¿½(&2)", 1,
 			onAutoModeWaitMenuClick, false));
 		autoModeFasterMenuItem.wait = autoModePageWaits.faster;
 		autoModeFasterMenuItem.lwait = autoModeLineWaits.faster;
-		autoModeWaitMenu.add(this.autoModeMediumMenuItem = new KAGMenuItem(this, "•’Ê(&3)", 1,
+		autoModeWaitMenu.add(this.autoModeMediumMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½(&3)", 1,
 			onAutoModeWaitMenuClick, false));
 		autoModeMediumMenuItem.wait = autoModePageWaits.medium;
 		autoModeMediumMenuItem.lwait = autoModeLineWaits.medium;
-		autoModeWaitMenu.add(this.autoModeSlowerMenuItem = new KAGMenuItem(this, "‚â‚â’·‚¢(&4)", 1,
+		autoModeWaitMenu.add(this.autoModeSlowerMenuItem = new KAGMenuItem(this, "ï¿½ï¿½â’·ï¿½ï¿½(&4)", 1,
 			onAutoModeWaitMenuClick, false));
 		autoModeSlowerMenuItem.wait = autoModePageWaits.slower;
 		autoModeSlowerMenuItem.lwait = autoModeLineWaits.slower;
-		autoModeWaitMenu.add(this.autoModeSlowMenuItem = new KAGMenuItem(this, "’·‚¢(&5)", 1,
+		autoModeWaitMenu.add(this.autoModeSlowMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½(&5)", 1,
 			onAutoModeWaitMenuClick, false));
 		autoModeSlowMenuItem.wait = autoModePageWaits.slow;
 		autoModeSlowMenuItem.lwait = autoModeLineWaits.slow;
 
 	systemMenu.add(new MenuItem(this, "-"));
 
-	systemMenu.add(this.goBackMenuItem = new KAGMenuItem(this, "‘O‚É–ß‚é(&B)", 0,
+	systemMenu.add(this.goBackMenuItem = new KAGMenuItem(this, "ï¿½Oï¿½É–ß‚ï¿½(&B)", 0,
 		onBackStartMenuItemClick, false));
 
-	systemMenu.add(this.goToStartMenuItem = new KAGMenuItem(this, "Å‰‚É–ß‚é(&R)", 0,
+	systemMenu.add(this.goToStartMenuItem = new KAGMenuItem(this, "ï¿½Åï¿½ï¿½É–ß‚ï¿½(&R)", 0,
 		onGoToStartMenuItemClick, false));
 
 	systemMenu.add(new MenuItem(this, "-"));
 
-	systemMenu.add(this.exitMenuItem = new KAGMenuItem(this, "I—¹(&X)", 0, onExitMenuItemClick, false));
+	systemMenu.add(this.exitMenuItem = new KAGMenuItem(this, "ï¿½Iï¿½ï¿½(&X)", 0, onExitMenuItemClick, false));
 
-	menu.add(this.characterMenu = new KAGMenuItem(this, "•¶š•\¦(&C)", 0, void, false));
+	menu.add(this.characterMenu = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½(&C)", 0, void, false));
 
-		characterMenu.add(this.chSpeedMenu = new KAGMenuItem(this, "•\¦‘¬“x(&C)", 0, void, false));
+		characterMenu.add(this.chSpeedMenu = new KAGMenuItem(this, "ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½x(&C)", 0, void, false));
 
-			chSpeedMenu.add(this.chNoWaitMenuItem = new KAGMenuItem(this, "ƒm[ƒEƒFƒCƒg(&W)", 1,
+			chSpeedMenu.add(this.chNoWaitMenuItem = new KAGMenuItem(this, "ï¿½mï¿½[ï¿½Eï¿½Fï¿½Cï¿½g(&W)", 1,
 				onChSpeedMenuItemClick, false));
 			chNoWaitMenuItem.speed = 0;
-			chSpeedMenu.add(this.chFastMenuItem = new KAGMenuItem(this, "‚‘¬(&F)", 1,
+			chSpeedMenu.add(this.chFastMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½(&F)", 1,
 				onChSpeedMenuItemClick, false));
 			chFastMenuItem.speed = chSpeeds.fast;
-			chSpeedMenu.add(this.chNormalMenuItem = new KAGMenuItem(this, "•’Ê(&N)", 1,
+			chSpeedMenu.add(this.chNormalMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½(&N)", 1,
 				onChSpeedMenuItemClick, false));
 			chNormalMenuItem.speed = chSpeeds.normal;
-			chSpeedMenu.add(this.chSlowMenuItem = new KAGMenuItem(this, "’x‚¢(&S)", 1,
+			chSpeedMenu.add(this.chSlowMenuItem = new KAGMenuItem(this, "ï¿½xï¿½ï¿½(&S)", 1,
 				onChSpeedMenuItemClick, false));
 			chSlowMenuItem.speed = chSpeeds.slow;
 
 			chSpeedMenu.add(new MenuItem(this, "-"));
 
-			chSpeedMenu.add(this.chNonStopToPageBreakItem = new KAGMenuItem(this, "ƒy[ƒW––‚Ü‚Åˆê‹C‚É(&P)", 0,
+			chSpeedMenu.add(this.chNonStopToPageBreakItem = new KAGMenuItem(this, "ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Ü‚Åˆï¿½Cï¿½ï¿½(&P)", 0,
 				onChNonStopToPageBreakItemClick, false));
 
-		characterMenu.add(this.ch2ndSpeedMenu = new KAGMenuItem(this, "ˆê“x“Ç‚ñ‚¾‚Æ‚±‚ë‚Í(&I)", 0, void, false));
+		characterMenu.add(this.ch2ndSpeedMenu = new KAGMenuItem(this, "ï¿½ï¿½xï¿½Ç‚ñ‚¾‚Æ‚ï¿½ï¿½ï¿½ï¿½(&I)", 0, void, false));
 
-			ch2ndSpeedMenu.add(this.ch2ndNoWaitMenuItem = new KAGMenuItem(this, "ƒm[ƒEƒFƒCƒg(&W)", 1,
+			ch2ndSpeedMenu.add(this.ch2ndNoWaitMenuItem = new KAGMenuItem(this, "ï¿½mï¿½[ï¿½Eï¿½Fï¿½Cï¿½g(&W)", 1,
 				onCh2ndSpeedMenuItemClick, false));
 			ch2ndNoWaitMenuItem.speed = 0;
-			ch2ndSpeedMenu.add(this.ch2ndFastMenuItem = new KAGMenuItem(this, "‚‘¬(&F)", 1,
+			ch2ndSpeedMenu.add(this.ch2ndFastMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½(&F)", 1,
 				onCh2ndSpeedMenuItemClick, false));
 			ch2ndFastMenuItem.speed = chSpeeds.fast;
-			ch2ndSpeedMenu.add(this.ch2ndNormalMenuItem = new KAGMenuItem(this, "•’Ê(&N)", 1,
+			ch2ndSpeedMenu.add(this.ch2ndNormalMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½ï¿½(&N)", 1,
 				onCh2ndSpeedMenuItemClick, false));
 			ch2ndNormalMenuItem.speed = chSpeeds.normal;
-			ch2ndSpeedMenu.add(this.ch2ndNoChangeMenuItem = new KAGMenuItem(this, "•Ï‚¦‚È‚¢(&M)", 1,
+			ch2ndSpeedMenu.add(this.ch2ndNoChangeMenuItem = new KAGMenuItem(this, "ï¿½Ï‚ï¿½ï¿½È‚ï¿½(&M)", 1,
 				onCh2ndSpeedMenuItemClick, false));
-			ch2ndNoChangeMenuItem.speed = -1; // •Ï‚¦‚È‚¢
+			ch2ndNoChangeMenuItem.speed = -1; // ï¿½Ï‚ï¿½ï¿½È‚ï¿½
 
 			ch2ndSpeedMenu.add(new MenuItem(this, "-"));
 
-			ch2ndSpeedMenu.add(this.ch2ndNonStopToPageBreakItem = new KAGMenuItem(this, "ƒy[ƒW––‚Ü‚Åˆê‹C‚É(&P)", 0,
+			ch2ndSpeedMenu.add(this.ch2ndNonStopToPageBreakItem = new KAGMenuItem(this, "ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Ü‚Åˆï¿½Cï¿½ï¿½(&P)", 0,
 				onCh2ndNonStopToPageBreakItemClick, false));
 
 		characterMenu.add(new MenuItem(this, "-"));
 
-		characterMenu.add(this.chAntialiasMenuItem = new KAGMenuItem(this, "ƒAƒ“ƒ`ƒGƒCƒŠƒAƒX(&A)", 0,
+		characterMenu.add(this.chAntialiasMenuItem = new KAGMenuItem(this, "ï¿½Aï¿½ï¿½ï¿½`ï¿½Gï¿½Cï¿½ï¿½ï¿½Aï¿½X(&A)", 0,
 			onChAntialiasMenuItemClick, false));
 
-		characterMenu.add(this.chChangeFontMenuItem = new KAGMenuItem(this, "ƒtƒHƒ“ƒg(&D) ...", 0,
+		characterMenu.add(this.chChangeFontMenuItem = new KAGMenuItem(this, "ï¿½tï¿½Hï¿½ï¿½ï¿½g(&D) ...", 0,
 			onChChangeFontMenuItem, false));
 
 	if(freeSaveDataMode)
 	{
-		// ƒtƒŠ[ƒZ[ƒuƒ‚[ƒh‚Ìê‡
-		menu.add(this.bookMarkMenu = new KAGMenuItem(this, "x(&J)", 0, void, false));
-		bookMarkMenu.add(this.restoreMenu = new KAGMenuItem(this, "x‚ğ‚½‚Ç‚é(&J) ...", 0, onRestoreMenuClick, false));
-		bookMarkMenu.add(this.storeMenu = new KAGMenuItem(this, "x‚ğ‚Í‚³‚Ş(&M) ...", 0, onStoreMenuClick, false));
+		// ï¿½tï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½[ï¿½hï¿½Ìê‡
+		menu.add(this.bookMarkMenu = new KAGMenuItem(this, "ï¿½x(&J)", 0, void, false));
+		bookMarkMenu.add(this.restoreMenu = new KAGMenuItem(this, "ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½(&J) ...", 0, onRestoreMenuClick, false));
+		bookMarkMenu.add(this.storeMenu = new KAGMenuItem(this, "ï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½(&M) ...", 0, onStoreMenuClick, false));
 	}
 	else
 	{
-		menu.add(this.restoreMenu = new KAGMenuItem(this, "x‚ğ‚½‚Ç‚é(&J)", 0, onRestoreMenuClick, false));
-		menu.add(this.storeMenu = new KAGMenuItem(this, "x‚ğ‚Í‚³‚Ş(&M)", 0, onStoreMenuClick, false));
+		menu.add(this.restoreMenu = new KAGMenuItem(this, "ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½(&J)", 0, onRestoreMenuClick, false));
+		menu.add(this.storeMenu = new KAGMenuItem(this, "ï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½(&M)", 0, onStoreMenuClick, false));
 	}
 
-	menu.add(this.displayMenu = new KAGMenuItem(this, "‰æ–Ê(&V)", 0, void, false));
+	menu.add(this.displayMenu = new KAGMenuItem(this, "ï¿½ï¿½ï¿½(&V)", 0, void, false));
 
-		displayMenu.add(this.windowedMenuItem = new KAGMenuItem(this, "ƒEƒBƒ“ƒhƒE•\¦(&W)", 1,
+		displayMenu.add(this.windowedMenuItem = new KAGMenuItem(this, "ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½\ï¿½ï¿½(&W)", 1,
 			onWindowedMenuItemClick, false));
-		displayMenu.add(this.fullScreenMenuItem = new KAGMenuItem(this, "ƒtƒ‹ƒXƒNƒŠ[ƒ“(&F)", 1,
+		displayMenu.add(this.fullScreenMenuItem = new KAGMenuItem(this, "ï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½(&F)", 1,
 			onFullScreenMenuItemClick, false));
 
-	menu.add(this.helpMenu = new KAGMenuItem(this, "ƒwƒ‹ƒv(&H)", 0, void, false));
+	menu.add(this.helpMenu = new KAGMenuItem(this, "ï¿½wï¿½ï¿½ï¿½v(&H)", 0, void, false));
 
-		helpMenu.add(this.helpIndexMenuItem = new KAGMenuItem(this, "–ÚŸ(&I) ...", 0,
+		helpMenu.add(this.helpIndexMenuItem = new KAGMenuItem(this, "ï¿½Úï¿½(&I) ...", 0,
 			onHelpIndexMenuItemClick, false));
-		helpMenu.add(this.helpAboutMenuItem = new KAGMenuItem(this, "‚±‚Ìƒ\ƒtƒg‚É‚Â‚¢‚Ä(&A) ...", 0,
+		helpMenu.add(this.helpAboutMenuItem = new KAGMenuItem(this, "ï¿½ï¿½ï¿½Ìƒ\ï¿½tï¿½gï¿½É‚Â‚ï¿½ï¿½ï¿½(&A) ...", 0,
 			onHelpAboutMenuItemClick, false));
 
-	menu.add(this.debugMenu = new KAGMenuItem(this, "ƒfƒoƒbƒO(&D)", 0, void, false));
+	menu.add(this.debugMenu = new KAGMenuItem(this, "ï¿½fï¿½oï¿½bï¿½O(&D)", 0, void, false));
 
-		debugMenu.add(this.reloadScenarioMenuItem = new KAGMenuItem(this, "ƒVƒiƒŠƒI‚ÌÄ“Ç‚İ(&R)", 1,
+		debugMenu.add(this.reloadScenarioMenuItem = new KAGMenuItem(this, "ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½ÌÄ“Çï¿½ï¿½ï¿½(&R)", 1,
 			onReloadScenarioMenuItemClick, false));
-		debugMenu.add(this.showConsoleMenuItem = new KAGMenuItem(this, "ƒRƒ“ƒ\[ƒ‹(&C)\tShift+F4", 1,
+		debugMenu.add(this.showConsoleMenuItem = new KAGMenuItem(this, "ï¿½Rï¿½ï¿½ï¿½\ï¿½[ï¿½ï¿½(&C)\tShift+F4", 1,
 			onShowConsoleMenuItemClick, false));
-		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "ƒRƒ“ƒgƒ[ƒ‰(&S)\tShift+F1", 1,
+		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "ï¿½Rï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½(&S)\tShift+F1", 1,
 			onShowContollerMenuItemClick, false));
 
 }
 
 
-// ˆÈ‰ºAKAG —p ƒƒjƒ…[ƒAƒCƒeƒ€ƒNƒ‰ƒX
+// ï¿½È‰ï¿½ï¿½AKAG ï¿½p ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½X
 class KAGMenuItem extends MenuItem
 {
-	// Šî–{“I‚É MenuItem ‚¾‚ªAw’è‚³‚ê‚½ƒCƒxƒ“ƒgA‚ ‚é‚¢‚Í
-	// •¶š—ñ‚ğÀs‚·‚é‹@”\‚ğ‚Â
+	// ï¿½ï¿½{ï¿½Iï¿½ï¿½ MenuItem ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½wï¿½è‚³ï¿½ê‚½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½@ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	var owner;
 	var command;
 	var _accessible = true;
@@ -176,7 +176,7 @@ class KAGMenuItem extends MenuItem
 		super.finalize(...);
 	}
 
-	property enabled  // ƒI[ƒo[ƒ‰ƒCƒh
+	property enabled  // ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 	{
 		getter { return _enabled; }
 		setter(x) { _enabled = x; super.enabled = _accessible && _enabled; }
@@ -190,7 +190,7 @@ class KAGMenuItem extends MenuItem
 
 	function click()
 	{
-		// click “®ì
+		// click ï¿½ï¿½ï¿½ï¿½
 		if(command !== void)
 		{
 			if(typeof command == "String")
