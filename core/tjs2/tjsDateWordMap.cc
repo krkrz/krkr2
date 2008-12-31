@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*
 	TJS2 Script Engine
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */

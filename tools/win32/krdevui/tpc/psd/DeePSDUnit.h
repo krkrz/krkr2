@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	fgconvert   (graphic converter for transparent images)
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -15,7 +15,7 @@
 extern void __fastcall SetGrayscalePalette(Graphics::TBitmap *dib, int bit);
 extern void ConvertAlphaToAddAlpha(Graphics::TBitmap *in);
 //---------------------------------------------------------------------------
-// —áŠOƒNƒ‰ƒX
+// ï¿½ï¿½Oï¿½Nï¿½ï¿½ï¿½X
 class EDeePSD : public Exception
 {
 
@@ -43,7 +43,7 @@ public:
 
 };
 //---------------------------------------------------------------------------
-// TDeePSD ƒNƒ‰ƒX
+// TDeePSD ï¿½Nï¿½ï¿½ï¿½X
 class TDeePSD : public Graphics::TBitmap
 {
 private:
@@ -51,12 +51,12 @@ protected:
 	AnsiString FLayerMode;
 
 public:
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ÆƒfƒXƒgƒ‰ƒNƒ^
+	// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½Æƒfï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
 	__fastcall TDeePSD(void);
 	__fastcall ~TDeePSD(void);
 
 
-	// Stream I/O  ‚ÌƒI[ƒo[ƒ‰ƒCƒh
+	// Stream I/O  ï¿½ÌƒIï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
 	void __fastcall LoadFromStream(Classes::TStream * Stream);
 	void __fastcall SaveToStream(Classes::TStream * Stream);
 

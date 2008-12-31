@@ -1,52 +1,52 @@
 /**
- * ‹[Ž—ƒR[ƒh‚É‚æ‚éƒ}ƒjƒ…ƒAƒ‹
+ * ï¿½[ï¿½ï¿½ï¿½Rï¿½[ï¿½hï¿½É‚ï¿½ï¿½}ï¿½jï¿½ï¿½ï¿½Aï¿½ï¿½
  *
- * Copyright 2005-2008 GoWatanabe
+ * Copyright 2005-2009 GoWatanabe
  *
- * expat ‚É‚æ‚éˆ—‚ª‚¨‚±‚È‚í‚ê‚ÄŽ©“®“I‚Éƒƒ\ƒbƒhŒÄ‚Ñ•Ô‚µˆ—‚ªs‚í‚ê‚Ü‚·
- * ‹ï‘Ì“I‚È DOM ‚ÌŽÀ‘•—á‚Í XML.tjs ŽQÆ
+ * expat ï¿½É‚ï¿½éˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ÄŽï¿½ï¿½ï¿½ï¿½Iï¿½Éƒï¿½ï¿½\ï¿½bï¿½hï¿½Ä‚Ñ•Ô‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½
+ * ï¿½ï¿½Ì“Iï¿½ï¿½ DOM ï¿½ÌŽï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ XML.tjs ï¿½Qï¿½ï¿½
  */
 class XMLParser {
 
     /**
-     * ƒeƒLƒXƒg‚É‘Î‚·‚éƒp[ƒXˆ—‚ðŽÀs‚·‚éB
-     * @param text ƒeƒLƒXƒgBÈ—ªŽž‚ÍŒ»ÝÝ’è’†‚ÌƒeƒLƒXƒg‚É‘Î‚µ‚Äˆ—‚ðs‚È‚¤
+     * ï¿½eï¿½Lï¿½Xï¿½gï¿½É‘Î‚ï¿½ï¿½ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½B
+     * @param text ï¿½eï¿½Lï¿½Xï¿½gï¿½Bï¿½È—ï¿½ï¿½ï¿½ï¿½ÍŒï¿½ï¿½ÝÝ’è’†ï¿½Ìƒeï¿½Lï¿½Xï¿½gï¿½É‘Î‚ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½È‚ï¿½
      */
     function parse(text);
 
     /**
-     * ƒeƒLƒXƒg‚É‘Î‚·‚éƒp[ƒXˆ—‚ðŽÀs‚·‚éB
-     * @param filename ƒeƒLƒXƒg‚Ìƒtƒ@ƒCƒ‹–¼
+     * ï¿½eï¿½Lï¿½Xï¿½gï¿½É‘Î‚ï¿½ï¿½ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½B
+     * @param filename ï¿½eï¿½Lï¿½Xï¿½gï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
      */
     function parseStorage(filename);
 
 	/**
-	 * ƒGƒ‰[ƒR[ƒh”’l
+	 * ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½hï¿½ï¿½ï¿½l
 	 */
 	property errorCode;
 	
 	/**
-	 * ƒGƒ‰[ƒR[ƒh•¶Žš—ñ
+	 * ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	 */
 	property errorString;
 
 	/**
-	 * Œ»Ý‚ÌƒoƒCƒgƒCƒ“ƒfƒbƒNƒX
+	 * ï¿½ï¿½ï¿½Ý‚Ìƒoï¿½Cï¿½gï¿½Cï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½X
 	 */
 	property currentByteIndex;
 
 	/**
-	 * Œ»Ý‚Ìs”Ô†
+	 * ï¿½ï¿½ï¿½Ý‚Ìsï¿½Ôï¿½
 	 */
 	property currentLineNumber;
 
 	/**
-	 * Œ»Ý‚Ìs”Ô†
+	 * ï¿½ï¿½ï¿½Ý‚Ìsï¿½Ôï¿½
 	 */
 	property currentColumnNumber;
 
 	/**
-	 * Œ»Ý‚ÌƒoƒCƒgƒJƒEƒ“ƒg
+	 * ï¿½ï¿½ï¿½Ý‚Ìƒoï¿½Cï¿½gï¿½Jï¿½Eï¿½ï¿½ï¿½g
 	 */
 	property currentButeCount;
 	

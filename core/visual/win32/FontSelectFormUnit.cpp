@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -183,18 +183,18 @@ HDWP TTVPFontSelectForm::ShowTop(HDWP hdwp)
 
 
 
-// ˆÈ‰º‚Ì“ñ‚Â‚Ìdefine‚ÍOpenType ƒtƒHƒ“ƒg‚ğ•\‚µ‚Ä‚¢‚ÄA
-// EnumFontsProc ‚Ì lpntme->ntmTm.ntmFlags ‚ÉƒrƒbƒgƒZƒbƒg‚Æ‚µ‚Ä“n‚³‚ê‚Ä‚­‚éB
-// (OpenType‚ªƒTƒ|[ƒg‚³‚ê‚½ Windows 2000 ˆÈ~‚Å‘¶İ)
-// tBaseFreeTypeFontDriver::EnumerateFonts ‚Å‚ÍTrueType ƒtƒHƒ“ƒg‚Æ‚Æ‚à‚É
-// ‚±‚ê‚ç‚ÌƒtƒHƒ“ƒg‚à—ñ‹“‚³‚ê‚éB
+// ï¿½È‰ï¿½ï¿½Ì“ï¿½Â‚ï¿½defineï¿½ï¿½OpenType ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½\ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ÄA
+// EnumFontsProc ï¿½ï¿½ lpntme->ntmTm.ntmFlags ï¿½Éƒrï¿½bï¿½gï¿½Zï¿½bï¿½gï¿½Æ‚ï¿½ï¿½Ä“nï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
+// (OpenTypeï¿½ï¿½ï¿½Tï¿½|ï¿½[ï¿½gï¿½ï¿½ï¿½ê‚½ Windows 2000 ï¿½È~ï¿½Å‘ï¿½ï¿½ï¿½)
+// tBaseFreeTypeFontDriver::EnumerateFonts ï¿½Å‚ï¿½TrueType ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Æ‚Æ‚ï¿½ï¿½ï¿½
+// ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒtï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ñ‹“‚ï¿½ï¿½ï¿½ï¿½B
 
 #ifndef NTM_PS_OPENTYPE
-#define NTM_PS_OPENTYPE     0x00020000 //!< PostScript Œ`® OpenType ƒtƒHƒ“ƒg
+#define NTM_PS_OPENTYPE     0x00020000 //!< PostScript ï¿½`ï¿½ï¿½ OpenType ï¿½tï¿½Hï¿½ï¿½ï¿½g
 #endif
 
 #ifndef NTM_TT_OPENTYPE
-#define NTM_TT_OPENTYPE     0x00040000 //!< TrueType Œ`® OpenType ƒtƒHƒ“ƒg
+#define NTM_TT_OPENTYPE     0x00040000 //!< TrueType ï¿½`ï¿½ï¿½ OpenType ï¿½tï¿½Hï¿½ï¿½ï¿½g
 #endif
 
 

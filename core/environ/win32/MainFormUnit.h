@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -25,7 +25,7 @@
 //---------------------------------------------------------------------------
 class TTVPMainForm : public TForm
 {
-__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
+__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TImageList *VerySmallIconImageList;
 	TImageList *SmallIconImageList;
 	TToolBar *ToolBar;
@@ -73,14 +73,14 @@ __published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	void __fastcall ShowControllerMenuItemClick(TObject *Sender);
 	void __fastcall RestartScriptEngineMenuItemClick(TObject *Sender);
 
-private:	// ƒ†[ƒU[éŒ¾
+private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	bool ContinuousEventCalling;
 	bool AutoShowConsoleOnError;
 	bool ApplicationStayOnTop;
 	bool ApplicationActivating;
 	bool ApplicationNotMinimizing;
 
-public:		// ƒ†[ƒU[éŒ¾
+public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	__fastcall TTVPMainForm(TComponent* Owner);
 
 	static TShortCut GetHotKeyFromOption(TShortCut def, const tjs_char * optname);

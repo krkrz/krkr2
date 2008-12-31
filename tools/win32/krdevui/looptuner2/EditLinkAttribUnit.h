@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -20,7 +20,7 @@
 //---------------------------------------------------------------------------
 class TEditLinkAttribFrame : public TFrame
 {
-__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
+__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TCheckBox *EnableConditionCheckBox;
 	TComboBox *CondVarComboBox;
 	TLabel *Label1;
@@ -34,7 +34,7 @@ __published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
           TShiftState Shift);
 	void __fastcall CondRefValueEditChange(TObject *Sender);
 	void __fastcall CondRefValueEditKeyPress(TObject *Sender, char &Key);
-private:	// ƒ†[ƒU[éŒ¾
+private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	tTVPWaveLoopLink FLink;
 	bool InLoading;
 
@@ -46,7 +46,7 @@ private:	// ƒ†[ƒU[éŒ¾
 	TNotifyEvent FOnInfoChanged;
 	TNotifyEvent FOnEraseRedo;
 
-public:		// ƒ†[ƒU[éŒ¾
+public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	__fastcall TEditLinkAttribFrame(TComponent* Owner);
 
 	void __fastcall SetLink(const tTVPWaveLoopLink &link);

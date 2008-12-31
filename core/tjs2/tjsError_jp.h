@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TJS2 Script Engine
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -9,54 +9,54 @@
 // Japanese localized messages
 //---------------------------------------------------------------------------
 
-TJS_MSG_DECL(TJSInternalError, TJS_W("“à•”ƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½"))
-TJS_MSG_DECL(TJSWarning, TJS_W("Œx: "))
-TJS_MSG_DECL(TJSWarnEvalOperator, TJS_W("ƒOƒ[ƒoƒ‹‚Å‚È‚¢êŠ‚ÅŒã’u ! ‰‰ŽZŽq‚ªŽg‚í‚ê‚Ä‚¢‚Ü‚·(‚±‚Ì‰‰ŽZŽq‚Ì‹““®‚ÍTJS2 version 2.4.1 ‚Å•Ï‚í‚è‚Ü‚µ‚½‚Ì‚Å‚²’ˆÓ‚­‚¾‚³‚¢)"))
-TJS_MSG_DECL(TJSNarrowToWideConversionError, TJS_W("ANSI •¶Žš—ñ‚ð UNICODE •¶Žš—ñ‚É•ÏŠ·‚Å‚«‚Ü‚¹‚ñBŒ»Ý‚ÌƒR[ƒhƒy[ƒW‚Å‰ðŽß‚Å‚«‚È‚¢•¶Žš‚ªŠÜ‚Ü‚ê‚Ä‚Ü‚·B³‚µ‚¢ƒf[ƒ^‚ªŽw’è‚³‚ê‚Ä‚¢‚é‚©‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢Bƒf[ƒ^‚ª”j‘¹‚µ‚Ä‚¢‚é‰Â”\«‚à‚ ‚è‚Ü‚·"))
-TJS_MSG_DECL(TJSVariantConvertError, TJS_W("%1 ‚©‚ç %2 ‚ÖŒ^‚ð•ÏŠ·‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSVariantConvertErrorToObject, TJS_W("%1 ‚©‚ç Object ‚ÖŒ^‚ð•ÏŠ·‚Å‚«‚Ü‚¹‚ñBObject Œ^‚ª—v‹‚³‚ê‚é•¶–¬‚Å Object Œ^ˆÈŠO‚Ì’l‚ª“n‚³‚ê‚é‚Æ‚±‚ÌƒGƒ‰[‚ª”­¶‚µ‚Ü‚·"))
-TJS_MSG_DECL(TJSIDExpected, TJS_W("Ž¯•ÊŽq‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"))
-TJS_MSG_DECL(TJSSubstitutionInBooleanContext, TJS_W("˜_—’l‚ª‹‚ß‚ç‚ê‚Ä‚¢‚éêŠ‚Å = ‰‰ŽZŽq‚ªŽg—p‚³‚ê‚Ä‚¢‚Ü‚·(== ‰‰ŽZŽq‚ÌŠÔˆá‚¢‚Å‚·‚©H‘ã“ü‚µ‚½ã‚Åƒ[ƒ‚Æ’l‚ð”äŠr‚µ‚½‚¢ê‡‚ÍA(A=B) != 0 ‚ÌŒ`Ž®‚ðŽg‚¤‚±‚Æ‚ð‚¨Š©‚ß‚µ‚Ü‚·)"));
-TJS_MSG_DECL(TJSCannotModifyLHS, TJS_W("•s³‚È‘ã“ü‚©•s³‚ÈŽ®‚Ì‘€ì‚Å‚·"))
-TJS_MSG_DECL(TJSInsufficientMem, TJS_W("ƒƒ‚ƒŠ‚ª‘«‚è‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSCannotGetResult, TJS_W("‚±‚ÌŽ®‚©‚ç‚Í’l‚ð“¾‚é‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSNullAccess, TJS_W("null ƒIƒuƒWƒFƒNƒg‚ÉƒAƒNƒZƒX‚µ‚æ‚¤‚Æ‚µ‚Ü‚µ‚½"))
-TJS_MSG_DECL(TJSMemberNotFound, TJS_W("ƒƒ“ƒo \"%1\" ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSMemberNotFoundNoNameGiven, TJS_W("ƒƒ“ƒo‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSNotImplemented, TJS_W("ŒÄ‚Ño‚»‚¤‚Æ‚µ‚½‹@”\‚Í–¢ŽÀ‘•‚Å‚·"))
-TJS_MSG_DECL(TJSInvalidParam, TJS_W("•s³‚Èˆø”‚Å‚·"))
-TJS_MSG_DECL(TJSBadParamCount, TJS_W("ˆø”‚Ì”‚ª•s³‚Å‚·"))
-TJS_MSG_DECL(TJSInvalidType, TJS_W("ŠÖ”‚Å‚Í‚È‚¢‚©ƒvƒƒpƒeƒB‚ÌŽí—Þ‚ªˆá‚¢‚Ü‚·"))
-TJS_MSG_DECL(TJSSpecifyDicOrArray, TJS_W("Dictionary ‚Ü‚½‚Í Array ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"))
-TJS_MSG_DECL(TJSSpecifyArray, TJS_W("Array ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"))
-TJS_MSG_DECL(TJSStringDeallocError, TJS_W("•¶Žš—ñƒƒ‚ƒŠƒuƒƒbƒN‚ð‰ð•ú‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSStringAllocError, TJS_W("•¶Žš—ñƒƒ‚ƒŠƒuƒƒbƒN‚ðŠm•Û‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSMisplacedBreakContinue, TJS_W("\"break\" ‚Ü‚½‚Í \"continue\" ‚Í‚±‚±‚É‘‚­‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSMisplacedCase, TJS_W("\"case\" ‚Í‚±‚±‚É‘‚­‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSMisplacedReturn, TJS_W("\"return\" ‚Í‚±‚±‚É‘‚­‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSStringParseError, TJS_W("•¶Žš—ñ’è”/³‹K•\Œ»/ƒIƒNƒeƒbƒg‘¦’l‚ªI‚í‚ç‚È‚¢‚Ü‚ÜƒXƒNƒŠƒvƒg‚ÌI’[‚É’B‚µ‚Ü‚µ‚½"))
-TJS_MSG_DECL(TJSNumberError, TJS_W("”’l‚Æ‚µ‚Ä‰ðŽß‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSUnclosedComment, TJS_W("ƒRƒƒ“ƒg‚ªI‚í‚ç‚È‚¢‚Ü‚ÜƒXƒNƒŠƒvƒg‚ÌI’[‚É’B‚µ‚Ü‚µ‚½"))
-TJS_MSG_DECL(TJSInvalidChar, TJS_W("•s³‚È•¶Žš‚Å‚· : \'%1\'"))
-TJS_MSG_DECL(TJSExpected, TJS_W("%1 ‚ª‚ ‚è‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSSyntaxError, TJS_W("•¶–@ƒGƒ‰[‚Å‚·(%1)"))
-TJS_MSG_DECL(TJSPPError, TJS_W("ðŒƒRƒ“ƒpƒCƒ‹Ž®‚ÉƒGƒ‰[‚ª‚ ‚è‚Ü‚·"))
-TJS_MSG_DECL(TJSCannotGetSuper, TJS_W("ƒX[ƒp[ƒNƒ‰ƒX‚ª‘¶Ý‚µ‚È‚¢‚©ƒX[ƒp[ƒNƒ‰ƒX‚ð“Á’è‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSInvalidOpecode, TJS_W("•s³‚È VM ƒR[ƒh‚Å‚·"))
-TJS_MSG_DECL(TJSRangeError, TJS_W("’l‚ª”ÍˆÍŠO‚Å‚·"))
-TJS_MSG_DECL(TJSAccessDenyed, TJS_W("“Ç‚Ýž‚Ýê—p‚ ‚é‚¢‚Í‘‚«ž‚Ýê—pƒvƒƒpƒeƒB‚É‘Î‚µ‚Äs‚¦‚È‚¢‘€ì‚ð‚µ‚æ‚¤‚Æ‚µ‚Ü‚µ‚½"))
-TJS_MSG_DECL(TJSNativeClassCrash, TJS_W("ŽÀsƒRƒ“ƒeƒLƒXƒg‚ªˆá‚¢‚Ü‚·"))
-TJS_MSG_DECL(TJSInvalidObject, TJS_W("ƒIƒuƒWƒFƒNƒg‚Í‚·‚Å‚É–³Œø‰»‚³‚ê‚Ä‚¢‚Ü‚·"))
-TJS_MSG_DECL(TJSCannotOmit, TJS_W("\"...\" ‚ÍŠÖ”ŠO‚Å‚ÍŽg‚¦‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSCannotParseDate, TJS_W("•s³‚È“ú•t•¶Žš—ñ‚ÌŒ`Ž®‚Å‚·"))
-TJS_MSG_DECL(TJSInvalidValueForTimestamp, TJS_W("•s³‚È“ú•tEŽž‚Å‚·"))
-TJS_MSG_DECL(TJSExceptionNotFound, TJS_W("\"Exception\" ‚ª‘¶Ý‚µ‚È‚¢‚½‚ß—áŠOƒIƒuƒWƒFƒNƒg‚ðì¬‚Å‚«‚Ü‚¹‚ñ"))
-TJS_MSG_DECL(TJSInvalidFormatString, TJS_W("•s³‚È‘Ž®•¶Žš—ñ‚Å‚·"))
-TJS_MSG_DECL(TJSDivideByZero, TJS_W("0 ‚ÅœŽZ‚ð‚µ‚æ‚¤‚Æ‚µ‚Ü‚µ‚½"))
-TJS_MSG_DECL(TJSNotReconstructiveRandomizeData, TJS_W("—”Œn—ñ‚ð‰Šú‰»‚Å‚«‚Ü‚¹‚ñ(‚¨‚»‚ç‚­•s³‚Èƒf[ƒ^‚ª“n‚³‚ê‚Ü‚µ‚½)"))
-TJS_MSG_DECL(TJSSymbol, TJS_W("Ž¯•ÊŽq"))
-TJS_MSG_DECL(TJSCallHistoryIsFromOutOfTJS2Script, TJS_W("[TJSƒXƒNƒŠƒvƒgŠÇ—ŠO]"))
-TJS_MSG_DECL(TJSNObjectsWasNotFreed, TJS_W("‡Œv %1 ŒÂ‚ÌƒIƒuƒWƒFƒNƒg‚ª‰ð•ú‚³‚ê‚Ä‚¢‚Ü‚¹‚ñ"))
+TJS_MSG_DECL(TJSInternalError, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSWarning, TJS_W("ï¿½xï¿½ï¿½: "))
+TJS_MSG_DECL(TJSWarnEvalOperator, TJS_W("ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½êŠï¿½ÅŒï¿½u ! ï¿½ï¿½ï¿½Zï¿½qï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½(ï¿½ï¿½ï¿½Ì‰ï¿½ï¿½Zï¿½qï¿½Ì‹ï¿½ï¿½ï¿½ï¿½ï¿½TJS2 version 2.4.1 ï¿½Å•Ï‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Ì‚Å‚ï¿½ï¿½ï¿½ï¿½Ó‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)"))
+TJS_MSG_DECL(TJSNarrowToWideConversionError, TJS_W("ANSI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UNICODE ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É•ÏŠï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½Ý‚ÌƒRï¿½[ï¿½hï¿½yï¿½[ï¿½Wï¿½Å‰ï¿½ï¿½ß‚Å‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Ü‚ï¿½Ä‚Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"))
+TJS_MSG_DECL(TJSVariantConvertError, TJS_W("%1 ï¿½ï¿½ï¿½ï¿½ %2 ï¿½ÖŒ^ï¿½ï¿½ÏŠï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSVariantConvertErrorToObject, TJS_W("%1 ï¿½ï¿½ï¿½ï¿½ Object ï¿½ÖŒ^ï¿½ï¿½ÏŠï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½BObject ï¿½^ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é•¶ï¿½ï¿½ï¿½ï¿½ Object ï¿½^ï¿½ÈŠOï¿½Ì’lï¿½ï¿½ï¿½nï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÌƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"))
+TJS_MSG_DECL(TJSIDExpected, TJS_W("ï¿½ï¿½ï¿½ÊŽqï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSSubstitutionInBooleanContext, TJS_W("ï¿½_ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½êŠï¿½ï¿½ = ï¿½ï¿½ï¿½Zï¿½qï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½(== ï¿½ï¿½ï¿½Zï¿½qï¿½ÌŠÔˆá‚¢ï¿½Å‚ï¿½ï¿½ï¿½ï¿½Hï¿½ï¿½ï¿½ï¿½Åƒ[ï¿½ï¿½ï¿½Æ’lï¿½ï¿½ï¿½rï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍA(A=B) != 0 ï¿½ÌŒ`ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½ï¿½Ü‚ï¿½)"));
+TJS_MSG_DECL(TJSCannotModifyLHS, TJS_W("ï¿½sï¿½ï¿½ï¿½È‘ï¿½ï¿½sï¿½ï¿½ï¿½ÈŽï¿½ï¿½Ì‘ï¿½ï¿½ï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSInsufficientMem, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSCannotGetResult, TJS_W("ï¿½ï¿½ï¿½ÌŽï¿½ï¿½ï¿½ï¿½ï¿½Í’lï¿½ð“¾‚é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSNullAccess, TJS_W("null ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÉƒAï¿½Nï¿½Zï¿½Xï¿½ï¿½ï¿½æ‚¤ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSMemberNotFound, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½o \"%1\" ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSMemberNotFoundNoNameGiven, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSNotImplemented, TJS_W("ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½@ï¿½\ï¿½Í–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSInvalidParam, TJS_W("ï¿½sï¿½ï¿½ï¿½Èˆï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSBadParamCount, TJS_W("ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSInvalidType, TJS_W("ï¿½Öï¿½ï¿½Å‚Í‚È‚ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½pï¿½eï¿½Bï¿½ÌŽï¿½Þ‚ï¿½ï¿½á‚¢ï¿½Ü‚ï¿½"))
+TJS_MSG_DECL(TJSSpecifyDicOrArray, TJS_W("Dictionary ï¿½Ü‚ï¿½ï¿½ï¿½ Array ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSSpecifyArray, TJS_W("Array ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSStringDeallocError, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ñƒƒï¿½ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSStringAllocError, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ñƒƒï¿½ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½mï¿½Û‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSMisplacedBreakContinue, TJS_W("\"break\" ï¿½Ü‚ï¿½ï¿½ï¿½ \"continue\" ï¿½Í‚ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSMisplacedCase, TJS_W("\"case\" ï¿½Í‚ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSMisplacedReturn, TJS_W("\"return\" ï¿½Í‚ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSStringParseError, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è”/ï¿½ï¿½ï¿½Kï¿½\ï¿½ï¿½/ï¿½Iï¿½Nï¿½eï¿½bï¿½gï¿½ï¿½ï¿½lï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½È‚ï¿½ï¿½Ü‚ÜƒXï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ÌIï¿½[ï¿½É’Bï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSNumberError, TJS_W("ï¿½ï¿½ï¿½lï¿½Æ‚ï¿½ï¿½Ä‰ï¿½ï¿½ß‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSUnclosedComment, TJS_W("ï¿½Rï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½È‚ï¿½ï¿½Ü‚ÜƒXï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ÌIï¿½[ï¿½É’Bï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSInvalidChar, TJS_W("ï¿½sï¿½ï¿½ï¿½È•ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ : \'%1\'"))
+TJS_MSG_DECL(TJSExpected, TJS_W("%1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSSyntaxError, TJS_W("ï¿½ï¿½ï¿½@ï¿½Gï¿½ï¿½ï¿½[ï¿½Å‚ï¿½(%1)"))
+TJS_MSG_DECL(TJSPPError, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ÉƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"))
+TJS_MSG_DECL(TJSCannotGetSuper, TJS_W("ï¿½Xï¿½[ï¿½pï¿½[ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Xï¿½[ï¿½pï¿½[ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSInvalidOpecode, TJS_W("ï¿½sï¿½ï¿½ï¿½ï¿½ VM ï¿½Rï¿½[ï¿½hï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSRangeError, TJS_W("ï¿½lï¿½ï¿½ï¿½ÍˆÍŠOï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSAccessDenyed, TJS_W("ï¿½Ç‚Ýï¿½ï¿½Ýï¿½pï¿½ï¿½ï¿½é‚¢ï¿½Íï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýï¿½pï¿½vï¿½ï¿½ï¿½pï¿½eï¿½Bï¿½É‘Î‚ï¿½ï¿½Äsï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSNativeClassCrash, TJS_W("ï¿½ï¿½ï¿½sï¿½Rï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½gï¿½ï¿½ï¿½á‚¢ï¿½Ü‚ï¿½"))
+TJS_MSG_DECL(TJSInvalidObject, TJS_W("ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Í‚ï¿½ï¿½Å‚É–ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½"))
+TJS_MSG_DECL(TJSCannotOmit, TJS_W("\"...\" ï¿½ÍŠÖï¿½ï¿½Oï¿½Å‚ÍŽgï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSCannotParseDate, TJS_W("ï¿½sï¿½ï¿½ï¿½È“ï¿½tï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŒ`ï¿½ï¿½ï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSInvalidValueForTimestamp, TJS_W("ï¿½sï¿½ï¿½ï¿½È“ï¿½tï¿½Eï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSExceptionNotFound, TJS_W("\"Exception\" ï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ß—ï¿½Oï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ì¬ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSInvalidFormatString, TJS_W("ï¿½sï¿½ï¿½ï¿½Èï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½"))
+TJS_MSG_DECL(TJSDivideByZero, TJS_W("0 ï¿½Åï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSNotReconstructiveRandomizeData, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ç‚­ï¿½sï¿½ï¿½ï¿½Èƒfï¿½[ï¿½^ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½)"))
+TJS_MSG_DECL(TJSSymbol, TJS_W("ï¿½ï¿½ï¿½ÊŽq"))
+TJS_MSG_DECL(TJSCallHistoryIsFromOutOfTJS2Script, TJS_W("[TJSï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Ç—ï¿½ï¿½O]"))
+TJS_MSG_DECL(TJSNObjectsWasNotFreed, TJS_W("ï¿½ï¿½ï¿½v %1 ï¿½Â‚ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
 #ifdef TJS_TEXT_OUT_CRLF
 TJS_MSG_DECL(TJSObjectCreationHistoryDelimiter, TJS_W("\r\n                     "))
 #else
@@ -64,27 +64,27 @@ TJS_MSG_DECL(TJSObjectCreationHistoryDelimiter, TJS_W("\n                     ")
 #endif
 #ifdef TJS_TEXT_OUT_CRLF
 TJS_MSG_DECL(TJSObjectWasNotFreed,
-				 TJS_W("ƒIƒuƒWƒFƒNƒg %1 [%2] ‚ª‰ð•ú‚³‚ê‚Ä‚¢‚Ü‚¹‚ñBƒIƒuƒWƒFƒNƒgì¬Žž‚ÌŒÄ‚Ño‚µ—š—ð‚ÍˆÈ‰º‚Ì’Ê‚è‚Å‚·:\r\n                     %3"))
+				 TJS_W("ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g %1 [%2] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ì¬ï¿½ï¿½ï¿½ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍˆÈ‰ï¿½ï¿½Ì’Ê‚ï¿½Å‚ï¿½:\r\n                     %3"))
 #else
 TJS_MSG_DECL(TJSObjectWasNotFreed,
-				 TJS_W("ƒIƒuƒWƒFƒNƒg %1 [%2] ‚ª‰ð•ú‚³‚ê‚Ä‚¢‚Ü‚¹‚ñBƒIƒuƒWƒFƒNƒgì¬Žž‚ÌŒÄ‚Ño‚µ—š—ð‚ÍˆÈ‰º‚Ì’Ê‚è‚Å‚·:\n                     %3"))
+				 TJS_W("ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g %1 [%2] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ì¬ï¿½ï¿½ï¿½ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍˆÈ‰ï¿½ï¿½Ì’Ê‚ï¿½Å‚ï¿½:\n                     %3"))
 #endif
-TJS_MSG_DECL(TJSGroupByObjectTypeAndHistory, TJS_W("ƒIƒuƒWƒFƒNƒg‚Ìƒ^ƒCƒv‚ÆƒIƒuƒWƒFƒNƒgì¬Žž‚Ì—š—ð‚É‚æ‚é•ª—Þ"))
-TJS_MSG_DECL(TJSGroupByObjectType, TJS_W("ƒIƒuƒWƒFƒNƒg‚Ìƒ^ƒCƒv‚É‚æ‚é•ª—Þ"))
+TJS_MSG_DECL(TJSGroupByObjectTypeAndHistory, TJS_W("ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ìƒ^ï¿½Cï¿½vï¿½ÆƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ì¬ï¿½ï¿½ï¿½Ì—ï¿½ï¿½ï¿½ï¿½É‚ï¿½é•ªï¿½ï¿½"))
+TJS_MSG_DECL(TJSGroupByObjectType, TJS_W("ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ìƒ^ï¿½Cï¿½vï¿½É‚ï¿½é•ªï¿½ï¿½"))
 #ifdef TJS_TEXT_OUT_CRLF
 TJS_MSG_DECL(TJSObjectCountingMessageGroupByObjectTypeAndHistory,
-				 TJS_W("%1 ŒÂ : [%2]\r\n                     %3"))
+				 TJS_W("%1 ï¿½ï¿½ : [%2]\r\n                     %3"))
 #else
 TJS_MSG_DECL(TJSObjectCountingMessageGroupByObjectTypeAndHistory,
-				 TJS_W("%1 ŒÂ : [%2]\n                     %3"))
+				 TJS_W("%1 ï¿½ï¿½ : [%2]\n                     %3"))
 #endif
-TJS_MSG_DECL(TJSObjectCountingMessageTJSGroupByObjectType, TJS_W("%1 ŒÂ : [%2]"))
+TJS_MSG_DECL(TJSObjectCountingMessageTJSGroupByObjectType, TJS_W("%1 ï¿½ï¿½ : [%2]"))
 #ifdef TJS_TEXT_OUT_CRLF
-TJS_MSG_DECL(TJSWarnRunningCodeOnDeletingObject, TJS_W("%4: íœ’†‚ÌƒIƒuƒWƒFƒNƒg %1[%2] ã‚ÅƒR[ƒh‚ªŽÀs‚³‚ê‚Ä‚¢‚Ü‚·B‚±‚ÌƒIƒuƒWƒFƒNƒg‚Ìì¬Žž‚ÌŒÄ‚Ño‚µ—š—ð‚ÍˆÈ‰º‚Ì’Ê‚è‚Å‚·:\r\n                     %3"))
+TJS_MSG_DECL(TJSWarnRunningCodeOnDeletingObject, TJS_W("%4: ï¿½íœï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½g %1[%2] ï¿½ï¿½ÅƒRï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ìì¬ï¿½ï¿½ï¿½ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍˆÈ‰ï¿½ï¿½Ì’Ê‚ï¿½Å‚ï¿½:\r\n                     %3"))
 #else
-TJS_MSG_DECL(TJSWarnRunningCodeOnDeletingObject, TJS_W("%4: íœ’†‚ÌƒIƒuƒWƒFƒNƒg %1[%2] ã‚ÅƒR[ƒh‚ªŽÀs‚³‚ê‚Ä‚¢‚Ü‚·B‚±‚ÌƒIƒuƒWƒFƒNƒg‚Ìì¬Žž‚ÌŒÄ‚Ño‚µ—š—ð‚ÍˆÈ‰º‚Ì’Ê‚è‚Å‚·:\n                     %3"))
+TJS_MSG_DECL(TJSWarnRunningCodeOnDeletingObject, TJS_W("%4: ï¿½íœï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½g %1[%2] ï¿½ï¿½ÅƒRï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ìì¬ï¿½ï¿½ï¿½ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍˆÈ‰ï¿½ï¿½Ì’Ê‚ï¿½Å‚ï¿½:\n                     %3"))
 #endif
-TJS_MSG_DECL(TJSWriteError, TJS_W("‘‚«ž‚ÝƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½"))
-TJS_MSG_DECL(TJSReadError, TJS_W("“Ç‚Ýž‚ÝƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½Bƒtƒ@ƒCƒ‹‚ª”j‘¹‚µ‚Ä‚¢‚é‰Â”\«‚âAƒfƒoƒCƒX‚©‚ç‚Ì“Ç‚Ýž‚Ý‚ÉŽ¸”s‚µ‚½‰Â”\«‚ª‚ ‚è‚Ü‚·"))
-TJS_MSG_DECL(TJSSeekError, TJS_W("ƒV[ƒNƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½Bƒtƒ@ƒCƒ‹‚ª”j‘¹‚µ‚Ä‚¢‚é‰Â”\«‚âAƒfƒoƒCƒX‚©‚ç‚Ì“Ç‚Ýž‚Ý‚ÉŽ¸”s‚µ‚½‰Â”\«‚ª‚ ‚è‚Ü‚·"))
+TJS_MSG_DECL(TJSWriteError, TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"))
+TJS_MSG_DECL(TJSReadError, TJS_W("ï¿½Ç‚Ýï¿½ï¿½ÝƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½Aï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½ï¿½ï¿½Ì“Ç‚Ýï¿½ï¿½Ý‚ÉŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"))
+TJS_MSG_DECL(TJSSeekError, TJS_W("ï¿½Vï¿½[ï¿½Nï¿½Gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½Aï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½ï¿½ï¿½Ì“Ç‚Ýï¿½ï¿½Ý‚ÉŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"))
 //---------------------------------------------------------------------------

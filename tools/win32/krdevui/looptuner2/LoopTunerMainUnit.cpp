@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -37,7 +37,7 @@ TTSSLoopTuner2MainForm *TSSLoopTuner2MainForm;
 //---------------------------------------------------------------------------
 AnsiString __fastcall GetLongFileName(AnsiString fn)
 {
-	// fn ‚ğƒƒ“ƒOƒtƒ@ƒCƒ‹–¼‚É•ÏŠ·‚µ‚Ä•Ô‚·
+	// fn ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½É•ÏŠï¿½ï¿½ï¿½ï¿½Ä•Ô‚ï¿½
 	char buf[MAX_PATH];
 	char *fnp=0;
 	GetFullPathName(fn.c_str(),MAX_PATH,buf,&fnp);
@@ -143,8 +143,8 @@ bool __fastcall TTSSLoopTuner2MainForm::GetCanClose()
 	if(!Manager) return true;
 	if(WaveView->Modified)
 	{
-		int r = MessageDlg("ƒtƒ@ƒCƒ‹ " + FileName + ".sli ‚Í•ÏX‚³‚ê‚Ä‚¢‚Ü‚·B\n"
-			"•ÏX‚ğ•Û‘¶‚µ‚Ü‚·‚©H", mtWarning, TMsgDlgButtons() << mbYes << mbNo << mbCancel, 0);
+		int r = MessageDlg("ï¿½tï¿½@ï¿½Cï¿½ï¿½ " + FileName + ".sli ï¿½Í•ÏXï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B\n"
+			"ï¿½ÏXï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½H", mtWarning, TMsgDlgButtons() << mbYes << mbNo << mbCancel, 0);
 		if(r == mrYes)
 		{
 			SaveAction->Execute();
@@ -219,9 +219,9 @@ void __fastcall TTSSLoopTuner2MainForm::ShowAboutActionExecute(
 	}
 
 	MessageDlg("Loop Tuner 2  version " + VersionString +
-		"  (C) 2000-2008 W.Dee All rights reserved.\n"
-		"Šeƒvƒ‰ƒOƒCƒ“‚Ìƒo[ƒWƒ‡ƒ“î•ñ‚Í plugin ƒtƒHƒ‹ƒ_‚Ì’†‚Ì"
-		"Še DLL ‚ÌƒvƒƒpƒeƒB‚ğQÆ‚µ‚Ä‚­‚¾‚³‚¢",
+		"  (C) 2000-2009 W.Dee All rights reserved.\n"
+		"ï¿½eï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Ìƒoï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ plugin ï¿½tï¿½Hï¿½ï¿½ï¿½_ï¿½Ì’ï¿½ï¿½ï¿½"
+		"ï¿½e DLL ï¿½Ìƒvï¿½ï¿½ï¿½pï¿½eï¿½Bï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
 			mtInformation, TMsgDlgButtons() << mbOK, 0);
 }
 //---------------------------------------------------------------------------
@@ -263,7 +263,7 @@ void __fastcall TTSSLoopTuner2MainForm::OnReaderProgress(TObject *sender)
 {
 	int pct = Reader->SamplesRead / (Reader->NumSamples / 100);
 	if(pct > 100) pct = 100;
-	Caption = ExtractFileName(FileName) +  " - “Ç‚İ‚İ’† " + AnsiString(pct) + "%";
+	Caption = ExtractFileName(FileName) +  " - ï¿½Ç‚İï¿½ï¿½İ’ï¿½ " + AnsiString(pct) + "%";
 	if(Reader->ReadDone)
 	{
 		WaveView->Reader = Reader; // reset the reader
@@ -343,8 +343,8 @@ void __fastcall TTSSLoopTuner2MainForm::Open()
 			// read from the memory
 			if(!Manager->ReadInformation(mem))// note that this method can destory the buffer
 			{
-				throw Exception(FileName + ".sli ‚Í•¶–@‚ªŠÔˆá‚Á‚Ä‚¢‚é‚©A"
-					"•s³‚ÈŒ`®‚Ì‚½‚ßA“Ç‚İ‚Ş‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
+				throw Exception(FileName + ".sli ï¿½Í•ï¿½ï¿½@ï¿½ï¿½ï¿½Ôˆï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½A"
+					"ï¿½sï¿½ï¿½ï¿½ÈŒ`ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ßAï¿½Ç‚İï¿½ï¿½Ş‚ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 			}
 		}
 		catch(...)
@@ -427,7 +427,7 @@ void __fastcall TTSSLoopTuner2MainForm::WMDropFiles(TMessage &msg)
 	char FileName[ MAX_PATH ];
 	int FileCount=
 		DragQueryFile(hd,0xFFFFFFFF,NULL,MAX_PATH);
-			//‚¢‚­‚Â—‚Æ‚³‚ê‚½‚©
+			//ï¿½ï¿½ï¿½ï¿½ï¿½Â—ï¿½ï¿½Æ‚ï¿½ï¿½ê‚½ï¿½ï¿½
 
 	for(int i=FileCount-1;i>=0;i--)
 	{
@@ -660,7 +660,7 @@ void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 
 		WaveView->MarkerPos = pos;
 
-		StatusBar->Panels->Items[3]->Text = "Ä¶’† " + Reader->SamplePosToTimeString(pos);
+		StatusBar->Panels->Items[3]->Text = "ï¿½Äï¿½ï¿½ï¿½ " + Reader->SamplePosToTimeString(pos);
 		StopPlayAction->Enabled = true;
 		NewLinkOnPlayAction->Enabled = true;
 	}
@@ -669,7 +669,7 @@ void __fastcall TTSSLoopTuner2MainForm::ApplicationEventsIdle(TObject *Sender,
 		Done = true;
 		WaveView->MarkerPos = -1;
 
-		StatusBar->Panels->Items[3]->Text = "’â~";
+		StatusBar->Panels->Items[3]->Text = "ï¿½ï¿½~";
 		StopPlayAction->Enabled = false;
 		NewLinkOnPlayAction->Enabled = false;
 	}

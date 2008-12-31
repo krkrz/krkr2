@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -74,12 +74,12 @@ static void FindPlugins(AnsiString path, AnsiString ext, TStringList *dest)
 	{
 		do
 		{
-			// ‚µ‚É DLL ‚ğƒ[ƒh‚µ‚Ä‚İ‚é
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ DLL ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Ä‚İ‚ï¿½
 			AnsiString filename = path + sr.FindData.cFileName;
 			HMODULE dll = LoadLibrary(filename.c_str());
 			if(dll)
 			{
-				// •K—v‚ÈŠÖ”‚ğ‚Á‚Ä‚¢‚é‚©
+				// ï¿½Kï¿½vï¿½ÈŠÖï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©
 				if(GetProcAddress(dll, "GetModuleInstance"))
 				{
 					dest->Add(filename);
@@ -119,7 +119,7 @@ TWaveReader::TWaveReader()
 	FTmpFileName = ExtractFileDir(ParamStr(0)) + "\\temp.dat";
 	FPlugins = new TStringList();
 
-	// g—p‰Â”\‚Èƒvƒ‰ƒOƒCƒ“‚ğŒŸõ‚·‚é
+	// ï¿½gï¿½pï¿½Â”\ï¿½Èƒvï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	AnsiString exepath = ExtractFilePath(ParamStr(0));
 	FindPlugins(exepath + "plugin\\", "dll", FPlugins);
 	FindPlugins(exepath+  "plugin\\", "tpm", FPlugins);
@@ -127,7 +127,7 @@ TWaveReader::TWaveReader()
 	FindPlugins(exepath + "..\\plugin\\", "tpm", FPlugins);
 
 
-	// g—p‰Â”\‚ÈŠg’£q‚Æ‚»‚Ìƒtƒ@ƒCƒ‹ƒ^ƒCƒv‚ğæ“¾‚·‚é
+	// ï¿½gï¿½pï¿½Â”\ï¿½ÈŠgï¿½ï¿½ï¿½qï¿½Æ‚ï¿½ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½^ï¿½Cï¿½vï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
 
 	TStringList *exts = new TStringList;
 	TStringList *descs = new TStringList;
@@ -137,7 +137,7 @@ TWaveReader::TWaveReader()
 	try
 	{
 		exts->Add(".wav");
-		descs->Add("Wave ƒtƒ@ƒCƒ‹");
+		descs->Add("Wave ï¿½tï¿½@ï¿½Cï¿½ï¿½");
 
 		for(int i = 0; i < FPlugins->Count; i++)
 		{
@@ -174,7 +174,7 @@ TWaveReader::TWaveReader()
 				}
 				else
 				{
-					MessageDlg(AnsiString("‚±‚Ìƒvƒ‰ƒOƒCƒ“‚Íˆµ‚¦‚Ü‚¹‚ñ : ") +
+					MessageDlg(AnsiString("ï¿½ï¿½ï¿½Ìƒvï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½Íˆï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : ") +
 						FPlugins->Strings[i].c_str(), mtWarning, TMsgDlgButtons() << mbOK , 0);
 				}
 				FreeLibrary(lib);
@@ -189,7 +189,7 @@ TWaveReader::TWaveReader()
 	}
 
 	AnsiString ret;
-	ret = "‚·‚×‚Ä‚ÌŒ`® (";
+	ret = "ï¿½ï¿½ï¿½×‚Ä‚ÌŒ`ï¿½ï¿½ (";
 	int i;
 	for(i=0; i<exts->Count; i++)
 	{
@@ -211,7 +211,7 @@ TWaveReader::TWaveReader()
 		ret+= "*" + exts->Strings[i];
 	}
 
-	ret+="|‚·‚×‚Ä‚Ìƒtƒ@ƒCƒ‹ (*.*)|*.*";
+	ret+="|ï¿½ï¿½ï¿½×‚Ä‚Ìƒtï¿½@ï¿½Cï¿½ï¿½ (*.*)|*.*";
 
 	FFilterString = ret;
 }
@@ -248,7 +248,7 @@ bool TWaveReader::ReadBlock()
 	delete [] buf;
 	if(written==0)
 	{
-		// “Ç‚İ‚İI‚í‚è
+		// ï¿½Ç‚İï¿½ï¿½İIï¿½ï¿½ï¿½
 		Map();
 		FReadDone = true;
 	}
@@ -296,10 +296,10 @@ void TWaveReader::Map()
 
 		FData = (__int16 *)MapViewOfFile(FMapping, FILE_MAP_READ, 0, 0, 0);
 
-		// ƒs[ƒN‚ğ’T‚·
+		// ï¿½sï¿½[ï¿½Nï¿½ï¿½Tï¿½ï¿½
 		#define PEAK_RANGE 128
 
-		if(FPeaks) SysFreeMem(FPeaks); // ƒs[ƒNƒLƒƒƒbƒVƒ…
+		if(FPeaks) SysFreeMem(FPeaks); // ï¿½sï¿½[ï¿½Nï¿½Lï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½
 
 		int alloc;
 		alloc = (FNumSamples / PEAK_RANGE + 2) * sizeof(__int16)*2 * Format.Format.nChannels;
@@ -347,9 +347,9 @@ void TWaveReader::LoadWave(AnsiString filename)
 
 	FTmpStream = new TFileStream(FTmpFileName, fmCreate|fmShareDenyWrite);
 
-	// g—p‰Â”\‚È‚Ì‚ğ’T‚·
+	// ï¿½gï¿½pï¿½Â”\ï¿½È‚Ì‚ï¿½Tï¿½ï¿½
 
-	// •W€ RIFF wave reader ‚Å‚·
+	// ï¿½Wï¿½ï¿½ RIFF wave reader ï¿½Åï¿½ï¿½ï¿½
 	bool res;
 	FInputContext = new TRIFFWaveContext();
 	try
@@ -366,7 +366,7 @@ void TWaveReader::LoadWave(AnsiString filename)
 		delete FInputContext;
 		FInputContext = NULL;
 
-		// ƒvƒ‰ƒOƒCƒ“‚©‚ç“Ç‚İ‚İ‰Â”\‚Èƒ‚ƒm‚ğ’T‚·
+		// ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚İï¿½ï¿½İ‰Â”\ï¿½Èƒï¿½ï¿½mï¿½ï¿½Tï¿½ï¿½
 		for(int i = 0; i < FPlugins->Count; i++)
 		{
 			FInputContext = new TTSSWaveContext(FPlugins->Strings[i]);
@@ -387,17 +387,17 @@ void TWaveReader::LoadWave(AnsiString filename)
 	{
 		delete FTmpStream;
 		FTmpStream = NULL;
-		throw Exception(filename + " : ‚±‚ÌŒ`®‚Ìƒtƒ@ƒCƒ‹‚Í“Ç‚İ‚ß‚È‚¢‚©Aƒtƒ@ƒCƒ‹‚ªˆÙí‚Å‚·");
+		throw Exception(filename + " : ï¿½ï¿½ï¿½ÌŒ`ï¿½ï¿½ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Í“Ç‚İï¿½ï¿½ß‚È‚ï¿½ï¿½ï¿½ï¿½Aï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ùï¿½Å‚ï¿½");
 	}
 
 	FNumSamples = FInputContext->TotalSamples;
 	if(FNumSamples >= (0x80000000ul/8))
 	{
-		throw Exception(filename + " ‚Í ‘å‚«‚·‚¬‚é‚½‚ßAˆµ‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
+		throw Exception(filename + " ï¿½ï¿½ ï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ßAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
 	}
 
-	// Format ‚ÉŠi”[
-	// 16bit ‚Ö‚Ì•ÏŠ·‚Íinputcontext‚ªs‚¤‚½‚ßAFormat ‚É‚Í 16bit ‚ğw’è‚·‚é
+	// Format ï¿½ÉŠiï¿½[
+	// 16bit ï¿½Ö‚Ì•ÏŠï¿½ï¿½ï¿½inputcontextï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ßAFormat ï¿½É‚ï¿½ 16bit ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½
 	DWORD speakerconfig = FInputContext->SpeakerConfig;
 	int channels = FInputContext->Channels;
 	int frequency = FInputContext->Frequency;
@@ -410,16 +410,16 @@ void TWaveReader::LoadWave(AnsiString filename)
 
 	if(speakerconfig == 0 && channels <= 2)
 	{
-		// •’Ê‚Ì WAVE_FORMAT_PCM
+		// ï¿½ï¿½ï¿½Ê‚ï¿½ WAVE_FORMAT_PCM
 		Format.Format.wFormatTag = WAVE_FORMAT_PCM;
 		Format.Format.cbSize = 0;
 	}
 	else if(speakerconfig == 0)
 	{
-		// channels ‚ª 4 ‚ ‚é‚¢‚Í 6 ‚Ìê‡
+		// channels ï¿½ï¿½ 4 ï¿½ï¿½ï¿½é‚¢ï¿½ï¿½ 6 ï¿½Ìê‡
 		if(channels == 4)
 		{
-			// ¶‘OA‰E‘OA¶ŒãA‰EŒã‚Å‚ ‚é‚Æ‰¼’è‚·‚é
+			// ï¿½ï¿½ï¿½Oï¿½Aï¿½Eï¿½Oï¿½Aï¿½ï¿½ï¿½ï¿½Aï¿½Eï¿½ï¿½Å‚ï¿½ï¿½ï¿½Æ‰ï¿½ï¿½è‚·ï¿½ï¿½
 			Format.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
 			Format.dwChannelMask =
 				SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT |
@@ -428,19 +428,19 @@ void TWaveReader::LoadWave(AnsiString filename)
 		}
 		else if(channels == 6)
 		{
-			// 5.1 ƒ`ƒƒƒ“ƒlƒ‹—pƒf[ƒ^‚Å‚ ‚é‚Æ‰¼’è‚·‚é
+			// 5.1 ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½pï¿½fï¿½[ï¿½^ï¿½Å‚ï¿½ï¿½ï¿½Æ‰ï¿½ï¿½è‚·ï¿½ï¿½
 			Format.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
 			Format.dwChannelMask = KSAUDIO_SPEAKER_5POINT1;
 			Format.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
 		}
 		else
 		{
-			throw Exception(filename + " : ‘Î‰‚Å‚«‚È‚¢ƒ`ƒƒƒ“ƒlƒ‹”‚Å‚·");
+			throw Exception(filename + " : ï¿½Î‰ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½");
 		}
 	}
 	else
 	{
-		// speakerconfig ‚ª‚ ‚é
+		// speakerconfig ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		Format.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
 		Format.dwChannelMask = speakerconfig;
 		Format.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
@@ -453,7 +453,7 @@ void TWaveReader::LoadWave(AnsiString filename)
 
 	FReaderThread = new TWaveReaderThread(this);
 
-	// ‚±‚ÌŠÖ”‚Í“Ç‚İ‚İ‚ÌI—¹‚ğ‘Ò‚½‚¸‚É–ß‚è‚Ü‚·
+	// ï¿½ï¿½ï¿½ÌŠÖï¿½ï¿½Í“Ç‚İï¿½ï¿½İ‚ÌIï¿½ï¿½ï¿½ï¿½Ò‚ï¿½ï¿½ï¿½ï¿½É–ß‚ï¿½Ü‚ï¿½
 }
 //---------------------------------------------------------------------------
 void TWaveReader::GetPeak(int &high, int &low, int pos, int channel, int range)

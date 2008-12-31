@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 /*
 	fgconvert   (graphic converter for transparent images)
-	Copyright (C) 2000-2008 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -51,8 +51,8 @@ static AnsiString SelectFolder(HWND owner)
 	BROWSEINFO bi;
 	bi.hwndOwner = owner;
 	bi.pidlRoot = NULL;
-	bi.pszDisplayName = "ƒtƒHƒ‹ƒ_‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢";
-	bi.lpszTitle = "ƒtƒHƒ‹ƒ_‚Ì‘I‘ğ";
+	bi.pszDisplayName = "ï¿½tï¿½Hï¿½ï¿½ï¿½_ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+	bi.lpszTitle = "ï¿½tï¿½Hï¿½ï¿½ï¿½_ï¿½Ì‘Iï¿½ï¿½";
 	bi.ulFlags = BIF_RETURNONLYFSDIRS;
 	bi.lpfn = NULL;
 	bi.lParam = 0;
@@ -374,7 +374,7 @@ static void BindMaskToMain(Graphics::TBitmap * main, Graphics::TBitmap * mask)
 	// bind 8bpp mask to 32bpp main
 
 	if(main->Width != mask->Width || mask->Height != mask->Height)
-		throw Exception("ƒƒCƒ“‰æ‘œ‚Æƒ}ƒXƒN‰æ‘œ‚ÌƒTƒCƒY‚ªˆÙ‚È‚è‚Ü‚·");
+		throw Exception("ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½æ‘œï¿½Æƒ}ï¿½Xï¿½Nï¿½æ‘œï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½Ù‚È‚ï¿½Ü‚ï¿½");
 
 	if(main->PixelFormat != pf32bit) main->PixelFormat = pf32bit;
 	if(mask->PixelFormat != pf8bit) mask->PixelFormat = pf8bit;
@@ -465,7 +465,7 @@ static Graphics::TBitmap *LoadSingleImage(AnsiString infile,
 		}
 		else
 		{
-			throw Exception("”F¯‚Å‚«‚È‚¢‰æ‘œŒ`®‚Å‚·");
+			throw Exception("ï¿½Fï¿½ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½æ‘œï¿½`ï¿½ï¿½ï¿½Å‚ï¿½");
 		}
 	}
 	catch(...)
@@ -883,7 +883,7 @@ void __fastcall TTPCMainForm::WMDropFiles(TMessage &Msg)
 	}
 }
 //---------------------------------------------------------------------------
-const char * NotOverwritten = "“¯–¼‚Ìƒtƒ@ƒCƒ‹‚ª‚ ‚é‚½‚ß‚Éã‘‚«‚µ‚Ü‚¹‚ñ‚Å‚µ‚½ : ";
+const char * NotOverwritten = "ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚Éã‘ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ : ";
 bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 {
 	// process a file
@@ -895,7 +895,7 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 		// change current directory
 		SetCurrentDir(ExtractFileDir(infile));
 
-		Log += "•ÏŠ·’† " + ExtractFileName(infile) + " ...\n";
+		Log += "ï¿½ÏŠï¿½ï¿½ï¿½ " + ExtractFileName(infile) + " ...\n";
 
 		// check for output files
 		AnsiString out_base = ChangeFileExt(ExtractFileName(infile), "");
@@ -1116,12 +1116,12 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 	}
 	catch(Exception &e)
 	{
-		Log += "ƒGƒ‰[: " + e.Message + "\n";
+		Log += "ï¿½Gï¿½ï¿½ï¿½[: " + e.Message + "\n";
 		error = true;
 	}
 	catch(...)
 	{
-		Log += "•s–¾‚ÈƒGƒ‰[\n";
+		Log += "ï¿½sï¿½ï¿½ï¿½ÈƒGï¿½ï¿½ï¿½[\n";
 		error = true;
 	}
 
