@@ -28,7 +28,7 @@
 static const GUID CLSID_WMReaderSource = 
 { 0xbae59473, 0x19e, 0x4f1f, { 0x8a, 0x8c, 0x3d, 0x41, 0xa9, 0xf4, 0x92, 0x1e } };
 
-// WMVï¿½ï¿½WMAï¿½ï¿½Decoderï¿½ÌƒNï¿½ï¿½ï¿½XID
+// WMV‚ÆWMA‚ÌDecoder‚ÌƒNƒ‰ƒXID
 static const GUID CLSID_WMVDecoderDMO = 
 { 0x82d353df, 0x90bd, 0x4382, { 0x8b, 0xc2, 0x3f, 0x61, 0x92, 0xb7, 0x6e, 0x34 } };
 static const GUID CLSID_WMADecoderDMO = 
@@ -57,14 +57,14 @@ tTVPDSMovie::~tTVPDSMovie()
 	CoUninitialize();
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Qï¿½ÆƒJï¿½Eï¿½ï¿½ï¿½^ï¿½ÌƒCï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½g
+//! @brief	  	ŽQÆƒJƒEƒ“ƒ^‚ÌƒCƒ“ƒNƒŠƒƒ“ƒg
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::AddRef()
 {
 	RefCount++;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Qï¿½ÆƒJï¿½Eï¿½ï¿½ï¿½^ï¿½Ìƒfï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½B1ï¿½È‚ï¿½deleteï¿½B
+//! @brief	  	ŽQÆƒJƒEƒ“ƒ^‚ÌƒfƒNƒŠƒƒ“ƒgB1‚È‚çdeleteB
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::Release()
 {
@@ -74,14 +74,14 @@ void __stdcall tTVPDSMovie::Release()
 		RefCount--;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒCƒ“ƒ^[ƒtƒFƒCƒX‚ð‰ð•ú‚·‚é
 //!
-//! ï¿½fï¿½oï¿½bï¿½Nï¿½ï¿½ï¿½AROTï¿½É‚Ü‚ï¿½ï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ê‡ï¿½ÍAï¿½ï¿½ï¿½ï¿½ï¿½Å“oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B@n
-//! ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½{ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Xï¿½ÅŽï¿½ï¿½Oï¿½É“oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¢
+//! ƒfƒoƒbƒNŽžAROT‚É‚Ü‚¾“o˜^‚³‚ê‚Ä‚¢‚éê‡‚ÍA‚±‚±‚Å“o˜^‚ð‰ðœ‚·‚éB@n
+//! ‚µ‚©‚µA–{—ˆ‚Í‚±‚ÌƒNƒ‰ƒX‚ðŒp³‚µ‚½ƒNƒ‰ƒX‚ÅŽ–‘O‚É“o˜^‰ðœ‚ðƒR[ƒ‹‚µ‚½•û‚ª‚æ‚¢
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::ReleaseAll()
 {
-	if( m_RegisteredROT )	// ï¿½oï¿½^ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ï¿½Å‰ï¿½ï¿½ï¿½
+	if( m_RegisteredROT )	// “o˜^‚ª‚Ü‚¾‰ðœ‚³‚ê‚Ä‚¢‚È‚¢Žž‚Í‚±‚±‚Å‰ðœ
 		RemoveFromROT( m_dwROTReg );
 
 	if( m_MediaControl.p != NULL )
@@ -117,7 +117,7 @@ void __stdcall tTVPDSMovie::ReleaseAll()
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒrƒfƒI‚ðÄ¶‚·‚é
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::Play()
 {
@@ -128,7 +128,7 @@ void __stdcall tTVPDSMovie::Play()
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒrƒfƒI‚ð’âŽ~‚·‚é
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::Stop()
 {
@@ -139,7 +139,7 @@ void __stdcall tTVPDSMovie::Stop()
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½êŽžï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒrƒfƒI‚ðˆêŽž’âŽ~‚·‚é
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::Pause()
 {
@@ -150,8 +150,8 @@ void __stdcall tTVPDSMovie::Pause()
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½Ý‚Ìƒï¿½ï¿½[ï¿½rï¿½[ï¿½ï¿½ï¿½Ô‚ï¿½Ý’è‚·ï¿½ï¿½
-//! @param 		tick : ï¿½Ý’è‚·ï¿½éŒ»ï¿½Ý‚ÌŽï¿½ï¿½ï¿½
+//! @brief	  	Œ»Ý‚Ìƒ€[ƒr[ŽžŠÔ‚ðÝ’è‚·‚é
+//! @param 		tick : Ý’è‚·‚éŒ»Ý‚ÌŽžŠÔ
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
 {
@@ -189,8 +189,8 @@ void __stdcall tTVPDSMovie::SetPosition( unsigned __int64 tick )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½Ý‚Ìƒï¿½ï¿½[ï¿½rï¿½[ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param 		tick : ï¿½ï¿½ï¿½Ý‚ÌŽï¿½ï¿½Ô‚ï¿½Ô‚ï¿½ï¿½Ïï¿½
+//! @brief	  	Œ»Ý‚Ìƒ€[ƒr[ŽžŠÔ‚ðŽæ“¾‚·‚é
+//! @param 		tick : Œ»Ý‚ÌŽžŠÔ‚ð•Ô‚·•Ï”
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
 {
@@ -209,7 +209,7 @@ void __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
 	}
 	if( IsEqualGUID( TIME_FORMAT_MEDIA_TIME, Format ) )
 	{
-		LONGLONG	curTime = (Current + 5000) / 10000; // ï¿½ê‰žï¿½Aï¿½lï¿½ÌŒÜ“ï¿½Ä‚ï¿½ï¿½ï¿½
+		LONGLONG	curTime = (Current + 5000) / 10000; // ˆê‰žAŽlŽÌŒÜ“ü‚µ‚Ä‚¨‚­
 		*tick = (unsigned __int64)( curTime < 0 ? 0 : curTime);
 	}
 	else if( IsEqualGUID( TIME_FORMAT_FRAME, Format ) )
@@ -228,8 +228,8 @@ void __stdcall tTVPDSMovie::GetPosition( unsigned __int64 *tick )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½Ý‚Ìƒï¿½ï¿½[ï¿½rï¿½[ï¿½Ìï¿½Ô‚ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param 		status : ï¿½ï¿½ï¿½Ý‚Ìï¿½Ô‚ï¿½Ô‚ï¿½ï¿½Ïï¿½
+//! @brief	  	Œ»Ý‚Ìƒ€[ƒr[‚Ìó‘Ô‚ðŽæ“¾‚·‚é
+//! @param 		status : Œ»Ý‚Ìó‘Ô‚ð•Ô‚·•Ï”
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetStatus(tTVPVideoStatus *status)
 {
@@ -248,10 +248,10 @@ void __stdcall tTVPDSMovie::GetStatus(tTVPVideoStatus *status)
 }
 //----------------------------------------------------------------------------
 //! @brief	  	A sample has been delivered. Copy it to the texture.
-//! @param 		evcode : ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Rï¿½[ï¿½h
-//! @param 		param1 : ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^1ï¿½Bï¿½ï¿½ï¿½eï¿½ÍƒCï¿½xï¿½ï¿½ï¿½gï¿½Rï¿½[ï¿½hï¿½É‚ï¿½ï¿½Ù‚È‚ï¿½B
-//! @param 		param2 : ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^2ï¿½Bï¿½ï¿½ï¿½eï¿½ÍƒCï¿½xï¿½ï¿½ï¿½gï¿½Rï¿½[ï¿½hï¿½É‚ï¿½ï¿½Ù‚È‚ï¿½B
-//! @param 		got : ï¿½æ“¾ï¿½Ìï¿½ï¿½ï¿½
+//! @param 		evcode : ƒCƒxƒ“ƒgƒR[ƒh
+//! @param 		param1 : ƒpƒ‰ƒ[ƒ^1B“à—e‚ÍƒCƒxƒ“ƒgƒR[ƒh‚É‚æ‚èˆÙ‚È‚éB
+//! @param 		param2 : ƒpƒ‰ƒ[ƒ^2B“à—e‚ÍƒCƒxƒ“ƒgƒR[ƒh‚É‚æ‚èˆÙ‚È‚éB
+//! @param 		got : Žæ“¾‚Ì³”Û
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetEvent( long *evcode, long *param1, long *param2, bool *got )
 {
@@ -270,12 +270,12 @@ void __stdcall tTVPDSMovie::GetEvent( long *evcode, long *param1, long *param2, 
 	return;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒCƒxƒ“ƒg‚ð‰ð•ú‚·‚é
 //! 
-//! GetEventï¿½ÅƒCï¿½xï¿½ï¿½ï¿½gï¿½ð“¾‚ÄAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½É‚ï¿½ï¿½ï¿½ÄƒCï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½é‚±ï¿½ï¿½
-//! @param 		evcode : ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Rï¿½[ï¿½h
-//! @param 		param1 : ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^1ï¿½Bï¿½ï¿½ï¿½eï¿½ÍƒCï¿½xï¿½ï¿½ï¿½gï¿½Rï¿½[ï¿½hï¿½É‚ï¿½ï¿½Ù‚È‚ï¿½B
-//! @param 		param2 : ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^2ï¿½Bï¿½ï¿½ï¿½eï¿½ÍƒCï¿½xï¿½ï¿½ï¿½gï¿½Rï¿½[ï¿½hï¿½É‚ï¿½ï¿½Ù‚È‚ï¿½B
+//! GetEvent‚ÅƒCƒxƒ“ƒg‚ð“¾‚ÄAˆ—‚µ‚½ŒãA‚±‚Ìƒƒ\ƒbƒh‚É‚æ‚Á‚ÄƒCƒxƒ“ƒg‚ð‰ð•ú‚·‚é‚±‚Æ
+//! @param 		evcode : ‰ð•ú‚·‚éƒCƒxƒ“ƒgƒR[ƒh
+//! @param 		param1 : ‰ð•ú‚·‚éƒpƒ‰ƒ[ƒ^1B“à—e‚ÍƒCƒxƒ“ƒgƒR[ƒh‚É‚æ‚èˆÙ‚È‚éB
+//! @param 		param2 : ‰ð•ú‚·‚éƒpƒ‰ƒ[ƒ^2B“à—e‚ÍƒCƒxƒ“ƒgƒR[ƒh‚É‚æ‚èˆÙ‚È‚éB
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::FreeEventParams(long evcode, long param1, long param2)
 {
@@ -285,9 +285,9 @@ void __stdcall tTVPDSMovie::FreeEventParams(long evcode, long param1, long param
 	return;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ï¿½ï¿½Åï¿½ï¿½ÌˆÊ’uï¿½Ü‚ÅŠï¿½ï¿½ï¿½ï¿½ß‚ï¿½
-//! @note		IMediaPositionï¿½Í”ñ„ï¿½ï¿½Ì‚æ‚¤ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Å‚ÍŽgï¿½pï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Ì‚ÅA
-//! 			ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Ü‚É‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½B
+//! @brief	  	ƒ€[ƒr[‚ðÅ‰‚ÌˆÊ’u‚Ü‚ÅŠª‚«–ß‚·
+//! @note		IMediaPosition‚Í”ñ„§‚Ì‚æ‚¤‚¾‚ªAƒTƒ“ƒvƒ‹‚Å‚ÍŽg—p‚³‚ê‚Ä‚¢‚½‚Ì‚ÅA
+//! 			“¯‚¶‚Ü‚Ü‚É‚µ‚Ä‚¨‚­B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::Rewind()
 {
@@ -301,11 +301,11 @@ void __stdcall tTVPDSMovie::Rewind()
 	return;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½wï¿½è‚³ï¿½ê‚½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÖˆÚ“ï¿½ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	Žw’è‚³‚ê‚½ƒtƒŒ[ƒ€‚ÖˆÚ“®‚·‚é
 //! 
-//! ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½É‚ï¿½ï¿½ï¿½ÄÝ’è‚³ï¿½ê‚½ï¿½Ê’uï¿½ÍAï¿½wï¿½è‚µï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÆŠï¿½ï¿½Sï¿½Éˆï¿½vï¿½ï¿½ï¿½ï¿½í‚¯ï¿½Å‚Í‚È‚ï¿½ï¿½B
-//! ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÍAï¿½wï¿½è‚µï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÉÅ‚ï¿½ï¿½ß‚ï¿½ï¿½Lï¿½[ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÌˆÊ’uï¿½ÉÝ’è‚³ï¿½ï¿½ï¿½B
-//! @param		f : ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½
+//! ‚±‚Ìƒƒ\ƒbƒh‚É‚æ‚Á‚ÄÝ’è‚³‚ê‚½ˆÊ’u‚ÍAŽw’è‚µ‚½ƒtƒŒ[ƒ€‚ÆŠ®‘S‚Éˆê’v‚·‚é‚í‚¯‚Å‚Í‚È‚¢B
+//! ƒtƒŒ[ƒ€‚ÍAŽw’è‚µ‚½ƒtƒŒ[ƒ€‚ÉÅ‚à‹ß‚¢ƒL[ƒtƒŒ[ƒ€‚ÌˆÊ’u‚ÉÝ’è‚³‚ê‚éB
+//! @param		f : ˆÚ“®‚·‚éƒtƒŒ[ƒ€
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetFrame( int f )
 {
@@ -344,8 +344,8 @@ void __stdcall tTVPDSMovie::SetFrame( int f )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½Ý‚Ìƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		f : ï¿½ï¿½ï¿½Ý‚Ìƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	Œ»Ý‚ÌƒtƒŒ[ƒ€‚ðŽæ“¾‚·‚é
+//! @param		f : Œ»Ý‚ÌƒtƒŒ[ƒ€‚ð“ü‚ê‚é•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetFrame( int *f )
 {
@@ -383,8 +383,8 @@ void __stdcall tTVPDSMovie::GetFrame( int *f )
 }
 
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½wï¿½è‚³ï¿½ê‚½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÅÄï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-//! @param		f : ï¿½Äï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½
+//! @brief	  	Žw’è‚³‚ê‚½ƒtƒŒ[ƒ€‚ÅÄ¶‚ð’âŽ~‚³‚¹‚é
+//! @param		f : Ä¶‚ð’âŽ~‚³‚¹‚éƒtƒŒ[ƒ€
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetStopFrame( int f )
 {
@@ -423,8 +423,8 @@ void __stdcall tTVPDSMovie::SetStopFrame( int f )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½Ý‚ÌÄï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		f : ï¿½ï¿½ï¿½Ý‚ÌÄï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	Œ»Ý‚ÌÄ¶‚ª’âŽ~‚·‚éƒtƒŒ[ƒ€‚ðŽæ“¾‚·‚é
+//! @param		f : Œ»Ý‚ÌÄ¶‚ª’âŽ~‚·‚éƒtƒŒ[ƒ€‚ð“ü‚ê‚é•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetStopFrame( int *f )
 {
@@ -461,7 +461,7 @@ void __stdcall tTVPDSMovie::GetStopFrame( int *f )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Äï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚É–ß‚ï¿½ï¿½B
+//! @brief	  	Ä¶‚ð’âŽ~‚·‚éƒtƒŒ[ƒ€‚ð‰Šúó‘Ô‚É–ß‚·B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetDefaultStopFrame()
 {
@@ -503,8 +503,8 @@ void __stdcall tTVPDSMovie::SetDefaultStopFrame()
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	FPSï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		f : FPSï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	FPS‚ðŽæ“¾‚·‚é
+//! @param		f : FPS‚ð“ü‚ê‚é•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetFPS( double *f )
 {
@@ -519,8 +519,8 @@ void __stdcall tTVPDSMovie::GetFPS( double *f )
 	*f = 1.0 / AvgTimePerFrame;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Sï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		f : ï¿½Sï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	‘SƒtƒŒ[ƒ€”‚ðŽæ“¾‚·‚é
+//! @param		f : ‘SƒtƒŒ[ƒ€”‚ð“ü‚ê‚é•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetNumberOfFrame( int *f )
 {
@@ -557,8 +557,8 @@ void __stdcall tTVPDSMovie::GetNumberOfFrame( int *f )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ì’ï¿½ï¿½ï¿½(msec)ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		f : ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Ì’ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	ƒ€[ƒr[‚Ì’·‚³(msec)‚ðŽæ“¾‚·‚é
+//! @param		f : ƒ€[ƒr[‚Ì’·‚³‚ð“ü‚ê‚é•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 {
@@ -586,7 +586,7 @@ void __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 		{
 			ThrowDShowException(L"Failed to call IBasicVideo::get_AvgTimePerFrame (in tTVPDSMovie::GetTotalTime).", hr);
 		}
-		// ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½ÖAï¿½bï¿½ï¿½ï¿½ï¿½msecï¿½ï¿½
+		// ƒtƒŒ[ƒ€‚©‚ç•b‚ÖA•b‚©‚çmsec‚Ö
 		*t = (__int64)((totalTime * AvgTimePerFrame) * 1000.0 );
 	}
 	else
@@ -595,9 +595,9 @@ void __stdcall tTVPDSMovie::GetTotalTime( __int64 *t )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½rï¿½fï¿½Iï¿½Ì‰æ‘œï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		width : ï¿½ï¿½
-//! @param		height : ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒrƒfƒI‚Ì‰æ‘œƒTƒCƒY‚ðŽæ“¾‚·‚é
+//! @param		width : •
+//! @param		height : ‚‚³
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetVideoSize( long *width, long *height )
 {
@@ -610,7 +610,7 @@ void __stdcall tTVPDSMovie::GetVideoSize( long *width, long *height )
 		Video()->get_SourceHeight( height );
 }
 //----------------------------------------------------------------------------
-//! @brief	  	buffï¿½ï¿½NULLï¿½ï¿½Ý’è‚·ï¿½ï¿½B
+//! @brief	  	buff‚ÉNULL‚ðÝ’è‚·‚éB
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetFrontBuffer( BYTE **buff )
 {
@@ -618,38 +618,38 @@ void __stdcall tTVPDSMovie::GetFrontBuffer( BYTE **buff )
 	return;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
+//! @brief	  	‰½‚à‚µ‚È‚¢
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetVideoBuffer( BYTE *buff1, BYTE *buff2, long size )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetWindow( HWND window )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetMessageDrainWindow( HWND window )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetRect( RECT *rect )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetVisible( bool b )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Äï¿½ï¿½ï¿½ï¿½xï¿½ï¿½Ý’è‚·ï¿½ï¿½
-//! @param	rate : ï¿½Äï¿½ï¿½ï¿½ï¿½[ï¿½gï¿½B1.0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+//! @brief	  	Ä¶‘¬“x‚ðÝ’è‚·‚é
+//! @param	rate : Ä¶ƒŒ[ƒgB1.0‚ª“™‘¬B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetPlayRate( double rate )
 {
@@ -663,8 +663,8 @@ void __stdcall tTVPDSMovie::SetPlayRate( double rate )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Äï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param	*rate : ï¿½Äï¿½ï¿½ï¿½ï¿½[ï¿½gï¿½B1.0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+//! @brief	  	Ä¶‘¬“x‚ðŽæ“¾‚·‚é
+//! @param	*rate : Ä¶ƒŒ[ƒgB1.0‚ª“™‘¬B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetPlayRate( double *rate )
 {
@@ -678,12 +678,12 @@ void __stdcall tTVPDSMovie::GetPlayRate( double *rate )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½oï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½Ý’è‚·ï¿½ï¿½
-//! @param	balance : ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Bï¿½lï¿½ï¿½ -10,000 ï¿½` 10,000 ï¿½Ì”ÍˆÍ‚ÅŽwï¿½ï¿½Å‚ï¿½ï¿½ï¿½B
-//! ï¿½lï¿½ï¿½ -10,000 ï¿½Ìê‡ï¿½Aï¿½Eï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ 100 dB ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Æ‚È‚é‚±ï¿½Æ‚ï¿½ï¿½Ó–ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
-//! ï¿½lï¿½ï¿½ 10,000 ï¿½Ìê‡ï¿½Aï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Ó–ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
-//! ï¿½^ï¿½ï¿½ï¿½Ì’lï¿½ï¿½ 0 ï¿½ÅAï¿½ï¿½ï¿½ï¿½Í—ï¿½ï¿½ï¿½Ìƒ`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Å‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Ó–ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
-//! ï¿½ï¿½ï¿½Ìƒ`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒ`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½Íƒtï¿½ï¿½ ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ì‚Ü‚Ü‚Å‚ï¿½ï¿½ï¿½B 
+//! @brief	  	ƒI[ƒfƒBƒIƒoƒ‰ƒ“ƒX‚ðÝ’è‚·‚é
+//! @param	balance : ƒoƒ‰ƒ“ƒX‚ðŽw’è‚·‚éB’l‚Í -10,000 ` 10,000 ‚Ì”ÍˆÍ‚ÅŽw’è‚Å‚«‚éB
+//! ’l‚ª -10,000 ‚Ìê‡A‰Eƒ`ƒƒƒ“ƒlƒ‹‚Í 100 dB Œ¸Š‚³‚êA–³‰¹‚Æ‚È‚é‚±‚Æ‚ðˆÓ–¡‚µ‚Ä‚¢‚éB
+//! ’l‚ª 10,000 ‚Ìê‡A¶ƒ`ƒƒƒ“ƒlƒ‹‚ª–³‰¹‚Å‚ ‚é‚±‚Æ‚ðˆÓ–¡‚µ‚Ä‚¢‚éB
+//! ^’†‚Ì’l‚Í 0 ‚ÅA‚±‚ê‚Í—¼•û‚Ìƒ`ƒƒƒ“ƒlƒ‹‚ªƒtƒ‹ ƒ{ƒŠƒ…[ƒ€‚Å‚ ‚é‚±‚Æ‚ðˆÓ–¡‚µ‚Ä‚¢‚éB
+//! ˆê•û‚Ìƒ`ƒƒƒ“ƒlƒ‹‚ªŒ¸Š‚³‚ê‚Ä‚àA‚à‚¤ˆê•û‚Ìƒ`ƒƒƒ“ƒlƒ‹‚Íƒtƒ‹ ƒ{ƒŠƒ…[ƒ€‚Ì‚Ü‚Ü‚Å‚ ‚éB 
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetAudioBalance( long balance )
 {
@@ -700,12 +700,12 @@ void __stdcall tTVPDSMovie::SetAudioBalance( long balance )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½oï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param	*balance : ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½Ì”ÍˆÍ‚ï¿½ -10,000 ï¿½` 10,000ï¿½Ü‚Å‚Å‚ï¿½ï¿½ï¿½B
-//! ï¿½lï¿½ï¿½ -10,000 ï¿½Ìê‡ï¿½Aï¿½Eï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ 100 dB ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Æ‚È‚é‚±ï¿½Æ‚ï¿½ï¿½Ó–ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
-//! ï¿½lï¿½ï¿½ 10,000 ï¿½Ìê‡ï¿½Aï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Ó–ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
-//! ï¿½^ï¿½ï¿½ï¿½Ì’lï¿½ï¿½ 0 ï¿½ÅAï¿½ï¿½ï¿½ï¿½Í—ï¿½ï¿½ï¿½Ìƒ`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½tï¿½ï¿½ ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Å‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Ó–ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
-//! ï¿½ï¿½ï¿½Ìƒ`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒ`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½Íƒtï¿½ï¿½ ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ì‚Ü‚Ü‚Å‚ï¿½ï¿½ï¿½B 
+//! @brief	  	ƒI[ƒfƒBƒIƒoƒ‰ƒ“ƒX‚ðŽæ“¾‚·‚é
+//! @param	*balance : ƒoƒ‰ƒ“ƒX‚Ì”ÍˆÍ‚Í -10,000 ` 10,000‚Ü‚Å‚Å‚ ‚éB
+//! ’l‚ª -10,000 ‚Ìê‡A‰Eƒ`ƒƒƒ“ƒlƒ‹‚Í 100 dB Œ¸Š‚³‚êA–³‰¹‚Æ‚È‚é‚±‚Æ‚ðˆÓ–¡‚µ‚Ä‚¢‚éB
+//! ’l‚ª 10,000 ‚Ìê‡A¶ƒ`ƒƒƒ“ƒlƒ‹‚ª–³‰¹‚Å‚ ‚é‚±‚Æ‚ðˆÓ–¡‚µ‚Ä‚¢‚éB
+//! ^’†‚Ì’l‚Í 0 ‚ÅA‚±‚ê‚Í—¼•û‚Ìƒ`ƒƒƒ“ƒlƒ‹‚ªƒtƒ‹ ƒ{ƒŠƒ…[ƒ€‚Å‚ ‚é‚±‚Æ‚ðˆÓ–¡‚µ‚Ä‚¢‚éB
+//! ˆê•û‚Ìƒ`ƒƒƒ“ƒlƒ‹‚ªŒ¸Š‚³‚ê‚Ä‚àA‚à‚¤ˆê•û‚Ìƒ`ƒƒƒ“ƒlƒ‹‚Íƒtƒ‹ ƒ{ƒŠƒ…[ƒ€‚Ì‚Ü‚Ü‚Å‚ ‚éB 
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetAudioBalance( long *balance )
 {
@@ -719,10 +719,10 @@ void __stdcall tTVPDSMovie::GetAudioBalance( long *balance )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½Ý’è‚·ï¿½ï¿½
-//! @param volume : ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ -10,000 ï¿½` 0 ï¿½Ìï¿½ï¿½lï¿½ÅŽwï¿½è‚·ï¿½ï¿½B
-//! ï¿½Å‘ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ 0ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ -10,000ï¿½B
-//! ï¿½Kï¿½vï¿½Èƒfï¿½Vï¿½xï¿½ï¿½ï¿½lï¿½ï¿½ 100 ï¿½{ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÎA-10,000 = -100 dBï¿½B 
+//! @brief	  	ƒI[ƒfƒBƒIƒ{ƒŠƒ…[ƒ€‚ðÝ’è‚·‚é
+//! @param volume : ƒ{ƒŠƒ…[ƒ€‚ð -10,000 ` 0 ‚Ì”’l‚ÅŽw’è‚·‚éB
+//! Å‘åƒ{ƒŠƒ…[ƒ€‚Í 0A–³‰¹‚Í -10,000B
+//! •K—v‚ÈƒfƒVƒxƒ‹’l‚ð 100 ”{‚·‚éB‚½‚Æ‚¦‚ÎA-10,000 = -100 dBB 
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetAudioVolume( long volume )
 {
@@ -739,10 +739,10 @@ void __stdcall tTVPDSMovie::SetAudioVolume( long volume )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½Ý’è‚·ï¿½ï¿½
-//! @param volume : ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ -10,000 ï¿½` 0 ï¿½Ìï¿½ï¿½lï¿½ÅŽwï¿½è‚·ï¿½ï¿½B
-//! ï¿½Å‘ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ 0ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ -10,000ï¿½B
-//! ï¿½Kï¿½vï¿½Èƒfï¿½Vï¿½xï¿½ï¿½ï¿½lï¿½ï¿½ 100 ï¿½{ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÎA-10,000 = -100 dBï¿½B 
+//! @brief	  	ƒI[ƒfƒBƒIƒ{ƒŠƒ…[ƒ€‚ðÝ’è‚·‚é
+//! @param volume : ƒ{ƒŠƒ…[ƒ€‚ð -10,000 ` 0 ‚Ì”’l‚ÅŽw’è‚·‚éB
+//! Å‘åƒ{ƒŠƒ…[ƒ€‚Í 0A–³‰¹‚Í -10,000B
+//! •K—v‚ÈƒfƒVƒxƒ‹’l‚ð 100 ”{‚·‚éB‚½‚Æ‚¦‚ÎA-10,000 = -100 dBB 
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetAudioVolume( long *volume )
 {
@@ -756,8 +756,8 @@ void __stdcall tTVPDSMovie::GetAudioVolume( long *volume )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param streamCount : ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	ƒI[ƒfƒBƒIƒXƒgƒŠ[ƒ€”‚ðŽæ“¾‚·‚é
+//! @param streamCount : ƒI[ƒfƒBƒIƒXƒgƒŠ[ƒ€”‚ð“ü‚ê‚é•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetNumberOfAudioStream( unsigned long *streamCount )
 {
@@ -767,8 +767,8 @@ void __stdcall tTVPDSMovie::GetNumberOfAudioStream( unsigned long *streamCount )
 		*streamCount = m_AudioStreamInfo.size();
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½wï¿½è‚µï¿½ï¿½ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½É‚ï¿½ï¿½ï¿½
-//! @param num : ï¿½Lï¿½ï¿½É‚ï¿½ï¿½ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½
+//! @brief	  	Žw’è‚µ‚½ƒI[ƒfƒBƒIƒXƒgƒŠ[ƒ€”Ô†‚ÌƒXƒgƒŠ[ƒ€‚ð—LŒø‚É‚·‚é
+//! @param num : —LŒø‚É‚·‚éƒI[ƒfƒBƒIƒXƒgƒŠ[ƒ€”Ô†
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SelectAudioStream( unsigned long num )
 {
@@ -777,9 +777,9 @@ void __stdcall tTVPDSMovie::SelectAudioStream( unsigned long num )
 	SelectStream( num, m_AudioStreamInfo );
 }
 //----------------------------------------------------------------------------
-// @brief		ï¿½Lï¿½ï¿½ÈƒIï¿½[ï¿½fï¿½Bï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ð“¾‚ï¿½
-// ï¿½ï¿½Ôï¿½ï¿½ß‚ÉŒï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ÈƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ï¿½Ô‚ï¿½ï¿½B
-// ï¿½Oï¿½ï¿½ï¿½[ï¿½vï¿½ï¿½ï¿½Ì‚ï¿½ï¿½×‚Ä‚ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½Å‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚ªï¿½AtTVPDSMovie::SelectAudioStreamï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Aï¿½Oï¿½ï¿½ï¿½[ï¿½vï¿½ï¿½ï¿½ï¿½1ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½É‚È‚ï¿½B
+// @brief		—LŒø‚ÈƒI[ƒfƒBƒIƒXƒgƒŠ[ƒ€”Ô†‚ð“¾‚é
+// ˆê”Ô‰‚ß‚ÉŒ©‚Â‚©‚Á‚½—LŒø‚ÈƒXƒgƒŠ[ƒ€”Ô†‚ð•Ô‚·B
+// ƒOƒ‹[ƒv“à‚Ì‚·‚×‚Ä‚ÌƒXƒgƒŠ[ƒ€‚ª—LŒø‚Å‚ ‚é‰Â”\«‚à‚ ‚é‚ªAtTVPDSMovie::SelectAudioStream‚ðŽg—p‚µ‚½ê‡AƒOƒ‹[ƒv“à‚Å1‚Â‚¾‚¯‚©—LŒø‚É‚È‚éB
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetEnableAudioStreamNum( long *num )
 {
@@ -788,8 +788,8 @@ void __stdcall tTVPDSMovie::GetEnableAudioStreamNum( long *num )
 	GetEnableStreamNum( num, m_AudioStreamInfo );
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½rï¿½fï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param streamCount : ï¿½rï¿½fï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	ƒrƒfƒIƒXƒgƒŠ[ƒ€”‚ðŽæ“¾‚·‚é
+//! @param streamCount : ƒrƒfƒIƒXƒgƒŠ[ƒ€”‚ð“ü‚ê‚é•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetNumberOfVideoStream( unsigned long *streamCount )
 {
@@ -799,8 +799,8 @@ void __stdcall tTVPDSMovie::GetNumberOfVideoStream( unsigned long *streamCount )
 		*streamCount = m_VideoStreamInfo.size();
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½wï¿½è‚µï¿½ï¿½ï¿½rï¿½fï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½É‚ï¿½ï¿½ï¿½
-//! @param num : ï¿½Lï¿½ï¿½É‚ï¿½ï¿½ï¿½rï¿½fï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½
+//! @brief	  	Žw’è‚µ‚½ƒrƒfƒIƒXƒgƒŠ[ƒ€”Ô†‚ÌƒXƒgƒŠ[ƒ€‚ð—LŒø‚É‚·‚é
+//! @param num : —LŒø‚É‚·‚éƒrƒfƒIƒXƒgƒŠ[ƒ€”Ô†
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SelectVideoStream( unsigned long num )
 {
@@ -809,9 +809,9 @@ void __stdcall tTVPDSMovie::SelectVideoStream( unsigned long num )
 	SelectStream( num, m_VideoStreamInfo );
 }
 //----------------------------------------------------------------------------
-// @brief		ï¿½Lï¿½ï¿½Èƒrï¿½fï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ð“¾‚ï¿½
-// ï¿½ï¿½Ôï¿½ï¿½ß‚ÉŒï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ÈƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ï¿½Ô‚ï¿½ï¿½B
-// ï¿½Oï¿½ï¿½ï¿½[ï¿½vï¿½ï¿½ï¿½Ì‚ï¿½ï¿½×‚Ä‚ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½Å‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚ªï¿½AtTVPDSMovie::SelectAudioStreamï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Aï¿½Oï¿½ï¿½ï¿½[ï¿½vï¿½ï¿½ï¿½ï¿½1ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½É‚È‚ï¿½B
+// @brief		—LŒø‚ÈƒrƒfƒIƒXƒgƒŠ[ƒ€”Ô†‚ð“¾‚é
+// ˆê”Ô‰‚ß‚ÉŒ©‚Â‚©‚Á‚½—LŒø‚ÈƒXƒgƒŠ[ƒ€”Ô†‚ð•Ô‚·B
+// ƒOƒ‹[ƒv“à‚Ì‚·‚×‚Ä‚ÌƒXƒgƒŠ[ƒ€‚ª—LŒø‚Å‚ ‚é‰Â”\«‚à‚ ‚é‚ªAtTVPDSMovie::SelectAudioStream‚ðŽg—p‚µ‚½ê‡AƒOƒ‹[ƒv“à‚Å1‚Â‚¾‚¯‚©—LŒø‚É‚È‚éB
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetEnableVideoStreamNum( long *num )
 {
@@ -820,9 +820,9 @@ void __stdcall tTVPDSMovie::GetEnableVideoStreamNum( long *num )
 	GetEnableStreamNum( num, m_VideoStreamInfo );
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½wï¿½è‚µï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½É‚ï¿½ï¿½ï¿½
-//! @param num : ï¿½Lï¿½ï¿½É‚ï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½
-//! @param si : ï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	Žw’è‚µ‚½ƒXƒgƒŠ[ƒ€”Ô†‚ÌƒXƒgƒŠ[ƒ€‚ð—LŒø‚É‚·‚é
+//! @param num : —LŒø‚É‚·‚éƒXƒgƒŠ[ƒ€”Ô†
+//! @param si : ƒrƒfƒI‚©ƒI[ƒfƒBƒI‚ÌƒXƒgƒŠ[ƒ€î•ñ
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SelectStream( unsigned long num, std::vector<StreamInfo> &si )
 {
@@ -836,9 +836,9 @@ void __stdcall tTVPDSMovie::SelectStream( unsigned long num, std::vector<StreamI
 	}
 }
 //----------------------------------------------------------------------------
-// @brief		ï¿½Lï¿½ï¿½Èƒrï¿½fï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ð“¾‚ï¿½
-//! @param num : ï¿½Lï¿½ï¿½ÈƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ôï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
-//! @param si : ï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½ÌƒXï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½
+// @brief		—LŒø‚ÈƒrƒfƒIƒXƒgƒŠ[ƒ€”Ô†‚ð“¾‚é
+//! @param num : —LŒø‚ÈƒXƒgƒŠ[ƒ€”Ô†‚ð“ü‚ê‚é•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
+//! @param si : ƒrƒfƒI‚©ƒI[ƒfƒBƒI‚ÌƒXƒgƒŠ[ƒ€î•ñ
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetEnableStreamNum( long *num, std::vector<StreamInfo> &si )
 {
@@ -865,8 +865,8 @@ void __stdcall tTVPDSMovie::GetEnableStreamNum( long *num, std::vector<StreamInf
 	}
 }
 //----------------------------------------------------------------------------
-// @brief		ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ð–³Œï¿½É‚ï¿½ï¿½ï¿½
-// MPEG Iï¿½ÌŽï¿½ï¿½Aï¿½ï¿½ï¿½Ì‘ï¿½ï¿½ï¿½Íoï¿½ï¿½ï¿½È‚ï¿½
+// @brief		ƒI[ƒfƒBƒIƒXƒgƒŠ[ƒ€‚ð–³Œø‚É‚·‚é
+// MPEG I‚ÌŽžA‚±‚Ì‘€ì‚Ío—ˆ‚È‚¢
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::DisableAudioStream( void )
 {
@@ -887,57 +887,57 @@ void __stdcall tTVPDSMovie::DisableAudioStream( void )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetMixingBitmap( HDC hdc, RECT *dest, float alpha )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::ResetMixingBitmap()
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetMixingMovieAlpha( float a )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetMixingMovieAlpha( float *a )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::SetMixingMovieBGColor( unsigned long col )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::GetMixingMovieBGColor( unsigned long *col )
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+//! @brief	  	‰½‚à‚µ‚È‚¢B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::PresentVideoImage()
 {
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ROT ( Running Object Table )ï¿½ÉƒOï¿½ï¿½ï¿½tï¿½ï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½B
+//! @brief	  	ROT ( Running Object Table )‚ÉƒOƒ‰ƒt‚ð“o˜^‚·‚éB
 //!
 //! Running Object Table functions: Used to debug. By registering the graph
 //! in the running object table, GraphEdit is able to connect to the running
 //! graph. This code should be removed before the application is shipped in
 //! order to avoid third parties from spying on your graph.
-//! @param		ROTreg : ï¿½oï¿½^I.D.ï¿½Bï¿½È‚ñ‚©Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û‚ï¿½ï¿½Ì‚ï¿½nï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½ÌB@n
-//! 				ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Å‚ï¿½dwROTReg = 0xfedcba98ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½nï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
-//! @return		ï¿½ï¿½ï¿½ï¿½
+//! @param		ROTreg : “o˜^I.D.B‚È‚ñ‚©A‚»‚ê‚Á‚Û‚¢‚Ì‚ð“n‚¹‚Î‚¢‚¢‚ñ‚Å‚È‚¢‚ÌB@n
+//! 				ƒTƒ“ƒvƒ‹‚Å‚ÍdwROTReg = 0xfedcba98‚Æ‚¢‚¤‚Ì‚ð“n‚µ‚Ä‚¢‚éB
+//! @return		³”Û
 //----------------------------------------------------------------------------
 HRESULT __stdcall tTVPDSMovie::AddToROT( DWORD ROTreg )
 {
@@ -964,8 +964,8 @@ HRESULT __stdcall tTVPDSMovie::AddToROT( DWORD ROTreg )
 }
 
 //----------------------------------------------------------------------------
-//! @brief	  	ROT ( Running Object Table )ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½tï¿½Ì“oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
-//! @param		ROTreg : AddToROTï¿½Å“nï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Æ“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½B
+//! @brief	  	ROT ( Running Object Table )‚©‚çƒOƒ‰ƒt‚Ì“o˜^‚ð‰ðœ‚·‚éB
+//! @param		ROTreg : AddToROT‚Å“n‚µ‚½‚Ì‚Æ“¯‚¶•¨‚ð“n‚·B
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSMovie::RemoveFromROT( DWORD ROTreg )
 {
@@ -978,9 +978,9 @@ void __stdcall tTVPDSMovie::RemoveFromROT( DWORD ROTreg )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	1ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ì•ï¿½ï¿½Ï•\ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½Ü‚ï¿½
-//! @param		pAvgTimePerFrame : 1ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ì•ï¿½ï¿½Ï•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-//! @return		ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½h
+//! @brief	  	1ƒtƒŒ[ƒ€‚Ì•½‹Ï•\Ž¦ŽžŠÔ‚ðŽæ“¾‚µ‚Ü‚·
+//! @param		pAvgTimePerFrame : 1ƒtƒŒ[ƒ€‚Ì•½‹Ï•\Ž¦ŽžŠÔ
+//! @return		ƒGƒ‰[ƒR[ƒh
 //----------------------------------------------------------------------------
 HRESULT __stdcall tTVPDSMovie::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
 {
@@ -989,9 +989,9 @@ HRESULT __stdcall tTVPDSMovie::GetAvgTimePerFrame( REFTIME *pAvgTimePerFrame )
 	return Video()->get_AvgTimePerFrame( pAvgTimePerFrame );
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½gï¿½ï¿½ï¿½qï¿½ï¿½ï¿½çƒ€ï¿½[ï¿½rï¿½[ï¿½Ìƒ^ï¿½Cï¿½vï¿½ð”»•Ê‚ï¿½ï¿½Ü‚ï¿½
-//! @param		mt : ï¿½ï¿½ï¿½fï¿½Bï¿½Aï¿½^ï¿½Cï¿½vï¿½ï¿½Ô‚ï¿½ï¿½Ïï¿½ï¿½Ö‚ÌŽQï¿½ï¿½
-//! @param		type : ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ÌŠgï¿½ï¿½ï¿½q
+//! @brief	  	Šg’£Žq‚©‚çƒ€[ƒr[‚Ìƒ^ƒCƒv‚ð”»•Ê‚µ‚Ü‚·
+//! @param		mt : ƒƒfƒBƒAƒ^ƒCƒv‚ð•Ô‚·•Ï”‚Ö‚ÌŽQÆ
+//! @param		type : ƒ€[ƒr[ƒtƒ@ƒCƒ‹‚ÌŠg’£Žq
 //----------------------------------------------------------------------------
 void tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 {
@@ -1020,9 +1020,9 @@ void tTVPDSMovie::ParseVideoType( CMediaType &mt, const wchar_t *type )
 		TVPThrowExceptionMessage(L"Unknown video format extension."); // unknown format
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½gï¿½ï¿½ï¿½qï¿½ï¿½ï¿½çƒ€ï¿½[ï¿½rï¿½[ï¿½ï¿½Windows Media Fileï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê‚ï¿½ï¿½Ü‚ï¿½
-//! @param		type : ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ÌŠgï¿½ï¿½ï¿½q
-//! @return		Windows Media Fileï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+//! @brief	  	Šg’£Žq‚©‚çƒ€[ƒr[‚ªWindows Media File‚©‚Ç‚¤‚©”»•Ê‚µ‚Ü‚·
+//! @param		type : ƒ€[ƒr[ƒtƒ@ƒCƒ‹‚ÌŠg’£Žq
+//! @return		Windows Media File‚©‚Ç‚¤‚©
 //----------------------------------------------------------------------------
 bool tTVPDSMovie::IsWindowsMediaFile( const wchar_t *type ) const
 {
@@ -1037,9 +1037,9 @@ bool tTVPDSMovie::IsWindowsMediaFile( const wchar_t *type ) const
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½fï¿½Bï¿½Aï¿½^ï¿½Cï¿½vï¿½ÌŠJï¿½ï¿½
-//!				IEnumMediaTypesï¿½ÅŽæ“¾ï¿½ï¿½ï¿½ï¿½AM_MEDIA_TYPEï¿½ÍAï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½Åíœï¿½ï¿½ï¿½é‚±ï¿½ï¿½
-//! @param		pmt : IEnumMediaTypesï¿½ÅŽæ“¾ï¿½ï¿½ï¿½ï¿½AM_MEDIA_TYPE
+//! @brief	  	ƒƒfƒBƒAƒ^ƒCƒv‚ÌŠJ•ú
+//!				IEnumMediaTypes‚ÅŽæ“¾‚µ‚½AM_MEDIA_TYPE‚ÍA‚±‚Ìƒƒ\ƒbƒh‚Åíœ‚·‚é‚±‚Æ
+//! @param		pmt : IEnumMediaTypes‚ÅŽæ“¾‚µ‚½AM_MEDIA_TYPE
 //----------------------------------------------------------------------------
 void tTVPDSMovie::UtilDeleteMediaType( AM_MEDIA_TYPE *pmt )
 {
@@ -1068,8 +1068,8 @@ void tTVPDSMovie::UtilDeleteMediaType( AM_MEDIA_TYPE *pmt )
 	CoTaskMemFree((PVOID)pmt);
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½sï¿½ï¿½ï¿½ÉÚ‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½fï¿½Bï¿½Aï¿½^ï¿½Cï¿½vï¿½ï¿½ï¿½fï¿½oï¿½bï¿½Oï¿½oï¿½Í‚É“fï¿½ï¿½
-//! @param		pPin : ï¿½oï¿½Í‘ÎÛ‚Æ‚È‚ï¿½sï¿½ï¿½
+//! @brief	  	ƒsƒ“‚ÉÚ‘±‰Â”\‚ÈƒƒfƒBƒAƒ^ƒCƒv‚ðƒfƒoƒbƒOo—Í‚É“f‚­
+//! @param		pPin : o—Í‘ÎÛ‚Æ‚È‚éƒsƒ“
 //----------------------------------------------------------------------------
 void tTVPDSMovie::DebugOutputPinMediaType( IPin *pPin )
 {
@@ -1093,10 +1093,10 @@ void tTVPDSMovie::DebugOutputPinMediaType( IPin *pPin )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½fï¿½Bï¿½Aï¿½^ï¿½Cï¿½vï¿½ÌŠJï¿½ï¿½
+//! @brief	  	ƒƒfƒBƒAƒ^ƒCƒv‚ÌŠJ•ú
 //!
-//! AM_MEDIA_TYPEï¿½ï¿½ï¿½ÛŽï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½Ì‚Ý‚ï¿½ï¿½Jï¿½ï¿½ï¿½
-//! @param		mt : ï¿½Jï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ÛŽï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½AM_MEDIA_TYPE
+//! AM_MEDIA_TYPE‚ª•ÛŽ‚µ‚Ä‚¢‚éƒf[ƒ^‚Ì‚Ý‚ðŠJ•ú‚·‚é
+//! @param		mt : ŠJ•ú‚·‚éƒf[ƒ^‚ð•ÛŽ‚µ‚Ä‚¢‚éAM_MEDIA_TYPE
 //----------------------------------------------------------------------------
 void tTVPDSMovie::UtilFreeMediaType(AM_MEDIA_TYPE& mt)
 {
@@ -1115,10 +1115,10 @@ void tTVPDSMovie::UtilFreeMediaType(AM_MEDIA_TYPE& mt)
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Oï¿½ï¿½ï¿½tï¿½ï¿½ï¿½ï¿½ï¿½çƒŒï¿½ï¿½ï¿½_ï¿½[ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½Tï¿½ï¿½ï¿½ÄAï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		mediatype : ï¿½ÎÛ‚Æ‚ï¿½ï¿½éƒŒï¿½ï¿½ï¿½_ï¿½[ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½Tï¿½|ï¿½[ï¿½gï¿½ï¿½ï¿½éƒï¿½fï¿½Bï¿½Aï¿½^ï¿½Cï¿½v
-//! @param		ppFilter : ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½[ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ó‚¯Žï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½^ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
-//! @return		ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½h
+//! @brief	  	ƒOƒ‰ƒt“à‚©‚çƒŒƒ“ƒ_[ƒtƒBƒ‹ƒ^‚ð’T‚µ‚ÄAŽæ“¾‚·‚é
+//! @param		mediatype : ‘ÎÛ‚Æ‚·‚éƒŒƒ“ƒ_[ƒtƒBƒ‹ƒ^‚ªƒTƒ|[ƒg‚·‚éƒƒfƒBƒAƒ^ƒCƒv
+//! @param		ppFilter : Œ©‚Â‚©‚Á‚½ƒŒƒ“ƒ_[ƒtƒBƒ‹ƒ^‚ðŽó‚¯Žæ‚éƒ|ƒCƒ“ƒ^‚Ö‚Ìƒ|ƒCƒ“ƒ^
+//! @return		ƒGƒ‰[ƒR[ƒh
 //----------------------------------------------------------------------------
 HRESULT tTVPDSMovie::FindRenderer( const GUID *mediatype, IBaseFilter **ppFilter)
 {
@@ -1211,21 +1211,21 @@ HRESULT tTVPDSMovie::FindRenderer( const GUID *mediatype, IBaseFilter **ppFilter
 	return hr;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Oï¿½ï¿½ï¿½tï¿½ï¿½ï¿½ï¿½ï¿½ï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½[ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½Tï¿½ï¿½ï¿½ÄAï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		ppFilter : ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½[ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ó‚¯Žï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½^ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
-//! @return		ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½h
+//! @brief	  	ƒOƒ‰ƒt“à‚©‚çƒrƒfƒIƒŒƒ“ƒ_[ƒtƒBƒ‹ƒ^‚ð’T‚µ‚ÄAŽæ“¾‚·‚é
+//! @param		ppFilter : Œ©‚Â‚©‚Á‚½ƒrƒfƒIƒŒƒ“ƒ_[ƒtƒBƒ‹ƒ^‚ðŽó‚¯Žæ‚éƒ|ƒCƒ“ƒ^‚Ö‚Ìƒ|ƒCƒ“ƒ^
+//! @return		ƒGƒ‰[ƒR[ƒh
 //----------------------------------------------------------------------------
 HRESULT tTVPDSMovie::FindVideoRenderer( IBaseFilter **ppFilter)
 {
 	return FindRenderer( &MEDIATYPE_Video, ppFilter);
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		ppFilter : ï¿½sï¿½ï¿½ï¿½ï¿½ÛŽï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½tï¿½Bï¿½ï¿½ï¿½^
-//! @param		dirrequired : ï¿½sï¿½ï¿½ï¿½Ì•ï¿½ï¿½ INPUT or OUTPUT
-//! @param		iNum : ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ì”Ôï¿½ 0ï¿½`
-//! @param		ppPin : ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ó‚¯Žï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½^ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
-//! @return		ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½h
+//! @brief	  	ƒsƒ“‚ðŽæ“¾‚·‚é
+//! @param		ppFilter : ƒsƒ“‚ð•ÛŽ‚µ‚Ä‚¢‚éƒtƒBƒ‹ƒ^
+//! @param		dirrequired : ƒsƒ“‚Ì•ûŒü INPUT or OUTPUT
+//! @param		iNum : Žæ“¾‚µ‚½‚¢ƒsƒ“‚Ì”Ô† 0`
+//! @param		ppPin : ƒsƒ“‚ðŽó‚¯Žæ‚éƒ|ƒCƒ“ƒ^‚Ö‚Ìƒ|ƒCƒ“ƒ^
+//! @return		ƒGƒ‰[ƒR[ƒh
 //----------------------------------------------------------------------------
 HRESULT tTVPDSMovie::GetPin( IBaseFilter * pFilter, PIN_DIRECTION dirrequired, int iNum, IPin **ppPin)
 {
@@ -1263,10 +1263,10 @@ HRESULT tTVPDSMovie::GetPin( IBaseFilter * pFilter, PIN_DIRECTION dirrequired, i
 	return hr;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½Íƒsï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		ppFilter : ï¿½sï¿½ï¿½ï¿½ï¿½ÛŽï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½tï¿½Bï¿½ï¿½ï¿½^
-//! @param		nPin : ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ì”Ôï¿½ 0ï¿½`
-//! @return		ï¿½sï¿½ï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	“ü—Íƒsƒ“‚ðŽæ“¾‚·‚é
+//! @param		ppFilter : ƒsƒ“‚ð•ÛŽ‚µ‚Ä‚¢‚éƒtƒBƒ‹ƒ^
+//! @param		nPin : Žæ“¾‚µ‚½‚¢ƒsƒ“‚Ì”Ô† 0`
+//! @return		ƒsƒ“‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 IPin *tTVPDSMovie::GetInPin( IBaseFilter * pFilter, int nPin )
 {
@@ -1275,10 +1275,10 @@ IPin *tTVPDSMovie::GetInPin( IBaseFilter * pFilter, int nPin )
 	return pComPin;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½oï¿½Íƒsï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		ppFilter : ï¿½sï¿½ï¿½ï¿½ï¿½ÛŽï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½tï¿½Bï¿½ï¿½ï¿½^
-//! @param		nPin : ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ì”Ôï¿½ 0ï¿½`
-//! @return		ï¿½sï¿½ï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
+//! @brief	  	o—Íƒsƒ“‚ðŽæ“¾‚·‚é
+//! @param		ppFilter : ƒsƒ“‚ð•ÛŽ‚µ‚Ä‚¢‚éƒtƒBƒ‹ƒ^
+//! @param		nPin : Žæ“¾‚µ‚½‚¢ƒsƒ“‚Ì”Ô† 0`
+//! @return		ƒsƒ“‚Ö‚Ìƒ|ƒCƒ“ƒ^
 //----------------------------------------------------------------------------
 IPin *tTVPDSMovie::GetOutPin( IBaseFilter * pFilter, int nPin )
 {
@@ -1287,11 +1287,11 @@ IPin *tTVPDSMovie::GetOutPin( IBaseFilter * pFilter, int nPin )
     return pComPin;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ÛŽï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-//! @param		ppFilter : ï¿½sï¿½ï¿½ï¿½ï¿½ÛŽï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½tï¿½Bï¿½ï¿½ï¿½^
-//! @param		pulInPins : ï¿½ï¿½Íƒsï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ó‚¯Žï¿½é‚½ï¿½ß‚Ì•Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
-//! @param		pulOutPins : ï¿½oï¿½Íƒsï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ó‚¯Žï¿½é‚½ï¿½ß‚Ì•Ïï¿½ï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^
-//! @return		ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½h
+//! @brief	  	ƒtƒBƒ‹ƒ^‚ª•ÛŽ‚µ‚Ä‚¢‚éƒsƒ“‚Ì”‚ðŽæ“¾‚·‚é
+//! @param		ppFilter : ƒsƒ“‚ð•ÛŽ‚µ‚Ä‚¢‚éƒtƒBƒ‹ƒ^
+//! @param		pulInPins : “ü—Íƒsƒ“‚Ì”‚ðŽó‚¯Žæ‚é‚½‚ß‚Ì•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
+//! @param		pulOutPins : o—Íƒsƒ“‚Ì”‚ðŽó‚¯Žæ‚é‚½‚ß‚Ì•Ï”‚Ö‚Ìƒ|ƒCƒ“ƒ^
+//! @return		ƒGƒ‰[ƒR[ƒh
 //----------------------------------------------------------------------------
 HRESULT tTVPDSMovie::CountFilterPins(IBaseFilter *pFilter, ULONG *pulInPins, ULONG *pulOutPins)
 {
@@ -1331,9 +1331,9 @@ HRESULT tTVPDSMovie::CountFilterPins(IBaseFilter *pFilter, ULONG *pulInPins, ULO
 }
 
 //----------------------------------------------------------------------------
-//! @brief	  	MPEG1 ï¿½pï¿½ÌƒOï¿½ï¿½ï¿½tï¿½ï¿½ï¿½è“®ï¿½Å\ï¿½zï¿½ï¿½ï¿½ï¿½
-//! @param		pRdr : ï¿½Oï¿½ï¿½ï¿½tï¿½ÉŽQï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½éƒŒï¿½ï¿½ï¿½_ï¿½[ï¿½tï¿½Bï¿½ï¿½ï¿½^
-//! @param		pSrc : ï¿½Oï¿½ï¿½ï¿½tï¿½ÉŽQï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½\ï¿½[ï¿½Xï¿½tï¿½Bï¿½ï¿½ï¿½^
+//! @brief	  	MPEG1 —p‚ÌƒOƒ‰ƒt‚ðŽè“®‚Å\’z‚·‚é
+//! @param		pRdr : ƒOƒ‰ƒt‚ÉŽQ‰Á‚µ‚Ä‚¢‚éƒŒƒ“ƒ_[ƒtƒBƒ‹ƒ^
+//! @param		pSrc : ƒOƒ‰ƒt‚ÉŽQ‰Á‚µ‚Ä‚¢‚éƒ\[ƒXƒtƒBƒ‹ƒ^
 //----------------------------------------------------------------------------
 void tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 {
@@ -1423,9 +1423,9 @@ void tTVPDSMovie::BuildMPEGGraph( IBaseFilter *pRdr, IBaseFilter *pSrc )
 	return;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	WMV ï¿½pï¿½ÌƒOï¿½ï¿½ï¿½tï¿½ï¿½ï¿½è“®ï¿½Å\ï¿½zï¿½ï¿½ï¿½ï¿½
-//! @param		pRdr : ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½[ï¿½tï¿½Bï¿½ï¿½ï¿½^
-//! @param		pStream : ï¿½\ï¿½[ï¿½Xï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ (WMVï¿½Å‚ï¿½ï¿½é‚±ï¿½ï¿½)
+//! @brief	  	WMV —p‚ÌƒOƒ‰ƒt‚ðŽè“®‚Å\’z‚·‚é
+//! @param		pRdr : ƒŒƒ“ƒ_[ƒtƒBƒ‹ƒ^
+//! @param		pStream : ƒ\[ƒXƒXƒgƒŠ[ƒ€ (WMV‚Å‚ ‚é‚±‚Æ)
 //----------------------------------------------------------------------------
 void tTVPDSMovie::BuildWMVGraph( IBaseFilter *pRdr, IStream *pStream )
 {
@@ -1482,7 +1482,7 @@ void tTVPDSMovie::BuildWMVGraph( IBaseFilter *pRdr, IStream *pStream )
 
 	// Connect to decoder filter
 	if( FAILED(hr = ConnectFilters( pWMSource, pWMADec )) )
-	{	// ï¿½Iï¿½[ï¿½fï¿½Bï¿½Iï¿½ï¿½ï¿½È‚ï¿½
+	{	// ƒI[ƒfƒBƒI‚ª‚È‚¢
 		if( FAILED(hr = GraphBuilder()->RemoveFilter( pWMADec)) )
 			ThrowDShowException(L"Failed to call GraphBuilder()->RemoveFilter( pDDSRenderer).", hr);
 		return;
@@ -1498,10 +1498,10 @@ void tTVPDSMovie::BuildWMVGraph( IBaseFilter *pRdr, IStream *pStream )
 
 }
 //----------------------------------------------------------------------------
-//! @brief	  	2ï¿½Â‚Ìƒtï¿½Bï¿½ï¿½ï¿½^ï¿½[ï¿½ï¿½Ú‘ï¿½ï¿½ï¿½ï¿½ï¿½
-//! @param		pFilterUpstream : ï¿½Aï¿½bï¿½vï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½tï¿½Bï¿½ï¿½ï¿½^
-//! @param		pFilterDownstream : ï¿½_ï¿½Eï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½tï¿½Bï¿½ï¿½ï¿½^
-//! @return		ï¿½Gï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½h
+//! @brief	  	2‚Â‚ÌƒtƒBƒ‹ƒ^[‚ðÚ‘±‚·‚é
+//! @param		pFilterUpstream : ƒAƒbƒvƒXƒgƒŠ[ƒ€ƒtƒBƒ‹ƒ^
+//! @param		pFilterDownstream : ƒ_ƒEƒ“ƒXƒgƒŠ[ƒ€ƒtƒBƒ‹ƒ^
+//! @return		ƒGƒ‰[ƒR[ƒh
 //----------------------------------------------------------------------------
 HRESULT tTVPDSMovie::ConnectFilters( IBaseFilter* pFilterUpstream, IBaseFilter* pFilterDownstream )
 {

@@ -64,66 +64,66 @@ enum tTVPMouseCursorState
 class iTVPWindow
 {
 public:
-	//! @brief	ï¿½ï¿½ï¿½æ‘œï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½ÏXï¿½ï¿½ï¿½ê‚½
-	//! @note	ï¿½`ï¿½ï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½æ‘œï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½ÏXï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½Æ‚ï¿½Ê’mï¿½ï¿½ï¿½é‚½ï¿½ß‚ÉŒÄ‚ÔB
-	//!			ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ iTVPDrawDevice::GetSrcSize() ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½ÄŒï¿½ï¿½æ‘œï¿½ï¿½
-	//!			ï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Yï¿½[ï¿½ï¿½ï¿½È‚Ç‚ÌŒvï¿½Zï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ 
-	//!			iTVPDrawDevice::SetTargetWindow() ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½B
+	//! @brief	Œ³‰æ‘œ‚ÌƒTƒCƒY‚ª•ÏX‚³‚ê‚½
+	//! @note	•`‰æƒfƒoƒCƒX‚ªAŒ³‰æ‘œ‚ÌƒTƒCƒY‚ª•ÏX‚³‚ê‚½‚±‚Æ‚ð’Ê’m‚·‚é‚½‚ß‚ÉŒÄ‚ÔB
+	//!			ƒEƒBƒ“ƒhƒE‚Í iTVPDrawDevice::GetSrcSize() ‚ðŒÄ‚Ño‚µ‚ÄŒ³‰æ‘œ‚Ì
+	//!			ƒTƒCƒY‚ðŽæ“¾‚µ‚½ŒãAƒY[ƒ€‚È‚Ç‚ÌŒvŽZ‚ðs‚Á‚Ä‚©‚ç 
+	//!			iTVPDrawDevice::SetTargetWindow() ‚ðŒÄ‚Ño‚·B
 	virtual void TJS_INTF_METHOD NotifySrcResize() = 0;
 
-	//! @brief		ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ÌŒ`ï¿½ï¿½ï¿½ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½É–ß‚ï¿½
-	//! @note		ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ÌŒ`ï¿½ï¿½ï¿½ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì•ï¿½ï¿½É–ß‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÉŒÄ‚ï¿½
+	//! @brief		ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌŒ`ó‚ðƒfƒtƒHƒ‹ƒg‚É–ß‚·
+	//! @note		ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌŒ`ó‚ðƒfƒtƒHƒ‹ƒg‚Ì•¨‚É–ß‚µ‚½‚¢ê‡‚ÉŒÄ‚Ô
 	virtual void TJS_INTF_METHOD SetDefaultMouseCursor() = 0; // set window mouse cursor to default
 
-	//! @brief		ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ÌŒ`ï¿½ï¿½ï¿½Ý’è‚·ï¿½ï¿½
-	//! @param		cursor		ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½`ï¿½ï¿½Ôï¿½
+	//! @brief		ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌŒ`ó‚ðÝ’è‚·‚é
+	//! @param		cursor		ƒ}ƒEƒXƒJ[ƒ\ƒ‹Œ`ó”Ô†
 	virtual void TJS_INTF_METHOD SetMouseCursor(tjs_int cursor) = 0; // set window mouse cursor
 
-	//! @brief		ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ÌˆÊ’uï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-	//! @param		x			ï¿½`ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½Ìï¿½ï¿½Wï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½xï¿½Ê’u
-	//! @param		y			ï¿½`ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½Ìï¿½ï¿½Wï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½yï¿½Ê’u
+	//! @brief		ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌˆÊ’u‚ðŽæ“¾‚·‚é
+	//! @param		x			•`‰æ‹éŒ`“à‚ÌÀ•W‚É‚¨‚¯‚éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌxˆÊ’u
+	//! @param		y			•`‰æ‹éŒ`“à‚ÌÀ•W‚É‚¨‚¯‚éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌyˆÊ’u
 	virtual void TJS_INTF_METHOD GetCursorPos(tjs_int &x, tjs_int &y) = 0;
 		// get mouse cursor position in primary layer's coordinates
 
-	//! @brief		ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ÌˆÊ’uï¿½ï¿½Ý’è‚·ï¿½ï¿½
-	//! @param		x			ï¿½`ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½Ìï¿½ï¿½Wï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½xï¿½Ê’u
-	//! @param		y			ï¿½`ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½Ìï¿½ï¿½Wï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½yï¿½Ê’u
+	//! @brief		ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌˆÊ’u‚ðÝ’è‚·‚é
+	//! @param		x			•`‰æ‹éŒ`“à‚ÌÀ•W‚É‚¨‚¯‚éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌxˆÊ’u
+	//! @param		y			•`‰æ‹éŒ`“à‚ÌÀ•W‚É‚¨‚¯‚éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌyˆÊ’u
 	virtual void TJS_INTF_METHOD SetCursorPos(tjs_int x, tjs_int y) = 0;
 
-	//! @brief		ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ìƒ}ï¿½Eï¿½Xï¿½Lï¿½ï¿½ï¿½vï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	//! @note		ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ìƒ}ï¿½Eï¿½Xï¿½Lï¿½ï¿½ï¿½vï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×‚ï¿½ï¿½ê‡ï¿½ÉŒÄ‚ÔB
-	//! @note		ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½Å‚ÍŠï¿½{ï¿½Iï¿½É‚ï¿½ ::ReleaseCapture() ï¿½È‚Ç‚ï¿½
-	//!				ï¿½}ï¿½Eï¿½Xï¿½ÌƒLï¿½ï¿½ï¿½vï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½ï¿½é‚±ï¿½ÆB
+	//! @brief		ƒEƒBƒ“ƒhƒE‚Ìƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒ‚ð‰ð•ú‚·‚é
+	//! @note		ƒEƒBƒ“ƒhƒE‚Ìƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒ‚ð‰ð•ú‚·‚×‚«ê‡‚ÉŒÄ‚ÔB
+	//! @note		‚±‚Ìƒƒ\ƒbƒh‚Å‚ÍŠî–{“I‚É‚Í ::ReleaseCapture() ‚È‚Ç‚Å
+	//!				ƒ}ƒEƒX‚ÌƒLƒƒƒvƒ`ƒƒ‚ðŠJ•ú‚·‚é‚±‚ÆB
 	virtual void TJS_INTF_METHOD WindowReleaseCapture() = 0;
 
-	//! @brief		ï¿½cï¿½[ï¿½ï¿½ï¿½`ï¿½bï¿½vï¿½qï¿½ï¿½ï¿½gï¿½ï¿½Ý’è‚·ï¿½ï¿½
-	//! @param		text		ï¿½qï¿½ï¿½ï¿½gï¿½eï¿½Lï¿½Xï¿½g(ï¿½ó•¶Žï¿½ï¿½ï¿½Ìê‡ï¿½Íƒqï¿½ï¿½ï¿½gï¿½Ì•\ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+	//! @brief		ƒc[ƒ‹ƒ`ƒbƒvƒqƒ“ƒg‚ðÝ’è‚·‚é
+	//! @param		text		ƒqƒ“ƒgƒeƒLƒXƒg(‹ó•¶Žš—ñ‚Ìê‡‚Íƒqƒ“ƒg‚Ì•\Ž¦‚ðƒLƒƒƒ“ƒZƒ‹‚·‚é)
 	virtual void TJS_INTF_METHOD SetHintText(const ttstr & text) = 0;
 
-	//! @brief		ï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½ÌÝ’ï¿½
-	//! @param		layer		ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ÌŠÜ‚Ü‚ï¿½éƒŒï¿½Cï¿½ï¿½
-	//! @param		x			ï¿½`ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½Ìï¿½ï¿½Wï¿½É‚ï¿½ï¿½ï¿½ï¿½é’ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½ï¿½xï¿½Ê’u
-	//! @param		y			ï¿½`ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½Ìï¿½ï¿½Wï¿½É‚ï¿½ï¿½ï¿½ï¿½é’ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½ï¿½yï¿½Ê’u
+	//! @brief		’Ž‹ƒ|ƒCƒ“ƒg‚ÌÝ’è
+	//! @param		layer		ƒtƒHƒ“ƒgî•ñ‚ÌŠÜ‚Ü‚ê‚éƒŒƒCƒ„
+	//! @param		x			•`‰æ‹éŒ`“à‚ÌÀ•W‚É‚¨‚¯‚é’Ž‹ƒ|ƒCƒ“ƒg‚ÌxˆÊ’u
+	//! @param		y			•`‰æ‹éŒ`“à‚ÌÀ•W‚É‚¨‚¯‚é’Ž‹ƒ|ƒCƒ“ƒg‚ÌyˆÊ’u
 	virtual void TJS_INTF_METHOD SetAttentionPoint(tTJSNI_BaseLayer *layer,
 		tjs_int l, tjs_int t) = 0;
 
-	//! @brief		ï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½Ì‰ï¿½ï¿½ï¿½
+	//! @brief		’Ž‹ƒ|ƒCƒ“ƒg‚Ì‰ðœ
 	virtual void TJS_INTF_METHOD DisableAttentionPoint() = 0;
 
-	//! @brief		IMEï¿½ï¿½ï¿½[ï¿½hï¿½ÌÝ’ï¿½
-	//! @param		mode		IMEï¿½ï¿½ï¿½[ï¿½h
+	//! @brief		IMEƒ‚[ƒh‚ÌÝ’è
+	//! @param		mode		IMEƒ‚[ƒh
 	virtual void TJS_INTF_METHOD SetImeMode(tTVPImeMode mode) = 0;
 
-	//! @brief		IMEï¿½ï¿½ï¿½[ï¿½hï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g
+	//! @brief		IMEƒ‚[ƒh‚ÌƒŠƒZƒbƒg
 	virtual void TJS_INTF_METHOD ResetImeMode() = 0;
 
-	//! @brief		iTVPWindow::Update() ï¿½ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	//! @note		ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½É‘Î‚ï¿½ï¿½ï¿½ iTVPWindow::Update() ï¿½ï¿½ï¿½ï¿½ï¿½Ì“Kï¿½ï¿½ï¿½Èƒ^ï¿½Cï¿½~ï¿½ï¿½ï¿½Oï¿½ï¿½
-	//!				ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
-	//!				iTVPWindow::Update() ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Å‚Í‰ï¿½ï¿½ï¿½ RequestUpdate() ï¿½ï¿½
-	//!				ï¿½Ä‚ï¿½Å‚ï¿½ï¿½ï¿½Ê‚Í“ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½Bï¿½Ü‚ï¿½ï¿½Aï¿½ï¿½x iTVPWindow::Update() ï¿½ï¿½
-	//!				ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½ÆAï¿½Ä‚ï¿½ RequestUpdate() ï¿½ï¿½ï¿½Ä‚Î‚È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	//!				iTVPWindow::Update() ï¿½ÍŒÄ‚Î‚ï¿½È‚ï¿½ï¿½B
+	//! @brief		iTVPWindow::Update() ‚ÌŒÄ‚Ño‚µ‚ð—v‹‚·‚é
+	//! @note		ƒEƒBƒ“ƒhƒE‚É‘Î‚µ‚Ä iTVPWindow::Update() ‚ðŽŸ‚Ì“K“–‚Èƒ^ƒCƒ~ƒ“ƒO‚Å
+	//!				ŒÄ‚Ño‚·‚±‚Æ‚ð—v‹‚·‚éB
+	//!				iTVPWindow::Update() ‚ªŒÄ‚Ño‚³‚ê‚é‚Ü‚Å‚Í‰½‰ñ RequestUpdate() ‚ð
+	//!				ŒÄ‚ñ‚Å‚àŒø‰Ê‚Í“¯‚¶‚Å‚ ‚éB‚Ü‚½Aˆê“x iTVPWindow::Update() ‚ª
+	//!				ŒÄ‚Ño‚³‚ê‚é‚ÆAÄ‚Ñ RequestUpdate() ‚ðŒÄ‚Î‚È‚¢ŒÀ‚è‚Í
+	//!				iTVPWindow::Update() ‚ÍŒÄ‚Î‚ê‚È‚¢B
 	virtual void TJS_INTF_METHOD RequestUpdate() = 0;
 };
 //---------------------------------------------------------------------------

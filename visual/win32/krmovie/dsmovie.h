@@ -28,9 +28,9 @@
 class CIStreamProxy;
 class CIStreamReader;
 //----------------------------------------------------------------------------
-//! @brief DirectShowï¿½Nï¿½ï¿½ï¿½X
+//! @brief DirectShowƒNƒ‰ƒX
 //!
-//! ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½Aï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½ÌŠï¿½ï¿½Nï¿½ï¿½ï¿½X
+//! ƒŒƒCƒ„[•`‰æAƒI[ƒo[ƒŒƒC‚ÌŠî’êƒNƒ‰ƒX
 //----------------------------------------------------------------------------
 class tTVPDSMovie : public iTVPVideoOverlay
 {
@@ -41,7 +41,7 @@ protected:
 	bool		Shutdown;
 	RECT		Rect;
 
-	DWORD		m_dwROTReg;	//!< ï¿½lï¿½Í‚ï¿½ï¿½Ô‚ï¿½È‚ï¿½ï¿½æ‚¤ï¿½É“Kï¿½Ø‚È•ï¿½ï¿½É‚ï¿½ï¿½é‚±ï¿½ï¿½
+	DWORD		m_dwROTReg;	//!< ’l‚Í‚©‚Ô‚ç‚È‚¢‚æ‚¤‚É“KØ‚È•¨‚É‚·‚é‚±‚Æ
 	bool		m_RegisteredROT;
 
 	CIStreamProxy			*m_Proxy;
@@ -64,8 +64,8 @@ protected:
 	std::vector<StreamInfo>	m_AudioStreamInfo;
 	std::vector<StreamInfo>	m_VideoStreamInfo;
 	//----------------------------------------------------------------------------
-	//! @brief	  	IMediaSeekingï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-	//! @return		IMediaSeekingï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½X
+	//! @brief	  	IMediaSeeking‚ğæ“¾‚·‚é
+	//! @return		IMediaSeekingƒCƒ“ƒ^[ƒtƒFƒCƒX
 	//----------------------------------------------------------------------------
 	IMediaSeeking *MediaSeeking()
 	{
@@ -75,8 +75,8 @@ protected:
 		return m_MediaSeeking;
 	}
 	//----------------------------------------------------------------------------
-	//! @brief	  	IMediaPositionï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-	//! @return		IMediaPositionï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½X
+	//! @brief	  	IMediaPosition‚ğæ“¾‚·‚é
+	//! @return		IMediaPositionƒCƒ“ƒ^[ƒtƒFƒCƒX
 	//----------------------------------------------------------------------------
 	IMediaPosition *Position()
 	{
@@ -84,8 +84,8 @@ protected:
 		return m_MediaPosition;
 	}
 	//----------------------------------------------------------------------------
-	//! @brief	  	IMediaControlï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-	//! @return		IMediaControlï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½X
+	//! @brief	  	IMediaControl‚ğæ“¾‚·‚é
+	//! @return		IMediaControlƒCƒ“ƒ^[ƒtƒFƒCƒX
 	//----------------------------------------------------------------------------
 	IMediaControl *Controller()
 	{ 
@@ -93,8 +93,8 @@ protected:
 		return m_MediaControl;
 	}
 	//----------------------------------------------------------------------------
-	//! @brief	  	IMediaEventExï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-	//! @return		IMediaEventExï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½X
+	//! @brief	  	IMediaEventEx‚ğæ“¾‚·‚é
+	//! @return		IMediaEventExƒCƒ“ƒ^[ƒtƒFƒCƒX
 	//----------------------------------------------------------------------------
 	IMediaEventEx *Event()
 	{
@@ -102,8 +102,8 @@ protected:
 		return m_MediaEventEx;
 	}
 	//----------------------------------------------------------------------------
-	//! @brief	  	IGraphBuilderï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-	//! @return		IGraphBuilderï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½X
+	//! @brief	  	IGraphBuilder‚ğæ“¾‚·‚é
+	//! @return		IGraphBuilderƒCƒ“ƒ^[ƒtƒFƒCƒX
 	//----------------------------------------------------------------------------
 	IGraphBuilder *GraphBuilder()
 	{
@@ -111,8 +111,8 @@ protected:
 		return m_GraphBuilder;
 	}
 	//----------------------------------------------------------------------------
-	//! @brief	  	IBasicVideoï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-	//! @return		IBasicVideoï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½X
+	//! @brief	  	IBasicVideo‚ğæ“¾‚·‚é
+	//! @return		IBasicVideoƒCƒ“ƒ^[ƒtƒFƒCƒX
 	//----------------------------------------------------------------------------
 	IBasicVideo *Video()
 	{
@@ -120,10 +120,10 @@ protected:
 		return m_BasicVideo;
 	}
 	//----------------------------------------------------------------------------
-	//! @brief	  	IBasicAudioï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
+	//! @brief	  	IBasicAudio‚ğæ“¾‚·‚é
 	//!
-	//! Audioï¿½Í‘ï¿½ï¿½İ‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅANULLï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½é‚±ï¿½ï¿½
-	//! @return		IBasicAudioï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½X
+	//! Audio‚Í‘¶İ‚µ‚È‚¢ê‡‚à‚ ‚é‚Ì‚ÅANULL‚©‚Ç‚¤‚©Šm”F‚µ‚Ä‚©‚çg—p‚·‚é‚±‚Æ
+	//! @return		IBasicAudioƒCƒ“ƒ^[ƒtƒFƒCƒX
 	//----------------------------------------------------------------------------
 	IBasicAudio *Audio()
 	{
@@ -131,10 +131,10 @@ protected:
 		return m_BasicAudio;
 	}
 	//----------------------------------------------------------------------------
-	//! @brief	  	IAMStreamSelectï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
+	//! @brief	  	IAMStreamSelect‚ğæ“¾‚·‚é
 	//!
-	//! Audioï¿½ï¿½ï¿½Ü‚ï¿½MPEGï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Å‚Ì‚İgï¿½pï¿½ÂBNULLï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½é‚±ï¿½ÆB
-	//! @return		IAMStreamSelectï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½X
+	//! Audio‚ğŠÜ‚ŞMPEGƒtƒ@ƒCƒ‹‚Å‚Ì‚İg—p‰ÂBNULL‚©‚Ç‚¤‚©Šm”F‚µ‚Ä‚©‚çg—p‚·‚é‚±‚ÆB
+	//! @return		IAMStreamSelectƒCƒ“ƒ^[ƒtƒFƒCƒX
 	//----------------------------------------------------------------------------
 	IAMStreamSelect *StreamSelect()
 	{
@@ -143,16 +143,16 @@ protected:
 
 	//----------------------------------------------------------------------------
 	//! @brief	  	BigEndian <-> LittleEndian
-	//! @param		l : ï¿½ÏŠï¿½ï¿½O
-	//! @return		ï¿½ÏŠï¿½ï¿½ï¿½
+	//! @param		l : •ÏŠ·‘O
+	//! @return		•ÏŠ·Œã
 	//----------------------------------------------------------------------------
 	inline unsigned long ChangeEndian32(unsigned long l)
 	{
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)
-		return _byteswap_ulong(l);	// VC7.0ï¿½È~
+		return _byteswap_ulong(l);	// VC7.0ˆÈ~
 #else
 #	if 1
-		// ï¿½xï¿½^ï¿½Éï¿½ï¿½ï¿½
+		// ƒxƒ^‚É‘‚­
 		unsigned long result;
 		unsigned char *ps=(unsigned char *)&l;
 		unsigned char *pd=(unsigned char *)&result;
@@ -162,7 +162,7 @@ protected:
 		pd[3] = ps[0];
 		return result;
 #	else
-		// ï¿½eï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½í‚¸ï¿½ï¿½
+		// ƒeƒ“ƒ|ƒ‰ƒŠg‚í‚¸‚É
 		register unsigned char *p=(unsigned char *)&l;
 		p[0]^=p[3];
 		p[3]^=p[0];

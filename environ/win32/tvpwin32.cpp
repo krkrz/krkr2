@@ -196,7 +196,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		if(TVPCheckAbout()) return 0; // version information dialog box;
 
-		Application->Title = "ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½";
+		Application->Title = "‹g—¢‹g—¢";
 		Application->CreateForm(__classid(TTVPMainForm), &TVPMainForm);
 		TVPLoadPluigins(); // load plugin module *.tpm
 		if(TVPProjectDirSelected) TVPInitializeStartupScript();

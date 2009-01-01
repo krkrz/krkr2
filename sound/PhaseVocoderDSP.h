@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 /*
-	Risa [ï¿½è‚³]      alias ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½3 [kirikiri-3]
+	Risa [‚è‚³]      alias ‹g—¢‹g—¢3 [kirikiri-3]
 	 stands for "Risa Is a Stagecraft Architecture"
 	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
@@ -8,7 +8,7 @@
 */
 //---------------------------------------------------------------------------
 //! @file
-//! @brief Phase Vocoder ï¿½ÌŽï¿½ï¿½ï¿½
+//! @brief Phase Vocoder ‚ÌŽÀ‘•
 //---------------------------------------------------------------------------
 #ifndef RisaPhaseVocoderH
 #define RisaPhaseVocoderH
@@ -16,147 +16,147 @@
 #include "RingBuffer.h"
 
 //---------------------------------------------------------------------------
-//! @brief Phase Vocoder DSP ï¿½Nï¿½ï¿½ï¿½X
+//! @brief Phase Vocoder DSP ƒNƒ‰ƒX
 //---------------------------------------------------------------------------
 class tRisaPhaseVocoderDSP
 {
 protected:
-	float ** AnalWork; //!< ï¿½ï¿½ï¿½(Analyze)ï¿½pï¿½oï¿½bï¿½tï¿½@(FrameSizeï¿½ï¿½) ï¿½ï¿½ï¿½Oï¿½ÅÎ‚ï¿½È‚ï¿½ï¿½æ‚¤ï¿½ï¿½
-	float ** SynthWork; //!< ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½Æƒoï¿½bï¿½tï¿½@(FrameSize)
-	float ** LastAnalPhase; //!< ï¿½Oï¿½ï¿½ï¿½ÍŽï¿½ï¿½ÌŠeï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½oï¿½ï¿½ï¿½hï¿½ÌˆÊ‘ï¿½ (ï¿½eï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½FrameSize/2ï¿½ï¿½)
-	float ** LastSynthPhase; //!< ï¿½Oï¿½ñ‡ï¿½ï¿½ï¿½ï¿½ÌŠeï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½oï¿½ï¿½ï¿½hï¿½ÌˆÊ‘ï¿½ (ï¿½eï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½FrameSize/2ï¿½ï¿½)
+	float ** AnalWork; //!< ‰ðÍ(Analyze)—pƒoƒbƒtƒ@(FrameSizeŒÂ) –¼‘O‚ÅÎ‚í‚È‚¢‚æ‚¤‚É
+	float ** SynthWork; //!< ‡¬—pì‹Æƒoƒbƒtƒ@(FrameSize)
+	float ** LastAnalPhase; //!< ‘O‰ñ‰ðÍŽž‚ÌŠeƒtƒBƒ‹ƒ^ƒoƒ“ƒh‚ÌˆÊ‘Š (Šeƒ`ƒƒƒ“ƒlƒ‹‚²‚Æ‚ÉFrameSize/2ŒÂ)
+	float ** LastSynthPhase; //!< ‘O‰ñ‡¬Žž‚ÌŠeƒtƒBƒ‹ƒ^ƒoƒ“ƒh‚ÌˆÊ‘Š (Šeƒ`ƒƒƒ“ƒlƒ‹‚²‚Æ‚ÉFrameSize/2ŒÂ)
 
-	int * FFTWorkIp; //!< rdft ï¿½É“nï¿½ï¿½ ip ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^
-	float * FFTWorkW; //!< rdft ï¿½É“nï¿½ï¿½ w ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^
-	float * InputWindow; //!< ï¿½ï¿½Í—pï¿½ï¿½ï¿½Öï¿½
-	float * OutputWindow; //!< ï¿½oï¿½Í—pï¿½ï¿½ï¿½Öï¿½
+	int * FFTWorkIp; //!< rdft ‚É“n‚· ip ƒpƒ‰ƒ[ƒ^
+	float * FFTWorkW; //!< rdft ‚É“n‚· w ƒpƒ‰ƒ[ƒ^
+	float * InputWindow; //!< “ü—Í—p‘‹ŠÖ”
+	float * OutputWindow; //!< o—Í—p‘‹ŠÖ”
 
-	unsigned int FrameSize; //!< FFTï¿½Tï¿½Cï¿½Y
-	unsigned int OverSampling; //!< ï¿½Iï¿½[ï¿½oï¿½[ï¿½Eï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Wï¿½ï¿½
-	unsigned int Frequency; //!< PCM ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½gï¿½ï¿½
-	unsigned int Channels; //!< PCM ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½
+	unsigned int FrameSize; //!< FFTƒTƒCƒY
+	unsigned int OverSampling; //!< ƒI[ƒo[EƒTƒ“ƒvƒŠƒ“ƒOŒW”
+	unsigned int Frequency; //!< PCM ƒTƒ“ƒvƒŠƒ“ƒOŽü”g”
+	unsigned int Channels; //!< PCM ƒ`ƒƒƒ“ƒlƒ‹”
 	unsigned int InputHopSize; //!< FrameSize/OverSampling
-	unsigned int OutputHopSize; //!< InputHopSize * TimeScale (SetTimeScaleï¿½ï¿½ï¿½ÉÄŒvï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½)
+	unsigned int OutputHopSize; //!< InputHopSize * TimeScale (SetTimeScaleŽž‚ÉÄŒvŽZ‚³‚ê‚é)
 
-	float	TimeScale; //!< ï¿½ï¿½ï¿½ÔŽï¿½ï¿½ï¿½ï¿½ÌƒXï¿½Pï¿½[ï¿½ï¿½(ï¿½oï¿½ï¿½/ï¿½ï¿½ï¿½)
-	float	FrequencyScale; //!< ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ÌƒXï¿½Pï¿½[ï¿½ï¿½(ï¿½oï¿½ï¿½/ï¿½ï¿½ï¿½)
+	float	TimeScale; //!< ŽžŠÔŽ²•ûŒü‚ÌƒXƒP[ƒ‹(o—Í/“ü—Í)
+	float	FrequencyScale; //!< Žü”g”•ûŒü‚ÌƒXƒP[ƒ‹(o—Í/“ü—Í)
 
-	// ï¿½È‰ï¿½ï¿½ARebuildParams ï¿½ï¿½ï¿½^ï¿½ÌŽï¿½ï¿½ÉÄ\ï¿½zï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^
-	// ï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½éƒï¿½ï¿½ï¿½oï¿½ÈŠOï¿½Å‚ÍAInputWindow ï¿½ï¿½ OutputWindow ï¿½ï¿½ï¿½Ä\ï¿½zï¿½ï¿½ï¿½ï¿½ï¿½
+	// ˆÈ‰ºARebuildParams ‚ª^‚ÌŽž‚ÉÄ\’z‚³‚ê‚éƒpƒ‰ƒ[ƒ^
+	// ‚±‚±‚É‚ ‚éƒƒ“ƒoˆÈŠO‚Å‚ÍAInputWindow ‚Æ OutputWindow ‚àÄ\’z‚³‚ê‚é
 	float OverSamplingRadian; //!< (2.0*M_PI)/OverSampling
-	float OverSamplingRadianRecp; //!< OverSamplingRadian ï¿½Ì‹tï¿½ï¿½
+	float OverSamplingRadianRecp; //!< OverSamplingRadian ‚Ì‹t”
 	float FrequencyPerFilterBand; //!< Frequency/FrameSize
-	float FrequencyPerFilterBandRecp; //!< FrequencyPerFilterBand ï¿½Ì‹tï¿½ï¿½
-	float ExactTimeScale; //!< ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½TimeScale = OutputHopSize / InputHopSize
-	// ï¿½Ä\ï¿½zï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½
+	float FrequencyPerFilterBandRecp; //!< FrequencyPerFilterBand ‚Ì‹t”
+	float ExactTimeScale; //!< Œµ–§‚ÈTimeScale = OutputHopSize / InputHopSize
+	// Ä\’z‚³‚ê‚éƒpƒ‰ƒ[ƒ^A‚±‚±‚Ü‚Å
 
-	tRisaRingBuffer<float> InputBuffer; //!< ï¿½ï¿½Í—pï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@
-	tRisaRingBuffer<float> OutputBuffer; //!< ï¿½oï¿½Í—pï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@
+	tRisaRingBuffer<float> InputBuffer; //!< “ü—Í—pƒŠƒ“ƒOƒoƒbƒtƒ@
+	tRisaRingBuffer<float> OutputBuffer; //!< o—Í—pƒŠƒ“ƒOƒoƒbƒtƒ@
 
-	bool	RebuildParams; //!< ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½Èƒpï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½È‚Ç‚ï¿½ï¿½Ä\ï¿½zï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚È‚ï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½É^
+	bool	RebuildParams; //!< “à•”“I‚Èƒpƒ‰ƒ[ƒ^‚È‚Ç‚ðÄ\’z‚µ‚È‚¯‚ê‚Î‚È‚ç‚È‚¢‚Æ‚«‚É^
 
-	unsigned long LastSynthPhaseAdjustCounter; //!< LastSynthPhase ï¿½ï¿½â³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½é‚½ï¿½ß‚ÌƒJï¿½Eï¿½ï¿½ï¿½^
-	const static unsigned long LastSynthPhaseAdjustIncrement = 0x03e8a444; //!< LastSynthPhaseAdjustCounterï¿½É‰ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½l
-	const static unsigned long LastSynthPhaseAdjustInterval  = 0xfa2911fe; //!< LastSynthPhase ï¿½ï¿½â³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	unsigned long LastSynthPhaseAdjustCounter; //!< LastSynthPhase ‚ð•â³‚·‚éŽüŠú‚ð‚Í‚©‚é‚½‚ß‚ÌƒJƒEƒ“ƒ^
+	const static unsigned long LastSynthPhaseAdjustIncrement = 0x03e8a444; //!< LastSynthPhaseAdjustCounter‚É‰ÁŽZ‚·‚é’l
+	const static unsigned long LastSynthPhaseAdjustInterval  = 0xfa2911fe; //!< LastSynthPhase ‚ð•â³‚·‚éŽüŠú
 
 
 public:
-	//! @brief Process ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½Xï¿½eï¿½[ï¿½^ï¿½X
+	//! @brief Process ‚ª•Ô‚·ƒXƒe[ƒ^ƒX
 	enum tStatus
 	{
-		psNoError, //!< ï¿½ï¿½ï¿½È‚ï¿½
-		psInputNotEnough, //!< ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ (GetInputBufferï¿½Å“ï¿½ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½^ï¿½Éï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ÄŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½)
-		psOutputFull //!< ï¿½oï¿½Íƒoï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï‚ï¿½ (GetOutputBufferï¿½Å“ï¿½ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½Ç‚Ýoï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ÄŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½)
+		psNoError, //!< –â‘è‚È‚µ
+		psInputNotEnough, //!< “ü—Í‚ª‚à‚¤‚È‚¢ (GetInputBuffer‚Å“¾‚½ƒ|ƒCƒ“ƒ^‚É‘‚¢‚Ä‚©‚çÄŽŽs‚¹‚æ)
+		psOutputFull //!< o—Íƒoƒbƒtƒ@‚ª‚¢‚Á‚Ï‚¢ (GetOutputBuffer‚Å“¾‚½ƒ|ƒCƒ“ƒ^‚©‚ç“Ç‚Ýo‚µ‚Ä‚©‚çÄŽŽs‚¹‚æ)
 	};
 
 public:
-	//! @brief		ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
-	//! @param		framesize		ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Tï¿½Cï¿½Y(2ï¿½Ì—Ýï¿½, 16ï¿½`)
-	//! @param		frequency		ï¿½ï¿½ï¿½PCMï¿½ÌƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½[ï¿½g
-	//! @param		channels		ï¿½ï¿½ï¿½PCMï¿½Ìƒ`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½
-	//! @note		ï¿½ï¿½ï¿½yï¿½pï¿½Å‚ï¿½framesize=4096,oversamp=16ï¿½ï¿½ï¿½ç‚¢ï¿½ï¿½ï¿½æ‚­ï¿½A
-	//! @note		ï¿½{ï¿½Cï¿½Xï¿½pï¿½Å‚ï¿½framesize=256,oversamp=8ï¿½ï¿½ï¿½ç‚¢ï¿½ï¿½ï¿½æ‚¢ï¿½B
+	//! @brief		ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	//! @param		framesize		ƒtƒŒ[ƒ€ƒTƒCƒY(2‚Ì—Ýæ, 16`)
+	//! @param		frequency		“ü—ÍPCM‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒŒ[ƒg
+	//! @param		channels		“ü—ÍPCM‚Ìƒ`ƒƒƒ“ƒlƒ‹”
+	//! @note		‰¹Šy—p‚Å‚Íframesize=4096,oversamp=16‚®‚ç‚¢‚ª‚æ‚­A
+	//! @note		ƒ{ƒCƒX—p‚Å‚Íframesize=256,oversamp=8‚®‚ç‚¢‚ª‚æ‚¢B
 	tRisaPhaseVocoderDSP(unsigned int framesize,
 					unsigned int frequency, unsigned int channels);
 
-	//! @brief		ï¿½fï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	//! @brief		ƒfƒXƒgƒ‰ƒNƒ^
 	~tRisaPhaseVocoderDSP();
 
-	float GetTimeScale() const { return TimeScale; } //!< ï¿½ï¿½ï¿½ÔŽï¿½ï¿½ï¿½ï¿½ÌƒXï¿½Pï¿½[ï¿½ï¿½ï¿½ð“¾‚ï¿½
+	float GetTimeScale() const { return TimeScale; } //!< ŽžŠÔŽ²•ûŒü‚ÌƒXƒP[ƒ‹‚ð“¾‚é
 
-	//! @brief		ï¿½ï¿½ï¿½ÔŽï¿½ï¿½ï¿½ï¿½ÌƒXï¿½Pï¿½[ï¿½ï¿½ï¿½ï¿½Ý’è‚·ï¿½ï¿½
-	//! @param		v     ï¿½Xï¿½Pï¿½[ï¿½ï¿½
+	//! @brief		ŽžŠÔŽ²•ûŒü‚ÌƒXƒP[ƒ‹‚ðÝ’è‚·‚é
+	//! @param		v     ƒXƒP[ƒ‹
 	void SetTimeScale(float v);
 
-	float GetFrequencyScale() const { return FrequencyScale; } //!< ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌƒXï¿½Pï¿½[ï¿½ï¿½ï¿½ð“¾‚ï¿½
+	float GetFrequencyScale() const { return FrequencyScale; } //!< Žü”g”Ž²•ûŒü‚ÌƒXƒP[ƒ‹‚ð“¾‚é
 
-	//! @brief		ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌƒXï¿½Pï¿½[ï¿½ï¿½ï¿½ï¿½Ý’è‚·ï¿½ï¿½
-	//! @param		v     ï¿½Xï¿½Pï¿½[ï¿½ï¿½
+	//! @brief		Žü”g”Ž²•ûŒü‚ÌƒXƒP[ƒ‹‚ðÝ’è‚·‚é
+	//! @param		v     ƒXƒP[ƒ‹
 	void SetFrequencyScale(float v);
 
-	//! @brief		ï¿½Iï¿½[ï¿½oï¿½[ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
-	//! @return		ï¿½Iï¿½[ï¿½oï¿½[ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Wï¿½ï¿½
+	//! @brief		ƒI[ƒo[ƒTƒ“ƒvƒŠƒ“ƒOŒW”‚ðŽæ“¾‚·‚é
+	//! @return		ƒI[ƒo[ƒTƒ“ƒvƒŠƒ“ƒOŒW”
 	unsigned int GetOverSampling() const { return OverSampling; }
 
-	//! @brief		ï¿½Iï¿½[ï¿½oï¿½[ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Wï¿½ï¿½ï¿½ï¿½Ý’è‚·ï¿½ï¿½
-	//! @param		v		ï¿½Wï¿½ï¿½ ( 0 = ï¿½ï¿½ï¿½ÔŽï¿½ï¿½ï¿½ï¿½ÌƒXï¿½Pï¿½[ï¿½ï¿½ï¿½É]ï¿½ï¿½ï¿½ÄŽï¿½ï¿½ï¿½ï¿½Iï¿½ÉÝ’ï¿½ )
+	//! @brief		ƒI[ƒo[ƒTƒ“ƒvƒŠƒ“ƒOŒW”‚ðÝ’è‚·‚é
+	//! @param		v		ŒW” ( 0 = ŽžŠÔŽ²•ûŒü‚ÌƒXƒP[ƒ‹‚É]‚Á‚ÄŽ©“®“I‚ÉÝ’è )
 	void SetOverSampling(unsigned int v);
 
-	unsigned int GetInputHopSize() const { return InputHopSize; } //!< InputHopSizeï¿½ð“¾‚ï¿½
-	unsigned int GetOutputHopSize() const { return OutputHopSize; } //!< OutputHopSize ï¿½ð“¾‚ï¿½
+	unsigned int GetInputHopSize() const { return InputHopSize; } //!< InputHopSize‚ð“¾‚é
+	unsigned int GetOutputHopSize() const { return OutputHopSize; } //!< OutputHopSize ‚ð“¾‚é
 
 private:
-	//! @brief		ï¿½Nï¿½ï¿½ï¿½A
+	//! @brief		ƒNƒŠƒA
 	void Clear();
 
 public:
-	//! @brief		ï¿½ï¿½Íƒoï¿½bï¿½tï¿½@ï¿½Ì‹ó‚«ƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ð“¾‚ï¿½
-	//! @return		ï¿½ï¿½Íƒoï¿½bï¿½tï¿½@ï¿½Ì‹ó‚«ƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
+	//! @brief		“ü—Íƒoƒbƒtƒ@‚Ì‹ó‚«ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”‚ð“¾‚é
+	//! @return		“ü—Íƒoƒbƒtƒ@‚Ì‹ó‚«ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”
 	size_t GetInputFreeSize();
 
-	//! @brief		ï¿½ï¿½Íƒoï¿½bï¿½tï¿½@ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ð“¾‚ï¿½
-	//! @param		numsamplegranules ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
-	//! @param		p1		ï¿½uï¿½ï¿½ï¿½bï¿½N1ï¿½Ìæ“ªï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ì•Ïï¿½
-	//! @param		p1size	p1ï¿½Ì•\ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
-	//! @param		p2		ï¿½uï¿½ï¿½ï¿½bï¿½N2ï¿½Ìæ“ªï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ì•Ïï¿½(NULLï¿½ï¿½ï¿½ï¿½ï¿½è“¾ï¿½ï¿½)
-	//! @param		p2size	p2ï¿½Ì•\ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½(0ï¿½ï¿½ï¿½ï¿½ï¿½è“¾ï¿½ï¿½)
-	//! @return		ï¿½ó‚«—eï¿½Ê‚ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‹Uï¿½Aï¿½ó‚«—eï¿½Ê‚ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½Î^
-	//! @note		p1 ï¿½ï¿½ p2 ï¿½Ì‚æ‚¤ï¿½É‚Qï¿½Â‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½Æ‚ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½Ì‚ÍA
-	//!				ï¿½ï¿½ï¿½Ìƒoï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Û‚Íƒï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@ï¿½ÅAï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½jï¿½Aï¿½Èƒoï¿½bï¿½tï¿½@
-	//!				ï¿½ÌIï¿½[ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ßBï¿½Ü‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½p2ï¿½ï¿½NULLï¿½É‚È‚é‚ªï¿½Aï¿½Ü‚ï¿½ï¿½ï¿½
-	//!				ï¿½ê‡ï¿½ï¿½ p1 ï¿½Ì‚ï¿½ï¿½Æ‚ï¿½ p2 ï¿½É‘ï¿½ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚È‚ï¿½ï¿½ï¿½Î‚È‚ï¿½È‚ï¿½ï¿½B
+	//! @brief		“ü—Íƒoƒbƒtƒ@‚Ì‘‚«ž‚Ýƒ|ƒCƒ“ƒ^‚ð“¾‚é
+	//! @param		numsamplegranules ‘‚«ž‚Ý‚½‚¢ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”
+	//! @param		p1		ƒuƒƒbƒN1‚Ìæ“ª‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ðŠi”[‚·‚é‚½‚ß‚Ì•Ï”
+	//! @param		p1size	p1‚Ì•\‚·ƒuƒƒbƒN‚ÌƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”
+	//! @param		p2		ƒuƒƒbƒN2‚Ìæ“ª‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ðŠi”[‚·‚é‚½‚ß‚Ì•Ï”(NULL‚ª‚ ‚è“¾‚é)
+	//! @param		p2size	p2‚Ì•\‚·ƒuƒƒbƒN‚ÌƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”(0‚ª‚ ‚è“¾‚é)
+	//! @return		‹ó‚«—e—Ê‚ª‘«‚è‚È‚¯‚ê‚Î‹UA‹ó‚«—e—Ê‚ª‘«‚èAƒ|ƒCƒ“ƒ^‚ª•Ô‚³‚ê‚ê‚Î^
+	//! @note		p1 ‚Æ p2 ‚Ì‚æ‚¤‚É‚Q‚Â‚Ìƒ|ƒCƒ“ƒ^‚Æ‚»‚ÌƒTƒCƒY‚ª•Ô‚³‚ê‚é‚Ì‚ÍA
+	//!				‚±‚Ìƒoƒbƒtƒ@‚ªŽÀÛ‚ÍƒŠƒ“ƒOƒoƒbƒtƒ@‚ÅAƒŠƒ“ƒOƒoƒbƒtƒ@“à•”‚ÌƒŠƒjƒA‚Èƒoƒbƒtƒ@
+	//!				‚ÌI’[‚ð‚Ü‚½‚®‰Â”\«‚ª‚ ‚é‚½‚ßB‚Ü‚½‚ª‚È‚¢ê‡‚Íp2‚ÍNULL‚É‚È‚é‚ªA‚Ü‚½‚®
+	//!				ê‡‚Í p1 ‚Ì‚ ‚Æ‚É p2 ‚É‘±‚¯‚Ä‘‚«ž‚Ü‚È‚¯‚ê‚Î‚È‚ç‚È‚¢B
 	bool GetInputBuffer(size_t numsamplegranules,
 		float * & p1, size_t & p1size,
 		float * & p2, size_t & p2size);
 
-	//! @brief		ï¿½oï¿½Íƒoï¿½bï¿½tï¿½@ï¿½Ìï¿½ï¿½ï¿½Ï‚ÝƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ð“¾‚ï¿½
-	//! @return		ï¿½oï¿½Íƒoï¿½bï¿½tï¿½@ï¿½Ìï¿½ï¿½ï¿½Ï‚ÝƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
+	//! @brief		o—Íƒoƒbƒtƒ@‚Ì€”õÏ‚ÝƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”‚ð“¾‚é
+	//! @return		o—Íƒoƒbƒtƒ@‚Ì€”õÏ‚ÝƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”
 	size_t GetOutputReadySize();
 
-	//! @brief		ï¿½oï¿½Íƒoï¿½bï¿½tï¿½@ï¿½Ì“Ç‚Ýï¿½ï¿½Ýƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ð“¾‚ï¿½
-	//! @param		numsamplegranules ï¿½Ç‚Ýï¿½ï¿½Ý‚ï¿½ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
-	//! @param		p1		ï¿½uï¿½ï¿½ï¿½bï¿½N1ï¿½Ìæ“ªï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ì•Ïï¿½
-	//! @param		p1size	p1ï¿½Ì•\ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
-	//! @param		p2		ï¿½uï¿½ï¿½ï¿½bï¿½N2ï¿½Ìæ“ªï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ì•Ïï¿½(NULLï¿½ï¿½ï¿½ï¿½ï¿½è“¾ï¿½ï¿½)
-	//! @param		p2size	p2ï¿½Ì•\ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½(0ï¿½ï¿½ï¿½ï¿½ï¿½è“¾ï¿½ï¿½)
-	//! @return		ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‹Uï¿½Aï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½Î^
-	//! @note		p1 ï¿½ï¿½ p2 ï¿½Ì‚æ‚¤ï¿½É‚Qï¿½Â‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½Æ‚ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½Ì‚ÍA
-	//!				ï¿½ï¿½ï¿½Ìƒoï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Û‚Íƒï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@ï¿½ÅAï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½jï¿½Aï¿½Èƒoï¿½bï¿½tï¿½@
-	//!				ï¿½ÌIï¿½[ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ßBï¿½Ü‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½p2ï¿½ï¿½NULLï¿½É‚È‚é‚ªï¿½Aï¿½Ü‚ï¿½ï¿½ï¿½
-	//!				ï¿½ê‡ï¿½ï¿½ p1 ï¿½Ì‚ï¿½ï¿½Æ‚ï¿½ p2 ï¿½ð‘±‚ï¿½ï¿½Ä“Ç‚Ýoï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚È‚ï¿½È‚ï¿½ï¿½B
+	//! @brief		o—Íƒoƒbƒtƒ@‚Ì“Ç‚Ýž‚Ýƒ|ƒCƒ“ƒ^‚ð“¾‚é
+	//! @param		numsamplegranules “Ç‚Ýž‚Ý‚½‚¢ƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”
+	//! @param		p1		ƒuƒƒbƒN1‚Ìæ“ª‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ðŠi”[‚·‚é‚½‚ß‚Ì•Ï”
+	//! @param		p1size	p1‚Ì•\‚·ƒuƒƒbƒN‚ÌƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”
+	//! @param		p2		ƒuƒƒbƒN2‚Ìæ“ª‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ðŠi”[‚·‚é‚½‚ß‚Ì•Ï”(NULL‚ª‚ ‚è“¾‚é)
+	//! @param		p2size	p2‚Ì•\‚·ƒuƒƒbƒN‚ÌƒTƒ“ƒvƒ‹ƒOƒ‰ƒjƒ…[ƒ‹”(0‚ª‚ ‚è“¾‚é)
+	//! @return		€”õ‚³‚ê‚½ƒTƒ“ƒvƒ‹‚ª‘«‚è‚È‚¯‚ê‚Î‹UAƒTƒ“ƒvƒ‹‚ª‘«‚èAƒ|ƒCƒ“ƒ^‚ª•Ô‚³‚ê‚ê‚Î^
+	//! @note		p1 ‚Æ p2 ‚Ì‚æ‚¤‚É‚Q‚Â‚Ìƒ|ƒCƒ“ƒ^‚Æ‚»‚ÌƒTƒCƒY‚ª•Ô‚³‚ê‚é‚Ì‚ÍA
+	//!				‚±‚Ìƒoƒbƒtƒ@‚ªŽÀÛ‚ÍƒŠƒ“ƒOƒoƒbƒtƒ@‚ÅAƒŠƒ“ƒOƒoƒbƒtƒ@“à•”‚ÌƒŠƒjƒA‚Èƒoƒbƒtƒ@
+	//!				‚ÌI’[‚ð‚Ü‚½‚®‰Â”\«‚ª‚ ‚é‚½‚ßB‚Ü‚½‚ª‚È‚¢ê‡‚Íp2‚ÍNULL‚É‚È‚é‚ªA‚Ü‚½‚®
+	//!				ê‡‚Í p1 ‚Ì‚ ‚Æ‚É p2 ‚ð‘±‚¯‚Ä“Ç‚Ýo‚³‚È‚¯‚ê‚Î‚È‚ç‚È‚¢B
 	bool GetOutputBuffer(size_t numsamplegranules,
 		const float * & p1, size_t & p1size,
 		const float * & p2, size_t & p2size);
 
-	//! @brief		ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½Xï¿½eï¿½bï¿½vï¿½sï¿½ï¿½
-	//! @return		ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê‚ï¿½\ï¿½ï¿½enum
+	//! @brief		ˆ—‚ð1ƒXƒeƒbƒvs‚¤
+	//! @return		ˆ—Œ‹‰Ê‚ð•\‚·enum
 	tStatus Process();
 
-	//! @brief		ï¿½ï¿½ï¿½Zï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	//! @param		ch			ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½
-	//! @note		ï¿½ï¿½ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½ÍŠeCPUï¿½ï¿½ï¿½Æ‚ÉÅ“Kï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ßA
-	//!				ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ opt_default ï¿½fï¿½Bï¿½ï¿½ï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½È‚Ç‚É’uï¿½ï¿½ï¿½ï¿½ï¿½B
-	//!				(PhaseVocoderDSP.cppï¿½ï¿½ï¿½É‚Í‚ï¿½ï¿½ï¿½ÌŽï¿½ï¿½ï¿½ï¿½Í‚È‚ï¿½)
+	//! @brief		‰‰ŽZ‚ÌªŠ²•”•ª‚ðˆ—‚·‚é
+	//! @param		ch			ˆ—‚ðs‚¤ƒ`ƒƒƒ“ƒlƒ‹
+	//! @note		‚±‚±‚Ì•”•ª‚ÍŠeCPU‚²‚Æ‚ÉÅ“K‰»‚³‚ê‚é‚½‚ßA
+	//!				ŽÀ‘•‚Í opt_default ƒfƒBƒŒƒNƒgƒŠ‰º‚È‚Ç‚É’u‚©‚ê‚éB
+	//!				(PhaseVocoderDSP.cpp“à‚É‚Í‚±‚ê‚ÌŽÀ‘•‚Í‚È‚¢)
 	void ProcessCore(int ch);
 };
 //---------------------------------------------------------------------------

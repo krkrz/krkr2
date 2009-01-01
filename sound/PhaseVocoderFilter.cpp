@@ -189,7 +189,7 @@ void TJS_INTF_METHOD tTJSNI_PhaseVocoder::Invalidate()
 //---------------------------------------------------------------------------
 void tTJSNI_PhaseVocoder::SetWindow(int window)
 {
-	// ï¿½lï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½N
+	// ’l‚ğƒ`ƒFƒbƒN
 	switch(window)
 	{
 	case 64: case 128: case 256: case 512: case 1024: case 2048: case 4096: case 8192:
@@ -203,7 +203,7 @@ void tTJSNI_PhaseVocoder::SetWindow(int window)
 //---------------------------------------------------------------------------
 void tTJSNI_PhaseVocoder::SetOverlap(int overlap)
 {
-	// ï¿½lï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½N
+	// ’l‚ğƒ`ƒFƒbƒN
 	switch(overlap)
 	{
 	case 0:
@@ -225,8 +225,8 @@ tTVPSampleAndLabelSource * tTJSNI_PhaseVocoder::Recreate(tTVPSampleAndLabelSourc
 	Source = source;
 	InputFormat = Source->GetFormat();
 	OutputFormat = InputFormat;
-	OutputFormat.IsFloat = true; // ï¿½oï¿½Í‚ï¿½ float
-	OutputFormat.BitsPerSample = 32; // ï¿½rï¿½bï¿½gï¿½ï¿½ 32 ï¿½rï¿½bï¿½g
+	OutputFormat.IsFloat = true; // o—Í‚Í float
+	OutputFormat.BitsPerSample = 32; // ƒrƒbƒg‚Í 32 ƒrƒbƒg
 	OutputFormat.BytesPerSample = 4;
 
 	return this;
@@ -269,30 +269,30 @@ void tTJSNI_PhaseVocoder::Fill(float * dest, tjs_uint samples, tjs_uint &written
 {
 	if(InputFormat.IsFloat && InputFormat.BitsPerSample == 32 && InputFormat.BytesPerSample == 4)
 	{
-		// ï¿½ï¿½Í‚ï¿½32bitï¿½tï¿½ï¿½ï¿½[ï¿½gï¿½È‚Ì‚Å•ÏŠï¿½ï¿½Ì•Kï¿½vï¿½Í‚È‚ï¿½
+		// “ü—Í‚à32bitƒtƒ[ƒg‚È‚Ì‚Å•ÏŠ·‚Ì•K—v‚Í‚È‚¢
 		Source->Decode(dest, samples, written, segments);
 	}
 	else
 	{
-		// ï¿½ï¿½Í‚ï¿½32bitï¿½tï¿½ï¿½ï¿½[ï¿½gï¿½Å‚Í‚È‚ï¿½ï¿½Ì‚Å•ÏŠï¿½ï¿½Ì•Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÏŠï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½É‚ï¿½ï¿½ß‚ï¿½
+		// “ü—Í‚ª32bitƒtƒ[ƒg‚Å‚Í‚È‚¢‚Ì‚Å•ÏŠ·‚Ì•K—v‚ª‚ ‚é
+		// ‚¢‚Á‚½‚ñ•ÏŠ·ƒoƒbƒtƒ@‚É‚½‚ß‚é
 		tjs_uint buf_size = samples * InputFormat.BytesPerSample * InputFormat.Channels;
 		if(FormatConvertBufferSize < buf_size)
 		{
-			// ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ÄŠmï¿½ï¿½
+			// ƒoƒbƒtƒ@‚ğÄŠm•Û
 			if(FormatConvertBuffer) delete [] FormatConvertBuffer, FormatConvertBuffer = NULL;
 			FormatConvertBuffer = new char[buf_size];
 			FormatConvertBufferSize = buf_size;
 		}
-		// ï¿½oï¿½bï¿½tï¿½@ï¿½Éƒfï¿½Rï¿½[ï¿½hï¿½ï¿½ï¿½sï¿½ï¿½
+		// ƒoƒbƒtƒ@‚ÉƒfƒR[ƒh‚ğs‚¤
 		Source->Decode(FormatConvertBuffer, samples, written, segments);
-		// ï¿½ÏŠï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
+		// •ÏŠ·‚ğs‚¤
 		TVPConvertPCMToFloat(dest, FormatConvertBuffer, InputFormat, written);
 	}
 	if(written < samples)
 	{
-		// ï¿½fï¿½Rï¿½[ï¿½hï¿½ï¿½ï¿½ê‚½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½É–ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡
-		// ï¿½cï¿½ï¿½ï¿½ 0 ï¿½Å–ï¿½ï¿½ß‚ï¿½
+		// ƒfƒR[ƒh‚³‚ê‚½ƒTƒ“ƒvƒ‹”‚ª—v‹‚³‚ê‚½ƒTƒ“ƒvƒ‹”‚É–‚½‚È‚¢ê‡
+		// c‚è‚ğ 0 ‚Å–„‚ß‚é
 		memset(dest + written * InputFormat.Channels, 0,
 			(samples - written) * sizeof(float) * InputFormat.Channels);
 	}
@@ -303,7 +303,7 @@ void tTJSNI_PhaseVocoder::Decode(void *dest, tjs_uint samples, tjs_uint &written
 {
 	if(!PhaseVocoder)
 	{
-		// PhaseVocoder ï¿½ï¿½ï¿½ì¬
+		// PhaseVocoder ‚ğì¬
 		tRisaPhaseVocoderDSP * pv = new tRisaPhaseVocoderDSP(Window,
 					InputFormat.SamplesPerSec, InputFormat.Channels);
 		pv->SetFrequencyScale(Pitch);
@@ -326,7 +326,7 @@ void tTJSNI_PhaseVocoder::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			size_t inputfree = PhaseVocoder->GetInputFreeSize();
 			if(inputfree >= inputhopsize)
 			{
-				// ï¿½ï¿½Í‚Éƒfï¿½[ï¿½^ï¿½ğ—¬‚ï¿½ï¿½ï¿½ï¿½ï¿½
+				// “ü—Í‚Éƒf[ƒ^‚ğ—¬‚µ‚Ş
 				float *p1, *p2;
 				size_t p1len, p2len;
 				PhaseVocoder->GetInputBuffer(inputhopsize, p1, p1len, p2, p2len);
@@ -334,29 +334,29 @@ void tTJSNI_PhaseVocoder::Decode(void *dest, tjs_uint samples, tjs_uint &written
 				tjs_uint total = 0;
 				Fill       (p1, p1len, filled, InputSegments), total += filled;
 				if(p2) Fill(p2, p2len, filled, InputSegments), total += filled;
-				if(total == 0) { break ; } // ï¿½ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½È‚ï¿½
+				if(total == 0) { break ; } // ‚à‚¤ƒf[ƒ^‚ª‚È‚¢
 			}
 
-			// PhaseVocoderï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
-			// ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½Å‚ÍAï¿½ï¿½Í‚ï¿½inputhopsizeï¿½ï¿½ï¿½ï¿½ï¿½ï‚µï¿½Aï¿½oï¿½Í‚ï¿½
-			// outputhopsizeï¿½ï¿½ï¿½oï¿½Í‚ï¿½ï¿½ï¿½B
+			// PhaseVocoder‚Ìˆ—‚ğs‚¤
+			// ˆê‰ñ‚Ìˆ—‚Å‚ÍA“ü—Í‚ğinputhopsize•ªÁ”ï‚µAo—Í‚ğ
+			// outputhopsize•ªo—Í‚·‚éB
 			status = PhaseVocoder->Process();
 			if(status == tRisaPhaseVocoderDSP::psNoError)
 			{
-				// ï¿½ï¿½ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½Binputhopsize ï¿½ï¿½ï¿½ÌƒLï¿½ï¿½ï¿½[ï¿½ï¿½ InputSegments ï¿½ï¿½ï¿½ï¿½Ç‚İoï¿½ï¿½ï¿½A
-				// outputhopsize ï¿½ï¿½ï¿½ÉƒXï¿½Pï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½AOutputSegments ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ŞB
+				// ˆ—‚É¬Œ÷Binputhopsize •ª‚ÌƒLƒ…[‚ğ InputSegments ‚©‚ç“Ç‚İo‚µA
+				// outputhopsize •ª‚ÉƒXƒP[ƒ‹‚µ’¼‚µ‚½ŒãAOutputSegments ‚É‘‚«‚ŞB
 				InputSegments.Dequeue(queue, inputhopsize);
 				queue.Scale(outputhopsize);
 				OutputSegments.Enqueue(queue);
 			}
 		} while(status == tRisaPhaseVocoderDSP::psInputNotEnough);
 
-		// ï¿½ï¿½Í‚Éƒfï¿½[ï¿½^ï¿½ğ—¬‚ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½Äoï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Í‚È‚ï¿½ï¿½ï¿½
-		// ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Í‚ï¿½ï¿½ï¿½
+		// “ü—Í‚Éƒf[ƒ^‚ğ—¬‚µ‚ñ‚Å‚¨‚¢‚Äo—Í‚ª–³‚¢‚±‚Æ‚Í‚È‚¢‚ª
+		// —v‹‚µ‚½ƒTƒCƒY‚æ‚è‚à¬‚³‚¢ê‡‚Í‚ ‚é
 		size_t output_ready = PhaseVocoder->GetOutputReadySize();
 		if(output_ready >= outputhopsize)
 		{
-			// PhaseVocoder ï¿½Ìoï¿½Í‚ï¿½ï¿½ï¿½ dest ï¿½ÉƒRï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
+			// PhaseVocoder ‚Ìo—Í‚©‚ç dest ‚ÉƒRƒs[‚·‚é
 			size_t copy_size = outputhopsize > samples ? samples : outputhopsize;
 			const float *p1, *p2;
 			size_t p1len, p2len;
@@ -369,13 +369,13 @@ void tTJSNI_PhaseVocoder::Decode(void *dest, tjs_uint samples, tjs_uint &written
 			written  += copy_size;
 			dest_buf += copy_size * OutputFormat.Channels;
 
-			// segment queue ï¿½Ìï¿½ï¿½ï¿½ï¿½oï¿½ï¿½
+			// segment queue ‚Ì‘‚«o‚µ
 			OutputSegments.Dequeue(queue, copy_size);
 			segments.Enqueue(queue);
 		}
 		else
 		{
-			return; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Íƒfï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îoï¿½Íƒfï¿½[ï¿½^ï¿½ï¿½ï¿½È‚ï¿½
+			return; // ‚à‚¤“ü—Íƒf[ƒ^‚à–³‚¯‚ê‚Îo—Íƒf[ƒ^‚à‚È‚¢
 		}
 	}
 }
