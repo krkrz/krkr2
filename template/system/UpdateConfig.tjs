@@ -1,18 +1,18 @@
-// UpdateConfig.tjs - Config.tjs ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ß‚ÌƒXï¿½Nï¿½ï¿½ï¿½vï¿½g
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// UpdateConfig.tjs - Config.tjs ‚ğˆø‚«Œp‚®‚½‚ß‚ÌƒXƒNƒŠƒvƒg
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
-// Config.~new ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ÍVï¿½ï¿½ï¿½ï¿½ Config.tjs ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½B
-// Config.tjs ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ìƒoï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ KAG ï¿½Ìƒoï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½vï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½É‚ï¿½ï¿½ÌƒXï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½B
+// Config.~new ƒtƒ@ƒCƒ‹‚ÍV‚µ‚¢ Config.tjs ƒtƒ@ƒCƒ‹B
+// Config.tjs ƒtƒ@ƒCƒ‹’†‚Ìƒo[ƒWƒ‡ƒ“î•ñ‚Æ KAG ‚Ìƒo[ƒWƒ‡ƒ“î•ñ‚ª
+// ˆê’v‚µ‚È‚¢ê‡‚É‚±‚ÌƒXƒNƒŠƒvƒgƒtƒ@ƒCƒ‹‚ªŒÄ‚Î‚ê‚éB
 
 if(Storages.isExistentStorage("Config.~new"))
 {
-	// Config.~new ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// Config.~new ƒtƒ@ƒCƒ‹‚ª‚ ‚Á‚½
 
-	// Config.tjs ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
-	var settings = %[]; // ï¿½İ’ï¿½ï¿½ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é«ï¿½ï¿½ï¿½zï¿½ï¿½
-	var oldconfig = [].load("Config.tjs"); //Config.tjs ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
-	var pattern = /^;\s*(.*?)\s*=(.*)$/; // ï¿½İ’ï¿½sï¿½ï¿½Fï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ìï¿½ï¿½Kï¿½\ï¿½ï¿½ï¿½pï¿½^ï¿½[ï¿½ï¿½
+	// Config.tjs ‚ğ“Ç‚İ‚Ş
+	var settings = %[]; // İ’èî•ñ‚ğŠi”[‚·‚é«‘”z—ñ
+	var oldconfig = [].load("Config.tjs"); //Config.tjs ‚ğ“Ç‚İ‚Ş
+	var pattern = /^;\s*(.*?)\s*=(.*)$/; // İ’ès‚ğ”F¯‚·‚é‚½‚ß‚Ì³‹K•\Œ»ƒpƒ^[ƒ“
 	var pattern_adds = /^\/\/\[start-(.*?)-additionals\]$/;
 	for(var i = 0; i < oldconfig.count; i++)
 	{
@@ -33,11 +33,11 @@ if(Storages.isExistentStorage("Config.~new"))
 		}
 	}
 
-	// ï¿½oï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	settings['global.config_version'] = " \"" + kagVersion + "\"; // ï¿½ï¿½ï¿½Ìsï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+	// ƒo[ƒWƒ‡ƒ“î•ñ‚Ì‘‚«‚İ
+	settings['global.config_version'] = " \"" + kagVersion + "\"; // ‚±‚Ìs‚ğÁ‚³‚È‚¢‚Å‚­‚¾‚³‚¢";
 
-	// Config.~new ï¿½Ì“Ç‚İï¿½ï¿½İ‚Æİ’ï¿½Ìˆï¿½pï¿½ï¿½
-	var newconfig = [].load("Config.~new"); // Config.~new ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
+	// Config.~new ‚Ì“Ç‚İ‚İ‚Æİ’è‚ÌˆøŒp‚¬
+	var newconfig = [].load("Config.~new"); // Config.~new ‚ğ“Ç‚İ‚İ
 	var lines = '';
 	for(var i = 0; i < newconfig.count; i++)
 	{
@@ -75,7 +75,7 @@ if(Storages.isExistentStorage("Config.~new"))
 		}
 	}
 
-	// Pad ï¿½Ì•\ï¿½ï¿½
+	// Pad ‚Ì•\¦
 	global.configPad = new Pad();
 	global.configPad.text = lines;
 	global.configPad.color = 0;
@@ -83,12 +83,12 @@ if(Storages.isExistentStorage("Config.~new"))
 	global.configPad.fileName = Storages.getLocalName(Storages.getPlacedPath("Config.tjs"));
 	global.configPad.visible = true;
 
-	// ï¿½Ê’m
-	System.inform("ï¿½İ’ï¿½ï¿½ï¿½eï¿½ï¿½ï¿½Ã‚ï¿½ Config.tjs ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B\n"
-		"ï¿½gConfig.tjsï¿½hï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½Å‚æ‚¯ï¿½ï¿½ÎAï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½\n"
-		"ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Äuï¿½Û‘ï¿½ï¿½vï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½AConfig.tjs ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B\n"
-		"Config.~new ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ííœï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B");
+	// ’Ê’m
+	System.inform("İ’è“à—e‚ğŒÃ‚¢ Config.tjs ‚©‚çˆø‚«Œp‚¬‚Ü‚µ‚½B\n"
+		"gConfig.tjshƒEƒBƒ“ƒhƒEã‚É•\¦‚³‚ê‚Ä‚¢‚é“à—e‚Å‚æ‚¯‚ê‚ÎA“¯ƒEƒBƒ“ƒhƒEã‚Å\n"
+		"‰EƒNƒŠƒbƒN‚ğ‚µ‚Äu•Û‘¶v‚ğ‘I‘ğ‚µAConfig.tjs ‚ğ•Û‘¶‚µ‚Ä‚­‚¾‚³‚¢B\n"
+		"Config.~new ƒtƒ@ƒCƒ‹‚Ííœ‚µ‚Ä‚©‚Ü‚¢‚Ü‚¹‚ñB");
 
-	// ï¿½Vï¿½ï¿½ï¿½ï¿½ config ï¿½Ì“Ç‚İï¿½ï¿½İ’ï¿½ï¿½ï¿½
+	// V‚µ‚¢ config ‚Ì“Ç‚İ‚İ’¼‚µ
 	Scripts.exec(lines);
 }

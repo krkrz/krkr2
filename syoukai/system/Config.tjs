@@ -1,43 +1,43 @@
-// Config.tjs - KAG ï¿½Ý’ï¿½
-// Copyright (C) 2001-2009 W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½ÍŽï¿½ï¿½Rï¿½Å‚ï¿½
-;global.config_version = "3.29-dev.20071022"; // ï¿½ï¿½ï¿½Ìsï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// Config.tjs - KAG Ý’è
+// Copyright (C) 2001-2009 W.Dee and contributors  ‰ü•ÏE”z•z‚ÍŽ©—R‚Å‚·
+;global.config_version = "3.29-dev.20071022"; // ‚±‚Ìs‚ðÁ‚³‚È‚¢‚Å‚­‚¾‚³‚¢
 
-// ï¿½ï¿½ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ÅÝ’ï¿½Å‚ï¿½ï¿½é€ï¿½Ú‚ÍAï¿½ï¿½ï¿½×‚ï¿½
-// ;ï¿½Ý’è–¼ = ï¿½l;
-// ï¿½ÌŒ`ï¿½ï¿½ï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ï¿½uï¿½Ç‰ï¿½ï¿½ÌÝ’ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄAï¿½Ý’ï¿½ÍŠeï¿½ï¿½ï¿½Ú‚É‚Â‚ï¿½ï¿½Pï¿½sï¿½Å‹Lï¿½qï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-
-
-//------------------------------------------------------- ï¿½Sï¿½Ì‚ÌÝ’ï¿½ -----
+// ‚±‚Ìƒtƒ@ƒCƒ‹“à‚ÅÝ’è‚Å‚«‚é€–Ú‚ÍA‚·‚×‚Ä
+// ;Ý’è–¼ = ’l;
+// ‚ÌŒ`Ž®‚É‚È‚Á‚Ä‚¢‚Ü‚·B
+// u’Ç‰Á‚ÌÝ’èv‚ðœ‚¢‚ÄAÝ’è‚ÍŠe€–Ú‚É‚Â‚«‚Ps‚Å‹Lq‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
 
 
-// ï¿½ï¿½ ï¿½^ï¿½Cï¿½gï¿½ï¿½
-// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ÌƒLï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½(ï¿½^ï¿½Cï¿½gï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½^ï¿½Xï¿½Nï¿½oï¿½[ï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Å‚ï¿½ï¿½B
-;System.title = "ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½";
+//------------------------------------------------------- ‘S‘Ì‚ÌÝ’è -----
 
 
-// ï¿½ï¿½ ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½Íƒï¿½ï¿½[ï¿½h
-// ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ì‰ï¿½sï¿½É]ï¿½í‚¹ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ false ï¿½ï¿½Ý’è‚µï¿½Ü‚ï¿½ï¿½B
-// false ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAKAG ï¿½ÌƒVï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½Ì‰ï¿½sï¿½ï¿½ï¿½Aï¿½sï¿½ï¿½ï¿½ï¿½ \ ï¿½Ü‚ï¿½ï¿½ï¿½ [p] ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½È‚ï¿½ï¿½ï¿½ï¿½è‚»ï¿½Ì‚Ü‚Üƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½Å‚Ì‰ï¿½sï¿½Æ‚ï¿½ï¿½Äˆï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// true ï¿½ï¿½Ý’è‚·ï¿½ï¿½ï¿½ [r] ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// KAG2.x ï¿½ÝŠï¿½ï¿½É‚ï¿½ï¿½ï¿½É‚ï¿½ false ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+// Ÿ ƒ^ƒCƒgƒ‹
+// ƒEƒBƒ“ƒhƒE‚ÌƒLƒƒƒvƒVƒ‡ƒ“(ƒ^ƒCƒgƒ‹)‚¨‚æ‚Ñ
+// ƒ^ƒXƒNƒo[‚É•\Ž¦‚³‚ê‚é‚à‚Ì‚Å‚·B
+;System.title = "‹g—¢‹g—¢";
+
+
+// Ÿ ƒVƒiƒŠƒI‰ðÍƒ‚[ƒh
+// ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹’†‚Ì‰üs‚É]‚í‚¹‚½‚¢ê‡‚É false ‚ðÝ’è‚µ‚Ü‚·B
+// false ‚ðŽw’è‚·‚é‚ÆAKAG ‚ÌƒVƒiƒŠƒI’†‚Ì‰üs‚ªAs––‚É \ ‚Ü‚½‚Í [p] ‚ð‘‚©
+// ‚È‚¢ŒÀ‚è‚»‚Ì‚Ü‚ÜƒƒbƒZ[ƒWƒŒƒCƒ„ã‚Å‚Ì‰üs‚Æ‚µ‚Äˆµ‚í‚ê‚Ü‚·B
+// true ‚ðÝ’è‚·‚é‚Æ [r] ƒ^ƒO‚ð‘‚©‚È‚¢ŒÀ‚è‰üs‚³‚ê‚Ü‚¹‚ñB
+// KAG2.x ŒÝŠ·‚É‚·‚é‚É‚Í false ‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 ;global.ignoreCR = true;
 
 
-// ï¿½ï¿½ ï¿½æ‘œï¿½Lï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½æ‘œï¿½Lï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ MB ï¿½Pï¿½Ê‚ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// gcsAuto ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ÉŒï¿½ï¿½è‚³ï¿½ï¿½Ü‚ï¿½ï¿½B
-;System.graphicCacheLimit = gcsAuto; // ï¿½æ‘œï¿½Lï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½bï¿½g = ï¿½ï¿½ï¿½ï¿½
+// Ÿ ‰æ‘œƒLƒƒƒbƒVƒ…§ŒÀ
+// ‰æ‘œƒLƒƒƒbƒVƒ…‚Ì§ŒÀ’l‚ð MB ’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B
+// gcsAuto ‚ðŽw’è‚·‚é‚ÆAŽ©“®“I‚ÉŒˆ’è‚³‚ê‚Ü‚·B
+;System.graphicCacheLimit = gcsAuto; // ‰æ‘œƒLƒƒƒbƒVƒ…ƒŠƒ~ƒbƒg = Ž©“®
 
 
-// ï¿½ï¿½ global ï¿½Ç‰ï¿½ï¿½ÌÝ’ï¿½
-// ï¿½Ç‰ï¿½ï¿½ÌÝ’è€ï¿½Ú‚ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
-// [start-global-additionals] ï¿½ï¿½ [end-global-additionals] ï¿½ÅˆÍ‚Ü‚ê‚½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÉÝ’ï¿½ï¿½ï¿½Lï¿½qï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ( [start-global-additionals] ï¿½ï¿½ [end-global-additionals] ï¿½Ìsï¿½ï¿½
-//  ï¿½ÒWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚µï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )
+// Ÿ global ’Ç‰Á‚ÌÝ’è
+// ’Ç‰Á‚ÌÝ’è€–Ú‚ª‚ ‚éê‡‚Í
+// [start-global-additionals] ‚Æ [end-global-additionals] ‚ÅˆÍ‚Ü‚ê‚½
+// •”•ª‚ÉÝ’è‚ð‹Lq‚µ‚Ä‚­‚¾‚³‚¢
+// ( [start-global-additionals] ‚Æ [end-global-additionals] ‚Ìs‚Í
+//  •ÒW‚µ‚½‚èÁ‚µ‚½‚è‚µ‚È‚¢‚Å‚­‚¾‚³‚¢ )
 
 //[start-global-additionals]
 
@@ -46,226 +46,226 @@
 
 
 
-//-------------------------------------------- ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½â“®ï¿½ï¿½ÌÝ’ï¿½ -----
+//-------------------------------------------- ƒEƒBƒ“ƒhƒE‚â“®ì‚ÌÝ’è -----
 
 function KAGWindow_config()
 {
-// ï¿½ï¿½ ï¿½ï¿½ÊƒTï¿½Cï¿½Y
-// scWidth ï¿½É‰ï¿½Ê‚Ì•ï¿½ï¿½AscHeight ï¿½É‰ï¿½Ê‚Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Nï¿½Zï¿½ï¿½ï¿½Pï¿½Ê‚ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// ï¿½Wï¿½ï¿½ï¿½Iï¿½ÉŽgï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ 640x480 ï¿½ï¿½ 800x600 ï¿½Ì‚æ‚¤ï¿½È‰ï¿½ÊƒTï¿½Cï¿½Yï¿½Å‚Í‚È‚ï¿½ï¿½Tï¿½Cï¿½Y
-// ï¿½ÉÝ’è‚·ï¿½ï¿½ÆAï¿½tï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½É‚Å‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ‰æ–ÊƒTƒCƒY
+// scWidth ‚É‰æ–Ê‚Ì•AscHeight ‚É‰æ–Ê‚Ì‚‚³‚ðƒsƒNƒZƒ‹’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B
+// •W€“I‚ÉŽg‚í‚ê‚Ä‚¢‚é 640x480 ‚â 800x600 ‚Ì‚æ‚¤‚È‰æ–ÊƒTƒCƒY‚Å‚Í‚È‚¢ƒTƒCƒY
+// ‚ÉÝ’è‚·‚é‚ÆAƒtƒ‹ƒXƒNƒŠ[ƒ“‚É‚Å‚«‚È‚¢ê‡‚ª‚ ‚è‚Ü‚·B
 ;scWidth = 640;
 ;scHeight = 480;
 
 
-// ï¿½ï¿½ ï¿½Ç‚Ý‚Æ‚ï¿½ï¿½pï¿½ï¿½ï¿½[ï¿½h
-// readOnlyMode = true ï¿½Æ‚ï¿½ï¿½ï¿½ÆAï¿½fï¿½Bï¿½Xï¿½Nï¿½Ö‚Ì‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
-// ï¿½È‚ï¿½Ü‚ï¿½ï¿½BCD-ROM ï¿½ã‚©ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½È‚Ç‚ÉŽwï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ìê‡ï¿½Ížxï¿½Ì•Û‘ï¿½ï¿½È‚Ç‚ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ “Ç‚Ý‚Æ‚èê—pƒ‚[ƒh
+// readOnlyMode = true ‚Æ‚·‚é‚ÆAƒfƒBƒXƒN‚Ö‚Ì‚¢‚Á‚³‚¢‚Ì‘‚«ž‚Ý“®ì‚ð‚µ‚È‚­
+// ‚È‚è‚Ü‚·BCD-ROM ã‚©‚çŽÀs‚³‚¹‚é‚Æ‚«‚È‚Ç‚ÉŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+// ‚à‚¿‚ë‚ñA‚»‚Ìê‡‚Ížx‚Ì•Û‘¶‚È‚Ç‚ª‚Å‚«‚È‚­‚È‚è‚Ü‚·B
 ;readOnlyMode = false;
 
 
-// ï¿½ï¿½ ï¿½tï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½u
-// ï¿½xï¿½Ì•Û‘ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// false ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½oï¿½[ï¿½Ìuï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½vï¿½uï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½Þvï¿½ï¿½
-// ï¿½Tï¿½uï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚ï¿½ï¿½ï¿½Zï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚Ýï¿½ï¿½ñ‚¾‚è‚µï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½Ìê‡ï¿½Í•Û‘ï¿½ï¿½Â”\ï¿½Èžxï¿½ÌÅ‘ï¿½ÌŒÂï¿½ï¿½ï¿½ numBookMarks ï¿½É‚ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// true ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æƒtï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½[ï¿½hï¿½É‚È‚ï¿½Aï¿½uï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½vï¿½Å‚ï¿½
-// ï¿½uï¿½Jï¿½ï¿½ï¿½vï¿½_ï¿½Cï¿½Aï¿½ï¿½ï¿½Oï¿½{ï¿½bï¿½Nï¿½Xï¿½Aï¿½uï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½Þvï¿½Å‚Íuï¿½ï¿½ï¿½Oï¿½ï¿½tï¿½ï¿½ï¿½Ä•Û‘ï¿½ï¿½vï¿½_ï¿½Cï¿½A
-// ï¿½ï¿½ï¿½Oï¿½{ï¿½bï¿½Nï¿½Xï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½Aï¿½xï¿½ï¿½ï¿½Â•Ê‚Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä•Û‘ï¿½ï¿½ï¿½ï¿½éƒ‚ï¿½[ï¿½hï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½Ìê‡ï¿½ï¿½ ï¿½Û‘ï¿½ï¿½Â”\ï¿½Èžxï¿½ÌŒÂï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½Ü‚ï¿½ï¿½A
-// ï¿½Gï¿½Nï¿½Xï¿½vï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½È‚Ç‚É‚ï¿½ï¿½xï¿½ÌŠÇ—ï¿½ï¿½ï¿½ï¿½eï¿½Õ‚É‚È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ƒtƒŠ[ƒZ[ƒu
+// žx‚Ì•Û‘¶Œ`Ž®‚ðŽw’è‚µ‚Ü‚·B
+// false ‚ðŽw’è‚·‚é‚ÆAƒƒjƒ…[ƒo[‚Ìužx‚ð‚½‚Ç‚évužx‚ð‚Í‚³‚Þv‚Ì
+// ƒTƒuƒƒjƒ…[€–Ú‚©‚çƒZ[ƒuƒf[ƒ^‚ð•Û‘¶‚µ‚½‚è“Ç‚Ýž‚ñ‚¾‚è‚µ‚Ü‚·B
+// ‚±‚Ìê‡‚Í•Û‘¶‰Â”\‚Èžx‚ÌÅ‘å‚ÌŒÂ”‚Í numBookMarks ‚É‚æ‚Á‚Ä§ŒÀ
+// ‚³‚ê‚Ü‚·B
+// true ‚ðŽw’è‚·‚é‚ÆƒtƒŠ[ƒZ[ƒuƒ‚[ƒh‚É‚È‚èAužx‚ð‚½‚Ç‚év‚Å‚Í
+// uŠJ‚­vƒ_ƒCƒAƒƒOƒ{ƒbƒNƒXAužx‚ð‚Í‚³‚Þv‚Å‚Íu–¼‘O‚ð•t‚¯‚Ä•Û‘¶vƒ_ƒCƒA
+// ƒƒOƒ{ƒbƒNƒX‚ªŠJ‚«Ažx‚ðŒÂ•Ê‚Ìƒtƒ@ƒCƒ‹‚Æ‚µ‚Ä•Û‘¶‚·‚éƒ‚[ƒh‚É‚È‚è‚Ü‚·B
+// ‚±‚Ìê‡‚Í •Û‘¶‰Â”\‚Èžx‚ÌŒÂ”‚É§ŒÀ‚Í‚ ‚è‚Ü‚¹‚ñB‚Ü‚½A
+// ƒGƒNƒXƒvƒ[ƒ‰‚È‚Ç‚É‚æ‚éžx‚ÌŠÇ—‚ª—eˆÕ‚É‚È‚è‚Ü‚·B
 ;freeSaveDataMode = false;
 
 
-// ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½é‚©
-// false ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAï¿½Zï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ÌŠgï¿½ï¿½ï¿½qï¿½ï¿½ .kdt ï¿½É‚È‚ï¿½Aï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ï¿½
-// ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// true ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAï¿½Zï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ÌŠgï¿½ï¿½ï¿½qï¿½ï¿½ .bmp ï¿½É‚È‚ï¿½Aï¿½Gï¿½Nï¿½Xï¿½vï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½
-// ï¿½uï¿½Jï¿½ï¿½ï¿½vï¿½_ï¿½Cï¿½Aï¿½ï¿½ï¿½Oï¿½{ï¿½bï¿½Nï¿½Xï¿½Ìuï¿½kï¿½ï¿½ï¿½Åvï¿½\ï¿½ï¿½ï¿½ÅƒZï¿½[ï¿½uï¿½ï¿½ï¿½_ï¿½Å‚ÌƒTï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½ï¿½
-// ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
+// ŸƒTƒ€ƒlƒCƒ‹‚ð•Û‘¶‚·‚é‚©
+// false ‚ðŽw’è‚·‚é‚ÆAƒZ[ƒuƒf[ƒ^‚ÌŠg’£Žq‚Í .kdt ‚É‚È‚èAƒTƒ€ƒlƒCƒ‹‚Í
+// •Û‘¶‚³‚ê‚Ü‚¹‚ñB
+// true ‚ðŽw’è‚·‚é‚ÆAƒZ[ƒuƒf[ƒ^‚ÌŠg’£Žq‚Í .bmp ‚É‚È‚èAƒGƒNƒXƒvƒ[ƒ‰‚â
+// uŠJ‚­vƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX‚Ìuk¬”Åv•\Ž¦‚ÅƒZ[ƒuŽž“_‚Å‚ÌƒTƒ€ƒlƒCƒ‹‚ð
+// •\Ž¦‚·‚é‚±‚Æ‚ª‚Å‚«‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
 ;saveThumbnail = false;
 
 
-// ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½Ì•Û‘ï¿½ï¿½Tï¿½Cï¿½Y
-// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½BsaveThumbnail ï¿½ï¿½ true ï¿½ÉÝ’è‚µï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
-// ï¿½Ý’ï¿½ÍˆÓ–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// ï¿½ï¿½ï¿½ï¿½ï¿½Íƒsï¿½Nï¿½Zï¿½ï¿½ï¿½Pï¿½Ê‚ÅŽwï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½Ä•ï¿½ï¿½ï¿½ scWidth ï¿½ï¿½ scHeight ï¿½ï¿½
-// ï¿½ï¿½Æ“ï¿½ï¿½ï¿½ï¿½ï¿½ÅŽï¿½ï¿½ï¿½ï¿½Iï¿½ÉŒvï¿½Zï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
+// ŸƒTƒ€ƒlƒCƒ‹‚Ì•Û‘¶ƒTƒCƒY
+// ƒTƒ€ƒlƒCƒ‹‚Ì‰¡•‚ðŽw’è‚µ‚Ü‚·BsaveThumbnail ‚ð true ‚ÉÝ’è‚µ‚È‚¢‚Æ‚±‚Ì
+// Ý’è‚ÍˆÓ–¡‚ª‚ ‚è‚Ü‚¹‚ñB
+// ‰¡•‚ÍƒsƒNƒZƒ‹’PˆÊ‚ÅŽw’è‚µ‚Ä‚­‚¾‚³‚¢B‚½‚Ä•‚Í scWidth ‚Æ scHeight ‚Ì
+// ”ä‚Æ“¯‚¶”ä‚ÅŽ©“®“I‚ÉŒvŽZ‚³‚ê‚Ü‚·B
 ;thumbnailWidth = 133;
 
-// ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½Ì•Û‘ï¿½ï¿½ï¿½ï¿½[ï¿½h
-// ï¿½Tï¿½ï¿½ï¿½lï¿½Cï¿½ï¿½ï¿½Ì•Û‘ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½BsaveThumbnail ï¿½ï¿½ true ï¿½ÉÝ’è‚µï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
-// ï¿½Ý’ï¿½ÍˆÓ–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// 8 ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ï¿½ 256 ï¿½Fï¿½rï¿½bï¿½gï¿½}ï¿½bï¿½vï¿½Å•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// 24 ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ï¿½ 24bitï¿½tï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½[ï¿½rï¿½bï¿½gï¿½}ï¿½bï¿½vï¿½Å•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// 256ï¿½Fï¿½rï¿½bï¿½gï¿½}ï¿½bï¿½vï¿½Ì•ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½A
-// ï¿½æŽ¿ï¿½Íˆï¿½ï¿½ï¿½ï¿½È‚ï¿½Ü‚ï¿½ï¿½B
+// ŸƒTƒ€ƒlƒCƒ‹‚Ì•Û‘¶ƒ‚[ƒh
+// ƒTƒ€ƒlƒCƒ‹‚Ì•Û‘¶ƒ‚[ƒh‚ðŽw’è‚µ‚Ü‚·BsaveThumbnail ‚ð true ‚ÉÝ’è‚µ‚È‚¢‚Æ‚±‚Ì
+// Ý’è‚ÍˆÓ–¡‚ª‚ ‚è‚Ü‚¹‚ñB
+// 8 ‚ðŽw’è‚·‚é‚Æ 256 Fƒrƒbƒgƒ}ƒbƒv‚Å•Û‘¶‚³‚ê‚Ü‚·B
+// 24 ‚ðŽw’è‚·‚é‚Æ 24bitƒtƒ‹ƒJƒ‰[ƒrƒbƒgƒ}ƒbƒv‚Å•Û‘¶‚³‚ê‚Ü‚·B
+// 256Fƒrƒbƒgƒ}ƒbƒv‚Ì•û‚ªƒtƒ@ƒCƒ‹ƒTƒCƒY‚ð¬‚³‚­—}‚¦‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·‚ªA
+// ‰æŽ¿‚Íˆ«‚­‚È‚è‚Ü‚·B
 ;thumbnailDepth = 8;
 
 
-// ï¿½ï¿½ ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½tï¿½Bï¿½Nï¿½X
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÅŽwï¿½è‚µï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ÅŽnï¿½Ü‚é–¼ï¿½Oï¿½Åžxï¿½Ö˜Aï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ï¿½tï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½[ï¿½hï¿½Ìê‡ï¿½Å‚ï¿½ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ÌÝ’ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½É‰eï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ƒf[ƒ^–¼ƒvƒŒƒtƒBƒNƒX
+// ‚±‚±‚ÅŽw’è‚µ‚½–¼‘O‚ÅŽn‚Ü‚é–¼‘O‚ÅžxŠÖ˜A‚Ìƒtƒ@ƒCƒ‹‚ªì¬‚³‚ê‚Ü‚·B
+// ƒtƒŠ[ƒZ[ƒuƒ‚[ƒh‚Ìê‡‚Å‚àƒVƒXƒeƒ€•Ï”‚âƒVƒXƒeƒ€‚ÌÝ’è‚ð•Û‘¶‚·‚é
+// ƒtƒ@ƒCƒ‹‚É‰e‹¿‚µ‚Ü‚·B
 ;dataName = "data";
 
 
-// ï¿½ï¿½ ï¿½fï¿½[ï¿½^ID
-// KAGï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½iï¿½ÌƒZï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½Ôˆï¿½ï¿½ï¿½Ä“Ç‚Ýï¿½ï¿½Ü‚È‚ï¿½ï¿½æ‚¤ï¿½ÉAï¿½ï¿½iï¿½Å—Lï¿½ï¿½
-// IDï¿½ï¿½ "" ï¿½ÅˆÍ‚ï¿½ï¿½ÄŽwï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ( ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ )ï¿½B
-// ï¿½ï¿½ï¿½Éƒtï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½[ï¿½hï¿½Ådï¿½vï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½Bï¿½tï¿½ï¿½ï¿½[ï¿½Zï¿½[ï¿½uï¿½ï¿½ï¿½[ï¿½hï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½Ù‚Çdï¿½vï¿½Å‚Í‚È‚ï¿½ï¿½Å‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½Ædï¿½È‚ï¿½È‚ï¿½ï¿½ï¿½Ó‚ï¿½IDï¿½Íï¿½ï¿½ÅŽæ“¾ï¿½ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
-// http://kikyou.info/uuidgen/uuidgen.php (ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½IDï¿½ï¿½ï¿½Rï¿½sï¿½[&ï¿½yï¿½[ï¿½Xï¿½g)
-// ï¿½Ü‚ï¿½ï¿½ï¿½ ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½uï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½vï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½AShift + F4 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½Rï¿½ï¿½ï¿½\ï¿½[ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ï¿½ï¿½Ì“ï¿½Í—ï¿½ï¿½ï¿½
+// Ÿ ƒf[ƒ^ID
+// KAG‚ª‘¼‚Ìì•i‚ÌƒZ[ƒuƒf[ƒ^‚ðŠÔˆá‚Á‚Ä“Ç‚Ýž‚Ü‚È‚¢‚æ‚¤‚ÉAì•iŒÅ—L‚Ì
+// ID‚ð "" ‚ÅˆÍ‚Á‚ÄŽw’è‚µ‚Ä‚­‚¾‚³‚¢ ( ‰½‚Å‚à‚©‚Ü‚¢‚Ü‚¹‚ñ )B
+// “Á‚ÉƒtƒŠ[ƒZ[ƒuƒ‚[ƒh‚Åd—v‚É‚È‚è‚Ü‚·BƒtƒŠ[ƒZ[ƒuƒ‚[ƒh‚É‚µ‚È‚¢ê‡‚Í
+// ‚»‚ê‚Ù‚Çd—v‚Å‚Í‚È‚¢‚Å‚·B
+// ‘¼‚Æd‚È‚ç‚È‚¢ˆêˆÓ‚ÈID‚Í«‚ÅŽæ“¾‚·‚é‚±‚Æ‚à‚Å‚«‚Ü‚·B
+// http://kikyou.info/uuidgen/uuidgen.php (o‚Ä‚«‚½ID‚ðƒRƒs[&ƒy[ƒXƒg)
+// ‚Ü‚½‚Í ‹g—¢‹g—¢‚ð‹N“®‚µ‚Ä u‘I‘ð‚µ‚È‚¢vƒ{ƒ^ƒ“‚ð‰Ÿ‚µAShift + F4 ‚ð‰Ÿ‚µ‚Ä
+// ƒRƒ“ƒ\[ƒ‹‚ð•\Ž¦‚³‚¹A‚»‚Ì‰º‘¤‚Ì“ü—Í—“‚É
 //       System.createUUID()
-//       ( ï¿½æ“ªï¿½ï¿½ // ï¿½ÍŠÜ‚Ü‚ï¿½ )
-// ï¿½Æ“ï¿½Í‚ï¿½ï¿½ï¿½ Enter ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ( ï¿½ï¿½ : "371a6289-a084-ee18-2885-66314a0aa19d" )
+//       ( æ“ª‚Ì // ‚ÍŠÜ‚Ü‚¸ )
+// ‚Æ“ü—Í‚µ‚Ä Enter ƒL[‚ð‰Ÿ‚µ‚Ä‚àŽæ“¾‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+// ( —á : "371a6289-a084-ee18-2885-66314a0aa19d" )
 ;saveDataID = "00000000-0000-0000-0000-000000000000";
 
 
-// ï¿½ï¿½ ï¿½Û‘ï¿½ï¿½ï¿½ï¿½[ï¿½h
-// "c" ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æžxï¿½ï¿½ï¿½Ãï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// "z" ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æžxï¿½ï¿½ï¿½ï¿½ï¿½kï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// "c" ï¿½ï¿½ "z" ï¿½ð—¼•ï¿½wï¿½è‚·ï¿½é‚±ï¿½Æ‚Íoï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½xï¿½ï¿½ï¿½ï¿½ï¿½kï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½È’Pï¿½É‚Í“Ç‚ß‚È‚ï¿½ï¿½æ‚¤ï¿½Èƒfï¿½[ï¿½^ï¿½É‚È‚ï¿½Ì‚ÅAï¿½xï¿½Ìˆï¿½ï¿½kï¿½ÍˆÃï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½Ë‚Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B
-// "" ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æžxï¿½ÌˆÃï¿½ï¿½ï¿½ï¿½âˆ³ï¿½kï¿½Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
+// Ÿ •Û‘¶ƒ‚[ƒh
+// "c" ‚ðŽw’è‚·‚é‚Æžx‚ªˆÃ†‰»‚³‚ê‚Ü‚·B
+// "z" ‚ðŽw’è‚·‚é‚Æžx‚ªˆ³k‚³‚ê‚Ü‚·B
+// "c" ‚Æ "z" ‚ð—¼•ûŽw’è‚·‚é‚±‚Æ‚Ío—ˆ‚Ü‚¹‚ñBžx‚ðˆ³k‚·‚é‚Æ
+// ŠÈ’P‚É‚Í“Ç‚ß‚È‚¢‚æ‚¤‚Èƒf[ƒ^‚É‚È‚é‚Ì‚ÅAžx‚Ìˆ³k‚ÍˆÃ†‰»‚ð
+// Œ“‚Ë‚Ä‚¢‚Ü‚·B
+// "" ‚ðŽw’è‚·‚é‚Æžx‚ÌˆÃ†‰»‚âˆ³k‚Í‚³‚ê‚Ü‚¹‚ñB
 ;saveDataMode = "";
 
 
-// ï¿½ï¿½ ï¿½xï¿½Éƒ}ï¿½Nï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
-// ï¿½xï¿½Éƒ}ï¿½Nï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½Btrue ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAKAG ï¿½ï¿½
-// ï¿½}ï¿½Nï¿½ï¿½ï¿½Ìï¿½ï¿½Ížxï¿½É•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚é“®ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ÆAï¿½xï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚Ìƒ}
-// ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ÄŒï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// false ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAKAG ï¿½Ìƒ}ï¿½Nï¿½ï¿½ï¿½Ìï¿½ï¿½Ížxï¿½É•Û‘ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Aï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚é“®ï¿½ï¿½
-// ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Aï¿½ï¿½ï¿½Ý‚Ìƒ}ï¿½Nï¿½ï¿½ï¿½Ìï¿½ï¿½Í•Ï‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½}ï¿½Nï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ ï¿½ï¿½iï¿½Ì‚Í‚ï¿½ï¿½ß‚Åsï¿½ï¿½ï¿½æ‚¤ï¿½È—pï¿½rï¿½Å‚ÍAï¿½Ã‚ï¿½ï¿½}ï¿½Nï¿½ï¿½ï¿½Ìï¿½ï¿½
-// ï¿½ï¿½ï¿½xï¿½Ì“Ç‚Ýï¿½ï¿½Ý‚É‚ï¿½ï¿½ï¿½ÄVï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½Nï¿½ï¿½ï¿½Ìï¿½ï¿½Éã‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Jï¿½ï¿½ï¿½ï¿½
-// ï¿½Wï¿½ï¿½ï¿½É‚È‚é‚½ï¿½ßAfalse ï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½ï¿½ï¿½æ‚¢ï¿½Å‚ï¿½ï¿½å‚¤ï¿½B
+// Ÿ žx‚Éƒ}ƒNƒ‚Ìî•ñ‚ð•Û‘¶‚·‚é‚©‚Ç‚¤‚©
+// žx‚Éƒ}ƒNƒ‚Ìî•ñ‚ð•Û‘¶‚·‚é‚©‚Ç‚¤‚©‚ðŽw’è‚µ‚Ü‚·Btrue ‚ðŽw’è‚·‚é‚ÆAKAG ‚Ì
+// ƒ}ƒNƒ‚Ìî•ñ‚Ížx‚É•Û‘¶‚³‚êAžx‚ð‚½‚Ç‚é“®ì‚ðs‚¤‚ÆAžx‚ð•Û‘¶‚µ‚½ó‘Ô‚Ìƒ}
+// ƒNƒ‚ªÄŒ»‚³‚ê‚Ü‚·B
+// false ‚ðŽw’è‚·‚é‚ÆAKAG ‚Ìƒ}ƒNƒ‚Ìî•ñ‚Ížx‚É•Û‘¶‚³‚ê‚È‚­Ažx‚ð‚½‚Ç‚é“®ì
+// ‚ðs‚Á‚Ä‚àAŒ»Ý‚Ìƒ}ƒNƒ‚Ìî•ñ‚Í•Ï‚í‚è‚Ü‚¹‚ñB
+// “Á‚É –ˆ‰ñƒ}ƒNƒ’è‹`‚ð ì•i‚Ì‚Í‚¶‚ß‚Ås‚¤‚æ‚¤‚È—p“r‚Å‚ÍAŒÃ‚¢ƒ}ƒNƒ‚Ìî•ñ
+// ‚ªžx‚Ì“Ç‚Ýž‚Ý‚É‚æ‚Á‚ÄV‚µ‚¢ƒ}ƒNƒ‚Ìî•ñ‚Éã‘‚«‚³‚ê‚Ä‚µ‚Ü‚¤‚±‚Æ‚ªŠJ”­‚Ì
+// –W‚°‚É‚È‚é‚½‚ßAfalse ‚ðŽw’è‚µ‚½•û‚ª‚æ‚¢‚Å‚µ‚å‚¤B
 ;saveMacros = true;
 
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h (ï¿½~ï¿½ï¿½ï¿½b/ï¿½ï¿½ï¿½ï¿½)
-;chSpeeds.fast = 10; // ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
-;chSpeeds.normal = 30; // ï¿½uï¿½ï¿½ï¿½Êvï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
-;chSpeeds.slow = 50; // ï¿½uï¿½xï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Xï¿½sï¿½[ï¿½h
+// Ÿ •¶Žš•\Ž¦ƒXƒs[ƒh (ƒ~ƒŠ•b/•¶Žš)
+;chSpeeds.fast = 10; // u‚‘¬v•¶Žš•\Ž¦ƒXƒs[ƒh
+;chSpeeds.normal = 30; // u•’Êv•¶Žš•\Ž¦ƒXƒs[ƒh
+;chSpeeds.slow = 50; // u’x‚¢v•¶Žš•\Ž¦ƒXƒs[ƒh
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚Ýiï¿½ÞƒEï¿½Fï¿½Cï¿½g ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Eï¿½Fï¿½Cï¿½gï¿½ÌÝ’ï¿½l (ï¿½~ï¿½ï¿½ï¿½b)
-;autoModePageWaits.fast = 400; // ï¿½uï¿½Zï¿½ï¿½ï¿½v
-;autoModePageWaits.faster = 700; // ï¿½uï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½v
-;autoModePageWaits.medium = 1000; // ï¿½uï¿½ï¿½ï¿½Êv
-;autoModePageWaits.slower = 1300; // ï¿½uï¿½ï¿½ï¿½xï¿½ï¿½ï¿½v
-;autoModePageWaits.slow = 2000; // ï¿½uï¿½xï¿½ï¿½ï¿½v
+// Ÿ Ž©“®“I‚É“Ç‚Ýi‚ÞƒEƒFƒCƒg ƒy[ƒW––ƒEƒFƒCƒg‚ÌÝ’è’l (ƒ~ƒŠ•b)
+;autoModePageWaits.fast = 400; // u’Z‚¢v
+;autoModePageWaits.faster = 700; // u‚â‚â’Z‚¢v
+;autoModePageWaits.medium = 1000; // u•’Êv
+;autoModePageWaits.slower = 1300; // u‚â‚â’x‚¢v
+;autoModePageWaits.slow = 2000; // u’x‚¢v
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚Ýiï¿½ÞƒEï¿½Fï¿½Cï¿½g [l] ï¿½Eï¿½Fï¿½Cï¿½gï¿½ÌÝ’ï¿½l (ï¿½~ï¿½ï¿½ï¿½b)
-;autoModeLineWaits.fast = 180; // ï¿½uï¿½Zï¿½ï¿½ï¿½v
-;autoModeLineWaits.faster = 240; // ï¿½uï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½v
-;autoModeLineWaits.medium = 300; // ï¿½uï¿½ï¿½ï¿½Êv
-;autoModeLineWaits.slower = 360; // ï¿½uï¿½ï¿½ï¿½xï¿½ï¿½ï¿½v
-;autoModeLineWaits.slow = 500; // ï¿½uï¿½xï¿½ï¿½ï¿½v
+// Ÿ Ž©“®“I‚É“Ç‚Ýi‚ÞƒEƒFƒCƒg [l] ƒEƒFƒCƒg‚ÌÝ’è’l (ƒ~ƒŠ•b)
+;autoModeLineWaits.fast = 180; // u’Z‚¢v
+;autoModeLineWaits.faster = 240; // u‚â‚â’Z‚¢v
+;autoModeLineWaits.medium = 300; // u•’Êv
+;autoModeLineWaits.slower = 360; // u‚â‚â’x‚¢v
+;autoModeLineWaits.slow = 500; // u’x‚¢v
 
 
-// ï¿½ï¿½ ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½
-// ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½Bï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ cr ï¿½ÅŽnï¿½Ü‚ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ ( ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Q SDK Help ï¿½Qï¿½ï¿½ ) ï¿½ï¿½ï¿½Aï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½è”ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æ‚ï¿½ï¿½ÍAcursor ï¿½^ï¿½Oï¿½ÅŽwï¿½è‚·ï¿½ï¿½æ‚¤ï¿½Éæ“ªï¿½ï¿½ &
-// ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Kï¿½vï¿½Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ê‡ï¿½ï¿½ "" 
-// (ï¿½_ï¿½uï¿½ï¿½ï¿½Nï¿½Iï¿½[ï¿½eï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½) ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
-;cursorDefault = crArrow; // ï¿½Êï¿½Ìƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½
-;cursorPointed = crHandPoint; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½È‚Ç‚ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½
-;cursorWaitingClick = crArrow; // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½ÌŽï¿½
-;cursorDraggable = crSizeAll; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½Â”\ï¿½È‚Æ‚ï¿½
+// Ÿ ƒ}ƒEƒXƒJ[ƒ\ƒ‹
+// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ðŽw’è‚µ‚Ü‚·Bƒ}ƒEƒXƒJ[ƒ\ƒ‹‚Í cr ‚ÅŽn‚Ü‚éƒ}ƒEƒXƒJ[ƒ\ƒ‹’è
+// ” ( ‹g—¢‹g—¢‚Q SDK Help ŽQÆ ) ‚©Aƒ}ƒEƒXƒJ[ƒ\ƒ‹ƒtƒ@ƒCƒ‹–¼‚Å‚ ‚é•K—v‚ª
+// ‚ ‚è‚Ü‚·BƒAƒjƒ[ƒVƒ‡ƒ“ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚àŽw’è‚Å‚«‚Ü‚·B
+// ƒ}ƒEƒXƒJ[ƒ\ƒ‹’è”‚ðŽw’è‚·‚é‚Æ‚«‚ÍAcursor ƒ^ƒO‚ÅŽw’è‚·‚é‚æ‚¤‚Éæ“ª‚É &
+// ‚ð‚Â‚¯‚é•K—v‚Í‚ ‚è‚Ü‚¹‚ñBƒ}ƒEƒXƒJ[ƒ\ƒ‹ƒtƒ@ƒCƒ‹–¼‚ðŽw’è‚·‚éê‡‚Í "" 
+// (ƒ_ƒuƒ‹ƒNƒI[ƒe[ƒVƒ‡ƒ“) ‚Å‚­‚­‚Á‚Ä‚­‚¾‚³‚¢B
+;cursorDefault = crArrow; // ’Êí‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹
+;cursorPointed = crHandPoint; // ƒŠƒ“ƒN‚È‚Ç‚ðƒ|ƒCƒ“ƒg‚µ‚½‚Æ‚«
+;cursorWaitingClick = crArrow; // ƒNƒŠƒbƒN‘Ò‚¿‚ÌŽž
+;cursorDraggable = crSizeAll; // ƒƒbƒZ[ƒWƒŒƒCƒ„‚ðƒhƒ‰ƒbƒO‰Â”\‚È‚Æ‚«
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Lï¿½^
-// ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½Éuï¿½Ç‚ñ‚¾vï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½^ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½ÌÝ’è‚ª false ï¿½Å‚È‚ï¿½ true ï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ÆAï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½Ç‚Þ‚ï¿½ï¿½Æ‚ÉƒVï¿½Xï¿½eï¿½ï¿½
-// ï¿½Ïï¿½ (sf) ï¿½ï¿½
-// trail_ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½
-// ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½ï¿½ï¿½Ì•Ïï¿½ï¿½ï¿½ 1 ï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ first.ks ï¿½ï¿½ *start ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ trail_first_start ï¿½Æ‚ï¿½
-// ï¿½ï¿½ï¿½Ïï¿½ï¿½ï¿½ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½Bï¿½Ü‚ï¿½ï¿½Ê‰ß‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½Jï¿½ï¿½ï¿½Å‚ï¿½ ï¿½ï¿½ï¿½ï¿½` ( 0 ï¿½Æ‚ï¿½ï¿½ÄŒï¿½ï¿½È‚ï¿½ï¿½ï¿½
-// ï¿½Ü‚ï¿½ ) ï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ï¿½uï¿½Ç‚Þvï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ì‚ÍAï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½ÌIï¿½ï¿½ï¿½Ü‚Å‚ï¿½ï¿½ï¿½ï¿½×‚ÄƒVï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½
-// ï¿½sï¿½ï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½É‚È‚ï¿½ï¿½Äï¿½ï¿½ß‚Äuï¿½Ç‚ñ‚¾vï¿½Æ‚Ý‚È‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ï¿½uï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ÌIï¿½ï¿½ï¿½vï¿½Æ‚ÍAï¿½È‰ï¿½ï¿½Ìê‡ï¿½ÉIï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½Íuï¿½Ç‚ñ‚¾vï¿½Æ‚ï¿½
-// ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ƒ‰ƒxƒ‹‹L˜^
+// Ž©“®“I‚Éu“Ç‚ñ‚¾vƒ‰ƒxƒ‹‚ð‹L˜^‚·‚é‚©‚Ç‚¤‚©‚ðŽw’è‚µ‚Ü‚·B
+// ‚±‚ÌÝ’è‚ª false ‚Å‚È‚­ true ‚É‚È‚Á‚Ä‚¢‚é‚ÆAƒ‰ƒxƒ‹‚ð“Ç‚Þ‚²‚Æ‚ÉƒVƒXƒeƒ€
+// •Ï” (sf) ‚É
+// trail_ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹–¼_ƒ‰ƒxƒ‹–¼
+// ‚Æ‚¢‚¤•Ï”–¼‚Ì•Ï”‚É 1 ‚ª‰ÁŽZ‚³‚ê‚Ü‚·B
+// ‚½‚Æ‚¦‚Î first.ks ‚Ì *start ‚Æ‚¢‚¤ƒ‰ƒxƒ‹‚Å‚ ‚ê‚Î trail_first_start ‚Æ‚¢
+// ‚¤•Ï”–¼‚É‚È‚è‚Ü‚·B‚Ü‚¾’Ê‰ß‚µ‚Ä‚¢‚È‚¢ƒJŠ‚Å‚Í –¢’è‹` ( 0 ‚Æ‚µ‚ÄŒ©‚È‚³‚ê
+// ‚Ü‚· ) ‚É‚È‚Á‚Ä‚¢‚Ü‚·B
+// u“Ç‚Þv‚Æ‚¢‚¤‚Ì‚ÍAƒ‰ƒxƒ‹‚©‚çA‚»‚Ìƒ‰ƒxƒ‹‚ÌI—¹‚Ü‚Å‚ð‚·‚×‚ÄƒVƒiƒŠƒI‚ªŽÀ
+// s‚³‚ê‚½‚Æ‚«‚É‚È‚Á‚Ä‰‚ß‚Äu“Ç‚ñ‚¾v‚Æ‚Ý‚È‚³‚ê‚Ü‚·B
+// uƒ‰ƒxƒ‹‚ÌI—¹v‚Æ‚ÍAˆÈ‰º‚Ìê‡‚ÉI—¹‚Æ‚³‚êA‚»‚Ìƒ‰ƒxƒ‹‚Íu“Ç‚ñ‚¾v‚Æ‚³
+// ‚ê‚Ü‚·B
 //
-// ï¿½E[s] ï¿½^ï¿½Oï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½ÌIï¿½[ï¿½É’Bï¿½ï¿½ï¿½ï¿½
-// ï¿½Eï¿½ï¿½ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
-// ï¿½Ejump ï¿½^ï¿½Oï¿½ÅƒWï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½
-// ï¿½Elink ï¿½ï¿½ button ï¿½Å‚Ìƒï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½Ö‚ÌƒWï¿½ï¿½ï¿½ï¿½ï¿½v
-//    ( ï¿½ï¿½ï¿½Í‚ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Å‚ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ÖƒWï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½Æuï¿½Ç‚ñ‚¾v
-//      ï¿½ÆŒï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Ì‚Å’ï¿½ï¿½ï¿½; link ï¿½ï¿½ button ï¿½^ï¿½Oï¿½ï¿½ countpage ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Qï¿½ï¿½ )
-// ï¿½Ereturn ï¿½^ï¿½Oï¿½Å–ß‚ï¿½Æ‚ï¿½ ( call ï¿½Å”ï¿½Ô‚Æ‚ï¿½ï¿½ÍIï¿½ï¿½ï¿½Æ‚ÍŒï¿½ï¿½È‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ )
+// E[s] ƒ^ƒO‚âƒVƒiƒŠƒI‚ÌI’[‚É’B‚µ‚½
+// EŽŸ‚Ìƒ‰ƒxƒ‹‚ªŒ»‚ê‚½
+// Ejump ƒ^ƒO‚ÅƒWƒƒƒ“ƒv‚µ‚½
+// Elink ‚â button ‚Å‚ÌƒŠƒ“ƒNæ‚Ö‚ÌƒWƒƒƒ“ƒv
+//    ( •¶Í‚ð•\Ž¦‚µ‚«‚Á‚Ä‚¢‚È‚¢ê‡‚Å‚à ƒŠƒ“ƒNæ‚ÖƒWƒƒƒ“ƒv‚·‚é‚Æu“Ç‚ñ‚¾v
+//      ‚ÆŒ©‚È‚³‚ê‚é‚Ì‚Å’ˆÓ; link ‚â button ƒ^ƒO‚Ì countpage ‘®«‚ðŽQÆ )
+// Ereturn ƒ^ƒO‚Å–ß‚é‚Æ‚« ( call ‚Å”ò‚Ô‚Æ‚«‚ÍI—¹‚Æ‚ÍŒ©‚È‚³‚ê‚Ü‚¹‚ñ )
 ;autoRecordPageShowing = true;
 
 
-// ï¿½ï¿½ ï¿½Ê‰ß‹Lï¿½^
-// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½Ésï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Lï¿½^ï¿½Æ‚Íˆá‚¢ï¿½Ü‚ï¿½ï¿½B
-// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ÆAï¿½uï¿½Vï¿½Xï¿½eï¿½ï¿½ - ï¿½Oï¿½É–ß‚ï¿½vï¿½ÅAï¿½ï¿½ï¿½Oï¿½ï¿½
-// ï¿½Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Óï¿½ï¿½É–ß‚é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
-// 0 ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆŽï¿½ï¿½ï¿½ï¿½Iï¿½É‚Í’Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ ( record ï¿½^ï¿½Oï¿½ÅŽè“®ï¿½Å’Ê‰ß‹L
-//   ï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ )
-// 1 ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ï¿½ ï¿½Û‘ï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½Ê‰ß‚ï¿½ï¿½é‚²ï¿½Æ‚ÉŽï¿½ï¿½ï¿½ï¿½Iï¿½É’Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
-//   ï¿½ï¿½ï¿½B
-// 2 ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æ‘Iï¿½ï¿½ï¿½ï¿½ ( s ï¿½^ï¿½Oï¿½Å’ï¿½~ ) ï¿½ï¿½ï¿½Æ‚É’Ê‰ß‹Lï¿½^ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ’Ê‰ß‹L˜^
+// ’Ê‰ß‹L˜^‚ðŽ©“®“I‚És‚¤‚©‚Ç‚¤‚©‚ðŽw’è‚µ‚Ü‚·B
+// ƒ‰ƒxƒ‹‹L˜^‚Æ‚Íˆá‚¢‚Ü‚·B
+// ’Ê‰ß‹L˜^‚ðs‚¤‚ÆAuƒVƒXƒeƒ€ - ‘O‚É–ß‚év‚ÅA’¼‘O‚É
+// ’Ê‰ß‹L˜^‚ðs‚Á‚½‰ÓŠ‚É–ß‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
+// 0 ‚ðŽw’è‚·‚é‚ÆŽ©“®“I‚É‚Í’Ê‰ß‹L˜^‚ðs‚¢‚Ü‚¹‚ñ ( record ƒ^ƒO‚ÅŽè“®‚Å’Ê‰ß‹L
+//   ˜^‚ðs‚¤‚±‚Æ‚Í‚Å‚«‚Ü‚· )
+// 1 ‚ðŽw’è‚·‚é‚Æ •Û‘¶‰Â”\‚Èƒ‰ƒxƒ‹‚ð’Ê‰ß‚·‚é‚²‚Æ‚ÉŽ©“®“I‚É’Ê‰ß‹L˜^‚ðs‚¢‚Ü
+//   ‚·B
+// 2 ‚ðŽw’è‚·‚é‚Æ‘I‘ðŽˆ ( s ƒ^ƒO‚Å’âŽ~ ) ‚²‚Æ‚É’Ê‰ß‹L˜^‚ðs‚¢‚Ü‚·B
 ;recordHistoryOfStore = 0;
 
 
-// ï¿½ï¿½ ï¿½Ê‰ß‹Lï¿½^ï¿½ÌÅ‘å”
-// ï¿½Ê‰ß‹Lï¿½^ï¿½ÌÅ‘å”ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½Bï¿½Å‘ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ÅŽwï¿½è‚µï¿½ï¿½ï¿½ñ”Aï¿½Oï¿½É–ß‚éŽ–ï¿½ï¿½ï¿½Å‚ï¿½
-// ï¿½Ü‚ï¿½ï¿½Bï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆƒZï¿½[ï¿½uï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½å‚«ï¿½ï¿½ï¿½È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ’Ê‰ß‹L˜^‚ÌÅ‘å”
+// ’Ê‰ß‹L˜^‚ÌÅ‘å”‚ðŽw’è‚µ‚Ü‚·BÅ‘åA‚±‚±‚ÅŽw’è‚µ‚½‰ñ”A‘O‚É–ß‚éŽ–‚ª‚Å‚«
+// ‚Ü‚·B‘å‚«‚­‚·‚é‚ÆƒZ[ƒuƒf[ƒ^‚à‘å‚«‚­‚È‚è‚Ü‚·B
 ;maxHistoryOfStore = 5;
 
 
-// ï¿½ï¿½ quake ï¿½ï¿½ time ï¿½ï¿½ï¿½ï¿½ï¿½l
-// true ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ quake ï¿½ï¿½ time ï¿½ï¿½ï¿½ï¿½ï¿½Ì’Pï¿½Ê‚ï¿½ delay ï¿½ÅŽwï¿½è‚µï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½
-// ï¿½ï¿½Ã‚ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½Bfalse ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ï¿½ ms (ï¿½~ï¿½ï¿½ï¿½b) ï¿½Pï¿½Ê‚ÅŽwï¿½è‚·ï¿½é‚±ï¿½ï¿½
-// ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½BKAG 2.x ï¿½ÝŠï¿½ï¿½É‚ï¿½ï¿½ï¿½É‚ï¿½ true ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+// Ÿ quake ‚Ì time ‘®«’l
+// true ‚Æ‚·‚é‚Æ quake ‚Ì time ‘®«‚Ì’PˆÊ‚ª delay ‚ÅŽw’è‚µ‚½•¶Žš•\Ž¦‘¬“x‚É
+// Šî‚Ã‚­‚æ‚¤‚É‚È‚è‚Ü‚·Bfalse ‚ðŽw’è‚·‚é‚Æ ms (ƒ~ƒŠ•b) ’PˆÊ‚ÅŽw’è‚·‚é‚±‚Æ
+// ‚É‚È‚è‚Ü‚·BKAG 2.x ŒÝŠ·‚É‚·‚é‚É‚Í true ‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 ;defaultQuakeTimeInChUnit = false;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½pï¿½Â”\ï¿½ÈŒï¿½Ê‰ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½Ìï¿½
-// ï¿½ï¿½ï¿½pï¿½Â”\ï¿½ÈŒï¿½Ê‰ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ÌÅ‘ï¿½lï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½Bï¿½Â‚Ü‚ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ÅŽwï¿½è‚µï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê‰ï¿½ï¿½ð“¯Žï¿½ï¿½ÉÄï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½Ê‰ï¿½ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ 0 ï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½
-// ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
+// Ÿ —˜—p‰Â”\‚ÈŒø‰Ê‰¹ƒoƒbƒtƒ@‚Ì”
+// —˜—p‰Â”\‚ÈŒø‰Ê‰¹ƒoƒbƒtƒ@‚ÌÅ‘å’l‚ðŽw’è‚µ‚Ü‚·B‚Â‚Ü‚èA‚±‚±‚ÅŽw’è‚µ‚½”‚Ì
+// •ª‚¾‚¯Œø‰Ê‰¹‚ð“¯Žž‚ÉÄ¶‚Å‚«‚Ü‚·BŒø‰Ê‰¹‚ðŽg—p‚µ‚È‚¢ê‡‚Í 0 ‚ðŽw’è‚µ‚Ä
+// ‚©‚Ü‚¢‚Ü‚¹‚ñB
 ;numSEBuffers = 3;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ìï¿½
-// ï¿½ï¿½ï¿½pï¿½Â”\ï¿½Èƒï¿½ï¿½[ï¿½rï¿½[ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÌÅ‘ï¿½lï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½Bï¿½Â‚Ü‚ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ÅŽwï¿½è‚µ
-// ï¿½ï¿½ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ð“¯Žï¿½ï¿½ÉÄï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ƒ€[ƒr[ƒIƒuƒWƒFƒNƒg‚Ì”
+// —˜—p‰Â”\‚Èƒ€[ƒr[ƒIƒuƒWƒFƒNƒg‚ÌÅ‘å’l‚ðŽw’è‚µ‚Ü‚·B‚Â‚Ü‚èA‚±‚±‚ÅŽw’è‚µ
+// ‚½”‚Ì•ª‚¾‚¯ƒ€[ƒr[‚ð“¯Žž‚ÉÄ¶‚Å‚«‚Ü‚·B
 ;numMovies = 1;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚Ì‘Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½
-// ï¿½Kï¿½vï¿½È‚ï¿½ï¿½ï¿½ï¿½ 0 ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‘ï¿½ï¿½xï¿½ï¿½ï¿½á‰ºï¿½ï¿½ï¿½ï¿½ï¿½èƒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï‚µï¿½Ü‚ï¿½ï¿½Ì‚ÅAï¿½Kï¿½vï¿½Èï¿½É‘å‚«ï¿½Èï¿½ï¿½ï¿½ï¿½w
-// ï¿½è‚µï¿½È‚ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½Å‚ï¿½ï¿½å‚¤ï¿½B
-// laycount ï¿½^ï¿½Oï¿½ÅƒVï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½Å‚ï¿½ï¿½ÏXï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ‰Šúó‘Ô‚Ì‘OŒiƒŒƒCƒ„‚Ì”
+// •K—v‚È‚¯‚ê‚Î 0 ‚ðŽw’è‚µ‚Ä‚©‚Ü‚¢‚Ü‚¹‚ñB
+// ”‚ª‘½‚¢‚Æ‘¬“x‚ª’á‰º‚µ‚½‚èƒƒ‚ƒŠ‚ðÁ”ï‚µ‚Ü‚·‚Ì‚ÅA•K—vˆÈã‚É‘å‚«‚È”‚ðŽw
+// ’è‚µ‚È‚¢•û‚ª—Ç‚¢‚Å‚µ‚å‚¤B
+// laycount ƒ^ƒO‚ÅƒVƒiƒŠƒI“à‚Å‚à•ÏX‚Å‚«‚Ü‚·B
 ;numCharacterLayers = 3;
 
 
-// ï¿½ï¿½ ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½ï¿½Eï¿½ï¿½ï¿½Sï¿½Ê’uï¿½wï¿½ï¿½
+// Ÿ ‘OŒiƒŒƒCƒ„‚Ì¶‰E’†SˆÊ’uŽw’è
 // +---------+
 // |         |
 // | |  |  | |
 // | |  |  | |
 // +---------+
-// image ï¿½^ï¿½Oï¿½ï¿½ï¿½é‚¢ï¿½ï¿½ img ï¿½^ï¿½Oï¿½ï¿½ pos ï¿½ï¿½ï¿½ï¿½ï¿½ÅŽwï¿½è‚·ï¿½ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ ï¿½Ê’uï¿½ï¿½ (
-// left ï¿½ï¿½ lecft_center ï¿½È‚ï¿½ ) ï¿½Æ‚ï¿½ï¿½ê‚¼ï¿½ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Sï¿½Ê’u ( x ï¿½ï¿½ï¿½W ) ï¿½ï¿½
-// ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B;scPositionX.ï¿½Ê’uï¿½ï¿½ = ï¿½ï¿½ï¿½Sï¿½Ê’u; ï¿½ÌŒ`ï¿½ï¿½ï¿½ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
+// image ƒ^ƒO‚ ‚é‚¢‚Í img ƒ^ƒO‚Ì pos ‘®«‚ÅŽw’è‚·‚é‘OŒiƒŒƒCƒ„‚Ì ˆÊ’u–¼ (
+// left ‚â lecft_center ‚È‚Ç ) ‚Æ‚»‚ê‚¼‚ê‚É‘Î‰ž‚·‚é ’†SˆÊ’u ( x À•W ) ‚ð
+// Žw’è‚µ‚Ü‚·B;scPositionX.ˆÊ’u–¼ = ’†SˆÊ’u; ‚ÌŒ`Ž®‚ÅŽw’è‚µ‚Ü‚·B
 ;scPositionX.left = 160;
 ;scPositionX.left_center = 240;
 ;scPositionX.center = 320;
@@ -273,9 +273,9 @@ function KAGWindow_config()
 ;scPositionX.right = 480;
 
 
-// ï¿½ÈˆÕ‚È‹Lï¿½ï¿½
-// ( pos ï¿½ï¿½ï¿½ï¿½ï¿½ÉŽwï¿½è‚·ï¿½ï¿½ left, left_center, center, right_center, right ï¿½ï¿½
-//  ï¿½ï¿½ï¿½ê‚¼ï¿½ï¿½ l, lc, c, rc, r ï¿½Å‚ï¿½ï¿½wï¿½ï¿½Å‚ï¿½ï¿½ï¿½æ‚¤ï¿½É•Ê–ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½Ü‚ï¿½ )
+// ŠÈˆÕ‚È‹L†
+// ( pos ‘®«‚ÉŽw’è‚·‚é left, left_center, center, right_center, right ‚ð
+//  ‚»‚ê‚¼‚ê l, lc, c, rc, r ‚Å‚àŽw’è‚Å‚«‚é‚æ‚¤‚É•Ê–¼‚ð’è‹`‚µ‚Ü‚· )
 ;scPositionX.l = scPositionX.left;
 ;scPositionX.lc = scPositionX.left_center;
 ;scPositionX.c = scPositionX.center;
@@ -283,59 +283,59 @@ function KAGWindow_config()
 ;scPositionX.r = scPositionX.right;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½
-// ï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Æˆï¿½ï¿½ï¿½ÄA0 ï¿½ï¿½ï¿½wï¿½è‚·ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½Èï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É‚ï¿½ï¿½×‚ï¿½ï¿½Å‚ï¿½ï¿½Blaycount ï¿½^ï¿½Oï¿½ÅƒVï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½Å‚ï¿½ï¿½ÏXï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ‰Šúó‘Ô‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì”
+// ‘OŒiƒŒƒCƒ„‚Æˆá‚Á‚ÄA0 ‚ðŽw’è‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñB‚±‚ê‚à•K—v‚È”‚¾‚¯Šm•Û
+// ‚·‚é‚æ‚¤‚É‚·‚×‚«‚Å‚·Blaycount ƒ^ƒO‚ÅƒVƒiƒŠƒI“à‚Å‚à•ÏX‚Å‚«‚Ü‚·B
 ;numMessageLayers = 2;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚Åƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
-// true ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚Å•\ï¿½ï¿½ï¿½ï¿½Ô‚É‚È‚ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½A
-// false ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æï¿½ï¿½ï¿½ï¿½Ô‚Å‚Í‚ï¿½ï¿½×‚Ä‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Íï¿½ï¿½ï¿½ï¿½Ô‚Å”ï¿½\ï¿½ï¿½
-// ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ‰Šúó‘Ô‚ÅƒƒbƒZ[ƒWƒŒƒCƒ„‚ð•\Ž¦‚·‚é‚©‚Ç‚¤‚©
+// true ‚ðŽw’è‚·‚é‚ÆƒƒbƒZ[ƒWƒŒƒCƒ„0‚ª‰Šúó‘Ô‚Å•\Ž¦ó‘Ô‚É‚È‚è‚Ü‚·‚ªA
+// false ‚ðŽw’è‚·‚é‚Æ‰Šúó‘Ô‚Å‚Í‚·‚×‚Ä‚ÌƒƒbƒZ[ƒWƒŒƒCƒ„‚Í‰Šúó‘Ô‚Å”ñ•\Ž¦
+// ‚É‚È‚è‚Ü‚·B
 ;initialMessageLayerVisible = true;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½pï¿½Â”\ï¿½Èžxï¿½Ìï¿½
-// ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½Â”\ï¿½Èžxï¿½Ìï¿½ï¿½Å‚ï¿½ï¿½B
-// save ï¿½ï¿½ load ï¿½^ï¿½Oï¿½Å•Û‘ï¿½ï¿½Â”\ï¿½Èžxï¿½Ìï¿½ï¿½Í‚ï¿½ï¿½ÌÝ’ï¿½É‚Í‰eï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½É‚ï¿½ï¿½xï¿½ÌŠÇ—ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½È‚ï¿½ï¿½ê‡ ( ï¿½Qï¿½[ï¿½ï¿½ï¿½ï¿½Ê’ï¿½ï¿½Å‘Sï¿½ï¿½ï¿½xï¿½ÌŠÇ—ï¿½ï¿½È‚Ç‚ï¿½
-// ï¿½sï¿½ï¿½ï¿½ê‡ï¿½È‚ï¿½ ) ï¿½ÍAnumBookMarks ï¿½Í•Kï¿½vï¿½Èï¿½ï¿½ÉÝ’è‚µï¿½ArestoreMenu.visible ï¿½ï¿½
-// storeMenu.visible ï¿½ï¿½ false ï¿½ÉÝ’è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+// Ÿ —˜—p‰Â”\‚Èžx‚Ì”
+// ƒƒjƒ…[‚É•\Ž¦‚µAƒ†[ƒU[‚ª‘I‘ð‰Â”\‚Èžx‚Ì”‚Å‚·B
+// save ‚â load ƒ^ƒO‚Å•Û‘¶‰Â”\‚Èžx‚Ì”‚Í‚±‚ÌÝ’è‚É‚Í‰e‹¿‚µ‚Ü‚¹‚ñB
+// ƒƒjƒ…[‚É‚æ‚éžx‚ÌŠÇ—‚ðs‚í‚È‚¢ê‡ ( ƒQ[ƒ€‰æ–Ê’†‚Å‘S•”žx‚ÌŠÇ—‚È‚Ç‚ð
+// s‚¤ê‡‚È‚Ç ) ‚ÍAnumBookMarks ‚Í•K—v‚È”‚ÉÝ’è‚µArestoreMenu.visible ‚Æ
+// storeMenu.visible ‚ð false ‚ÉÝ’è‚µ‚Ä‚­‚¾‚³‚¢B
 ;numBookMarks = 10;
 
 
-// ï¿½ï¿½ ï¿½xï¿½É“ï¿½tï¿½ð•¹‹Lï¿½ï¿½ï¿½é‚©
-// true ï¿½ÉÝ’è‚·ï¿½ï¿½ÆAï¿½xï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Ìï¿½ï¿½Ú‚Ì‰ï¿½ï¿½ï¿½ YY/MM/DD HH:MMï¿½ÌŒ`ï¿½ï¿½ï¿½Åžxï¿½ï¿½Û‘ï¿½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½Eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ žx‚É“ú•t‚ð•¹‹L‚·‚é‚©
+// true ‚ÉÝ’è‚·‚é‚ÆAžxƒƒjƒ…[‚Ì€–Ú‚Ì‰¡‚É YY/MM/DD HH:MM‚ÌŒ`Ž®‚Åžx‚ð•Û‘¶
+// ‚µ‚½“ú•tEŽž‚ª•\Ž¦‚³‚ê‚Ü‚·B
 ;showBookMarkDate = true;
 
 
-// ï¿½ï¿½ ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Iï¿½ï¿½ï¿½ÅŒÅ’ï¿½sï¿½bï¿½`ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì‚Ý‚ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-// true ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Iï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ÅŒÅ’ï¿½sï¿½bï¿½`ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì‚Ý‚ï¿½\ï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ƒtƒHƒ“ƒg‘I‘ð‚ÅŒÅ’èƒsƒbƒ`ƒtƒHƒ“ƒg‚Ì‚Ý‚ð•\Ž¦‚·‚é‚©
+// true ‚ðŽw’è‚·‚é‚ÆAƒtƒHƒ“ƒg‘I‘ðƒEƒBƒ“ƒhƒE‚ÅŒÅ’èƒsƒbƒ`ƒtƒHƒ“ƒg‚Ì‚Ý‚ð•\Ž¦
+// ‚·‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
 ;showFixedPitchOnlyInFontSelector = false;
 
 
-// ï¿½ï¿½ ï¿½uï¿½wï¿½ï¿½ï¿½v > ï¿½ÚŽï¿½ï¿½vï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÅŽwï¿½è‚·ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Í‹gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Â”\ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Æ“ï¿½ï¿½ï¿½ï¿½êŠï¿½ÉÝ’uï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
-// ï¿½È‚ï¿½ï¿½ï¿½Î‚È‚ï¿½Ü‚ï¿½ï¿½ï¿½B
+// Ÿ uƒwƒ‹ƒv > –ÚŽŸv‚ð‘I‘ð‚µ‚½‚Æ‚«‚ÉŽÀs‚·‚éƒtƒ@ƒCƒ‹
+// ‚±‚±‚ÅŽw’è‚·‚éƒtƒ@ƒCƒ‹‚Í‹g—¢‹g—¢ŽÀs‰Â”\ƒtƒ@ƒCƒ‹‚Æ“¯‚¶êŠ‚ÉÝ’u‚³‚ê‚Ä‚¢
+// ‚È‚¯‚ê‚Î‚È‚è‚Ü‚¹‚ñB
 ;helpFile = "readme.txt";
 
 
-// ï¿½ï¿½ ï¿½uï¿½wï¿½ï¿½ï¿½v > ï¿½ï¿½ï¿½Ìƒ\ï¿½tï¿½gï¿½É‚Â‚ï¿½ï¿½Ävï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½É‚Å‚ï¿½
-// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ì•\ï¿½ï¿½ï¿½Ìˆï¿½ÌƒTï¿½Cï¿½Y
-// ï¿½ï¿½ï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ about.ks ï¿½ï¿½ï¿½ï¿½ï¿½ÌƒEï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½ÅŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-;aboutWidth = 320; // ï¿½ï¿½
-;aboutHeight = 200; // ï¿½ï¿½ï¿½ï¿½
+// Ÿ uƒwƒ‹ƒv > ‚±‚Ìƒ\ƒtƒg‚É‚Â‚¢‚Äv‚ð‘I‘ð‚µ‚½‚Æ‚«‚É‚Å‚é
+// ƒEƒBƒ“ƒhƒE‚Ì•\Ž¦—Ìˆæ‚ÌƒTƒCƒY
+// ‚±‚Ìƒƒjƒ…[‚ð‘I‘ð‚·‚é‚Æ about.ks ‚ª‚»‚ÌƒEƒBƒ“ƒhƒE“à‚ÅŽÀs‚³‚ê‚Ü‚·B
+;aboutWidth = 320; // •
+;aboutHeight = 200; // ‚‚³
 
 
-// ï¿½ï¿½ ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½â“®ï¿½ï¿½Ì’Ç‰ï¿½ï¿½ÌÝ’ï¿½
-// ï¿½Ç‰ï¿½ï¿½ÌÝ’è€ï¿½Ú‚ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
-// [start-window-additionals] ï¿½ï¿½ [end-window-additionals] ï¿½ÅˆÍ‚Ü‚ê‚½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÉÝ’ï¿½ï¿½ï¿½Lï¿½qï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ( [start-window-additionals] ï¿½ï¿½ [end-window-additionals] ï¿½Ìsï¿½ï¿½
-//  ï¿½ÒWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚µï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )
+// Ÿ ƒEƒBƒ“ƒhƒE‚â“®ì‚Ì’Ç‰Á‚ÌÝ’è
+// ’Ç‰Á‚ÌÝ’è€–Ú‚ª‚ ‚éê‡‚Í
+// [start-window-additionals] ‚Æ [end-window-additionals] ‚ÅˆÍ‚Ü‚ê‚½
+// •”•ª‚ÉÝ’è‚ð‹Lq‚µ‚Ä‚­‚¾‚³‚¢
+// ( [start-window-additionals] ‚Æ [end-window-additionals] ‚Ìs‚Í
+//  •ÒW‚µ‚½‚èÁ‚µ‚½‚è‚µ‚È‚¢‚Å‚­‚¾‚³‚¢ )
 
 //[start-window-additionals]
 
@@ -344,111 +344,111 @@ function KAGWindow_config()
 }
 
 
-//---------------------------------------------------- ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ÌÝ’ï¿½ -----
+//---------------------------------------------------- ƒƒjƒ…[‚ÌÝ’è -----
 
 function Menu_visible_config()
 {
-// ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½Ì•\ï¿½ï¿½/ï¿½ï¿½\ï¿½ï¿½ï¿½ÌÝ’ï¿½
-// true ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æ•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Afalse ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æ”ï¿½\ï¿½ï¿½ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½éƒï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú–ï¿½ï¿½É‚Â‚ï¿½ï¿½Ä‚ï¿½ Menus.tjs ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½B
+// ƒƒjƒ…[‚Ì•\Ž¦/”ñ•\Ž¦‚ÌÝ’è
+// true ‚ðŽw’è‚·‚é‚Æ•\Ž¦‚³‚êAfalse ‚ðŽw’è‚·‚é‚Æ”ñ•\Ž¦‚É‚È‚è‚Ü‚·B
+// ƒƒjƒ…[‚É•\Ž¦‚·‚éƒƒjƒ…[€–Ú–¼‚É‚Â‚¢‚Ä‚Í Menus.tjs ‚ð‘‚«Š·‚¦‚Ä‚­‚¾‚³
+// ‚¢B
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½oï¿½[ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-// ï¿½ï¿½\ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½Æ“ï¿½ï¿½Rï¿½Ç‚Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚É‚ï¿½ï¿½Aï¿½Nï¿½Zï¿½Xï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ƒƒjƒ…[ƒo[‚ð•\Ž¦‚·‚é‚©
+// ”ñ•\Ž¦‚É‚·‚é‚Æ“–‘R‚Ç‚Ìƒƒjƒ…[€–Ú‚É‚àƒAƒNƒZƒX‚Å‚«‚È‚­‚È‚è‚Ü‚·B
 ;menu.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½Vï¿½Xï¿½eï¿½ï¿½ > ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½v
-// ï¿½ï¿½ï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚ï¿½ï¿½\ï¿½ï¿½ï¿½É‚ï¿½ï¿½Ä‚ï¿½ï¿½}ï¿½Eï¿½Xï¿½Ì‰Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Å‚Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½
-// ï¿½ï¿½\ï¿½ï¿½ï¿½Íˆò«‘±ï¿½ï¿½ï¿½Lï¿½ï¿½Å‚ï¿½ï¿½B
+// Ÿ uƒVƒXƒeƒ€ > ƒƒbƒZ[ƒW‚ðÁ‚·v
+// ‚±‚Ìƒƒjƒ…[€–Ú‚ð”ñ•\Ž¦‚É‚µ‚Ä‚àƒ}ƒEƒX‚Ì‰EƒNƒŠƒbƒN‚Å‚ÌƒƒbƒZ[ƒW‚Ì
+// ”ñ•\Ž¦‚Íˆø‚«‘±‚«—LŒø‚Å‚·B
 ;rightClickMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½Vï¿½Xï¿½eï¿½ï¿½ > ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Ì•\ï¿½ï¿½ï¿½v
+// Ÿ uƒVƒXƒeƒ€ > ƒƒbƒZ[ƒW—š—ð‚Ì•\Ž¦v
 ;showHistoryMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½Vï¿½Xï¿½eï¿½ï¿½ > ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Ç‚Ü‚Åiï¿½Þvï¿½Ü‚ï¿½ï¿½Íuï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½ï¿½Ü‚Åiï¿½Þv
+// Ÿ uƒVƒXƒeƒ€ > ŽŸ‚Ì‘I‘ðŽˆ/–¢“Ç‚Ü‚Åi‚Þv‚Ü‚½‚ÍuŽŸ‚Ì‘I‘ðŽˆ‚Ü‚Åi‚Þv
 ;skipToNextStopMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½Vï¿½Xï¿½eï¿½ï¿½ > ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚Ýiï¿½Þv
+// Ÿ uƒVƒXƒeƒ€ > Ž©“®“I‚É“Ç‚Ýi‚Þv
 ;autoModeMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½Vï¿½Xï¿½eï¿½ï¿½ > ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É“Ç‚Ýiï¿½ÞƒEï¿½Fï¿½Cï¿½gï¿½v
+// Ÿ uƒVƒXƒeƒ€ > Ž©“®“I‚É“Ç‚Ýi‚ÞƒEƒFƒCƒgv
 ;autoModeWaitMenu.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½Vï¿½Xï¿½eï¿½ï¿½ > ï¿½Oï¿½É–ß‚ï¿½v
+// Ÿ uƒVƒXƒeƒ€ > ‘O‚É–ß‚év
 ;goBackMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½Vï¿½Xï¿½eï¿½ï¿½ > ï¿½Åï¿½ï¿½É–ß‚ï¿½v
+// Ÿ uƒVƒXƒeƒ€ > Å‰‚É–ß‚év
 ;goToStartMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½v
+// Ÿ u•¶Žš•\Ž¦v
 ;characterMenu.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ > ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½x > ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Ü‚Åˆï¿½Cï¿½Év
-// ï¿½ï¿½ï¿½[ï¿½Uï¿½ï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½jï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ú‚ï¿½ï¿½`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ÆA
-// l ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ u•¶Žš•\Ž¦ > •\Ž¦‘¬“x > ƒy[ƒW––‚Ü‚Åˆê‹C‚Év
+// ƒ†[ƒU‚ª‚±‚Ìƒƒjƒ…[€–Ú‚ðƒ`ƒFƒbƒN‚·‚é‚ÆA
+// l ƒ^ƒO‚ª–³Ž‹‚³‚ê‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
 ;chNonStopToPageBreakItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ > ï¿½ï¿½xï¿½Ç‚ñ‚¾‚Æ‚ï¿½ï¿½ï¿½Ív
+// Ÿ u•¶Žš•\Ž¦ > ˆê“x“Ç‚ñ‚¾‚Æ‚±‚ë‚Ív
 ;ch2ndSpeedMenu.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ > ï¿½ï¿½xï¿½Ç‚ñ‚¾‚Æ‚ï¿½ï¿½ï¿½ï¿½ > ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Ü‚Åˆï¿½Cï¿½Év
+// Ÿ u•¶Žš•\Ž¦ > ˆê“x“Ç‚ñ‚¾‚Æ‚±‚ë‚Í > ƒy[ƒW––‚Ü‚Åˆê‹C‚Év
 ;ch2ndNonStopToPageBreakItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ > ï¿½Aï¿½ï¿½ï¿½`ï¿½Gï¿½Cï¿½ï¿½ï¿½Aï¿½Xï¿½v
+// Ÿ u•¶Žš•\Ž¦ > ƒAƒ“ƒ`ƒGƒCƒŠƒAƒXv
 ;chAntialiasMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ > ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½v
+// Ÿ u•¶Žš•\Ž¦ > ƒtƒHƒ“ƒgv
 ;chChangeFontMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½xï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½v
+// Ÿ užx‚ð‚½‚Ç‚év
 ;restoreMenu.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½xï¿½ï¿½ï¿½Í‚ï¿½ï¿½Þv
+// Ÿ užx‚ð‚Í‚³‚Þv
 ;storeMenu.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½ï¿½Êv
+// Ÿ u‰æ–Êv
 ;displayMenu.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½wï¿½ï¿½ï¿½vï¿½v
+// Ÿ uƒwƒ‹ƒvv
 ;helpMenu.visible = false;
 
 
-// ï¿½ï¿½ ï¿½uï¿½wï¿½ï¿½ï¿½v > ï¿½ÚŽï¿½ ...ï¿½v
+// Ÿ uƒwƒ‹ƒv > –ÚŽŸ ...v
 ;helpIndexMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½wï¿½ï¿½ï¿½v > ï¿½ï¿½ï¿½Ìƒ\ï¿½tï¿½gï¿½É‚Â‚ï¿½ï¿½ï¿½ ...ï¿½v
+// Ÿ uƒwƒ‹ƒv > ‚±‚Ìƒ\ƒtƒg‚É‚Â‚¢‚Ä ...v
 ;helpAboutMenuItem.visible = true;
 
 
-// ï¿½ï¿½ ï¿½uï¿½fï¿½oï¿½bï¿½Oï¿½v
+// Ÿ uƒfƒoƒbƒOv
 ;debugMenu.visible = false;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½[ ï¿½Ç‰ï¿½ï¿½ÌÝ’ï¿½
-// ï¿½Ç‰ï¿½ï¿½ÌÝ’è€ï¿½Ú‚ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
-// [start-menu-additionals] ï¿½ï¿½ [end-menu-additionals] ï¿½ÅˆÍ‚Ü‚ê‚½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÉÝ’ï¿½ï¿½ï¿½Lï¿½qï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ( [start-menu-additionals] ï¿½ï¿½ [end-menu-additionals] ï¿½Ìsï¿½ï¿½
-//  ï¿½ÒWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚µï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )
+// Ÿ ƒƒjƒ…[ ’Ç‰Á‚ÌÝ’è
+// ’Ç‰Á‚ÌÝ’è€–Ú‚ª‚ ‚éê‡‚Í
+// [start-menu-additionals] ‚Æ [end-menu-additionals] ‚ÅˆÍ‚Ü‚ê‚½
+// •”•ª‚ÉÝ’è‚ð‹Lq‚µ‚Ä‚­‚¾‚³‚¢
+// ( [start-menu-additionals] ‚Æ [end-menu-additionals] ‚Ìs‚Í
+//  •ÒW‚µ‚½‚èÁ‚µ‚½‚è‚µ‚È‚¢‚Å‚­‚¾‚³‚¢ )
 
 //[start-menu-additionals]
 
@@ -456,203 +456,203 @@ function Menu_visible_config()
 
 }
 
-//-------------------------------------------- ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌÝ’ï¿½ -----
+//-------------------------------------------- ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌÝ’è -----
 
 
 function MessageLayer_config()
 {
-// ï¿½ï¿½ ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì•\ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½h
-// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ç‚Ìƒï¿½ï¿½[ï¿½hï¿½Å•\ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// ltAddAlpha ï¿½ï¿½ KAG3 3.23 beta 5 ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½Â”\ï¿½Èƒï¿½ï¿½[ï¿½hï¿½ÅA
-// ltAlpha ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½áŠ±ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½B
-// ltAlpha ï¿½Í‚ï¿½ï¿½ï¿½È‘Oï¿½ï¿½ KAG ï¿½ÆŒÝŠï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½éƒ‚ï¿½[ï¿½hï¿½Å‚ï¿½ï¿½B
-// ltAddAlpha ï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½ï¿½ê‡ï¿½ÍAframeGraphic ï¿½ÅŽwï¿½è‚·ï¿½ï¿½
-// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½gï¿½pï¿½Ì‰æ‘œï¿½ï¿½ï¿½AltAddAlpha ï¿½pï¿½Éì¬ï¿½ï¿½ï¿½ê‚½
-// ï¿½æ‘œï¿½ï¿½pï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É‚Í”ï¿½ï¿½Ê‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½)ï¿½B
-// ltAddAlpha ï¿½pï¿½Ì‰æ‘œï¿½Í‰æ‘œï¿½tï¿½Hï¿½[ï¿½}ï¿½bï¿½gï¿½Rï¿½ï¿½ï¿½oï¿½[ï¿½^ï¿½Åì¬ï¿½Â”\ï¿½Å‚ï¿½ï¿½B
+// Ÿ ƒƒbƒZ[ƒWƒŒƒCƒ„‚Ì•\Ž¦ƒ‚[ƒh
+// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ð‚Ç‚Ìƒ‚[ƒh‚Å•\Ž¦‚·‚é‚©‚ðŽw’è‚µ‚Ü‚·B
+// ltAddAlpha ‚Í KAG3 3.23 beta 5 ‚©‚çŽw’è‰Â”\‚Èƒ‚[ƒh‚ÅA
+// ltAlpha ‚æ‚è‚àˆ—‚ªŽáŠ±‚‘¬‚Å‚·B
+// ltAlpha ‚Í‚»‚êˆÈ‘O‚Ì KAG ‚ÆŒÝŠ·«‚Ì‚ ‚éƒ‚[ƒh‚Å‚·B
+// ltAddAlpha ‚ðŽw’è‚µ‚½ê‡‚ÍAframeGraphic ‚ÅŽw’è‚·‚é
+// ƒƒbƒZ[ƒW˜g—p‚Ì‰æ‘œ‚àAltAddAlpha —p‚Éì¬‚³‚ê‚½
+// ‰æ‘œ‚ð—p‚¢‚é•K—v‚ª‚ ‚è‚Ü‚· (Ž©“®“I‚É‚Í”»•Ê‚³‚ê‚Ü‚¹‚ñ)B
+// ltAddAlpha —p‚Ì‰æ‘œ‚Í‰æ‘œƒtƒH[ƒ}ƒbƒgƒRƒ“ƒo[ƒ^‚Åì¬‰Â”\‚Å‚·B
 ;layerType = ltAddAlpha;
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½gï¿½pï¿½Ì‰æ‘œ
-// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½gï¿½pï¿½Ì‰æ‘œï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// "" ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½gï¿½Ì‰æ‘œï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½Ü‚ï¿½ï¿½Aï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½gï¿½pï¿½ï¿½
-// ï¿½æ‘œï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½ï¿½ê‡ï¿½Aposition ï¿½^ï¿½Oï¿½Åƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ÏXï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È•\ï¿½ï¿½ï¿½É‚È‚ï¿½ÆŽvï¿½ï¿½ï¿½Ü‚ï¿½
-;frameGraphic = "";  // position ï¿½^ï¿½Oï¿½ï¿½ frame ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ƒƒbƒZ[ƒW˜g—p‚Ì‰æ‘œ
+// ƒƒbƒZ[ƒW˜g—p‚Ì‰æ‘œ‚Ìƒtƒ@ƒCƒ‹–¼‚ðŽw’è‚µ‚Ü‚·B
+// "" ‚ðŽw’è‚·‚é‚ÆƒƒbƒZ[ƒW˜g‚Ì‰æ‘œ‚ðŽg—p‚µ‚Ü‚¹‚ñB‚Ü‚½AƒƒbƒZ[ƒW˜g—p‚Ì
+// ‰æ‘œ‚ðŽw’è‚µ‚½ê‡Aposition ƒ^ƒO‚ÅƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌƒTƒCƒY‚ð•ÏX‚·‚é‚Æ
+// ‚¨‚©‚µ‚È•\Ž¦‚É‚È‚é‚ÆŽv‚¢‚Ü‚·
+;frameGraphic = "";  // position ƒ^ƒO‚Ì frame ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌFï¿½Æ•sï¿½ï¿½ï¿½ï¿½ï¿½x
-// frameColor ï¿½É‚ï¿½ 0xRRGGBB ï¿½`ï¿½ï¿½ï¿½ï¿½ ( RR GG BB ï¿½Í‚ï¿½ï¿½ê‚¼ï¿½ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ 16 ï¿½iï¿½ï¿½)
-// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌFï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½BframeOpacity ï¿½É‚ï¿½ 0 ï¿½` 255 ï¿½Ìï¿½ï¿½lï¿½ÅA
-// ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½gï¿½pï¿½Ì‰æ‘œï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ê‡ï¿½Í–ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½B
-;frameColor = 0x000000; // position ï¿½^ï¿½Oï¿½ï¿½ color ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
-;frameOpacity = 128;  // position ï¿½^ï¿½Oï¿½ï¿½ opacity ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌF‚Æ•s“§–¾“x
+// frameColor ‚É‚Í 0xRRGGBB Œ`Ž®‚Å ( RR GG BB ‚Í‚»‚ê‚¼‚ê 2 Œ…‚Ì 16 i”)
+// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌF‚ðŽw’è‚µ‚Ü‚·BframeOpacity ‚É‚Í 0 ` 255 ‚Ì”’l‚ÅA
+// •s“§–¾“x‚ðŽw’è‚µ‚Ü‚·BƒƒbƒZ[ƒW˜g—p‚Ì‰æ‘œ‚ªŽw’è‚³‚ê‚Ä‚¢‚éê‡‚Í–³Œø‚Å
+// ‚·B
+;frameColor = 0x000000; // position ƒ^ƒO‚Ì color ‘®«‚É‘Š“–
+;frameOpacity = 128;  // position ƒ^ƒO‚Ì opacity ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½Eï¿½ã‰ºï¿½}ï¿½[ï¿½Wï¿½ï¿½
-// ï¿½}ï¿½[ï¿½Wï¿½ï¿½ (ï¿½]ï¿½ï¿½) ï¿½ï¿½ pixel ï¿½Pï¿½Ê‚ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½gï¿½pï¿½Ì‰æ‘œï¿½ï¿½ï¿½wï¿½è‚µ
-// ï¿½ï¿½ï¿½ê‡ï¿½ÍAï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½gï¿½Ì•\ï¿½ï¿½ï¿½ÍˆÍ“ï¿½ï¿½ÉÝ’è‚·ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÍAposition ï¿½^ï¿½Oï¿½ï¿½ marginl, maringt, marginr, marginb ï¿½ï¿½ï¿½ï¿½ï¿½É‘Î‰ï¿½
-// ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-;marginL = 8; // ï¿½ï¿½ï¿½]ï¿½ï¿½
-;marginT = 8; // ï¿½ï¿½]ï¿½ï¿½
-;marginR = 8; // ï¿½Eï¿½]ï¿½ï¿½
-;marginB = 8; // ï¿½ï¿½ï¿½]ï¿½ï¿½
+// Ÿ ¶‰Eã‰ºƒ}[ƒWƒ“
+// ƒ}[ƒWƒ“ (—]”’) ‚ð pixel ’PˆÊ‚ÅŽw’è‚µ‚Ü‚·BƒƒbƒZ[ƒW˜g—p‚Ì‰æ‘œ‚ðŽw’è‚µ
+// ‚½ê‡‚ÍAƒƒbƒZ[ƒW˜g‚Ì•\Ž¦”ÍˆÍ“à‚ÉÝ’è‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
+// ‚±‚ê‚ç‚ÍAposition ƒ^ƒO‚Ì marginl, maringt, marginr, marginb ‘®«‚É‘Î‰ž
+// ‚µ‚Ü‚·B
+;marginL = 8; // ¶—]”’
+;marginT = 8; // ã—]”’
+;marginR = 8; // ‰E—]”’
+;marginB = 8; // ‰º—]”’
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ê’u
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÍAposition ï¿½^ï¿½Oï¿½Ì‚ï¿½ï¿½ê‚¼ï¿½ï¿½ left top width height ï¿½Ì‘ï¿½ï¿½ï¿½ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½B
-;ml = 16;  // ï¿½ï¿½ï¿½[ï¿½Ê’u
-;mt = 16;  // ï¿½ï¿½[ï¿½Ê’u
-;mw = 640-32;   // ï¿½ï¿½
-;mh = 480-32;   // ï¿½ï¿½ï¿½ï¿½
+// Ÿ ‰ŠúˆÊ’u
+// ‚±‚ê‚ç‚ÍAposition ƒ^ƒO‚Ì‚»‚ê‚¼‚ê left top width height ‚Ì‘®«‚É‘Î‰ž‚µ‚Ü
+// ‚·B
+;ml = 16;  // ¶’[ˆÊ’u
+;mt = 16;  // ã’[ˆÊ’u
+;mw = 640-32;   // •
+;mh = 480-32;   // ‚‚³
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½s/ï¿½ï¿½yï¿½[ï¿½W
-// true ï¿½ï¿½Ý’è‚·ï¿½ï¿½ÆAï¿½sï¿½ï¿½ï¿½Å‚ÌŽï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Aï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Å‚ÌŽï¿½ï¿½ï¿½ï¿½ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½Bfalse ï¿½ï¿½Ý’è‚·ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ç‚ªï¿½sï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Aï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½È‚ï¿½ï¿½
-// ï¿½ï¿½ï¿½B
+// Ÿ Ž©“®‰üs/‰üƒy[ƒW
+// true ‚ðÝ’è‚·‚é‚ÆAs––‚Å‚ÌŽ©“®‰üsAƒy[ƒW––‚Å‚ÌŽ©“®‰üƒy[ƒW‚ªs‚í‚ê‚Ü
+// ‚·Bfalse ‚ðÝ’è‚·‚é‚Æ‚±‚ê‚ç‚ªs‚í‚ê‚È‚¢‘¼A‹Ö‘¥ˆ—“™‚à‚³‚ê‚È‚­‚È‚è‚Ü
+// ‚·B
 ;defaultAutoReturn = true; 
 
 
-// ï¿½ï¿½ ï¿½Eï¿½ï¿½ï¿½ï¿½ï¿½}ï¿½[ï¿½Wï¿½ï¿½
-// ï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½É‚ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Eï¿½[ï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// (ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½Å‚Í‰ï¿½ï¿½[ï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½Æ‰ï¿½ï¿½ß‚ï¿½ï¿½ï¿½Ü‚ï¿½)
+// Ÿ ‰E•¶Žšƒ}[ƒWƒ“
+// ‹Ö‘¥ˆ——p‚É‚ ‚¯‚Ä‚¨‚­‰E’[‚Ì•¶Žš”‚ðŽw’è‚µ‚Ü‚·B
+// (c‘‚«ƒ‚[ƒh‚Å‚Í‰º’[‚Ì•¶Žš”‚Å‚ ‚é‚Æ‰ðŽß‚³‚ê‚Ü‚·)
 ;marginRCh = 2;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì‘å‚«ï¿½ï¿½
-// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì•ï¿½ï¿½ï¿½ï¿½Ì‘å‚«ï¿½ï¿½ ( ï¿½ï¿½ï¿½ï¿½ ) ï¿½ï¿½ pixel ï¿½Pï¿½Ê‚ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-;defaultFontSize = 24;  // deffont ï¿½^ï¿½Oï¿½ï¿½ size ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ •¶Žš‚Ì‘å‚«‚³
+// ƒfƒtƒHƒ‹ƒg‚Ì•¶Žš‚Ì‘å‚«‚³ ( ‚‚³ ) ‚ð pixel ’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B
+;defaultFontSize = 24;  // deffont ƒ^ƒO‚Ì size ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½sï¿½ï¿½
-// ï¿½sï¿½Ô‚ï¿½ pixel ï¿½Pï¿½Ê‚ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-;defaultLineSpacing = 6; // defstyle ï¿½^ï¿½Oï¿½ï¿½ linespacing ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ sŠÔ
+// sŠÔ‚ð pixel ’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B
+;defaultLineSpacing = 6; // defstyle ƒ^ƒO‚Ì linespacing ‘®«‚É‘Š“–
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½Ô‚ï¿½ pixel ï¿½Pï¿½Ê‚ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ 0 ï¿½ÅAï¿½ï¿½ï¿½ï¿½ï¿½é‚¢ï¿½Í•ï¿½ï¿½ÌƒIï¿½tï¿½Zï¿½bï¿½gï¿½ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½Ìï¿½ï¿½lï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆŽï¿½ï¿½Ô‚ï¿½ï¿½lï¿½Ü‚ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½Ìï¿½ï¿½lï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆŽï¿½ï¿½Ô‚ï¿½ï¿½ó‚«‚ï¿½
-// ï¿½ï¿½ï¿½B
-;defaultPitch = 0; // defstyle ï¿½^ï¿½Oï¿½ï¿½ pitch ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
-
-
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½
-// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒtï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½ÌÝ’ï¿½ÍƒVï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½É‹Lï¿½^ï¿½ï¿½ï¿½ï¿½ÄAï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½Éˆï¿½pï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅA
-// userFace ï¿½ÌÝ’ï¿½ï¿½ÏXï¿½ï¿½ï¿½Aï¿½Kï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍƒVï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½
-// ?????sc.* ï¿½ï¿½ "chdefaultFace" => ï¿½Ìsï¿½ï¿½ï¿½íœï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
-// (ï¿½ï¿½ï¿½é‚¢ï¿½ÍƒVï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
-// ï¿½Jï¿½ï¿½ï¿½}ï¿½Å‹ï¿½Ø‚ï¿½ï¿½Ä•ï¿½ï¿½ï¿½ï¿½Ìƒtï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½wï¿½è‚·ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½Ìê‡ï¿½ÍAï¿½Åï¿½
-// ï¿½Ì•ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½ï¿½ÎAï¿½Dï¿½æ‚³ï¿½ï¿½Ü‚ï¿½ï¿½B
-;userFace = "ï¿½lï¿½r ï¿½oï¿½ï¿½ï¿½ï¿½"; // deffont ï¿½^ï¿½Oï¿½ï¿½ face ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ŽšŠÔ
+// ŽšŠÔ‚ð pixel ’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B
+// ƒfƒtƒHƒ‹ƒg‚Í 0 ‚ÅA³‚ ‚é‚¢‚Í•‰‚ÌƒIƒtƒZƒbƒg‚ÅŽw’è‚µ‚Ü‚·B
+// •‰‚Ì”’l‚ðŽw’è‚·‚é‚ÆŽšŠÔ‚ª‹l‚Ü‚è‚Ü‚·B³‚Ì”’l‚ðŽw’è‚·‚é‚ÆŽšŠÔ‚ª‹ó‚«‚Ü
+// ‚·B
+;defaultPitch = 0; // defstyle ƒ^ƒO‚Ì pitch ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ÌF
-// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì•ï¿½ï¿½ï¿½ï¿½ÌFï¿½ï¿½ 0xRRGGBB ï¿½`ï¿½ï¿½ï¿½ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-;defaultChColor = 0xffffff;  // deffont ï¿½^ï¿½Oï¿½ï¿½ color ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ •¶Žš‚Ì‘‘Ì
+// ƒfƒtƒHƒ‹ƒg‚ÌƒtƒHƒ“ƒg–¼‚ðŽw’è‚µ‚Ü‚·B
+// ‚±‚ÌÝ’è‚ÍƒVƒXƒeƒ€•Ï”‚É‹L˜^‚³‚ê‚ÄAŽŸ‰ñ‹N“®Žž‚Éˆø‚«Œp‚ª‚ê‚é‚Ì‚ÅA
+// userFace ‚ÌÝ’è‚ð•ÏX‚µA“K—p‚µ‚½‚¢ê‡‚ÍƒVƒXƒeƒ€•Ï”ƒtƒ@ƒCƒ‹
+// ?????sc.* ‚Ì "chdefaultFace" => ‚Ìs‚ðíœ‚µ‚Ä‚­‚¾‚³‚¢B
+// (‚ ‚é‚¢‚ÍƒVƒXƒeƒ€•Ï”ƒtƒ@ƒCƒ‹‚ðÁ‚µ‚Ä‚­‚¾‚³‚¢)
+// ƒJƒ“ƒ}‚Å‹æØ‚Á‚Ä•¡”‚ÌƒtƒHƒ“ƒg‚ðŽw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B‚»‚Ìê‡‚ÍAÅ‰
+// ‚Ì•û‚É‘‚¢‚½ƒtƒHƒ“ƒg‚ª‘¶Ý‚·‚ê‚ÎA—Dæ‚³‚ê‚Ü‚·B
+;userFace = "‚l‚r ‚o–¾’©"; // deffont ƒ^ƒO‚Ì face ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½{ï¿½[ï¿½ï¿½ï¿½hï¿½É‚ï¿½ï¿½é‚©
-// ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ true, ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ false ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-;defaultBold = true; // deffont ï¿½^ï¿½Oï¿½ï¿½ bold ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ •¶Žš‚ÌF
+// ƒfƒtƒHƒ‹ƒg‚Ì•¶Žš‚ÌF‚ð 0xRRGGBB Œ`Ž®‚ÅŽw’è‚µ‚Ü‚·B
+;defaultChColor = 0xffffff;  // deffont ƒ^ƒO‚Ì color ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½rï¿½Tï¿½Cï¿½Y
-// ï¿½ï¿½ï¿½rï¿½Tï¿½Cï¿½Yï¿½ï¿½ pixel ï¿½Pï¿½Ê‚ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-;defaultRubySize = 10; // deffont ï¿½^ï¿½Oï¿½ï¿½ rubysize ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ •¶Žš‚ðƒ{[ƒ‹ƒh‚É‚·‚é‚©
+// ‚·‚éê‡‚Í true, ‚µ‚È‚¢ê‡‚Í false ‚ðŽw’è‚µ‚Ü‚·B
+;defaultBold = true; // deffont ƒ^ƒO‚Ì bold ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½r ï¿½Ì•\ï¿½ï¿½ï¿½Iï¿½tï¿½Zï¿½bï¿½g
-// ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ pixel ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½{ï¿½ï¿½ï¿½É‹ß‚ï¿½ï¿½Ê’uï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-;defaultRubyOffset = -2; // deffont ï¿½^ï¿½Oï¿½ï¿½ rubyoffset ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ƒ‹ƒrƒTƒCƒY
+// ƒ‹ƒrƒTƒCƒY‚ð pixel ’PˆÊ‚ÅŽw’è‚µ‚Ü‚·B
+;defaultRubySize = 10; // deffont ƒ^ƒO‚Ì rubysize ‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½Aï¿½ï¿½ï¿½`ï¿½Gï¿½Cï¿½ï¿½ï¿½Aï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-// ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ true, ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ false ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
+// Ÿ ƒ‹ƒr ‚Ì•\Ž¦ƒIƒtƒZƒbƒg
+// •‰‚Ì”‚ðŽw’è‚·‚é‚Æ‚»‚Ì pixel ”•ªA–{•¶‚É‹ß‚¢ˆÊ’u‚É•\Ž¦‚³‚ê‚Ü‚·B
+;defaultRubyOffset = -2; // deffont ƒ^ƒO‚Ì rubyoffset ‚É‘Š“–
+
+
+// Ÿ ƒAƒ“ƒ`ƒGƒCƒŠƒAƒX•¶Žš•`‰æ‚ð‚·‚é‚©
+// ‚·‚éê‡‚Í true, ‚µ‚È‚¢ê‡‚Í false ‚ðŽw’è‚µ‚Ü‚·B
 ;defaultAntialiased = true;
 
 
-// ï¿½ï¿½ ï¿½eï¿½ÌF
-// ï¿½eï¿½ÌFï¿½ï¿½ 0xRRGGBB ï¿½`ï¿½ï¿½ï¿½ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-;defaultShadowColor = 0x000000;  // deffont ï¿½^ï¿½Oï¿½ï¿½ shadowcolor ï¿½É‘ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ‰e‚ÌF
+// ‰e‚ÌF‚ð 0xRRGGBB Œ`Ž®‚ÅŽw’è‚µ‚Ü‚·B
+;defaultShadowColor = 0x000000;  // deffont ƒ^ƒO‚Ì shadowcolor ‚É‘®«‚É‘Š“–
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ÌF
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÌFï¿½ï¿½ 0xRRGGBB ï¿½`ï¿½ï¿½ï¿½ÅŽwï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-;defaultEdgeColor = 0x000000;  // deffont ï¿½^ï¿½Oï¿½ï¿½ edgecolor ï¿½É‘ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
-
-
-// ï¿½ï¿½ ï¿½eï¿½ï¿½`ï¿½æ‚·ï¿½é‚©
-// ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ true, ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ false ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½B
-;defaultShadow = true;  // deffont ï¿½^ï¿½Oï¿½ï¿½ shadow ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ‰Žæ‚è‚ÌF
+// ‰Žæ‚è‚ÌF‚ð 0xRRGGBB Œ`Ž®‚ÅŽw’è‚µ‚Ü‚·B
+;defaultEdgeColor = 0x000000;  // deffont ƒ^ƒO‚Ì edgecolor ‚É‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-// ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ true, ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ false ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½BKAG3 ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Æ‰e
-// ï¿½ð“¯Žï¿½ï¿½É•`ï¿½æ‚·ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½È‚ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½ï¿½ê‡ï¿½Í‰ï¿½ï¿½ï¿½è‚ª
-// ï¿½Dï¿½æ‚³ï¿½ï¿½Ü‚ï¿½ï¿½B
-;defaultEdge = false;  // deffont ï¿½^ï¿½Oï¿½ï¿½ edge ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ‰e‚ð•`‰æ‚·‚é‚©
+// ‚·‚éê‡‚Í true, ‚µ‚È‚¢ê‡‚Í false ‚ðŽw’è‚µ‚Ü‚·B
+;defaultShadow = true;  // deffont ƒ^ƒO‚Ì shadow ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Oï¿½ï¿½ï¿½tï¿½Ì‰æ‘œï¿½tï¿½@ï¿½Cï¿½ï¿½
-// ï¿½æ‘œï¿½Ìï¿½ï¿½ï¿½ÍAï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ ( AnimationLayer.tjs ) ï¿½ï¿½ï¿½ï¿½ï¿½Qï¿½Æ‚ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½gï¿½ï¿½ï¿½qï¿½ÍŽwï¿½è‚µï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
-// ï¿½Jï¿½ï¿½ï¿½[ï¿½Lï¿½[ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍƒVï¿½iï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ glyph ï¿½^ï¿½Oï¿½ÅŽwï¿½è‚µï¿½Ä‚ï¿½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
-
-// ï¿½sï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Oï¿½ï¿½ï¿½t
-;lineBreakGlyph = "LineBreak";  // glyph ï¿½^ï¿½Oï¿½ï¿½ line ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ‰Žæ‚è‚ð‚·‚é‚©
+// ‚·‚éê‡‚Í true, ‚µ‚È‚¢ê‡‚Í false ‚ðŽw’è‚µ‚Ü‚·BKAG3 ‚©‚çA‰Žæ‚è‚Æ‰e
+// ‚ð“¯Žž‚É•`‰æ‚·‚é‚±‚Æ‚ª‚Å‚«‚È‚­‚È‚è‚Ü‚µ‚½B‰Žæ‚è‚ðŽw’è‚µ‚½ê‡‚Í‰Žæ‚è‚ª
+// —Dæ‚³‚ê‚Ü‚·B
+;defaultEdge = false;  // deffont ƒ^ƒO‚Ì edge ‘®«‚É‘Š“–
 
 
-// ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Oï¿½ï¿½ï¿½t
-;pageBreakGlyph = "PageBreak";  // glyph ï¿½^ï¿½Oï¿½ï¿½ page ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ƒNƒŠƒbƒN‘Ò‚¿ƒOƒŠƒt‚Ì‰æ‘œƒtƒ@ƒCƒ‹
+// ‰æ‘œ‚Ìì‚è•û‚ÍAƒAƒjƒ[ƒVƒ‡ƒ“ƒŒƒCƒ„ ( AnimationLayer.tjs ) “à‚ðŽQÆ‚µ‚Ä
+// ‚­‚¾‚³‚¢BŠg’£Žq‚ÍŽw’è‚µ‚È‚¢‚Å‚­‚¾‚³‚¢B
+// ƒJƒ‰[ƒL[‚ðŽw’è‚·‚é•K—v‚ª‚ ‚éê‡‚ÍƒVƒiƒŠƒI’†‚Å glyph ƒ^ƒO‚ÅŽw’è‚µ‚Ä‚­
+// ‚¾‚³‚¢B
+
+// s––ƒNƒŠƒbƒN‘Ò‚¿ƒOƒŠƒt
+;lineBreakGlyph = "LineBreak";  // glyph ƒ^ƒO‚Ì line ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Oï¿½ï¿½ï¿½tï¿½ï¿½ï¿½Å’è‚µï¿½ï¿½ï¿½êŠï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
-// false ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½(ï¿½Oï¿½ï¿½ï¿½t)ï¿½ÍAï¿½ï¿½ï¿½Ý‚Ì•ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Ê’uï¿½É•\ï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Btrue ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ÆAï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ÍA glyphFixedLeft ï¿½ï¿½
-// glyphFixedTop ï¿½ÅŽwï¿½è‚µï¿½ï¿½ï¿½Ê’uï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-;glyphFixedPosition = false;  // glyph ï¿½^ï¿½Oï¿½ï¿½ fix ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// ƒy[ƒW––ƒNƒŠƒbƒN‘Ò‚¿ƒOƒŠƒt
+;pageBreakGlyph = "PageBreak";  // glyph ƒ^ƒO‚Ì page ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Oï¿½ï¿½ï¿½tï¿½ï¿½ï¿½Å’è‚µï¿½ï¿½ï¿½êŠï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÌˆÊ’u
-// glyphFixedLeft ï¿½É‚ÍƒOï¿½ï¿½ï¿½tï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é¶ï¿½[ï¿½Ê’uï¿½ï¿½ï¿½AglyphFixedTop ï¿½É‚ÍƒOï¿½ï¿½ï¿½t
-// ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Ê’uï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
-;glyphFixedLeft = 0;  // glyph ï¿½^ï¿½Oï¿½ï¿½ left ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
-;glyphFixedTop = 0;  // glyph ï¿½^ï¿½Oï¿½ï¿½ top ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ƒNƒŠƒbƒN‘Ò‚¿ƒOƒŠƒt‚ðŒÅ’è‚µ‚½êŠ‚É•\Ž¦‚·‚é‚©‚Ç‚¤‚©
+// false ‚ðŽw’è‚·‚é‚ÆAƒNƒŠƒbƒN‘Ò‚¿‹L†(ƒOƒŠƒt)‚ÍAŒ»Ý‚Ì•¶Žš•\Ž¦ˆÊ’u‚É•\Ž¦
+// ‚³‚ê‚Ü‚·Btrue ‚ðŽw’è‚·‚é‚ÆAƒNƒŠƒbƒN‘Ò‚¿‹L†‚ÍA glyphFixedLeft ‚â
+// glyphFixedTop ‚ÅŽw’è‚µ‚½ˆÊ’u‚É•\Ž¦‚³‚ê‚Ü‚·B
+;glyphFixedPosition = false;  // glyph ƒ^ƒO‚Ì fix ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ì‹ï¿½ï¿½ï¿½ï¿½F
-// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éoï¿½é”¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½Ìƒfï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÌFï¿½Å‚ï¿½ï¿½B
-;defaultLinkColor = 0x0080ff;  // link ï¿½^ï¿½Oï¿½ï¿½ color ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ƒNƒŠƒbƒN‘Ò‚¿ƒOƒŠƒt‚ðŒÅ’è‚µ‚½êŠ‚É•\Ž¦‚·‚é‚Æ‚«‚ÌˆÊ’u
+// glyphFixedLeft ‚É‚ÍƒOƒŠƒt‚ð•\Ž¦‚·‚é¶’[ˆÊ’u‚ðAglyphFixedTop ‚É‚ÍƒOƒŠƒt
+// ‚ð•\Ž¦‚·‚éã’[ˆÊ’u‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
+;glyphFixedLeft = 0;  // glyph ƒ^ƒO‚Ì left ‘®«‚É‘Š“–
+;glyphFixedTop = 0;  // glyph ƒ^ƒO‚Ì top ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ì•sï¿½ï¿½ï¿½ï¿½ï¿½x
-// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éoï¿½é”¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½Ì•sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Å‚ï¿½ï¿½B
+// Ÿ ƒŠƒ“ƒN‚Ì‹­’²F
+// ƒŠƒ“ƒN‚ð‘I‘ð‚µ‚½‚Æ‚«‚Éo‚é”¼“§–¾‹éŒ`‚ÌƒfƒtƒHƒ‹ƒg‚ÌF‚Å‚·B
+;defaultLinkColor = 0x0080ff;  // link ƒ^ƒO‚Ì color ‘®«‚É‘Š“–
+
+
+// Ÿ ƒŠƒ“ƒN‚Ì•s“§–¾“x
+// ƒŠƒ“ƒN‚ð‘I‘ð‚µ‚½‚Æ‚«‚Éo‚é”¼“§–¾‹éŒ`‚Ì•s“§–¾“x‚Å‚·B
 ;defaultLinkOpacity = 64;
 
 
-// ï¿½ï¿½ ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½h
-// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½Åcï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½É‚ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ false ï¿½Å‚Í‚È‚ï¿½ true ï¿½ï¿½
-// ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+// Ÿ c‘‚«ƒ‚[ƒh
+// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ð•W€‚Åc‘‚«ƒ‚[ƒh‚É‚·‚éê‡‚Í false ‚Å‚Í‚È‚­ true ‚ð
+// Žw’è‚µ‚Ä‚­‚¾‚³‚¢B
 ;vertical = false;
 
 
-// ï¿½ï¿½ ï¿½}ï¿½Eï¿½Xï¿½Åƒhï¿½ï¿½ï¿½bï¿½Oï¿½Â”\ï¿½ï¿½
-// true ï¿½ÉÝ’è‚·ï¿½ï¿½ÆAmarginR, marginL, marginT, marginB ï¿½ÅÝ’è‚µï¿½ï¿½ï¿½}ï¿½[ï¿½Wï¿½ï¿½
-// ï¿½Oï¿½Ì•ï¿½ï¿½ï¿½ï¿½ÅAï¿½ï¿½ï¿½Âƒtï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œï¿½Ì•sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ 64 ï¿½Èï¿½Ì‰Óï¿½ï¿½ï¿½ï¿½}ï¿½Eï¿½Xï¿½Å‚Â‚ï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Uï¿½ï¿½ï¿½Ú“ï¿½ï¿½Å‚ï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
-;draggable = false;  // position ï¿½^ï¿½Oï¿½ï¿½ draggable ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+// Ÿ ƒ}ƒEƒX‚Åƒhƒ‰ƒbƒO‰Â”\‚©
+// true ‚ÉÝ’è‚·‚é‚ÆAmarginR, marginL, marginT, marginB ‚ÅÝ’è‚µ‚½ƒ}[ƒWƒ“
+// ŠO‚Ì•”•ª‚ÅA‚©‚ÂƒtƒŒ[ƒ€‰æ‘œ‚Ì•s“§–¾“x‚ª 64 ˆÈã‚Ì‰ÓŠ‚ðƒ}ƒEƒX‚Å‚Â‚©‚ñ‚Å
+// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ðƒ†[ƒU‚ªˆÚ“®‚Å‚«‚é‚æ‚¤‚É‚È‚è‚Ü‚·B
+;draggable = false;  // position ƒ^ƒO‚Ì draggable ‘®«‚É‘Š“–
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ ï¿½Ç‰ï¿½ï¿½ÌÝ’ï¿½
-// ï¿½Ç‰ï¿½ï¿½ÌÝ’è€ï¿½Ú‚ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
-// [start-messagelayer-additionals] ï¿½ï¿½ [end-messagelayer-additionals] ï¿½Åˆï¿½
-// ï¿½Ü‚ê‚½ï¿½ï¿½ï¿½ï¿½ï¿½ÉÝ’ï¿½ï¿½ï¿½Lï¿½qï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ( [start-messagelayer-additionals] ï¿½ï¿½ [end-messagelayer-additionals] ï¿½ï¿½
-// ï¿½sï¿½Í•ÒWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚µï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )
+// Ÿ ƒƒbƒZ[ƒWƒŒƒCƒ„ ’Ç‰Á‚ÌÝ’è
+// ’Ç‰Á‚ÌÝ’è€–Ú‚ª‚ ‚éê‡‚Í
+// [start-messagelayer-additionals] ‚Æ [end-messagelayer-additionals] ‚ÅˆÍ
+// ‚Ü‚ê‚½•”•ª‚ÉÝ’è‚ð‹Lq‚µ‚Ä‚­‚¾‚³‚¢
+// ( [start-messagelayer-additionals] ‚Æ [end-messagelayer-additionals] ‚Ì
+// s‚Í•ÒW‚µ‚½‚èÁ‚µ‚½‚è‚µ‚È‚¢‚Å‚­‚¾‚³‚¢ )
 
 //[start-messagelayer-additionals]
 
@@ -660,60 +660,60 @@ function MessageLayer_config()
 
 }
 
-//-------------------------------------------------------- BGM ï¿½ÌÝ’ï¿½ -----
+//-------------------------------------------------------- BGM ‚ÌÝ’è -----
 
 
 function BGM_config()
 {
-// BGM ï¿½ÌÝ’ï¿½Å‚ï¿½ï¿½B
-// CD-DA, Wave, MIDI ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½ê‚©ï¿½ï¿½ BGM ï¿½Æ‚ï¿½ï¿½ÄÄï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+// BGM ‚ÌÝ’è‚Å‚·B
+// CD-DA, Wave, MIDI ‚Ì‚¢‚¸‚ê‚©‚ð BGM ‚Æ‚µ‚ÄÄ¶‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 
-// ï¿½ï¿½ BGMï¿½Äï¿½ï¿½ï¿½ï¿½fï¿½Bï¿½A
-// type ï¿½Ïï¿½ï¿½ÉÝ’è‚·ï¿½é•¶ï¿½ï¿½ï¿½ï¿½ÅAï¿½gï¿½pï¿½ï¿½ï¿½ï¿½Tï¿½Eï¿½ï¿½ï¿½hï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ß‚é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½
-// ï¿½Ü‚ï¿½ï¿½B
-// "Wave"  : WaveSoundBuffer ( wavï¿½ï¿½(ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ÅÄï¿½ï¿½Å‚ï¿½ï¿½é•¨ï¿½ï¿½ï¿½Ü‚ï¿½) )
+// Ÿ BGMÄ¶ƒƒfƒBƒA
+// type •Ï”‚ÉÝ’è‚·‚é•¶Žš—ñ‚ÅAŽg—p‚·‚éƒTƒEƒ“ƒhƒoƒbƒtƒ@‚ðŒˆ‚ß‚é‚±‚Æ‚ª‚Å‚«
+// ‚Ü‚·B
+// "Wave"  : WaveSoundBuffer ( wav“™(ƒvƒ‰ƒOƒCƒ“‚ÅÄ¶‚Å‚«‚é•¨‚àŠÜ‚Þ) )
 // "MIDI"  : MIDISoundBuffer ( mid,smf )
 // "CDDA"  : CDDASoundBuffer ( cda )
 ;type = "Wave";
 
 
-// ï¿½ï¿½ CDDAï¿½Äï¿½ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½
-// "CDDA" ï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½ï¿½ê‡ï¿½ÍAcdVolume ï¿½Ïï¿½ï¿½ÉAï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½ CD ï¿½Ìƒ{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½
-// ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ü‚ï¿½ï¿½Bï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ôï¿½ï¿½Å‚Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// KAG ï¿½ÍAï¿½ï¿½ï¿½Ìƒ{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ CD ï¿½Ì‘}ï¿½ï¿½ê‚½ CD-ROM ï¿½hï¿½ï¿½ï¿½Cï¿½uï¿½ï¿½
-// CD-DA ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½Éƒ}ï¿½Vï¿½ï¿½ï¿½É•ï¿½ï¿½ï¿½ï¿½ï¿½CD-ROMï¿½hï¿½ï¿½ï¿½Cï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ê‡
-// ï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½Äƒhï¿½ï¿½ï¿½Cï¿½uï¿½Ì‹ï¿½Ê‚ï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
+// Ÿ CDDAÄ¶ƒ{ƒŠƒ…[ƒ€ƒ‰ƒxƒ‹
+// "CDDA" ‚ðŽw’è‚µ‚½ê‡‚ÍAcdVolume •Ï”‚ÉAÄ¶‚·‚é CD ‚Ìƒ{ƒŠƒ…[ƒ€ƒ‰ƒxƒ‹
+// ‚ðŽw’è‚µ‚Ü‚·Bƒ{ƒŠƒ…[ƒ€ƒVƒŠƒAƒ‹”Ô†‚Å‚Í‚ ‚è‚Ü‚¹‚ñB
+// KAG ‚ÍA‚±‚Ìƒ{ƒŠƒ…[ƒ€ƒ‰ƒxƒ‹‚ðŽ‚Á‚½ CD ‚Ì‘}“ü‚³‚ê‚½ CD-ROM ƒhƒ‰ƒCƒu‚Å
+// CD-DA ‚ðÄ¶‚µ‚Ü‚·B“Á‚Éƒ}ƒVƒ“‚É•¡”‚ÌCD-ROMƒhƒ‰ƒCƒu‚ª‘•’…‚³‚ê‚Ä‚¢‚éê‡
+// ‚É‚±‚ê‚ðŒ³‚É‚µ‚Äƒhƒ‰ƒCƒu‚Ì‹æ•Ê‚ðs‚¢‚Ü‚·B
 ;cdVolume = "xxxx";
 
 
-// ï¿½ï¿½ ï¿½Nï¿½ï¿½ï¿½Xï¿½tï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
-// doubleBuffered ï¿½Ïï¿½ï¿½É‚ÍAï¿½Tï¿½Eï¿½ï¿½ï¿½hï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½Qï¿½ÂŽgï¿½pï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µ
-// ï¿½Ü‚ï¿½ï¿½Btrue ï¿½ÉÝ’è‚·ï¿½ï¿½ÆƒTï¿½Eï¿½ï¿½ï¿½hï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ 2 ï¿½Â—pï¿½Ó‚ï¿½ï¿½ï¿½Aï¿½Nï¿½ï¿½ï¿½Xï¿½tï¿½Fï¿½[ï¿½hï¿½ï¿½
-// ï¿½Â”\ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
-// MIDI ï¿½Tï¿½Eï¿½ï¿½ï¿½hï¿½oï¿½bï¿½tï¿½@ï¿½Å•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½Ó}ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ê‡ï¿½ï¿½A
-// CDDA ï¿½Tï¿½Eï¿½ï¿½ï¿½hï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ê‡ï¿½ï¿½ false ï¿½ÉŽwï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+// Ÿ ƒNƒƒXƒtƒF[ƒh‚ðs‚¤‚©
+// doubleBuffered •Ï”‚É‚ÍAƒTƒEƒ“ƒhƒoƒbƒtƒ@‚ð‚Q‚ÂŽg—p‚·‚é‚©‚Ç‚¤‚©‚ðŽw’è‚µ
+// ‚Ü‚·Btrue ‚ÉÝ’è‚·‚é‚ÆƒTƒEƒ“ƒhƒoƒbƒtƒ@‚ª 2 ‚Â—pˆÓ‚³‚êAƒNƒƒXƒtƒF[ƒh‚ª
+// ‰Â”\‚É‚È‚è‚Ü‚·B
+// MIDI ƒTƒEƒ“ƒhƒoƒbƒtƒ@‚Å•¡”“¯ŽžÄ¶‚ðˆÓ}‚µ‚Ä‚¢‚È‚¢ƒf[ƒ^‚ðŽg‚¤ê‡‚âA
+// CDDA ƒTƒEƒ“ƒhƒoƒbƒtƒ@‚ðŽg‚¤ê‡‚Í false ‚ÉŽw’è‚µ‚Ä‚­‚¾‚³‚¢B
 ;doubleBuffered = true;
 
 
-// ï¿½ï¿½ MIDI ï¿½Äï¿½ï¿½Jï¿½nï¿½Oï¿½É‘ï¿½ï¿½éƒï¿½bï¿½Zï¿½[ï¿½W
-// MIDI ï¿½fï¿½[ï¿½^ï¿½ÌÄï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ MIDI ï¿½ï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½éƒï¿½bï¿½Zï¿½[ï¿½Wï¿½Å‚ï¿½ï¿½B
-// <% %> ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Í‘ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B
-// <% f0 7e 7f 09 01 f7 ff 00 %> ï¿½ï¿½ GM System On ï¿½Å‚ï¿½ï¿½B
-// ï¿½Ù‚ï¿½ï¿½ï¿½
+// Ÿ MIDI Ä¶ŠJŽn‘O‚É‘—‚éƒƒbƒZ[ƒW
+// MIDI ƒf[ƒ^‚ÌÄ¶‚ðŠJŽn‚·‚é‘O‚É MIDI ‰¹Œ¹‚É‘—‚éƒƒbƒZ[ƒW‚Å‚·B
+// <% %> ‚ðŽw’è‚·‚é‚Æ ƒƒbƒZ[ƒW‚Í‘—‚ç‚ê‚Ü‚¹‚ñB
+// <% f0 7e 7f 09 01 f7 ff 00 %> ‚Í GM System On ‚Å‚·B
+// ‚Ù‚©‚É
 // <% f0 41 10 42 12 40 00 7f 00 41 f7 ff 00 %> GS reset
 // <% f0 43 10 4c 00 00 7e 00 f7 ff 00 %> XG on
-// ï¿½È‚ÇB
-// ff 00 ï¿½ï¿½rï¿½ï¿½ï¿½É‘}ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÌŽï¿½ï¿½_ï¿½ï¿½ 50ms ï¿½ÌƒEï¿½Fï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚Ç‚ÅƒEï¿½Fï¿½Cï¿½gï¿½ï¿½ï¿½Kï¿½vï¿½Èê‡ï¿½É‘}ï¿½ï¿½Ü‚ï¿½ï¿½B
+// ‚È‚ÇB
+// ff 00 ‚ð“r’†‚É‘}“ü‚·‚é‚Æ‚»‚ÌŽž“_‚Å 50ms ‚ÌƒEƒFƒCƒg‚ª“ü‚è‚Ü‚·B
+// ‰¹Œ¹‰Šú‰»‚È‚Ç‚ÅƒEƒFƒCƒg‚ª•K—v‚Èê‡‚É‘}“ü‚µ‚Ü‚·B
 ;midiInitialMessage = <% f0 7e 7f 09 01 f7 ff 00 %>;
 
 
-// ï¿½ï¿½ BGM ï¿½Ç‰ï¿½ï¿½ÌÝ’ï¿½
-// ï¿½Ç‰ï¿½ï¿½ÌÝ’è€ï¿½Ú‚ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
-// [start-bgm-additionals] ï¿½ï¿½ [end-bgm-additionals] ï¿½ÅˆÍ‚Ü‚ê‚½
-// ï¿½ï¿½ï¿½ï¿½ï¿½ÉÝ’ï¿½ï¿½ï¿½Lï¿½qï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ( [start-bgm-additionals] ï¿½ï¿½ [end-bgm-additionals] ï¿½Ìsï¿½ï¿½
-//  ï¿½ÒWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚µï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )
+// Ÿ BGM ’Ç‰Á‚ÌÝ’è
+// ’Ç‰Á‚ÌÝ’è€–Ú‚ª‚ ‚éê‡‚Í
+// [start-bgm-additionals] ‚Æ [end-bgm-additionals] ‚ÅˆÍ‚Ü‚ê‚½
+// •”•ª‚ÉÝ’è‚ð‹Lq‚µ‚Ä‚­‚¾‚³‚¢
+// ( [start-bgm-additionals] ‚Æ [end-bgm-additionals] ‚Ìs‚Í
+//  •ÒW‚µ‚½‚èÁ‚µ‚½‚è‚µ‚È‚¢‚Å‚­‚¾‚³‚¢ )
 
 //[start-bgm-additionals]
 
@@ -721,65 +721,65 @@ function BGM_config()
 
 }
 
-//---------------------------------------------- ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ÌÝ’ï¿½ -----
+//---------------------------------------------- ƒƒbƒZ[ƒW—š—ð‚ÌÝ’è -----
 
 
 function HistoryLayer_config()
 {
-// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ÌÝ’ï¿½Å‚ï¿½
+// ƒƒbƒZ[ƒW—š—ð‚ÌÝ’è‚Å‚·
 
 
-// ï¿½ï¿½ ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½
-;fontName = "ï¿½lï¿½r ï¿½oï¿½ï¿½ï¿½ï¿½";
+// Ÿ ƒtƒHƒ“ƒg–¼
+;fontName = "‚l‚r ‚o–¾’©";
 
 
-// ï¿½ï¿½ ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ð‘¾Žï¿½ï¿½É‚ï¿½ï¿½é‚©
+// Ÿ ƒtƒHƒ“ƒg‚ð‘¾Žš‚É‚·‚é‚©
 ;fontBold = true;
 
 
-// ï¿½ï¿½ ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÌƒTï¿½Cï¿½Y ( pixelï¿½Pï¿½ï¿½)
+// Ÿ ƒtƒHƒ“ƒg‚ÌƒTƒCƒY ( pixel’PˆÊ)
 ;fontHeight = 24;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½
+// Ÿ ƒ‰ƒCƒ“‚Ì‚‚³
 ;lineHeight = 26;
 
 
-// ï¿½ï¿½ ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½Ìê‡ï¿½ï¿½ true
+// Ÿ c‘‚«‚Ìê‡‚Í true
 ;verticalView = false;
 
 
-// ï¿½ï¿½ ï¿½yï¿½[ï¿½Wï¿½Pï¿½Ê‚Å‚Ì‰{ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
-// ï¿½yï¿½[ï¿½Wï¿½Pï¿½Ê‚Å‚Ì‰{ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½ï¿½
-// cm ct er ï¿½^ï¿½Oï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½ï¿½ repage ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ true ï¿½ï¿½ hr ï¿½^ï¿½O
-// ï¿½Åƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Ì‰ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½sï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ ƒy[ƒW’PˆÊ‚Å‚Ì‰{——‚ðs‚¤‚©‚Ç‚¤‚©
+// ƒy[ƒW’PˆÊ‚Å‚Ì‰{——‚ð‚·‚é‚æ‚¤‚É‚È‚é‚Æ
+// cm ct er ƒ^ƒOA‚ ‚é‚¢‚Í repage ‘®«‚ª true ‚Ì hr ƒ^ƒO
+// ‚ÅƒƒbƒZ[ƒW—š—ð‚Ì‰üƒy[ƒW‚ðs‚¤‚æ‚¤‚É‚È‚è‚Ü‚·B
 ;everypage = false;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+// Ÿ Ž©“®‰üs‚ðs‚¤‚©‚Ç‚¤‚©
 ;autoReturn = true;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ÛŽï¿½ï¿½Å‘å”
-// ï¿½uï¿½ï¿½ ï¿½yï¿½[ï¿½Wï¿½Pï¿½Ê‚Å‚Ì‰{ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ true ï¿½ÉÝ’è‚µï¿½ï¿½ï¿½ê‡ï¿½ï¿½
-// maxPages ï¿½ï¿½ï¿½yï¿½[ï¿½Wï¿½Pï¿½Ê‚ÅAfalse ï¿½ÉÝ’è‚µï¿½ï¿½ï¿½ê‡ï¿½ï¿½ maxLines ï¿½ï¿½ï¿½sï¿½Pï¿½Ê‚ï¿½
-// ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+// Ÿ —š—ð•ÛŽÅ‘å”
+// uŸ ƒy[ƒW’PˆÊ‚Å‚Ì‰{——‚ðs‚¤‚©‚Ç‚¤‚©v‚ð true ‚ÉÝ’è‚µ‚½ê‡‚Í
+// maxPages ‚ðƒy[ƒW’PˆÊ‚ÅAfalse ‚ÉÝ’è‚µ‚½ê‡‚Í maxLines ‚ðs’PˆÊ‚Å
+// Žw’è‚µ‚Ä‚­‚¾‚³‚¢B
 ;maxPages = 100;
 ;maxLines = 2000;
 
 
-// ï¿½ï¿½ ï¿½xï¿½Éƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½é‚©
-// true ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½Æžxï¿½Éƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½ï¿½
-// ï¿½È‚ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Aï¿½xï¿½Ìƒfï¿½[ï¿½^ï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½å‚«ï¿½ï¿½ï¿½È‚ï¿½Ü‚ï¿½ï¿½B
+// Ÿ žx‚ÉƒƒbƒZ[ƒW—š—ð‚ð•Û‘¶‚·‚é‚©
+// true ‚ðŽw’è‚·‚é‚Æžx‚ÉƒƒbƒZ[ƒW—š—ð‚ª•Û‘¶‚³‚ê‚é‚æ‚¤‚É
+// ‚È‚è‚Ü‚·‚ªAžx‚Ìƒf[ƒ^ƒTƒCƒY‚ª‘å‚«‚­‚È‚è‚Ü‚·B
 ;storeState = false;
 
 
-// ï¿½ï¿½ ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ ï¿½Ç‰ï¿½ï¿½ÌÝ’ï¿½
-// ï¿½Ç‰ï¿½ï¿½ÌÝ’è€ï¿½Ú‚ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
-// [start-historylayer-additionals] ï¿½ï¿½ [end-historylayer-additionals] ï¿½Åˆï¿½
-// ï¿½Ü‚ê‚½ï¿½ï¿½ï¿½ï¿½ï¿½ÉÝ’ï¿½ï¿½ï¿½Lï¿½qï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-// ( [start-historylayer-additionals] ï¿½ï¿½ [end-historylayer-additionals] ï¿½Ìsï¿½ï¿½
-//  ï¿½ÒWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚µï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )
+// Ÿ ƒƒbƒZ[ƒW—š—ð ’Ç‰Á‚ÌÝ’è
+// ’Ç‰Á‚ÌÝ’è€–Ú‚ª‚ ‚éê‡‚Í
+// [start-historylayer-additionals] ‚Æ [end-historylayer-additionals] ‚ÅˆÍ
+// ‚Ü‚ê‚½•”•ª‚ÉÝ’è‚ð‹Lq‚µ‚Ä‚­‚¾‚³‚¢
+// ( [start-historylayer-additionals] ‚Æ [end-historylayer-additionals] ‚Ìs‚Í
+//  •ÒW‚µ‚½‚èÁ‚µ‚½‚è‚µ‚È‚¢‚Å‚­‚¾‚³‚¢ )
 
 //[start-historylayer-additionals]
 
@@ -792,6 +792,6 @@ function HistoryLayer_config()
 
 
 // ---------
-// ï¿½ï¿½ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½È~ï¿½ÍÝ’ï¿½Å‚ï¿½ï¿½é€ï¿½Ú‚Í‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½
+// ‚±‚Ìƒtƒ@ƒCƒ‹‚Ì‚±‚êˆÈ~‚ÍÝ’è‚Å‚«‚é€–Ú‚Í‚ ‚è‚Ü‚¹‚ñ
 
 
