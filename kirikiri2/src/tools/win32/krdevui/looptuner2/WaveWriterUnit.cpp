@@ -31,7 +31,7 @@ void __fastcall TWaveWriterForm::WriteWaveData(TWaveReader *reader, int start, i
 {
 	UserBreak = false;
 	CloseLock = true;
-	Label->Caption = ExtractFileName(filename) +" ï¿½Éoï¿½Í’ï¿½ ...";
+	Label->Caption = ExtractFileName(filename) +" ‚Éo—Í’† ...";
 	TStream *out;
 
 	try
@@ -40,7 +40,7 @@ void __fastcall TWaveWriterForm::WriteWaveData(TWaveReader *reader, int start, i
 	}
 	catch(Exception &e)
 	{
-		MessageDlg("ï¿½oï¿½Íƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ş‚ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½", mtError,
+		MessageDlg("o—Íƒtƒ@ƒCƒ‹‚É‘‚«‚Ş‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ", mtError,
 				TMsgDlgButtons() << mbOK, 0);
   		CloseLock = false;
 		ModalResult = mrCancel;
@@ -48,12 +48,12 @@ void __fastcall TWaveWriterForm::WriteWaveData(TWaveReader *reader, int start, i
 	}
 
 
-	// ï¿½wï¿½bï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// ƒwƒbƒ_‚ğ‘‚­
 	try
 	{
 		DWORD size;
 		out->Write("RIFF", 4);
-		size = length * reader->Channels * 2 + 44; // 44= ï¿½wï¿½bï¿½_ï¿½Tï¿½Cï¿½Y
+		size = length * reader->Channels * 2 + 44; // 44= ƒwƒbƒ_ƒTƒCƒY
 		out->Write(&size, 4);
 		out->Write("WAVEfmt \x10\x00\x00\x00", 12); // WAVEfmt
 		WAVEFORMATEX wfe;
@@ -63,7 +63,7 @@ void __fastcall TWaveWriterForm::WriteWaveData(TWaveReader *reader, int start, i
 		wfe.nAvgBytesPerSec = reader->Frequency * reader->Channels * 2;
 		wfe.nBlockAlign = (WORD)reader->Channels * 2;
 		wfe.wBitsPerSample = (WORD)reader->BitsPerSample;
-		wfe.cbSize = 0;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ìƒï¿½ï¿½ï¿½ï¿½oï¿½Í‹Lï¿½^ï¿½ï¿½ï¿½ï¿½È‚ï¿½
+		wfe.cbSize = 0;  // ‚½‚¾‚µA‚±‚Ìƒƒ“ƒo‚Í‹L˜^‚³‚ê‚È‚¢
 
 		out->Write(&wfe, 16);
 
@@ -96,7 +96,7 @@ void __fastcall TWaveWriterForm::WriteWaveData(TWaveReader *reader, int start, i
 
 			if(onesize > out->Write(buf, onesize * reader->Channels * 2))
 			{
-				MessageDlg("ï¿½oï¿½Íƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ş‚ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½", mtError,
+				MessageDlg("o—Íƒtƒ@ƒCƒ‹‚É‘‚«‚Ş‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ", mtError,
 					TMsgDlgButtons() << mbOK, 0);
 				delete [] buf;
 				delete out;
@@ -120,7 +120,7 @@ void __fastcall TWaveWriterForm::WriteWaveData(TWaveReader *reader, int start, i
 	}
 	catch(...)
 	{
-		MessageDlg("ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½oï¿½Í’ï¿½ï¿½ÉƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½", mtError,
+		MessageDlg("ƒtƒ@ƒCƒ‹o—Í’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½", mtError,
 			TMsgDlgButtons() << mbOK, 0);
 		CloseLock = false;
 		ModalResult = mrCancel;
@@ -152,7 +152,7 @@ void __fastcall TWaveWriterForm::FormCloseQuery(TObject *Sender,
 void __fastcall TWaveWriterForm::FormClose(TObject *Sender,
       TCloseAction &Action)
 {
-	Action = caFree; // ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½É‰ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Å‚Ì‰ï¿½ï¿½Í•sï¿½v	
+	Action = caFree; // ©“®“I‚É‰ğ•ú‚³‚ê‚é‚Ì‚ÅAŒÄ‚Ño‚µ‘¤‚Å‚Ì‰ğ•ú‚Í•s—v	
 }
 //---------------------------------------------------------------------------
 

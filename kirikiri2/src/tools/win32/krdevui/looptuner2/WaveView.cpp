@@ -19,21 +19,21 @@
 //---------------------------------------------------------------------------
 // constants
 //---------------------------------------------------------------------------
-const AnsiString C_NEW_LABEL_BASE_NAME = "ï¿½ï¿½ï¿½xï¿½ï¿½";
+const AnsiString C_NEW_LABEL_BASE_NAME = "ƒ‰ƒxƒ‹";
 const AnsiString C_LINK_HINT =
-	"ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½: %s\n"	// link from
-	"ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½: %s\n"	// link to
-	"ï¿½ï¿½ï¿½ï¿½ : %s\n"		// distance
-	"ï¿½ï¿½ï¿½ï¿½ : %s"   		// condition
+	"ƒŠƒ“ƒNŒ³: %s\n"	// link from
+	"ƒŠƒ“ƒNæ: %s\n"	// link to
+	"‹——£ : %s\n"		// distance
+	"ðŒ : %s"   		// condition
 	;
 const AnsiString C_LINK_COND_CODES[] = {
-	"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
-	"%d ï¿½Ô‚Ìƒtï¿½ï¿½ï¿½Oï¿½ï¿½ %d ï¿½Æ“ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½",
-	"%d ï¿½Ô‚Ìƒtï¿½ï¿½ï¿½Oï¿½ï¿½ %d ï¿½Å‚È‚ï¿½ï¿½Æ‚ï¿½",
-	"%d ï¿½Ô‚Ìƒtï¿½ï¿½ï¿½Oï¿½ï¿½ %d ï¿½ï¿½ï¿½å‚«ï¿½ï¿½ï¿½Æ‚ï¿½",
-	"%d ï¿½Ô‚Ìƒtï¿½ï¿½ï¿½Oï¿½ï¿½ %d ï¿½Èï¿½Ì‚Æ‚ï¿½",
-	"%d ï¿½Ô‚Ìƒtï¿½ï¿½ï¿½Oï¿½ï¿½ %d ï¿½ï¿½è¬ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½",
-	"%d ï¿½Ô‚Ìƒtï¿½ï¿½ï¿½Oï¿½ï¿½ %d ï¿½È‰ï¿½ï¿½Ì‚Æ‚ï¿½"
+	"ðŒ–³‚µ",
+	"%d ”Ô‚Ìƒtƒ‰ƒO‚ª %d ‚Æ“¯‚¶‚Æ‚«",
+	"%d ”Ô‚Ìƒtƒ‰ƒO‚ª %d ‚Å‚È‚¢‚Æ‚«",
+	"%d ”Ô‚Ìƒtƒ‰ƒO‚ª %d ‚æ‚è‘å‚«‚¢‚Æ‚«",
+	"%d ”Ô‚Ìƒtƒ‰ƒO‚ª %d ˆÈã‚Ì‚Æ‚«",
+	"%d ”Ô‚Ìƒtƒ‰ƒO‚ª %d ‚æ‚è¬‚³‚¢‚Æ‚«",
+	"%d ”Ô‚Ìƒtƒ‰ƒO‚ª %d ˆÈ‰º‚Ì‚Æ‚«"
 };
 //---------------------------------------------------------------------------
 

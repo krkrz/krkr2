@@ -68,11 +68,11 @@ void __stdcall GetAPIVersion(DWORD *ver)
 //---------------------------------------------------------------------------
 HRESULT __stdcall V2Link(iTVPFunctionExporter *exporter)
 {
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ÛˆÊ’uï¿½Åƒuï¿½ï¿½ï¿½[ï¿½Nï¿½ï¿½\ï¿½ï¿½É‚ÍˆÈ‰ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ÅŠmï¿½Û”Ôï¿½ï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½B
-// ï¿½uï¿½ï¿½ï¿½[ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍAï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Rï¿½[ï¿½ï¿½ï¿½Xï¿½^ï¿½bï¿½N)ï¿½ï¿½ï¿½ï¿½ï¿½ÄAï¿½Ç‚ï¿½ï¿½ÅŠmï¿½Û‚ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Nï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½Tï¿½ï¿½B
-// _CrtDumpMemoryLeaks ï¿½Åƒfï¿½oï¿½bï¿½Oï¿½oï¿½Í‚Éƒï¿½ï¿½[ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŠmï¿½Û”Ôï¿½ï¿½ï¿½ï¿½oï¿½ï¿½Ì‚ÅAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½OK
-// ï¿½mï¿½Ûï¿½ï¿½ï¿½ï¿½sï¿½mï¿½ï¿½Èê‡ï¿½Íhï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ï¿½ï¿½Å’è‚·ï¿½ï¿½Î‚Ù‚Ú“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÅŠmï¿½Û‚ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½B
-//	_CrtSetBreakAlloc(53);	// ï¿½wï¿½è‚³ï¿½ê‚½ï¿½ñ”–Ú‚Ìƒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ÛŽï¿½ï¿½Éƒuï¿½ï¿½ï¿½[ï¿½Nï¿½ï¿½\ï¿½ï¿½
+// ƒƒ‚ƒŠŠm•ÛˆÊ’u‚ÅƒuƒŒ[ƒN‚ð“\‚é‚É‚ÍˆÈ‰º‚Ìƒƒ\ƒbƒh‚ÅŠm•Û”Ô†‚ðŽw’è‚·‚éB
+// ƒuƒŒ[ƒN‚ª‚©‚©‚Á‚½Œã‚ÍAŒÄ‚Ño‚µ—š—ð(ƒR[ƒ‹ƒXƒ^ƒbƒN)‚ðŒ©‚ÄA‚Ç‚±‚ÅŠm•Û‚³‚ê‚½ƒƒ‚ƒŠ‚ªƒŠ[ƒN‚µ‚Ä‚¢‚é‚©’T‚éB
+// _CrtDumpMemoryLeaks ‚ÅƒfƒoƒbƒOo—Í‚ÉƒŠ[ƒN‚µ‚½ƒƒ‚ƒŠ‚ÌŠm•Û”Ô†‚ªo‚é‚Ì‚ÅA‚»‚ê‚ð“ü‚ê‚ê‚ÎOK
+// Šm•Û‡‚ª•sŠm’è‚Èê‡‚Íh‚¢‚ªAƒXƒNƒŠƒvƒg‚ðŒÅ’è‚·‚ê‚Î‚Ù‚Ú“¯‚¶‡‚ÅŠm•Û‚³‚ê‚é‚Í‚¸B
+//	_CrtSetBreakAlloc(53);	// Žw’è‚³‚ê‚½‰ñ”–Ú‚Ìƒƒ‚ƒŠŠm•ÛŽž‚ÉƒuƒŒ[ƒN‚ð“\‚é
 
 	TVPInitImportStub(exporter);
 

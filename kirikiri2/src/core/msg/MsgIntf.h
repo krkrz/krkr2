@@ -27,13 +27,13 @@
 // Japanese localized messages
 TVP_MSG_DECL_CONST(TVPAboutString,
 	
-TJS_W("ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½[ï¿½ï¿½ï¿½è‚«ï¿½ï¿½] 2 ï¿½ï¿½ï¿½sï¿½Rï¿½A version %1 ( TJS version %2 )\n")
+TJS_W("‹g—¢‹g—¢[‚«‚è‚«‚è] 2 ŽÀsƒRƒA version %1 ( TJS version %2 )\n")
 TJS_W("Compiled on ") __DATE__ TJS_W(" ") __TIME__ TJS_W("\n")
-TJS_W("Copyright (C) 1997-2008 W.Dee and contributors All rights reserved.\n")
+TJS_W("Copyright (C) 1997-2009 W.Dee and contributors All rights reserved.\n")
 TJS_W("Contributors in alphabetical order:\n")
 TJS_W("  Go Watanabe, Kenjo, Kiyobee, Kouhei Yanagita, mey, MIK, Takenori Imoto, yun\n")
-TJS_W("ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Rï¿½Aï¿½ÌŽgï¿½p/ï¿½zï¿½z/ï¿½ï¿½Ï‚ÍA\n")
-TJS_W("SDK ï¿½tï¿½ï¿½ï¿½ï¿½ license.txt ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½éƒ‰ï¿½Cï¿½Zï¿½ï¿½ï¿½Xï¿½É]ï¿½ï¿½ï¿½Äsï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½.\n")
+TJS_W("‹g—¢‹g—¢ŽÀsƒRƒA‚ÌŽg—p/”z•z/‰ü•Ï‚ÍA\n")
+TJS_W("SDK •t‘®‚Ì license.txt ‚É‘‚©‚ê‚Ä‚¢‚éƒ‰ƒCƒZƒ“ƒX‚É]‚Á‚Äs‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·.\n")
 TJS_W("------------------------------------------------------------------------------\n")
 TJS_W("Thanks for many libraries, contributers and supporters not listible here.\n")
 TJS_W("This software is based in part on the work of Independent JPEG Group.\n")
@@ -72,310 +72,310 @@ TJS_W("   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING\n
 TJS_W("   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\n")
 TJS_W("   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n")
 TJS_W("------------------------------------------------------------------------------\n")
-TJS_W("ï¿½Â‹ï¿½ï¿½ï¿½ï¿½\n")
+TJS_W("ŠÂ‹«î•ñ\n")
   // important log (environment information, Debug.notice etc.) comes here
 );
 
 TVP_MSG_DECL_CONST(TVPVersionInformation,
 	
-TJS_W("ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½[ï¿½ï¿½ï¿½è‚«ï¿½ï¿½] 2 ï¿½ï¿½ï¿½sï¿½Rï¿½A/%1 ")
+TJS_W("‹g—¢‹g—¢[‚«‚è‚«‚è] 2 ŽÀsƒRƒA/%1 ")
 TJS_W("(Compiled on ") __DATE__ TJS_W(" ") __TIME__ TJS_W(") TJS2/%2 ")
-TJS_W("Copyright (C) 1997-2008 W.Dee and contributors All rights reserved."));
+TJS_W("Copyright (C) 1997-2009 W.Dee and contributors All rights reserved."));
 
 TVP_MSG_DECL_CONST(TVPVersionInformation2,
-	TJS_W("ï¿½oï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌÚ×‚ï¿½ Ctrl + F12 ï¿½Å‰{ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("ƒo[ƒWƒ‡ƒ“î•ñ‚ÌÚ×‚Í Ctrl + F12 ‚Å‰{——‚Å‚«‚Ü‚·"));
 
 TVP_MSG_DECL_CONST(TVPDownloadPageURL,
 	TJS_W("http://kikyou.info/tvp/"));
 
 TVP_MSG_DECL(TVPInternalError,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½: at %1 line %2"));
+	TJS_W("“à•”ƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½: at %1 line %2"));
 
 TVP_MSG_DECL(TVPInvalidParam,
-	TJS_W("ï¿½sï¿½ï¿½ï¿½Èƒpï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½Å‚ï¿½"));
+	TJS_W("•s³‚Èƒpƒ‰ƒ[ƒ^‚Å‚·"));
 
 TVP_MSG_DECL(TVPWarnDebugOptionEnabled,
-	TJS_W("-debug ï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½é‚½ï¿½ßAï¿½ï¿½ï¿½ï¿½ ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Íƒfï¿½oï¿½bï¿½Oï¿½ï¿½ï¿½[ï¿½hï¿½Å“ï¿½ï¿½ì‚µï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½fï¿½oï¿½bï¿½Oï¿½ï¿½ï¿½[ï¿½hï¿½Å‚Í\ï¿½ï¿½ï¿½ÈŽï¿½ï¿½sï¿½ï¿½ï¿½xï¿½ï¿½ï¿½oï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Å’ï¿½ï¿½Ó‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("-debug ƒIƒvƒVƒ‡ƒ“‚ªŽw’è‚³‚ê‚Ä‚¢‚é‚½‚ßAŒ»Ý ‹g—¢‹g—¢‚ÍƒfƒoƒbƒOƒ‚[ƒh‚Å“®ì‚µ‚Ä‚¢‚Ü‚·BƒfƒoƒbƒOƒ‚[ƒh‚Å‚Í\•ª‚ÈŽÀs‘¬“x‚ªo‚È‚¢ê‡‚ª‚ ‚é‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPCommandLineParamIgnoredAndDefaultUsed,
-	TJS_W("ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ %1 ï¿½ÉŽwï¿½è‚³ï¿½ê‚½ï¿½l %2 ï¿½Í–ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ßƒfï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÌÝ’ï¿½ï¿½pï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^ %1 ‚ÉŽw’è‚³‚ê‚½’l %2 ‚Í–³Œø‚Ì‚½‚ßƒfƒtƒHƒ‹ƒg‚ÌÝ’è‚ð—p‚¢‚Ü‚·"));
 
 TVP_MSG_DECL(TVPInvalidCommandLineParam,
-	TJS_W("ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ %1 ï¿½ÉŽwï¿½è‚³ï¿½ê‚½ï¿½l %2 ï¿½Í–ï¿½ï¿½ï¿½Å‚ï¿½"));
+	TJS_W("ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^ %1 ‚ÉŽw’è‚³‚ê‚½’l %2 ‚Í–³Œø‚Å‚·"));
 
 TVP_MSG_DECL(TVPNotImplemented,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‹@ï¿½\ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("–¢ŽÀ‘•‚Ì‹@”\‚ðŒÄ‚Ño‚»‚¤‚Æ‚µ‚Ü‚µ‚½"));
 
 TVP_MSG_DECL(TVPCannotOpenStorage,
-	TJS_W("ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½W %1 ï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒXƒgƒŒ[ƒW %1 ‚ðŠJ‚­‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotFindStorage,
-	TJS_W("ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½W %1 ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒXƒgƒŒ[ƒW %1 ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotOpenStorageForWrite,
-	TJS_W("ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½W %1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý—pï¿½ÉŠJï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý‹ÖŽ~ï¿½É‚È‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½Íƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý‰Â”\ï¿½Èƒï¿½ï¿½fï¿½Bï¿½Aï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½È‚Ì‚ï¿½ï¿½ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("ƒXƒgƒŒ[ƒW %1 ‚ð‘‚«ž‚Ý—p‚ÉŠJ‚­‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñBƒtƒ@ƒCƒ‹‚ª‘‚«ž‚Ý‹ÖŽ~‚É‚È‚Á‚Ä‚¢‚È‚¢‚©A‚ ‚é‚¢‚Íƒtƒ@ƒCƒ‹‚É‘‚«ž‚ÝŒ ŒÀ‚ª‚ ‚é‚©‚Ç‚¤‚©A‚ ‚é‚¢‚Í‚»‚à‚»‚à‚»‚ê‚ª‘‚«ž‚Ý‰Â”\‚ÈƒƒfƒBƒA‚âƒtƒ@ƒCƒ‹‚È‚Ì‚©‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPStorageInArchiveNotFound,
-	TJS_W("ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½W %1 ï¿½ï¿½ï¿½Aï¿½[ï¿½Jï¿½Cï¿½u %2 ï¿½Ì’ï¿½ï¿½ÉŒï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒXƒgƒŒ[ƒW %1 ‚ªƒA[ƒJƒCƒu %2 ‚Ì’†‚ÉŒ©‚Â‚©‚è‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPInvalidPathName,
-	TJS_W("ï¿½pï¿½Xï¿½ï¿½ %1 ï¿½Í–ï¿½ï¿½ï¿½ÈŒ`ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Bï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("ƒpƒX–¼ %1 ‚Í–³Œø‚ÈŒ`Ž®‚Å‚·BŒ`Ž®‚ª³‚µ‚¢‚©‚Ç‚¤‚©‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPUnsupportedMediaName,
-	TJS_W("\"%1\" ï¿½Í‘Î‰ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½fï¿½Bï¿½Aï¿½^ï¿½Cï¿½vï¿½Å‚ï¿½"));
+	TJS_W("\"%1\" ‚Í‘Î‰ž‚µ‚Ä‚¢‚È‚¢ƒƒfƒBƒAƒ^ƒCƒv‚Å‚·"));
 
 TVP_MSG_DECL(TVPCannotUnbindXP3EXE,
-	TJS_W("%1 ï¿½ÍŽï¿½ï¿½sï¿½Â”\ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ÉŒï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ÉŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½ð”­Œï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½"));
+	TJS_W("%1 ‚ÍŽÀs‰Â”\ƒtƒ@ƒCƒ‹‚ÉŒ©‚¦‚Ü‚·‚ªA‚±‚ê‚ÉŒ‹‡‚³‚ê‚½ƒA[ƒJƒCƒu‚ð”­Œ©‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½"));
 
 TVP_MSG_DECL(TVPCannotFindXP3Mark,
-	TJS_W("%1 ï¿½ï¿½ XP3 ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½Å‚Í‚È‚ï¿½ï¿½ï¿½ï¿½Aï¿½Î‰ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½`ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Bï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚·ï¿½×‚ï¿½ï¿½ï¿½Ê‚Å’Êï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½ï¿½ê‡ï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½Í‘Î‰ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½ï¿½ï¿½ê‡ï¿½È‚Ç‚É‚ï¿½ï¿½ÌƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Ì‚ÅAï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("%1 ‚Í XP3 ƒA[ƒJƒCƒu‚Å‚Í‚È‚¢‚©A‘Î‰ž‚Å‚«‚È‚¢Œ`Ž®‚Å‚·BƒA[ƒJƒCƒuƒtƒ@ƒCƒ‹‚ðŽw’è‚·‚×‚«ê–Ê‚Å’Êí‚Ìƒtƒ@ƒCƒ‹‚ðŽw’è‚µ‚½ê‡A‚ ‚é‚¢‚Í‘Î‰ž‚Å‚«‚È‚¢ƒA[ƒJƒCƒuƒtƒ@ƒCƒ‹‚ðŽw’è‚µ‚½ê‡‚È‚Ç‚É‚±‚ÌƒGƒ‰[‚ª”­¶‚µ‚Ü‚·‚Ì‚ÅAŠm”F‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPMissingPathDelimiterAtLast,
-	TJS_W("ï¿½pï¿½Xï¿½ï¿½ï¿½ÌÅŒï¿½É‚ï¿½ '>' ï¿½Ü‚ï¿½ï¿½ï¿½ '/' ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Q 2.19 beta 14 ï¿½ï¿½ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½Ì‹ï¿½Ø‚ï¿½Lï¿½ï¿½ï¿½ï¿½ '#' ï¿½ï¿½ï¿½ï¿½ '>' ï¿½É•Ï‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½)"));
+	TJS_W("ƒpƒX–¼‚ÌÅŒã‚É‚Í '>' ‚Ü‚½‚Í '/' ‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢ (‹g—¢‹g—¢‚Q 2.19 beta 14 ‚æ‚èƒA[ƒJƒCƒu‚Ì‹æØ‚è‹L†‚ª '#' ‚©‚ç '>' ‚É•Ï‚í‚è‚Ü‚µ‚½)"));
 
 TVP_MSG_DECL(TVPFilenameContainsSharpWarn,
-	TJS_W("(ï¿½ï¿½ï¿½ï¿½) '#' ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ \"%1\" ï¿½ÉŠÜ‚Ü‚ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½Ì‹ï¿½Ø‚è•¶ï¿½ï¿½ï¿½Í‹gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Q 2.19 beta 14 ï¿½ï¿½ï¿½'#' ï¿½ï¿½ï¿½ï¿½ '>' ï¿½É•Ï‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B")
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½Ì‹ï¿½Ø‚è•¶ï¿½ï¿½ï¿½Ì‚Â‚ï¿½ï¿½ï¿½ï¿½ '#' ï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍAï¿½ï¿½ï¿½è”ï¿½Å‚ï¿½ï¿½ï¿½ '>' ï¿½É•Ï‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("(’ˆÓ) '#' ‚ªƒtƒ@ƒCƒ‹–¼ \"%1\" ‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚Ü‚·BƒA[ƒJƒCƒu‚Ì‹æØ‚è•¶Žš‚Í‹g—¢‹g—¢‚Q 2.19 beta 14 ‚æ‚è'#' ‚©‚ç '>' ‚É•Ï‚í‚è‚Ü‚µ‚½B")
+	TJS_W("‚à‚µƒA[ƒJƒCƒu‚Ì‹æØ‚è•¶Žš‚Ì‚Â‚à‚è‚Å '#' ‚ðŽg—p‚µ‚½ê‡‚ÍA‚¨Žè”‚Å‚·‚ª '>' ‚É•Ï‚¦‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPCannotGetLocalName,
-	TJS_W("ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ %1 ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Jï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½É•ÏŠï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Bï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½[ï¿½Jï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Íƒï¿½ï¿½[ï¿½Jï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½É•ÏŠï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B"));
+	TJS_W("ƒXƒgƒŒ[ƒW–¼ %1 ‚ðƒ[ƒJƒ‹ƒtƒ@ƒCƒ‹–¼‚É•ÏŠ·‚Å‚«‚Ü‚¹‚ñBƒA[ƒJƒCƒuƒtƒ@ƒCƒ‹“à‚Ìƒtƒ@ƒCƒ‹‚âAƒ[ƒJƒ‹ƒtƒ@ƒCƒ‹‚Å‚È‚¢ƒtƒ@ƒCƒ‹‚Íƒ[ƒJƒ‹ƒtƒ@ƒCƒ‹–¼‚É•ÏŠ·‚Å‚«‚Ü‚¹‚ñB"));
 
 TVP_MSG_DECL(TVPReadError,
-	TJS_W("ï¿½Ç‚Ýï¿½ï¿½ÝƒGï¿½ï¿½ï¿½[ï¿½Å‚ï¿½ï¿½Bï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½Aï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½ï¿½ï¿½Ì“Ç‚Ýï¿½ï¿½Ý‚ÉŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("“Ç‚Ýž‚ÝƒGƒ‰[‚Å‚·Bƒtƒ@ƒCƒ‹‚ª”j‘¹‚µ‚Ä‚¢‚é‰Â”\«‚âAƒfƒoƒCƒX‚©‚ç‚Ì“Ç‚Ýž‚Ý‚ÉŽ¸”s‚µ‚½‰Â”\«‚ª‚ ‚è‚Ü‚·"));
 
 TVP_MSG_DECL(TVPWriteError,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝƒGï¿½ï¿½ï¿½[ï¿½Å‚ï¿½"));
+	TJS_W("‘‚«ž‚ÝƒGƒ‰[‚Å‚·"));
 
 TVP_MSG_DECL(TVPSeekError,
-	TJS_W("ï¿½Vï¿½[ï¿½Nï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½Aï¿½fï¿½oï¿½Cï¿½Xï¿½ï¿½ï¿½ï¿½Ì“Ç‚Ýï¿½ï¿½Ý‚ÉŽï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("ƒV[ƒN‚ÉŽ¸”s‚µ‚Ü‚µ‚½Bƒtƒ@ƒCƒ‹‚ª”j‘¹‚µ‚Ä‚¢‚é‰Â”\«‚âAƒfƒoƒCƒX‚©‚ç‚Ì“Ç‚Ýž‚Ý‚ÉŽ¸”s‚µ‚½‰Â”\«‚ª‚ ‚è‚Ü‚·"));
 
 TVP_MSG_DECL(TVPTruncateError,
-	TJS_W("ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ì’ï¿½ï¿½ï¿½ï¿½ï¿½Ø‚ï¿½lï¿½ß‚ï¿½Ì‚ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒtƒ@ƒCƒ‹‚Ì’·‚³‚ðØ‚è‹l‚ß‚é‚Ì‚ÉŽ¸”s‚µ‚Ü‚µ‚½"));
 
 TVP_MSG_DECL(TVPInsufficientMemory,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½Û‚ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B"));
+	TJS_W("ƒƒ‚ƒŠŠm•Û‚ÉŽ¸”s‚µ‚Ü‚µ‚½B"));
 
 TVP_MSG_DECL(TVPUncompressionFailed,
-	TJS_W("ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ì“Wï¿½Jï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½Î‰ï¿½ï¿½Ìˆï¿½ï¿½kï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚³ï¿½ê‚½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½Íƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("ƒtƒ@ƒCƒ‹‚Ì“WŠJ‚ÉŽ¸”s‚µ‚Ü‚µ‚½B–¢‘Î‰ž‚Ìˆ³kŒ`Ž®‚ªŽw’è‚³‚ê‚½‚©A‚ ‚é‚¢‚Íƒtƒ@ƒCƒ‹‚ª”j‘¹‚µ‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·"));
 
 TVP_MSG_DECL(TVPCompressionFailed,
-	TJS_W("ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ìˆï¿½ï¿½kï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒtƒ@ƒCƒ‹‚Ìˆ³k‚ÉŽ¸”s‚µ‚Ü‚µ‚½"));
 
 TVP_MSG_DECL(TVPCannotWriteToArchive,
-	TJS_W("ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½Éƒfï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ‚ï¿½ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒA[ƒJƒCƒu‚Éƒf[ƒ^‚ð‘‚«ž‚Þ‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPUnsupportedCipherMode,
-	TJS_W("%1 ï¿½Í–ï¿½ï¿½Î‰ï¿½ï¿½ÌˆÃï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("%1 ‚Í–¢‘Î‰ž‚ÌˆÃ†‰»Œ`Ž®‚©Aƒf[ƒ^‚ª”j‘¹‚µ‚Ä‚¢‚Ü‚·"));
 
 TVP_MSG_DECL(TVPUnsupportedModeString,
-	TJS_W("ï¿½Fï¿½ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŽwï¿½ï¿½Å‚ï¿½(%1)"));
+	TJS_W("”FŽ¯‚Å‚«‚È‚¢ƒ‚[ƒh•¶Žš—ñ‚ÌŽw’è‚Å‚·(%1)"));
 
 TVP_MSG_DECL(TVPUnknownGraphicFormat,
-	TJS_W("%1 ï¿½Í–ï¿½ï¿½mï¿½Ì‰æ‘œï¿½`ï¿½ï¿½ï¿½Å‚ï¿½"));
+	TJS_W("%1 ‚Í–¢’m‚Ì‰æ‘œŒ`Ž®‚Å‚·"));
 
 TVP_MSG_DECL(TVPCannotSuggestGraphicExtension,
-	TJS_W("%1 ï¿½É‚Â‚ï¿½ï¿½Ä“Kï¿½Ø‚ÈŠgï¿½ï¿½ï¿½qï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½"));
+	TJS_W("%1 ‚É‚Â‚¢‚Ä“KØ‚ÈŠg’£Žq‚ðŽ‚Á‚½ƒtƒ@ƒCƒ‹‚ðŒ©‚Â‚¯‚ç‚ê‚Ü‚¹‚ñ‚Å‚µ‚½"));
 
 TVP_MSG_DECL(TVPMaskSizeMismatch,
-	TJS_W("ï¿½}ï¿½Xï¿½Nï¿½æ‘œï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½æ‘œï¿½ÌƒTï¿½Cï¿½Yï¿½Æˆá‚¢ï¿½Ü‚ï¿½"));
+	TJS_W("ƒ}ƒXƒN‰æ‘œ‚ÌƒTƒCƒY‚ªƒƒCƒ“‰æ‘œ‚ÌƒTƒCƒY‚Æˆá‚¢‚Ü‚·"));
 
 TVP_MSG_DECL(TVPProvinceSizeMismatch,
-	TJS_W("ï¿½Ìˆï¿½æ‘œ %1 ï¿½Íƒï¿½ï¿½Cï¿½ï¿½ï¿½æ‘œï¿½ÆƒTï¿½Cï¿½Yï¿½ï¿½ï¿½á‚¢ï¿½Ü‚ï¿½"));
+	TJS_W("—Ìˆæ‰æ‘œ %1 ‚ÍƒƒCƒ“‰æ‘œ‚ÆƒTƒCƒY‚ªˆá‚¢‚Ü‚·"));
 
 TVP_MSG_DECL(TVPImageLoadError,
-	TJS_W("ï¿½æ‘œï¿½Ç‚Ýï¿½ï¿½Ý’ï¿½ï¿½ÉƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/%1"));
+	TJS_W("‰æ‘œ“Ç‚Ýž‚Ý’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½/%1"));
 
 TVP_MSG_DECL(TVPJPEGLoadError,
-	TJS_W("JPEG ï¿½Ç‚Ýï¿½ï¿½Ý’ï¿½ï¿½ÉƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/%1"));
+	TJS_W("JPEG “Ç‚Ýž‚Ý’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½/%1"));
 
 TVP_MSG_DECL(TVPPNGLoadError,
-	TJS_W("PNG ï¿½Ç‚Ýï¿½ï¿½Ý’ï¿½ï¿½ÉƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/%1"));
+	TJS_W("PNG “Ç‚Ýž‚Ý’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½/%1"));
 
 TVP_MSG_DECL(TVPERILoadError,
-	TJS_W("ERI ï¿½Ç‚Ýï¿½ï¿½Ý’ï¿½ï¿½ÉƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/%1"));
+	TJS_W("ERI “Ç‚Ýž‚Ý’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½/%1"));
 
 TVP_MSG_DECL(TVPTLGLoadError,
-	TJS_W("TLG ï¿½Ç‚Ýï¿½ï¿½Ý’ï¿½ï¿½ÉƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½/%1"));
+	TJS_W("TLG “Ç‚Ýž‚Ý’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½/%1"));
 
 TVP_MSG_DECL(TVPInvalidImageSaveType,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½È•Û‘ï¿½ï¿½æ‘œï¿½`ï¿½ï¿½ï¿½Å‚ï¿½(%1)"));
+	TJS_W("–³Œø‚È•Û‘¶‰æ‘œŒ`Ž®‚Å‚·(%1)"));
 
 TVP_MSG_DECL(TVPInvalidOperationFor8BPP,
-	TJS_W("8bpp ï¿½æ‘œï¿½É‘Î‚ï¿½ï¿½Ä‚Ísï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("8bpp ‰æ‘œ‚É‘Î‚µ‚Ä‚Ís‚¦‚È‚¢‘€ì‚ðs‚¨‚¤‚Æ‚µ‚Ü‚µ‚½"));
 
 TVP_MSG_DECL(TVPSpecifyWindow,
-	TJS_W("Window ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("Window ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPSpecifyLayer,
-	TJS_W("Layer ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("Layer ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPCannotCreateEmptyLayerImage,
-	TJS_W("ï¿½æ‘œï¿½Tï¿½Cï¿½Yï¿½Ì‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚¢ï¿½Ícï¿½ï¿½ï¿½ï¿½ 0 ï¿½È‰ï¿½ï¿½Ìï¿½ï¿½ÉÝ’è‚·ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("‰æ‘œƒTƒCƒY‚Ì‰¡•‚ ‚é‚¢‚Íc•‚ð 0 ˆÈ‰º‚Ì”‚ÉÝ’è‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotSetPrimaryInvisible,
-	TJS_W("ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Í•sï¿½ÂŽï¿½ï¿½É‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚Í•s‰ÂŽ‹‚É‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotMovePrimary,
-	TJS_W("ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÍˆÚ“ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚ÍˆÚ“®‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotSetParentSelf,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½eï¿½Æ‚ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("Ž©•ªŽ©g‚ðe‚Æ‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotMoveNextToSelfOrNotSiblings,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì‘Oï¿½ï¿½ï¿½eï¿½ÌˆÙ‚È‚éƒŒï¿½Cï¿½ï¿½ï¿½Ì‘Oï¿½ï¿½ÉˆÚ“ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("Ž©•ªŽ©g‚Ì‘OŒã‚âe‚ÌˆÙ‚È‚éƒŒƒCƒ„‚Ì‘OŒã‚ÉˆÚ“®‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotMovePrimaryOrSiblingless,
-	TJS_W("ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½Ì–ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Í‘Oï¿½ï¿½ÉˆÚ“ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚âŒZ’í‚Ì–³‚¢ƒŒƒCƒ„‚Í‘OŒã‚ÉˆÚ“®‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotMoveToUnderOtherPrimaryLayer,
-	TJS_W("ï¿½Ê‚Ìƒvï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Éƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("•Ê‚Ìƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‰º‚ÉƒŒƒCƒ„‚ðˆÚ“®‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPInvalidImagePosition,
-	TJS_W("ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆï¿½É‰æ‘œï¿½Ì–ï¿½ï¿½ï¿½ï¿½Ìˆæ‚ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒŒƒCƒ„—Ìˆæ‚É‰æ‘œ‚Ì–³‚¢—Ìˆæ‚ª”­¶‚µ‚Ü‚µ‚½"));
 
 TVP_MSG_DECL(TVPCannotSetModeToDisabledOrModal,
-	TJS_W("ï¿½ï¿½ï¿½Å‚Éƒï¿½ï¿½[ï¿½_ï¿½ï¿½ï¿½Èƒï¿½ï¿½Cï¿½ï¿½ï¿½Ìeï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½Í•sï¿½ÂŽï¿½/ï¿½ï¿½ï¿½ï¿½Èƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½_ï¿½ï¿½ï¿½É‚ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("‚·‚Å‚Éƒ‚[ƒ_ƒ‹‚ÈƒŒƒCƒ„‚ÌeƒŒƒCƒ„A‚ ‚é‚¢‚Í•s‰ÂŽ‹/–³Œø‚ÈƒŒƒCƒ„‚ðƒ‚[ƒ_ƒ‹‚É‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPNotDrawableLayerType,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ type ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½Å‚Í•`ï¿½ï¿½ï¿½æ‘œï¿½Ç‚Ýï¿½ï¿½Ý‚ï¿½æ‘œï¿½Tï¿½Cï¿½Y/ï¿½Ê’uï¿½Ì•ÏX/ï¿½æ“¾ï¿½Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("‚±‚Ì type ‚ÌƒŒƒCƒ„‚Å‚Í•`‰æ‚â‰æ‘œ“Ç‚Ýž‚Ý‚â‰æ‘œƒTƒCƒY/ˆÊ’u‚Ì•ÏX/Žæ“¾‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPSourceLayerHasNoImage,
-	TJS_W("ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Í‰æ‘œï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("“]‘—Œ³ƒŒƒCƒ„‚Í‰æ‘œ‚ðŽ‚Á‚Ä‚¢‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPUnsupportedLayerType,
-	TJS_W("%1 ï¿½Í‚ï¿½ï¿½ï¿½ type ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½Å‚ÍŽgï¿½pï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("%1 ‚Í‚±‚Ì type ‚ÌƒŒƒCƒ„‚Å‚ÍŽg—p‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPNotDrawableFaceType,
-	TJS_W("%1 ï¿½Å‚Í‚ï¿½ï¿½ï¿½ face ï¿½É•`ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("%1 ‚Å‚Í‚±‚Ì face ‚É•`‰æ‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotConvertLayerTypeUsingGivenDirection,
-	TJS_W("ï¿½wï¿½è‚³ï¿½ê‚½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½^ï¿½Cï¿½vï¿½ÏŠï¿½ï¿½Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("Žw’è‚³‚ê‚½ƒŒƒCƒ„ƒ^ƒCƒv•ÏŠ·‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPNegativeOpacityNotSupportedOnThisFace,
-	TJS_W("ï¿½ï¿½ï¿½Ì•sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Í‚ï¿½ï¿½ï¿½ face ï¿½Å‚ÍŽwï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("•‰‚Ì•s“§–¾“x‚Í‚±‚Ì face ‚Å‚ÍŽw’è‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPSrcRectOutOfBitmap,
-	TJS_W("ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½rï¿½bï¿½gï¿½}ï¿½bï¿½vï¿½Oï¿½Ì—Ìˆï¿½ï¿½ï¿½Ü‚ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÍˆÍ‚ÉŽï¿½Ü‚ï¿½æ‚¤ï¿½É“]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("“]‘—Œ³‚ªƒrƒbƒgƒ}ƒbƒvŠO‚Ì—Ìˆæ‚ðŠÜ‚ñ‚Å‚¢‚Ü‚·B³‚µ‚¢”ÍˆÍ‚ÉŽû‚Ü‚é‚æ‚¤‚É“]‘—Œ³‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPBoxBlurAreaMustContainCenterPixel,
-	TJS_W("ï¿½ï¿½`ï¿½uï¿½ï¿½ï¿½[ï¿½Ì”ÍˆÍ‚Í•Kï¿½ï¿½(0,0)ï¿½ï¿½ï¿½ï¿½ï¿½Ì’ï¿½ï¿½ÉŠÜ‚Þ•Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Bleftï¿½ï¿½rightï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½lï¿½Aï¿½ï¿½ï¿½é‚¢ï¿½Í—ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½lï¿½Æ‚ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½(topï¿½ï¿½bottomï¿½É‘Î‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½l)"));
+	TJS_W("‹éŒ`ƒuƒ‰[‚Ì”ÍˆÍ‚Í•K‚¸(0,0)‚ð‚»‚Ì’†‚ÉŠÜ‚Þ•K—v‚ª‚ ‚è‚Ü‚·Bleft‚Æright‚ª—¼•û‚Æ‚à³‚Ì”’lA‚ ‚é‚¢‚Í—¼•û‚Æ‚à•‰‚Ì”’l‚Æ‚¢‚¤Žw’è‚Í‚Å‚«‚Ü‚¹‚ñ(top‚Æbottom‚É‘Î‚µ‚Ä‚à“¯—l)"));
 
 TVP_MSG_DECL(TVPBoxBlurAreaMustBeSmallerThan16Million,
-	TJS_W("ï¿½ï¿½`ï¿½uï¿½ï¿½ï¿½[ï¿½Ì”ÍˆÍ‚ï¿½ï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½Bï¿½ï¿½`ï¿½uï¿½ï¿½ï¿½[ï¿½Ì”ÍˆÍ‚ï¿½1677ï¿½ï¿½ï¿½È‰ï¿½ï¿½Å‚ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("‹éŒ`ƒuƒ‰[‚Ì”ÍˆÍ‚ª‘å‚«‚·‚¬‚Ü‚·B‹éŒ`ƒuƒ‰[‚Ì”ÍˆÍ‚Í1677–œˆÈ‰º‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·"));
 
 TVP_MSG_DECL(TVPCannotChangeFocusInProcessingFocus,
-	TJS_W("ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ÏXï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Íƒtï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½Vï¿½ï¿½ï¿½É•ÏXï¿½ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒtƒH[ƒJƒX•ÏXˆ—’†‚ÍƒtƒH[ƒJƒX‚ðV‚½‚É•ÏX‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPWindowHasNoLayer,
-	TJS_W("ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Éƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒEƒBƒ“ƒhƒE‚ÉƒŒƒCƒ„‚ª‚ ‚è‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPWindowHasAlreadyPrimaryLayer,
-	TJS_W("ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½É‚Í‚ï¿½ï¿½Å‚Éƒvï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("ƒEƒBƒ“ƒhƒE‚É‚Í‚·‚Å‚Éƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚ª‚ ‚è‚Ü‚·"));
 
 TVP_MSG_DECL(TVPSpecifiedEventNeedsParameter,
-	TJS_W("ï¿½Cï¿½xï¿½ï¿½ï¿½g %1 ï¿½É‚Íƒpï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½ï¿½ï¿½Kï¿½vï¿½Å‚ï¿½"));
+	TJS_W("ƒCƒxƒ“ƒg %1 ‚É‚Íƒpƒ‰ƒ[ƒ^‚ª•K—v‚Å‚·"));
 
 TVP_MSG_DECL(TVPSpecifiedEventNeedsParameter2,
-	TJS_W("ï¿½Cï¿½xï¿½ï¿½ï¿½g %1 ï¿½É‚Íƒpï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ %2 ï¿½ï¿½ï¿½Kï¿½vï¿½Å‚ï¿½"));
+	TJS_W("ƒCƒxƒ“ƒg %1 ‚É‚Íƒpƒ‰ƒ[ƒ^ %2 ‚ª•K—v‚Å‚·"));
 
 TVP_MSG_DECL(TVPSpecifiedEventNameIsUnknown,
-	TJS_W("ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ %1 ï¿½Í–ï¿½ï¿½mï¿½ÌƒCï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Å‚ï¿½"));
+	TJS_W("ƒCƒxƒ“ƒg–¼ %1 ‚Í–¢’m‚ÌƒCƒxƒ“ƒg–¼‚Å‚·"));
 
 TVP_MSG_DECL(TVPOutOfRectangle,
-	TJS_W("ï¿½ï¿½`ï¿½Oï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("‹éŒ`ŠO‚ðŽw’è‚³‚ê‚Ü‚µ‚½"));
 
 TVP_MSG_DECL(TVPInvalidMethodInUpdating,
-	TJS_W("ï¿½ï¿½ÊXï¿½Vï¿½ï¿½ï¿½Í‚ï¿½ï¿½Ì‹@ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("‰æ–ÊXV’†‚Í‚±‚Ì‹@”\‚ðŽÀs‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPCannotCreateInstance,
-	TJS_W("ï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½Xï¿½ÍƒCï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ì¬ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("‚±‚ÌƒNƒ‰ƒX‚ÍƒCƒ“ƒXƒ^ƒ“ƒX‚ðì¬‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPUnknownWaveFormat,
-	TJS_W("%1 ï¿½Í‘Î‰ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ Wave ï¿½`ï¿½ï¿½ï¿½Å‚ï¿½"));
+	TJS_W("%1 ‚Í‘Î‰ž‚Å‚«‚È‚¢ Wave Œ`Ž®‚Å‚·"));
 
 TVP_MSG_DECL(TVPSpecifyMenuItem,
-	TJS_W("MenuItem ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("MenuItem ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPCurrentTransitionMustBeStopping,
-	TJS_W("ï¿½ï¿½ï¿½Ý‚Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½Ä•ï¿½ï¿½ï¿½ï¿½Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ð“¯Žï¿½ï¿½ÉŽï¿½ï¿½sï¿½ï¿½ï¿½æ‚¤ï¿½Æ‚ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÌƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("Œ»Ý‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ð’âŽ~‚³‚¹‚Ä‚©‚çV‚µ‚¢ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŠJŽn‚µ‚Ä‚­‚¾‚³‚¢B“¯‚¶ƒŒƒCƒ„‚É‘Î‚µ‚Ä•¡”‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ð“¯Žž‚ÉŽÀs‚µ‚æ‚¤‚Æ‚·‚é‚Æ‚±‚ÌƒGƒ‰[‚ª”­¶‚µ‚Ü‚·"));
 
 TVP_MSG_DECL(TVPTransHandlerError,
-	TJS_W("ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ÅƒGï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : %1"));
+	TJS_W("ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ƒnƒ“ƒhƒ‰‚ÅƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½ : %1"));
 
 TVP_MSG_DECL(TVPTransAlreadyRegistered,
-	TJS_W("ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ %1 ï¿½ÍŠï¿½É“oï¿½^ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ %1 ‚ÍŠù‚É“o˜^‚³‚ê‚Ä‚¢‚Ü‚·"));
 
 TVP_MSG_DECL(TVPCannotFindTransHander,
-	TJS_W("ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ %1 ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ƒnƒ“ƒhƒ‰ %1 ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPSpecifyTransitionSource,
-	TJS_W("ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPLayerCannotHaveImage,
-	TJS_W("ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½Í‰æ‘œï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("‚±‚ÌƒŒƒCƒ„‚Í‰æ‘œ‚ðŽ‚Â‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPTransitionSourceAndDestinationMustHaveImage,
-	TJS_W("ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í‚Æ‚ï¿½ï¿½É‰æ‘œï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚Æƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“æ‚Í‚Æ‚à‚É‰æ‘œ‚ðŽ‚Á‚Ä‚¢‚é•K—v‚ª‚ ‚è‚Ü‚·"));
 
 TVP_MSG_DECL(TVPCannotLoadRuleGraphic,
-	TJS_W("ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œ %1 ï¿½ï¿½Ç‚Ýï¿½ï¿½Þ‚ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒ‹[ƒ‹‰æ‘œ %1 ‚ð“Ç‚Ýž‚Þ‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPSpecifyOption,
-	TJS_W("ï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ %1 ï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("ƒIƒvƒVƒ‡ƒ“ %1 ‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPTransitionLayerSizeMismatch,
-	TJS_W("ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(%1)ï¿½Æƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(%2)ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³(%1)‚Æƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“æ(%2)‚ÌƒŒƒCƒ„‚ÌƒTƒCƒY‚ªˆê’v‚µ‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPTransitionMutualSource,
-	TJS_W("ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Å‚ï¿½"));
+	TJS_W("ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚ªŽ©•ªŽ©g‚Å‚·"));
 
 TVP_MSG_DECL(TVPHoldDestinationAlphaParameterIsNowDeprecated,
-	TJS_W("ï¿½xï¿½ï¿½ : ï¿½ï¿½ï¿½\ï¿½bï¿½h %1 ï¿½ï¿½ %2 ï¿½Ô–Ú‚É“nï¿½ï¿½ï¿½ê‚½ hda ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½ÍAï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Q 2.23 beta 2 ï¿½ï¿½è–³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ Layer.holdAlpha ï¿½vï¿½ï¿½ï¿½pï¿½eï¿½Bï¿½ï¿½pï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B"));
+	TJS_W("Œx : ƒƒ\ƒbƒh %1 ‚Ì %2 ”Ô–Ú‚É“n‚³‚ê‚½ hda ƒpƒ‰ƒ[ƒ^‚ÍA‹g—¢‹g—¢‚Q 2.23 beta 2 ‚æ‚è–³Ž‹‚³‚ê‚é‚æ‚¤‚É‚È‚è‚Ü‚µ‚½B‘ã‚í‚è‚É Layer.holdAlpha ƒvƒƒpƒeƒB‚ð—p‚¢‚Ä‚­‚¾‚³‚¢B"));
 
 TVP_MSG_DECL(TVPCannotConnectMultipleWaveSoundBufferAtOnce,
-	TJS_W("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ WaveSoundBuffer ï¿½ï¿½ï¿½ï¿½Â‚Ìƒtï¿½Bï¿½ï¿½ï¿½^ï¿½Å“ï¿½ï¿½ï¿½ï¿½ÉŽgï¿½pï¿½ï¿½ï¿½é‚±ï¿½Æ‚Í‚Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("•¡”‚Ì WaveSoundBuffer ‚ðˆê‚Â‚ÌƒtƒBƒ‹ƒ^‚Å“¯Žž‚ÉŽg—p‚·‚é‚±‚Æ‚Í‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPInvalidWindowSizeMustBeIn64to32768,
-	TJS_W("window ï¿½ï¿½ 64ï¿½`32768 ï¿½Ì”ÍˆÍ‚ï¿½ 2 ï¿½Ì—Ýï¿½Å–ï¿½ï¿½ï¿½ï¿½ï¿½Î‚È‚ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("window ‚Í 64`32768 ‚Ì”ÍˆÍ‚Ì 2 ‚Ì—Ýæ‚Å–³‚¯‚ê‚Î‚È‚è‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPInvalidOverlapCountMustBeIn2to32,
-	TJS_W("overlap ï¿½ï¿½ 2ï¿½`32 ï¿½Ì”ÍˆÍ‚ï¿½ 2 ï¿½Ì—Ýï¿½Å–ï¿½ï¿½ï¿½ï¿½ï¿½Î‚È‚ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("overlap ‚Í 2`32 ‚Ì”ÍˆÍ‚Ì 2 ‚Ì—Ýæ‚Å–³‚¯‚ê‚Î‚È‚è‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPKAGNoLine,
-	TJS_W("ï¿½Ç‚Ýï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ %1 ï¿½Í‹ï¿½Å‚ï¿½"));
+	TJS_W("“Ç‚Ýž‚à‚¤‚Æ‚µ‚½ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹ %1 ‚Í‹ó‚Å‚·"));
 
 TVP_MSG_DECL(TVPKAGCannotOmmitFirstLabelName,
-	TJS_W("ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ÌÅï¿½ï¿½Ìƒï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ÍÈ—ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹‚ÌÅ‰‚Ìƒ‰ƒxƒ‹–¼‚ÍÈ—ª‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPKAGLabelNotFound,
-	TJS_W("ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ %1 ï¿½ï¿½ï¿½Éƒï¿½ï¿½xï¿½ï¿½ %2 ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹ %1 “à‚Éƒ‰ƒxƒ‹ %2 ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPKAGInlineScriptNotEnd,
-	TJS_W("[endscript] ï¿½Ü‚ï¿½ï¿½ï¿½ @endscript ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("[endscript] ‚Ü‚½‚Í @endscript ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPKAGSyntaxError,
-	TJS_W("ï¿½^ï¿½Oï¿½Ì•ï¿½ï¿½@ï¿½Gï¿½ï¿½ï¿½[ï¿½Å‚ï¿½ï¿½B'[' ï¿½ï¿½ ']' ï¿½Ì‘Î‰ï¿½ï¿½A\" ï¿½ï¿½ \" ï¿½Ì‘Î‰ï¿½ï¿½Aï¿½Xï¿½yï¿½[ï¿½Xï¿½Ì“ï¿½ï¿½Yï¿½ï¿½Aï¿½]ï¿½ï¿½ï¿½È‰ï¿½sï¿½Amacro ï¿½` endmacro ï¿½Ì‘Î‰ï¿½ï¿½Aï¿½Kï¿½vï¿½È‘ï¿½ï¿½ï¿½ï¿½Ì•sï¿½ï¿½ï¿½È‚Ç‚ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("ƒ^ƒO‚Ì•¶–@ƒGƒ‰[‚Å‚·B'[' ‚â ']' ‚Ì‘Î‰žA\" ‚Æ \" ‚Ì‘Î‰žAƒXƒy[ƒX‚Ì“ü‚ê–Y‚êA—]•ª‚È‰üsAmacro ` endmacro ‚Ì‘Î‰žA•K—v‚È‘®«‚Ì•s‘«‚È‚Ç‚ðŠm”F‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPKAGMacroEntityNotAvailable,
-	TJS_W("ï¿½}ï¿½Nï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½eï¿½Bï¿½eï¿½Bï¿½Íƒ}ï¿½Nï¿½ï¿½ï¿½Oï¿½Å‚ÍŽgï¿½pï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒ}ƒNƒƒGƒ“ƒeƒBƒeƒB‚Íƒ}ƒNƒŠO‚Å‚ÍŽg—p‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPKAGCallStackUnderflow,
-	TJS_W("return ï¿½^ï¿½Oï¿½ï¿½ call ï¿½^ï¿½Oï¿½Æ‘Î‰ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ ( return ï¿½^ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )"));
+	TJS_W("return ƒ^ƒO‚ª call ƒ^ƒO‚Æ‘Î‰ž‚µ‚Ä‚¢‚Ü‚¹‚ñ ( return ƒ^ƒO‚ª‘½‚¢ )"));
 
 TVP_MSG_DECL(TVPKAGReturnLostSync,
-	TJS_W("ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½É•ÏXï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ return ï¿½Ì–ß‚ï¿½ï¿½Ê’uï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒVƒiƒŠƒIƒtƒ@ƒCƒ‹‚É•ÏX‚ª‚ ‚Á‚½‚½‚ß return ‚Ì–ß‚èæˆÊ’u‚ð“Á’è‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPKAGSpecifyKAGParser,
-	TJS_W("KAGParser ï¿½Nï¿½ï¿½ï¿½Xï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
+	TJS_W("KAGParser ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg‚ðŽw’è‚µ‚Ä‚­‚¾‚³‚¢"));
 
 TVP_MSG_DECL(TVPKAGMalformedSaveData,
-	TJS_W("ï¿½xï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½Ùï¿½Å‚ï¿½ï¿½Bï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½jï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Â”\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½"));
+	TJS_W("žxƒf[ƒ^‚ªˆÙí‚Å‚·Bƒf[ƒ^‚ª”j‘¹‚µ‚Ä‚¢‚é‰Â”\«‚ª‚ ‚è‚Ü‚·"));
 
 TVP_MSG_DECL(TVPLabelOrScriptInMacro,
-	TJS_W("ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ iscript ï¿½Íƒ}ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½É‹Lï¿½qï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒ‰ƒxƒ‹‚â iscript ‚Íƒ}ƒNƒ’†‚É‹Lq‚Å‚«‚Ü‚¹‚ñ"));
 
 TVP_MSG_DECL(TVPUnknownMacroName,
-	TJS_W("ï¿½}ï¿½Nï¿½ï¿½ \"%1\" ï¿½Í“oï¿½^ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½"));
+	TJS_W("ƒ}ƒNƒ \"%1\" ‚Í“o˜^‚³‚ê‚Ä‚¢‚Ü‚¹‚ñ"));
 
 //---------------------------------------------------------------------------
 // Utility Functions

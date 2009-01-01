@@ -1,22 +1,22 @@
-// DefaultMover.tjs - ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½Ìƒfï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒnï¿½ï¿½ï¿½hï¿½ï¿½
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// DefaultMover.tjs - ƒŒƒCƒ„©“®ˆÚ“®‚ÌƒfƒtƒHƒ‹ƒg‚Ìƒnƒ“ƒhƒ‰
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 class LinearMover
 {
-	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// ’¼ü•âŠÔ
 
-	var layer; // ï¿½ï¿½ï¿½Cï¿½ï¿½
-	var path; // ï¿½_ï¿½zï¿½ï¿½
-	var time; // ï¿½_ï¿½ï¿½Ê‰ß‚ï¿½ï¿½ï¿½Ì‚É•Kï¿½vï¿½Èï¿½ï¿½ï¿½
-	var accel; // ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Iï¿½È“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+	var layer; // ƒŒƒCƒ„
+	var path; // “_”z—ñ
+	var time; // “_‚ğ’Ê‰ß‚·‚é‚Ì‚É•K—v‚ÈŠÔ
+	var accel; // ‰Á‘¬“x“I‚È“®‚«‚ğ‚·‚é‚©‚Ç‚¤‚©
 	var pointCount; // path.count -1
-	var finalFunction; // ï¿½Ú“ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ÉŒÄ‚ÔŠÖï¿½
-	var startTick; // ï¿½Ú“ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½Bï¿½bï¿½N
-	var totalTime; // ï¿½Sï¿½Ì‚Ìï¿½ï¿½ï¿½
-	var delayTimer; // ï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½Ü‚Å‘Ò‚Â‚ï¿½ï¿½ß‚Ìƒ^ï¿½Cï¿½}
-	var moving = false; // ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½
-	var first = true; // ï¿½ï¿½ï¿½ï¿½Ìƒnï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½
-	var nextStop = false; // ï¿½ï¿½ï¿½Ìƒnï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½Å’ï¿½~ï¿½ï¿½ï¿½é‚©
+	var finalFunction; // ˆÚ“®I—¹‚ÉŒÄ‚ÔŠÖ”
+	var startTick; // ˆÚ“®ŠJn‚ğ‚µ‚½ƒeƒBƒbƒN
+	var totalTime; // ‘S‘Ì‚ÌŠÔ
+	var delayTimer; // “®ìŠJn‚Ü‚Å‘Ò‚Â‚½‚ß‚Ìƒ^ƒCƒ}
+	var moving = false; // ˆÚ“®’†‚©
+	var first = true; // ‰‰ñ‚Ìƒnƒ“ƒhƒ‰ŒÄ‚Ño‚µ‚©
+	var nextStop = false; // Ÿ‚Ìƒnƒ“ƒhƒ‰ŒÄ‚Ño‚µ‚Å’â~‚·‚é‚©
 
 	function LinearMover(layer, path, time, accel, finalfunction)
 	{
@@ -36,7 +36,7 @@ class LinearMover
 
 	function startMove(delay)
 	{
-		// ï¿½Ú“ï¿½ï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½
+		// ˆÚ“®‚ğŠJn‚·‚é
 		if(delay != 0)
 		{
 			delayTimer = new Timer(onDelayTimer, '');
@@ -46,24 +46,24 @@ class LinearMover
 		}
 		else
 		{
-			System.addContinuousHandler(handler); // ContinuousHandlers ï¿½É’Ç‰ï¿½
+			System.addContinuousHandler(handler); // ContinuousHandlers ‚É’Ç‰Á
 			moving = true;
 		}
 	}
 
 	function onDelayTimer()
 	{
-		// delayTimer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// delayTimer ‚ª”­“®‚µ‚½
 		delayTimer.enabled = false;
 		System.addContinuousHandler(handler);
 	}
 
 	function stopMove()
 	{
-		// ï¿½Ú“ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½
+		// ˆÚ“®‚ğI‚í‚é
 		if(moving)
 		{
-			// ï¿½ÅIï¿½Ê’uï¿½ÉˆÚ“ï¿½
+			// ÅIˆÊ’u‚ÉˆÚ“®
 			if(layer isvalid)
 			{
 				var idx = int(pointCount*3);
@@ -79,7 +79,7 @@ class LinearMover
 
 	function handler(tick)
 	{
-		// ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// ˆÚ“®’†‚ÉŒÄ‚Î‚ê‚é
 		if(nextStop || !(layer isvalid)) { stopMove();  return; }
 		if(first) startTick = tick, first = false;
 		tick -= startTick;
@@ -95,14 +95,14 @@ class LinearMover
 
 		if(accel < 0)
 		{
-			// ï¿½ãŒ· ( ï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Xï¿½É’xï¿½ï¿½ï¿½È‚ï¿½ )
+			// ãŒ· ( Å‰‚ª“®‚«‚ª‘‚­A™X‚É’x‚­‚È‚é )
 			tick = 1.0 - tick / totalTime;
 			tick = Math.pow(tick, -accel);
 			tick = int ( (1.0 - tick) * totalTime );
 		}
 		else if(accel > 0)
 		{
-			// ï¿½ï¿½ï¿½ï¿½ ( ï¿½Åï¿½ï¿½Í“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Xï¿½É‘ï¿½ï¿½ï¿½ï¿½È‚ï¿½ )
+			// ‰ºŒ· ( Å‰‚Í“®‚«‚ª’x‚­A™X‚É‘‚­‚È‚é )
 			tick = tick / totalTime;
 			tick = Math.pow(tick, accel);
 			tick = int ( tick * totalTime );
@@ -135,9 +135,9 @@ class LinearMover
 
 class SplineMover extends LinearMover
 {
-	// ï¿½Xï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½
-	var zx = []; // ï¿½Xï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½N
-	var zy = []; // ï¿½Xï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½N
+	// ƒXƒvƒ‰ƒCƒ“•âŠÔ
+	var zx = []; // ƒXƒvƒ‰ƒCƒ“ƒ[ƒN
+	var zy = []; // ƒXƒvƒ‰ƒCƒ“ƒ[ƒN
 
 	function SplineMover(layer, path, time, accel, finalfunction)
 	{
@@ -145,11 +145,11 @@ class SplineMover extends LinearMover
 
 		if(path.count < 9)
 		{
-			// 3 ï¿½_ï¿½È‰ï¿½ ( ï¿½wï¿½è‚·ï¿½ï¿½Ì‚Í‚ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½ï¿½2ï¿½_ ) ï¿½Í•âŠ®ï¿½Å‚ï¿½ï¿½È‚ï¿½
-			throw new Exception("2 ï¿½_ï¿½Èï¿½ï¿½ï¿½wï¿½è‚µï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
+			// 3 “_ˆÈ‰º ( w’è‚·‚é‚Ì‚Í‚»‚Ì‚¤‚¿‚Ì2“_ ) ‚Í•âŠ®‚Å‚«‚È‚¢
+			throw new Exception("2 “_ˆÈã‚ğw’è‚µ‚Ä‚­‚¾‚³‚¢");
 		}
 
-		// ï¿½Xï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½Ô‚É•Kï¿½vï¿½Èƒï¿½ï¿½[ï¿½Nï¿½ï¿½ï¿½vï¿½Z
+		// ƒXƒvƒ‰ƒCƒ“•âŠÔ‚É•K—v‚Èƒ[ƒN‚ğŒvZ
 		var points = path.count \ 3;
 		var tmpx = [], tmpy = [];
 		var tx = zx, ty = zy;

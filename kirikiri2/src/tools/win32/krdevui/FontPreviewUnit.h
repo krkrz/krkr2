@@ -56,7 +56,7 @@ public:
 //---------------------------------------------------------------------------
 class TFontPreviewForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TPanel *UpperPanel;
 	TComboBox *ZoomComboBox;
 	TButton *CloseButton;
@@ -70,13 +70,13 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
           TPoint &MousePos, bool &Handled);
 	void __fastcall FormMouseWheelUp(TObject *Sender, TShiftState Shift,
           TPoint &MousePos, bool &Handled);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	TFontPreviewBox * PreviewBox;
 	TCanvas *RefCanvas;
 	TCanvas *PrivRefCanvas; // for private (GAIJI) area
 	bool Antialiased;
 
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TFontPreviewForm(TComponent* Owner, TCanvas *refcanvas,
 		TCanvas *privrefcanvas);
 

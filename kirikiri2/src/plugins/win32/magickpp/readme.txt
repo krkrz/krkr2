@@ -143,7 +143,7 @@ ImageMagick は GPL 互換ラインセンスです。多分。
 詳しくは http://www.imagemagick.org/script/license.php をご覧ください。
 
 ------------------------------------------------------------------------------
-Copyright 1999-2008 ImageMagick Studio LLC, a non-profit organization dedicated to making software imaging solutions freely available.
+Copyright 1999-2009 ImageMagick Studio LLC, a non-profit organization dedicated to making software imaging solutions freely available.
 
 1. Definitions.
 

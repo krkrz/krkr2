@@ -1,45 +1,45 @@
-// SliderLayer.tjs - ÔøΩXÔøΩÔøΩÔøΩCÔøΩ_ÔøΩ[ÔøΩÔøΩÔøΩCÔøΩÔøΩ
-// Copyright (C)2001-2009, W.Dee  ÔøΩÔøΩœÅEÔøΩzÔøΩzÔøΩÕéÔøΩÔøΩRÔøΩ≈ÇÔøΩ
+// SliderLayer.tjs - ÉXÉâÉCÉ_Å[ÉåÉCÉÑ
+// Copyright (C)2001-2009, W.Dee  â¸ïœÅEîzïzÇÕé©óRÇ≈Ç∑
 
 /**
- * ÔøΩXÔøΩÔøΩÔøΩCÔøΩ_ÔøΩ∆ÇÔøΩÔøΩƒìÔøΩÔøΩÏÇ∑ÔøΩÈÉåÔøΩCÔøΩÔøΩÔøΩ≈ÇÔøΩ
- * ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ_ÔøΩ≈ÇÕècÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩŒâÔøΩ
+ * ÉXÉâÉCÉ_Ç∆ÇµÇƒìÆçÏÇ∑ÇÈÉåÉCÉÑÇ≈Ç∑
+ * Å¶åªéûì_Ç≈ÇÕècèëÇ´îÒëŒâû
  */
 class SliderLayer extends KAGLayer
 {
-    // ÔøΩxÔøΩ[ÔøΩXÔøΩÊëú
+    // ÉxÅ[ÉXâÊëú
     var baseImage;
-    // ÔøΩ^ÔøΩuÔøΩÊëú
+    // É^ÉuâÊëú
     var tabImage;
 
-    // ÔøΩcÔøΩXÔøΩÔøΩÔøΩCÔøΩ_
+    // ècÉXÉâÉCÉ_
     var vertical;
     
-    var Slider_min = 0;   // ÔøΩ≈èÔøΩÔøΩl
-    var Slider_max = 100; // ÔøΩ≈ëÔøΩl
-    var Slider_position = 0; // ÔøΩ íu
-	var Slider_step = 0; // ÔøΩPÔøΩXÔøΩeÔøΩbÔøΩvÔøΩÃà⁄ìÔøΩÔøΩ Åi0ÔøΩÃèÍçáÔøΩÕéÔøΩÔøΩÔøΩÔøΩvÔøΩZÔøΩj
-	var Slider_tabWidth = 10; // ÔøΩ¬Ç‹Ç›ÉTÔøΩCÔøΩY
-    var Slider_tabHeight = 10; // ÔøΩ¬Ç‹Ç›ÉTÔøΩCÔøΩYÔøΩiÔøΩcÔøΩp)
-    var Slider_dragging = false; // ÔøΩhÔøΩÔøΩÔøΩbÔøΩOÔøΩÔøΩÔøΩÔøΩÔøΩ«ÇÔøΩÔøΩÔøΩ
-	var Slider_dragOriginX; // ÔøΩhÔøΩÔøΩÔøΩbÔøΩOÔøΩJÔøΩn X ÔøΩ íu
-    var Slider_dragOriginY; // ÔøΩhÔøΩÔøΩÔøΩbÔøΩOÔøΩJÔøΩn Y ÔøΩ íu
-    var Slider_mouseOn = false; // ÔøΩ}ÔøΩEÔøΩXÔøΩÔøΩÔøΩÃàÔøΩÔøΩÔøΩ…ÇÔøΩÔøΩÈÇ©ÔøΩ«ÇÔøΩÔøΩÔøΩ
+    var Slider_min = 0;   // ç≈è¨íl
+    var Slider_max = 100; // ç≈ëÂíl
+    var Slider_position = 0; // à íu
+	var Slider_step = 0; // ÇPÉXÉeÉbÉvÇÃà⁄ìÆó Åi0ÇÃèÍçáÇÕé©ìÆåvéZÅj
+	var Slider_tabWidth = 10; // Ç¬Ç‹Ç›ÉTÉCÉY
+    var Slider_tabHeight = 10; // Ç¬Ç‹Ç›ÉTÉCÉYÅiècóp)
+    var Slider_dragging = false; // ÉhÉâÉbÉOíÜÇ©Ç«Ç§Ç©
+	var Slider_dragOriginX; // ÉhÉâÉbÉOäJén X à íu
+    var Slider_dragOriginY; // ÉhÉâÉbÉOäJén Y à íu
+    var Slider_mouseOn = false; // É}ÉEÉXÇ™óÃàÊì‡Ç…Ç†ÇÈÇ©Ç«Ç§Ç©
 
-    var Slider_color = clWindow; // ÔøΩwÔøΩiÔøΩF
-    var Slider_opacity = 192; // ÔøΩsÔøΩÔøΩÔøΩÔøΩÔøΩx
+    var Slider_color = clWindow; // îwåiêF
+    var Slider_opacity = 192; // ïsìßñæìx
 
-    var nohilight; // ÔøΩnÔøΩCÔøΩÔøΩÔøΩCÔøΩgÔøΩÔøΩÔøΩ»ÇÔøΩ
-    var jumpMode = false; // ÔøΩNÔøΩÔøΩÔøΩbÔøΩNÔøΩÔøΩÔøΩÔøΩÔøΩ∆ÇÔøΩÔøΩ…ÇÔøΩÔøΩÔøΩÔøΩ…ÉWÔøΩÔøΩÔøΩÔøΩÔøΩvÔøΩÔøΩÔøΩÔøΩ
+    var nohilight; // ÉnÉCÉâÉCÉgÇµÇ»Ç¢
+    var jumpMode = false; // ÉNÉäÉbÉNÇµÇΩÇ∆Ç´Ç…ÇªÇ±Ç…ÉWÉÉÉìÉvÇ∑ÇÈ
     
     /**
-     * ÔøΩRÔøΩÔøΩÔøΩXÔøΩgÔøΩÔøΩÔøΩNÔøΩ^
+     * ÉRÉìÉXÉgÉâÉNÉ^
      */
 	function SliderLayer(win, par, vertical=false)
 	{
 		super.Layer(win, par);
 
-		focusable = true; // ÔøΩtÔøΩHÔøΩ[ÔøΩJÔøΩXÔøΩìæÇÔøΩÔøΩÔøΩ
+		focusable = true; // ÉtÉHÅ[ÉJÉXÇìæÇÁÇÍÇÈ
 		hitType = htMask;
 		hitThreshold = 0;
         this.vertical = vertical;
@@ -55,7 +55,7 @@ class SliderLayer extends KAGLayer
 
 	function assign(src)
 	{
-		// src ÔøΩÃèÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÃÉIÔøΩuÔøΩWÔøΩFÔøΩNÔøΩgÔøΩ…ÉRÔøΩsÔøΩ[
+		// src ÇÃèÓïÒÇÇ±ÇÃÉIÉuÉWÉFÉNÉgÇ…ÉRÉsÅ[
 		Slider_min = src.Slider_min;
 		Slider_max = src.Slider_max;
         Slider_position = src.Slider_position;
@@ -65,23 +65,23 @@ class SliderLayer extends KAGLayer
 
 	function onPaint()
 	{
-		// onPaint ÔøΩCÔøΩxÔøΩÔøΩÔøΩg
-		// ÔøΩÔøΩÔøΩCÔøΩÔøΩÔøΩÃìÔøΩÔøΩeÔøΩÔøΩ`ÔøΩÊÇ∑ÔøΩÔøΩ
+		// onPaint ÉCÉxÉìÉg
+		// ÉåÉCÉÑÇÃì‡óeÇï`âÊÇ∑ÇÈ
 		super.onPaint(...);
 
-        // ÔøΩÊÇ≠ÔøΩgÔøΩÔøΩÔøΩlÔøΩÔøΩÔøΩÔøΩÔøΩ[ÔøΩJÔøΩÔøΩÔøΩœêÔøΩÔøΩ…ópÔøΩ”ÇÔøΩÔøΩÔøΩ
+        // ÇÊÇ≠égÇ§ílÇÉçÅ[ÉJÉãïœêîÇ…ópà”Ç∑ÇÈ
         var imw = imageWidth, imh = imageHeight;
         
         if (baseImage !== void) {
             copyRect(0, 0, baseImage, 0, 0, imw, imh);
         } else {
-            // ÔøΩÔøΩÔøΩ~ÔøΩÔøΩÔøΩÔøΩhÔøΩÔøΩ
+            // â∫ï~Ç´ÇìhÇÈ
             fillRect(0, 0, imw, imh, 0);
                 colorRect(0, 0, imw, imh, Slider_color, Slider_opacity);
         }
         
         if (focused && !nohilight)	{
-            // ÔøΩtÔøΩHÔøΩ[ÔøΩJÔøΩXÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÃÇ≈ÉnÔøΩCÔøΩÔøΩÔøΩCÔøΩgÔøΩÔøΩÔøΩÔøΩ
+            // ÉtÉHÅ[ÉJÉXÇ™Ç†ÇÈÇÃÇ≈ÉnÉCÉâÉCÉgÇ∑ÇÈ
             colorRect(0, 0, width-1, 1, clHighlight, 128);
             colorRect(0, 1, 1, height-2, clHighlight, 128);
             colorRect(0, height-1, width, 1, clHighlight, 128);
@@ -93,7 +93,7 @@ class SliderLayer extends KAGLayer
             var tabh = Slider_tabHeight;
             var htabh = tabh >> 1;
             
-            // ÔøΩÔøΩÔøΩÔøΩÔøΩÃÇ÷ÇÔøΩÔøΩ›êÔøΩ
+            // íÜâõÇÃÇ÷Ç±Ç›ê¸
             //if (baseImage === void) {
             //var himh = imh >> 1;
             //var right = imw - tabh;
@@ -101,7 +101,7 @@ class SliderLayer extends KAGLayer
             //fillRect(htabh, himh    , right, 1, 0x80ffffff);
             //}
             
-            // ÔøΩ^ÔøΩu
+            // É^Éu
             var pos_y = int(
                 (Slider_position-Slider_min) * (imh - tabh - 2)/(Slider_max - Slider_min)) +
                 htabh + 1;
@@ -143,7 +143,7 @@ class SliderLayer extends KAGLayer
             var tabw = Slider_tabWidth;
             var htabw = tabw >> 1;
             
-            // ÔøΩÔøΩÔøΩÔøΩÔøΩÃÇ÷ÇÔøΩÔøΩ›êÔøΩ
+            // íÜâõÇÃÇ÷Ç±Ç›ê¸
             //if (baseImage === void) {
             //var himh = imh >> 1;
             //var right = imw - tabw;
@@ -151,7 +151,7 @@ class SliderLayer extends KAGLayer
             //fillRect(htabw, himh    , right, 1, 0x80ffffff);
             //}
             
-            // ÔøΩ^ÔøΩu
+            // É^Éu
             var pos_x = int(
                 (Slider_position-Slider_min) * (imw - tabw - 2)/(Slider_max - Slider_min)) +
                 htabw + 1;
@@ -217,12 +217,12 @@ class SliderLayer extends KAGLayer
 
     function toPosition(x, y) {
         if (vertical) {
-            // ÔøΩ^ÔøΩuÔøΩÔøΩÔøΩhÔøΩÔøΩÔøΩbÔøΩO
+            // É^ÉuÇÉhÉâÉbÉO
             position = int(
                 (y - Slider_dragOriginY - (Slider_tabHeight >> 1)) * (Slider_max - Slider_min) /
                 (imageHeight - Slider_tabHeight - 2) + Slider_min);
         } else {
-            // ÔøΩ^ÔøΩuÔøΩÔøΩÔøΩhÔøΩÔøΩÔøΩbÔøΩO
+            // É^ÉuÇÉhÉâÉbÉO
             position = int(
                 (x - Slider_dragOriginX - (Slider_tabWidth >> 1)) * (Slider_max - Slider_min) /
                 (imageWidth - Slider_tabWidth - 2) + Slider_min);
@@ -231,26 +231,26 @@ class SliderLayer extends KAGLayer
     
 	function onKeyDown(key, shift, process)
 	{
-		// ÔøΩLÔøΩ[ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÍÇΩ
+		// ÉLÅ[Ç™âüÇ≥ÇÍÇΩ
 		if(process)
 		{
 			if(key == VK_LEFT)
 			{
-				// ÔøΩÔøΩ
+				// ç∂
 				if(shift & ssAlt)
 					position = Slider_position - 1;
 				else
                     toLeft();
-                super.onKeyDown(key, shift, false); // ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÃÇÔøΩprocessÔøΩÔøΩfalseÔøΩÔøΩnÔøΩÔøΩ
+                super.onKeyDown(key, shift, false); // èàóùÇÇµÇΩÇÃÇ≈processÇ…falseÇìnÇ∑
 			}
 			else if(key == VK_RIGHT)
 			{
-				// ÔøΩÔøΩ
+				// ç∂
 				if(shift & ssAlt)
                     position = Slider_position + 1;
                 else
                     toRight();
-                super.onKeyDown(key, shift, false); // ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÃÇÔøΩprocessÔøΩÔøΩfalseÔøΩÔøΩnÔøΩÔøΩ
+                super.onKeyDown(key, shift, false); // èàóùÇÇµÇΩÇÃÇ≈processÇ…falseÇìnÇ∑
 			}
 			else
 			{
@@ -259,14 +259,14 @@ class SliderLayer extends KAGLayer
 		}
 		else
 		{
-			// process ÔøΩÔøΩ false ÔøΩÃèÍçáÔøΩÕèÔøΩÔøΩÔøΩÔøΩÕçsÔøΩÔøΩ»ÇÔøΩ
+			// process Ç™ false ÇÃèÍçáÇÕèàóùÇÕçsÇÌÇ»Ç¢
 			super.onKeyDown(...);
 		}
 	}
 
 	function onMouseDown(x, y, button)
 	{
-		// ÔøΩ}ÔøΩEÔøΩXÔøΩ{ÔøΩ^ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÍÇΩ
+		// É}ÉEÉXÉ{É^ÉìÇ™âüÇ≥ÇÍÇΩ
 		focus();
 		super.onMouseDown(...);
 
@@ -278,22 +278,22 @@ class SliderLayer extends KAGLayer
                     (Slider_position-Slider_min) * (imageHeight - tabh - 2)/(Slider_max - Slider_min)) +
                     htabh + 1;
                 if(pos_y - htabh > y) {
-                    // ÔøΩ^ÔøΩuÔøΩÔøΩËâ∫
+                    // É^ÉuÇÊÇËâ∫
                     if (jumpMode) {
                         toPosition(x, y);
                     } else {
                         toLeft();
                     }
                 } else if(pos_y + htabh < y) {
-                    // ÔøΩ^ÔøΩuÔøΩÔøΩÔøΩÔøΩ
+                    // É^ÉuÇÊÇËè„
                     if (jumpMode) {
                         position = Slider_position + int((Slider_max - Slider_min)/ (tabh-2));
                     } else {
                         toRight();
                     }
                 } else {
-                    // ÔøΩ^ÔøΩu
-                    // ÔøΩ^ÔøΩuÔøΩÃÉhÔøΩÔøΩÔøΩbÔøΩOÔøΩÔøΩÔøΩJÔøΩn
+                    // É^Éu
+                    // É^ÉuÇÃÉhÉâÉbÉOÇäJén
                     Slider_dragging = true;
                     Slider_dragOriginY = y - pos_y;
                 }
@@ -304,22 +304,22 @@ class SliderLayer extends KAGLayer
                     (Slider_position-Slider_min) * (imageWidth - tabw - 2)/(Slider_max - Slider_min)) +
                     htabw + 1;
                 if(pos_x - htabw > x) {
-                    // ÔøΩ^ÔøΩuÔøΩÔøΩËç∂
+                    // É^ÉuÇÊÇËç∂
                     if (jumpMode) {
                         toPosition(x, y);
                     } else {
                         toLeft();
                     }
                 } else if(pos_x + htabw < x) {
-                    // ÔøΩ^ÔøΩuÔøΩÔøΩÔøΩE
+                    // É^ÉuÇÊÇËâE
                     if (jumpMode) {
                         toPosition(x, y);
                     } else {
                         toRight();
                     }
                 } else {
-                    // ÔøΩ^ÔøΩu
-                    // ÔøΩ^ÔøΩuÔøΩÃÉhÔøΩÔøΩÔøΩbÔøΩOÔøΩÔøΩÔøΩJÔøΩn
+                    // É^Éu
+                    // É^ÉuÇÃÉhÉâÉbÉOÇäJén
                     Slider_dragging = true;
                     Slider_dragOriginX = x - pos_x;
                 }
@@ -329,7 +329,7 @@ class SliderLayer extends KAGLayer
 
 	function onMouseUp(x, y, button)
 	{
-		// ÔøΩ}ÔøΩEÔøΩXÔøΩ{ÔøΩ^ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÍÇΩ
+		// É}ÉEÉXÉ{É^ÉìÇ™ó£Ç≥ÇÍÇΩ
 		super.onMouseUp(...);
         if (Slider_dragging) {
             Slider_dragging = false;
@@ -339,7 +339,7 @@ class SliderLayer extends KAGLayer
 
 	function onMouseMove(x, y)
 	{
-		// ÔøΩ}ÔøΩEÔøΩXÔøΩÔøΩÔøΩ⁄ìÔøΩÔøΩÔøΩÔøΩÔøΩ
+		// É}ÉEÉXÇ™à⁄ìÆÇµÇΩ
 		super.onMouseMove(...);
 
 		if(Slider_dragging)
@@ -350,7 +350,7 @@ class SliderLayer extends KAGLayer
 
 	function onMouseEnter()
 	{
-		// ÔøΩ}ÔøΩEÔøΩXÔøΩÔøΩÔøΩÔøΩÔøΩCÔøΩÔøΩÔøΩÃàÔøΩÔøΩÔøΩ…ìÔøΩÔøΩÔøΩÔøΩ
+		// É}ÉEÉXÇ™ÉåÉCÉÑóÃàÊì‡Ç…ì¸Ç¡ÇΩ
 		update();
 		Slider_mouseOn = true;
 		super.onMouseEnter(...);
@@ -358,7 +358,7 @@ class SliderLayer extends KAGLayer
 
 	function onMouseLeave()
 	{
-		// ÔøΩ}ÔøΩEÔøΩXÔøΩÔøΩÔøΩÔøΩÔøΩCÔøΩÔøΩÔøΩÃàÊÇ©ÔøΩÔøΩoÔøΩƒÇÔøΩÔøΩÔøΩÔøΩÔøΩ
+		// É}ÉEÉXÇ™ÉåÉCÉÑóÃàÊÇ©ÇÁèoÇƒÇ¢Ç¡ÇΩ
 		update();
 		Slider_mouseOn = false;
 		Slider_dragging = false;
@@ -367,28 +367,28 @@ class SliderLayer extends KAGLayer
 
 	function onFocus()
 	{
-		// ÔøΩtÔøΩHÔøΩ[ÔøΩJÔøΩXÔøΩìæÇÔøΩ
+		// ÉtÉHÅ[ÉJÉXÇìæÇΩ
 		super.onFocus(...);
 		update();
 	}
 
 	function onBlur()
 	{
-		// ÔøΩtÔøΩHÔøΩ[ÔøΩJÔøΩXÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
+		// ÉtÉHÅ[ÉJÉXÇé∏Ç¡ÇΩ
 		super.onBlur(...);
 		update();
 	}
 
 	function onNodeDisabled()
 	{
-		// ÔøΩÔøΩÔøΩCÔøΩÔøΩÔøΩÃÉmÔøΩ[ÔøΩhÔøΩÔøΩÔøΩsÔøΩ¬Ç…Ç»ÇÔøΩÔøΩÔøΩ
+		// ÉåÉCÉÑÇÃÉmÅ[ÉhÇ™ïsâ¬Ç…Ç»Ç¡ÇΩ
 		super.onNodeDisabled(...);
 		update();
 	}
 
 	function onNodeEnabled()
 	{
-		// ÔøΩÔøΩÔøΩCÔøΩÔøΩÔøΩÃÉmÔøΩ[ÔøΩhÔøΩÔøΩÔøΩLÔøΩÔøΩ…Ç»ÇÔøΩÔøΩÔøΩ
+		// ÉåÉCÉÑÇÃÉmÅ[ÉhÇ™óLå¯Ç…Ç»Ç¡ÇΩ
 		super.onNodeEnabled(...);
 		update();
 	}
@@ -499,13 +499,13 @@ class SliderLayer extends KAGLayer
 	}
 
     /**
-     * ÔøΩXÔøΩÔøΩÔøΩCÔøΩ_ÔøΩÊëúUIÔøΩÔøΩÔøΩÃì«Ç›çÔøΩÔøΩÔøΩ
+     * ÉXÉâÉCÉ_âÊëúUIèÓïÒÇÃì«Ç›çûÇ›
      */
     function loadUIInfo(uiinfo) {
         var temp = window.temporaryLayer;
         var states = uiinfo.uistates;
         if (states === void) {
-            throw new Exception("ÔøΩÊëúÔøΩÔøΩÔøΩsÔøΩÔøΩÔøΩ≈ÇÔøΩ:" + uiinfo.name);
+            throw new Exception("âÊëúèÓïÒïsê≥Ç≈Ç∑:" + uiinfo.name);
         }
 
         width  = uiinfo.width;
@@ -529,8 +529,8 @@ class SliderLayer extends KAGLayer
     }
     
     /**
-     * ÔøΩxÔøΩ[ÔøΩXÔøΩÊëúÔøΩÔøΩ«Ç›çÔøΩÔøΩÔøΩ
-     * @param storage ÔøΩÊëúÔøΩBÔøΩÔøΩÔøΩÃÉTÔøΩCÔøΩYÔøΩÃÉ{ÔøΩ^ÔøΩÔøΩÔøΩ…Ç»ÇÔøΩ
+     * ÉxÅ[ÉXâÊëúÇì«Ç›çûÇﬁ
+     * @param storage âÊëúÅBÇ±ÇÃÉTÉCÉYÇÃÉ{É^ÉìÇ…Ç»ÇÈ
      */
     function loadBase(storage, key)
 	{
@@ -545,8 +545,8 @@ class SliderLayer extends KAGLayer
     }
 
     /**
-     * ÔøΩ^ÔøΩuÔøΩÊëúÔøΩÔøΩ«Ç›çÔøΩÔøΩÔøΩ
-     * @param storage ÔøΩÊëú  ÔøΩ èÔøΩ/ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ/ÔøΩIÔøΩ[ÔøΩoÔøΩ[ÔøΩÔøΩÔøΩAÔøΩÔøΩÔøΩÔøΩÔøΩÍÇΩÔøΩÊëú
+     * É^ÉuâÊëúÇì«Ç›çûÇﬁ
+     * @param storage âÊëú  í èÌ/âüÇµâ∫Ç∞/ÉIÅ[ÉoÅ[Ç™òAåãÇ≥ÇÍÇΩâÊëú
      */
     function loadTab(storage, key) {
         if (tabImage === void) {
@@ -560,10 +560,10 @@ class SliderLayer extends KAGLayer
     }
     
     /**
-     * ÔøΩÔøΩÔøΩÔøΩÔøΩ{ÔøΩ^ÔøΩÔøΩÔøΩÊëúÔøΩÃì«Ç›çÔøΩÔøΩÔøΩ
-     * @param normal ÔøΩ èÌéûÔøΩÊëú
-     * @param over ÔøΩIÔøΩ[ÔøΩoÔøΩ[ÔøΩÔøΩÔøΩÊëú
-     * @param on ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÊëú
+     * ï™ó£É{É^ÉìâÊëúÇÃì«Ç›çûÇ›
+     * @param normal í èÌéûâÊëú
+     * @param over ÉIÅ[ÉoÅ[éûâÊëú
+     * @param on âüÇµâ∫Ç∞éûâÊëú
      */
     function loadTabs(normal, over, on) {
         if (tabImage === void) {

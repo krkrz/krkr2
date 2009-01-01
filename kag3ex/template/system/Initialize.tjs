@@ -1,5 +1,5 @@
-// Initialize.tjs - ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// Initialize.tjs - ƒVƒXƒeƒ€‚Ì‰Šú‰»
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 try {
 	Plugins.link("layerExMovie.dll");
@@ -10,51 +10,51 @@ try {
 } catch(e) {
 }
 
-// ï¿½ï¿½ï¿½bï¿½Nï¿½æ•ªï¿½p
+// ƒƒbƒN‹æ•ª—p
 var lockKey = "";
 
-// ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½oï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½
+// ƒVƒXƒeƒ€ƒo[ƒWƒ‡ƒ“
 var kagVersion = "EX 3.27-dev.20070519";
 
 /*
-	Debug.message ï¿½Ö‚ÌƒVï¿½ï¿½ï¿½[ï¿½gï¿½Jï¿½bï¿½g
+	Debug.message ‚Ö‚ÌƒVƒ‡[ƒgƒJƒbƒg
 */
 
-var dm = Debug.message; // ï¿½ï¿½ï¿½ï¿½ï¿½ dm("message"); ï¿½ÅƒRï¿½ï¿½ï¿½\ï¿½[ï¿½ï¿½ï¿½ï¿½ message ï¿½ï¿½\ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½
+var dm = Debug.message; // ‚±‚ê‚Å dm("message"); ‚ÅƒRƒ“ƒ\[ƒ‹‚É message ‚ğ•\¦‚Å‚«‚é
 
 
 /*
-	ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìuï¿½ß‘ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½Oï¿½vï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
+	ƒfƒtƒHƒ‹ƒg‚Ìu•ß‘¨‚³‚ê‚È‚¢—áŠOvƒnƒ“ƒhƒ‰
 */
 if (System.getArgument("-debugwin") != "no") {
 
 System.exceptionHandler = function (e)
 {
-	// ï¿½Ç‚ï¿½ï¿½É‚ï¿½ï¿½ß‘ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ï¿½Å•ß‘ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ê‡ï¿½Aï¿½ï¿½ï¿½ÌŠÖï¿½ï¿½ï¿½
-	// ï¿½Ä‚Î‚ï¿½ï¿½Be ï¿½Í—ï¿½Oï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½B
+	// ‚Ç‚±‚É‚à•ß‘¨‚³‚ê‚È‚¢—áŠO‚ªƒVƒXƒeƒ€‘¤‚Å•ß‘¨‚³‚ê‚½ê‡A‚±‚ÌŠÖ”‚ª
+	// ŒÄ‚Î‚ê‚éBe ‚Í—áŠOƒIƒuƒWƒFƒNƒgB
 	if(e instanceof "ConductorException")
 	{
-		// ï¿½Rï¿½ï¿½ï¿½_ï¿½Nï¿½^ï¿½Ì“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Ìê‡
-		Debug.logAsError(); // ï¿½ï¿½ï¿½Oï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Ö‚Ìï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŠJï¿½nï¿½È‚ï¿½
+		// ƒRƒ“ƒ_ƒNƒ^‚Ì“Š‚°‚½—áŠO‚Ìê‡
+		Debug.logAsError(); // ƒƒO‚Ìƒtƒ@ƒCƒ‹‚Ö‚Ì‘‚«o‚µ“®ì‚ÌŠJn‚È‚Ç
 		var event_disabled = System.eventDisabled;
 		System.eventDisabled = true;
-			// ï¿½Gï¿½ï¿½ï¿½[ï¿½Ì—ï¿½ï¿½Rï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ô‚ÉƒCï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚Ì‚Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			// ƒGƒ‰[‚Ì——R‚ğ•\¦‚³‚¹‚Ä‚¢‚éŠÔ‚ÉƒCƒxƒ“ƒg‚ª”­¶‚·‚é‚Æ
+			// ‚â‚Á‚©‚¢‚È‚Ì‚Å‚¢‚Á‚½‚ñƒCƒxƒ“ƒg”­¶‚ğ’â~‚³‚¹‚é
 		System.inform(e.message);
 		System.eventDisabled = event_disabled;
-			// ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ğ”­ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½Ô‚ï¿½
-		return true; // true ï¿½ï¿½Ô‚ï¿½ï¿½Æ–{ï¿½Ì‘ï¿½ï¿½Å—ï¿½Oï¿½Ìï¿½ï¿½ï¿½ï¿½Ísï¿½ï¿½È‚ï¿½ï¿½È‚ï¿½
+			// ƒCƒxƒ“ƒg‚ğ”­¶‚·‚é‚©‚Ç‚¤‚©‚ğŒ³‚Ìó‘Ô‚É
+		return true; // true ‚ğ•Ô‚·‚Æ–{‘Ì‘¤‚Å—áŠO‚Ìˆ—‚Ís‚í‚È‚­‚È‚é
 	}
 	else
 	{
-		return false; // false ï¿½ï¿½Ô‚ï¿½ï¿½Æ’Êï¿½Ì—ï¿½Oï¿½ï¿½ï¿½ï¿½
+		return false; // false ‚ğ•Ô‚·‚Æ’Êí‚Ì—áŠOˆ—
 	}
 };
 
 } else {
-	// ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// ƒŠƒŠ[ƒXˆ—
 	System.exceptionHandler = function (e) {
-		Debug.logAsError(); // ï¿½ï¿½ï¿½Oï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½Ö‚Ìï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŠJï¿½nï¿½È‚ï¿½
+		Debug.logAsError(); // ƒƒO‚Ìƒtƒ@ƒCƒ‹‚Ö‚Ì‘‚«o‚µ“®ì‚ÌŠJn‚È‚Ç
 		var event_disabled = System.eventDisabled;
 		System.eventDisabled = true;
 		System.inform(e.message);
@@ -64,18 +64,18 @@ System.exceptionHandler = function (e)
 };
 
 /*
-	ï¿½pï¿½Xï¿½Ìİ’ï¿½
-	ï¿½ï¿½Éwï¿½è‚µï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Dï¿½æ‚³ï¿½ï¿½Ägï¿½pï¿½ï¿½ï¿½ï¿½ï¿½
+	ƒpƒX‚Ìİ’è
+	Œã‚Éw’è‚µ‚½•¨‚ªA‚æ‚è—Dæ‚³‚ê‚Äg—p‚³‚ê‚é
 */
 
 
-var archive_exists = %[]; // ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½é‚©ï¿½Lï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½
+var archive_exists = %[]; // ƒA[ƒJƒCƒu‚ª‘¶İ‚·‚é‚©ƒLƒƒƒbƒVƒ…
 
 function useArchiveIfExists(name)
 {
-	// name ï¿½ğ³‹Kï¿½ï¿½
+	// name ‚ğ³‹K‰»
 	with (Storages) name = .chopStorageExt(.extractStorageName(name));
-	// name ï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ç‚»ï¿½ÌƒAï¿½[ï¿½Jï¿½Cï¿½uï¿½ï¿½ï¿½gï¿½ï¿½
+	// name ‚ª‘¶İ‚µ‚Ä‚¢‚½‚ç‚»‚ÌƒA[ƒJƒCƒu‚ğg‚¤
 	var arcname = System.exePath + name + ".xp3";
 	if(Storages.isExistentStorage(arcname)) {
 		archive_exists[name.toLowerCase()] = true;
@@ -85,12 +85,12 @@ function useArchiveIfExists(name)
 
 function addArchive(name)
 {
-	// ï¿½ï¿½ï¿½ï¿½pï¿½Xï¿½ï¿½İ’è‚µï¿½Â‚ÂCname.xp3 ï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ç‚»ï¿½ÌƒAï¿½[ï¿½Jï¿½Cï¿½uï¿½ï¿½ï¿½gï¿½ï¿½
+	// ŒŸõƒpƒX‚ğİ’è‚µ‚Â‚ÂCname.xp3 ‚ª‘¶İ‚µ‚Ä‚¢‚½‚ç‚»‚ÌƒA[ƒJƒCƒu‚ğg‚¤
 	Storages.addAutoPath(name + "/");
 	useArchiveIfExists(name);
 }
 
-// ï¿½Tï¿½uï¿½tï¿½Hï¿½ï¿½ï¿½_ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½Xï¿½oï¿½^
+// ƒTƒuƒtƒHƒ‹ƒ_‚Â‚«ŒŸõƒpƒX“o˜^
 function addArchiveWithSubFolder(name, arr*)
 {
 	var arcname = System.exePath + name + ".xp3";
@@ -102,38 +102,38 @@ function addArchiveWithSubFolder(name, arr*)
 		Storages.addAutoPath(arcname + ">" + sub + "/") if (isexist);
 	}
 }
-// (obsolete) ï¿½ï¿½ï¿½İŠï¿½ï¿½p
+// (obsolete) ‹ŒŒİŠ·—p
 function addVoiceArchive(name) {
 	addArchiveWithSubFolder("voice", name);
 }
 
 if (System.getArgument("-debugwin") != "no") {
-	Storages.addAutoPath(System.exePath + "tools/"); // exePath ï¿½È‰ï¿½ï¿½ï¿½ tools/
+	Storages.addAutoPath(System.exePath + "tools/"); // exePath ˆÈ‰º‚Ì tools/
 }
-Storages.addAutoPath(System.exePath + "video/"); // exePath ï¿½È‰ï¿½ï¿½ï¿½ video/
-Storages.addAutoPath("data/"); // data ï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("video/"); // video ï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("others/"); // ï¿½ï¿½ï¿½Ì‘ï¿½
-Storages.addAutoPath("rule/"); // ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("sound/"); // ï¿½ï¿½Ê‰ï¿½ï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("bgm/"); // BGM ï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("fgimage/"); // ï¿½Oï¿½iï¿½æ‘œï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("bgimage/"); // ï¿½wï¿½iï¿½æ‘œï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("scenario/"); // ï¿½Vï¿½iï¿½ï¿½ï¿½Iï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("image/"); // ï¿½ï¿½ï¿½Ì‚Ù‚ï¿½ï¿½Ì‰æ‘œï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("system/"); // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("voice/");  // ï¿½{ï¿½Cï¿½Xï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("face/");   // ï¿½tï¿½Fï¿½Cï¿½Xï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("init/");   // ï¿½ï¿½ï¿½ï¿½pï¿½tï¿½Hï¿½ï¿½ï¿½_
-Storages.addAutoPath("sysscn/"); // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½pï¿½Vï¿½iï¿½ï¿½ï¿½I
-Storages.addAutoPath("main/"); // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½pï¿½Vï¿½iï¿½ï¿½ï¿½I
+Storages.addAutoPath(System.exePath + "video/"); // exePath ˆÈ‰º‚Ì video/
+Storages.addAutoPath("data/"); // data ƒtƒHƒ‹ƒ_
+Storages.addAutoPath("video/"); // video ƒtƒHƒ‹ƒ_
+Storages.addAutoPath("others/"); // ‚»‚Ì‘¼
+Storages.addAutoPath("rule/"); // ƒ‹[ƒ‹‰æ‘œƒtƒHƒ‹ƒ_
+Storages.addAutoPath("sound/"); // Œø‰Ê‰¹ƒtƒHƒ‹ƒ_
+Storages.addAutoPath("bgm/"); // BGM ƒtƒHƒ‹ƒ_
+Storages.addAutoPath("fgimage/"); // ‘OŒi‰æ‘œƒtƒHƒ‹ƒ_
+Storages.addAutoPath("bgimage/"); // ”wŒi‰æ‘œƒtƒHƒ‹ƒ_
+Storages.addAutoPath("scenario/"); // ƒVƒiƒŠƒIƒtƒHƒ‹ƒ_
+Storages.addAutoPath("image/"); // ‚»‚Ì‚Ù‚©‚Ì‰æ‘œƒtƒHƒ‹ƒ_
+Storages.addAutoPath("system/"); // ƒVƒXƒeƒ€ƒtƒHƒ‹ƒ_
+Storages.addAutoPath("voice/");  // ƒ{ƒCƒXƒtƒHƒ‹ƒ_
+Storages.addAutoPath("face/");   // ƒtƒFƒCƒXƒtƒHƒ‹ƒ_
+Storages.addAutoPath("init/");   // ‰Šú‰»—pƒtƒHƒ‹ƒ_
+Storages.addAutoPath("sysscn/"); // ƒVƒXƒeƒ€—pƒVƒiƒŠƒI
+Storages.addAutoPath("main/"); // ƒVƒXƒeƒ€—pƒVƒiƒŠƒI
 Storages.addAutoPath("evimage/");
 Storages.addAutoPath("thum/");
 Storages.addAutoPath("uipsd/");
 
-// ï¿½pï¿½bï¿½`ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½ÌŒï¿½ï¿½ï¿½Ægï¿½p
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì–ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Â”\ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
-// ï¿½ï¿½ï¿½ï¿½ï¿½êŠï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Dï¿½æ‚µï¿½Ägï¿½ï¿½
+// ƒpƒbƒ`ƒA[ƒJƒCƒu‚ÌŒŸõ‚Æg—p
+// ‚à‚µ‚±‚ê‚ç‚Ì–¼‘O‚ğ‚Á‚½ƒA[ƒJƒCƒu‚ªÀs‰Â”\ƒtƒ@ƒCƒ‹‚Æ
+// “¯‚¶êŠ‚É‚ ‚Á‚½ê‡A‚»‚ê‚ğ—Dæ‚µ‚Äg‚¤
 useArchiveIfExists("video.xp3");
 useArchiveIfExists("others.xp3");
 useArchiveIfExists("rule.xp3");
@@ -158,56 +158,56 @@ if(Storages.isExistentStorage("Storages.tjs"))
 
 useArchiveIfExists("patch.xp3");
 
-// ï¿½Ç‰ï¿½ï¿½Ìƒpï¿½bï¿½`ï¿½pï¿½Aï¿½[ï¿½Jï¿½Cï¿½uï¿½ÌŒï¿½ï¿½ï¿½
+// ’Ç‰Á‚Ìƒpƒbƒ`—pƒA[ƒJƒCƒu‚ÌŒŸõ
 for(var i = 2; ; i++)
 {
-	// ï¿½pï¿½bï¿½`ï¿½pï¿½Aï¿½[ï¿½Jï¿½Cï¿½u patch2.xp3, patch3.xp3 ... ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	// ï¿½Dï¿½æ‚µï¿½Ä“Ç‚İï¿½ï¿½Ş‚æ‚¤ï¿½ï¿½
+	// ƒpƒbƒ`—pƒA[ƒJƒCƒu patch2.xp3, patch3.xp3 ... ‚ª‚ ‚éê‡‚Í‚»‚¿‚ç‚ğ
+	// —Dæ‚µ‚Ä“Ç‚İ‚Ş‚æ‚¤‚É
 	if(Storages.isExistentStorage(System.exePath + "patch" + i + ".xp3"))
 		Storages.addAutoPath(System.exePath + "patch" + i + ".xp3>");
 	else
 		break;
 }
 
-delete useArchiveIfExists; // useArchiveIfExists ï¿½Ígï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Åˆê‰ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+delete useArchiveIfExists; // useArchiveIfExists ‚Íg‚¢I‚í‚Á‚½‚Ì‚Åˆê‰Á‚µ‚Ä‚¨‚­
 
 /*
-	ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½oï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½
+	ƒVƒXƒeƒ€ƒo[ƒWƒ‡ƒ“
 */
 Debug.notice("OS : " + System.osName + " (" + System.platformName + ")");
 Debug.notice("KAG : " + kagVersion);
 Debug.notice("Kirikiri : " + System.versionString);
 
 /*
-	( ï¿½fï¿½oï¿½bï¿½O ) ï¿½ï¿½ï¿½ÔŒvï¿½ï¿½
+	( ƒfƒoƒbƒO ) ŠÔŒv‘ª
 */
 
 var parseStartTick = System.getTickCount();
 
 
 /*
-	ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Ç‚İï¿½ï¿½İƒï¿½ï¿½bï¿½pï¿½[
+	ƒXƒNƒŠƒvƒg“Ç‚İ‚İƒ‰ƒbƒp[
 */
 
 function KAGLoadScript(name)
 {
 	var start = System.getTickCount();
 	Scripts.execStorage(name);
-	dm(name + " ï¿½ï¿½Ç‚İï¿½ï¿½İ‚Ü‚ï¿½ï¿½ï¿½(" + (System.getTickCount() - start) + "ms)");
+	dm(name + " ‚ğ“Ç‚İ‚İ‚Ü‚µ‚½(" + (System.getTickCount() - start) + "ms)");
 }
 
 var loaded_scripts = %[];
 
 function KAGLoadScriptOnce(name)
 {
-	// ï¿½wï¿½è‚µï¿½ï¿½ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ï¿½Ç‚İï¿½ï¿½Ş‚ï¿½ï¿½Aï¿½ï¿½ñ‚µ‚ï¿½ï¿½Ç‚İï¿½ï¿½Ü‚È‚ï¿½
-	if(global.loaded_scripts[name] === true) return; // ï¿½ï¿½É“Ç‚İï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½
+	// w’è‚µ‚½ƒXƒNƒŠƒvƒg‚ğ“Ç‚İ‚Ş‚ªAˆê‰ñ‚µ‚©“Ç‚İ‚Ü‚È‚¢
+	if(global.loaded_scripts[name] === true) return; // Šù‚É“Ç‚İ‚ñ‚Å‚¢‚é
 	global.KAGLoadScript(name);
 	global.loaded_scripts[name] = true;
 }
 
 /*
-	AppConfig.tjs ï¿½Ç‚İï¿½ï¿½ï¿½
+	AppConfig.tjs “Ç‚İ‚İ
 */
 if(Storages.isExistentStorage("AppConfig.tjs"))
 {
@@ -215,7 +215,7 @@ if(Storages.isExistentStorage("AppConfig.tjs"))
 }
 
 /*
-	Config.tjs ï¿½Ç‚İï¿½ï¿½ï¿½
+	Config.tjs “Ç‚İ‚İ
 */
 if(Storages.isExistentStorage("Config.tjs"))
 {
@@ -223,13 +223,13 @@ if(Storages.isExistentStorage("Config.tjs"))
 }
 else if(Storages.isExistentStorage("Config.~new"))
 {
-	System.inform("Config.tjs ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B\nsystem ï¿½tï¿½Hï¿½ï¿½ï¿½_ï¿½É‚ï¿½ï¿½ï¿½ "
-		"Config.~new ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ Config.tjs ï¿½É‰ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B");
+	System.inform("Config.tjs ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñB\nsystem ƒtƒHƒ‹ƒ_‚É‚ ‚é "
+		"Config.~new ƒtƒ@ƒCƒ‹‚ğ Config.tjs ‚É‰ü–¼‚µ‚Ä‚­‚¾‚³‚¢B");
 	System.exit();
 }
 else
 {
-	throw new Exception("Config.tjs ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B");
+	throw new Exception("Config.tjs ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñB");
 }
 
 if (typeof global.ENV_GameName != "undefined") {
@@ -237,7 +237,7 @@ if (typeof global.ENV_GameName != "undefined") {
 }
 
 /*
-	Config.tjs ï¿½oï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½N
+	Config.tjs ƒo[ƒWƒ‡ƒ“ƒ`ƒFƒbƒN
 */
 
 if(typeof global.config_version == "undefined" || config_version != kagVersion)
@@ -246,20 +246,20 @@ if(typeof global.config_version == "undefined" || config_version != kagVersion)
 }
 
 /*
-	ï¿½ï¿½dï¿½Nï¿½ï¿½ï¿½Ìƒ`ï¿½Fï¿½bï¿½N
+	“ñd‹N“®‚Ìƒ`ƒFƒbƒN
 */
 
-// ï¿½ï¿½ï¿½sï¿½Â”\ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ìƒpï¿½Xï¿½ï¿½ï¿½Lï¿½[ï¿½É‚ï¿½ï¿½Äƒï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½sï¿½ï¿½
+// Às‰Â”\ƒtƒ@ƒCƒ‹‚ÌƒpƒX‚ğƒL[‚É‚µ‚ÄƒƒbƒN‚ğs‚¤
 if(!System.createAppLock((System.exePath + lockKey).replace(/[^A-Za-z]/g, '_')) && typeof global.restart == "undefined")
 {
-	// ï¿½ï¿½ï¿½Å‚É‹Nï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
-	System.inform(System.title + "ï¿½Í‚ï¿½ï¿½Å‚É‹Nï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½");
+	// ‚·‚Å‚É‹N“®‚µ‚Ä‚¢‚é
+	System.inform(System.title + "‚Í‚·‚Å‚É‹N“®‚µ‚Ä‚¢‚Ü‚·");
 	System.exit();
 }
 
 
 /*
-	ï¿½Iï¿½ï¿½ï¿½Eï¿½fï¿½}ï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½[ï¿½fï¿½Bï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ß‚Ì’ï¿½`
+	ƒIƒ“Eƒfƒ}ƒ“ƒhEƒ[ƒfƒBƒ“ƒO‚ğs‚¤‚½‚ß‚Ì’è‹`
 */
 
 
@@ -274,9 +274,9 @@ property uiload { getter() { KAGLoadScript("UILoader.tjs"); return global.uiload
 property uiloadSystem { getter() { KAGLoadScript("UILoader.tjs"); return global.uiloadSystem; } }
 
 /*
-	ï¿½eï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
+	ŠeƒVƒXƒeƒ€“Ç‚İ‚İ
 */
-dm("KAG System ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ï¿½Ç‚İï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½...");
+dm("KAG System ƒXƒNƒŠƒvƒg‚ğ“Ç‚İ‚ñ‚Å‚¢‚Ü‚·...");
 
 // add by GoWatanabe
 KAGLoadScript("LayerEx.tjs");
@@ -311,28 +311,28 @@ if(Storages.isExistentStorage(System.exePath + "Override2.tjs"))
 	KAGLoadScript(System.exePath + "Override2.tjs");
 
 /*
-	( ï¿½fï¿½oï¿½bï¿½O ) ï¿½ï¿½ï¿½ÔŒvï¿½ï¿½
+	( ƒfƒoƒbƒO ) ŠÔŒv‘ª
 */
-dm("ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Ì“Ç‚İï¿½ï¿½İ‚ï¿½ " + (System.getTickCount() - parseStartTick) + "ms ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+dm("ƒXƒNƒŠƒvƒg‚Ì“Ç‚İ‚İ‚É " + (System.getTickCount() - parseStartTick) + "ms ‚©‚©‚è‚Ü‚µ‚½");
 parseStartTick = System.getTickCount();
 
 /*
-	( ï¿½fï¿½oï¿½bï¿½O ) VM ï¿½Rï¿½[ï¿½hï¿½Ìƒ_ï¿½ï¿½ï¿½v
+	( ƒfƒoƒbƒO ) VM ƒR[ƒh‚Ìƒ_ƒ“ƒv
 */
 
 // Scripts.dump();
 
 /*
-	( ï¿½fï¿½oï¿½bï¿½O ) ï¿½ï¿½ï¿½ÔŒvï¿½ï¿½
+	( ƒfƒoƒbƒO ) ŠÔŒv‘ª
 */
 
 parseStartTick = System.getTickCount();
 
 
 /*
-	KAG ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ìì¬
-	ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½o kag ï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ KAGWindow ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½
-	ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½Ä“ï¿½ï¿½ï¿½
+	KAG ƒƒCƒ“ƒEƒBƒ“ƒhƒE‚Ìì¬
+	ƒOƒ[ƒoƒ‹ƒƒ“ƒo kag ‚ª‘¶İ‚µ‚È‚¯‚ê‚Î KAGWindow ƒNƒ‰ƒX‚Ì
+	ƒIƒuƒWƒFƒNƒg‚ğì¬‚µ‚Ä“ü‚ê‚é
 */
 
 global.kag = new KAGWindow() if typeof global.kag == "undefined";
@@ -341,13 +341,13 @@ global.kag = new KAGWindow() if typeof global.kag == "undefined";
 
 
 /*
-	ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È’Pï¿½ÉƒAï¿½Nï¿½Zï¿½Xï¿½Å‚ï¿½ï¿½ï¿½æ‚¤ï¿½ÉAï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½
-	ï¿½Ïï¿½ï¿½Ì•Ê–ï¿½ï¿½ï¿½ï¿½ì¬
+	ƒOƒ[ƒoƒ‹‚©‚çŠÈ’P‚ÉƒAƒNƒZƒX‚Å‚«‚é‚æ‚¤‚ÉA‚¢‚­‚Â‚©‚Ì
+	•Ï”‚Ì•Ê–¼‚ğì¬
 */
 
-var f = kag.flags;   // ï¿½ï¿½ï¿½[ï¿½Uï¿½Ïï¿½ (ï¿½tï¿½ï¿½ï¿½O)
-var sf = kag.sflags; // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½Ïï¿½ (ï¿½Vï¿½Xï¿½eï¿½ï¿½)
-var tf = kag.tflags; // ï¿½êï¿½Ïï¿½ (ï¿½êï¿½tï¿½ï¿½ï¿½O)
+var f = kag.flags;   // ƒ†[ƒU•Ï” (ƒtƒ‰ƒO)
+var sf = kag.sflags; // ƒVƒXƒeƒ€•Ï” (ƒVƒXƒeƒ€)
+var tf = kag.tflags; // ˆê•Ï” (ˆêƒtƒ‰ƒO)
 
 property mp
 {
@@ -355,14 +355,14 @@ property mp
 }
 
 /*
-	( ï¿½fï¿½oï¿½bï¿½O ) ï¿½ï¿½ï¿½ÔŒvï¿½ï¿½
+	( ƒfƒoƒbƒO ) ŠÔŒv‘ª
 */
-dm("KAGMainWindow ï¿½ÌƒRï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½ï¿½ " + (System.getTickCount() - parseStartTick) + "ms ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+dm("KAGMainWindow ‚ÌƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å " + (System.getTickCount() - parseStartTick) + "ms ‚©‚©‚è‚Ü‚µ‚½");
 delete parseStartTick;
 
 
 /*
-	AfterInit.tjs ï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½ï¿½Îï¿½ï¿½s
+	AfterInit.tjs ‚ª‘¶İ‚·‚ê‚ÎÀs
 */
 if(Storages.isExistentStorage("AfterInit.tjs"))
 	KAGLoadScript("AfterInit.tjs");
@@ -370,8 +370,8 @@ if(Storages.isExistentStorage(System.exePath + "AfterInit2.tjs"))
 	KAGLoadScript(System.exePath + "AfterInit2.tjs");
 
 /*
-	ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½Æ‚ï¿½ï¿½ï¿½ -ovr ï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½
-	ï¿½ï¿½ï¿½Ìƒpï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½ï¿½ TJS ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Äï¿½ï¿½s
+	ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒpƒ‰ƒ[ƒ^‚Æ‚µ‚Ä -ovr ‚ªw’è‚³‚ê‚Ä‚¢‚ê‚Î
+	‚»‚Ìƒpƒ‰ƒ[ƒ^‚ğ TJS ®‚Æ‚µ‚ÄÀs
 */
 {
 	var ovr = System.getArgument('-ovr');
@@ -379,7 +379,7 @@ if(Storages.isExistentStorage(System.exePath + "AfterInit2.tjs"))
 }
 
 /*
-	first.ks ï¿½Ìï¿½ï¿½s
+	first.ks ‚ÌÀs
 */
 
 kag.process("first.ks");

@@ -1,5 +1,5 @@
-// Utils.tjs - ï¿½ï¿½ï¿½[ï¿½eï¿½Bï¿½ï¿½ï¿½eï¿½Bï¿½Öï¿½
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// Utils.tjs - ƒ†[ƒeƒBƒŠƒeƒBŠÖ”
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 
 property random
@@ -9,15 +9,15 @@ property random
 
 function intrandom(min = 0, max = 0) 
 {
-	// min ï¿½Èï¿½ max ï¿½È‰ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½Ì—ï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
-	// ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½Ìê‡ï¿½ï¿½ 0 ï¿½` ï¿½ï¿½ï¿½Ìï¿½ï¿½Ü‚Å‚Ìï¿½ï¿½ï¿½ï¿½ï¿½Ô‚ï¿½
+	// min ˆÈã max ˆÈ‰º‚Ì®”‚Ì—”‚ğ•Ô‚·
+	// ˆø”‚ªˆêŒÂ‚¾‚¯‚Ìê‡‚Í 0 ` ‚»‚Ì”‚Ü‚Å‚Ì®”‚ğ•Ô‚·
 	if(min>max) { min <-> max; }
 	return int(Math.random() * (max-min+1)) + min;
 }
 
 function str2num(str)
 {
-	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½->ï¿½ï¿½ï¿½ï¿½ ( ï¿½Sï¿½pï¿½Î‰ï¿½ )
+	// •¶š—ñ->”š ( ‘SŠp‘Î‰ )
 	var res;
 	var i;
 	for(i=0; i<str.length; i++)
@@ -25,22 +25,22 @@ function str2num(str)
 		var ch = str[i];
 		switch(ch)
 		{
-		case "ï¿½O": res+="0"; break;
-		case "ï¿½P": res+="1"; break;
-		case "ï¿½Q": res+="2"; break;
-		case "ï¿½R": res+="3"; break;
-		case "ï¿½S": res+="4"; break;
-		case "ï¿½T": res+="5"; break;
-		case "ï¿½U": res+="6"; break;
-		case "ï¿½V": res+="7"; break;
-		case "ï¿½W": res+="8"; break;
-		case "ï¿½X": res+="9"; break;
-		case "ï¿½ï¿½": res+="e"; break;
-		case "ï¿½d": res+="E"; break;
-		case "ï¿½B": res+="."; break;
-		case "ï¿½D": res+="."; break;
-		case "ï¿½|": res+="-"; break;
-		case "ï¿½[": res+="-"; break;
+		case "‚O": res+="0"; break;
+		case "‚P": res+="1"; break;
+		case "‚Q": res+="2"; break;
+		case "‚R": res+="3"; break;
+		case "‚S": res+="4"; break;
+		case "‚T": res+="5"; break;
+		case "‚U": res+="6"; break;
+		case "‚V": res+="7"; break;
+		case "‚W": res+="8"; break;
+		case "‚X": res+="9"; break;
+		case "‚…": res+="e"; break;
+		case "‚d": res+="E"; break;
+		case "B": res+="."; break;
+		case "D": res+="."; break;
+		case "|": res+="-"; break;
+		case "[": res+="-"; break;
 		default: res+=ch; break;
 		}
 	}
@@ -50,7 +50,7 @@ function str2num(str)
 
 function han2zen(str)
 {
-	// ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½Sï¿½p ( ï¿½pï¿½ï¿½ï¿½Ì‚ï¿½ )
+	// ”¼Šp¨‘SŠp ( ‰p”‚Ì‚İ )
 	var res;
 	var i;
 	for(i=0;i<str.length;i++)
@@ -66,21 +66,21 @@ function han2zen(str)
 
 function kansuuji(
 	n,
-	digits = "ï¿½Zï¿½ï¿½ï¿½Oï¿½lï¿½Ü˜Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
-	small_units = "ï¿½@ï¿½\ï¿½Sï¿½ï¿½",
-	large_units = "ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
-	zero_expression = "ï¿½[ï¿½ï¿½",
-	minus_expression = "ï¿½}ï¿½Cï¿½iï¿½X"
+	digits = "Zˆê“ñOlŒÜ˜Zµ”ª‹ã",
+	small_units = "@\•Sç",
+	large_units = "@–œ‰­’›‹",
+	zero_expression = "ƒ[ƒ",
+	minus_expression = "ƒ}ƒCƒiƒX"
 	)
 {
-	// n ï¿½ï¿½ï¿½ï¿½Ê“Iï¿½ÈŠï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½Lï¿½É‚ï¿½ï¿½Ä•Ô‚ï¿½
-	// TJS ï¿½Ìï¿½ï¿½ï¿½ï¿½^ï¿½ï¿½ 922ï¿½ï¿½ï¿½Ù‚Ç‚Ü‚Å‚È‚Ì‚Å‹ï¿½ï¿½ï¿½ï¿½ï¿½ÌŒï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½Í•Kï¿½vï¿½È‚ï¿½
+	// n ‚ğˆê”Ê“I‚ÈŠ¿”š•\‹L‚É‚µ‚Ä•Ô‚·
+	// TJS ‚Ì®”Œ^‚Í 922‹‚Ù‚Ç‚Ü‚Å‚È‚Ì‚Å‹‚æ‚èã‚ÌŒ…‚Ìˆ—‚Í•K—v‚È‚¢
 
 	n = int n;
 	if(n == 0) return zero_expression;
-	var out = ""; // ï¿½oï¿½Í•ï¿½ï¿½ï¿½ï¿½ï¿½
+	var out = ""; // o—Í•¶š—ñ
 	if(n < 0) n = -n, out = minus_expression;
-	n = string n; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É•ÏŠï¿½
+	n = string n; // •¶š—ñ‚É•ÏŠ·
 
 	var n_len = n.length;
 	var n_pos = n_len - 1;
@@ -92,18 +92,18 @@ function kansuuji(
 		var digit = +n[i];
 		switch(small_unit)
 		{
-		case 0: // 1 ï¿½ÌŒï¿½
+		case 0: // 1 ‚ÌŒ…
 			if(digit != 0) out += digits[digit], nonzero = true;
 			if(nonzero && n_pos) out += large_units[n_pos >> 2];
 			nonzero = false;
 			break;
-		case 1: // ï¿½\ï¿½ÌŒï¿½
-		case 2: // ï¿½Sï¿½ÌŒï¿½
-		case 3: // ï¿½ï¿½ÌŒï¿½
+		case 1: // \‚ÌŒ…
+		case 2: // •S‚ÌŒ…
+		case 3: // ç‚ÌŒ…
 			if(digit != 0)
 			{
-				/* ï¿½ï¿½ÌŒï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Èï¿½Ìê‡ï¿½ï¿½ï¿½pï¿½Iï¿½ï¿½ ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½B
-				   ï¿½Ü‚ï¿½ï¿½Aï¿½ï¿½Sï¿½ï¿½ï¿½\ï¿½Æ‚Í‚ï¿½ï¿½ï¿½È‚ï¿½ï¿½B */
+				/* ç‚ÌŒ…‚Í –œˆÈã‚Ìê‡Šµ—p“I‚É ˆêç‚Æ‚¢‚¤B
+				   ‚Ü‚½Aˆê•S‚âˆê\‚Æ‚Í‚¢‚í‚È‚¢B */
 				if(digit != 1 || (small_unit == 3 && n_pos > 4))
 					out += digits[digit] + small_units[small_unit];
 				else
@@ -119,11 +119,11 @@ function kansuuji(
 
 function kansuuji_simple(
 	n,
-	digits = "ï¿½Zï¿½ï¿½ï¿½Oï¿½lï¿½Ü˜Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
-	point = "ï¿½E",
-	minus = "ï¿½}ï¿½Cï¿½iï¿½X")
+	digits = "Zˆê“ñOlŒÜ˜Zµ”ª‹ã",
+	point = "E",
+	minus = "ƒ}ƒCƒiƒX")
 {
-	// n ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½Lï¿½É‚ï¿½ï¿½é‚ªï¿½Aï¿½ï¿½ï¿½Pï¿½Ê‚Í‚Â‚ï¿½ï¿½È‚ï¿½
+	// n ‚ğŠ¿”š•\‹L‚É‚·‚é‚ªAŒ…’PˆÊ‚Í‚Â‚¯‚È‚¢
 
 	n = string n;
 	var n_len = n.length;
@@ -145,12 +145,12 @@ function kansuuji_simple(
 
 function number_format(n)
 {
-	// n ï¿½ï¿½ï¿½Rï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ ï¿½Jï¿½ï¿½ï¿½}ï¿½Å‹ï¿½Ø‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½\ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
+	// n ‚ğ‚RŒ…‚²‚Æ‚É ƒJƒ“ƒ}‚Å‹æØ‚Á‚½”’l•\Œ»‚É‚·‚é
 	n = string n;
 	var n_len = n.length;
 	var n_digits = 0;
 
-	// ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ğ”‚ï¿½ï¿½ï¿½
+	// ”š‚Ì”‚ğ”‚¦‚é
 	for(var i = 0; i < n_len; i++)
 	{
 		var digit = n[i];
@@ -160,7 +160,7 @@ function number_format(n)
 
 	var out = "";
 
-	// ï¿½Jï¿½ï¿½ï¿½}ï¿½ï¿½}ï¿½ï¿½
+	// ƒJƒ“ƒ}‚ğ‘}“ü
 	for(var i = 0; i < n_len; i++)
 	{
 		var digit = n[i];

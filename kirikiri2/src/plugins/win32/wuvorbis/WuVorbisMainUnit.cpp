@@ -650,21 +650,21 @@ extern "C" const wchar_t * _stdcall _export GetOptionDesc()
 	if(GetACP() == 932) // 932 == Japan
 	{
 		return 
-L"OggVorbisï¿½fï¿½Rï¿½[ï¿½_:ï¿½Qï¿½Cï¿½ï¿½;OggVorbis ï¿½fï¿½Rï¿½[ï¿½_ï¿½Ì‰ï¿½ï¿½ï¿½(ï¿½Qï¿½Cï¿½ï¿½)ï¿½ÌÝ’ï¿½Å‚ï¿½ï¿½B|"
+L"OggVorbisƒfƒR[ƒ_:ƒQƒCƒ“;OggVorbis ƒfƒR[ƒ_‚Ì‰¹—Ê(ƒQƒCƒ“)‚ÌÝ’è‚Å‚·B|"
 L"vorbis_gain|select,"
 L"*0;0dB,-0.1;-0.1dB,-0.2;-0.2dB,-0.3;-0.3dB,-0.4;-0.4dB,-0.5;-0.5dB,"
 L"-0.6;-0.6dB,-0.7;-0.7dB,-0.8;-0.8dB,-0.9;-0.9dB,-1;-1dB,-1.1;-1.1dB,"
 L"-1.2;-1.2dB,-1.3;-1.3dB,-1.4;-1.4dB,-1.5;-1.5dB,-1.6;-1.6dB,"
 L"-1.7;-1.7dB,-1.8;-1.8dB,-1.9;-1.9dB,-2;-2dB,-3;-3dB,-4;"
 L"-4dB,-5;-5dB,-6;-6dB,-7;-7dB,-8;-8dB,-9;-9dB,-10;-10dB\n"
-L"OggVorbisï¿½fï¿½Rï¿½[ï¿½_:ï¿½oï¿½ÍŒ`ï¿½ï¿½;OggVorbis ï¿½fï¿½Rï¿½[ï¿½_ï¿½ï¿½ï¿½oï¿½Í‚ï¿½ï¿½ï¿½ PCM ï¿½`ï¿½ï¿½ï¿½ÌÝ’ï¿½Å‚ï¿½ï¿½B|"
-L"vorbis_pcm_format|select,*i16;16bit ï¿½ï¿½ï¿½ï¿½ PCM,f32;32bit ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½ï¿½ PCM\n"
-L"OggVorbisï¿½fï¿½Rï¿½[ï¿½_:ReplayGain;ReplayGainï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ÌÝ’ï¿½Å‚ï¿½ï¿½B|"
-L"vorbis_rg|select,none;ï¿½Î‰ï¿½ï¿½ï¿½ï¿½È‚ï¿½,album;Album Gain ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,*track;Track Gain ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n"
+L"OggVorbisƒfƒR[ƒ_:o—ÍŒ`Ž®;OggVorbis ƒfƒR[ƒ_‚ªo—Í‚·‚é PCM Œ`Ž®‚ÌÝ’è‚Å‚·B|"
+L"vorbis_pcm_format|select,*i16;16bit ®” PCM,f32;32bit •‚“®¬”“_” PCM\n"
+L"OggVorbisƒfƒR[ƒ_:ReplayGain;ReplayGain‚É‘Î‰ž‚·‚é‚©‚Ç‚¤‚©‚ÌÝ’è‚Å‚·B|"
+L"vorbis_rg|select,none;‘Î‰ž‚µ‚È‚¢,album;Album Gain ‚ðŒ©‚é,*track;Track Gain ‚ðŒ©‚é\n"
 /*
-L"OggVorbisï¿½fï¿½Rï¿½[ï¿½_:ï¿½ï¿½ï¿½ï¿½;OggVorbisï¿½fï¿½Rï¿½[ï¿½_ï¿½Ì‰ï¿½ï¿½ï¿½ï¿½Ý’ï¿½Å‚ï¿½ï¿½Bï¿½uï¿½á‚¢ï¿½vï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æuï¿½Êï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Äï¿½ï¿½Ì•iï¿½ï¿½ï¿½Í’á‚­ï¿½È‚ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½A"
-L"OggVorbisï¿½Ìƒfï¿½Rï¿½[ï¿½hï¿½ÉŠÖ‚ï¿½ï¿½ï¿½CPUï¿½Ö‚Ì•ï¿½ï¿½Sï¿½ï¿½ï¿½yï¿½ï¿½ï¿½È‚ï¿½Ü‚ï¿½ï¿½B|"
-L"vorbis_quality,*normal;ï¿½Êï¿½,low;ï¿½á‚¢\n"*/;
+L"OggVorbisƒfƒR[ƒ_:‰¹Ž¿;OggVorbisƒfƒR[ƒ_‚Ì‰¹Ž¿Ý’è‚Å‚·Bu’á‚¢v‚ð‘I‘ð‚·‚é‚Æu’Êív‚æ‚è‚àÄ¶‚Ì•iŽ¿‚Í’á‚­‚È‚è‚Ü‚·‚ªA"
+L"OggVorbis‚ÌƒfƒR[ƒh‚ÉŠÖ‚·‚éCPU‚Ö‚Ì•‰’S‚ªŒy‚­‚È‚è‚Ü‚·B|"
+L"vorbis_quality,*normal;’Êí,low;’á‚¢\n"*/;
 	}
 	else
 	{

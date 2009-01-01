@@ -1,5 +1,5 @@
 /**
- * ï¿½[ï¿½ï¿½ï¿½Rï¿½[ï¿½hï¿½É‚ï¿½ï¿½}ï¿½jï¿½ï¿½ï¿½Aï¿½ï¿½
+ * ‹[—ƒR[ƒh‚É‚æ‚éƒ}ƒjƒ…ƒAƒ‹
  *
  * Copyright 2005-2009 GoWatanabe
  */
@@ -7,55 +7,55 @@
 class LineParser {
 
     /**
-     * ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
-     * @param target ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½Bï¿½ï¿½ï¿½wï¿½èï¿½Íï¿½ï¿½ï¿½ï¿½É‘ï¿½ï¿½ï¿½
+     * ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+     * @param target ƒCƒxƒ“ƒg‚ğ“]‘—‚·‚éƒ^[ƒQƒbƒgB–¢w’è‚Í©•ª‚É‘—‚é
      */
     function LineParser(target);
 
     /**
-     * ï¿½ï¿½ï¿½ï¿½ï¿½ÎÛƒeï¿½Lï¿½Xï¿½gï¿½Ìï¿½ï¿½ï¿½
-     * @param text ï¿½eï¿½Lï¿½Xï¿½g
+     * ˆ—‘ÎÛƒeƒLƒXƒg‚Ì‰Šú‰»
+     * @param text ƒeƒLƒXƒg
      */
     function init(text);
 
     /**
-     * ï¿½ï¿½ï¿½ï¿½ï¿½ÎÛƒeï¿½Lï¿½Xï¿½gï¿½Ìï¿½ï¿½ï¿½
-     * @param filename ï¿½eï¿½Lï¿½Xï¿½gï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
-     * @param utf8 UTF-8 ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ê‡ï¿½ï¿½ true
+     * ˆ—‘ÎÛƒeƒLƒXƒg‚Ì‰Šú‰»
+     * @param filename ƒeƒLƒXƒg‚Ìƒtƒ@ƒCƒ‹–¼
+     * @param utf8 UTF-8 ‚Ìƒtƒ@ƒCƒ‹‚ğg‚¤ê‡‚Í true
      */
     function initStorage(filename,utf8=false);
 
     /**
-     * ï¿½ï¿½ï¿½Ìsï¿½Ìï¿½ï¿½ğ•¶ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Äæ“¾ï¿½ï¿½ï¿½ï¿½
-     * @return ï¿½s
+     * Ÿ‚Ìs‚Ìî•ñ‚ğ•¶š—ñ‚Æ‚µ‚Äæ“¾‚·‚é
+     * @return s
      */
     function getNextLine();
 
     /**
-     * ï¿½ï¿½ï¿½İ‚Ìï¿½ï¿½ï¿½ï¿½Ï‚İsï¿½Ôï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
+     * Œ»İ‚Ìˆ—Ï‚İs”Ô†‚ğæ“¾‚·‚é
      */
     property currentLineNumber;
 
     /**
-     * ï¿½eï¿½Lï¿½Xï¿½gï¿½É‘Î‚ï¿½ï¿½ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½B
-     * ï¿½sï¿½ï¿½ï¿½Æ‚ï¿½ doLine() ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½B
-     * @param text ï¿½eï¿½Lï¿½Xï¿½gï¿½Bï¿½È—ï¿½ï¿½ï¿½ï¿½ÍŒï¿½ï¿½İİ’è’†ï¿½Ìƒeï¿½Lï¿½Xï¿½gï¿½É‘Î‚ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½È‚ï¿½
+     * ƒeƒLƒXƒg‚É‘Î‚·‚éƒp[ƒXˆ—‚ğÀs‚·‚éB
+     * s‚²‚Æ‚É doLine() ƒCƒxƒ“ƒg‚ğŒÄ‚Ño‚·B
+     * @param text ƒeƒLƒXƒgBÈ—ª‚ÍŒ»İİ’è’†‚ÌƒeƒLƒXƒg‚É‘Î‚µ‚Äˆ—‚ğs‚È‚¤
      */
     function parse(text);
 
     /**
-     * ï¿½eï¿½Lï¿½Xï¿½gï¿½É‘Î‚ï¿½ï¿½ï¿½pï¿½[ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½B
-     * @param filename ï¿½eï¿½Lï¿½Xï¿½gï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
-     * @param utf8 UTF-8 ï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ê‡ï¿½ï¿½ true
+     * ƒeƒLƒXƒg‚É‘Î‚·‚éƒp[ƒXˆ—‚ğÀs‚·‚éB
+     * @param filename ƒeƒLƒXƒg‚Ìƒtƒ@ƒCƒ‹–¼
+     * @param utf8 UTF-8 ‚Ìƒtƒ@ƒCƒ‹‚ğg‚¤ê‡‚Í true
      */
     function parseStorage(filename,utf8=false);
 
     // ----------------------------------
 
     /**
-     * parse/parseStorage ï¿½ÅŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½xï¿½ï¿½ï¿½g
-     * @param text ï¿½sï¿½Ìƒeï¿½Lï¿½Xï¿½gï¿½ï¿½ï¿½
-     * @param lineNo ï¿½sï¿½Ôï¿½(1ï¿½ï¿½ï¿½ï¿½É‚È‚ï¿½)
+     * parse/parseStorage ‚ÅŒÄ‚Ño‚³‚ê‚éƒCƒxƒ“ƒg
+     * @param text s‚ÌƒeƒLƒXƒgî•ñ
+     * @param lineNo s”Ô†(1‚©‚ç‚É‚È‚é)
      */
     function doLine(text, lineNo);
 };

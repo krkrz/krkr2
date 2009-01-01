@@ -1,35 +1,35 @@
-// EditLayer.tjs - ï¿½ï¿½sï¿½ÒWï¿½pï¿½Rï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// EditLayer.tjs - ˆês•ÒW—pƒRƒ“ƒgƒ[ƒ‹ƒŒƒCƒ„
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 /*
-ï¿½Pï¿½ï¿½sï¿½Ì•ÒWï¿½Rï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä“ï¿½ï¿½ì‚·ï¿½éƒŒï¿½Cï¿½ï¿½ï¿½Å‚ï¿½ï¿½B
+’Pˆês‚Ì•ÒWƒRƒ“ƒgƒ[ƒ‹‚Æ‚µ‚Ä“®ì‚·‚éƒŒƒCƒ„‚Å‚·B
 
-ï¿½ï¿½ï¿½ï¿½  new EditLayer(<window>, <parent>)
+‘®  new EditLayer(<window>, <parent>)
 */
 
 class EditLayer extends KAGLayer
 {
-	var Edit_text = ""; // ï¿½ÒWï¿½ï¿½ï¿½Ìƒeï¿½Lï¿½Xï¿½g
-	var Edit_selStart = 0; // ï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½Ê’u
-	var Edit_selAnchor = 0; // ï¿½ÍˆÍ‘Iï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Jï¿½[ï¿½Ê’u
-	var Edit_scrollPos = 0; // ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é¶ï¿½[ï¿½Ì•ï¿½ï¿½ï¿½ï¿½Ê’u
-	var Edit_caretLayer; // ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½pï¿½ï¿½ï¿½Cï¿½ï¿½
-	var Edit_color = clWindow; // ï¿½wï¿½iï¿½F
-	var Edit_antialiased = true; // ï¿½Aï¿½ï¿½ï¿½`ï¿½Gï¿½Cï¿½ï¿½ï¿½Aï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-	var Edit_opacity = 192; // ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½x
-	var Edit_maxChars = 0; // ï¿½Å‘å•¶ï¿½ï¿½ï¿½ï¿½ ( 0 = ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )
+	var Edit_text = ""; // •ÒW’†‚ÌƒeƒLƒXƒg
+	var Edit_selStart = 0; // ƒJ[ƒ\ƒ‹ˆÊ’u
+	var Edit_selAnchor = 0; // ”ÍˆÍ‘I‘ğƒAƒ“ƒJ[ˆÊ’u
+	var Edit_scrollPos = 0; // •\¦‚³‚ê‚Ä‚¢‚é¶’[‚Ì•¶šˆÊ’u
+	var Edit_caretLayer; // ƒLƒƒƒŒƒbƒg—pƒŒƒCƒ„
+	var Edit_color = clWindow; // ”wŒiF
+	var Edit_antialiased = true; // ƒAƒ“ƒ`ƒGƒCƒŠƒAƒX‚ğ‚©‚¯‚é‚©
+	var Edit_opacity = 192; // •s“§–¾“x
+	var Edit_maxChars = 0; // Å‘å•¶š” ( 0 = –³§ŒÀ )
 	var Edit_textColor = clWindowText;
 	var Edit_blinkTimer;
 	var Edit_vertical = false;
 	var Edit_mouseDown = false;
     var Edit_noborder = false;
-	var Edit_textOffsetX = 0; // drawText ï¿½`ï¿½æï¿½ÌƒIï¿½tï¿½Zï¿½bï¿½g
+	var Edit_textOffsetX = 0; // drawText •`‰æ‚ÌƒIƒtƒZƒbƒg
 	var Edit_textOffsetY = 0;
-	var Edit_passwordView = false; // ï¿½pï¿½Xï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½[ï¿½h
-	var Edit_passwordMark = "*";   // ï¿½pï¿½Xï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Ìƒ}ï¿½Xï¿½Nï¿½ï¿½ï¿½ï¿½
+	var Edit_passwordView = false; // ƒpƒXƒ[ƒhƒ‚[ƒh
+	var Edit_passwordMark = "*";   // ƒpƒXƒ[ƒhƒ‚[ƒh‚Ìƒ}ƒXƒN•¶š
 
-	var Edit_selLength = 0; // ï¿½pï¿½~ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B
-							// ï¿½gï¿½ï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+	var Edit_selLength = 0; // ”p~‚µ‚Ü‚µ‚½B
+							// g‚í‚È‚¢‚Å‚­‚¾‚³‚¢B
 
 	function EditLayer(win, par, vert = false)
 	{
@@ -38,18 +38,18 @@ class EditLayer extends KAGLayer
 		Edit_vertical = vert;
 
 		hitType = htMask;
-		hitThreshold = 0; // ï¿½Sï¿½ï¿½Åƒ}ï¿½Eï¿½Xï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Í•sï¿½ï¿½ï¿½ï¿½
-		focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½Íó‚¯ï¿½ï¿½
-		useAttention = true; // ï¿½ï¿½ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½ï¿½ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½
+		hitThreshold = 0; // ‘Sˆæ‚Åƒ}ƒEƒXƒCƒxƒ“ƒg‚Í•s“§–¾
+		focusable = true; // ƒtƒH[ƒJƒX‚Íó‚¯æ‚é
+		useAttention = true; // ’‹ƒ|ƒCƒ“ƒg‚ğg—p‚·‚é
 
 		Edit_caretLayer = new global.Layer(win, this);
 		Edit_caretLayer.hitType = htMask;
-		Edit_caretLayer.hitThreshold = 256; // ï¿½ï¿½ï¿½Sï¿½Éƒ}ï¿½Eï¿½Xï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Í“ï¿½ï¿½ï¿½
+		Edit_caretLayer.hitThreshold = 256; // Š®‘S‚Éƒ}ƒEƒXƒCƒxƒ“ƒg‚Í“§–¾
 		resizeCaret();
 
-		imeMode = imDontCare; // IME ï¿½gï¿½pï¿½ï¿½
+		imeMode = imDontCare; // IME g—p‰Â
 
-		// ï¿½_ï¿½Å—pï¿½^ï¿½Cï¿½}ï¿½ï¿½pï¿½ï¿½
+		// “_–Å—pƒ^ƒCƒ}‚ğ—pˆÓ
 		Edit_blinkTimer = new Timer(onBlink, '');
 
 		cursor = vert ? crHBeam : crIBeam;
@@ -96,10 +96,10 @@ class EditLayer extends KAGLayer
 
 	function resizeCaret()
 	{
-		// ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½ÌƒTï¿½Cï¿½Yï¿½Ìï¿½ï¿½ï¿½
+		// ƒLƒƒƒŒƒbƒg‚ÌƒTƒCƒY‚Ì‰Šú‰»
 		if(Edit_vertical)
 		{
-			var h = 2; // 2 ï¿½Å’ï¿½
+			var h = 2; // 2 ŒÅ’è
 			var w = font.height;
 			w = -w if(w<0);
 			Edit_caretLayer.setImageSize(w, h);
@@ -108,7 +108,7 @@ class EditLayer extends KAGLayer
 		}
 		else
 		{
-			var w = 2; // 2 ï¿½Å’ï¿½
+			var w = 2; // 2 ŒÅ’è
 			var h = font.height;
 			h = -h if(h<0);
 			Edit_caretLayer.setImageSize(w, h);
@@ -119,17 +119,17 @@ class EditLayer extends KAGLayer
 
 	function getCaretXPos()
 	{
-		// ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½ÌˆÊ’uï¿½ï¿½ï¿½æ“¾
-		var bch = _viewtext.substring(0, Edit_selStart); // ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½È‘Oï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒLƒƒƒŒƒbƒg‚ÌˆÊ’u‚ğæ“¾
+		var bch = _viewtext.substring(0, Edit_selStart); // ƒLƒƒƒŒƒbƒgˆÈ‘O‚Ì•¶š—ñ
 		var bchw = font.getTextWidth(bch);
-		var sch = _viewtext.substring(0, Edit_scrollPos); // ï¿½\ï¿½ï¿½ï¿½È‘Oï¿½Ì•ï¿½ï¿½ï¿½
+		var sch = _viewtext.substring(0, Edit_scrollPos); // •\¦ˆÈ‘O‚Ì•¶š
 		var schw = font.getTextWidth(sch);
 		return bchw - schw + 3;
 	}
 
 	function ensureCaretVisible(step = 1)
 	{
-		// ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½ï¿½ï¿½mï¿½ï¿½ï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê’uï¿½Ü‚ÅƒXï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒLƒƒƒŒƒbƒg‚ªŠmÀ‚É•\¦‚³‚ê‚éˆÊ’u‚Ü‚ÅƒXƒNƒ[ƒ‹‚·‚é
 		var sp_save = Edit_scrollPos;
 		var txtlen = Edit_text.length;
 		if(Edit_selStart == txtlen)
@@ -184,7 +184,7 @@ class EditLayer extends KAGLayer
 	{
 		var oldAnchor = Edit_selAnchor;
 
-		// ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒLƒƒƒŒƒbƒg‚ğ¶‚Ö
 		if(Edit_selStart > 0) Edit_selStart --, ensureCaretVisible(3);
 		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
 		if(keepAnchor || oldAnchor != Edit_selAnchor)
@@ -196,7 +196,7 @@ class EditLayer extends KAGLayer
 	{
 		var oldAnchor = Edit_selAnchor;
 
-		// ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½ï¿½ï¿½Eï¿½ï¿½
+		// ƒLƒƒƒŒƒbƒg‚ğ‰E‚Ö
 		if(Edit_selStart < Edit_text.length) Edit_selStart ++, ensureCaretVisible(3);
 		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
 		if(keepAnchor || oldAnchor != Edit_selAnchor)
@@ -206,7 +206,7 @@ class EditLayer extends KAGLayer
 
 	function getCaretPosFromX(x)
 	{
-		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ï¿½Ê’uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½
+		// ƒNƒŠƒbƒN‚³‚ê‚½ˆÊ’u‚ğŠ„‚èo‚·
 		x -= 3;
 		var text = _viewtext.substring(Edit_scrollPos);
 		var i = 0;
@@ -234,7 +234,7 @@ class EditLayer extends KAGLayer
 	{
 		Edit_mouseDown = true;
 
-		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½
+		// ƒNƒŠƒbƒN‚³‚ê‚½
 		if(x >= 3 && y >= 3 && x < imageWidth -3 && y < imageHeight - 3)
 		{
 			var oldStart = Edit_selStart;
@@ -245,11 +245,11 @@ class EditLayer extends KAGLayer
 			else
 				Edit_selStart = getCaretPosFromX(x);
 
-			// Shift ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½Ì‚Å‚ï¿½ï¿½ï¿½ÎƒAï¿½ï¿½ï¿½Jï¿½[ï¿½ï¿½ï¿½Xï¿½Vï¿½ï¿½ï¿½ï¿½
+			// Shift ƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚È‚¢‚Ì‚Å‚ ‚ê‚ÎƒAƒ“ƒJ[‚àXV‚·‚é
 			if((shift & ssShift) != ssShift)
 				Edit_selAnchor = Edit_selStart;
 
-			// ï¿½Xï¿½Vï¿½Ì•Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎXï¿½Vï¿½ï¿½ï¿½ï¿½
+			// XV‚Ì•K—v‚ª‚ ‚ê‚ÎXV‚·‚é
 			if(oldStart != Edit_selStart || oldAnchor != Edit_selAnchor)
 				update();
 
@@ -272,7 +272,7 @@ class EditLayer extends KAGLayer
 	{
 		if(Edit_mouseDown)
 		{
-			// ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ÌˆÚ“ï¿½ï¿½ÍƒAï¿½ï¿½ï¿½Jï¿½[ï¿½Íï¿½Î‚ÉˆÚ“ï¿½ï¿½ï¿½ï¿½È‚ï¿½
+			// ‚±‚±‚Å‚ÌˆÚ“®‚ÍƒAƒ“ƒJ[‚Íâ‘Î‚ÉˆÚ“®‚µ‚È‚¢
 
 			if(Edit_vertical)
 			{
@@ -282,7 +282,7 @@ class EditLayer extends KAGLayer
 
 					Edit_selStart = getCaretPosFromX(y);
 
-					// ï¿½Xï¿½Vï¿½Ì•Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎXï¿½Vï¿½ï¿½ï¿½ï¿½
+					// XV‚Ì•K—v‚ª‚ ‚ê‚ÎXV‚·‚é
 					if(oldStart != Edit_selStart)
 						update();
 
@@ -306,7 +306,7 @@ class EditLayer extends KAGLayer
 
 					Edit_selStart = getCaretPosFromX(x);
 
-					// ï¿½Xï¿½Vï¿½Ì•Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎXï¿½Vï¿½ï¿½ï¿½ï¿½
+					// XV‚Ì•K—v‚ª‚ ‚ê‚ÎXV‚·‚é
 					if(oldStart != Edit_selStart)
 						update();
 
@@ -328,8 +328,8 @@ class EditLayer extends KAGLayer
 	}
 
 	/*
-	 ï¿½Iï¿½ï¿½ÍˆÍ‚ÉŠÜ‚Ü‚ï¿½é•¶ï¿½ï¿½ï¿½ï¿½Sï¿½Äíœï¿½ï¿½ï¿½ï¿½
-	 ï¿½íœï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Å‚ï¿½ï¿½ï¿½ï¿½ true ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½ï¿½ï¿½ false ï¿½ï¿½Ô‚ï¿½
+	 ‘I‘ğ”ÍˆÍ‚ÉŠÜ‚Ü‚ê‚é•¶š‚ğ‘S‚Äíœ‚·‚é
+	 íœ‚µ‚½‚Ì‚Å‚ ‚ê‚Î true ‚ğA‚»‚¤‚Å‚È‚¯‚ê‚Î false ‚ğ•Ô‚·
 	*/
 	function deleteSelectRange()
 	{
@@ -361,7 +361,7 @@ class EditLayer extends KAGLayer
 	}
 
 	/*
-	 pos ï¿½ÌˆÊ’uï¿½É‚ï¿½ï¿½é•¶ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ÍˆÍ‚ÉŠÜ‚Ü‚ï¿½Ä‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×‚ï¿½
+	 pos ‚ÌˆÊ’u‚É‚ ‚é•¶š‚ª‘I‘ğ”ÍˆÍ‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©’²‚×‚é
 	*/
 	function isSelected(pos)
 	{
@@ -376,7 +376,7 @@ class EditLayer extends KAGLayer
 		return true;/* dead code */
 	}
 
-	/* ï¿½Sï¿½Iï¿½ğ‘€ï¿½ */
+	/* ‘S‘I‘ğ‘€ì */
 	function operationAllSelection()
 	{
 		Edit_selAnchor = 0;
@@ -393,10 +393,10 @@ class EditLayer extends KAGLayer
 		update();
 	}
 
-	/* ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½ */
+	/* ƒRƒs[‘€ì */
 	function operationCopy()
 	{
-		if(Edit_selAnchor == Edit_selStart || Edit_passwordView)  // ï¿½ÍˆÍ‚ï¿½ï¿½È‚ï¿½ or ï¿½pï¿½Xï¿½ï¿½Íï¿½ï¿½ÍƒRï¿½sï¿½[ï¿½sï¿½ï¿½
+		if(Edit_selAnchor == Edit_selStart || Edit_passwordView)  // ”ÍˆÍ‚ª‚È‚¢ or ƒpƒX“ü—Í‚ÍƒRƒs[•s‰Â
 			return;
 
 		var start, len;
@@ -416,21 +416,21 @@ class EditLayer extends KAGLayer
 		Clipboard.asText = Edit_text.substring(start, len);
 	}
 
-	/* ï¿½yï¿½[ï¿½Xï¿½gï¿½ï¿½ï¿½ï¿½ */
+	/* ƒy[ƒXƒg‘€ì */
 	function operationPaste()
 	{
-		// ï¿½eï¿½Lï¿½Xï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½ï¿½ñ‰½‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½
+		// ƒeƒLƒXƒg‚ª–³‚¯‚ê‚Î‚à‚¿‚ë‚ñ‰½‚à‚µ‚È‚¢
 		if(Clipboard.hasFormat(cbfText))
 		{
 			var text = Clipboard.asText;
 
-			// ï¿½ï¿½ï¿½ï¿½È‚É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì“ï¿½ï¿½È‚ï¿½ï¿½æ‚£
+			// ‚»‚ñ‚È‚É‚¨‚Á‚«‚¡‚Ì“ü‚ç‚È‚¢‚æ‚£
 			if(Edit_maxChars)
 			{
 				var acceptLen = Edit_maxChars - (Edit_text.length - selectLength);
 				text = text.substring(0, acceptLen);
 
-				// ï¿½Ş‚ï¿½ï¿½
+				// ‚Ş‚è‚Û
 				if(text == "")
 					return;
 			}
@@ -439,20 +439,20 @@ class EditLayer extends KAGLayer
 		}
 	}
 
-	/* ï¿½Jï¿½bï¿½gï¿½ï¿½ï¿½ï¿½ */
+	/* ƒJƒbƒg‘€ì */
 	function operationCut()
 	{
-		if (Edit_passwordView) return; // ï¿½pï¿½Xï¿½ï¿½Íï¿½ï¿½ÍƒJï¿½bï¿½gï¿½sï¿½ï¿½
+		if (Edit_passwordView) return; // ƒpƒX“ü—Í‚ÍƒJƒbƒg•s‰Â
 		operationCopy();
 		deleteSelectRange();
 	}
 
 	function insertCharacter(ch)
 	{
-		// ï¿½Iï¿½ï¿½ÍˆÍ‚Ìƒeï¿½Lï¿½Xï¿½gï¿½ï¿½ï¿½íœï¿½ï¿½ï¿½ï¿½
+		// ‘I‘ğ”ÍˆÍ‚ÌƒeƒLƒXƒg‚ğíœ‚·‚é
 		deleteSelectRange();
 
-		// ch ï¿½ï¿½ï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½Ê’uï¿½É‘}ï¿½ï¿½
+		// ch ‚ğƒJ[ƒ\ƒ‹ˆÊ’u‚É‘}“ü
 		var bcr = Edit_text.substring(0, Edit_selStart);
 		var acr = Edit_text.substring(Edit_selStart);
 		Edit_text = bcr + ch + acr;
@@ -465,7 +465,7 @@ class EditLayer extends KAGLayer
 
 	function deleteBeforeCaret()
 	{
-		// ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½Ìï¿½Oï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê•¶ï¿½ï¿½ï¿½íœï¿½ï¿½ï¿½ï¿½
+		// ƒLƒƒƒŒƒbƒg‚Ìè‘O‚Ì•¶š‚ğˆê•¶šíœ‚·‚é
 		if(!deleteSelectRange() && Edit_selStart > 0)
 		{
 			var bcr = Edit_text.substring(0, Edit_selStart-1);
@@ -481,7 +481,7 @@ class EditLayer extends KAGLayer
 
 	function deleteAfterCaret()
 	{
-		// ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½bï¿½gï¿½Ìï¿½ï¿½Ìˆê•¶ï¿½ï¿½ï¿½ï¿½ï¿½íœï¿½ï¿½ï¿½ï¿½
+		// ƒLƒƒƒŒƒbƒg‚ÌŸ‚Ìˆê•¶š‚ğíœ‚·‚é
 		if(!deleteSelectRange() && Edit_selStart < Edit_text.length)
 		{
 			var bcr = Edit_text.substring(0, Edit_selStart);
@@ -495,13 +495,13 @@ class EditLayer extends KAGLayer
 
 	function onKeyPress(key)
 	{
-		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
+		// ƒL[‚ª‰Ÿ‚³‚ê‚½
 		if(#key >= 32)
 		{
-			// ï¿½ï¿½ï¿½Ê‚Ì•ï¿½ï¿½ï¿½
+			// •’Ê‚Ì•¶š
 			if(!Edit_maxChars || (Edit_text.length - selectLength) < Edit_maxChars)
 				insertCharacter(key);
-			// ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½êï¿½Iï¿½É”ï¿½\ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
+			// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğˆê“I‚É”ñ•\¦‚É‚·‚é
 			window.hideMouseCursor();
 		}
 		else super.onKeyPress(...);
@@ -509,7 +509,7 @@ class EditLayer extends KAGLayer
 
 	function onKeyDown(key, shift)
 	{
-		// ï¿½ï¿½ï¿½ï¿½ÈƒIï¿½yï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½
+		// “Áê‚ÈƒIƒyƒŒ[ƒVƒ‡ƒ“
 		if(shift & ssCtrl)
 		{
 			switch(key)
@@ -531,7 +531,7 @@ class EditLayer extends KAGLayer
 
 	function onFocus()
 	{
-		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½
+		// ƒtƒH[ƒJƒX‚ğ“¾‚½
 		super.onFocus(...);
 		operationAllSelection();
 		//showCaret();
@@ -539,7 +539,7 @@ class EditLayer extends KAGLayer
 
 	function onBlur()
 	{
-		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒtƒH[ƒJƒX‚ğ¸‚Á‚½
 		super.onBlur(...);
 		operationNoSelection();
 		//hideCaret();
@@ -548,16 +548,16 @@ class EditLayer extends KAGLayer
 
 	function onPaint()
 	{
-		// ï¿½`ï¿½ï¿½Ì’ï¿½ï¿½Oï¿½ÉŒÄ‚Î‚ï¿½ï¿½
-		// ï¿½ï¿½ï¿½eï¿½ï¿½`ï¿½æ‚·ï¿½ï¿½
-		// ï¿½Æ‚è‚ ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½A
+		// •`‰æ‚Ì’¼‘O‚ÉŒÄ‚Î‚ê‚é
+		// “à—e‚ğ•`‰æ‚·‚é
+		// ‚Æ‚è‚ ‚¦‚¸ƒNƒŠƒA
 		var vert = Edit_vertical;
 		var imwidth = vert?imageHeight:imageWidth;
 		fillRect(0, 0, imageWidth, imageHeight, 0);
 		colorRect(0, 0, imageWidth, imageHeight, Edit_color, Edit_opacity);
-		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½
-		// ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½Ïï¿½ï¿½ï¿½Aï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½Ïï¿½ï¿½ÍƒAï¿½Nï¿½Zï¿½Xï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ì‚ÅA
-		// ï¿½æ‚­ï¿½gï¿½ï¿½ï¿½Ïï¿½ï¿½Íƒï¿½ï¿½[ï¿½Jï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+		// •¶š‚ğ•`‰æ
+		// ƒOƒ[ƒoƒ‹•Ï”‚âAƒIƒuƒWƒFƒNƒg“à•Ï”‚ÍƒAƒNƒZƒX‚ª’x‚¢‚Ì‚ÅA
+		// ‚æ‚­g‚¤•Ï”‚Íƒ[ƒJƒ‹‚É‚Á‚Ä‚­‚é
 		var h = font.height;
 		h = -h if(h<0);
 		var x = vert ? imageWidth - 3 : 3;
@@ -582,15 +582,15 @@ class EditLayer extends KAGLayer
 				var chw = font.getTextWidth(ch);
 				if(isSelected(chpos++))
 				{
-					// ï¿½Iï¿½ï¿½Ìˆï¿½ï¿½
-					// ï¿½wï¿½iï¿½ï¿½hï¿½ï¿½
+					// ‘I‘ğ—Ìˆæ“à
+					// ”wŒi‚ğ“h‚é
 					fillRect(x, y, h, chw, highlightbg);
-					// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+					// •¶š‚ğ‘‚­
 					drawText(x, y, ch, highlighttext, 255, anti);
 				}
 				else
 				{
-					// ï¿½Iï¿½ï¿½Ìˆï¿½O
+					// ‘I‘ğ—ÌˆæŠO
 					drawText(x, y, ch, textcolor, 255, anti);
 				}
 				tx += ch;
@@ -607,20 +607,20 @@ class EditLayer extends KAGLayer
 				var chw = font.getTextWidth(ch);
 				if(isSelected(chpos++))
 				{
-					// ï¿½wï¿½iï¿½ï¿½hï¿½ï¿½
+					// ”wŒi‚ğ“h‚é
 					fillRect(x, y, chw, h, highlightbg);
-					// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+					// •¶š‚ğ‘‚­
 					drawText(x, y, ch, highlighttext, 255, anti);
 				}
 				else
 				{
-					// ï¿½Iï¿½ï¿½Ìˆï¿½O
+					// ‘I‘ğ—ÌˆæŠO
 					drawText(x, y, ch, textcolor, 255, anti);
 				}
 				tx += ch;
 			}
 		}
-		// ï¿½ï¿½ï¿½ï¿½ï¿½Ìˆï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Nï¿½ï¿½ï¿½A
+		// •¶š—ÌˆæŠO‚ğ‚à‚¤ˆê“xƒNƒŠƒA
 		if(vert)
 		{
 			fillRect(0, imageHeight - 3, imageWidth, 3, 0);
@@ -632,29 +632,29 @@ class EditLayer extends KAGLayer
 			colorRect(imageWidth - 3, 0, 3, imageHeight, Edit_color, Edit_opacity);
 		}
         if (!Edit_noborder) {
-            // ï¿½gï¿½ï¿½`ï¿½ï¿½
+            // ˜g‚ğ•`‰æ
             colorRect(0, 0, imageWidth, 1, 0x000000, 128);
             colorRect(0, 1, 1, imageHeight-2, 0x000000, 128);
             colorRect(imageWidth-1, 1, 1, imageHeight-1, 0xffffff, 128);
             colorRect(1, imageHeight-1, imageWidth-2, 1, 0xffffff, 128);
         }
 	}
-	// drawText ï¿½É‘Î‚ï¿½ï¿½Ä•`ï¿½ï¿½Iï¿½tï¿½Zï¿½bï¿½gï¿½ï¿½Kï¿½pï¿½ï¿½ï¿½ï¿½
+	// drawText ‚É‘Î‚µ‚Ä•`‰æƒIƒtƒZƒbƒg‚ğ“K—p‚·‚é
 	function drawText(x, y, *) {
 		super.drawText(x + Edit_textOffsetX, y + Edit_textOffsetY, *);
 	}
-	// ï¿½Iï¿½tï¿½Zï¿½bï¿½gï¿½İ’ï¿½
+	// ƒIƒtƒZƒbƒgİ’è
 	function setDrawTextOffset(ox, oy) {
 		Edit_textOffsetX = ox;
 		Edit_textOffsetY = oy;
 		update();
 	}
 
-	// ï¿½ï¿½Ê‚É•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½iï¿½pï¿½Xï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½Íƒ}ï¿½Xï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½j
+	// ‰æ–Ê‚É•\¦‚·‚é‚×‚«•¶š—ñ‚ğæ“¾iƒpƒXƒ[ƒh‚Íƒ}ƒXƒN•¶šj
 	property _viewtext { getter {
 		return Edit_passwordView ? Edit_passwordMark.repeat(Edit_text.length) : Edit_text;
 	} }
-	// ï¿½pï¿½Xï¿½ï¿½ï¿½[ï¿½hï¿½ï¿½ï¿½[ï¿½hï¿½pï¿½Ìİ’ï¿½vï¿½ï¿½ï¿½pï¿½eï¿½B
+	// ƒpƒXƒ[ƒhƒ‚[ƒh—p‚Ìİ’èƒvƒƒpƒeƒB
 	property passwordMode {
 		getter { return Edit_passwordView;     }
 		setter(v) {     Edit_passwordView = v; text = text; }
