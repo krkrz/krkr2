@@ -4,12 +4,12 @@
 #include <squirrel.h>
 #include <sqstdio.h>
 
-// squirrel ï¿½ï¿½Å‚ï¿½ TJS2ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚ÌQï¿½Æ–ï¿½
+// squirrel ã‚Å‚Ì TJS2‚ÌƒOƒ[ƒoƒ‹‹óŠÔ‚ÌQÆ–¼
 #define KIRIKIRI_GLOBAL L"krkr"
-// TJS2 ï¿½ï¿½Å‚ï¿½ squirrel ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚ÌQï¿½Æ–ï¿½
+// TJS2 ã‚Å‚Ì squirrel ‚ÌƒOƒ[ƒoƒ‹‹óŠÔ‚ÌQÆ–¼
 #define SQUIRREL_GLOBAL L"sqglobal"
 
-// ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½Cï¿½gï¿½\ï¿½L
+// ƒRƒs[ƒ‰ƒCƒg•\‹L
 static const char *copyright =
 "\n------ Squirrel Copyright START ------\n"
 "Copyright (c) 2003-2009 Alberto Demichelis\n"
@@ -20,7 +20,7 @@ static HSQUIRRELVM vm = NULL;
 #include <tchar.h>
 
 /**
- * ï¿½ï¿½ï¿½Oï¿½oï¿½Í—p for squirrel
+ * ƒƒOo—Í—p for squirrel
  */
 void printFunc(HSQUIRRELVM v, const SQChar* format, ...)
 {
@@ -33,7 +33,7 @@ void printFunc(HSQUIRRELVM v, const SQChar* format, ...)
 }
 
 //---------------------------------------------------------------------------
-// squirrel -> TJS2 ï¿½uï¿½ï¿½ï¿½bï¿½Wï¿½p
+// squirrel -> TJS2 ƒuƒŠƒbƒW—p
 //---------------------------------------------------------------------------
 
 extern void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
@@ -41,7 +41,7 @@ extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
 extern void SQEXCEPTION(HSQUIRRELVM v);
 
 /**
- * Squirrel ï¿½ï¿½ ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚É“oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
+ * Squirrel ‚Ì ƒOƒ[ƒoƒ‹‹óŠÔ‚É“o˜^ˆ—‚ğs‚¤
  */
 static void registglobal(HSQUIRRELVM v, const SQChar *name, tTJSVariant &variant)
 {
@@ -53,7 +53,7 @@ static void registglobal(HSQUIRRELVM v, const SQChar *name, tTJSVariant &variant
 }
 
 /**
- * Squirrel ï¿½ï¿½ ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½íœï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
+ * Squirrel ‚Ì ƒOƒ[ƒoƒ‹‹óŠÔ‚©‚çíœˆ—‚ğs‚¤
  */
 static void unregistglobal(HSQUIRRELVM v, const SQChar *name)
 {
@@ -67,7 +67,7 @@ static void unregistglobal(HSQUIRRELVM v, const SQChar *name)
 
 #include "../json/Writer.hpp"
 
-// squirrel ï¿½\ï¿½ï¿½ï¿½ê——
+// squirrel —\–ñŒêˆê——
 static const char *reservedKeys[] = 
 {
 	"break",
@@ -112,10 +112,10 @@ static const char *reservedKeys[] =
 #include <set>
 using namespace std;
 
-// ï¿½\ï¿½ï¿½ï¿½ê——
+// —\–ñŒêˆê——
 set<ttstr> reserved;
 
-// ï¿½\ï¿½ï¿½ï¿½Ì“oï¿½^
+// —\–ñŒê‚Ì“o˜^
 static void initReserved()
 {
 	const char **p = reservedKeys;
@@ -125,7 +125,7 @@ static void initReserved()
 	}
 }
 
-// ï¿½\ï¿½ï¿½ê‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+// —\–ñŒê‚©‚Ç‚¤‚©
 static bool isReserved(const tjs_char *key)
 {
 	return reserved.find(ttstr(key)) != reserved.end();
@@ -186,9 +186,9 @@ quoteString(const tjs_char *str, IWriter *writer)
 static void getVariantString(tTJSVariant &var, IWriter *writer);
 
 /**
- * ï¿½ï¿½ï¿½ï¿½ï¿½Ì“ï¿½ï¿½eï¿½\ï¿½ï¿½ï¿½pï¿½ÌŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½bï¿½N
+ * «‘‚Ì“à—e•\¦—p‚ÌŒÄ‚Ño‚µƒƒWƒbƒN
  */
-class DictMemberDispCaller : public tTJSDispatch /** EnumMembers ï¿½p */
+class DictMemberDispCaller : public tTJSDispatch /** EnumMembers —p */
 {
 protected:
 	IWriter *writer;
@@ -242,10 +242,10 @@ static void getDictString(iTJSDispatch2 *dict, IWriter *writer)
 	writer->write((tjs_char)'}');
 }
 
-// Array ï¿½Nï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½o
+// Array ƒNƒ‰ƒXƒƒ“ƒo
 static iTJSDispatch2 *ArrayCountProp   = NULL;   // Array.count
 
-// ï¿½zï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½æ“¾
+// ”z—ñ‚Ì”‚ğæ“¾
 tjs_int getArrayCount(iTJSDispatch2 *array) {
 	tTJSVariant result;
 	if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, array))) {
@@ -254,7 +254,7 @@ tjs_int getArrayCount(iTJSDispatch2 *array) {
 	return 0;
 }
 
-// ï¿½zï¿½ñ‚©‚ç•¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾
+// ”z—ñ‚©‚ç•¶š—ñ‚ğæ“¾
 void getArrayString(iTJSDispatch2 *array, int idx, ttstr &store)
 {
 	tTJSVariant result;
@@ -323,7 +323,7 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 }
 
 //---------------------------------------------------------------------------
-// sqyurrel ï¿½Xï¿½ï¿½ï¿½bï¿½hï¿½ï¿½ï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½[ï¿½X
+// sqyurrel ƒXƒŒƒbƒhˆ——pƒCƒ“ƒ^[ƒtƒF[ƒX
 //---------------------------------------------------------------------------
 
 extern void sqobject_init(HSQUIRRELVM v);
@@ -331,7 +331,7 @@ extern void sqobject_main(int tick);
 extern void sqobject_fork(const char *filename);
 extern void sqobject_done();
 
-// Continuous Handelr ï¿½p
+// Continuous Handelr —p
 class SQThreadContinuous : public tTVPContinuousEventCallbackIntf {
 public:
 	SQThreadContinuous() {
@@ -354,7 +354,7 @@ void sqobject_stop()
 }
 
 //---------------------------------------------------------------------------
-// squirrel tjsï¿½Nï¿½ï¿½ï¿½Xï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½p
+// squirrel tjsƒNƒ‰ƒX“o˜^ˆ——p
 //---------------------------------------------------------------------------
 
 extern void sqtjsobj_init();
@@ -363,7 +363,7 @@ extern void sqtjsobj_regist(HSQUIRRELVM v, const tjs_char *className, tTJSVarian
 //---------------------------------------------------------------------------
 
 /**
- * Scripts ï¿½Nï¿½ï¿½ï¿½Xï¿½Ö‚ï¿½ Squirrel ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½\ï¿½bï¿½hï¿½Ì’Ç‰ï¿½
+ * Scripts ƒNƒ‰ƒX‚Ö‚Ì Squirrel Àsƒƒ\ƒbƒh‚Ì’Ç‰Á
  */
 class ScriptsSquirrel {
 
@@ -371,9 +371,9 @@ public:
 	ScriptsSquirrel(){};
 
 	/**
-	 * squirrel ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Ìï¿½ï¿½s
-	 * @param script ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½g
-	 * @return ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+	 * squirrel ƒXƒNƒŠƒvƒg‚ÌÀs
+	 * @param script ƒXƒNƒŠƒvƒg
+	 * @return ÀsŒ‹‰Ê
 	 */
 	static tjs_error TJS_INTF_METHOD exec(tTJSVariant *result,
 										  tjs_int numparams,
@@ -399,9 +399,9 @@ public:
 	}
 
 	/**
-	 * squirrel ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Ìƒtï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½s
-	 * @param filename ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
-	 * @return ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+	 * squirrel ƒXƒNƒŠƒvƒg‚Ìƒtƒ@ƒCƒ‹‚©‚ç‚ÌÀs
+	 * @param filename ƒtƒ@ƒCƒ‹–¼
+	 * @return ÀsŒ‹‰Ê
 	 */
 	static tjs_error TJS_INTF_METHOD execStorage(tTJSVariant *result,
 												 tjs_int numparams,
@@ -427,10 +427,10 @@ public:
 	}
 
 	/**
-	 * squirrel ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½bï¿½hï¿½ÌŒÄ‚Ñoï¿½ï¿½
-	 * @param name ï¿½ï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½
-	 * @param ... ï¿½ï¿½
-	 * @return ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+	 * squirrel ƒOƒ[ƒoƒ‹ƒƒ\ƒbƒh‚ÌŒÄ‚Ño‚µ
+	 * @param name ƒƒ\ƒbƒh–¼
+	 * @param ... ˆø”
+	 * @return ÀsŒ‹‰Ê
 	 */
 	static tjs_error TJS_INTF_METHOD call(tTJSVariant *result,
 										  tjs_int numparams,
@@ -439,10 +439,10 @@ public:
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
 		sq_pushroottable(vm);
 		sq_pushstring(vm, param[0]->GetString(), -1);
-		if (SQ_SUCCEEDED(sq_get(vm, -2))) { // ï¿½ï¿½ï¿½[ï¿½gï¿½eï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½ï¿½ï¿½æ“¾
+		if (SQ_SUCCEEDED(sq_get(vm, -2))) { // ƒ‹[ƒgƒe[ƒuƒ‹‚©‚çŠÖ”‚ğæ“¾
 			sq_pushroottable(vm); // this
 			int cnt=1;
-			for (int i=1;i<numparams;i++) {	// ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½^ï¿½Q
+			for (int i=1;i<numparams;i++) {	// ƒpƒ‰ƒ[ƒ^ŒQ
 				sq_pushvariant(vm, *param[i]);
 			}
 			if (SQ_SUCCEEDED(sq_call(vm, numparams, result ? SQTrue:SQFalse, SQTrue))) {
@@ -464,10 +464,10 @@ public:
 
 	
 	/**
-	 * squirrel ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ÌƒRï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	 * @param text ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	 * @store store ï¿½oï¿½Cï¿½iï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½
-	 * @return ï¿½Gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ void
+	 * squirrel ƒXƒNƒŠƒvƒg‚ÌƒRƒ“ƒpƒCƒ‹ˆ—
+	 * @param text ƒXƒNƒŠƒvƒg‚ªŠi”[‚³‚ê‚½•¶š—ñ
+	 * @store store ƒoƒCƒiƒŠƒNƒ[ƒWƒƒŠi”[æƒtƒ@ƒCƒ‹
+	 * @return ƒGƒ‰[•¶š—ñ‚Ü‚½‚Í void
 	 */
 	static tjs_error TJS_INTF_METHOD compile(tTJSVariant *result,
 											 tjs_int numparams,
@@ -488,10 +488,10 @@ public:
 	}
 
 	/**
-	 * Squirrel ï¿½Rï¿½[ï¿½hï¿½ÌƒRï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	 * @param ï¿½Rï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½
-	 * @store ï¿½oï¿½Cï¿½iï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½
-	 * @return ï¿½Gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ void
+	 * Squirrel ƒR[ƒh‚ÌƒRƒ“ƒpƒCƒ‹ˆ—
+	 * @param ƒRƒ“ƒpƒCƒ‹Œ³ƒtƒ@ƒCƒ‹
+	 * @store ƒoƒCƒiƒŠƒNƒ[ƒWƒƒŠi”[æƒtƒ@ƒCƒ‹
+	 * @return ƒGƒ‰[•¶š—ñ‚Ü‚½‚Í void
 	 */
 	static tjs_error TJS_INTF_METHOD compileStorage(tTJSVariant *result,
 													tjs_int numparams,
@@ -512,12 +512,12 @@ public:
 	}
 	
 	/**
-	 * squirrel ï¿½`ï¿½ï¿½ï¿½Å‚ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ì•Û‘ï¿½
-	 * @param filename ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
-	 * @param obj ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
-	 * @param utf true ï¿½È‚ï¿½ UTF-8 ï¿½Åoï¿½ï¿½
-	 * @param newline ï¿½ï¿½sï¿½Rï¿½[ï¿½h 0:CRLF 1:LF
-	 * @return ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+	 * squirrel Œ`®‚Å‚ÌƒIƒuƒWƒFƒNƒg‚Ì•Û‘¶
+	 * @param filename ƒtƒ@ƒCƒ‹–¼
+	 * @param obj ƒIƒuƒWƒFƒNƒg
+	 * @param utf true ‚È‚ç UTF-8 ‚Åo—Í
+	 * @param newline ‰üsƒR[ƒh 0:CRLF 1:LF
+	 * @return ÀsŒ‹‰Ê
 	 */
 	static tjs_error TJS_INTF_METHOD save(tTJSVariant *result,
 										  tjs_int numparams,
@@ -534,10 +534,10 @@ public:
 	}
 
 	/**
-	 * squirrel ï¿½`ï¿½ï¿½ï¿½Å•ï¿½ï¿½ï¿½ï¿½ï¿½
-	 * @param obj ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
-	 * @param newline ï¿½ï¿½sï¿½Rï¿½[ï¿½h 0:CRLF 1:LF
-	 * @return ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+	 * squirrel Œ`®‚Å•¶š—ñ‰»
+	 * @param obj ƒIƒuƒWƒFƒNƒg
+	 * @param newline ‰üsƒR[ƒh 0:CRLF 1:LF
+	 * @return ÀsŒ‹‰Ê
 	 */
 	static tjs_error TJS_INTF_METHOD toString(tTJSVariant *result,
 											  tjs_int numparams,
@@ -553,9 +553,9 @@ public:
 	}
 
 	/**
-	 * squirrel ï¿½Ì–ï¿½ï¿½Oï¿½ï¿½Ô‚É“oï¿½^
-	 * @param name ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½
-	 * @param obj ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
+	 * squirrel ‚Ì–¼‘O‹óŠÔ‚É“o˜^
+	 * @param name ƒIƒuƒWƒFƒNƒg–¼
+	 * @param obj ƒIƒuƒWƒFƒNƒg
 	 */
 	static tjs_error TJS_INTF_METHOD regist(tTJSVariant *result,
 											tjs_int numparams,
@@ -573,9 +573,9 @@ public:
 	}
 
 	/**
-	 * squirrel ï¿½Ì–ï¿½ï¿½Oï¿½ï¿½Ô‚ï¿½ï¿½ï¿½íœ
-	 * @param name ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½
-	 * @param obj ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½g
+	 * squirrel ‚Ì–¼‘O‹óŠÔ‚©‚çíœ
+	 * @param name ƒIƒuƒWƒFƒNƒg–¼
+	 * @param obj ƒIƒuƒWƒFƒNƒg
 	 */
 	static tjs_error TJS_INTF_METHOD unregist(tTJSVariant *result,
 											  tjs_int numparams,
@@ -587,11 +587,11 @@ public:
 	}
 
 	/**
-	 * Squirrel ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½Ô‚ï¿½ TJS2ï¿½ÌƒNï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Xï¿½Æ‚ï¿½ï¿½Ä“oï¿½^
-	 * @param className squirrelï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½Xï¿½ï¿½
-	 * @param tjsClassName TJSï¿½ï¿½ï¿½ÌƒNï¿½ï¿½ï¿½Xï¿½ï¿½
-	 * @param methods ï¿½ï¿½ï¿½\ï¿½bï¿½h/ï¿½vï¿½ï¿½ï¿½pï¿½eï¿½Bï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ name=value
-	 * value=0:ï¿½ï¿½ï¿½\ï¿½bï¿½h value=1:GETï¿½Ì‚İƒvï¿½ï¿½ï¿½pï¿½eï¿½B value=2:SETï¿½Ì‚İƒvï¿½ï¿½ï¿½pï¿½eï¿½B value=3:ï¿½vï¿½ï¿½ï¿½pï¿½eï¿½B
+	 * Squirrel ‚ÌƒOƒ[ƒoƒ‹‹óŠÔ‚É TJS2‚ÌƒNƒ‰ƒX‚ğƒNƒ‰ƒX‚Æ‚µ‚Ä“o˜^
+	 * @param className squirrel‘¤‚ÌƒNƒ‰ƒX–¼
+	 * @param tjsClassName TJS‘¤‚ÌƒNƒ‰ƒX–¼
+	 * @param methods ƒƒ\ƒbƒh/ƒvƒƒpƒeƒBî•ñ‚Ì«‘ name=value
+	 * value=0:ƒƒ\ƒbƒh value=1:GET‚Ì‚İƒvƒƒpƒeƒB value=2:SET‚Ì‚İƒvƒƒpƒeƒB value=3:ƒvƒƒpƒeƒB
 	 */
 	static tjs_error TJS_INTF_METHOD registClass(tTJSVariant *result,
 												 tjs_int numparams,
@@ -619,27 +619,27 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 };
 
 /**
- * Squirrel ï¿½p Continuous ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½X
- * ï¿½ï¿½ï¿½ï¿½ squirrel ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ Continuous ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ğ¶ï¿½ï¿½ï¿½ï¿½ï¿½
+ * Squirrel —p Continuous ƒnƒ“ƒhƒ‰ƒNƒ‰ƒX
+ * ’¼Ú squirrel ‚Ìƒƒ\ƒbƒh‚ğŒÄ‚Ño‚· Continuous ƒnƒ“ƒhƒ‰‚ğ¶¬‚·‚é
  */
 class SQContinuous : public tTVPContinuousEventCallbackIntf {
 
 protected:
-	// ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Qï¿½Æ•Ûï¿½ï¿½p
+	// “à•”ƒIƒuƒWƒFƒNƒgQÆ•Û—p
 	HSQOBJECT obj;
 
 public:
 	/**
-	 * ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
-	 * @param name ï¿½ï¿½ï¿½ï¿½
+	 * ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	 * @param name –¼Ì
 	 */
 	SQContinuous(const tjs_char *name) {
-		sq_resetobject(&obj);          // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		sq_resetobject(&obj);          // ƒnƒ“ƒhƒ‹‚ğ‰Šú‰»
 		sq_pushroottable(vm);
 		sq_pushstring(vm, name, -1);
-		if (SQ_SUCCEEDED(sq_get(vm, -2))) { // ï¿½ï¿½ï¿½[ï¿½gï¿½eï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½ï¿½ï¿½æ“¾
-			sq_getstackobj(vm, -1, &obj); // ï¿½Ê’u-1ï¿½ï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ğ“¾‚ï¿½
-			sq_addref(vm, &obj);          // ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ö‚ÌQï¿½Æ‚ï¿½Ç‰ï¿½
+		if (SQ_SUCCEEDED(sq_get(vm, -2))) { // ƒ‹[ƒgƒe[ƒuƒ‹‚©‚çŠÖ”‚ğæ“¾
+			sq_getstackobj(vm, -1, &obj); // ˆÊ’u-1‚©‚çƒIƒuƒWƒFƒNƒgƒnƒ“ƒhƒ‹‚ğ“¾‚é
+			sq_addref(vm, &obj);          // ƒIƒuƒWƒFƒNƒg‚Ö‚ÌQÆ‚ğ’Ç‰Á
 			sq_pop(vm, 2);
 		} else {
 			sq_pop(vm, 1);
@@ -648,7 +648,7 @@ public:
 	}
 
 	/**
-	 * ï¿½fï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	 * ƒfƒXƒgƒ‰ƒNƒ^
 	 */
 	~SQContinuous() {
 		stop();
@@ -656,7 +656,7 @@ public:
 	}
 
 	/**
-	 * ï¿½Ä‚Ñoï¿½ï¿½ï¿½Jï¿½n
+	 * ŒÄ‚Ño‚µŠJn
 	 */
 	void start() {
 		stop();
@@ -664,20 +664,20 @@ public:
 	}
 
 	/**
-	 * ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½~
+	 * ŒÄ‚Ño‚µ’â~
 	 */
 	void stop() {
 		TVPRemoveContinuousEventHook(this);
 	}
 
 	/**
-	 * Continuous ï¿½Rï¿½[ï¿½ï¿½ï¿½oï¿½bï¿½N
-	 * ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½É‚È‚Æ‚ï¿½ï¿½Éï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+	 * Continuous ƒR[ƒ‹ƒoƒbƒN
+	 * ‹g—¢‹g—¢‚ª‰É‚È‚Æ‚«‚Éí‚ÉŒÄ‚Î‚ê‚é
 	 */
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
 		sq_pushobject(vm, obj);
 		sq_pushroottable(vm);
-		sq_pushinteger(vm, (SQInteger)tick); // ï¿½Ø‚ï¿½Ì‚ÄŒï¿½ï¿½
+		sq_pushinteger(vm, (SQInteger)tick); // Ø‚èÌ‚ÄŒä–Æ
 		if (SQ_SUCCEEDED(sq_call(vm, 2, SQFalse, SQTrue))) {
 			sq_pop(vm, 1);
 		} else {
@@ -696,27 +696,27 @@ NCB_REGISTER_CLASS(SQContinuous) {
 
 
 /**
- * ï¿½ï¿½ï¿½ï¿½ squirrel ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½tï¿½@ï¿½ï¿½ï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½éƒ‰ï¿½bï¿½pï¿½[
- * ï¿½ÏŠï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½î‚³ï¿½ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½Ì‚ÅŒï¿½ï¿½Ç‚ï¿½
+ * ’¼Ú squirrel ‚ÌƒOƒ[ƒoƒ‹ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚ğŒÄ‚Ño‚·‚±‚Æ‚ª‚Å‚«‚éƒ‰ƒbƒp[
+ * •ÏŠ·ˆ—‚ğ‰î‚³‚¸‚Éˆ—‚Å‚«‚é‚Ì‚ÅŒø—¦‚ª—Ç‚¢
  */
 class SQFunction {
 
 protected:
-	// ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Qï¿½Æ•Ûï¿½ï¿½p
+	// “à•”ƒIƒuƒWƒFƒNƒgQÆ•Û—p
 	HSQOBJECT obj;
 
 public:
 	/**
-	 * ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
-	 * @param name ï¿½ï¿½ï¿½ï¿½
+	 * ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	 * @param name –¼Ì
 	 */
 	SQFunction(const tjs_char *name) {
-		sq_resetobject(&obj);          // ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		sq_resetobject(&obj);          // ƒnƒ“ƒhƒ‹‚ğ‰Šú‰»
 		sq_pushroottable(vm);
 		sq_pushstring(vm, name, -1);
-		if (SQ_SUCCEEDED(sq_get(vm, -2))) { // ï¿½ï¿½ï¿½[ï¿½gï¿½eï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½ï¿½ï¿½æ“¾
-			sq_getstackobj(vm, -1, &obj); // ï¿½Ê’u-1ï¿½ï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ğ“¾‚ï¿½
-			sq_addref(vm, &obj);          // ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ö‚ÌQï¿½Æ‚ï¿½Ç‰ï¿½
+		if (SQ_SUCCEEDED(sq_get(vm, -2))) { // ƒ‹[ƒgƒe[ƒuƒ‹‚©‚çŠÖ”‚ğæ“¾
+			sq_getstackobj(vm, -1, &obj); // ˆÊ’u-1‚©‚çƒIƒuƒWƒFƒNƒgƒnƒ“ƒhƒ‹‚ğ“¾‚é
+			sq_addref(vm, &obj);          // ƒIƒuƒWƒFƒNƒg‚Ö‚ÌQÆ‚ğ’Ç‰Á
 			sq_pop(vm, 2);
 		} else {
 			sq_pop(vm, 1);
@@ -725,14 +725,14 @@ public:
 	}
 
 	/**
-	 * ï¿½fï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	 * ƒfƒXƒgƒ‰ƒNƒ^
 	 */
 	~SQFunction() {
 		sq_release(vm, &obj);  
 	}
 
 	/**
-	 * ï¿½tï¿½@ï¿½ï¿½ï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÄŒÄ‚Ñoï¿½ï¿½
+	 * ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚Æ‚µ‚ÄŒÄ‚Ño‚µ
 	 */
 	static tjs_error TJS_INTF_METHOD call(tTJSVariant *result,
 										  tjs_int numparams,
@@ -740,7 +740,7 @@ public:
 										  SQFunction *objthis) {
 		sq_pushobject(vm, objthis->obj);
 		sq_pushroottable(vm); // this
-		for (int i=0;i<numparams;i++) { // ï¿½ï¿½
+		for (int i=0;i<numparams;i++) { // ˆø”
 			sq_pushvariant(vm, *param[i]);
 		}
 		if (SQ_SUCCEEDED(sq_call(vm, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
@@ -767,40 +767,40 @@ NCB_REGISTER_CLASS(SQFunction) {
 extern void sqbasic_init(HSQUIRRELVM v);
 
 /**
- * ï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½O
+ * “o˜^ˆ—‘O
  */
 static void PreRegistCallback()
 {
-	// Copyright ï¿½\ï¿½ï¿½
+	// Copyright •\¦
 	TVPAddImportantLog(ttstr(copyright));
-	// ï¿½\ï¿½ï¿½ï¿½oï¿½^
+	// —\–ñŒê“o˜^
 	initReserved();
-	// squirrel ï¿½oï¿½^
+	// squirrel “o˜^
 	vm = sq_open(1024);
 
-	// ï¿½fï¿½oï¿½bï¿½Oï¿½ï¿½ï¿½Ì—Lï¿½ï¿½
+	// ƒfƒoƒbƒOî•ñ‚Ì—LŒø‰»
 	sq_enabledebuginfo(vm, SQTrue);
 	
-	// ï¿½oï¿½Í—p
+	// o—Í—p
 	sq_setprintfunc(vm, printFunc);
-	// ï¿½ï¿½Oï¿½Ê’mï¿½ï¿½Lï¿½ï¿½ï¿½
+	// —áŠO’Ê’m‚ğ—LŒø‚É
 	sq_notifyallexceptions(vm, SQTrue);
 
-	// ï¿½ï¿½{ï¿½ï¿½ï¿½ï¿½
+	// Šî–{‰Šú‰»
 	sqbasic_init(vm);
 	sqobject_init(vm);
 	sqtjsobj_init();
 }
 
 /**
- * ï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * “o˜^ˆ—Œã
  */
 static void PostRegistCallback()
 {
-	// TJS ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
+	// TJS ‚ÌƒOƒ[ƒoƒ‹ƒIƒuƒWƒFƒNƒg‚ğæ“¾‚·‚é
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
 	if (global) {
-		// ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½ Squirrel ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½
+		// ‹g—¢‹g—¢‚ÌƒOƒ[ƒoƒ‹‚É Squirrel ‚ÌƒOƒ[ƒoƒ‹‚ğ“o˜^‚·‚é
 		{
 			tTJSVariant result;
 			sq_pushroottable(vm);
@@ -808,13 +808,13 @@ static void PostRegistCallback()
 			sq_pop(vm, 1);
 			global->PropSet(TJS_MEMBERENSURE, SQUIRREL_GLOBAL, NULL, &result, global);
 		}
-		// Squirrel ï¿½ï¿½ ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½É‹gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½
+		// Squirrel ‚Ì ƒOƒ[ƒoƒ‹‚É‹g—¢‹g—¢‚Ì ƒOƒ[ƒoƒ‹‚ğ“o˜^‚·‚é
 		tTJSVariant var(global, global);
 		registglobal(vm, KIRIKIRI_GLOBAL, var);
 		global->Release();
 	}
 
-	// Array.count ï¿½ï¿½ï¿½æ“¾
+	// Array.count ‚ğæ“¾
 	{
 		tTJSVariant varScripts;
 		TVPExecuteExpression(TJS_W("Array"), &varScripts);
@@ -832,7 +832,7 @@ static void PostRegistCallback()
 }
 
 /**
- * ï¿½Jï¿½ï¿½ï¿½O
+ * ŠJ•úˆ—‘O
  */
 static void PreUnregistCallback()
 {
@@ -844,27 +844,27 @@ static void PreUnregistCallback()
 		ArrayCountProp = NULL;
 	}
 	
-	// TJS ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
+	// TJS ‚ÌƒOƒ[ƒoƒ‹ƒIƒuƒWƒFƒNƒg‚ğæ“¾‚·‚é
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
 	if (global)	{
-		// Squirrel ï¿½ï¿½ ï¿½Oï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½oï¿½ï¿½ï¿½ï¿½ï¿½íœ
+		// Squirrel ‚Ì ƒOƒ[ƒoƒ‹‚©‚ç‹g—¢‹g—¢‚ÌƒOƒ[ƒoƒ‹‚ğíœ
 		unregistglobal(vm, KIRIKIRI_GLOBAL);
-		// squirrel ï¿½ï¿½ global ï¿½Ö‚Ì“oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// squirrel ‚Ì global ‚Ö‚Ì“o˜^‚ğ‰ğœ
 		global->DeleteMember(0, SQUIRREL_GLOBAL, NULL, global);
 		global->Release();
 	}
 }
 
 /**
- * ï¿½Jï¿½ï¿½ï¿½ï¿½
+ * ŠJ•úˆ—Œã
  */
 static void PostUnregistCallback()
 {
-	// squirrel ï¿½Iï¿½ï¿½
+	// squirrel I—¹
 	if (vm) {
 		sq_close(vm);
 	}
-	TVPAddLog(L"squirrelï¿½Iï¿½ï¿½");
+	TVPAddLog(L"squirrelI—¹");
 }
 
 NCB_PRE_REGIST_CALLBACK(PreRegistCallback);

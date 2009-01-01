@@ -39,7 +39,7 @@ inline bool operator <(const TCharacterItem &x, const TCharacterItem &y)
 //---------------------------------------------------------------------------
 class TFontMakerWriteForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TProgressBar *ProgressBar;
 	TButton *CancelButton;
 	TTimer *Timer;
@@ -47,7 +47,7 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	AnsiString FileName;
 	bool Canceled;
 	TCanvas *TargetCanvas;
@@ -58,7 +58,7 @@ private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	bool Vertical;
 	TStream * OutStream;
 	std::vector<TCharacterItem> Items;
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TFontMakerWriteForm(TComponent* Owner,
 		AnsiString outfile, TCanvas * font, TCanvas * privfont,
 		bool antialiased, bool vertical, const wchar_t *list, int listcount);

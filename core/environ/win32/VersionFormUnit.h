@@ -21,7 +21,7 @@
 //---------------------------------------------------------------------------
 class TTVPVersionForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
     TButton *OKButton;
     TRichEdit *Memo;
     TPopupMenu *PopupMenu;
@@ -30,8 +30,8 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
     void __fastcall PopupMenuPopup(TObject *Sender);
     void __fastcall CopyMenuItemClick(TObject *Sender);
     void __fastcall CopyEnvInfoButtonClick(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
     __fastcall TTVPVersionForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------

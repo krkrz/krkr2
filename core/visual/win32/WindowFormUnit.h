@@ -82,7 +82,7 @@ class tTVPWheelDirectInputDevice; // class for DirectInputDevice management
 class tTVPPadDirectInputDevice; // class for DirectInputDevice management
 class TTVPWindowForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TScrollBox *ScrollBox;
 	TMainMenu *MainMenu;
 	TPopupMenu *PopupMenu;
@@ -126,9 +126,9 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	void __fastcall FormActivate(TObject *Sender);
 	void __fastcall FormResize(TObject *Sender);
 
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	bool InMode;
 	bool Focusable;
 
@@ -225,7 +225,7 @@ private:
 
 private:
 
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	//-- interface to plugin
 private:
 	void CallWindowDetach(bool close);

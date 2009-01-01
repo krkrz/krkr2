@@ -107,7 +107,7 @@ void tTJSLocalSymbolList::Remove(const tjs_char *name)
 // tTJSLocalNamespace
 //---------------------------------------------------------------------------
 /*
-ÔøΩ@a class for compile-time local variables look-up
+Å@a class for compile-time local variables look-up
 */
 #ifdef TJS_DEBUG_PROFILE_TIME
 tjs_uint time_ns_Push = 0;

@@ -13,7 +13,7 @@
 //---------------------------------------------------------------------------
 #include "WaveLoopManager.h"
 //---------------------------------------------------------------------------
-// ï¿½vï¿½ï¿½ï¿½gï¿½^ï¿½Cï¿½v
+// ƒvƒƒgƒ^ƒCƒv
 typedef DWORD __fastcall (__closure *TGetPCMDataEvent)
 	(__int16 * Buffer, DWORD Offset, DWORD Samples);
 void __fastcall InitDirectSound(HWND wnd);

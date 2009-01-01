@@ -20,7 +20,7 @@
 class TWaveReader;
 class TWaveWriterForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TProgressBar *ProgressBar;
 	TButton *CancelButton;
 	TLabel *Label;
@@ -30,14 +30,14 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 	void __fastcall TimerTimer(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	bool CloseLock;
 	bool UserBreak;
 	void __fastcall WriteWaveData(TWaveReader *reader, int start, int length,
 		AnsiString filename);
 
 
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	TWaveReader * WaveReader;
 	int Start;
 	int Length;

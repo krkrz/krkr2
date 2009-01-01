@@ -19,7 +19,7 @@ void __fastcall ShowJPEGQualityForm(TForm *parent, int & quality);
 //---------------------------------------------------------------------------
 class TJPEGQualityForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TLabel *Label1;
 	TTrackBar *TrackBar;
 	TLabel *Label2;
@@ -32,8 +32,8 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TButton *CancelButton;
 	void __fastcall TrackBarChange(TObject *Sender);
 	void __fastcall RestoreDefaultButtonClick(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TJPEGQualityForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------

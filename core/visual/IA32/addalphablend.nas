@@ -2,7 +2,7 @@
 ; this is a part of TVP (KIRIKIRI) software source.
 ; see other sources for license.
 ; (C)2001-2009 W.Dee <dee@kikyou.info> and contributors
-; ï¿½cï¿½ï¿½ï¿½Þ‚ï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½gï¿½Gï¿½fï¿½Bï¿½^ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½È‚ï¿½ï¿½Æ‚ï¿½UTF-7ï¿½Æ‚ï¿½ï¿½ÄŒï¿½Fï¿½ï¿½ï¿½È‚ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è‚¢ï¿½ï¿½ï¿½Ü‚ï¿½
+; c—Š‚Þ‚©‚çƒeƒLƒXƒgƒGƒfƒBƒ^‚³‚ñA­‚È‚­‚Æ‚àUTF-7‚Æ‚µ‚ÄŒë”F‚µ‚È‚¢‚Å‚­‚¾‚³‚¢‚¨Šè‚¢‚µ‚Ü‚·
 
 ; addive alpha blend
 

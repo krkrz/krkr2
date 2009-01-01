@@ -19,7 +19,7 @@
 //---------------------------------------------------------------------------
 class TConfSettingsForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TButton *OKButton;
 	TButton *CancelButton;
 	TConfMainFrame *ConfMainFrame;
@@ -29,8 +29,8 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	TLabel *FileWroteLabel;
 	TLabel *ProgramMayRunningLabel;
 	void __fastcall OKButtonClick(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TConfSettingsForm(TComponent* Owner, bool userconf);
 
 	bool __fastcall SelectFile();

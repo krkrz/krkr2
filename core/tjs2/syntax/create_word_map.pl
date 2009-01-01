@@ -2,7 +2,7 @@ $input_file = "dp_wordtable.txt";
 
 open FH, $input_file or die;
 
-;# ï¿½Pï¿½ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×‚Ä“Ç‚İï¿½ï¿½ï¿½
+;# ’PŒêƒtƒ@ƒCƒ‹‚ğ‚·‚×‚Ä“Ç‚İ‚Ş
 
 %words = ();
 
@@ -15,7 +15,7 @@ while($line = <FH>)
 	}
 }
 
-;# ï¿½Pï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éƒ\ï¿½[ï¿½gï¿½Aï¿½Ø‚ï¿½ switch ï¿½ï¿½ï¿½Å\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+;# ’PŒê‚ğ«‘‡‚Éƒ\[ƒgA–Ø‚ğ switch •¶‚Å\¬‚·‚é
 
 sub gen
 {
@@ -29,13 +29,13 @@ sub gen
 
 	if($#names == 0 && $names[0] eq "\b")
 	{
-		;# ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Aï¿½ï¿½ï¿½Â–ï¿½ï¿½[
+		;# ‘I‘ğ‚ªˆê‚Â‚µ‚©‚È‚¢A‚©‚Â––’[
 		($v, $tok) = split("\t", $list{"\b"});
 		return "${padding} if(!TJS_iswalpha(InputPointer[$level])) ".
 			"{ InputPointer += $level; yylex->val = $v; return $tok; }\n"
 	}
 
-	;# ï¿½Åï¿½ï¿½Ìˆê•¶ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾
+	;# Å‰‚Ìˆê•¶š‚ğæ“¾
 
 	$fc = '';
 	%newlist = ();
@@ -59,7 +59,7 @@ sub gen
 			{
 				if($fc eq "\b")
 				{
-					;# ï¿½ï¿½ï¿½[
+					;# ––’[
 					$deflist .= "${padding}default:\n";
 					($v, $tok) = split("\t", $list{"\b"});
 					$deflist .= "${padding} if(!TJS_iswalpha(InputPointer[$level])) ".
@@ -88,7 +88,7 @@ sub gen
 	{
 		if($fc eq "\b")
 		{
-			;# ï¿½ï¿½ï¿½[
+			;# ––’[
 			$deflist .= "${padding}default:\n";
 			($v, $tok) = split("\t", $list{"\b"});
 			$deflist .= "${padding} InputPointer += $level; yylex->val = $v; return $tok;\n";

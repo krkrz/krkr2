@@ -20,14 +20,14 @@
 //---------------------------------------------------------------------------
 class TEditLabelAttribFrame : public TFrame
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TLabel *Label1;
 	TEdit *LabelNameEdit;
 	void __fastcall LabelNameEditExit(TObject *Sender);
 	void __fastcall LabelNameEditKeyDown(TObject *Sender, WORD &Key,
           TShiftState Shift);
 	void __fastcall LabelNameEditChange(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	tTVPWaveLabel FLabel;
 	bool InLoading;
 	TNotifyEvent FOnInfoChanged;
@@ -35,7 +35,7 @@ private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 
 	void __fastcall AttribChanged();
 	void __fastcall CommitChanges();
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TEditLabelAttribFrame(TComponent* Owner);
 	void __fastcall SetLabel(const tTVPWaveLabel &label);
 	void __fastcall SetLabelInfo(tTVPWaveLabel &label);
