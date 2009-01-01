@@ -1,12 +1,12 @@
-// Movie.tjs - ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Äï¿½
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// Movie.tjs - ƒ€[ƒr[Ä¶
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 class Movie extends VideoOverlay
 {
 	var owner;
-	var lastStatus = "unload"; // ï¿½ï¿½ï¿½Oï¿½ÌƒXï¿½eï¿½[ï¿½^ï¿½X
+	var lastStatus = "unload"; // ’¼‘O‚ÌƒXƒe[ƒ^ƒX
 	var opened = false;
-	var id = 0; // ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gID
+	var id = 0; // ƒ€[ƒr[ƒIƒuƒWƒFƒNƒgID
 	var layerNumber = [];
 	var layerPage = [];
 	var storageName;
@@ -40,7 +40,7 @@ class Movie extends VideoOverlay
 				dic.enabledAudioStream = enabledAudioStream;
 			}
 
-			// dic.playRate // ï¿½Ûï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½H
+			// dic.playRate // •Û‚µ‚È‚¢•û‚ª—Ç‚¢H
 			dic.segmentLoopStartFrame = segmentLoopStartFrame;
 			dic.segmentLoopEndFrame = segmentLoopEndFrame;
 			dic.periodEventFrame = periodEventFrame;
@@ -84,7 +84,7 @@ class Movie extends VideoOverlay
 			if( dic.lastStatus != "unload" )
 			{
 				this.open( dic.storageName );
-				periodEventFrame = dic.periodEventFrame;	// ï¿½ï¿½ï¿½Ìİ’ï¿½Í•Kï¿½ï¿½ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Ésï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+				periodEventFrame = dic.periodEventFrame;	// ‚±‚Ìİ’è‚Í•K‚¸ƒtƒŒ[ƒ€‚æ‚è‘O‚És‚¤‚±‚Æ
 				if( dic.frame >= 0 )
 					frame = dic.frame;
 
@@ -116,36 +116,36 @@ class Movie extends VideoOverlay
 		var oldls = lastStatus;
 		lastStatus = status;
 
-		// ï¿½Xï¿½eï¿½[ï¿½^ï¿½Xï¿½Ì•ÏXï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒXƒe[ƒ^ƒX‚Ì•ÏX‚ª‚ ‚Á‚½
 		if(oldls == "play" && status == "stop")
 		{
-			owner.onMovieStop(id); // ï¿½ï¿½~ï¿½Ê’m
+			owner.onMovieStop(id); // ’â~’Ê’m
 			super.close();
 		} else if(oldls == "stop" && status == "play") {
-			owner.onMoviePlay(id); // ï¿½Jï¿½nï¿½Ê’m
+			owner.onMoviePlay(id); // ŠJn’Ê’m
 		}
 	}
 
 	function onPeriod(type)
 	{
-		// period ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// period ƒCƒxƒ“ƒg‚ª”­¶‚µ‚½
 		owner.onMoviePeriod(id,type);
 	}
 
 	function onCallbackCommand(cmd, arg)
 	{
-		// ï¿½Rï¿½[ï¿½ï¿½ï¿½oï¿½bï¿½Nï¿½Rï¿½}ï¿½ï¿½ï¿½h
+		// ƒR[ƒ‹ƒoƒbƒNƒRƒ}ƒ“ƒh
 		if(cmd == "Go")
 		{
 			var spos = arg.indexOf('/');
 			if(spos == -1)
 			{
-				// ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½Wï¿½wï¿½è‚ªï¿½È‚ï¿½
+				// ƒXƒgƒŒ[ƒWw’è‚ª‚È‚¢
 				owner.process('', '*' + arg);
 			}
 			else
 			{
-				// ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½Wï¿½wï¿½è‚ªï¿½ï¿½ï¿½ï¿½
+				// ƒXƒgƒŒ[ƒWw’è‚ª‚ ‚é
 				var label = arg.substring(spos + 1);
 				if(label != '') label = '*' + label;
 				owner.process(arg.substring(0, spos), label);
@@ -161,7 +161,7 @@ class Movie extends VideoOverlay
 	{
 		getter
 		{
-			// ï¿½Ò‚Ä‚é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+			// ‘Ò‚Ä‚é‚©‚Ç‚¤‚©
 			return lastStatus == "play";
 		}
 	}
@@ -176,7 +176,7 @@ class Movie extends VideoOverlay
 
 	function open(storage)
 	{
-		// open ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
+		// open ƒI[ƒo[ƒ‰ƒCƒh
 		this.storageName = storage;
 		opened = false;
 		var errmes, looped;
@@ -192,7 +192,7 @@ class Movie extends VideoOverlay
 			if (!opened && mode == vomMixer) {
 				try {
 					mode = vomOverlay;
-					Debug.notice(storage + ": VideoMixerï¿½ï¿½ï¿½ï¿½Overlayï¿½Öƒtï¿½Hï¿½[ï¿½ï¿½ï¿½oï¿½bï¿½Nï¿½ï¿½ï¿½Ü‚ï¿½: " + errmes);
+					Debug.notice(storage + ": VideoMixer‚©‚çOverlay‚ÖƒtƒH[ƒ‹ƒoƒbƒN‚µ‚Ü‚·: " + errmes);
 					looped = true;
 				} catch(e) {
 					errmes = e.message;
@@ -200,13 +200,13 @@ class Movie extends VideoOverlay
 			}
 		} while (looped);
 		if (!opened) {
-			dm("ï¿½ï¿½ï¿½[ï¿½rï¿½[ " + storage + " ï¿½ï¿½ï¿½Äï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : " + errmes);
+			dm("ƒ€[ƒr[ " + storage + " ‚ğÄ¶‚Å‚«‚Ü‚¹‚ñ : " + errmes);
 		}
 	}
 
 	function play(storage)
 	{
-		// play ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
+		// play ƒI[ƒo[ƒ‰ƒCƒh
 		try
 		{
 			if (!opened) {
@@ -219,7 +219,7 @@ class Movie extends VideoOverlay
 		catch(e)
 		{
 			if(e.message.indexOf(".dll") != -1) throw e;
-			dm("ï¿½ï¿½ï¿½[ï¿½rï¿½[ " + storage + " ï¿½ï¿½ï¿½Äï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : " +
+			dm("ƒ€[ƒr[ " + storage + " ‚ğÄ¶‚Å‚«‚Ü‚¹‚ñ : " +
 				e.message);
 			return;
 		}
@@ -233,21 +233,21 @@ class Movie extends VideoOverlay
 		catch(e)
 		{
 			if(e.message.indexOf(".dll") != -1) throw e;
-			dm("ï¿½ï¿½ï¿½[ï¿½rï¿½[ï¿½ï¿½ï¿½Äï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ : " + e.message);
+			dm("ƒ€[ƒr[‚ğÄ¶‚Å‚«‚Ü‚¹‚ñ : " + e.message);
 			return;
 		}
 	}
 
 	function stop()
 	{
-		// stop ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
+		// stop ƒI[ƒo[ƒ‰ƒCƒh
 		super.stop(...);
 		super.close();
 	}
 
 	function setOptions(elm)
 	{
-		// elm ï¿½ï¿½ï¿½ï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½
+		// elm ‚©‚çƒIƒvƒVƒ‡ƒ“‚ğİ’è
 		visible = +elm.visible if elm.visible !== void;
 		var l = left, t = top, w = width, h = height;
 		var set = false;

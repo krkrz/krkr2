@@ -1,10 +1,10 @@
-// YesNoDialog.tjs - ï¿½Í‚ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½Cï¿½Aï¿½ï¿½ï¿½Oï¿½{ï¿½bï¿½Nï¿½X
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// YesNoDialog.tjs - ‚Í‚¢/‚¢‚¢‚¦‚ğ‘I‘ğ‚·‚éƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 class YesNoDialogWindow extends Window
 {
-	var yesButton; // [ï¿½Í‚ï¿½] ï¿½{ï¿½^ï¿½ï¿½
-	var noButton; // [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½] ï¿½{ï¿½^ï¿½ï¿½
+	var yesButton; // [‚Í‚¢] ƒ{ƒ^ƒ“
+	var noButton; // [‚¢‚¢‚¦] ƒ{ƒ^ƒ“
 
 	var result = false; // no:false yes:true
 
@@ -12,10 +12,10 @@ class YesNoDialogWindow extends Window
 	{
 		super.Window();
 
-		// ï¿½ï¿½ï¿½ÌƒEï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Å‚Í‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½{ï¿½Iï¿½ï¿½drawerï¿½ï¿½pï¿½ï¿½ï¿½ï¿½
+		// ‚±‚ÌƒEƒBƒ“ƒhƒE‚Å‚Í‚à‚Á‚Æ‚àŠî–{“I‚Èdrawer‚ğ—p‚¢‚é
 		drawDevice.preferredDrawer = global.Window.PassThroughDrawDevice.dtDrawDib;
 
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½ï¿½ cursor**** ï¿½Ìï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+		// ƒƒCƒ“ƒEƒBƒ“ƒhƒE‚©‚ç cursor**** ‚Ìî•ñ‚ğ‚Æ‚Á‚Ä‚­‚é
 		if(global.Window.mainWindow !== null &&
 			typeof global.Window.mainWindow.cursorDefault != "undefined")
 			this.cursorDefault = global.Window.mainWindow.cursorDefault;
@@ -23,20 +23,20 @@ class YesNoDialogWindow extends Window
 			typeof global.Window.mainWindow.cursorPointed != "undefined")
 			this.cursorPointed = global.Window.mainWindow.cursorPointed;
 
-		// ï¿½Oï¿½ï¿½ï¿½Ì’ï¿½ï¿½ï¿½
+		// ŠOŒ©‚Ì’²®
 		borderStyle = bsDialog;
 		innerSunken = false;
 		caption = cap;
 		showScrollBars = false;
 
-		// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìì¬
+		// ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚Ìì¬
 		add(new Layer(this, null));
 
-		// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½Ìƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½İ’ï¿½
+		// ƒvƒ‰ƒCƒ}ƒŠ‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğİ’è
 		if(typeof this.cursorDefault !== "undefined")
 			primaryLayer.cursor = cursorDefault;
 
-		// ï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒTƒCƒY‚ğŒˆ’è
 		var tw = primaryLayer.font.getTextWidth(message);
 		var th = primaryLayer.font.getTextHeight(message);
 
@@ -44,7 +44,7 @@ class YesNoDialogWindow extends Window
 		if(w<200) w = 200;
 		var h = th*2 + 60;
 
-		// ï¿½gï¿½å—¦ï¿½Ìİ’ï¿½
+		// Šg‘å—¦‚Ìİ’è
 		if (kag.fullScreen) {
 			if (kag.innerWidth / kag.scWidth
 				< kag.innerHeight / kag.scHeight)
@@ -54,16 +54,16 @@ class YesNoDialogWindow extends Window
 		} else {
 		  setZoom(kag.zoomNumer, kag.zoomDenom);
 		}
-		// ï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒTƒCƒY‚ğŒˆ’è
 		setInnerSize(w * zoomNumer / zoomDenom,
 			 h * zoomNumer / zoomDenom);
 
-		// ï¿½vï¿½ï¿½ï¿½Cï¿½}ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½İ’ï¿½
+		// ƒvƒ‰ƒCƒ}ƒŠƒŒƒCƒ„‚ÌƒTƒCƒY‚ğİ’è
 		primaryLayer.width = w;
 		primaryLayer.height = h;
 		primaryLayer.colorRect(0, 0, w, h, clBtnFace, 255);
 
-		// ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ê’uï¿½Ì’ï¿½ï¿½ï¿½
+		// ƒEƒBƒ“ƒhƒEˆÊ’u‚Ì’²®
 		if(global.Window.mainWindow !== null && global.Window.mainWindow isvalid)
 		{
 			var win = global.Window.mainWindow;
@@ -81,12 +81,12 @@ class YesNoDialogWindow extends Window
 			setPos((System.screenWidth - width)>>1, (System.screenHeight - height)>>1);
 		}
 
-		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Ì•`ï¿½ï¿½
+		// ƒƒbƒZ[ƒW‚Ì•`‰æ
 		primaryLayer.drawText((w - tw)>>1, 14, message, clBtnText);
 
-		// Yesï¿½{ï¿½^ï¿½ï¿½
+		// Yesƒ{ƒ^ƒ“
 		add(yesButton = new ButtonLayer(this, primaryLayer));
-		yesButton.caption = "ï¿½Í‚ï¿½";
+		yesButton.caption = "‚Í‚¢";
 		yesButton.captionColor = clBtnText;
 		yesButton.width = 70;
 		yesButton.height = 25;
@@ -94,9 +94,9 @@ class YesNoDialogWindow extends Window
 		yesButton.left = (w - (70*2 + 10)>>1);
 		yesButton.visible = true;
 
-		// Noï¿½{ï¿½^ï¿½ï¿½
+		// Noƒ{ƒ^ƒ“
 		add(noButton = new ButtonLayer(this, primaryLayer));
-		noButton.caption = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+		noButton.caption = "‚¢‚¢‚¦";
 		noButton.captionColor = clBtnText;
 		noButton.width = 70;
 		noButton.height = 25;
@@ -129,7 +129,7 @@ class YesNoDialogWindow extends Window
 		}
 		else if(ev.type == "onKeyDown" && ev.target === this)
 		{
-			// ï¿½pï¿½bï¿½hï¿½ï¿½Í‚É‘Î‰ï¿½ï¿½ï¿½ï¿½éˆï¿½ï¿½
+			// ƒpƒbƒh“ü—Í‚É‘Î‰‚·‚éˆ—
 			switch(ev.key)
 			{
 			case VK_PADLEFT:
@@ -163,16 +163,16 @@ class YesNoDialogWindow extends Window
 		super.onKeyDown(...);
 		if(key == VK_ESCAPE)
 		{
-			// ESC ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
-			// ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Æ‚ï¿½ï¿½Äï¿½ï¿½ï¿½
+			// ESC ƒL[‚ª‰Ÿ‚³‚ê‚½
+			// u‚¢‚¢‚¦v‚Æ‚µ‚Äˆ—
 			result = false;
 			close();
 		}
 	}
 }
 
-// Yes ï¿½ï¿½ No ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½ï¿½è‚³ï¿½ï¿½ï¿½ï¿½Öï¿½
-function askYesNo(message, caption = "ï¿½mï¿½F")
+// Yes ‚© No ‚©‚Í‚Á‚«‚è‚³‚¹‚éŠÖ”
+function askYesNo(message, caption = "Šm”F")
 {
 	var win = new YesNoDialogWindow(message, caption);
 	win.showModal();

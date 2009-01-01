@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 /*
-	Risa [ï¿½è‚³]      alias ï¿½gï¿½ï¿½ï¿½gï¿½ï¿½3 [kirikiri-3]
+	Risa [‚è‚³]      alias ‹g—¢‹g—¢3 [kirikiri-3]
 	 stands for "Risa Is a Stagecraft Architecture"
 	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
@@ -8,30 +8,30 @@
 */
 //---------------------------------------------------------------------------
 //! @file
-//! @brief ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½éŽ©ï¿½Æï¿½ï¿½eï¿½ï¿½ï¿½vï¿½ï¿½ï¿½[ï¿½gï¿½Nï¿½ï¿½ï¿½X
+//! @brief ƒŠƒ“ƒOƒoƒbƒtƒ@‚ðŽÀŒ»‚·‚éŽ©‰Æ»ƒeƒ“ƒvƒŒ[ƒgƒNƒ‰ƒX
 //---------------------------------------------------------------------------
 #ifndef RingBufferH
 #define RingBufferH
 
 #include <stddef.h>
 /*
-	ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@, ring buffer, circular buffer, ï¿½Âï¿½oï¿½bï¿½tï¿½@
+	ƒŠƒ“ƒOƒoƒbƒtƒ@, ring buffer, circular buffer, ŠÂóƒoƒbƒtƒ@
 */
 
 //---------------------------------------------------------------------------
-//! @brief		ï¿½Å’è’·ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½oï¿½bï¿½tï¿½@ï¿½ÌŽï¿½ï¿½ï¿½
+//! @brief		ŒÅ’è’·ƒŠƒ“ƒOƒoƒbƒtƒ@‚ÌŽÀ‘•
 //---------------------------------------------------------------------------
 template <typename T>
 class tRisaRingBuffer
 {
-	T * Buffer; //!< ï¿½oï¿½bï¿½tï¿½@
-	size_t Size; //!< ï¿½oï¿½bï¿½tï¿½@ï¿½ÌƒTï¿½Cï¿½Y
-	size_t WritePos; //!< ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝˆÊ’u
-	size_t ReadPos; //!< ï¿½Ç‚Ýï¿½ï¿½ÝˆÊ’u
-	size_t DataSize; //!< ï¿½oï¿½bï¿½tï¿½@ï¿½É“ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ÌƒTï¿½Cï¿½Y
+	T * Buffer; //!< ƒoƒbƒtƒ@
+	size_t Size; //!< ƒoƒbƒtƒ@‚ÌƒTƒCƒY
+	size_t WritePos; //!< ‘‚«ž‚ÝˆÊ’u
+	size_t ReadPos; //!< “Ç‚Ýž‚ÝˆÊ’u
+	size_t DataSize; //!< ƒoƒbƒtƒ@‚É“ü‚Á‚Ä‚¢‚éƒf[ƒ^‚ÌƒTƒCƒY
 
 public:
-	//! @brief ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	//! @brief ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 	tRisaRingBuffer(size_t size)
 	{
 		Size = size;
@@ -40,40 +40,40 @@ public:
 		DataSize = 0;
 	}
 
-	//! @brief ï¿½fï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	//! @brief ƒfƒXƒgƒ‰ƒNƒ^
 	~tRisaRingBuffer()
 	{
 		delete [] Buffer;
 	}
 
-	//! @brief	ï¿½Tï¿½Cï¿½Yï¿½ð“¾‚ï¿½
+	//! @brief	ƒTƒCƒY‚ð“¾‚é
 	size_t GetSize() { return Size; }
 
-	//! @brief	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝˆÊ’uï¿½ð“¾‚ï¿½
+	//! @brief	‘‚«ž‚ÝˆÊ’u‚ð“¾‚é
 	size_t GetWritePos() { return WritePos; }
 
-	//! @brief	ï¿½Ç‚Ýï¿½ï¿½ÝˆÊ’uï¿½ð“¾‚ï¿½
+	//! @brief	“Ç‚Ýž‚ÝˆÊ’u‚ð“¾‚é
 	size_t GetReadPos() { return ReadPos; }
 
-	//! @brief	ï¿½oï¿½bï¿½tï¿½@ï¿½É“ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ÌƒTï¿½Cï¿½Yï¿½ð“¾‚ï¿½
+	//! @brief	ƒoƒbƒtƒ@‚É“ü‚Á‚Ä‚¢‚éƒf[ƒ^‚ÌƒTƒCƒY‚ð“¾‚é
 	size_t GetDataSize() { return DataSize; }
 
-	//! @brief	ï¿½oï¿½bï¿½tï¿½@ï¿½Ì‹ó‚«—eï¿½Ê‚ð“¾‚ï¿½
+	//! @brief	ƒoƒbƒtƒ@‚Ì‹ó‚«—e—Ê‚ð“¾‚é
 	size_t GetFreeSize() { return Size - DataSize; }
 
-	//! @brief	ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½Ç‚Ýï¿½ï¿½Þ‚ï¿½ï¿½ß‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ð“¾‚ï¿½
-	//! @param	readsize ï¿½Ç‚Ýï¿½ï¿½Ý‚ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ ( 1 ï¿½Èï¿½Ìï¿½ï¿½ï¿½; 0 ï¿½ï¿½nï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ )
-	//! @param	p1		ï¿½uï¿½ï¿½ï¿½bï¿½N1ï¿½Ìæ“ªï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ì•Ïï¿½
-	//! @param	p1size	p1ï¿½Ì•\ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒTï¿½Cï¿½Y
-	//! @param	p2		ï¿½uï¿½ï¿½ï¿½bï¿½N2ï¿½Ìæ“ªï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ì•Ïï¿½(NULLï¿½ï¿½ï¿½ï¿½ï¿½è“¾ï¿½ï¿½)
-	//! @param	p2size	p2ï¿½Ì•\ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒTï¿½Cï¿½Y(0ï¿½ï¿½ï¿½ï¿½ï¿½è“¾ï¿½ï¿½)
-	//! @param	offset	ReadPos ï¿½É‰ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½tï¿½Zï¿½bï¿½g
-	//! @note	ï¿½Âï¿½oï¿½bï¿½tï¿½@ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Aï¿½ï¿½ï¿½Û‚Íƒï¿½ï¿½jï¿½Aï¿½È—Ìˆï¿½Éƒoï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½mï¿½Û‚ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
-	//!			ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ßA ReadPos + readsize ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ÌIï¿½[ï¿½ð’´‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ê‡ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	//!			ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½Í‚Qï¿½Â‚É•ï¿½ï¿½fï¿½ï¿½ï¿½ï¿½é‚±ï¿½Æ‚É‚È‚ï¿½B
-	//!			ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ÍAreadsizeï¿½ï¿½ï¿½ï¿½ï¿½Û‚Éƒoï¿½bï¿½tï¿½@ï¿½É“ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ÌƒTï¿½Cï¿½Yï¿½È‰ï¿½ï¿½Å‚ï¿½ï¿½é‚©
-	//!			ï¿½È‚Ç‚Ìƒ`ï¿½Fï¿½bï¿½Nï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½È‚ï¿½ï¿½Bï¿½ï¿½ï¿½Oï¿½ï¿½ GetDataSize ï¿½ð’²‚×Aï¿½Ç‚Ýï¿½ï¿½Ý‚ï¿½ï¿½ï¿½
-	//!			ï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½Û‚Éƒoï¿½bï¿½tï¿½@ï¿½É‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½é‚±ï¿½ÆB
+	//! @brief	ƒoƒbƒtƒ@‚©‚ç“Ç‚Ýž‚Þ‚½‚ß‚Ìƒ|ƒCƒ“ƒ^‚ð“¾‚é
+	//! @param	readsize “Ç‚Ýž‚Ý‚½‚¢ƒf[ƒ^” ( 1 ˆÈã‚Ì®”; 0 ‚ð“n‚³‚È‚¢‚±‚Æ )
+	//! @param	p1		ƒuƒƒbƒN1‚Ìæ“ª‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ðŠi”[‚·‚é‚½‚ß‚Ì•Ï”
+	//! @param	p1size	p1‚Ì•\‚·ƒuƒƒbƒN‚ÌƒTƒCƒY
+	//! @param	p2		ƒuƒƒbƒN2‚Ìæ“ª‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ðŠi”[‚·‚é‚½‚ß‚Ì•Ï”(NULL‚ª‚ ‚è“¾‚é)
+	//! @param	p2size	p2‚Ì•\‚·ƒuƒƒbƒN‚ÌƒTƒCƒY(0‚ª‚ ‚è“¾‚é)
+	//! @param	offset	ReadPos ‚É‰ÁŽZ‚³‚ê‚éƒIƒtƒZƒbƒg
+	//! @note	ŠÂóƒoƒbƒtƒ@‚Æ‚¢‚Á‚Ä‚àAŽÀÛ‚ÍƒŠƒjƒA‚È—Ìˆæ‚Éƒoƒbƒtƒ@‚ªŠm•Û‚³‚ê‚Ä‚¢‚éB
+	//!			‚»‚Ì‚½‚ßA ReadPos + readsize ‚ªƒoƒbƒtƒ@‚ÌI’[‚ð’´‚¦‚Ä‚¢‚éê‡A“¾‚½‚¢
+	//!			ƒuƒƒbƒN‚Í‚Q‚Â‚É•ª’f‚³‚ê‚é‚±‚Æ‚É‚È‚éB
+	//!			‚±‚Ìƒƒ\ƒbƒh‚ÍAreadsize‚ªŽÀÛ‚Éƒoƒbƒtƒ@‚É“ü‚Á‚Ä‚¢‚éƒf[ƒ^‚ÌƒTƒCƒYˆÈ‰º‚Å‚ ‚é‚©
+	//!			‚È‚Ç‚Ìƒ`ƒFƒbƒN‚Í‚¢‚Á‚³‚¢s‚í‚È‚¢BŽ–‘O‚É GetDataSize ‚ð’²‚×A“Ç‚Ýž‚Ý‚½‚¢
+	//!			ƒTƒCƒY‚ªŽÀÛ‚Éƒoƒbƒtƒ@‚É‚ ‚é‚©‚Ç‚¤‚©‚ðƒ`ƒFƒbƒN‚·‚é‚±‚ÆB
 	void GetReadPointer(size_t readsize,
 						const T * & p1, size_t &p1size,
 						const T * & p2, size_t &p2size,
@@ -83,8 +83,8 @@ public:
 		while(pos >= Size) pos -= Size;
 		if(readsize + pos > Size)
 		{
-			// readsize + pos ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ÌIï¿½[ï¿½ð’´‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
-			//  ï¿½ï¿½ ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½2ï¿½ï¿½
+			// readsize + pos ‚ªƒoƒbƒtƒ@‚ÌI’[‚ð’´‚¦‚Ä‚¢‚é
+			//  ¨ •Ô‚³‚ê‚éƒuƒƒbƒN‚Í2‚Â
 			p1 = pos + Buffer;
 			p1size = Size - pos;
 			p2 = Buffer;
@@ -92,8 +92,8 @@ public:
 		}
 		else
 		{
-			// readsize + pos ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ÌIï¿½[ï¿½ð’´‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½
-			//  ï¿½ï¿½ ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½1ï¿½ï¿½
+			// readsize + pos ‚ªƒoƒbƒtƒ@‚ÌI’[‚ð’´‚¦‚Ä‚¢‚È‚¢
+			//  ¨ •Ô‚³‚ê‚éƒuƒƒbƒN‚Í1‚Â
 			p1 = pos + Buffer;
 			p1size = readsize;
 			p2 = NULL;
@@ -101,10 +101,10 @@ public:
 		}
 	}
 
-	//! @brief	ï¿½Ç‚Ýï¿½ï¿½Ýƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½iï¿½ß‚ï¿½
-	//! @param	advance		ï¿½iï¿½ß‚ï¿½vï¿½fï¿½ï¿½
-	//! @note	ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ÍŽï¿½ï¿½Û‚ï¿½ advance < GetDataSize() ï¿½Å‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½È‚ï¿½ï¿½B
-	//!			ï¿½Kï¿½vï¿½È‚ï¿½ÎŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Åƒ`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½é‚±ï¿½ÆB
+	//! @brief	“Ç‚Ýž‚Ýƒ|ƒCƒ“ƒ^‚ði‚ß‚é
+	//! @param	advance		i‚ß‚é—v‘f”
+	//! @note	‚±‚Ìƒƒ\ƒbƒh‚ÍŽÀÛ‚É advance < GetDataSize() ‚Å‚ ‚é‚±‚Æ‚ðŠm”F‚µ‚È‚¢B
+	//!			•K—v‚È‚ç‚ÎŒÄ‚Ño‚µ‘¤‚Åƒ`ƒFƒbƒN‚·‚é‚±‚ÆB
 	void AdvanceReadPos(size_t advance = 1)
 	{
 		ReadPos += advance;
@@ -112,21 +112,21 @@ public:
 		DataSize -= advance;
 	}
 
-	//! @brief	ï¿½Åï¿½ï¿½Ì—vï¿½fï¿½ï¿½Ô‚ï¿½
-	//! @return	ï¿½Åï¿½ï¿½Ì—vï¿½fï¿½Ö‚ÌŽQï¿½ï¿½
-	//! @note	ï¿½Åï¿½ï¿½Ì—vï¿½fï¿½Ö‚ÌŽQï¿½Æ‚ï¿½ï¿½Aï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Bï¿½vï¿½fï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½É–ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Í–ï¿½ï¿½ï¿½È—vï¿½f
-	//!			(ï¿½Aï¿½Nï¿½Zï¿½Xï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½vï¿½f)ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ÅAï¿½ï¿½ï¿½Oï¿½Éƒoï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½É—vï¿½fï¿½ï¿½1ï¿½ÂˆÈï¿½
-	//!			ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½é‚±ï¿½ÆBï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½Í“Ç‚Ýï¿½ï¿½Ýƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+	//! @brief	Å‰‚Ì—v‘f‚ð•Ô‚·
+	//! @return	Å‰‚Ì—v‘f‚Ö‚ÌŽQÆ
+	//! @note	Å‰‚Ì—v‘f‚Ö‚ÌŽQÆ‚ª‹A‚Á‚Ä‚­‚éB—v‘f‚ªƒoƒbƒtƒ@“à‚É–³‚¢‚Æ‚«‚Í–³Œø‚È—v‘f
+	//!			(ƒAƒNƒZƒX‚Å‚«‚È‚¢—v‘f)‚ª‹A‚Á‚Ä‚­‚é‚Ì‚ÅAŽ–‘O‚Éƒoƒbƒtƒ@“à‚É—v‘f‚ª1‚ÂˆÈã
+	//!			‘¶Ý‚·‚é‚±‚Æ‚ðŠm”F‚·‚é‚±‚ÆB‚±‚Ìƒƒ\ƒbƒh‚Í“Ç‚Ýž‚Ýƒ|ƒCƒ“ƒ^‚ðˆÚ“®‚µ‚È‚¢B
 	const T & GetFirst() const
 	{
 		size_t pos = ReadPos;
 		return Buffer[pos];
 	}
 
-	//! @brief	nï¿½Ô–Ú‚Ì—vï¿½fï¿½ï¿½Ô‚ï¿½
-	//! @return	nï¿½Ô–Ú‚Ì—vï¿½fï¿½Ö‚ÌŽQï¿½ï¿½
-	//! @note	nï¿½Ô–Ú‚Ì—vï¿½fï¿½Ö‚ÌŽQï¿½Æ‚ï¿½ï¿½Aï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Bï¿½vï¿½fï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½É–ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ÍˆÍŠOï¿½ÌŽï¿½
-	//!			ï¿½Ì“ï¿½ï¿½ï¿½Í–ï¿½ï¿½ï¿½`ï¿½Å‚ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½Í“Ç‚Ýï¿½ï¿½Ýƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+	//! @brief	n”Ô–Ú‚Ì—v‘f‚ð•Ô‚·
+	//! @return	n”Ô–Ú‚Ì—v‘f‚Ö‚ÌŽQÆ
+	//! @note	n”Ô–Ú‚Ì—v‘f‚Ö‚ÌŽQÆ‚ª‹A‚Á‚Ä‚­‚éB—v‘f‚ªƒoƒbƒtƒ@“à‚É–³‚¢‚Æ‚«‚â”ÍˆÍŠO‚ÌŽž
+	//!			‚Ì“®ì‚Í–¢’è‹`‚Å‚ ‚éB‚±‚Ìƒƒ\ƒbƒh‚Í“Ç‚Ýž‚Ýƒ|ƒCƒ“ƒ^‚ðˆÚ“®‚µ‚È‚¢B
 	const T & GetAt(size_t n) const
 	{
 		size_t pos = ReadPos + n;
@@ -134,14 +134,14 @@ public:
 		return Buffer[pos];
 	}
 
-	//! @brief	ï¿½oï¿½bï¿½tï¿½@ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ‚ï¿½ï¿½ß‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ð“¾‚ï¿½
-	//! @param	writesize ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý‚ï¿½ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ ( 1 ï¿½Èï¿½Ìï¿½ï¿½ï¿½; 0 ï¿½ï¿½nï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ )
-	//! @param	p1		ï¿½uï¿½ï¿½ï¿½bï¿½N1ï¿½Ìæ“ªï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ì•Ïï¿½
-	//! @param	p1size	p1ï¿½Ì•\ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒTï¿½Cï¿½Y
-	//! @param	p2		ï¿½uï¿½ï¿½ï¿½bï¿½N2ï¿½Ìæ“ªï¿½Ö‚Ìƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½iï¿½[ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ì•Ïï¿½(NULLï¿½ï¿½ï¿½ï¿½ï¿½è“¾ï¿½ï¿½)
-	//! @param	p2size	p2ï¿½Ì•\ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ÌƒTï¿½Cï¿½Y(0ï¿½ï¿½ï¿½ï¿½ï¿½è“¾ï¿½ï¿½)
-	//! @param	offset	WritePos ï¿½É‰ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½tï¿½Zï¿½bï¿½g
-	//! @note	GetReadPointerï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Qï¿½Æ‚Ì‚ï¿½ï¿½ï¿½
+	//! @brief	ƒoƒbƒtƒ@‚É‘‚«ž‚Þ‚½‚ß‚Ìƒ|ƒCƒ“ƒ^‚ð“¾‚é
+	//! @param	writesize ‘‚«ž‚Ý‚½‚¢ƒf[ƒ^” ( 1 ˆÈã‚Ì®”; 0 ‚ð“n‚³‚È‚¢‚±‚Æ )
+	//! @param	p1		ƒuƒƒbƒN1‚Ìæ“ª‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ðŠi”[‚·‚é‚½‚ß‚Ì•Ï”
+	//! @param	p1size	p1‚Ì•\‚·ƒuƒƒbƒN‚ÌƒTƒCƒY
+	//! @param	p2		ƒuƒƒbƒN2‚Ìæ“ª‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ðŠi”[‚·‚é‚½‚ß‚Ì•Ï”(NULL‚ª‚ ‚è“¾‚é)
+	//! @param	p2size	p2‚Ì•\‚·ƒuƒƒbƒN‚ÌƒTƒCƒY(0‚ª‚ ‚è“¾‚é)
+	//! @param	offset	WritePos ‚É‰ÁŽZ‚³‚ê‚éƒIƒtƒZƒbƒg
+	//! @note	GetReadPointer‚Ìà–¾‚àŽQÆ‚Ì‚±‚Æ
 	void GetWritePointer(size_t writesize,
 						T * & p1, size_t &p1size,
 						T * & p2, size_t &p2size,
@@ -151,8 +151,8 @@ public:
 		while(pos >= Size) pos -= Size;
 		if(writesize + pos > Size)
 		{
-			// writesize + pos ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ÌIï¿½[ï¿½ð’´‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
-			//  ï¿½ï¿½ ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½2ï¿½ï¿½
+			// writesize + pos ‚ªƒoƒbƒtƒ@‚ÌI’[‚ð’´‚¦‚Ä‚¢‚é
+			//  ¨ •Ô‚³‚ê‚éƒuƒƒbƒN‚Í2‚Â
 			p1 = pos + Buffer;
 			p1size = Size - pos;
 			p2 = Buffer;
@@ -160,8 +160,8 @@ public:
 		}
 		else
 		{
-			// writesize + pos ï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ÌIï¿½[ï¿½ð’´‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½
-			//  ï¿½ï¿½ ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½1ï¿½ï¿½
+			// writesize + pos ‚ªƒoƒbƒtƒ@‚ÌI’[‚ð’´‚¦‚Ä‚¢‚È‚¢
+			//  ¨ •Ô‚³‚ê‚éƒuƒƒbƒN‚Í1‚Â
 			p1 = pos + Buffer;
 			p1size = writesize;
 			p2 = NULL;
@@ -169,10 +169,10 @@ public:
 		}
 	}
 
-	//! @brief	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½iï¿½ß‚ï¿½
-	//! @param	advance		ï¿½iï¿½ß‚ï¿½vï¿½fï¿½ï¿½
-	//! @note	ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ÍŽï¿½ï¿½Û‚ï¿½ advance < GetFreeSize() ï¿½Å‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½mï¿½Fï¿½ï¿½ï¿½È‚ï¿½ï¿½B
-	//!			ï¿½Kï¿½vï¿½È‚ï¿½ÎŒÄ‚Ñoï¿½ï¿½ï¿½ï¿½ï¿½Åƒ`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½é‚±ï¿½ÆB
+	//! @brief	‘‚«ž‚Ýƒ|ƒCƒ“ƒ^‚ði‚ß‚é
+	//! @param	advance		i‚ß‚é—v‘f”
+	//! @note	‚±‚Ìƒƒ\ƒbƒh‚ÍŽÀÛ‚É advance < GetFreeSize() ‚Å‚ ‚é‚±‚Æ‚ðŠm”F‚µ‚È‚¢B
+	//!			•K—v‚È‚ç‚ÎŒÄ‚Ño‚µ‘¤‚Åƒ`ƒFƒbƒN‚·‚é‚±‚ÆB
 	void AdvanceWritePos(size_t advance = 1)
 	{
 		WritePos += advance;
@@ -180,9 +180,9 @@ public:
 		DataSize += advance;
 	}
 
-	//! @brief	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýƒ|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½iï¿½ßAï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Ó‚ê‚½ï¿½ï¿½æ“ªï¿½ï¿½ï¿½Ì‚Ä‚ï¿½
-	//! @param	advance		ï¿½iï¿½ß‚ï¿½vï¿½fï¿½ï¿½
-	//! @note	AdvanceWritePos ï¿½ÆˆÙ‚È‚ï¿½Aï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Ó‚ê‚½ï¿½ï¿½Aï¿½fï¿½[ï¿½^ï¿½Ìæ“ªï¿½ï¿½ï¿½Ì‚Ä‚ï¿½B
+	//! @brief	‘‚«ž‚Ýƒ|ƒCƒ“ƒ^‚ði‚ßAƒoƒbƒtƒ@‚ª‚ ‚Ó‚ê‚½‚çæ“ª‚ðŽÌ‚Ä‚é
+	//! @param	advance		i‚ß‚é—v‘f”
+	//! @note	AdvanceWritePos ‚ÆˆÙ‚È‚èAƒoƒbƒtƒ@‚ª‚ ‚Ó‚ê‚½‚çAƒf[ƒ^‚Ìæ“ª‚ðŽÌ‚Ä‚éB
 	void AdvanceWritePosWithDiscard(size_t advance = 1)
 	{
 		WritePos += advance;
@@ -194,11 +194,11 @@ public:
 		}
 	}
 
-	//! @brief	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝˆÊ’uï¿½Ì—vï¿½fï¿½ï¿½Ô‚ï¿½
-	//! @return	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝˆÊ’uï¿½Ì—vï¿½fï¿½Ö‚ÌŽQï¿½ï¿½
-	//! @note	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝˆÊ’uï¿½Ì—vï¿½fï¿½Ö‚ÌŽQï¿½Æ‚ï¿½ï¿½Aï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Bï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½Íƒoï¿½bï¿½tï¿½@ï¿½É‹ï¿½
-	//!			ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½Ìƒ`ï¿½Fï¿½bï¿½Nï¿½Ísï¿½ï¿½È‚ï¿½ï¿½Ì‚Å’ï¿½ï¿½Ó‚ï¿½ï¿½é‚±ï¿½ÆB
-	//!			ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½Íƒoï¿½bï¿½tï¿½@ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝˆÊ’uï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+	//! @brief	‘‚«ž‚ÝˆÊ’u‚Ì—v‘f‚ð•Ô‚·
+	//! @return	‘‚«ž‚ÝˆÊ’u‚Ì—v‘f‚Ö‚ÌŽQÆ
+	//! @note	‘‚«ž‚ÝˆÊ’u‚Ì—v‘f‚Ö‚ÌŽQÆ‚ª‹A‚Á‚Ä‚­‚éB‚±‚Ìƒƒ\ƒbƒh‚Íƒoƒbƒtƒ@‚É‹ó‚«
+	//!			‚ª‚ ‚é‚©‚Ç‚¤‚©‚Ìƒ`ƒFƒbƒN‚Ís‚í‚È‚¢‚Ì‚Å’ˆÓ‚·‚é‚±‚ÆB
+	//!			‚±‚Ìƒƒ\ƒbƒh‚Íƒoƒbƒtƒ@‚Ì‘‚«ž‚ÝˆÊ’u‚ðˆÚ“®‚µ‚È‚¢B
 	T & GetLast()
 	{
 		return Buffer[WritePos];

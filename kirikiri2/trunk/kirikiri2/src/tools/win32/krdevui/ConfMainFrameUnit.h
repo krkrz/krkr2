@@ -59,7 +59,7 @@ public:
 //---------------------------------------------------------------------------
 class TConfMainFrame : public TFrame
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TGroupBox *IconGroupBox;
 	TCheckBox *ChangeIconCheck;
 	TButton *RefIconButton;
@@ -89,10 +89,10 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	void __fastcall RestoreDefaultButtonClick(TObject *Sender);
 	void __fastcall InvisibleCheckBoxClick(TObject *Sender);
 	void __fastcall OptionValueEditChange(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	bool DescGot;
 
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	AnsiString SourceExe;
 	AnsiString TargetExe;
 

@@ -15,7 +15,7 @@
 extern void __fastcall SetGrayscalePalette(Graphics::TBitmap *dib, int bit);
 extern void ConvertAlphaToAddAlpha(Graphics::TBitmap *in);
 //---------------------------------------------------------------------------
-// ï¿½ï¿½Oï¿½Nï¿½ï¿½ï¿½X
+// —áŠOƒNƒ‰ƒX
 class EDeePSD : public Exception
 {
 
@@ -43,7 +43,7 @@ public:
 
 };
 //---------------------------------------------------------------------------
-// TDeePSD ï¿½Nï¿½ï¿½ï¿½X
+// TDeePSD ƒNƒ‰ƒX
 class TDeePSD : public Graphics::TBitmap
 {
 private:
@@ -51,12 +51,12 @@ protected:
 	AnsiString FLayerMode;
 
 public:
-	// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ï¿½Æƒfï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ÆƒfƒXƒgƒ‰ƒNƒ^
 	__fastcall TDeePSD(void);
 	__fastcall ~TDeePSD(void);
 
 
-	// Stream I/O  ï¿½ÌƒIï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
+	// Stream I/O  ‚ÌƒI[ƒo[ƒ‰ƒCƒh
 	void __fastcall LoadFromStream(Classes::TStream * Stream);
 	void __fastcall SaveToStream(Classes::TStream * Stream);
 

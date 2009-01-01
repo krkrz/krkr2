@@ -52,7 +52,7 @@ __fastcall TTSSWaveContext::TTSSWaveContext(AnsiString dllname)
 	FHandle = LoadLibrary(dllname.c_str());
 	if(FHandle == NULL)
 	{
-		throw Exception(dllname + "ï¿½ï¿½Ç‚İï¿½ï¿½Ş‚ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		throw Exception(dllname + "‚ğ“Ç‚İ‚Ş‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
 	}
 
 	FGetModuleInstance =(GetModuleInstanceProc)
@@ -69,7 +69,7 @@ __fastcall TTSSWaveContext::TTSSWaveContext(AnsiString dllname)
 	{
 		FreeLibrary(FHandle);
 		FHandle = NULL;
-		throw Exception("ï¿½Oï¿½ï¿½ DLL "+dllname+" ï¿½Ígï¿½pï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		throw Exception("ŠO•” DLL "+dllname+" ‚Íg—p‚Å‚«‚Ü‚¹‚ñ");
 	}
 }
 //---------------------------------------------------------------------------
@@ -91,7 +91,7 @@ bool __fastcall TTSSWaveContext::Start(AnsiString filename)
 	hr = FModule->GetMediaInstance(WideString(filename).c_bstr(), &decoder);
 	if(FAILED(hr))
 	{
-		throw Exception(filename + " ï¿½ÍŠJï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		throw Exception(filename + " ‚ÍŠJ‚­‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
 	}
 
 	hr = decoder->QueryInterface(IID_ITSSWaveDecoder, (void**)&FDecoder);
@@ -99,7 +99,7 @@ bool __fastcall TTSSWaveContext::Start(AnsiString filename)
 	{
 		decoder->Release();
 		FDecoder = NULL;
-		throw Exception(filename + " ï¿½Ìƒï¿½ï¿½fï¿½Bï¿½Aï¿½Eï¿½^ï¿½Cï¿½vï¿½Íˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		throw Exception(filename + " ‚ÌƒƒfƒBƒAEƒ^ƒCƒv‚Íˆµ‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
 	}
 
 	decoder->Release();
@@ -108,24 +108,24 @@ bool __fastcall TTSSWaveContext::Start(AnsiString filename)
 	FDecoder->GetFormat(&format);
 	if(format.dwBitsPerSample != 16)
 	{
-		throw Exception(filename + " ï¿½ï¿½ 16bit PCM ï¿½É•ÏŠï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ßˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		throw Exception(filename + " ‚Í 16bit PCM ‚É•ÏŠ·‚Å‚«‚È‚¢‚½‚ßˆµ‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
 	}
 	if(format.dwChannels > 8)
 	{
-		throw Exception(filename + " ï¿½ï¿½ 9ï¿½`ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½Èã‚ ï¿½é‚½ï¿½ßˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		throw Exception(filename + " ‚Í 9ƒ`ƒƒƒlƒ‹ˆÈã‚ ‚é‚½‚ßˆµ‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
 	}
 	if(format.ui64TotalSamples == 0)
 	{
-		throw Exception(filename + " ï¿½ï¿½ ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½[ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ßˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		throw Exception(filename + " ‚Í ‘ƒTƒ“ƒvƒ‹”‚ª•s–¾‚©Aƒ[ƒ‚Ì‚½‚ßˆµ‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
 	}
 	if(format.ui64TotalSamples >= 0x10000000ui64)
 	{
-		throw Exception(filename + " ï¿½ï¿½ ï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ßAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		throw Exception(filename + " ‚Í ‘å‚«‚·‚¬‚é‚½‚ßAˆµ‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ");
 	}
 	FChannels = format.dwChannels;
 	FFrequency = format.dwSamplesPerSec;
 	FBitsPerSample = 16;
-	FSpeakerConfig = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½_ï¿½Å‚Íï¿½ï¿½ 0 (ï¿½È‚É‚ï¿½ï¿½Kï¿½iï¿½ï¿½ï¿½Â‚ï¿½ï¿½é‚©ï¿½ï¿½)
+	FSpeakerConfig = 0; // Œ»“_‚Å‚Íí‚É 0 (‚È‚É‚©‹KŠi‚ğ‚Â‚­‚é‚©‚à)
 	FTotalSamples = (int)format.ui64TotalSamples;
 
 	FGranuleSize = FChannels * sizeof(__int16);

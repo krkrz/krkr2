@@ -20,7 +20,7 @@
 //---------------------------------------------------------------------------
 class TEditLinkAttribFrame : public TFrame
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TCheckBox *EnableConditionCheckBox;
 	TComboBox *CondVarComboBox;
 	TLabel *Label1;
@@ -34,7 +34,7 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
           TShiftState Shift);
 	void __fastcall CondRefValueEditChange(TObject *Sender);
 	void __fastcall CondRefValueEditKeyPress(TObject *Sender, char &Key);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	tTVPWaveLoopLink FLink;
 	bool InLoading;
 
@@ -46,7 +46,7 @@ private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	TNotifyEvent FOnInfoChanged;
 	TNotifyEvent FOnEraseRedo;
 
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TEditLinkAttribFrame(TComponent* Owner);
 
 	void __fastcall SetLink(const tTVPWaveLoopLink &link);

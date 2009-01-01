@@ -100,16 +100,16 @@ static DIOBJECTDATAFORMAT _c_rgodf[ ] = {
 #define numObjects (sizeof(_c_rgodf) / sizeof(_c_rgodf[0]))
 static DIDATAFORMAT c_dfPad =
 {
-	sizeof(DIDATAFORMAT),		//	structure size   ï¿½\ï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Y
-	sizeof(DIOBJECTDATAFORMAT),	//	size of object data format ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½fï¿½[ï¿½^ï¿½`ï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Y
-	DIDF_ABSAXIS,				//	absolute axis system ï¿½ï¿½Îï¿½ï¿½ï¿½ï¿½Wï¿½n
-	sizeof(DIJOYSTATE),			//	size of device data ï¿½fï¿½oï¿½Cï¿½Xï¿½fï¿½[ï¿½^ï¿½ÌƒTï¿½Cï¿½Y
-	numObjects, 				//	count of objects ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½
-	_c_rgodf,					//	position ï¿½Ê’u
+	sizeof(DIDATAFORMAT),		//	structure size   \‘¢‘ÌƒTƒCƒY
+	sizeof(DIOBJECTDATAFORMAT),	//	size of object data format ƒIƒuƒWƒFƒNƒgƒf[ƒ^Œ`®‚ÌƒTƒCƒY
+	DIDF_ABSAXIS,				//	absolute axis system â‘Î²À•WŒn
+	sizeof(DIJOYSTATE),			//	size of device data ƒfƒoƒCƒXƒf[ƒ^‚ÌƒTƒCƒY
+	numObjects, 				//	count of objects ƒIƒuƒWƒFƒNƒg”
+	_c_rgodf,					//	position ˆÊ’u
 };
 static const tjs_int   PadAxisMax = +32767;
 static const tjs_int   PadAxisMin = -32768;
-static const tjs_int   PadAxisThreshold   = 95; // Assumes 95% value can turn input on. 95%ï¿½Ì“ï¿½Í‚ï¿½OK
+static const tjs_int   PadAxisThreshold   = 95; // Assumes 95% value can turn input on. 95%‚Ì“ü—Í‚ÅOK
 static const tjs_int   PadAxisUpperThreshold  = PadAxisMax * PadAxisThreshold / 100;
 static const tjs_int   PadAxisLowerThreshold  = PadAxisMin * PadAxisThreshold / 100;
 static bool CALLBACK EnumJoySticksCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);

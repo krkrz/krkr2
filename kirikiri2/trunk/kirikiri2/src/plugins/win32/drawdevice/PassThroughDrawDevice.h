@@ -6,7 +6,7 @@
 	See details of license at "license.txt"
 */
 //---------------------------------------------------------------------------
-//!@file "PassThrough" ï¿½`ï¿½ï¿½fï¿½oï¿½Cï¿½Xï¿½Ç—ï¿½
+//!@file "PassThrough" •`‰æƒfƒoƒCƒXŠÇ—
 //---------------------------------------------------------------------------
 #ifndef PASSTHROUGHDRAWDEVICE_H
 #define PASSTHROUGHDRAWDEVICE_H
@@ -16,37 +16,37 @@
 
 class tTVPDrawer;
 //---------------------------------------------------------------------------
-//! @brief		ï¿½uPass Throughï¿½vï¿½fï¿½oï¿½Cï¿½X(ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½{ï¿½Iï¿½È•`ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ì‚İ‚Ìƒfï¿½oï¿½Cï¿½X)
+//! @brief		uPass ThroughvƒfƒoƒCƒX(‚à‚Á‚Æ‚àŠî–{“I‚È•`‰æ‚ğs‚¤‚Ì‚İ‚ÌƒfƒoƒCƒX)
 //---------------------------------------------------------------------------
 class tTVPPassThroughDrawDevice : public tTVPDrawDevice
 {
 	typedef tTVPDrawDevice inherited;
 	HWND TargetWindow;
 	bool IsMainWindow;
-	tTVPDrawer * Drawer; //!< ï¿½`ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	tTVPDrawer * Drawer; //!< •`‰æ‚ğs‚¤‚à‚Ì
 
 public:
-	//! @brief	drawerï¿½Ìƒ^ï¿½Cï¿½v
+	//! @brief	drawer‚Ìƒ^ƒCƒv
 	enum tDrawerType
 	{
-		dtNone, //!< drawer ï¿½È‚ï¿½
-		dtDrawDib, //!< ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Pï¿½ï¿½ï¿½ï¿½drawer
-		dtDBGDI, // GDI ï¿½É‚ï¿½ï¿½_ï¿½uï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½sï¿½ï¿½drawer
-		dtDBDD, // DirectDraw ï¿½É‚ï¿½ï¿½_ï¿½uï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½sï¿½ï¿½drawer
-		dtDBD3D // Direct3D ï¿½É‚ï¿½ï¿½_ï¿½uï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½sï¿½ï¿½drawer
+		dtNone, //!< drawer ‚È‚µ
+		dtDrawDib, //!< ‚à‚Á‚Æ‚à’Pƒ‚Èdrawer
+		dtDBGDI, // GDI ‚É‚æ‚éƒ_ƒuƒ‹ƒoƒbƒtƒ@ƒŠƒ“ƒO‚ğs‚¤drawer
+		dtDBDD, // DirectDraw ‚É‚æ‚éƒ_ƒuƒ‹ƒoƒbƒtƒ@ƒŠƒ“ƒO‚ğs‚¤drawer
+		dtDBD3D // Direct3D ‚É‚æ‚éƒ_ƒuƒ‹ƒoƒbƒtƒ@ƒŠƒ“ƒO‚ğs‚¤drawer
 	};
 
 private:
-	tDrawerType DrawerType; //!< drawer ï¿½Ìƒ^ï¿½Cï¿½v
-	tDrawerType PreferredDrawerType; //!< ï¿½gï¿½ï¿½ï¿½Ä—~ï¿½ï¿½ï¿½ï¿½ drawer ï¿½Ìƒ^ï¿½Cï¿½v
+	tDrawerType DrawerType; //!< drawer ‚Ìƒ^ƒCƒv
+	tDrawerType PreferredDrawerType; //!< g‚Á‚Ä—~‚µ‚¢ drawer ‚Ìƒ^ƒCƒv
 
-	bool DestSizeChanged; //!< DestRect ï¿½ÌƒTï¿½Cï¿½Yï¿½É•ÏXï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	bool SrcSizeChanged; //!< SrcSize ï¿½É•ÏXï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	bool DestSizeChanged; //!< DestRect ‚ÌƒTƒCƒY‚É•ÏX‚ª‚ ‚Á‚½‚©
+	bool SrcSizeChanged; //!< SrcSize ‚É•ÏX‚ª‚ ‚Á‚½‚©
 
 public:
-	tTVPPassThroughDrawDevice(); //!< ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	tTVPPassThroughDrawDevice(); //!< ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 private:
-	~tTVPPassThroughDrawDevice(); //!< ï¿½fï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+	~tTVPPassThroughDrawDevice(); //!< ƒfƒXƒgƒ‰ƒNƒ^
 
 public:
 	void SetToRecreateDrawer() { DestroyDrawer(); }
@@ -62,25 +62,25 @@ public:
 	void SetPreferredDrawerType(tDrawerType type) { PreferredDrawerType = type; }
 	tDrawerType GetPreferredDrawerType() const { return PreferredDrawerType; }
 
-//---- LayerManager ï¿½ÌŠÇ—ï¿½ï¿½Ö˜A
+//---- LayerManager ‚ÌŠÇ—ŠÖ˜A
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
 
-//---- ï¿½`ï¿½ï¿½Ê’uï¿½Eï¿½Tï¿½Cï¿½Yï¿½Ö˜A
+//---- •`‰æˆÊ’uEƒTƒCƒYŠÖ˜A
 	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd, bool is_main);
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
 
-//---- ï¿½Ä•`ï¿½ï¿½Ö˜A
+//---- Ä•`‰æŠÖ˜A
 	virtual void TJS_INTF_METHOD Show();
 
-//---- LayerManager ï¿½ï¿½ï¿½ï¿½Ì‰æ‘œï¿½ó‚¯“nï¿½ï¿½ï¿½Ö˜A
+//---- LayerManager ‚©‚ç‚Ì‰æ‘œó‚¯“n‚µŠÖ˜A
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
 	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(iTVPLayerManager * manager,
 		tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
 
-//---- ï¿½fï¿½oï¿½bï¿½Oï¿½xï¿½ï¿½
+//---- ƒfƒoƒbƒOx‰‡
 	virtual void TJS_INTF_METHOD SetShowUpdateRect(bool b);
 
 };

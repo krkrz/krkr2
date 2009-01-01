@@ -21,24 +21,24 @@
 #include "OptionInfo.h"
 
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
+//! @brief	  	‰½‚à‚µ‚È‚¢
 //----------------------------------------------------------------------------
 tTVPDSVideoOverlay::tTVPDSVideoOverlay()
 {}
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒCƒ“ƒ^[ƒtƒFƒCƒX‚ğ‰ğ•ú‚·‚é
 //----------------------------------------------------------------------------
 tTVPDSVideoOverlay::~tTVPDSVideoOverlay()
 {
 	ReleaseAll();
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½tï¿½Bï¿½ï¿½ï¿½^ï¿½Oï¿½ï¿½ï¿½tï¿½Ì\ï¿½z
-//! @param 		callbackwin : ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ğ‘—Mï¿½ï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½E
-//! @param 		stream : ï¿½Ç‚İï¿½ï¿½İŒï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½
-//! @param 		streamname : ï¿½Xï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ì–ï¿½ï¿½O
-//! @param 		type : ï¿½ï¿½ï¿½fï¿½Bï¿½Aï¿½^ï¿½Cï¿½v(ï¿½gï¿½ï¿½ï¿½q)
-//! @param 		size : ï¿½ï¿½ï¿½fï¿½Bï¿½Aï¿½Tï¿½Cï¿½Y
+//! @brief	  	ƒtƒBƒ‹ƒ^ƒOƒ‰ƒt‚Ì\’z
+//! @param 		callbackwin : ƒƒbƒZ[ƒW‚ğ‘—M‚·‚éƒEƒBƒ“ƒhƒE
+//! @param 		stream : “Ç‚İ‚İŒ³ƒXƒgƒŠ[ƒ€
+//! @param 		streamname : ƒXƒgƒŠ[ƒ€‚Ì–¼‘O
+//! @param 		type : ƒƒfƒBƒAƒ^ƒCƒv(Šg’£q)
+//! @param 		size : ƒƒfƒBƒAƒTƒCƒY
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream,
 	const wchar_t * streamname, const wchar_t *type, unsigned __int64 size )
@@ -91,7 +91,7 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 			if( FAILED(hr = GraphBuilder()->AddFilter( m_Reader, NULL)) )
 				ThrowDShowException(L"Failed to call IFilterGraph::AddFilter.", hr);
 
-			// AddFilterï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½Release
+			// AddFilter‚µ‚½‚Ì‚ÅRelease
 			m_Reader->Release();
 
 			if( mt.subtype == MEDIASUBTYPE_Avi || mt.subtype == MEDIASUBTYPE_QTMovie )
@@ -166,11 +166,11 @@ void __stdcall tTVPDSVideoOverlay::BuildGraph( HWND callbackwin, IStream *stream
 	}
 
 	MakeAPause(false);
-	CoUninitialize();	// ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚Ô‚Æ‚Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‹Cï¿½ï¿½ï¿½ï¿½ï¿½é‚¯ï¿½ÇAï¿½ï¿½ï¿½vï¿½È‚Ì‚ï¿½ï¿½È‚ï¿½
+	CoUninitialize();	// ‚±‚±‚Å‚±‚ê‚ğŒÄ‚Ô‚Æ‚Ü‚¸‚»‚¤‚È‹C‚ª‚·‚é‚¯‚ÇA‘åä•v‚È‚Ì‚©‚È‚Ÿ
 }
 
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½Cï¿½ï¿½ï¿½^ï¿½[ï¿½tï¿½Fï¿½Cï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒCƒ“ƒ^[ƒtƒFƒCƒX‚ğ‰ğ•ú‚·‚é
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 {
@@ -188,10 +188,10 @@ void __stdcall tTVPDSVideoOverlay::ReleaseAll()
 	tTVPDSMovie::ReleaseAll();
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½rï¿½fï¿½I ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½eï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½İ’è‚·ï¿½ï¿½B 
+//! @brief	  	ƒrƒfƒI ƒEƒBƒ“ƒhƒE‚ğŠ—L‚·‚éeƒEƒBƒ“ƒhƒE‚ğİ’è‚·‚éB 
 //! 
-//! ï¿½rï¿½fï¿½I ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½eï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½İ’è‚µï¿½Aï¿½\ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éİ’è‚·ï¿½ï¿½B
-//! @param 		window : ï¿½eï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½E
+//! ƒrƒfƒI ƒEƒBƒ“ƒhƒE‚ğŠ—L‚·‚éeƒEƒBƒ“ƒhƒE‚ğİ’è‚µA•\¦‹éŒ`‚à“¯‚Éİ’è‚·‚éB
+//! @param 		window : eƒEƒBƒ“ƒhƒE
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::SetWindow( HWND window )
 {
@@ -231,8 +231,8 @@ void __stdcall tTVPDSVideoOverlay::SetWindow( HWND window )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½rï¿½fï¿½I ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ìƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Ì‘ï¿½ï¿½Mï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ï¿½ï¿½wï¿½è‚·ï¿½ï¿½B
-//! @param 		window : ï¿½ï¿½ï¿½Mï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½E
+//! @brief	  	ƒrƒfƒI ƒEƒBƒ“ƒhƒE‚ÌƒƒbƒZ[ƒW‚Ì‘—MæƒEƒBƒ“ƒhƒE‚ğw’è‚·‚éB
+//! @param 		window : ‘—MæƒEƒBƒ“ƒhƒE
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::SetMessageDrainWindow( HWND window )
 {
@@ -243,8 +243,8 @@ void __stdcall tTVPDSVideoOverlay::SetMessageDrainWindow( HWND window )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½\ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½İ’è‚·ï¿½ï¿½
-//! @param 		rect : ï¿½\ï¿½ï¿½ï¿½ï¿½`
+//! @brief	  	•\¦‹éŒ`‚ğİ’è‚·‚é
+//! @param 		rect : •\¦‹éŒ`
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::SetRect( RECT *rect )
 {
@@ -258,8 +258,8 @@ void __stdcall tTVPDSVideoOverlay::SetRect( RECT *rect )
 	}
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½\ï¿½ï¿½/ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½İ’è‚·ï¿½ï¿½
-//! @param 		b : ï¿½\ï¿½ï¿½/ï¿½ï¿½\ï¿½ï¿½
+//! @brief	  	•\¦/”ñ•\¦‚ğİ’è‚·‚é
+//! @param 		b : •\¦/”ñ•\¦
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::SetVisible( bool b )
 {
@@ -275,7 +275,7 @@ void __stdcall tTVPDSVideoOverlay::SetVisible( bool b )
 	Visible = b;
 }
 //----------------------------------------------------------------------------
-//! @brief	  	ï¿½rï¿½fï¿½Iï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½
+//! @brief	  	ƒrƒfƒI‚ğÄ¶‚·‚é
 //----------------------------------------------------------------------------
 void __stdcall tTVPDSVideoOverlay::Play()
 {

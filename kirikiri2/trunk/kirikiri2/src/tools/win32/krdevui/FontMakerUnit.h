@@ -36,7 +36,7 @@ public:
 //---------------------------------------------------------------------------
 class TFontMakerForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TGroupBox *FontGroupBox;
 	TLabel *Label1;
 	TComboBox *FontSelectComboBox;
@@ -68,7 +68,7 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
 	void __fastcall AntialiasedCheckBoxClick(TObject *Sender);
 	void __fastcall IncludeAllFontCharsCheckBoxClick(TObject *Sender);
 	void __fastcall IncludePrivateCharsCheckBoxClick(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	TFontPreviewForm *FontPreviewForm;
 	void __fastcall EnumFonts();
 	bool CharacterListInvalidated;
@@ -77,7 +77,7 @@ private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
 	TPrivRefControl * PrivRefControl;
 
 
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TFontMakerForm(TComponent* Owner);
 private:
 	void __fastcall SetFontToCanvas(LOGFONT & font);

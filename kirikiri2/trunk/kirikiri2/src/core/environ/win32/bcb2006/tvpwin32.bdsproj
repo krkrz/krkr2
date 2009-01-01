@@ -676,7 +676,7 @@
           <VersionInfoKeys Name="FileDescription">TVP(KIRIKIRI) 2 core / Scripting Platform for Win32</VersionInfoKeys>
           <VersionInfoKeys Name="FileVersion">2.29.2007.1022</VersionInfoKeys>
           <VersionInfoKeys Name="InternalName">tvp2/win32</VersionInfoKeys>
-          <VersionInfoKeys Name="LegalCopyright">(KIRIKIRI core) (C) 1997-2008 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.</VersionInfoKeys>
+          <VersionInfoKeys Name="LegalCopyright">(KIRIKIRI core) (C) 1997-2009 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.</VersionInfoKeys>
           <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
           <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
           <VersionInfoKeys Name="ProductName"></VersionInfoKeys>

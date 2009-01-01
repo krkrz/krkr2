@@ -1,22 +1,22 @@
-// SliderLayer.tjs - ï¿½Xï¿½ï¿½ï¿½Cï¿½_ï¿½[ï¿½ï¿½ï¿½Cï¿½ï¿½
-// Copyright (C)2001-2009, W.Dee  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// SliderLayer.tjs - ƒXƒ‰ƒCƒ_[ƒŒƒCƒ„
+// Copyright (C)2001-2009, W.Dee  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 class SliderLayer extends Layer
 {
-	var Slider_min = 0; // ï¿½Åï¿½ï¿½l
-	var Slider_max = 0; // ï¿½Å‘ï¿½l
-	var Slider_position = 0; // ï¿½Ê’u
-	var Slider_tabWidth = 10; // ï¿½Â‚Ü‚İƒTï¿½Cï¿½Y
-	var Slider_dragging = false; // ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
-	var Slider_dragOriginX; // ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½Jï¿½n X ï¿½Ê’u
-	var Slider_mouseOn = false; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½Ìˆï¿½ï¿½ï¿½É‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
-	var Slider_onChangeHandler = null; // ï¿½Ê’uï¿½ï¿½ï¿½ÏXï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
+	var Slider_min = 0; // Å¬’l
+	var Slider_max = 0; // Å‘å’l
+	var Slider_position = 0; // ˆÊ’u
+	var Slider_tabWidth = 10; // ‚Â‚Ü‚İƒTƒCƒY
+	var Slider_dragging = false; // ƒhƒ‰ƒbƒO’†‚©‚Ç‚¤‚©
+	var Slider_dragOriginX; // ƒhƒ‰ƒbƒOŠJn X ˆÊ’u
+	var Slider_mouseOn = false; // ƒ}ƒEƒX‚ª—Ìˆæ“à‚É‚ ‚é‚©‚Ç‚¤‚©
+	var Slider_onChangeHandler = null; // ˆÊ’u‚ª•ÏX‚³‚ê‚½‚ÉŒÄ‚Î‚ê‚éƒnƒ“ƒhƒ‰
 
 	function SliderLayer(win, par)
 	{
 		super.Layer(win, par);
 
-		focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½ï¿½ï¿½
+		focusable = true; // ƒtƒH[ƒJƒX‚ğ“¾‚ç‚ê‚é
 
 		hitType = htMask;
 		hitThreshold = 0;
@@ -29,7 +29,7 @@ class SliderLayer extends Layer
 
 	function assign(src)
 	{
-		// src ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÉƒRï¿½sï¿½[
+		// src ‚Ìî•ñ‚ğ‚±‚ÌƒIƒuƒWƒFƒNƒg‚ÉƒRƒs[
 		Slider_min = src.Slider_min;
 		Slider_max = src.Slider_max;
 		Slider_position = src.Slider_position;
@@ -37,28 +37,28 @@ class SliderLayer extends Layer
 
 	function onPaint()
 	{
-		// onPaint ï¿½Cï¿½xï¿½ï¿½ï¿½g
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ì“ï¿½ï¿½eï¿½ï¿½`ï¿½æ‚·ï¿½ï¿½
+		// onPaint ƒCƒxƒ“ƒg
+		// ƒŒƒCƒ„‚Ì“à—e‚ğ•`‰æ‚·‚é
 		super.onPaint(...);
 
-		// ï¿½æ‚­ï¿½gï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Jï¿½ï¿½ï¿½Ïï¿½ï¿½É—pï¿½Ó‚ï¿½ï¿½ï¿½
+		// ‚æ‚­g‚¤’l‚ğƒ[ƒJƒ‹•Ï”‚É—pˆÓ‚·‚é
 		var imw = imageWidth, imh = imageHeight;
 		var tabw = Slider_tabWidth;
 		var htabw = tabw >> 1;
 
-		// ï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½hï¿½ï¿½
+		// ‰º•~‚«‚ğ“h‚é
 		fillRect(0, 0, imw, imh, 0);
 
 		if(focused)
 		{
-			// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Åƒnï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½
+			// ƒtƒH[ƒJƒX‚ª‚ ‚é‚Ì‚ÅƒnƒCƒ‰ƒCƒg‚·‚é
 			colorRect(0, 0, width-1, 1, clHighlight, 128);
 			colorRect(0, 1, 1, height-2, clHighlight, 128);
 			colorRect(0, height-1, width, 1, clHighlight, 128);
 			colorRect(width-1, 0, 1, height-1, clHighlight, 128);
 		}
 
-		// ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Ö‚ï¿½ï¿½İï¿½
+		// ’†‰›‚Ì‚Ö‚±‚İü
 		{
 			var himh = imh >> 1;
 			var right = imw - tabw;
@@ -66,7 +66,7 @@ class SliderLayer extends Layer
 			fillRect(htabw, himh    , right, 1, 0x80ffffff);
 		}
 
-		// ï¿½^ï¿½u
+		// ƒ^ƒu
 		var pos_x = int(
 			(Slider_position-Slider_min) * (imw - tabw - 2)/(Slider_max - Slider_min)) +
 			htabw + 1;
@@ -85,26 +85,26 @@ class SliderLayer extends Layer
 
 	function onKeyDown(key, shift, process)
 	{
-		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
+		// ƒL[‚ª‰Ÿ‚³‚ê‚½
 		if(process)
 		{
 			if(key == VK_LEFT)
 			{
-				// ï¿½ï¿½
+				// ¶
 				if(shift & ssAlt)
 					position = Slider_position - 1;
 				else
 					position = Slider_position - int((Slider_max - Slider_min)/ (Slider_tabWidth-2) / 2);
-				super.onKeyDown(key, shift, false); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½processï¿½ï¿½falseï¿½ï¿½nï¿½ï¿½
+				super.onKeyDown(key, shift, false); // ˆ—‚ğ‚µ‚½‚Ì‚Åprocess‚Éfalse‚ğ“n‚·
 			}
 			else if(key == VK_RIGHT)
 			{
-				// ï¿½ï¿½
+				// ¶
 				if(shift & ssAlt)
 					position = Slider_position + 1;
 				else
 					position = Slider_position + int((Slider_max - Slider_min)/ (Slider_tabWidth-2) / 2);
-				super.onKeyDown(key, shift, false); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½processï¿½ï¿½falseï¿½ï¿½nï¿½ï¿½
+				super.onKeyDown(key, shift, false); // ˆ—‚ğ‚µ‚½‚Ì‚Åprocess‚Éfalse‚ğ“n‚·
 			}
 			else
 			{
@@ -113,14 +113,14 @@ class SliderLayer extends Layer
 		}
 		else
 		{
-			// process ï¿½ï¿½ false ï¿½Ìê‡ï¿½Íï¿½ï¿½ï¿½ï¿½Ísï¿½ï¿½È‚ï¿½
+			// process ‚ª false ‚Ìê‡‚Íˆ—‚Ís‚í‚È‚¢
 			super.onKeyDown(...);
 		}
 	}
 
 	function onMouseDown(x, y, button)
 	{
-		// ï¿½}ï¿½Eï¿½Xï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
+		// ƒ}ƒEƒXƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½
 		focus();
 
 		super.onMouseDown(...);
@@ -132,18 +132,18 @@ class SliderLayer extends Layer
 			htabw + 1;
 		if(pos_x - htabw > x)
 		{
-			// ï¿½^ï¿½uï¿½ï¿½è¶
+			// ƒ^ƒu‚æ‚è¶
 			position = Slider_position - int((Slider_max - Slider_min)/ (tabw-2));
 		}
 		else if(pos_x + htabw < x)
 		{
-			// ï¿½^ï¿½uï¿½ï¿½ï¿½E
+			// ƒ^ƒu‚æ‚è‰E
 			position = Slider_position + int((Slider_max - Slider_min)/ (tabw-2));
 		}
 		else
 		{
-			// ï¿½^ï¿½u
-			// ï¿½^ï¿½uï¿½Ìƒhï¿½ï¿½ï¿½bï¿½Oï¿½ï¿½ï¿½Jï¿½n
+			// ƒ^ƒu
+			// ƒ^ƒu‚Ìƒhƒ‰ƒbƒO‚ğŠJn
 			Slider_dragging = true;
 			Slider_dragOriginX = x - pos_x;
 		}
@@ -151,7 +151,7 @@ class SliderLayer extends Layer
 
 	function onMouseUp(x, y, button)
 	{
-		// ï¿½}ï¿½Eï¿½Xï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
+		// ƒ}ƒEƒXƒ{ƒ^ƒ“‚ª—£‚³‚ê‚½
 		super.onMouseUp(...);
 
 		Slider_dragging = false;
@@ -159,12 +159,12 @@ class SliderLayer extends Layer
 
 	function onMouseMove(x, y)
 	{
-		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒ}ƒEƒX‚ªˆÚ“®‚µ‚½
 		super.onMouseMove(...);
 
 		if(Slider_dragging)
 		{
-			// ï¿½^ï¿½uï¿½ï¿½ï¿½hï¿½ï¿½ï¿½bï¿½O
+			// ƒ^ƒu‚ğƒhƒ‰ƒbƒO
 			position = int(
 				(x - Slider_dragOriginX - (Slider_tabWidth >> 1)) * (Slider_max - Slider_min) /
 				(imageWidth - Slider_tabWidth - 2) + Slider_min);
@@ -173,7 +173,7 @@ class SliderLayer extends Layer
 
 	function onMouseEnter()
 	{
-		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆï¿½ï¿½ï¿½É“ï¿½ï¿½ï¿½ï¿½
+		// ƒ}ƒEƒX‚ªƒŒƒCƒ„—Ìˆæ“à‚É“ü‚Á‚½
 		update();
 		Slider_mouseOn = true;
 		super.onMouseEnter(...);
@@ -181,7 +181,7 @@ class SliderLayer extends Layer
 
 	function onMouseLeave()
 	{
-		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆæ‚©ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒ}ƒEƒX‚ªƒŒƒCƒ„—Ìˆæ‚©‚ço‚Ä‚¢‚Á‚½
 		update();
 		Slider_mouseOn = false;
 		Slider_dragging = false;
@@ -190,28 +190,28 @@ class SliderLayer extends Layer
 
 	function onFocus()
 	{
-		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½
+		// ƒtƒH[ƒJƒX‚ğ“¾‚½
 		super.onFocus(...);
 		update();
 	}
 
 	function onBlur()
 	{
-		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒtƒH[ƒJƒX‚ğ¸‚Á‚½
 		super.onBlur(...);
 		update();
 	}
 
 	function onNodeDisabled()
 	{
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒmï¿½[ï¿½hï¿½ï¿½ï¿½sï¿½Â‚É‚È‚ï¿½ï¿½ï¿½
+		// ƒŒƒCƒ„‚Ìƒm[ƒh‚ª•s‰Â‚É‚È‚Á‚½
 		super.onNodeDisabled(...);
 		update();
 	}
 
 	function onNodeEnabled()
 	{
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒmï¿½[ï¿½hï¿½ï¿½ï¿½Lï¿½ï¿½É‚È‚ï¿½ï¿½ï¿½
+		// ƒŒƒCƒ„‚Ìƒm[ƒh‚ª—LŒø‚É‚È‚Á‚½
 		super.onNodeEnabled(...);
 		update();
 	}
@@ -289,7 +289,7 @@ class SliderLayer extends Layer
 
 	function setPos(x)
 	{
-		// ï¿½ï¿½ï¿½İˆÊ’uï¿½ï¿½İ’è‚·ï¿½é‚ªï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Í”ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
+		// Œ»İˆÊ’u‚ğİ’è‚·‚é‚ªƒCƒxƒ“ƒg‚Í”­¶‚³‚¹‚È‚¢
 		if(x < Slider_min) x = Slider_min;
 		if(x > Slider_max) x = Slider_max;
 		Slider_position = x;

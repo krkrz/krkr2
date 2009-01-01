@@ -1,64 +1,64 @@
-// SelectLayer.tjs - ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// SelectLayer.tjs - ‘I‘ğˆƒŒƒCƒ„
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 /**
- * ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½{ï¿½^ï¿½ï¿½
+ * ‘I‘ğˆˆ——pƒ{ƒ^ƒ“
  */
 class SelectButtonLayer extends ButtonLayer
 {
-    var owner; // ï¿½Zï¿½ï¿½ï¿½Nï¿½gï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½{ï¿½ï¿½
+    var owner; // ƒZƒŒƒNƒgƒŒƒCƒ„–{‘Ì
 
-    var onclick; // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    var onenter; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    var onleave; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    var storage; // ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ÌƒWï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½
-    var target;  // ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ÌƒWï¿½ï¿½ï¿½ï¿½ï¿½vï¿½ï¿½
+    var onclick; // ƒNƒŠƒbƒN‚ÉÀs‚·‚é‚à‚Ì
+    var onenter; // ƒ}ƒEƒX‚ª“ü‚Á‚Ä‚«‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
+    var onleave; // ƒ}ƒEƒX‚ªo‚Ä‚¢‚Á‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
+    var storage; // ˆ—I—¹Œã‚ÌƒWƒƒƒ“ƒvæ
+    var target;  // ˆ—I—¹Œã‚ÌƒWƒƒƒ“ƒvæ
 
     /**
-     * ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Ì•`ï¿½ï¿½
+     * ƒƒbƒZ[ƒW‚Ì•`‰æ
      */
     function drawMessage(message) {
         var cnt = Butt_showFocusImage ? 4 : 3;
         var tw = font.getTextWidth(message);
         var th = font.getTextHeight(message);
         var y = (height-th)>>1;
-        //dm("ï¿½Tï¿½Cï¿½Y:" + width + " ," + height);
+        //dm("ƒTƒCƒY:" + width + " ," + height);
         var dx = (width-tw)>>1;
         for (var i=0;i<cnt;i++) {
             var x = i*width + dx;
-            //dm("ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½W:" + x);
+            //dm("ƒƒbƒZ[ƒW:" + x);
             drawText(x, y, message, (owner.getDrawTextArgs(i))*);
         }
     }
     
     /**
-     * ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
-     * @param owner   ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
-     * @param message ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½éƒï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½wï¿½ï¿½
+     * ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+     * @param owner   ‘I‘ğƒŒƒCƒ„
+     * @param message •\¦‚·‚éƒƒbƒZ[ƒW‚ğw’è
      */
     function SelectButtonLayer(owner, message) {
 
         this.owner = owner;
         
-        // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ƒŒƒCƒ„‰Šú‰»
         super.ButtonLayer(owner.window, owner.window.primaryLayer);
 
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // •¶š‰Šú‰»
         font.face   = owner.fontFace !== void ? owner.fontFace : owner.window.chDefaultFace;
         font.bold   = owner.fontBold;
         font.italic = owner.fontItalic;
         font.height = owner.fontSize;
 
         if (owner.normalImage !== void) {
-            // ï¿½æ‘œï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Íƒï¿½ï¿½[ï¿½h
+            // ‰æ‘œ‚ª‚ ‚éê‡‚Íƒ[ƒh
             loadButtons(owner.normalImage, owner.overImage, owner.onImage, owner.focusImage);
             drawMessage(message);
         } else if (owner.graphic !== void) {
-            // ï¿½æ‘œï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Íƒï¿½ï¿½[ï¿½h
+            // ‰æ‘œ‚ª‚ ‚éê‡‚Íƒ[ƒh
             loadImages(owner.graphic, owner.graphickey);
             drawMessage(message);
         } else {
-            // ï¿½È‚ï¿½ï¿½ê‡ï¿½Í‘gï¿½İï¿½ï¿½İƒ{ï¿½^ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Äï¿½ï¿½ï¿½
+            // ‚È‚¢ê‡‚Í‘g‚İ‚İƒ{ƒ^ƒ“‚Æ‚µ‚Äˆ—
             width        = owner.selectWidth;
             height       = owner.selectHeight;
             captionColor = owner.selectColor;
@@ -102,7 +102,7 @@ class SelectButtonLayer extends ButtonLayer
 
 	function onKeyDown(key, shift, process)
 	{
-		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
+		// ƒL[‚ª‰Ÿ‚³‚ê‚½
 		if (window.preProcessKeys(key, shift)) return;
 		switch (key) {
 		case VK_SPACE: case VK_RETURN:
@@ -116,7 +116,7 @@ class SelectButtonLayer extends ButtonLayer
 
 	function onFocus(prevfocused, direction)
 	{
-        // ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½Ï“ï¿½ï¿½Ìê‡ï¿½Éƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½
+        // ƒL[‘€ì‚É‚æ‚éƒtƒH[ƒJƒX•Ï“®‚Ìê‡‚Éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚àˆÚ“®
         var sgks = window.getKeyState;
         var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
             sgks(VK_DOWN) || sgks(VK_TAB);
@@ -129,7 +129,7 @@ class SelectButtonLayer extends ButtonLayer
 }
 
 /**
- * ï¿½Iï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½æ“¾ï¿½p
+ * ‘I‘ğƒ{ƒ^ƒ“æ“¾—p
  */
 function getSelectButtonLayer(owner, name)
 {
@@ -137,8 +137,8 @@ function getSelectButtonLayer(owner, name)
 }
 
 /**
- * ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½Wï¿½bï¿½N
- * KAGï¿½pï¿½É“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½
+ * ‘I‘ğˆˆ——pƒƒWƒbƒN
+ * KAG—p‚É“Á‰»‚µ‚Ä‚¢‚Ü‚·
  */
 class SelectLayer {
 
@@ -152,14 +152,14 @@ class SelectLayer {
     var width;
     var height;
     
-    // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú‚Ì‘ï¿½ï¿½ï¿½
+    // ‘I‘ğˆ€–Ú‚Ì‘®«
     var selectWidth  = 400;
     var selectHeight = 50;
     var selectColor  = 0xffffff;
     var selectBaseColor = 0x888888;
     var fontSize     = 24;
 
-    // ï¿½æ‘œï¿½fï¿½[ï¿½^
+    // ‰æ‘œƒf[ƒ^
     var graphic;
     var graphickey;
     var normalImage;
@@ -167,7 +167,7 @@ class SelectLayer {
     var onImage;
     var focusImage;
 
-    // ï¿½tï¿½Hï¿½ï¿½ï¿½g
+    // ƒtƒHƒ“ƒg
     var fontFace;
     var fontBold;
     var fontItalic;
@@ -180,12 +180,12 @@ class SelectLayer {
 	var fontShadowOffsetY = 2;
     var fontEdgeEmphasis = 512;
     var fontEdgeExtent = 0;
-	// ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Éƒtï¿½Hï¿½ï¿½ï¿½gï¿½ÌFï¿½ï¿½ÏXï¿½ï¿½ï¿½ï¿½ê‡ï¿½Ì’l(voidï¿½È‚ï¿½ÏXï¿½ï¿½ï¿½È‚ï¿½)
+	// ‘I‘ğ‚ÉƒtƒHƒ“ƒg‚ÌF‚ğ•ÏX‚·‚éê‡‚Ì’l(void‚È‚ç•ÏX‚µ‚È‚¢)
 	var otherFontColors       = %[];
 	var otherFontEdgeColors   = %[];
 	var otherFontShadowColors = %[];
 
-    // ï¿½ï¿½Ê‰ï¿½
+    // Œø‰Ê‰¹
     var enterse;
     var leavese;
     var clickse;
@@ -197,13 +197,13 @@ class SelectLayer {
     
 	function setOptions(elm) {
 
-        // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Ìˆï¿½wï¿½ï¿½
+        // ‘I‘ğˆ—Ìˆæw’è
         left   = +elm.left if elm.left !== void;
         top    = +elm.top  if elm.top  !== void;
         width  = +elm.width if elm.width !== void;
         height = +elm.height if elm.height !== void;
         
-        // ï¿½æ‘œï¿½wï¿½ï¿½
+        // ‰æ‘œw’è
         normalImage = elm.normal if elm.normal !== void;
         overImage   = elm.over   if elm.over   !== void;
         onImage     = elm.on     if elm.on     !== void;
@@ -211,13 +211,13 @@ class SelectLayer {
         graphic     = elm.graphic    if elm.graphic !== void;
         graphickey  = elm.graphickey if elm.graphickey !== void;
 
-        // ï¿½Tï¿½Cï¿½Yï¿½wï¿½ï¿½
+        // ƒTƒCƒYw’è
         selectWidth  = +elm.selectwidth  if elm.selectwidth  !== void;
         selectHeight = +elm.selectheight if elm.selectheight !== void;
         selectColor = +elm.selectcolor if elm.selectcolor !== void;
         selectBaseColor = +elm.selectbasecolor if elm.selectbasecolor !== void;
 
-        // ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½wï¿½ï¿½
+        // ƒtƒHƒ“ƒgw’è
         fontFace   =  elm.fontface if elm.fontface !== void;
         fontSize   = +elm.size if elm.size !== void;
         fontColor  = +elm.color if elm.color !== void;
@@ -233,7 +233,7 @@ class SelectLayer {
 		fontShadowOffsetX = +elm.shadowoffsetx if elm.shadowoffsetx !== void;
 		fontShadowOffsetY = +elm.shadowoffsety if elm.shadowoffsety !== void;
 
-		// ï¿½Êï¿½ï¿½ÔˆÈŠOï¿½ÌFï¿½wï¿½ï¿½
+		// ’Êíó‘ÔˆÈŠO‚ÌFw’è
 		otherFontColors.over  = +elm.overcolor   if elm.overcolor   !== void;
 		otherFontColors.on    = +elm.oncolor     if elm.oncolor     !== void;
 		otherFontColors.focus = +elm.focuscolor  if elm.focuscolor  !== void;
@@ -244,7 +244,7 @@ class SelectLayer {
 		otherFontShadowColors.on    = +elm.onshadowcolor     if elm.onshadowcolor     !== void;
 		otherFontShadowColors.focus = +elm.focusshadowcolor  if elm.focusshadowcolor  !== void;
 
-        // ï¿½ï¿½Ê‰ï¿½ï¿½wï¿½ï¿½
+        // Œø‰Ê‰¹w’è
         enterse = elm.enterse if elm.enterse !== void;
         leavese = elm.leavese if elm.leavese !== void;
         clickse = elm.clickse if elm.clickse !== void;
@@ -254,29 +254,29 @@ class SelectLayer {
         closese = elm.closese if elm.closese !== void;
         closesebuf = elm.closesebuf !== void ? elm.closesebuf : kag.numSEBuffers - 1;
         
-        // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+        // ƒƒbƒZ[ƒW‘‹‚ğÁ‹‚·‚é‚©‚Ç‚¤‚©
         msgoff = elm.msgoff if elm.msgoff !== void;
 
-        // ï¿½tï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½
+        // ƒtƒF[ƒhŠÔ
         fadeTime = +elm.fadetime if elm.fadetime !== void;
     }
 
     /**
-     * ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÌFï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½
+     * ƒtƒHƒ“ƒg‚ÌF‚ğæ“¾‚·‚é
      */
 	function getFontColor(sel, normal, cols) {
 		with (cols) {
-			switch (sel) { // ï¿½Fï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½breakï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½Ì‚Ü‚Ü‰ï¿½ï¿½É“Ë‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-			case 3: if (.focus !== void) return .focus; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½X
-				/**/if (.over  !== void) return .over;  // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½iï¿½Iï¿½[ï¿½oï¿½[ï¿½Å‘ï¿½pï¿½j
-			case 1: if (.on    !== void) return .on;    // ï¿½Iï¿½ï¿½
-			case 2: if (.over  !== void) return .over;  // ï¿½Iï¿½[ï¿½oï¿½[
+			switch (sel) { // F‚ª‚È‚¢ê‡‚Íbreak‚¹‚¸‚É‚»‚Ì‚Ü‚Ü‰º‚É“Ë‚«”²‚¯‚é
+			case 3: if (.focus !== void) return .focus; // ƒtƒH[ƒJƒX
+				/**/if (.over  !== void) return .over;  // ƒtƒH[ƒJƒXiƒI[ƒo[‚Å‘ã—pj
+			case 1: if (.on    !== void) return .on;    // ƒIƒ“
+			case 2: if (.over  !== void) return .over;  // ƒI[ƒo[
 			}
 		}
-		return normal; // ï¿½Êï¿½
+		return normal; // ’Êí
 	}
     /**
-     * ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½ÌƒGï¿½tï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½(SelectButtonLayerï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½)
+     * •¶š•`‰æ‚ÌƒGƒtƒFƒNƒg‚ğæ“¾‚·‚é(SelectButtonLayer‚©‚çŒÄ‚Î‚ê‚é)
      */
 	function getDrawTextArgs(sel) {
 		var args, color = getFontColor(sel, fontColor, otherFontColors);
@@ -286,11 +286,11 @@ class SelectLayer {
 		return args;
 	}
 
-    // ï¿½oï¿½^ï¿½Ï‚İ‘Iï¿½ï¿½ï¿½ï¿½
+    // “o˜^Ï‚İ‘I‘ğˆ
     var selects = [];
 
     /**
-     * ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+     * ƒRƒ“ƒXƒgƒ‰ƒNƒ^
      */
     function SelectLayer(window) {
         this.window = window;
@@ -311,8 +311,8 @@ class SelectLayer {
     }
 
     /**
-     * ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ÏXï¿½ï¿½ï¿½ï¿½
-     * ï¿½Ö˜Aï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½í‚¹ï¿½Äï¿½ï¿½ï¿½
+     * •s“§–¾“x•ÏXˆ—
+     * ŠÖ˜AƒŒƒCƒ„‚à‚ ‚í‚¹‚Ä§Œä
      */
     function setInnerOpacity(v) {
         if (v !== void) {
@@ -324,8 +324,8 @@ class SelectLayer {
     }
 
     /**
-     * ï¿½\ï¿½ï¿½ï¿½ï¿½Ô•ÏXï¿½ï¿½ï¿½ï¿½
-     * ï¿½Ö˜Aï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½í‚¹ï¿½Äï¿½ï¿½ï¿½
+     * •\¦ó‘Ô•ÏXˆ—
+     * ŠÖ˜AƒŒƒCƒ„‚à‚ ‚í‚¹‚Ä§Œä
      */
     function setInnerVisible(v) {
         if (v !== void) {
@@ -337,8 +337,8 @@ class SelectLayer {
     }
 
     /**
-     * ï¿½{ï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ÅIï¿½Iï¿½È•\ï¿½ï¿½ï¿½ï¿½ÔEï¿½sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½É‚ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
-     * ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½ğ’†~ï¿½ï¿½ï¿½ï¿½
+     * –{—ˆw’è‚³‚ê‚Ä‚¢‚éÅI“I‚È•\¦ó‘ÔE•s“§–¾“x‚É‚à‚Ç‚µ‚Ä
+     * Às’†‚ÌƒtƒF[ƒh‚ğ’†~‚·‚é
      */
     function fadeDone() {
         setInnerOpacity(_opacity);
@@ -346,7 +346,7 @@ class SelectLayer {
         _fadeTimer.enabled = false;
     }
     
-    // ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½x
+    // •s“§–¾“x
     var _opacity;
     property opacity {
         setter(v) {
@@ -358,7 +358,7 @@ class SelectLayer {
         }
     }
 
-    // ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½
+    // •\¦ó‘Ô
     var _visible = false;
     property visible {
         setter(v) {
@@ -389,11 +389,11 @@ class SelectLayer {
     }
 
     /**
-     * visible ï¿½É‰ï¿½ï¿½ï¿½ï¿½Äƒtï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * visible ‚É‰‚¶‚ÄƒtƒF[ƒh‚à©“®’²®‚·‚é
      */
     function setVisibleTime(v, time, done=void) {
         if (v != visible) {
-//            dm("ï¿½ï¿½ï¿½tï¿½Fï¿½[ï¿½hï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:" + v);
+//            dm("‘‹ƒtƒF[ƒh•\¦ˆ—:" + v);
             _visible = v;
             _opacity = v ? 255 : 0;
             if (time > 0) {
@@ -414,7 +414,7 @@ class SelectLayer {
     }
 
     /**
-     * ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * ƒ{ƒ^ƒ“Á‹
      */
     function clearButtons() {
         for (var i=0; i<selects.count;i++) {
@@ -425,7 +425,7 @@ class SelectLayer {
     }
 
     /**
-     * ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‰ï¿½
+     * ‘I‘ğˆ‚ğ’Ç‰Á
      */
     function addSelect(elm) {
 
@@ -437,7 +437,7 @@ class SelectLayer {
         var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : kag.numSEBuffers - 1;
         
         var select = getSelectButtonLayer(this, elm.text);
-        select.name = "ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½" + elm.text;
+        select.name = "‘I‘ğˆƒ{ƒ^ƒ“" + elm.text;
         
         select.onenter = MessageLayer.createSoundExpression(elm.onenter, enterse, entersebuf);
         select.onleave = MessageLayer.createSoundExpression(elm.onleave, leavese, leavesebuf);
@@ -449,7 +449,7 @@ class SelectLayer {
     }
 
     /*
-     * ï¿½eï¿½Ìï¿½ï¿½ï¿½ï¿½Ö‚ï¿½
+     * e‚Ì·‚µ‘Ö‚¦
      */
     function setParent(parent, absolute) {
         for (var i=0; i<selects.count;i++) {
@@ -460,7 +460,7 @@ class SelectLayer {
     }
     
     /**
-     * ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Jï¿½n
+     * ‘I‘ğˆ—ŠJn
      */
     function start(parent, absolute) {
         var h = height / (selects.count + 1);
@@ -484,10 +484,10 @@ class SelectLayer {
     }
 
     /**
-     * ï¿½ï¿½ï¿½ï¿½
+     * Š®—¹
      */
     function done() {
-// ï¿½Î‰ï¿½ï¿½ß‚ï¿½Ç‚ï¿½ï¿½Ì‚Å‚Æ‚è‚ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½Å‘Î‰ï¿½
+// ‘Î‰‚ß‚ñ‚Ç‚¢‚Ì‚Å‚Æ‚è‚ ‚¦‚¸ˆêuÁ‹‚Å‘Î‰
 //        if (fadeTime !== void) {
 //            setVisibleTime(false, fadeTime, clearButtons);
 //        } else {
@@ -500,7 +500,7 @@ class SelectLayer {
     }
     
     /**
-     * ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½
+     * ˆ—I—¹
      */
     function onButtonClick(select) {
         if (select !== void) {
@@ -516,22 +516,22 @@ class SelectLayer {
         }
     }
 
-	var invisibleByUser = false; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½ï¿½êï¿½Iï¿½É•sï¿½Âï¿½
+	var invisibleByUser = false; // ƒ†[ƒU‚É‚æ‚èˆê“I‚É•s‰Â‹
 	var visibleBeforeUserInvisible  = false;
 
     function setHiddenStateByUser(b)
 	{
-        // ï¿½ï¿½ï¿½[ï¿½Uï¿½ï¿½ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½È‚Ç‚Åƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½êï¿½Iï¿½É‰Bï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
-		// ï¿½Ä‚Î‚ï¿½ï¿½
+        // ƒ†[ƒU‚ª‰EƒNƒŠƒbƒN‚È‚Ç‚ÅƒƒbƒZ[ƒWƒŒƒCƒ„‚ğˆê“I‚É‰B‚·‚Æ‚«‚É
+		// ŒÄ‚Î‚ê‚é
 		if(b)
 		{
 			visibleBeforeUserInvisible = visible;
-			invisibleByUser = true; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½ï¿½êï¿½Iï¿½É•sï¿½Âï¿½
+			invisibleByUser = true; // ƒ†[ƒU‚É‚æ‚èˆê“I‚É•s‰Â‹
 			visible = false;
 		}
 		else
 		{
-			invisibleByUser = false; // ï¿½Âï¿½
+			invisibleByUser = false; // ‰Â‹
 			visible = visibleBeforeUserInvisible;
 		}
 	}

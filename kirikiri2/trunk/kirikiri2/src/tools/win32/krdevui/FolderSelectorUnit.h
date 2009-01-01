@@ -21,7 +21,7 @@
 //---------------------------------------------------------------------------
 class TFolderSelectorForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TPanel *ViewPanel;
 	TButton *OKButton;
 	TButton *CancelButton;
@@ -55,8 +55,8 @@ __published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
           TShellFileItem *Item, TShiftState Shift, int SubItem, int X,
           int Y, bool &DefaultAction);
 	void __fastcall SelectItemMenuItemClick(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	AnsiString Selected;
 	__fastcall TFolderSelectorForm(TComponent* Owner);
 };

@@ -1,20 +1,20 @@
-//;# MessageLayer.tjs - ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½
-//;# Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+//;# MessageLayer.tjs - ƒƒbƒZ[ƒWƒŒƒCƒ„
+//;# Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 //;<<'END_OF_TJS_SCRIPT';
 
-// ï¿½ï¿½ï¿½ÌƒXï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Í—Lï¿½ï¿½ï¿½ perl5 ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄA
-// assign/store/restore ï¿½Åï¿½ï¿½Û‚ÉƒRï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½Ïï¿½ï¿½Ìƒï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Xï¿½Vï¿½ï¿½ï¿½é‚½ï¿½ß‚ï¿½ perl ï¿½ï¿½pï¿½ï¿½ï¿½A
+// ‚±‚ÌƒXƒNƒŠƒvƒg‚Í—LŒø‚È perl5 ƒXƒNƒŠƒvƒg‚Å‚à‚ ‚Á‚ÄA
+// assign/store/restore ‚ÅÀÛ‚ÉƒRƒs[‚·‚é•Ï”‚ÌƒŠƒXƒg‚ğXV‚·‚é‚½‚ß‚É perl ‚ğ—p‚¢A
 // perl MessgeLayer.tjs
-// ï¿½ÅXï¿½Vï¿½ï¿½ï¿½sï¿½ï¿½
-// ( ï¿½ï¿½ï¿½ï¿½ï¿½Ì“ï¿½ï¿½eï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ TJS2 ï¿½Å‚ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ñ‚¾‚ï¿½ï¿½ÇAï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½
-//   perl ï¿½Ì‚æ‚¤ï¿½Èï¿½ï¿½sï¿½Â‹ï¿½ï¿½ï¿½ TJS2 ï¿½É‚Í‚È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚È‚ï¿½ )
+// ‚ÅXV‚ğs‚¤
+// ( ˆ—‚Ì“à—e‚Æ‚µ‚Ä‚Í TJS2 ‚Å‚à\•ª‘‚¯‚é‚ñ‚¾‚¯‚ÇA‚ ‚¢‚É‚­
+//   perl ‚Ì‚æ‚¤‚ÈÀsŠÂ‹«‚ª TJS2 ‚É‚Í‚È‚¢‚Æ‚¢‚¤‚©ì‚Á‚Ä‚È‚¢ )
 
 class LinkButtonLayer extends ButtonLayer
 {
-	// ï¿½Oï¿½ï¿½ï¿½tï¿½Bï¿½Jï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä“ï¿½ï¿½ì‚·ï¿½é‚½ï¿½ß‚Ìƒï¿½ï¿½Cï¿½ï¿½
-	var linkNum; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½
-	var onenter; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	var onleave; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	// ƒOƒ‰ƒtƒBƒJƒ‹ƒ{ƒ^ƒ“‚Æ‚µ‚Ä“®ì‚·‚é‚½‚ß‚ÌƒŒƒCƒ„
+	var linkNum; // ƒŠƒ“ƒN”Ô†
+	var onenter; // ƒ}ƒEƒX‚ª“ü‚Á‚Ä‚«‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
+	var onleave; // ƒ}ƒEƒX‚ªo‚Ä‚¢‚Á‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
 
     var _eventTransparent;
     var _focusable;
@@ -22,9 +22,9 @@ class LinkButtonLayer extends ButtonLayer
     
 	function LinkButtonLayer(win, par)
 	{
-		// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
         super.ButtonLayer(...);
-		focusable = false; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½Íó‚¯ï¿½ï¿½È‚ï¿½
+		focusable = false; // ƒtƒH[ƒJƒX‚Íó‚¯æ‚ç‚È‚¢
 		enabled  = true;
         eventTransparent = false;
         hint = "";
@@ -82,8 +82,8 @@ class LinkButtonLayer extends ButtonLayer
 	}
 
     property enabled {
-        // ï¿½Lï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
-        // ï¿½ï¿½ï¿½ï¿½Èê‡ï¿½ÍƒCï¿½xï¿½ï¿½ï¿½gï¿½ğ“§‰ß‚ï¿½ï¿½ï¿½ï¿½ï¿½
+        // —LŒø‚©‚Ç‚¤‚©
+        // –³Œø‚Èê‡‚ÍƒCƒxƒ“ƒg‚ğ“§‰ß‚³‚¹‚é
         setter(x) {
 			_enabled = x;
 			var en = super.enabled = getEnabled(x);
@@ -102,16 +102,16 @@ class LinkButtonLayer extends ButtonLayer
     
 	property eventTransparent
 	{
-		// ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ğ“§‰ß‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+		// ƒCƒxƒ“ƒg‚ğ“§‰ß‚·‚é‚©‚Ç‚¤‚©
 		setter(x)
 		{
 			if(_eventTransparent != x)
 			{
 				_eventTransparent = x;
 				hitType = x ? htProvince : htMask; 
-					// ï¿½{ï¿½^ï¿½ï¿½ï¿½æ‘œï¿½Í—Ìˆï¿½æ‘œï¿½Íï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½Ì‚ï¿½
-					// hitType ï¿½ï¿½ htProvince ï¿½É‚ï¿½ï¿½ï¿½Æ•Kï¿½ï¿½
-					// ï¿½}ï¿½Eï¿½Xï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ğ“§‰ß‚ï¿½ï¿½ï¿½æ‚¤ï¿½É‚È‚ï¿½
+					// ƒ{ƒ^ƒ“‰æ‘œ‚Í—Ìˆæ‰æ‘œ‚Í‚Á‚Ä‚¢‚È‚¢‚Ì‚Å
+					// hitType ‚ğ htProvince ‚É‚·‚é‚Æ•K‚¸
+					// ƒ}ƒEƒXƒCƒxƒ“ƒg‚ğ“§‰ß‚·‚é‚æ‚¤‚É‚È‚é
 			}
 		}
 		getter()
@@ -122,7 +122,7 @@ class LinkButtonLayer extends ButtonLayer
 
 	property focusable
 	{
-		// ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½ğ“§‰ß‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+		// ƒCƒxƒ“ƒg‚ğ“§‰ß‚·‚é‚©‚Ç‚¤‚©
 		setter(x)
 		{
             _focusable = x;
@@ -153,21 +153,21 @@ class LinkButtonLayer extends ButtonLayer
 
 class LinkCheckBoxLayer extends CheckBoxLayer
 {
-	// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Éuï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½vï¿½Æ‚ï¿½ï¿½ÄŠÇ—ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚ï¿½
-	// ï¿½`ï¿½Fï¿½bï¿½Nï¿½{ï¿½bï¿½Nï¿½X
-	var linkNum; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½
-	var exp; // ï¿½ï¿½
+	// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÉuƒŠƒ“ƒNv‚Æ‚µ‚ÄŠÇ—‚³‚ê‚é‚½‚ß‚Ì
+	// ƒ`ƒFƒbƒNƒ{ƒbƒNƒX
+	var linkNum; // ƒŠƒ“ƒN”Ô†
+	var exp; // ®
     var changefuncdata;
-    var changefunc; // ï¿½ÏXï¿½Öï¿½
-    var change; // ï¿½ÏXï¿½ï¿½
-    var changese; // ï¿½ÏXï¿½ï¿½SE
-    var vertical; // ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½h
+    var changefunc; // •ÏXŠÖ”
+    var change; // •ÏX®
+    var changese; // •ÏXSE
+    var vertical; // c‘‚«ƒ‚[ƒh
 
 	function LinkCheckBoxLayer(win, par)
 	{
-		// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 		super.CheckBoxLayer(...);
-		joinFocusChain = false; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½`ï¿½Fï¿½[ï¿½ï¿½ï¿½É‚ÍQï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
+		joinFocusChain = false; // ƒtƒH[ƒJƒXƒ`ƒF[ƒ“‚É‚ÍQ‰Á‚µ‚È‚¢
 		hint = "";
 	}
 
@@ -192,7 +192,7 @@ class LinkCheckBoxLayer extends CheckBoxLayer
 
 	function onKeyDown(key, shift, process)
 	{
-		// ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½Í‰Eï¿½Æï¿½ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
+		// c‘‚«‚Ì‚Í‰E‚Æ¶‚ğ“ü‚ê‘Ö‚¦‚é
 		if(vertical)
 		{
 			if(key == VK_LEFT) key = VK_RIGHT;
@@ -249,16 +249,16 @@ class LinkCheckBoxLayer extends CheckBoxLayer
 
 class LinkEditLayer extends EditLayer
 {
-	// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Éuï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½vï¿½Æ‚ï¿½ï¿½ÄŠÇ—ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚ï¿½
-	// ï¿½Pï¿½ï¿½sï¿½ÒWï¿½ï¿½ï¿½Cï¿½ï¿½
-	var linkNum; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½
-	var exp; // ï¿½ï¿½
+	// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÉuƒŠƒ“ƒNv‚Æ‚µ‚ÄŠÇ—‚³‚ê‚é‚½‚ß‚Ì
+	// ’Pˆês•ÒWƒŒƒCƒ„
+	var linkNum; // ƒŠƒ“ƒN”Ô†
+	var exp; // ®
 
 	function LinkEditLayer(win, par)
 	{
-		// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
 		super.EditLayer(...);
-		joinFocusChain = false; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½`ï¿½Fï¿½[ï¿½ï¿½ï¿½É‚ÍQï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
+		joinFocusChain = false; // ƒtƒH[ƒJƒXƒ`ƒF[ƒ“‚É‚ÍQ‰Á‚µ‚È‚¢
 		hint = "";
 	}
 
@@ -277,13 +277,13 @@ class LinkEditLayer extends EditLayer
 
 	function onKeyDown(key, shift, process)
 	{
-		// ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½Í‰Eï¿½Æï¿½ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
+		// c‘‚«‚Ì‚Í‰E‚Æ¶‚ğ“ü‚ê‘Ö‚¦‚é
 		if(Edit_vertical)
 		{
 			if(key == VK_LEFT) key = VK_RIGHT;
 			else if(key == VK_RIGHT) key = VK_LEFT;
 		}
-		// ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½keyLinkï¿½ï¿½â³
+		// ˆÚ“®‚ÉkeyLink‚ğ•â³
 		switch (key) {
 		case VK_LEFT: case VK_RIGHT: case VK_UP: case VK_DOWN: case VK_RETURN: case VK_TAB:
 			parent.keyLink = linkNum;
@@ -326,20 +326,20 @@ class LinkEditLayer extends EditLayer
 
 class LinkSliderLayer extends SliderLayer
 {
-    // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Éuï¿½Xï¿½ï¿½ï¿½Cï¿½_ï¿½vï¿½Æ‚ï¿½ï¿½ÄŠÇ—ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚ÌƒXï¿½ï¿½ï¿½Cï¿½_
-	var linkNum; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½
-	var onenter; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	var onleave; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ƒƒbƒZ[ƒWƒŒƒCƒ„‚ÉuƒXƒ‰ƒCƒ_v‚Æ‚µ‚ÄŠÇ—‚³‚ê‚é‚½‚ß‚ÌƒXƒ‰ƒCƒ_
+	var linkNum; // ƒŠƒ“ƒN”Ô†
+	var onenter; // ƒ}ƒEƒX‚ª“ü‚Á‚Ä‚«‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
+	var onleave; // ƒ}ƒEƒX‚ªo‚Ä‚¢‚Á‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
 
-    var exp; // ï¿½ï¿½
+    var exp; // ®
     var changefuncdata;
-    var changefunc; // ï¿½ÏXï¿½Öï¿½
-    var change; // ï¿½ÏXï¿½ï¿½
-    var changese; // ï¿½ÏXï¿½ï¿½SE
+    var changefunc; // •ÏXŠÖ”
+    var change; // •ÏX®
+    var changese; // •ÏXSE
 
     function LinkSliderLayer(win, par)
     {
-        // ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
+        // ƒRƒ“ƒXƒgƒ‰ƒNƒ^
         super.SliderLayer(...);
         joinFocusChain = false;
         hint = "";
@@ -423,21 +423,21 @@ class LinkSliderLayer extends SliderLayer
 }
 
 /**
- * ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½gï¿½ï¿½
- * KAG ï¿½ÌƒTï¿½ï¿½ï¿½vï¿½ï¿½ï¿½vï¿½ï¿½ï¿½Oï¿½Cï¿½ï¿½ï¿½ÌŠgï¿½ï¿½
+ * ƒVƒXƒeƒ€ƒ{ƒ^ƒ“Šg’£
+ * KAG ‚ÌƒTƒ“ƒvƒ‹ƒvƒ‰ƒOƒCƒ“‚ÌŠg’£
  */
 class SystemButtonLayer extends ButtonLayer
 {
-    var noStable; // ï¿½ï¿½Stableï¿½ï¿½ï¿½Å‚ï¿½ï¿½Lï¿½ï¿½
-    var onclick; // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    var onenter; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    var onleave; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    var noStable; // ”ñStable‚Å‚à—LŒø
+    var onclick; // ƒNƒŠƒbƒN‚ÉÀs‚·‚é‚à‚Ì
+    var onenter; // ƒ}ƒEƒX‚ª“ü‚Á‚Ä‚«‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
+    var onleave; // ƒ}ƒEƒX‚ªo‚Ä‚¢‚Á‚½‚Æ‚«‚ÉÀs‚·‚é‚à‚Ì
 
     /**
-     * ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
-     * @param window ï¿½Eï¿½Cï¿½ï¿½ï¿½hï¿½E
-     * @param parent ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½
-     * @param init ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½iï¿½ï¿½ï¿½Aï¿½pï¿½É•Ûï¿½ï¿½j
+     * ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+     * @param window ƒEƒCƒ“ƒhƒE
+     * @param parent ƒƒbƒZ[ƒWƒŒƒCƒ„
+     * @param init ¶¬î•ñi•œ‹A—p‚É•Ûj
      */
     
 	function SystemButtonLayer(window, parent)
@@ -501,7 +501,7 @@ class SystemButtonLayer extends ButtonLayer
 }
 
 /**
- * ï¿½\ï¿½ï¿½ï¿½ï¿½Ô‚Æ•\ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½É‚Â‚ï¿½ï¿½Ä‚ï¿½ï¿½éƒŒï¿½Cï¿½ï¿½ï¿½Æ‘ï¿½ï¿½Î“ï¿½ï¿½ï¿½éƒŒï¿½Cï¿½ï¿½
+ * •\¦ó‘Ô‚Æ•\¦ƒŒƒxƒ‹‚É‚Â‚¢‚Ä‚ ‚éƒŒƒCƒ„‚Æ‘Š‘Î“¯Šú‚·‚éƒŒƒCƒ„
  */
 class RelativeLayer extends AnimKAGLayer
 {
@@ -529,7 +529,7 @@ class RelativeLayer extends AnimKAGLayer
         }
     }
 
-    // ï¿½ï¿½ï¿½_ï¿½â³ï¿½ï¿½ï¿½ï¿½
+    // Œ´“_•â³ˆ—
     var _originMode = 0;
     property originMode {
         setter(v) {
@@ -652,24 +652,24 @@ class NameLayer extends RelativeLayer
     }
 
     /**
-     * ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½
-     * @param x Xï¿½ï¿½ï¿½W
-     * @param y Yï¿½ï¿½ï¿½W
-     * @param text ï¿½\ï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½g
+     * •¶š•`‰æ
+     * @param x XÀ•W
+     * @param y YÀ•W
+     * @param text •\¦ƒeƒLƒXƒg
      */
     function draw(x, y, text) {
 		with (owner) {
-			if (.edge)       drawText(x, y, text, .chColor, 255, .antialiased, 512, .edgeColor, .edgeExtent, 0, 0); // ï¿½ï¿½ï¿½ï¿½
-			else if(.shadow) drawText(x, y, text, .chColor, 255, .antialiased, 255, .shadowColor, 0, .shadowOffsetX, .shadowOffsetY); // ï¿½ï¿½ï¿½ï¿½
-			else             drawText(x, y, text, .chColor, 255, .antialiased); // ï¿½ï¿½ï¿½ï¿½
+			if (.edge)       drawText(x, y, text, .chColor, 255, .antialiased, 512, .edgeColor, .edgeExtent, 0, 0); // •¶š
+			else if(.shadow) drawText(x, y, text, .chColor, 255, .antialiased, 255, .shadowColor, 0, .shadowOffsetX, .shadowOffsetY); // •¶š
+			else             drawText(x, y, text, .chColor, 255, .antialiased); // •¶š
 		}
     }
 
-	// ï¿½eï¿½Lï¿½Xï¿½gï¿½Ì‰ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Cï¿½ï¿½ (-1:ï¿½ï¿½, 0:ï¿½ï¿½ï¿½ï¿½, 1:ï¿½E
+	// ƒeƒLƒXƒg‚Ì‰¡•ûŒüƒAƒ‰ƒCƒ“ (-1:¶, 0:’†‰›, 1:‰E
 	var align = -1;
 
     /**
-     * ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½
+     * –¼‘Oˆ—
      */
     function processName(text) {
         if (owner.nameImageMap !== void ) {
@@ -762,12 +762,12 @@ class MessageLayer extends AnimKAGLayer
     }
 
     /**
-     * ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ÏXï¿½ï¿½ï¿½ï¿½
-     * ï¿½Ö˜Aï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½í‚¹ï¿½Äï¿½ï¿½ï¿½
+     * •s“§–¾“x•ÏXˆ—
+     * ŠÖ˜AƒŒƒCƒ„‚à‚ ‚í‚¹‚Ä§Œä
      */
     function setInnerOpacity(v) {
         if (v !== void) {
-            //dm("ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½wï¿½ï¿½:" + v);
+            //dm("“à•”•s“§–¾“xw’è:" + v);
             super.opacity = v;
             faceLayer.opacity = v if faceLayer !== void;
             nameLayer.opacity = v if nameLayer !== void;
@@ -775,12 +775,12 @@ class MessageLayer extends AnimKAGLayer
     }
 
     /**
-     * ï¿½\ï¿½ï¿½ï¿½ï¿½Ô•ÏXï¿½ï¿½ï¿½ï¿½
-     * ï¿½Ö˜Aï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½í‚¹ï¿½Äï¿½ï¿½ï¿½
+     * •\¦ó‘Ô•ÏXˆ—
+     * ŠÖ˜AƒŒƒCƒ„‚à‚ ‚í‚¹‚Ä§Œä
      */
     function setInnerVisible(v) {
         if (v !== void) {
-            //dm("ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½Ôwï¿½ï¿½:" + v);
+            //dm("“à•”•\¦ó‘Ôw’è:" + v);
             super.visible     = v;
             faceLayer.visible = faceLayer.visible if faceLayer !== void;
             nameLayer.visible = nameLayer.visible if nameLayer !== void;
@@ -788,11 +788,11 @@ class MessageLayer extends AnimKAGLayer
     }
 
     /**
-     * ï¿½{ï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ÅIï¿½Iï¿½È•\ï¿½ï¿½ï¿½ï¿½ÔEï¿½sï¿½ï¿½ï¿½ï¿½ï¿½xï¿½É‚ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
-     * ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ìƒtï¿½Fï¿½[ï¿½hï¿½ğ’†~ï¿½ï¿½ï¿½ï¿½
+     * –{—ˆw’è‚³‚ê‚Ä‚¢‚éÅI“I‚È•\¦ó‘ÔE•s“§–¾“x‚É‚à‚Ç‚µ‚Ä
+     * Às’†‚ÌƒtƒF[ƒh‚ğ’†~‚·‚é
      */
     function fadeDone() {
-        //dm("ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½");
+        //dm("‘‹•\¦ˆ—I—¹");
         setInnerOpacity(_opacity);
         setInnerVisible(_visible);
         _fadeTimer.enabled = false;
@@ -801,7 +801,7 @@ class MessageLayer extends AnimKAGLayer
         }
     }
     
-    // ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½x
+    // •s“§–¾“x
     var _opacity;
     property opacity {
         setter(v) {
@@ -813,7 +813,7 @@ class MessageLayer extends AnimKAGLayer
         }
     }
 
-    // ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½
+    // •\¦ó‘Ô
     var _visible;
     property visible {
         setter(v) {
@@ -841,11 +841,11 @@ class MessageLayer extends AnimKAGLayer
     }
 
     /**
-     * visible ï¿½É‰ï¿½ï¿½ï¿½ï¿½Äƒtï¿½Fï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * visible ‚É‰‚¶‚ÄƒtƒF[ƒh‚à©“®’²®‚·‚é
      */
     function setVisibleTime(v, time) {
         if (v != visible) {
-            //dm("ï¿½ï¿½ï¿½tï¿½Fï¿½[ï¿½hï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:" + v);
+            //dm("‘‹ƒtƒF[ƒh•\¦ˆ—:" + v);
             _visible = v;
             if (time > 0) {
                 _fadeStartTime = System.getTickCount();
@@ -861,7 +861,7 @@ class MessageLayer extends AnimKAGLayer
         } 
     }
 
-    // ï¿½\ï¿½ï¿½ï¿½Ê’u
+    // •\¦ˆÊ’u
     property absolute {
         setter(v) {
             super.absolute = v;
@@ -873,149 +873,149 @@ class MessageLayer extends AnimKAGLayer
         }
     }
     
-    var wwFollowing = "%),:;]}ï¿½ï¿½ï¿½ßBï¿½Cï¿½Aï¿½Dï¿½Fï¿½Gï¿½Jï¿½Kï¿½Rï¿½Sï¿½T"
-                "ï¿½Uï¿½Xï¿½fï¿½hï¿½jï¿½lï¿½nï¿½pï¿½rï¿½tï¿½vï¿½xï¿½zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½@"; // ï¿½sï¿½ï¿½ï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½
-	var wwFollowingWeak="!.?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Eï¿½Hï¿½Iï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½@ï¿½B"
-                "ï¿½Dï¿½Fï¿½Hï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"; // ï¿½sï¿½ï¿½(ï¿½ï¿½)ï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½
-	var wwLeading="\\$([{ï¿½ï¿½eï¿½gï¿½iï¿½kï¿½mï¿½oï¿½qï¿½sï¿½uï¿½wï¿½yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"; // ï¿½sï¿½ï¿½ï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½
+    var wwFollowing = "%),:;]}¡£ŞßBCADFGJKRST"
+                "UXfhjlnprtvxz‹Œ‘“ñ@"; // s“ª‹Ö‘¥•¶š
+	var wwFollowingWeak="!.?¤¥§¨©ª«¬­®¯°EHI[‚Ÿ‚¡‚£‚¥‚§‚Á‚á‚ã‚å‚ìƒ@ƒB"
+                "ƒDƒFƒHƒbƒƒƒ…ƒ‡ƒƒ•ƒ–"; // s“ª(ã)‹Ö‘¥•¶š
+	var wwLeading="\\$([{¢egikmoqsuwy’"; // s––‹Ö‘¥•¶š
 
 	wwFollowing += wwFollowingWeak;
 
-	var id; // ï¿½ï¿½ï¿½Êq
-	var comp; // ï¿½Î‰ï¿½ï¿½ï¿½ï¿½ï¿½\/ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½
+	var id; // ¯•Êq
+	var comp; // ‘Î‰‚·‚é•\/— ƒƒbƒZ[ƒWƒŒƒCƒ„
 
 
-	// ï¿½È‰ï¿½ï¿½A/*C*/ ï¿½Ì‹Lï¿½ï¿½ï¿½Ì‚Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÍAassign ï¿½Ì‚Æ‚ï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½Iï¿½ÉƒRï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌB
-	// /*S*/ ï¿½Ì‹Lï¿½ï¿½ï¿½Ì‚Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÍAstore/resto ï¿½Ìï¿½ï¿½Éï¿½ï¿½ï¿½ï¿½Iï¿½ÉƒRï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌB
-	// ï¿½ï¿½ï¿½ï¿½ï¿½Ì•Ïï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Ïï¿½ï¿½ï¿½ï¿½íœï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Ç‰ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½
-	// perl ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Æ‚ï¿½ï¿½Ä‚ï¿½ï¿½ÌƒXï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B
-	// ( ï¿½ï¿½ï¿½[ï¿½ï¿½ perl ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Åï¿½ï¿½ï¿½ )
+	// ˆÈ‰ºA/*C*/ ‚Ì‹L†‚Ì‚Â‚¢‚½‚à‚Ì‚ÍAassign ‚Ì‚Æ‚«‚É©“®“I‚ÉƒRƒs[‚³‚ê‚é‚à‚ÌB
+	// /*S*/ ‚Ì‹L†‚Ì‚Â‚¢‚½‚à‚Ì‚ÍAstore/resto ‚Ì‚É©“®“I‚ÉƒRƒs[‚³‚ê‚é‚à‚ÌB
+	// ‚±‚ê‚ç‚Ì•Ï”–¼‚ğ‚¢‚¶‚Á‚½‚èA•Ï”‚ğíœ‚µ‚½‚èA’Ç‰Á‚·‚éê‡‚Í‚¢‚Á‚½‚ñ‚Ü‚½
+	// perl ƒXƒNƒŠƒvƒg‚Æ‚µ‚Ä‚±‚ÌƒXƒNƒŠƒvƒg‚ğÀs‚·‚é•K—v‚ª‚ ‚è‚Ü‚·B
+	// ( ––’[‚Ì perl ƒXƒNƒŠƒvƒg‚Åˆ— )
 
-	var layerType = ltAddAlpha; // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½^ï¿½Cï¿½v
-	/*CS*/var frameGraphic = ""; // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½
-	/*CS*/var frameKey = clNone; // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œï¿½Lï¿½[
+	var layerType = ltAddAlpha; // ƒŒƒCƒ„ƒ^ƒCƒv
+	/*CS*/var frameGraphic = ""; // ƒtƒŒ[ƒ€‰æ‘œƒtƒ@ƒCƒ‹–¼
+	/*CS*/var frameKey = clNone; // ƒtƒŒ[ƒ€‰æ‘œƒL[
     var frameAnimCount;
     var frameAnimTime;
-    /*CS*/var frameColor = 0x000000; // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ÌF
-	/*CS*/var frameOpacity = 128; // ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ì•sï¿½ï¿½ï¿½ï¿½ï¿½x
-	/*CS*/var marginL = 8; // ï¿½ï¿½ï¿½}ï¿½[ï¿½Wï¿½ï¿½
-	/*CS*/var marginT = 8; // ï¿½ï¿½}ï¿½[ï¿½Wï¿½ï¿½
-	/*CS*/var marginR = 8; // ï¿½Eï¿½}ï¿½[ï¿½Wï¿½ï¿½
-	/*CS*/var marginB = 8; // ï¿½ï¿½ï¿½}ï¿½[ï¿½Wï¿½ï¿½
-	/*CS*/var marginRCh = 2; // ï¿½Eï¿½[(ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½Ìê‡ï¿½Í‰ï¿½ï¿½[)ï¿½ÉŠmï¿½Û‚ï¿½ï¿½ï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½]ï¿½ï¿½
+    /*CS*/var frameColor = 0x000000; // ƒtƒŒ[ƒ€‚ÌF
+	/*CS*/var frameOpacity = 128; // ƒtƒŒ[ƒ€‚Ì•s“§–¾“x
+	/*CS*/var marginL = 8; // ¶ƒ}[ƒWƒ“
+	/*CS*/var marginT = 8; // ãƒ}[ƒWƒ“
+	/*CS*/var marginR = 8; // ‰Eƒ}[ƒWƒ“
+	/*CS*/var marginB = 8; // ‰ºƒ}[ƒWƒ“
+	/*CS*/var marginRCh = 2; // ‰E’[(c‘‚«‚Ìê‡‚Í‰º’[)‚ÉŠm•Û‚·‚é‹Ö‘¥ˆ——p—]”’
 	var kinsokuCount;
 	/*C*/var x;
-	/*C*/var y; // ï¿½ï¿½ï¿½İ‚Ì•\ï¿½ï¿½ï¿½Ê’u
-	/*C*/var relinexpos; // ï¿½ï¿½sï¿½ï¿½ï¿½×‚ï¿½ï¿½ÅIï¿½E(ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½Ìê‡ï¿½Í‰ï¿½)ï¿½Ê’u
-	/*C*/var isLastLine; // ï¿½yï¿½[ï¿½Wï¿½ÅIï¿½sï¿½ï¿½`ï¿½æ’†
-	/*C*/var indentxpos; // ï¿½Cï¿½ï¿½ï¿½fï¿½ï¿½ï¿½gï¿½ï¿½(ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½Ìê‡ï¿½Íï¿½)ï¿½Ê’u
-	var links = [];  // ï¿½ï¿½ï¿½ï¿½ï¿½N
-    var names = %[]; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ì–ï¿½ï¿½Oï¿½Å‚ÌQï¿½ï¿½
-    /*C*/var linkFilled; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ìˆï¿½æ‘œï¿½ï¿½hï¿½ï¿½Â‚Ô‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
-	/*C*/var numLinks = 0; // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½ï¿½ï¿½Nï¿½Ìï¿½
+	/*C*/var y; // Œ»İ‚Ì•\¦ˆÊ’u
+	/*C*/var relinexpos; // ‰üs‚·‚×‚«ÅI‰E(c‘‚«‚Ìê‡‚Í‰º)ˆÊ’u
+	/*C*/var isLastLine; // ƒy[ƒWÅIs‚ğ•`‰æ’†
+	/*C*/var indentxpos; // ƒCƒ“ƒfƒ“ƒg¶(c‘‚«‚Ìê‡‚Íã)ˆÊ’u
+	var links = [];  // ƒŠƒ“ƒN
+    var names = %[]; // ƒŠƒ“ƒN‚Ì–¼‘O‚Å‚ÌQÆ
+    /*C*/var linkFilled; // ƒŠƒ“ƒN—Ìˆæ‰æ‘œ‚ğ“h‚è‚Â‚Ô‚µ‚½‚©‚Ç‚¤‚©
+	/*C*/var numLinks = 0; // ƒŒƒCƒ„“à‚ÌƒŠƒ“ƒN‚Ì”
 
-	var lastLink = -1; // ï¿½ÅŒï¿½É‘Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½
-	var keyLink = -1; // ï¿½Lï¿½[ï¿½{ï¿½[ï¿½hï¿½Å‘Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½
-	var inLink = -1; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½`ï¿½æ’†ï¿½ï¿½
-	var highlightLayer; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ìƒï¿½ï¿½Cï¿½ï¿½
-	/*C*/var selProcessLock = false; // process ï¿½ï¿½Éƒï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ì‚³ï¿½ï¿½ï¿½Ì‚ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ß‚Ìƒtï¿½ï¿½ï¿½O
-	/*C*/var storedSelProcessLock = false; // storeSelProcessLock ï¿½ï¿½ï¿½_ï¿½Å‚Ìï¿½ï¿½
+	var lastLink = -1; // ÅŒã‚É‘I‘ğ‚µ‚½ƒŠƒ“ƒN”Ô†
+	var keyLink = -1; // ƒL[ƒ{[ƒh‚Å‘I‘ğ‚µ‚½ƒŠƒ“ƒN”Ô†
+	var inLink = -1; // ƒŠƒ“ƒN‚ğ•`‰æ’†‚©
+	var highlightLayer; // ƒŠƒ“ƒN‚ğ‹­’²•\¦‚·‚é‚½‚ß‚ÌƒŒƒCƒ„
+	/*C*/var selProcessLock = false; // process Œã‚ÉƒŠƒ“ƒN‚ª‘€ì‚³‚ê‚é‚Ì‚ğ–h‚®‚½‚ß‚Ìƒtƒ‰ƒO
+	/*C*/var storedSelProcessLock = false; // storeSelProcessLock “_‚Å‚Ìó‘Ô
 
-	/*CS*/var defaultLinkColor = 0x0080ff; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½ï¿½ï¿½Nï¿½F
-	/*CS*/var defaultLinkOpacity = 64; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½ï¿½ï¿½Nï¿½Ì•sï¿½ï¿½ï¿½ï¿½ï¿½x
+	/*CS*/var defaultLinkColor = 0x0080ff; // ƒfƒtƒHƒ‹ƒg‚ÌƒŠƒ“ƒNF
+	/*CS*/var defaultLinkOpacity = 64; // ƒfƒtƒHƒ‹ƒg‚ÌƒŠƒ“ƒN‚Ì•s“§–¾“x
 
-	/*CS*/var defaultFontSize = 24; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒtï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½
-	/*C*/var fontSize; // ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½
-	/*C*/var _fontSize; // ï¿½ï¿½ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½
-	/*CS*/var defaultLineSize = 0; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	/*C*/var reserveLineSize = 0; // 'ï¿½\ï¿½ï¿½' ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	/*C*/var lineSize; // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	/*CS*/var defaultRubySize = 10; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½rï¿½Ìï¿½ï¿½ï¿½
-	/*C*/var rubySize; // ï¿½ï¿½ï¿½rï¿½ï¿½ï¿½ï¿½
-	/*C*/var _rubySize; // ï¿½ï¿½ï¿½ï¿½ï¿½rï¿½ï¿½ï¿½ï¿½
-	/*CS*/var defaultRubyOffset = -2; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½rï¿½ÌƒIï¿½tï¿½Zï¿½bï¿½g
-	/*C*/var rubyOffset; // ï¿½ï¿½ï¿½rï¿½ÌƒIï¿½tï¿½Zï¿½bï¿½g
-	/*C*/var _rubyOffset; // ï¿½ï¿½ï¿½ï¿½ï¿½rï¿½Iï¿½tï¿½Zï¿½bï¿½g
+	/*CS*/var defaultFontSize = 24; // ƒfƒtƒHƒ‹ƒg‚ÌƒtƒHƒ“ƒg‚‚³
+	/*C*/var fontSize; // ƒtƒHƒ“ƒg‚‚³
+	/*C*/var _fontSize; // ‰¼ƒtƒHƒ“ƒg‚‚³
+	/*CS*/var defaultLineSize = 0; // ƒfƒtƒHƒ‹ƒg‚Ìƒ‰ƒCƒ“‚‚³
+	/*C*/var reserveLineSize = 0; // '—\–ñ' ƒ‰ƒCƒ“‚‚³
+	/*C*/var lineSize; // ƒ‰ƒCƒ“‚‚³
+	/*CS*/var defaultRubySize = 10; // ƒfƒtƒHƒ‹ƒg‚Ìƒ‹ƒr‚Ì‚‚³
+	/*C*/var rubySize; // ƒ‹ƒr‚‚³
+	/*C*/var _rubySize; // ‰¼ƒ‹ƒr‚‚³
+	/*CS*/var defaultRubyOffset = -2; // ƒfƒtƒHƒ‹ƒg‚Ìƒ‹ƒr‚ÌƒIƒtƒZƒbƒg
+	/*C*/var rubyOffset; // ƒ‹ƒr‚ÌƒIƒtƒZƒbƒg
+	/*C*/var _rubyOffset; // ‰¼ƒ‹ƒrƒIƒtƒZƒbƒg
 
-	/*CS*/var defaultLineSpacing = 6; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìsï¿½ï¿½
-	/*C*/var lineSpacing; // ï¿½sï¿½ï¿½
-	/*CS*/var defaultPitch = 0; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìï¿½ï¿½ï¿½
-	/*C*/var pitch; // ï¿½ï¿½ï¿½ï¿½
-	/*CS*/var defaultShadow = true; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Å‰eï¿½ï¿½ï¿½Â‚ï¿½ï¿½é‚©
-	/*C*/var shadow; // ï¿½eï¿½ï¿½ï¿½Â‚ï¿½ï¿½é‚©
-	/*CS*/var defaultEdge = false; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Å‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-	/*C*/var edge; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-	/*CS*/var defaultShadowColor = 0x000000; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì‰eï¿½ÌF
-	/*C*/var shadowColor; // ï¿½eï¿½ÌF
-	/*CS*/var defaultEdgeColor = 0x0080ff; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì‰ï¿½ï¿½ï¿½ï¿½ÌF
-	/*C*/var edgeColor; // ï¿½ï¿½ï¿½ï¿½ï¿½ÌF
-	/*CS*/var defaultBold = true; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Åƒ{ï¿½[ï¿½ï¿½ï¿½hï¿½Å•`ï¿½æ‚·ï¿½é‚©
-	/*C*/var bold; // ï¿½{ï¿½[ï¿½ï¿½ï¿½hï¿½Å•`ï¿½æ‚·ï¿½é‚©
-	/*CS*/var defaultFace = "user"; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒtï¿½Hï¿½ï¿½ï¿½g
-	/*C*/var userFace = "ï¿½lï¿½r ï¿½oï¿½ï¿½ï¿½ï¿½"; // ï¿½ï¿½ï¿½[ï¿½Uï¿½Ì‘Iï¿½ñ‚¾ƒtï¿½Hï¿½ï¿½ï¿½g
-	/*C*/var fontFace; // ï¿½tï¿½Hï¿½ï¿½ï¿½g
-	/*CS*/var defaultChColor = 0xffffff; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ì•ï¿½ï¿½ï¿½ï¿½F
-	/*C*/var chColor; // ï¿½ï¿½ï¿½ï¿½ï¿½F
-	/*C*/var defaultAntialiased = true; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÅƒAï¿½ï¿½ï¿½`ï¿½Gï¿½Cï¿½ï¿½ï¿½Aï¿½Xï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½é‚©
-	/*C*/var antialiased; // ï¿½Aï¿½ï¿½ï¿½`ï¿½Gï¿½Cï¿½ï¿½ï¿½Aï¿½Xï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½é‚©
-	/*CS*/var vertical = false; // ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½Ìï¿½ï¿½ï¿½ true
-	/*C*/var currentRuby = ""; // ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½éƒ‹ï¿½r
-	/*C*/var lastDrawnCh = ""; // ï¿½ÅŒï¿½É•`ï¿½æ‚µï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	/*CS*/var defaultLineSpacing = 6; // ƒfƒtƒHƒ‹ƒg‚ÌsŠÔ
+	/*C*/var lineSpacing; // sŠÔ
+	/*CS*/var defaultPitch = 0; // ƒfƒtƒHƒ‹ƒg‚ÌšŠÔ
+	/*C*/var pitch; // šŠÔ
+	/*CS*/var defaultShadow = true; // ƒfƒtƒHƒ‹ƒg‚Å‰e‚ğ‚Â‚¯‚é‚©
+	/*C*/var shadow; // ‰e‚ğ‚Â‚¯‚é‚©
+	/*CS*/var defaultEdge = false; // ƒfƒtƒHƒ‹ƒg‚Å‰æ‚è‚ğ‚·‚é‚©
+	/*C*/var edge; // ‰æ‚è‚ğ‚·‚é‚©
+	/*CS*/var defaultShadowColor = 0x000000; // ƒfƒtƒHƒ‹ƒg‚Ì‰e‚ÌF
+	/*C*/var shadowColor; // ‰e‚ÌF
+	/*CS*/var defaultEdgeColor = 0x0080ff; // ƒfƒtƒHƒ‹ƒg‚Ì‰æ‚è‚ÌF
+	/*C*/var edgeColor; // ‰æ‚è‚ÌF
+	/*CS*/var defaultBold = true; // ƒfƒtƒHƒ‹ƒg‚Åƒ{[ƒ‹ƒh‚Å•`‰æ‚·‚é‚©
+	/*C*/var bold; // ƒ{[ƒ‹ƒh‚Å•`‰æ‚·‚é‚©
+	/*CS*/var defaultFace = "user"; // ƒfƒtƒHƒ‹ƒg‚ÌƒtƒHƒ“ƒg
+	/*C*/var userFace = "‚l‚r ‚o–¾’©"; // ƒ†[ƒU‚Ì‘I‚ñ‚¾ƒtƒHƒ“ƒg
+	/*C*/var fontFace; // ƒtƒHƒ“ƒg
+	/*CS*/var defaultChColor = 0xffffff; // ƒfƒtƒHƒ‹ƒg‚Ì•¶šF
+	/*C*/var chColor; // •¶šF
+	/*C*/var defaultAntialiased = true; // ƒfƒtƒHƒ‹ƒg‚ÅƒAƒ“ƒ`ƒGƒCƒŠƒAƒX‚ğŠ|‚¯‚é‚©
+	/*C*/var antialiased; // ƒAƒ“ƒ`ƒGƒCƒŠƒAƒX‚ğŠ|‚¯‚é‚©
+	/*CS*/var vertical = false; // c‘‚«ƒ‚[ƒh‚Ì‚É true
+	/*C*/var currentRuby = ""; // Ÿ‚Ì•¶š‚É‘Î‚·‚éƒ‹ƒr
+	/*C*/var lastDrawnCh = ""; // ÅŒã‚É•`‰æ‚µ‚½•¶š
 
-	/*CS*/var edgeExtent = 1; // ï¿½Ü•ï¿½ï¿½ï¿½ï¿½Ì‚Ó‚Æ‚ï¿½
-	/*CS*/var edgeEmphasis = 512; // ï¿½Ü•ï¿½ï¿½ï¿½ï¿½Ì‹ï¿½ï¿½ï¿½ï¿½x
-	/*CS*/var shadowOffsetX = 2; // ï¿½eï¿½ÌƒIï¿½tï¿½Zï¿½bï¿½g
-	/*CS*/var shadowOffsetY = 2; // ï¿½eï¿½ÌƒIï¿½tï¿½Zï¿½bï¿½g
+	/*CS*/var edgeExtent = 1; // ‘Ü•¶š‚Ì‚Ó‚Æ‚³
+	/*CS*/var edgeEmphasis = 512; // ‘Ü•¶š‚Ì‹­’²“x
+	/*CS*/var shadowOffsetX = 2; // ‰e‚ÌƒIƒtƒZƒbƒg
+	/*CS*/var shadowOffsetY = 2; // ‰e‚ÌƒIƒtƒZƒbƒg
 
-	/*C*/var sizeChanged = false; // ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½ÏXï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ true
+	/*C*/var sizeChanged = false; // ƒtƒHƒ“ƒgƒTƒCƒY‚ª•ÏX‚³‚ê‚é‚Æ true
 
-	/*C*/var nextClearFlag = false; // ï¿½ï¿½ï¿½[ï¿½É’Bï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Aï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Åƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
+	/*C*/var nextClearFlag = false; // ‰º’[‚É’B‚µ‚½‚Æ‚«AŸ‚Ì•¶š•\¦‚ÅƒŒƒCƒ„‚ğƒNƒŠƒA‚·‚é‚©‚Ç‚¤‚©
 
-	var lineLayer; // ï¿½sï¿½`ï¿½ï¿½pï¿½Ìƒï¿½ï¿½Cï¿½ï¿½
-	/*C*/var lineLayerBase; // ï¿½xï¿½[ï¿½Xï¿½ï¿½ï¿½Cï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½Ê’u/ï¿½cï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½Ê’u)
-	/*C*/var lineLayerPos; // lineLayer ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½Ê’u
-	/*C*/var lineLayerLength; // lineLayer ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½ï¿½
-	/*C*/var lineLayerOriginX; // ï¿½\ï¿½ï¿½ï¿½Iï¿½tï¿½Zï¿½bï¿½gX
-	/*C*/var lineLayerOriginY; // ï¿½\ï¿½ï¿½ï¿½Iï¿½tï¿½Zï¿½bï¿½gY
-	var lineLayerLinks = []; // lineLayer ï¿½ï¿½ï¿½Ç—ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½éƒŠï¿½ï¿½ï¿½N
+	var lineLayer; // s•`‰æ—p‚ÌƒŒƒCƒ„
+	/*C*/var lineLayerBase; // ƒx[ƒXƒ‰ƒCƒ“(‰¡‘‚«:‰ºüˆÊ’u/c‘‚«:’†‰›ˆÊ’u)
+	/*C*/var lineLayerPos; // lineLayer ’†‚Ì•¶š•\¦ˆÊ’u
+	/*C*/var lineLayerLength; // lineLayer ’†‚Ì•¶š•
+	/*C*/var lineLayerOriginX; // •\¦ƒIƒtƒZƒbƒgX
+	/*C*/var lineLayerOriginY; // •\¦ƒIƒtƒZƒbƒgY
+	var lineLayerLinks = []; // lineLayer ‚ªŠÇ—‚µ‚Ä‚¢‚éƒŠƒ“ƒN
 
-	/*C*/var align=-1; // -1=ï¿½ï¿½/ï¿½ã‚»ï¿½ë‚¦  0=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½   1=ï¿½E/ï¿½ï¿½ï¿½ï¿½ï¿½ë‚¦
-	/*CS*/var defaultAutoReturn = true; // ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Åï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
-	/*C*/var autoReturn = true; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½Eï¿½ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+	/*C*/var align=-1; // -1=¶/ã‚»‚ë‚¦  0=’†‰›‘µ‚¦   1=‰E/‰º‚»‚ë‚¦
+	/*CS*/var defaultAutoReturn = true; // ƒfƒtƒHƒ‹ƒg‚Å©“®‰üs‚ğs‚¤‚©‚Ç‚¤‚©
+	/*C*/var autoReturn = true; // ©“®‰üsE‰üƒy[ƒWˆ—‚ğs‚¤‚©
 
-	/*CS*/var lineBreakGlyph = "linebreak"; // ï¿½sï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½
-	/*CS*/var lineBreakGlyphKey = clNone; // ï¿½sï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ÌƒJï¿½ï¿½ï¿½[ï¿½Lï¿½[
-    /*CS*/var lineBreakBaseLine = 0; // ï¿½xï¿½[ï¿½Xï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½â³ï¿½p
-    /*CS*/var pageBreakGlyph = "pagebreak"; // ï¿½yï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½
-	/*CS*/var pageBreakGlyphKey = clNone; // ï¿½yï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ÌƒJï¿½ï¿½ï¿½[ï¿½Lï¿½[
-    /*CS*/var pageBreakBaseLine = 0; // ï¿½xï¿½[ï¿½Xï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½â³ï¿½p
-	/*CS*/var glyphFixedPosition = false; // ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Å’ï¿½Óï¿½ï¿½É•\ï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-	/*CS*/var glyphFixedLeft = 0; // ï¿½ï¿½ï¿½ÌˆÊ’u
+	/*CS*/var lineBreakGlyph = "linebreak"; // s‘Ò‚¿‹L†–¼
+	/*CS*/var lineBreakGlyphKey = clNone; // s‘Ò‚¿‹L†‚ÌƒJƒ‰[ƒL[
+    /*CS*/var lineBreakBaseLine = 0; // ƒx[ƒXƒ‰ƒCƒ“•â³—p
+    /*CS*/var pageBreakGlyph = "pagebreak"; // ƒy[ƒW‘Ò‚¿‹L†–¼
+	/*CS*/var pageBreakGlyphKey = clNone; // ƒy[ƒW‘Ò‚¿‹L†‚ÌƒJƒ‰[ƒL[
+    /*CS*/var pageBreakBaseLine = 0; // ƒx[ƒXƒ‰ƒCƒ“•â³—p
+	/*CS*/var glyphFixedPosition = false; // ‹L†‚ğŒÅ’è‰ÓŠ‚É•\¦‚·‚é‚©
+	/*CS*/var glyphFixedLeft = 0; // ‚»‚ÌˆÊ’u
 	/*CS*/var glyphFixedTop = 0;
 
-	/*CS*/var glyphFixedSize   = false; // ï¿½Lï¿½ï¿½ï¿½ï¿½ï¿½Å’ï¿½Tï¿½Cï¿½Yï¿½ï¿½
-	/*CS*/var glyphFixedWidth  = 24;     // ï¿½ï¿½ï¿½ÌˆÊ’u
+	/*CS*/var glyphFixedSize   = false; // ‹L†‚ğŒÅ’èƒTƒCƒY‚É
+	/*CS*/var glyphFixedWidth  = 24;     // ‚»‚ÌˆÊ’u
 	/*CS*/var glyphFixedHeight = 24;
     
-	/*CS*/var draggable = false; // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½Â”\ï¿½ï¿½
-	var dragging = false; // ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½ï¿½ï¿½ï¿½
-	var dragOriginX, dragOriginY; // ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½ï¿½ï¿½Aï¿½Â‚ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½W
+	/*CS*/var draggable = false; // ƒƒbƒZ[ƒWƒŒƒCƒ„‚ğƒhƒ‰ƒbƒO‰Â”\‚©
+	var dragging = false; // ƒhƒ‰ƒbƒO’†‚©
+	var dragOriginX, dragOriginY; // ƒhƒ‰ƒbƒO’†A‚Â‚©‚ñ‚Å‚¢‚éÀ•W
 
-	/*C*/var selClickLock = false; // ï¿½Aï¿½Å‚É‚ï¿½ï¿½ë‘€ï¿½ï¿½ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ß‚Ìƒtï¿½ï¿½ï¿½O
+	/*C*/var selClickLock = false; // ˜A‘Å‚É‚æ‚éŒë‘€ì‚ğ–h‚®‚½‚ß‚Ìƒtƒ‰ƒO
 	/*C*/var lastMouseX;
-	/*C*/var lastMouseY; // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÌÅŒï¿½Ìƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ÌˆÊ’u
+	/*C*/var lastMouseY; // ƒŠƒ“ƒN‚ğ•\¦‚µ‚½‚Æ‚«‚ÌÅŒã‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌˆÊ’u
 
-    /*C*/var eventTransparent = true; // ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½Ì“ï¿½ï¿½ï¿½
+    /*C*/var eventTransparent = true; // ƒCƒxƒ“ƒg‚Ì“§‰ß
     
-	var ml, mt, mw, mh; // ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Tï¿½Cï¿½Y(configï¿½p)
+	var ml, mt, mw, mh; // ‰ŠúƒŒƒCƒ„ƒTƒCƒY(config—p)
 
-	var invisibleByUser = false; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½ï¿½êï¿½Iï¿½É•sï¿½Âï¿½
+	var invisibleByUser = false; // ƒ†[ƒU‚É‚æ‚èˆê“I‚É•s‰Â‹
 	var visibleBeforeUserInvisible  = false;
 
-	var lastMouseDownX; // ï¿½ÅŒï¿½Éƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ X ï¿½ï¿½ï¿½W
-	var lastMouseDownY; // ï¿½ÅŒï¿½Éƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ Y ï¿½ï¿½ï¿½W
+	var lastMouseDownX; // ÅŒã‚Éƒ}ƒEƒX‚ªƒNƒŠƒbƒN‚³‚ê‚½ X À•W
+	var lastMouseDownY; // ÅŒã‚Éƒ}ƒEƒX‚ªƒNƒŠƒbƒN‚³‚ê‚½ Y À•W
 
-	// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½^ï¿½Cï¿½v
+	// ƒŠƒ“ƒNƒ^ƒCƒv
     var ltNormal   = 1;
     var ltButton   = 2;
     var ltEdit     = 3;
@@ -1023,17 +1023,17 @@ class MessageLayer extends AnimKAGLayer
     var ltSlider   = 5;
     var ltLayer    = 6;
     
-    // ï¿½ï¿½ï¿½Oï¿½`ï¿½ï¿½pï¿½ï¿½ï¿½Cï¿½ï¿½
+    // –¼‘O•`‰æ—pƒŒƒCƒ„
     var nameLayer;
 
-    // ï¿½ï¿½`ï¿½ï¿½pï¿½ï¿½ï¿½Cï¿½ï¿½
+    // Šç•`‰æ—pƒŒƒCƒ„
     var faceLayer;
 
-    // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
+    // ƒVƒXƒeƒ€ƒ{ƒ^ƒ“ƒŒƒCƒ„
     var buttons = %[];
     var buttons_save = [];
 
-    // ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½ï¿½p
+    // ƒ^ƒCƒ€ƒAƒEƒgˆ——p
     var timeoutTimer;
     var timeoutTime;
     var timeoutStorage;
@@ -1052,7 +1052,7 @@ class MessageLayer extends AnimKAGLayer
         if (!selProcessLock) {
             Scripts.eval(timeoutExp) if timeoutExp != '';
             if (timeoutStorage != '' || timeoutTarget != '') {
-                window.lockMessageLayerSelProcess(); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½N
+                window.lockMessageLayerSelProcess(); // ‘I‘ğ‚ğƒƒbƒN
                 window.process(timeoutStorage, timeoutTarget);
                 clearTimeout();
             }
@@ -1064,8 +1064,8 @@ class MessageLayer extends AnimKAGLayer
         timeoutStorage = elm.storage;
         timeoutTarget  = elm.target;
         timeoutExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
-        setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-        //comp.setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+        setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
+        //comp.setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
     }
 
     function stopTimeout() {
@@ -1098,9 +1098,9 @@ class MessageLayer extends AnimKAGLayer
         clickStorage = elm.storage;
         clickTarget  = elm.target;
         clickExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
-        focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ó‚¯ï¿½ï¿½ï¿½æ‚¤ï¿½ï¿½
-        setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-        //comp.setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+        focusable = true; // ƒtƒH[ƒJƒX‚ğó‚¯æ‚ê‚é‚æ‚¤‚É
+        setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
+        //comp.setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
         selClickLock = false;
     }
 
@@ -1111,10 +1111,10 @@ class MessageLayer extends AnimKAGLayer
     function processClick() {
         Scripts.eval(clickExp) if clickExp != '';
         if(clickStorage != '' || clickTarget != '') {
-            window.lockMessageLayerSelProcess(); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½N
+            window.lockMessageLayerSelProcess(); // ‘I‘ğ‚ğƒƒbƒN
             if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
                 window.hideMouseCursor();
-            // ï¿½Lï¿½[ï¿½{ï¿½[ï¿½hï¿½É‚ï¿½é‘€ï¿½ï¿½Ìê‡ï¿½Íƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½
+            // ƒL[ƒ{[ƒh‚É‚æ‚é‘€ì‚Ìê‡‚Íƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğ‰B‚·
             window.process(clickStorage, clickTarget);
             clearClick();
         }
@@ -1138,9 +1138,9 @@ class MessageLayer extends AnimKAGLayer
         wheelTarget  = elm.target;
         wheelFunc    = elm.func;
         wheelExp = createSoundExpression(elm.exp, elm.se, elm.sebuf);
-        focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ó‚¯ï¿½ï¿½ï¿½æ‚¤ï¿½ï¿½
-        setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-        //comp.setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+        focusable = true; // ƒtƒH[ƒJƒX‚ğó‚¯æ‚ê‚é‚æ‚¤‚É
+        setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
+        //comp.setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
     }
 
     function hasWheel() {
@@ -1152,7 +1152,7 @@ class MessageLayer extends AnimKAGLayer
             Scripts.eval(wheelFunc)(shift, delta, x, y) if wheelFunc != void;
             Scripts.eval(wheelExp) if wheelExp != '';
             if(wheelStorage != '' || wheelTarget != '') {
-                window.lockMessageLayerSelProcess(); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½N
+                window.lockMessageLayerSelProcess(); // ‘I‘ğ‚ğƒƒbƒN
                 window.process(wheelStorage, wheelTarget);
                 clearWheel();
             }
@@ -1164,13 +1164,13 @@ class MessageLayer extends AnimKAGLayer
         left = 0;
         top  = 0;
 
-        // MessageLayer ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^
-		// owner : ï¿½Iï¿½[ï¿½iï¿½[ KAG Window
-        // parent : ï¿½eï¿½ï¿½ï¿½Cï¿½ï¿½
-        // name ï¿½ï¿½ï¿½O
-		// id : ï¿½ï¿½ï¿½Êq
-		// left, top, width, height : ï¿½ï¿½ï¿½ï¿½Ê’u
-		// do_config : ï¿½Rï¿½ï¿½ï¿½tï¿½Bï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+        // MessageLayer ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+		// owner : ƒI[ƒi[ KAG Window
+        // parent : eƒŒƒCƒ„
+        // name –¼‘O
+		// id : ¯•Êq
+		// left, top, width, height : ‰ŠúˆÊ’u
+		// do_config : ƒRƒ“ƒtƒBƒMƒ…ƒŒ[ƒVƒ‡ƒ“‚ğs‚¤‚©
         super.AnimKAGLayer(...);
 
         _opacity = super.opacity;
@@ -1181,52 +1181,52 @@ class MessageLayer extends AnimKAGLayer
 
 		imageModified = true;
 
-		// ï¿½Rï¿½ï¿½ï¿½tï¿½Bï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½
+		// ƒRƒ“ƒtƒBƒMƒ…ƒŒ[ƒVƒ‡ƒ“
 		if(do_config)
 		{
 			(MessageLayer_config incontextof this)();
 			(MessageLayer_config_override incontextof this)()
 				if typeof global.MessageLayer_config_override != "undefined";
 
-			// ï¿½ï¿½ï¿½ï¿½Tï¿½Cï¿½Yï¿½ï¿½ mw mh ï¿½É“ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ï¿½
+			// ‰ŠúƒTƒCƒY‚Í mw mh ‚É“ü‚Á‚Ä‚¢‚é‚Ì‚Å
 			setPos(ml, mt);
 			setImageSize(mw, mh);
 			setSize(mw, mh);
 		}
 		else
 		{
-			// config ï¿½ï¿½ï¿½sï¿½ï¿½È‚ï¿½ï¿½ê‡
-			// ï¿½Tï¿½Cï¿½Yï¿½Íƒfï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÅŒï¿½ï¿½è‚·ï¿½ï¿½
+			// config ‚ğs‚í‚È‚¢ê‡
+			// ƒTƒCƒY‚ÍƒfƒtƒHƒ‹ƒg‚ÅŒˆ’è‚·‚é
 			setPos(0, 0);
 			setImageSize(parent.width, parent.height);
 			setSize(parent.width, parent.height);
 		}
 
-		// config ï¿½pï¿½êï¿½Ïï¿½ï¿½Ìï¿½ï¿½ï¿½
+		// config —pˆê•Ï”‚ÌÁ‹
 		delete ml; delete mt; delete mw; delete mh;
 
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½^ï¿½Cï¿½vï¿½Ìİ’ï¿½
+		// ƒŒƒCƒ„ƒ^ƒCƒv‚Ìİ’è
 		type = layerType;
 
-		// ï¿½ï¿½ï¿½ï¿½ï¿½è”»ï¿½è‰ï¿½ï¿½
+		// “–‚½‚è”»’è‰Šú‰»
 		hitType = htMask;
-		hitThreshold = 0; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Í‘Sï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+		hitThreshold = 0; // ƒ}ƒEƒXƒƒbƒZ[ƒW‚Í‘Sˆæ•s“§‰ß
 
-		// ï¿½sï¿½`ï¿½ï¿½pï¿½Ì•ï¿½ï¿½Vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ï¿½
+		// s•`‰æ—p‚Ì•‚—VƒŒƒCƒ„‚ğŠm•Û
 		lineLayer = new global.KAGLayer(window, this);
 		lineLayer.hitType = htMask;
-		lineLayer.hitThreshold = 256; // ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½Í‘Sï¿½æ“§ï¿½ï¿½
+		lineLayer.hitThreshold = 256; // ƒ}ƒEƒXƒƒbƒZ[ƒW‚Í‘Sˆæ“§‰ß
 		lineLayer.face = dfAuto;
 		lineLayer.type = layerType;
-		lineLayer.name = "ï¿½sï¿½`ï¿½ï¿½pï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½";
+		lineLayer.name = "s•`‰æ—p•‚—VƒƒbƒZ[ƒWƒŒƒCƒ„";
 
-		// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½nï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚Ìƒï¿½ï¿½Cï¿½ï¿½
+		// ƒŠƒ“ƒN‚ğƒnƒCƒ‰ƒCƒg•\¦‚·‚é‚½‚ß‚ÌƒŒƒCƒ„
 		highlightLayer = new global.KAGLayer(window, this);
 		highlightLayer.type = layerType;
 		highlightLayer.face = dfAuto;
 		highlightLayer.hitType = htProvince;
-        highlightLayer.name = "ï¿½nï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½pï¿½ï¿½ï¿½Cï¿½ï¿½";
-        // ï¿½Ìˆï¿½æ‘œï¿½Å“ï¿½ï¿½ï¿½ï¿½è”»ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
+        highlightLayer.name = "ƒnƒCƒ‰ƒCƒg—pƒŒƒCƒ„";
+        // —Ìˆæ‰æ‘œ‚Å“–‚½‚è”»’è‚ğs‚¤
 
         _fadeTimer = new Timer(fadeHandler, '');
         _fadeTimer.capacity = 1;
@@ -1246,7 +1246,7 @@ class MessageLayer extends AnimKAGLayer
         if (nameLayer === void) {
             nameLayer = new NameLayer(this);
             nameLayer.type = layerType;
-            nameLayer.name = name + ":ï¿½ï¿½ï¿½O";
+            nameLayer.name = name + ":–¼‘O";
             nameLayer.hitType = htProvince;
             resetNameLayerFont();
         }
@@ -1263,7 +1263,7 @@ class MessageLayer extends AnimKAGLayer
         if (faceLayer === void) {
             faceLayer = new FaceLayer(this);
             faceLayer.type = ltAlpha;
-            faceLayer.name = name + ":ï¿½\ï¿½ï¿½";
+            faceLayer.name = name + ":•\î";
             faceLayer.hitType = htProvince;
         }
     }
@@ -1277,7 +1277,7 @@ class MessageLayer extends AnimKAGLayer
 
     function finalize()
 	{
-        // invalidateLinkObjects(); // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ÉŒï¿½ï¿½Ñ‚Â‚ï¿½ï¿½ï¿½ê‚½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Ì–ï¿½ï¿½ï¿½
+        // invalidateLinkObjects(); // ƒŠƒ“ƒN‚ÉŒ‹‚Ñ‚Â‚¯‚ç‚ê‚½ƒIƒuƒWƒFƒNƒg‚Ì–³Œø‰»
 		invalidateLinkObjects();
         invalidate highlightLayer;
         invalidate lineLayer;
@@ -1297,7 +1297,7 @@ class MessageLayer extends AnimKAGLayer
 
     function clearLayer(all)
 	{
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½A
+		// ƒŒƒCƒ„‚ğƒNƒŠƒA
 		window.updateBeforeCh = 1;
 
 		cancelDrag();
@@ -1306,7 +1306,7 @@ class MessageLayer extends AnimKAGLayer
 		{
 			if(frameGraphic == "")
 			{
-				// ï¿½tï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½æ‘œï¿½ï¿½ï¿½wï¿½è‚³ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
+				// ƒtƒŒ[ƒ€‰æ‘œ‚ªw’è‚³‚ê‚Ä‚¢‚È‚¢ê‡
 				face = dfAuto;
 				if(type == ltAddAlpha)
 				{
@@ -1328,26 +1328,26 @@ class MessageLayer extends AnimKAGLayer
 			}
 
 			face = dfProvince;
-			colorRect(0, 0, imageWidth, imageHeight, 0); // ï¿½Ìˆï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½A
+			colorRect(0, 0, imageWidth, imageHeight, 0); // —Ìˆæ‚àƒNƒŠƒA
 			face = dfAuto;
 		}
 
 		imageModified = false;
 
-		invalidateLinkObjects(); // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ÉŠÖ˜Aï¿½Ã‚ï¿½ï¿½ï¿½ê‚½ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ğ–³Œï¿½
+		invalidateLinkObjects(); // ƒŠƒ“ƒN‚ÉŠÖ˜A‚Ã‚¯‚ç‚ê‚½ƒIƒuƒWƒFƒNƒg‚ğ–³Œø‰»
 
 		focusable = false;
         links.clear();
         
         numLinks = 0;
 		inLink = -1;
-		highlightLink(lastLink, false); // ï¿½nï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		highlightLink(lastLink, false); // ƒnƒCƒ‰ƒCƒg‚ğÁ‚·
 		highlightLayer.visible = false;
 		lastLink = -1;
 		keyLink = -1;
 		linkFilled = false;
-		lastDrawnCh = ""; // ï¿½ÅŒï¿½É•`ï¿½æ‚µï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		isLastLine = false; // ï¿½ÅIï¿½sï¿½ï¿½
+		lastDrawnCh = ""; // ÅŒã‚É•`‰æ‚µ‚½•¶š
+		isLastLine = false; // ÅIs‚©
 		selClickLock = true;
 		lastMouseX = cursorX;
 		lastMouseY = cursorY;
@@ -1361,12 +1361,12 @@ class MessageLayer extends AnimKAGLayer
 
 	function setPosition(elm)
 	{
-        // ï¿½Æ‚è‚ ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½jï¿½ï¿½ï¿½ï¿½~
+        // ‚Æ‚è‚ ‚¦‚¸ƒAƒjƒ’â~
         animStop();
         
-        // elm ï¿½É]ï¿½ï¿½ï¿½Äƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒIï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’ï¿½
-		// ï¿½ï¿½ï¿½Ìƒ^ï¿½Oï¿½ï¿½ position ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½È‚Ì‚Í‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ KAG
-		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½ï¿½ò«‚¸ï¿½ï¿½ï¿½Ä‚ï¿½Ì‚ï¿½(^^;
+        // elm ‚É]‚Á‚ÄƒƒbƒZ[ƒWƒŒƒCƒ„‚ÌƒIƒvƒVƒ‡ƒ“‚ğİ’è
+		// ‚±‚Ìƒ^ƒO‚ª position ‚Æ‚¢‚¤–¼‘O‚È‚Ì‚Í‘Š“–‰Šú‚Ì KAG
+		// ‚ª‚»‚¤‚¾‚Á‚½‚Ì‚ğˆø‚«‚¸‚Á‚Ä‚é‚Ì‚Ë(^^;
 		left = elm.left if elm.left !== void;
 		top = elm.top if elm.top !== void;
 		imageWidth = elm.width if elm.width !== void;
@@ -1375,12 +1375,12 @@ class MessageLayer extends AnimKAGLayer
 
         frameGraphic = elm.frame if elm.frame !== void;
         frameKey = elm.framekey if elm.framekey !== void;
-        frameAnimCount = elm.frame !== void ? +elm.animcount : void; // frame ï¿½wï¿½è‚ªï¿½ï¿½ï¿½ï¿½Îï¿½ï¿½ï¿½
+        frameAnimCount = elm.frame !== void ? +elm.animcount : void; // frame w’è‚ª‚ ‚ê‚Î‰Šú‰»
         frameAnimTime  = elm.frame !== void ? +elm.animtime : void;
 
         frameColor = +elm.color if elm.color !== void;
 		frameOpacity = +elm.opacity if elm.opacity !== void;
-		imageModified = true; // ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½Éƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚½ï¿½ß‚ï¿½
+		imageModified = true; // ‹­§“I‚ÉƒƒbƒZ[ƒWƒŒƒCƒ„‚ğƒNƒŠƒA‚·‚é‚½‚ß‚É
 		marginL = +elm.marginl if elm.marginl !== void;
 		marginT = +elm.margint if elm.margint !== void;
 		marginR = +elm.marginr if elm.marginr !== void;
@@ -1390,7 +1390,7 @@ class MessageLayer extends AnimKAGLayer
 		visible = +elm.visible if elm.visible !== void;
         eventTransparent = +elm.transparent if elm.transparent !== void;
         
-        // ï¿½ï¿½ï¿½Oï¿½ï¿½
+        // –¼‘O‘‹
         if (elm.nameleft !== void) {
             initNameLayer();
             nameLayer.left     = +elm.nameleft   if elm.nameleft   !== void;
@@ -1404,7 +1404,7 @@ class MessageLayer extends AnimKAGLayer
             invalidateNameLayer();
         }
         
-        // ï¿½\ï¿½î‘‹
+        // •\î‘‹
         if (elm.faceleft !== void) {
             initFaceLayer();
             faceLayer.left     = +elm.faceleft   if elm.faceleft   !== void;
@@ -1417,19 +1417,19 @@ class MessageLayer extends AnimKAGLayer
             invalidateFaceLayer();
         }
         
-        // ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ƒƒbƒZ[ƒWƒ{ƒ^ƒ“Á‹
         clearSystemButtons();
 
-        // ï¿½ï¿½ï¿½ï¿½
+        // Á‹
         clear(true);
     }
 
 	function clear(all=false)
 	{
-		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½
+		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ğƒNƒŠƒA‚·‚é
 		clearLayer(all);
 
-		// ï¿½\ï¿½ï¿½ï¿½Ê’uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê’uï¿½ï¿½
+		// •\¦ˆÊ’u‚ğ‰ŠúˆÊ’u‚É
 		if(vertical)
 		{
 			x = imageWidth - marginR;
@@ -1442,7 +1442,7 @@ class MessageLayer extends AnimKAGLayer
 		}
 		kinsokuCount = marginRCh;
 		
-		// ï¿½ï¿½ï¿½Ì‘ï¿½ï¿½ï¿½ï¿½Zï¿½bï¿½g
+		// ‚»‚Ì‘¼ƒŠƒZƒbƒg
 		indentxpos = 0;
 		resetFont();
 		resetStyle();
@@ -1457,14 +1457,14 @@ class MessageLayer extends AnimKAGLayer
 
 	function clear2(all=false)
 	{
-		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½é‚ª
-		// ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½Zï¿½bï¿½gï¿½È‚Ç‚Ísï¿½ï¿½È‚ï¿½
-		// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½Ü‚Å‚ï¿½ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½Iï¿½Éƒyï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½A
-		// ï¿½Æ‚È‚ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// ƒƒbƒZ[ƒWƒŒƒCƒ„‚ğƒNƒŠƒA‚·‚é‚ª
+		// ƒtƒHƒ“ƒg‚ÌƒŠƒZƒbƒg‚È‚Ç‚Ís‚í‚È‚¢
+		// ƒƒbƒZ[ƒW‚ª‰º’[‚Ü‚Å‚¢‚Á‚Ä©“®“I‚Éƒy[ƒW‘Ò‚¿¨ƒƒbƒZ[ƒWƒŒƒCƒ„ƒNƒŠƒA
+		// ‚Æ‚È‚é‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
 
 		clearLayer(all);
 
-		// ï¿½\ï¿½ï¿½ï¿½Ê’uï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê’uï¿½ï¿½
+		// •\¦ˆÊ’u‚ğ‰ŠúˆÊ’u‚É
 		if(vertical)
 		{
 			y = marginT + indentxpos;
@@ -1489,10 +1489,10 @@ class MessageLayer extends AnimKAGLayer
     
 	function resetFont()
 	{
-		// ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g
+		// ƒtƒHƒ“ƒg‚ÌƒŠƒZƒbƒg
 		sizeChanged = true;
 
-		// ï¿½eï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìİ’ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½
+		// ŠeƒfƒtƒHƒ‹ƒg‚Ìİ’è‚ğ‘‚«–ß‚µ
 		if(!vertical)
 		{
 			lineLayer.font.face = fontFace = defaultFace == 'user' ? userFace : defaultFace;
@@ -1517,7 +1517,7 @@ class MessageLayer extends AnimKAGLayer
 		shadowColor = defaultShadowColor;
 		edgeColor = defaultEdgeColor;
 
-		// ï¿½ï¿½sï¿½Ê’uï¿½ï¿½ï¿½vï¿½Z
+		// ‰üsˆÊ’u‚ğŒvZ
 		if(!vertical)
 			relinexpos = imageWidth - marginR - marginRCh * _fontSize;
         else
@@ -1526,7 +1526,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setFont(elm)
 	{
-		// ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìİ’ï¿½
+		// ƒtƒHƒ“ƒg‚Ìİ’è
 		sizeChanged = true;
 
 		if(!vertical)
@@ -1634,7 +1634,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setDefaultFont(elm)
 	{
-		// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Ìİ’ï¿½
+		// ƒfƒtƒHƒ‹ƒgƒtƒHƒ“ƒg‚Ìİ’è
 		defaultFace = elm.face if elm.face !== void;
 		defaultAntialiased = +elm.antialiased if elm.antialiased !== void;
 		defaultBold = +elm.bold if elm.bold !== void;
@@ -1650,7 +1650,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function resetStyle()
 	{
-		// ï¿½Xï¿½^ï¿½Cï¿½ï¿½ï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g
+		// ƒXƒ^ƒCƒ‹‚ÌƒŠƒZƒbƒg
 		reserveLineSize = defaultLineSize;
 		lineSpacing = defaultLineSpacing;
 		pitch = defaultPitch;
@@ -1662,7 +1662,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setStyle(elm)
 	{
-		// ï¿½Xï¿½^ï¿½Cï¿½ï¿½ï¿½Ìİ’ï¿½
+		// ƒXƒ^ƒCƒ‹‚Ìİ’è
 		if(elm.linespacing == 'default')
 			lineSpacing = defaultLineSpacing;
 		else if(elm.linespacing !== void)
@@ -1710,7 +1710,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setDefaultStyle(elm)
 	{
-		// ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ÌƒXï¿½^ï¿½Cï¿½ï¿½ï¿½Ìİ’ï¿½
+		// ƒfƒtƒHƒ‹ƒg‚ÌƒXƒ^ƒCƒ‹‚Ìİ’è
 		defaultLineSpacing = +elm.linespacing if elm.linespacing !== void;
 		defaultPitch = +elm.pitch if elm.pitch !== void;
 		defaultLineSize = +elm.linesize if elm.linesize !== void;
@@ -1720,13 +1720,13 @@ class MessageLayer extends AnimKAGLayer
 
 	function resetLineSize()
 	{
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Tï¿½Cï¿½Yï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g
+		// ƒ‰ƒCƒ“ƒTƒCƒY‚ÌƒŠƒZƒbƒg
 		lineSize = reserveLineSize > fontSize ? reserveLineSize : fontSize;
 	}
 
 	function decideSizeChange()
 	{
-		// ï¿½ï¿½ï¿½É•ÏXï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½Eï¿½Xï¿½^ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½mï¿½ï¿½
+		// ‰¼‚É•ÏX‚³‚ê‚Ä‚¢‚½ƒtƒHƒ“ƒgEƒXƒ^ƒCƒ‹î•ñ‚ğŠm’è
 		if(!sizeChanged) return;
 		lineLayer.font.height = - _fontSize;
 		fontSize = _fontSize;
@@ -1737,20 +1737,20 @@ class MessageLayer extends AnimKAGLayer
 
 	function getLineLayerBaseLine()
 	{
-		// ï¿½ï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½pï¿½Ìƒxï¿½[ï¿½Xï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½Ä•Ô‚ï¿½
-		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìê‡ï¿½Í•ï¿½ï¿½ï¿½ï¿½Ì‰ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½A
-		// ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½Ìê‡ï¿½Í•ï¿½ï¿½ï¿½ï¿½Ì’ï¿½ï¿½ï¿½ï¿½ï¿½
+		// •¶š•\¦—p‚Ìƒx[ƒXƒ‰ƒCƒ“‚ğŒvZ‚µ‚Ä•Ô‚·
+		// ‰¡‘‚«‚Ìê‡‚Í•¶š‚Ì‰º’[•”•ªA
+		// c‘‚«‚Ìê‡‚Í•¶š‚Ì’†‰›ü
 		if(!vertical)
 			return -getLineLayerTopOffset() + lineSpacing + lineSize;
 		else
-			// ï¿½cï¿½ï¿½ï¿½ï¿½
-			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ÌˆÊ’u)
+			// c‘‚«
+			// ’†‰›ü(ƒŒƒCƒ„¶’[‚©‚ç‚ÌˆÊ’u)
 			return 4 + (lineSize>>1);
 	}
 
 	function initLineLayer()
 	{
-		// lineLayer ï¿½Ìï¿½ï¿½ï¿½
+		// lineLayer ‚Ì‰Šú‰»
 		var ll = lineLayer;
 		resetLineSize();
 		lineLayerLinks.count = 0;
@@ -1769,16 +1769,16 @@ class MessageLayer extends AnimKAGLayer
 		var lliw = ll.imageWidth;
 		var llih = ll.imageHeight;
 		ll.fillRect(0, 0, lliw, llih, 0);
-			// ï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			// Š®‘S“§–¾‚É
 		ll.face = dfProvince;
 		ll.fillRect(0, 0, lliw, llih, 0);
 		ll.face = dfAuto;
-			// ï¿½Ìˆï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½A
+			// —Ìˆæ‚ğƒNƒŠƒA
 	}
 
 	function fixLineLayer()
 	{
-		// lineLayer ï¿½ï¿½ï¿½ï¿½ï¿½İ‚Ì•\ï¿½ï¿½ï¿½Ê’uï¿½ÉŠmï¿½ï¿½
+		// lineLayer ‚ğŒ»İ‚Ì•\¦ˆÊ’u‚ÉŠm’è
 		var ll = lineLayer;
 		if(ll.visible == false) return;
 
@@ -1814,14 +1814,14 @@ class MessageLayer extends AnimKAGLayer
 			var y = linkn.y[l] += lloy;
 			var w = linkn.w[l];
 			var h = linkn.h[l];
-			linkn.fixed[l] = true; // ï¿½Å’è‚³ï¿½ê‚½
+			linkn.fixed[l] = true; // ŒÅ’è‚³‚ê‚½
 
             if (animCount > 0) {
                 for (var j=0;j<animCount;j++) {
-                    colorRect(x, y + height * j, w, h, n+1); // ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ÌŠYï¿½ï¿½ï¿½ï¿½ï¿½é•”ï¿½ï¿½ï¿½ï¿½hï¿½ï¿½Â‚Ô‚ï¿½
+                    colorRect(x, y + height * j, w, h, n+1); // ‚±‚ÌƒŒƒCƒ„‚ÌŠY“–‚·‚é•”•ª‚ğ“h‚è‚Â‚Ô‚·
                 }
             } else {
-                colorRect(x, y, w, h, n+1); // ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ÌŠYï¿½ï¿½ï¿½ï¿½ï¿½é•”ï¿½ï¿½ï¿½ï¿½hï¿½ï¿½Â‚Ô‚ï¿½
+                colorRect(x, y, w, h, n+1); // ‚±‚ÌƒŒƒCƒ„‚ÌŠY“–‚·‚é•”•ª‚ğ“h‚è‚Â‚Ô‚·
             }
 		}
 
@@ -1831,35 +1831,35 @@ class MessageLayer extends AnimKAGLayer
 
 	function changeLineSize(forceresize = false)
 	{
-		// ï¿½sï¿½Tï¿½Cï¿½Yï¿½ï¿½ï¿½ÏXï¿½ï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½Ésï¿½`ï¿½ï¿½pï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ï¿½ÏXï¿½ï¿½ï¿½é‚½ï¿½ß‚ï¿½
-		// ï¿½Ä‚Î‚ï¿½ï¿½
+		// sƒTƒCƒY‚ª•ÏX‚³‚ê‚½‚Æ‚«‚És•`‰æ—pƒŒƒCƒ„‚ÌƒTƒCƒY‚ğ•ÏX‚·‚é‚½‚ß‚É
+		// ŒÄ‚Î‚ê‚é
 
 		if(inLink!=-1) endLinkLine();
 		decideSizeChange();
 
 		var newlinesize = lineSize;
-		if(fontSize>lineSize) newlinesize = fontSize; // ï¿½gï¿½ï¿½
+		if(fontSize>lineSize) newlinesize = fontSize; // Šg’£
 
 		var newlinelayersize = newlinesize + lineSpacing;
 		if(rubySize + rubyOffset > lineSpacing)
 		{
-			// ï¿½ï¿½ï¿½rï¿½ï¿½ï¿½ï¿½Ìsï¿½Æ‚ï¿½ï¿½Ô‚ï¿½
+			// ƒ‹ƒr‚ªã‚Ìs‚Æ‚©‚Ô‚é
 			newlinelayersize += rubySize+rubyOffset - lineSpacing;
 		}
 
-		newlinelayersize += 8; // ï¿½Ü•ï¿½ï¿½ï¿½ï¿½Eï¿½eï¿½`ï¿½ï¿½pï¿½Ì—]ï¿½T
+		newlinelayersize += 8; // ‘Ü•¶šE‰e•`‰æ—p‚Ì—]—T
 		if(!vertical)
 		{
-			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìê‡
+			// ‰¡‘‚«‚Ìê‡
 			if(forceresize || lineLayer.imageHeight<newlinelayersize)
 			{
-				// ï¿½sï¿½ÔŠgï¿½ï¿½
+				// sŠÔŠg’£
 				lineSize = newlinesize;
 				var oldsize = lineLayer.imageHeight;
 				lineLayer.imageHeight = newlinelayersize;
 				lineLayer.setSizeToImageSize();
 				lineLayerBase = getLineLayerBaseLine();
-				// ï¿½ï¿½ï¿½eï¿½Ú“ï¿½
+				// “à—eˆÚ“®
 				if(!forceresize)
 				{
 					var d = lineLayer.imageHeight - oldsize;
@@ -1881,34 +1881,34 @@ class MessageLayer extends AnimKAGLayer
 					var l = lineLayerLinks[i].line;
 					links[n].y[l] += lineLayer.imageHeight - oldsize;
 				}
-				// ï¿½Ê’uï¿½Ú“ï¿½ 
+				// ˆÊ’uˆÚ“® 
                 lineLayer.setPos(lineLayerOriginX + getLineLayerLeftOffset(),
 							lineLayerOriginY + getLineLayerTopOffset());
 			}
 		}
 		else
 		{
-			// ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½Ìê‡
+			// c‘‚«‚Ìê‡
 			if(forceresize || lineLayer.imageWidth < newlinelayersize)
 			{
-				// ï¿½sï¿½ÔŠgï¿½ï¿½
+				// sŠÔŠg’£
 				lineSize = newlinesize;
 				var oldbase = lineLayerBase;
 				var oldsize = lineLayer.imageWidth;
 				lineLayer.imageWidth = newlinelayersize;
 				lineLayer.setSizeToImageSize();
 				lineLayerBase = getLineLayerBaseLine();
-				// ï¿½ï¿½ï¿½eï¿½Ú“ï¿½
+				// “à—eˆÚ“®
 				if(!forceresize)
 				{
 					lineLayer.face = dfAuto;
-					// oldbaseline , lineLayerBase ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½
-					// ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½ï¿½ï¿½Ú“ï¿½
+					// oldbaseline , lineLayerBase ‚ğg‚Á‚Ä
+					// •\¦“à—e‚ğˆÚ“®
 					lineLayer.copyRect(
 						lineLayerBase - oldbase, 0,
 						lineLayer,
 						0,0,lineLayer.imageWidth, lineLayer.imageHeight);
-					// ï¿½ï¿½ï¿½[ï¿½Æ‰Eï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+					// ¶’[‚Æ‰E’[‚ğÁ‹
 					lineLayer.fillRect(0, 0,
 						lineLayerBase - oldbase, lineLayer.imageHeight, 0);
 					lineLayer.fillRect(
@@ -1936,7 +1936,7 @@ class MessageLayer extends AnimKAGLayer
 					var l = lineLayerLinks[i].line;
 					links[n].x[l] += lineLayerBase - oldbase;
 				}
-				// ï¿½Ê’uï¿½Ú“ï¿½ 
+				// ˆÊ’uˆÚ“® 
 				lineLayer.setPos(lineLayerOriginX + getLineLayerLeftOffset(),
 							lineLayerOriginY + getLineLayerTopOffset());
 			}
@@ -1945,7 +1945,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function getLineLayerLeftOffset()
 	{
-		// ï¿½sï¿½`ï¿½ï¿½pï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Å‚Ìï¿½ï¿½Iï¿½tï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½æ“¾
+		// s•`‰æ—pƒŒƒCƒ„“à‚Å‚Ì¶ƒIƒtƒZƒbƒg‚ğæ“¾
 		if(!vertical)
 		{
 			if(align == -1)
@@ -1963,7 +1963,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function getLineLayerTopOffset()
 	{
-		// ï¿½sï¿½`ï¿½ï¿½pï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Å‚Ìï¿½Iï¿½tï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½æ“¾
+		// s•`‰æ—pƒŒƒCƒ„“à‚Å‚ÌãƒIƒtƒZƒbƒg‚ğæ“¾
 		if(!vertical)
 		{
 			return -(lineLayer.imageHeight - 4 - lineSize - lineSpacing);
@@ -1989,8 +1989,8 @@ class MessageLayer extends AnimKAGLayer
 
 	function reline()
 	{
-		// ï¿½ï¿½s
-		// ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ true, ï¿½zï¿½ï¿½ï¿½È‚ï¿½ï¿½Å‰ï¿½sï¿½Å‚ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ false
+		// ‰üs
+		// ƒy[ƒW‚ğ‰z‚¦‚éê‡‚Í true, ‰z‚¦‚È‚¢‚Å‰üs‚Å‚«‚éê‡‚Í false
 		var condition;
 		if(vertical)
 		{
@@ -2005,7 +2005,7 @@ class MessageLayer extends AnimKAGLayer
 
 		if(condition)
 		{
-			// ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½!
+			// ƒy[ƒW‚ğ‰z‚¦‚é!
 			return true;
 		}
 		else
@@ -2036,7 +2036,7 @@ class MessageLayer extends AnimKAGLayer
 
 			if(condition)
 			{
-				// ï¿½yï¿½[ï¿½Wï¿½ÅIï¿½s
+				// ƒy[ƒWÅIs
 				isLastLine=true;
 			}
 
@@ -2049,9 +2049,9 @@ class MessageLayer extends AnimKAGLayer
 
 	function processCh(ch)
 	{
-		// ï¿½ï¿½ï¿½ï¿½ ch ï¿½ï¿½`ï¿½æ‚·ï¿½ï¿½
-		// ï¿½ï¿½sï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Â‚ï¿½ï¿½ê‚ªï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ true ï¿½ï¿½Ô‚ï¿½
-		// ï¿½ï¿½ï¿½ï¿½ÈŠOï¿½ï¿½ false
+		// •¶š ch ‚ğ•`‰æ‚·‚é
+		// ‰üs‚ªs‚í‚êA‚©‚Â‚»‚ê‚ªƒy[ƒW––’[‚ğ‰z‚¦‚éê‡‚Í true ‚ğ•Ô‚·
+		// ‚»‚êˆÈŠO‚Í false
 		var vert = vertical;
 
 		if((vert ?  y >= relinexpos  : x >= relinexpos ) && autoReturn)
@@ -2063,17 +2063,17 @@ class MessageLayer extends AnimKAGLayer
 				(lastDrawnCh!="" && wwFollowingWeak.indexOf(lastDrawnCh)!=-1 &&
 					wwFollowingWeak.indexOf(ch)!=-1))
 			{
-				// ï¿½ÅŒï¿½É•`ï¿½æ‚µï¿½ï¿½ï¿½Ì‚ï¿½ï¿½sï¿½ï¿½ï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚È‚ï¿½ï¿½ê‡
-				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚©ï¿½ï¿½`ï¿½æ‚·ï¿½ï¿½Ì‚ï¿½ï¿½sï¿½ï¿½ï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚È‚ï¿½
-				// ï¿½ê‡
-				// ï¿½Ü‚ï¿½ï¿½Íï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ê‡
+				// ÅŒã‚É•`‰æ‚µ‚½‚Ì‚ªs––‹Ö‘¥•¶š‚Å‚È‚¢ê‡
+				// ‚µ‚©‚à‚±‚ê‚©‚ç•`‰æ‚·‚é‚Ì‚ªs“ª‹Ö‘¥•¶š‚Å‚È‚¢
+				// ê‡
+				// ‚Ü‚½‚Íã‹Ö‘¥•¶š‚ª˜A‘±‚µ‚Ä‚¢‚È‚¢ê‡
 				if(reline()) return autoReturn;
 			}
 			else if(vert ? ( y>imageHeight ) : (x>imageWidth))
 			{
-				// ï¿½ï¿½ï¿½ê‚©ï¿½ï¿½`ï¿½æ‚·ï¿½ï¿½Ì‚ï¿½ï¿½ï¿½ï¿½Ö‘ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚Í‚È‚ï¿½ï¿½ÄA
-				// ï¿½mï¿½ï¿½ï¿½ï¿½ ï¿½Eï¿½[ï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½ê‡
-				// ( ï¿½ï¿½ï¿½Ìê‡ï¿½Í—]ï¿½ï¿½ï¿½Ílï¿½ï¿½ï¿½È‚ï¿½ )
+				// ‚±‚ê‚©‚ç•`‰æ‚·‚é‚Ì‚ª‹­‹Ö‘¥•¶š‚Å‚Í‚È‚­‚ÄA
+				// ŠmÀ‚É ‰E’[‚ğ‰z‚¦‚éê‡
+				// ( ‚±‚Ìê‡‚Í—]”’‚Íl‚¦‚È‚¢ )
 				if(reline()) return autoReturn;
 			} else {
 				kinsokuCount--;
@@ -2100,15 +2100,15 @@ class MessageLayer extends AnimKAGLayer
 
 
 		if(edge)
-			ll.drawText(dx, dy, ch, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // ï¿½ï¿½ï¿½ï¿½
+			ll.drawText(dx, dy, ch, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // •¶š
 		else if(shadow)
-			ll.drawText(dx, dy, ch, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // ï¿½ï¿½ï¿½ï¿½
+			ll.drawText(dx, dy, ch, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // •¶š
 		else
-			ll.drawText(dx, dy, ch, chColor, 255, antialiased); // ï¿½ï¿½ï¿½ï¿½
+			ll.drawText(dx, dy, ch, chColor, 255, antialiased); // •¶š
 
 		if(currentRuby != "")
 		{
-			// ï¿½ï¿½ï¿½rï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			// ƒ‹ƒr‚ª‚ ‚é
 			var cw = llfont.getTextWidth(ch);
 			var orgsize = llfont.height;
 			llfont.height = rubySize;
@@ -2126,11 +2126,11 @@ class MessageLayer extends AnimKAGLayer
 			}
 
 			if(edge)
-				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // ï¿½ï¿½ï¿½ï¿½
+				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // •¶š
 			else if(shadow)
-				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // ï¿½ï¿½ï¿½ï¿½
+				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // •¶š
 			else
-				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased); // ï¿½ï¿½ï¿½ï¿½
+				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased); // •¶š
 
 			llfont.height = orgsize;
 			currentRuby = '';
@@ -2140,7 +2140,7 @@ class MessageLayer extends AnimKAGLayer
 
 		if(inlink)
 		{
-			// ï¿½nï¿½Cï¿½pï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Å‚ï¿½ï¿½ï¿½[
+			// ƒnƒCƒp[ƒŠƒ“ƒN‚Å‚¿‚ã[
 			ll.face = dfProvince;
 			if(!vert)
 				ll.fillRect(lineLayerPos, lineLayerBase - fontSize,
@@ -2149,7 +2149,7 @@ class MessageLayer extends AnimKAGLayer
 				ll.fillRect(lineLayerBase - (fontSize>>1), lineLayerPos,
 					fontSize, cw, numLinks + 1);
 
-			// ï¿½Ìˆï¿½æ‘œï¿½ï¿½ï¿½hï¿½ï¿½Â‚Ô‚ï¿½ï¿½Ä‚ï¿½ï¿½
+			// —Ìˆæ‰æ‘œ‚à“h‚è‚Â‚Ô‚µ‚Ä‚â‚é
 			ll.face = dfAuto;
 			linkFilled = true;
 		}
@@ -2170,14 +2170,14 @@ class MessageLayer extends AnimKAGLayer
 
 	function putGraph(storage, key, ischar)
 	{
-		// ï¿½æ‘œ storage ï¿½ï¿½`ï¿½æ‚·ï¿½ï¿½
+		// ‰æ‘œ storage ‚ğ•`‰æ‚·‚é
 
-		// ï¿½eï¿½ï¿½ï¿½|ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½pï¿½ï¿½
+		// ƒeƒ“ƒ|ƒ‰ƒŠ‚ÌƒŒƒCƒ„‚ğ—pˆÓ
 		var lay = window.temporaryLayer;
 
 		lay.type = ltTransparent;
 		lay.face = dfAuto;
-		lay.loadImages(storage, key); // ï¿½æ‘œï¿½Ç‚İï¿½ï¿½ï¿½
+		lay.loadImages(storage, key); // ‰æ‘œ“Ç‚İ‚İ
 		var lw, lh;
 		lw = lay.imageWidth;
 		lh = lay.imageHeight;
@@ -2185,12 +2185,12 @@ class MessageLayer extends AnimKAGLayer
 		var cw;
 		if(vertical)
 		{
-			if(lw > lineSize) lineSize = lw; // ï¿½gï¿½ï¿½
+			if(lw > lineSize) lineSize = lw; // Šg’£
 			cw = lh;
 		}
 		else
 		{
-			if(lh > lineSize) lineSize = lh; // ï¿½gï¿½ï¿½
+			if(lh > lineSize) lineSize = lh; // Šg’£
 			cw = lw;
 		}
 
@@ -2202,17 +2202,17 @@ class MessageLayer extends AnimKAGLayer
 
 		if(autoReturn)
 		{
-			// ï¿½ï¿½sï¿½Ê’uï¿½É’Bï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½H
+			// ‰üsˆÊ’u‚É’B‚µ‚Ä‚¢‚éH
 			if(vertical ? ( y > relinexpos ) : (x > relinexpos) )
 			{
 				repage = reline();
 			}
 		}
 
-		if(repage) return true; // ï¿½ï¿½ï¿½ï¿½ï¿½Í•`ï¿½æ‚µï¿½È‚ï¿½
+		if(repage) return true; // •¶š‚Í•`‰æ‚µ‚È‚¢
 
 
-		// ï¿½`ï¿½ï¿½
+		// •`‰æ
 		var cx,cy;
 		if(vertical)
 		{
@@ -2229,11 +2229,11 @@ class MessageLayer extends AnimKAGLayer
 		{
 			lay.face = dfOpaque;
 			lay.holdAlpha = true;
-				// ï¿½e/ï¿½Ü•ï¿½ï¿½ï¿½ï¿½ÌFï¿½Åƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½hï¿½ï¿½Â‚Ô‚ï¿½
+				// ‰e/‘Ü•¶š‚ÌF‚ÅƒƒCƒ“‚ğ“h‚è‚Â‚Ô‚·
 
 			if(edge)
 			{
-				// ï¿½ï¿½
+				// ‘Ü
 				lay.fillRect(0, 0, lw, lh, edgeColor);
 				lineLayer.operateRect(cx+1, cy, lay, 0, 0, lw, lh);
 				lineLayer.operateRect(cx, cy+1, lay, 0, 0, lw, lh);
@@ -2242,7 +2242,7 @@ class MessageLayer extends AnimKAGLayer
 			}
 			else if(shadow)
 			{
-				// ï¿½e
+				// ‰e
 				lay.fillRect(0, 0, lw, lh, shadowColor);
 				lineLayer.operateRect(cx+2, cy+2, lay, 0, 0, lw, lh);
 			}
@@ -2254,17 +2254,17 @@ class MessageLayer extends AnimKAGLayer
 			lay.face = dfOpaque;
 			lay.holdAlpha = true;
 			lay.fillRect(0, 0, lw, lh, chColor);
-				// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ğ•¶ï¿½ï¿½Fï¿½Å“hï¿½ï¿½Â‚Ô‚ï¿½
+				// ƒƒCƒ“‚ğ•¶šF‚Å“h‚è‚Â‚Ô‚·
 		}
 
-		lineLayer.operateRect(cx, cy, lay, 0, 0, lw, lh); // ï¿½`ï¿½ï¿½
+		lineLayer.operateRect(cx, cy, lay, 0, 0, lw, lh); // •`‰æ
 
-		// ï¿½`ï¿½æ‚¨ï¿½ï¿½ï¿½
+		// •`‰æ‚¨‚í‚è
 		lastDrawnCh="";
 
 		if(inLink!=-1)
 		{
-			// ï¿½nï¿½Cï¿½pï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Å‚ï¿½ï¿½ï¿½[
+			// ƒnƒCƒp[ƒŠƒ“ƒN‚Å‚¿‚ã[
 			lineLayer.face = dfProvince;
 			if(vertical)
 				lineLayer.fillRect(lineLayerBase - (fontSize>>1), lineLayerPos,
@@ -2274,7 +2274,7 @@ class MessageLayer extends AnimKAGLayer
 					cw, fontSize, numLinks+1);
 			face = dfAuto;
 			lineLayer.face = dfBoth;
-			// ï¿½Ìˆï¿½æ‘œï¿½ï¿½ï¿½hï¿½ï¿½Â‚Ô‚ï¿½ï¿½Ä‚ï¿½ï¿½
+			// —Ìˆæ‰æ‘œ‚à“h‚è‚Â‚Ô‚µ‚Ä‚â‚é
 			linkFilled=true;
 		}
 
@@ -2292,68 +2292,68 @@ class MessageLayer extends AnimKAGLayer
 
 	function putHorizonCh(text, expand = false)
 	{
-		// ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½æ‚·ï¿½ï¿½
-		if(!vertical) throw new Exception("ï¿½cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½hï¿½Å‚È‚ï¿½ï¿½Ægï¿½pï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½");
+		// c’†‰¡‚ğ•`‰æ‚·‚é
+		if(!vertical) throw new Exception("c‘‚«ƒ‚[ƒh‚Å‚È‚¢‚Æg—p‚Å‚«‚Ü‚¹‚ñ");
 
-		// ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½İ’è‚µï¿½ï¿½ï¿½ï¿½
+		// ƒtƒHƒ“ƒg‚ğİ’è‚µ’¼‚·
 		var ll = lineLayer;
 		var lf = ll.font;
 		var orgfont = lf.face;
 		var organgle = lf.angle;
-		lf.face = orgfont.substring(1); // ï¿½æ“ªï¿½ï¿½ @ ï¿½}ï¿½[ï¿½Nï¿½ï¿½ï¿½ï¿½èœï¿½ï¿½
+		lf.face = orgfont.substring(1); // æ“ª‚Ì @ ƒ}[ƒN‚ğæ‚èœ‚­
 		lf.angle = 0;
 
-		// ï¿½`ï¿½æ‚·ï¿½é•¶ï¿½ï¿½ï¿½Ì‰ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾
+		// •`‰æ‚·‚é•¶š‚Ì‰¡•‚ğæ“¾
 		var cw = lf.getTextWidth(text);
 		var ch = fontSize;
 
-		// linesize ï¿½ÌŠgï¿½ï¿½
+		// linesize ‚ÌŠg’£
 		if(expand)
 		{
-			if(cw > lineSize) lineSize = cw; // ï¿½gï¿½ï¿½
+			if(cw > lineSize) lineSize = cw; // Šg’£
 			changeLineSize();
 		}
 
-		// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Ìê‡ï¿½Íƒï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Jï¿½n
+		// ƒŠƒ“ƒN’†‚Ìê‡‚ÍƒŠƒ“ƒN‚ğŠJn
 		if(inLink != -1) beginLinkLine();
 
-		// ï¿½ï¿½s/ï¿½ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½ï¿½
+		// ‰üs/‰üƒy[ƒWˆ—
 		var repage = false;
 		if(autoReturn)
 		{
-			// ï¿½ï¿½sï¿½Ê’uï¿½É’Bï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½H
+			// ‰üsˆÊ’u‚É’B‚µ‚Ä‚¢‚éH
 			if(y > relinexpos) repage = reline();
 		}
 		if(repage)
 		{
-			// ï¿½ß‚ï¿½Oï¿½Éƒtï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Æ‚É‚ï¿½ï¿½Ç‚ï¿½
+			// –ß‚é‘O‚ÉƒtƒHƒ“ƒg‚ğ‚à‚Æ‚É‚à‚Ç‚·
 			lf.face = orgfont;
 			lf.angle = organgle;
-			return true; // ï¿½ï¿½ï¿½ï¿½ï¿½Í•`ï¿½æ‚µï¿½È‚ï¿½
+			return true; // •¶š‚Í•`‰æ‚µ‚È‚¢
 		}
 
-		// ï¿½`ï¿½ï¿½
+		// •`‰æ
 		var dx = lineLayerBase - (cw>>1);
 		var dy = lineLayerPos;
 
         if(edge)
-			ll.drawText(dx, dy, text, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // ï¿½ï¿½ï¿½ï¿½
+			ll.drawText(dx, dy, text, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // •¶š
 		else if(shadow)
-			ll.drawText(dx, dy, text, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // ï¿½ï¿½ï¿½ï¿½
+			ll.drawText(dx, dy, text, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // •¶š
 		else
-			ll.drawText(dx, dy, text, chColor, 255, antialiased); // ï¿½ï¿½ï¿½ï¿½
+			ll.drawText(dx, dy, text, chColor, 255, antialiased); // •¶š
 
-		// ï¿½`ï¿½æ‚¨ï¿½ï¿½ï¿½
+		// •`‰æ‚¨‚í‚è
 		lastDrawnCh="";
 
-		// ï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½É–ß‚ï¿½
+		// ƒtƒHƒ“ƒg‚ğŒ³‚É–ß‚·
 		lf.face = orgfont;
 		lf.angle = organgle;
 
-		// ï¿½nï¿½Cï¿½pï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ìï¿½ï¿½ï¿½
+		// ƒnƒCƒp[ƒŠƒ“ƒN‚Ìˆ—
 		if(inLink!=-1)
 		{
-			// ï¿½nï¿½Cï¿½pï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Å‚ï¿½ï¿½ï¿½[
+			// ƒnƒCƒp[ƒŠƒ“ƒN‚Å‚¿‚ã[
 			ll.face = dfProvince;
 			ll.fillRect(lineLayerBase - (fontSize>>1), lineLayerPos,
 				fontSize, cw, numLinks+1);
@@ -2362,17 +2362,17 @@ class MessageLayer extends AnimKAGLayer
 			linkFilled=true;
 		}
 
-		// ï¿½Ê’uï¿½Xï¿½V
+		// ˆÊ’uXV
 		y += ch;
 		lineLayerPos += ch;
 		lineLayerLength += ch;
 
 		lineLayer.visible = true;
 
-		// ï¿½Aï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÌCï¿½ï¿½
+		// ƒAƒ‰ƒCƒ“‚ÌC³
 		if(align >= 0) adjustAlign();
 
-		// ï¿½ß‚ï¿½
+		// –ß‚é
 		return false;
 	}
 
@@ -2380,7 +2380,7 @@ class MessageLayer extends AnimKAGLayer
     var defaultNameImage;
     
     /**
-     * ï¿½ï¿½ï¿½Oï¿½Ì•`ï¿½ï¿½
+     * –¼‘O‚Ì•`‰æ
      */
     function processName(text="") {
         if (nameLayer !== void) {
@@ -2395,7 +2395,7 @@ class MessageLayer extends AnimKAGLayer
     
 	function invalidateLinkObjects()
 	{
-		// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½ÉƒIï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½è“–ï¿½Ä‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½ï¿½ï¿½
+		// ƒŠƒ“ƒNƒAƒCƒeƒ€‚ÉƒIƒuƒWƒFƒNƒg‚ªŠ„‚è“–‚Ä‚ç‚ê‚Ä‚¢‚½ê‡–³Œø‰»
 		for(var i = links.count-1; i>=0; i--)
 		{
 			if(links[i].type != ltNormal)
@@ -2407,9 +2407,9 @@ class MessageLayer extends AnimKAGLayer
 
 	function beginLinkLine()
 	{
-		// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Jï¿½n
-		// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Jï¿½nï¿½Ìƒ^ï¿½Oï¿½È~ï¿½ÅAï¿½ï¿½ï¿½Û‚É•ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½È‚Ç‚ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
-		// ï¿½Ä‚Î‚ï¿½ï¿½(ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ÉˆÚ‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½)
+		// ƒŠƒ“ƒNŠJn
+		// ƒŠƒ“ƒNŠJn‚Ìƒ^ƒOˆÈ~‚ÅAÀÛ‚É•¶š•`‰æ‚È‚Ç‚ª‹N‚±‚é‚Æ‚«‚É
+		// ŒÄ‚Î‚ê‚é(s‚ªŸ‚ÉˆÚ‚Á‚½‚Æ‚«‚àŒÄ‚Î‚ê‚é)
 		if(linkFilled) return;
 		var sx, sy;
 		if(!vertical)
@@ -2423,7 +2423,7 @@ class MessageLayer extends AnimKAGLayer
 			sy = lineLayerPos;
 		}
 		var n = links[numLinks].lineCount - 1;
-		links[numLinks].fixed[n] = false; // ï¿½ï¿½ï¿½Å’ï¿½
+		links[numLinks].fixed[n] = false; // –¢ŒÅ’è
 		links[numLinks].x[n] = sx;
 		links[numLinks].y[n] = sy;
 
@@ -2433,7 +2433,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function endLinkLine()
 	{
-		// ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½É‚Äsï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// ƒŠƒ“ƒN’†‚É‚Äs‚ªI—¹‚µ‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
 		if(!linkFilled) return;
 		linkFilled = false;
 		var w, h;
@@ -2442,7 +2442,7 @@ class MessageLayer extends AnimKAGLayer
 		if(!vertical)
 		{
 			w = lineLayerPos - linkn.x[linenum];
-			if(lineLayer.font.italic) w += fontSize>>2; // ï¿½Î‘Ì‚Ìï¿½ï¿½Íˆê‰ï¿½Ì—]ï¿½Tï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			if(lineLayer.font.italic) w += fontSize>>2; // Î‘Ì‚Ì‚Íˆê‰‚Ì—]—T‚ğ‚½‚¹‚é
 			if(w <= 0) return;
 			h = fontSize;
 		}
@@ -2460,9 +2460,9 @@ class MessageLayer extends AnimKAGLayer
 
 	function createSoundExpression(exp, storage, buf)
 	{
-		// ï¿½Tï¿½Eï¿½ï¿½ï¿½hï¿½ï¿½Â‚ç‚·ï¿½ï¿½ï¿½ß‚Ìï¿½ï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½ï¿½
-		// exp ï¿½É‚È‚É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍƒJï¿½ï¿½ï¿½}ï¿½Å‚Â‚È‚ï¿½
-		// ï¿½ï¿½ï¿½Ìdï¿½lï¿½ÍŒï¿½Å•ÏXï¿½ï¿½ï¿½é‚©ï¿½ï¿½
+		// ƒTƒEƒ“ƒh‚ğ–Â‚ç‚·‚½‚ß‚Ì®‚ğì¬‚·‚é
+		// exp ‚É‚È‚É‚©®‚ª‚ ‚Á‚½ê‡‚ÍƒJƒ“ƒ}‚Å‚Â‚È‚®
+		// ‚±‚Ìd—l‚ÍŒã‚Å•ÏX‚·‚é‚©‚à
 		if(storage === void) return exp;
 		if(buf === void) buf = 0;
 		var seexp = "(kag.se["+buf+"].play(%[storage:\"" + storage.escape() +"\"]))";
@@ -2475,8 +2475,8 @@ class MessageLayer extends AnimKAGLayer
 
 	function beginHyperLink(elm)
 	{
-		// ï¿½ï¿½ï¿½Ê‚Ìƒï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ï¿½
-		links[numLinks] = %[ // ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½ï¿½ï¿½ì¬
+		// •’Ê‚ÌƒŠƒ“ƒN‚ğŠJn‚·‚é
+		links[numLinks] = %[ // «‘”z—ñ‚ğì¬
 			type :		ltNormal,
 			storage :	elm.storage,
 			target :	elm.target,
@@ -2503,22 +2503,22 @@ class MessageLayer extends AnimKAGLayer
 		endLinkLine();
 		links[numLinks].lineCount--;
 		numLinks++;
-		focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ó‚¯ï¿½ï¿½ï¿½æ‚¤ï¿½ï¿½
+		focusable = true; // ƒtƒH[ƒJƒX‚ğó‚¯æ‚ê‚é‚æ‚¤‚É
 		lastMouseX = cursorX;
 		lastMouseY = cursorY;
 		selClickLock = true;
-		setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-        //comp.setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+		setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
+        //comp.setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
 	}
 
 	function findLink(x,y)
 	{
-		// x, y ï¿½Ê’uï¿½É‚ï¿½ï¿½éƒŠï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìƒï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½ï¿½ï¿½Ô‚ï¿½
+		// x, y ˆÊ’u‚É‚ ‚éƒŠƒ“ƒN‚ğ‚³‚ª‚µAŒ©‚Â‚©‚ê‚Î ‚»‚ÌƒŠƒ“ƒN”Ô†‚ğ•Ô‚·
 
 		if(selClickLock) return -1;
 
 		var i=0;
-		// ï¿½Ìˆï¿½æ‘œï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// —Ìˆæ‰æ‘œ‚ğg‚Á‚½”»’è
 		if(lineLayer.visible)
 		{
 			if(lineLayer.left <= x && lineLayer.top <= y  &&
@@ -2553,7 +2553,7 @@ class MessageLayer extends AnimKAGLayer
     
 	function addButton(elm)
 	{
-		// ï¿½Oï¿½ï¿½ï¿½tï¿½Bï¿½Jï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½zï¿½u
+		// ƒOƒ‰ƒtƒBƒJƒ‹ƒ{ƒ^ƒ“‚ğ”z’u
         var object = new LinkButtonLayer(window, this);
         object.name =  elm.name !== void ? elm.name : "button" + numLinks;
         if (elm.uistates !== void) {
@@ -2622,14 +2622,14 @@ class MessageLayer extends AnimKAGLayer
         names[object.name] = object;
 
 		numLinks++;
-		focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ó‚¯ï¿½ï¿½ï¿½æ‚¤ï¿½ï¿½
-		setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-        //comp.setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+		focusable = true; // ƒtƒH[ƒJƒX‚ğó‚¯æ‚ê‚é‚æ‚¤‚É
+		setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
+        //comp.setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
 	}
 
 	function addEdit(elm)
 	{
-		// ï¿½Pï¿½ï¿½sï¿½Gï¿½fï¿½Bï¿½bï¿½gï¿½ï¿½zï¿½u
+		// ’PˆêsƒGƒfƒBƒbƒg‚ğ”z’u
 		changeLineSize() if sizeChanged;
 		var object = new LinkEditLayer(window, this, vertical);
         object.name = elm.name !== void ? elm.name : "edit" + numLinks;
@@ -2645,8 +2645,8 @@ class MessageLayer extends AnimKAGLayer
 		var exp = (elm.exp != "") ? elm.exp : elm.name;
 		object.exp     = exp;
         object.antialiased = antialiased;
-		object.color = elm.bgcolor if elm.bgcolor !== void; // color ï¿½Å‚È‚ï¿½ï¿½ï¿½ï¿½É’ï¿½ï¿½ï¿½
-		object.textColor = elm.color if elm.color !== void; // textColor ï¿½Å‚È‚ï¿½ï¿½ï¿½ï¿½Æ‚É’ï¿½ï¿½ï¿½
+		object.color = elm.bgcolor if elm.bgcolor !== void; // color ‚Å‚È‚¢–‚É’ˆÓ
+		object.textColor = elm.color if elm.color !== void; // textColor ‚Å‚È‚¢‚±‚Æ‚É’ˆÓ
 		object.maxChars = elm.maxchars if elm.maxchars !== void;
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
 		object.noborder = elm.noborder if elm.noborder !== void;
@@ -2693,8 +2693,8 @@ class MessageLayer extends AnimKAGLayer
 
 		numLinks ++;
 		focusable = true;
-		setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-        //comp.setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+		setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
+        //comp.setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
 	}
 
 	function addCheckBox(elm)
@@ -2709,8 +2709,8 @@ class MessageLayer extends AnimKAGLayer
         object.changefunc = elm.onchangefunc if elm.onchangefunc !== void;
         object.change = elm.onchange if elm.onchange !== void;
         object.changese = createSoundExpression(void, elm.changese, elm.changesebuf);
-        object.color = elm.bgcolor if elm.bgcolor !== void; // color ï¿½Å‚È‚ï¿½ï¿½ï¿½ï¿½É’ï¿½ï¿½ï¿½
-		object.glyphColor = elm.color if elm.color !== void; // glyphColor ï¿½Å‚È‚ï¿½ï¿½ï¿½ï¿½Æ‚É’ï¿½ï¿½ï¿½
+        object.color = elm.bgcolor if elm.bgcolor !== void; // color ‚Å‚È‚¢–‚É’ˆÓ
+		object.glyphColor = elm.color if elm.color !== void; // glyphColor ‚Å‚È‚¢‚±‚Æ‚É’ˆÓ
 		object.bgOpacity = elm.opacity if elm.opacity !== void;
 
 		var cw;
@@ -2718,12 +2718,12 @@ class MessageLayer extends AnimKAGLayer
 		var lh = object.height;
 		if(vertical)
 		{
-			if(lw > lineSize) lineSize = lw; else lw = object.width = lineSize; // ï¿½gï¿½ï¿½
+			if(lw > lineSize) lineSize = lw; else lw = object.width = lineSize; // Šg’£
 			cw = lh;
 		}
 		else
 		{
-			if(lh > lineSize) lineSize = lh; else lh = object.height = lineSize; // ï¿½gï¿½ï¿½
+			if(lh > lineSize) lineSize = lh; else lh = object.height = lineSize; // Šg’£
 			cw = lw;
 		}
 
@@ -2758,15 +2758,15 @@ class MessageLayer extends AnimKAGLayer
 			y :				[object.top],
 			w :				[object.width],
 			h :				[object.height],
-			fixed :			[true], // ï¿½Å’ï¿½!!!
+			fixed :			[true], // ŒÅ’è!!!
 			lineCount :		1
 			];
         names[object.name] = object;
 
 		numLinks ++;
 		focusable = true;
-		setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-        //comp.setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+		setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
+        //comp.setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
 	}
 
 	function addSlider(elm)
@@ -2779,7 +2779,7 @@ class MessageLayer extends AnimKAGLayer
 		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
 		var exp = (elm.exp != "") ? elm.exp : elm.name;
 		object.exp     = exp;
-        object.color = elm.bgcolor if elm.bgcolor !== void; // color ï¿½Å‚È‚ï¿½ï¿½ï¿½ï¿½É’ï¿½ï¿½ï¿½
+        object.color = elm.bgcolor if elm.bgcolor !== void; // color ‚Å‚È‚¢–‚É’ˆÓ
         object.bgOpacity = elm.opacity if elm.opacity !== void;
 		object.min  = +elm.min  if elm.min  !== void;
 		object.max  = +elm.max  if elm.max  !== void;
@@ -2801,14 +2801,14 @@ class MessageLayer extends AnimKAGLayer
             object.loadUIInfo(elm); 
 			object.uiname = elm.uiname;
        } else {
-            // ï¿½xï¿½[ï¿½Xï¿½Ìwï¿½ï¿½
+            // ƒx[ƒX‚Ìw’è
             if (elm.base !== void) {
                 object.loadBase(elm.base);
             } else {
                 object.width   = elm.width  === void ? 200 : +elm.width;
                 object.height  = elm.height === void ? 30  : +elm.height;
             }
-            // ï¿½^ï¿½uï¿½Ìwï¿½ï¿½
+            // ƒ^ƒu‚Ìw’è
             if (elm.normal !== void) {
                 object.loadTabs(elm.normal, elm.over, elm.on);
             } else if (elm.tab !== void) {
@@ -2816,7 +2816,7 @@ class MessageLayer extends AnimKAGLayer
             }
         }
 
-		// ï¿½Ê’uï¿½â³ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Iï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‰ï¿½
+		// ˆÊ’u•â³‚ğ‚µ‚È‚¢ƒIƒvƒVƒ‡ƒ“‚ğ’Ç‰Á
 		if (elm.nofixpos) {
 			object.setPos(x, y);
 		} else {
@@ -2825,11 +2825,11 @@ class MessageLayer extends AnimKAGLayer
 			var lh = object.height;
 			if(vertical) {
 				if (lw > lineSize) lineSize = lw;
-				else lw = object.width = lineSize; // ï¿½gï¿½ï¿½
+				else lw = object.width = lineSize; // Šg’£
 				cw = lh;
 			} else {
 				if (lh > lineSize) lineSize = lh;
-				else lh = object.height = lineSize; // ï¿½gï¿½ï¿½
+				else lh = object.height = lineSize; // Šg’£
 				cw = lw;
 			}
 			changeLineSize();
@@ -2866,19 +2866,19 @@ class MessageLayer extends AnimKAGLayer
 			y :				[object.top],
 			w :				[object.width],
 			h :				[object.height],
-			fixed :			[true], // ï¿½Å’ï¿½!!!
+			fixed :			[true], // ŒÅ’è!!!
 			lineCount :		1
 			];
         names[object.name] = object;
 
         numLinks ++;
         focusable = true;
-        setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-        //comp.setSelProcessLock(false); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+        setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
+        //comp.setSelProcessLock(false); // ‘I‘ğƒƒbƒN‰ğœ
 	}
 
     /**
-     * ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½Ì“oï¿½^
+     * ƒVƒXƒeƒ€ƒ{ƒ^ƒ“‚Ì“o˜^
      */
     function addSystemButton(elm) {
         var object = new SystemButtonLayer(window, this);
@@ -2918,7 +2918,7 @@ class MessageLayer extends AnimKAGLayer
         object.noStable = elm.nostable;
         buttons[object.name] = object;
 
-        // ï¿½ï¿½ï¿½Û‘ï¿½
+        // î•ñ•Û‘¶
         var init = %[];
         (Dictionary.assign incontextof init)(elm, false); 
         buttons_save.add(init);
@@ -2926,9 +2926,9 @@ class MessageLayer extends AnimKAGLayer
     
 	function highlightLink(n, b = false)
 	{
-		// n ï¿½Ô–Ú‚Ìƒï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½
-		// b : true  : ï¿½nï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½
-		// b : false : ï¿½nï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// n ”Ô–Ú‚ÌƒŠƒ“ƒN‚ğ
+		// b : true  : ƒnƒCƒ‰ƒCƒg‚·‚é
+		// b : false : ƒnƒCƒ‰ƒCƒg‚ğÁ‚·
 		if(selProcessLock) return;
 		if(b)
 		{
@@ -2941,14 +2941,14 @@ class MessageLayer extends AnimKAGLayer
 
             if(linkn.onenter != '') Scripts.eval(linkn.onenter);
 
-			// ï¿½nï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½
+			// ƒnƒCƒ‰ƒCƒg‚·‚é
 			if(!vertical)
 			{
-				// ï¿½ï¿½
-				// ï¿½Sï¿½ï¿½ÊXï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ï¿½
-				// ï¿½Åï¿½ï¿½ÆÅ‘ï¿½ÌˆÊ’uï¿½ğ“¾‚ï¿½
+				// ‰¡
+				// ‘S‰æ–ÊXV‚ğ‚³‚¯‚é‚½‚ß
+				// Å¬‚ÆÅ‘å‚ÌˆÊ’u‚ğ“¾‚é
 				var min = linkn.y[0];
-				if(!linkn.fixed[0]) min += yofs; // ï¿½Å’è‚³ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Í•â³
+				if(!linkn.fixed[0]) min += yofs; // ŒÅ’è‚³‚ê‚Ä‚¢‚È‚¢ê‡‚Í•â³
 				var max = linkn.y[0] + linkn.h[0];
 				if(!linkn.fixed[0]) max += yofs;
 
@@ -2970,7 +2970,7 @@ class MessageLayer extends AnimKAGLayer
 			}
 			else
 			{
-				// ï¿½c
+				// c
 				var min = linkn.x[0];
 				if(!linkn.fixed[0]) min += xofs;
 				var max = linkn.x[0] + linkn.w[0];
@@ -3022,7 +3022,7 @@ class MessageLayer extends AnimKAGLayer
 			if(parent.isPrimary && comp !== void && left == comp.left && top == comp.top &&
 				width == comp.width && height == comp.height)
 			{
-				// ï¿½ï¿½ï¿½yï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½Éİ’ï¿½
+				// — ƒy[ƒWƒŒƒCƒ„‚à“¯—l‚Éİ’è
 				var tl = highlightLayer;
 				var bl = comp.highlightLayer;
 				bl.assignImages(tl);
@@ -3030,7 +3030,7 @@ class MessageLayer extends AnimKAGLayer
 				bl.visible = true;
 			}
 
-			// ï¿½qï¿½ï¿½ï¿½gï¿½ï¿½İ’ï¿½
+			// ƒqƒ“ƒg‚ğİ’è
 			hint = links[n].hint;
 		}
 		else
@@ -3064,19 +3064,19 @@ class MessageLayer extends AnimKAGLayer
     
 	function processLink(n)
 	{
-        // ï¿½^ï¿½Cï¿½ï¿½ï¿½Aï¿½Eï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Í’ï¿½~
+        // ƒ^ƒCƒ€ƒAƒEƒgˆ—‚Í’â~
         stopTimeout();
 
-        // ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½ n ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ƒŠƒ“ƒN”Ô† n ‚ğˆ—‚·‚é
 		var ln = links[n];
 		if(ln === void) return;
 
-        // XXX ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚İ‚ï¿½
+        // XXX ‘«‚µ‚Ä‚İ‚½
         if (ln.object !== void && !ln.object.enabled) {
             return;
         }
 
-        // ï¿½{ï¿½^ï¿½ï¿½ï¿½Ìê‡ï¿½Ì“ï¿½ï¿½êˆï¿½ï¿½
+        // ƒ{ƒ^ƒ“‚Ìê‡‚Ì“Áêˆ—
         if (ln.type == ltButton) {
             var button = ln.object;
             if (button.groupName != "") {
@@ -3086,34 +3086,34 @@ class MessageLayer extends AnimKAGLayer
             }
         }
 
-        // ï¿½ï¿½ï¿½ï¿½Ê‚Ìƒnï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½\ï¿½ï¿½
+        // — ‰æ–Ê‚ÌƒnƒCƒ‰ƒCƒg‚ğ”ñ•\¦
 		if(comp !== void) comp.highlightLayer.visible = false;
 
-		// ï¿½ï¿½ï¿½s
+		// Às
 		Scripts.eval(ln.exp) if ln.exp != '';
 
 		if(ln.storage != '' || ln.target != '')
 		{
-			window.lockMessageLayerSelProcess(); // ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bï¿½N
+			window.lockMessageLayerSelProcess(); // ‘I‘ğ‚ğƒƒbƒN
 			if(window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
 				window.hideMouseCursor();
-					// ï¿½Lï¿½[ï¿½{ï¿½[ï¿½hï¿½É‚ï¿½é‘€ï¿½ï¿½Ìê‡ï¿½Íƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½ï¿½
+					// ƒL[ƒ{[ƒh‚É‚æ‚é‘€ì‚Ìê‡‚Íƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğ‰B‚·
 			window.process(ln.storage, ln.target, ln.countPage);
 		}
     }
 
 	function onButtonClick(num)
 	{
-        // ï¿½Ôï¿½ num ï¿½ÌƒOï¿½ï¿½ï¿½tï¿½Bï¿½Jï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½
+        // ”Ô† num ‚ÌƒOƒ‰ƒtƒBƒJƒ‹ƒ{ƒ^ƒ“‚ªƒNƒŠƒbƒN‚³‚ê‚½
 		processLink(num);
     }
 
 
 	function setSelProcessLock(b)
 	{
-		// ï¿½Iï¿½ï¿½ï¿½Ìƒï¿½ï¿½bï¿½Nï¿½ï¿½İ’ï¿½
-		// ï¿½Iï¿½ï¿½ï¿½Ìƒï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ì‚ÍAï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		// ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½æ‚¤ï¿½É‚ï¿½ï¿½é‚½ï¿½ï¿½
+		// ‘I‘ğ‚ÌƒƒbƒN‚ğİ’è
+		// ‘I‘ğ‚ÌƒƒbƒN‚ğs‚¤‚Ì‚ÍA‚¢‚Á‚½‚ñ‘I‘ğˆ‚ğ‘I‘ğ‚µ‚½‚ç
+		// ‘¼‚Ì‘I‘ğˆ‚ğ‘I‘ğ‚Å‚«‚È‚¢‚æ‚¤‚É‚·‚é‚½‚ß
 		if(selProcessLock != b)
 		{
 			selProcessLock = b;
@@ -3137,22 +3137,22 @@ class MessageLayer extends AnimKAGLayer
 
 	function storeSelProcessLock()
 	{
-		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Tï¿½uï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½É“ï¿½ï¿½Oï¿½ÉŒÄ‚Î‚ï¿½A
-		// ï¿½ï¿½ï¿½İ‚ï¿½ selProcessLock ï¿½Ìï¿½Ô‚ï¿½Ş”ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ‰EƒNƒŠƒbƒNƒTƒuƒ‹[ƒ`ƒ“‚É“ü‚é‘O‚ÉŒÄ‚Î‚êA
+		// Œ»İ‚Ì selProcessLock ‚Ìó‘Ô‚ğ‘Ş”ğ‚·‚é
 		storedSelProcessLock = selProcessLock;
 	}
 
 	function restoreSelProcessLock()
 	{
-		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½ç”²ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½A
-		// ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½[ï¿½`ï¿½ï¿½ï¿½É“ï¿½ï¿½Oï¿½ï¿½ selProcessLock ï¿½Ìï¿½Ô‚ï¿½
-		// ï¿½ï¿½ï¿½ß‚ï¿½
+		// ‰EƒNƒŠƒbƒNƒ‹[ƒ`ƒ“‚©‚ç”²‚¯‚é‚Æ‚«‚ÉŒÄ‚Î‚êA
+		// ‰EƒNƒŠƒbƒNƒ‹[ƒ`ƒ“‚É“ü‚é‘O‚Ì selProcessLock ‚Ìó‘Ô‚ğ
+		// æ‚è–ß‚·
 		setSelProcessLock(storedSelProcessLock);
 	}
 
 	function commit()
 	{
-		// ï¿½tï¿½Hï¿½[ï¿½ï¿½ï¿½vï¿½fï¿½Ì“ï¿½ï¿½eï¿½ï¿½ï¿½Rï¿½~ï¿½bï¿½g
+		// ƒtƒH[ƒ€—v‘f‚Ì“à—e‚ğƒRƒ~ƒbƒg
 		var lks = links;
 		for(var i = 0; i < numLinks; i++)
 		{
@@ -3164,7 +3164,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function isDragPos(x, y)
 	{
-		// x y ï¿½Ìï¿½ï¿½Wï¿½ï¿½ ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½Å‚Â‚ï¿½ï¿½Ş‚ï¿½ï¿½Æ‚Ì‚Å‚ï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+		// x y ‚ÌÀ•W‚ª ƒhƒ‰ƒbƒO‚Å‚Â‚©‚Ş‚±‚Æ‚Ì‚Å‚«‚éÀ•W‚©‚Ç‚¤‚©
 		if(!draggable) return false;
 		if(x >= marginL && y >= marginT && x < imageWidth - marginR && y < imageHeight - marginB)
 			return false;
@@ -3174,20 +3174,20 @@ class MessageLayer extends AnimKAGLayer
 
 	function internalHitTest(x, y)
 	{
-        // onHitTest ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½)
+        // onHitTest ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰(“à•”ŠÖ”)
 
 		if(isDragPos(x, y))
 		{
 			cursor = window.cursorDraggable;
 			showParentHint = true;
-			return true; // ï¿½sï¿½ï¿½ï¿½ï¿½
+			return true; // •s“§‰ß
 		}
 
 		if(selClickLock)
 		{
-			// ï¿½ÅŒï¿½ÉƒNï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ê‚½ï¿½Ê’uï¿½ï¿½ï¿½ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½Ú“ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½Ç‚ï¿½ï¿½ï¿½
-			// ï¿½ï¿½ï¿½Ì”ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Ì‚ÍAï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Aï¿½Å‚É‚ï¿½ï¿½vï¿½ï¿½Ê‘Iï¿½ï¿½ï¿½ï¿½ï¿½Ì‘Iï¿½ï¿½ï¿½~ï¿½Xï¿½ï¿½
-			// ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			// ÅŒã‚ÉƒNƒŠƒbƒN‚³‚ê‚½ˆÊ’u‚©‚çƒ}ƒEƒX‚ª‚ ‚é’ö“xˆÚ“®‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©
+			// ‚±‚Ì”»’è‚ğs‚¤‚Ì‚ÍAƒNƒŠƒbƒN˜A‘Å‚É‚æ‚év‚í‚Ê‘I‘ğˆ‚Ì‘I‘ğƒ~ƒX‚ğ
+			// –h‚®‚½‚ß
 			if(lastMouseX-3 > x || lastMouseX+3 < x ||
 				lastMouseY-3 > y || lastMouseY+3 < y)
 			{
@@ -3197,31 +3197,31 @@ class MessageLayer extends AnimKAGLayer
 
         if (!eventTransparent) return true;
 
-		if (selProcessLock) return false; // ï¿½ï¿½ï¿½ï¿½
+		if (selProcessLock) return false; // “§‰ß
         
 		var n;
 		n = findLink(x, y);
         if(n == -1)
 		{
-            return hasClick(); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î“ï¿½ï¿½ï¿½
+            return hasClick(); // ƒNƒŠƒbƒNˆ—‚ª‚È‚¯‚ê‚Î“§‰ß
 		}
 		else
 		{
 			cursor = window.cursorPointed;
-			return true; // ï¿½ï¿½ï¿½ß‚ï¿½ï¿½È‚ï¿½
+			return true; // “§‰ß‚µ‚È‚¢
 		}
 	}
 
 	function onHitTest(x, y, b)
 	{
-		// onHitTest ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
+		// onHitTest ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
 		var b = internalHitTest(x - imageLeft, y - imageTop);
 		return super.onHitTest(x, y, b);
 	}
 
 	function internalOnMouseDown(x, y, button)
 	{
-        // onMouseDown ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Öï¿½)
+        // onMouseDown ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰(“à•”ŠÖ”)
 		if(button == mbLeft && !selProcessLock)
 		{
             if(!selClickLock)
@@ -3241,12 +3241,12 @@ class MessageLayer extends AnimKAGLayer
 
 		if(isDragPos(x, y))
 		{
-			// ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½Â”\ï¿½Ê’uï¿½Ìê‡
+			// ƒhƒ‰ƒbƒO‰Â”\ˆÊ’u‚Ìê‡
 			if(window.inStable)
 			{
 				dragOriginX = x;
 				dragOriginY = y;
-				dragging = true; // ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½ÌŠJï¿½n
+				dragging = true; // ƒhƒ‰ƒbƒO‚ÌŠJn
 			}
 		}
 	}
@@ -3256,7 +3256,7 @@ class MessageLayer extends AnimKAGLayer
         lastMouseDownX = x;
 		lastMouseDownY = y;
 
-        // ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Í‘fï¿½Ê‚ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ‰EƒNƒŠƒbƒN‚Í‘f’Ê‚µ‚·‚é
         if (button == mbRight) {
 			releaseCapture();
             window.onPrimaryRightClick();
@@ -3276,16 +3276,16 @@ class MessageLayer extends AnimKAGLayer
 
 	function cancelDrag()
 	{
-		// ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½ÌƒLï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½
+		// ƒhƒ‰ƒbƒO‚ÌƒLƒƒƒ“ƒZƒ‹
 		dragging = false;
 	}
 
 	function internalMouseMove(x, y)
 	{
-		// onMouseMoveï¿½È‚ï¿½ ï¿½ï¿½ï¿½ï¿½Ä‚Î‚ï¿½ï¿½
+		// onMouseMove‚È‚Ç ‚©‚çŒÄ‚Î‚ê‚é
 		if(dragging)
 		{
-			// ï¿½hï¿½ï¿½ï¿½bï¿½Oï¿½ï¿½
+			// ƒhƒ‰ƒbƒO’†
 			var px = parent.cursorX;
 			var py = parent.cursorY;
 			if(px < 0) px = 0;
@@ -3301,12 +3301,12 @@ class MessageLayer extends AnimKAGLayer
 
 		if(selProcessLock)
 		{
-			// ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½Íï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½È‚ï¿½
-			if(cursor == window.cursorPointed) cursor = crDefault; // ï¿½È‚ï¿½Æ‚È‚ï¿½ï¿½Eï¿½Eï¿½E
+			// ‘I‘ğƒƒbƒN’†‚Íˆ—‚ğs‚í‚È‚¢
+			if(cursor == window.cursorPointed) cursor = crDefault; // ‚È‚ñ‚Æ‚È‚­EEE
 			return;
 		}
 
-		var n = findLink(x, y); // x, y ï¿½Ê’uï¿½Éƒï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½İ‚ï¿½
+		var n = findLink(x, y); // x, y ˆÊ’u‚ÉƒŠƒ“ƒN‚ª‚ ‚é‚©‚İ‚é
 
 		if(n != lastLink)
 		{
@@ -3326,7 +3326,7 @@ class MessageLayer extends AnimKAGLayer
 
     function onMouseMove(x, y)
 	{
-        // onMouseMove ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
+        // onMouseMove ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
         super.onMouseMove(...);
 
 		internalMouseMove(x - imageLeft, y - imageTop);
@@ -3334,7 +3334,7 @@ class MessageLayer extends AnimKAGLayer
 
     function onMouseLeave()
 	{
-        // onMouseLeave ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
+        // onMouseLeave ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
 		if(lastLink != -1)
 		{
 			highlightLink(lastLink, false);
@@ -3345,11 +3345,11 @@ class MessageLayer extends AnimKAGLayer
 
 	function setFocusToLink(n, force = false)
 	{
-        // ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Ôï¿½ n ï¿½ÌˆÊ’uï¿½ÉˆÚ“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½A
-		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½è‚·ï¿½ï¿½
-		// force=false ï¿½Ìê‡ï¿½ÍƒLï¿½[ï¿½{ï¿½[ï¿½hï¿½ï¿½ï¿½ì‚ªï¿½sï¿½ï¿½ê‚½ï¿½ê‡ï¿½Ì‚ï¿½
-		// ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½é‚ªï¿½Aforce=true ï¿½Ì‚Î‚ï¿½ï¿½ï¿½ï¿½ÍƒLï¿½[ï¿½{ï¿½[ï¿½hï¿½Ìï¿½Ô‚ï¿½
-		// ï¿½Ö‚ï¿½ç‚¸ï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½Aï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½İ’è‚·ï¿½ï¿½
+        // ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğ ƒŠƒ“ƒN”Ô† n ‚ÌˆÊ’u‚ÉˆÚ“®‚³‚¹‚½‚èA
+		// ƒtƒH[ƒJƒX‚ğ—^‚¦‚½‚è‚·‚é
+		// force=false ‚Ìê‡‚ÍƒL[ƒ{[ƒh‘€ì‚ªs‚í‚ê‚½ê‡‚Ì‚İ
+		// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğˆÚ“®‚·‚é‚ªAforce=true ‚Ì‚Î‚ ‚¢‚ÍƒL[ƒ{[ƒh‚Ìó‘Ô‚É
+		// ŠÖ‚í‚ç‚¸ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğˆÚ“®‚µAƒtƒH[ƒJƒX‚ğİ’è‚·‚é
 		var linkn = links[n];
 		if(linkn === void) return;
 		var left = linkn.x[0];
@@ -3359,7 +3359,7 @@ class MessageLayer extends AnimKAGLayer
 		var x, y;
         if(linkn.type == ltEdit)
 		{
-			// ï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ï¿½Ü‚È‚Ì‚Å’[ï¿½ï¿½ï¿½ï¿½ï¿½É’uï¿½ï¿½
+			// ƒJ[ƒ\ƒ‹‚Í‚¶‚á‚Ü‚È‚Ì‚Å’[‚Á‚±‚É’u‚­
 			if(vertical)
 			{
 				x = left + (width>>1);
@@ -3383,8 +3383,8 @@ class MessageLayer extends AnimKAGLayer
 			y += lineLayerOriginY + getLineLayerTopOffset();
 		}
 
-		// ï¿½Lï¿½[ï¿½{ï¿½[ï¿½hï¿½Å‘ï¿½ï¿½ì‚ªï¿½sï¿½ï¿½ê‚½ï¿½ê‡ï¿½É‚Ì‚İƒJï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½
-		// ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ßAï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½sï¿½ï¿½
+		// ƒL[ƒ{[ƒh‚Å‘€ì‚ªs‚í‚ê‚½ê‡‚É‚Ì‚İƒJ[ƒ\ƒ‹‚ğ
+		// ˆÚ“®‚³‚¹‚é‚½‚ßAŠY“–‚·‚éƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN‚ğs‚¤
 		var sgks = window.getKeyState;
 		var process = force || sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
 			sgks(VK_DOWN) || sgks(VK_TAB) || sgks(VK_RETURN);
@@ -3394,7 +3394,7 @@ class MessageLayer extends AnimKAGLayer
 			cursorX = x;
 			cursorY = y;
 			internalMouseMove(x, y);
-			if(force) keyLink = n; // ï¿½ê‰ï¿½Äİ’ï¿½
+			if(force) keyLink = n; // ˆê‰Äİ’è
 		}
 		if(linkn.type == ltEdit || linkn.type == ltCheckBox || linkn.type == ltSlider)
 		{
@@ -3466,7 +3466,7 @@ class MessageLayer extends AnimKAGLayer
     
 	function onKeyDown(key, shift)
 	{
-		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
+		// ƒL[‚ª‰Ÿ‚³‚ê‚½
 		if(window.preProcessKeys(key, shift)) return;
 
 		if(!focusable || (!numLinks && !hasClick())) { return super.onKeyDown(...); }
@@ -3512,7 +3512,7 @@ class MessageLayer extends AnimKAGLayer
 		}
 		else
 		{
-			window.processKeys(key, shift); // window ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½
+			window.processKeys(key, shift); // window ‚Éˆ—‚ğ‚Ü‚©‚¹‚é
 		}
 	}
 
@@ -3528,13 +3528,13 @@ class MessageLayer extends AnimKAGLayer
 
 	function onBeforeFocus(layer, blured, direction)
 	{
-        // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½Oï¿½ÉŒÄ‚Î‚ï¿½ï¿½
-		// ï¿½Åï¿½ï¿½Ìƒï¿½ï¿½ï¿½ï¿½Nï¿½Ü‚ÅƒJï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        // ƒtƒH[ƒJƒX‚ğ“¾‚é‘O‚ÉŒÄ‚Î‚ê‚é
+		// Å‰‚ÌƒŠƒ“ƒN‚Ü‚ÅƒJ[ƒ\ƒ‹‚ğˆÚ“®‚³‚¹‚é
 
 		if(!selProcessLock)
 		{
-			// ï¿½Lï¿½[ï¿½{ï¿½[ï¿½hï¿½Å‘ï¿½ï¿½ì‚ªï¿½sï¿½ï¿½ê‚½ï¿½ê‡ï¿½É‚Ì‚İƒJï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½
-			// ï¿½Ú“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ßAï¿½Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©ï¿½`ï¿½Fï¿½bï¿½Nï¿½ï¿½ï¿½sï¿½ï¿½
+			// ƒL[ƒ{[ƒh‚Å‘€ì‚ªs‚í‚ê‚½ê‡‚É‚Ì‚İƒJ[ƒ\ƒ‹‚ğ
+			// ˆÚ“®‚³‚¹‚é‚½‚ßAŠY“–‚·‚éƒL[‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN‚ğs‚¤
 			var sgks = window.getKeyState;
 			var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
 				sgks(VK_DOWN) || sgks(VK_TAB);
@@ -3604,13 +3604,13 @@ class MessageLayer extends AnimKAGLayer
 
 		if(!vertical && newy === void)
 		{
-			// ï¿½ï¿½ï¿½Ê’uï¿½Ì‚İ‚Ì•ÏX
+			// ‰¡ˆÊ’u‚Ì‚İ‚Ì•ÏX
 			lineLayerPos += dx;
 			lineLayerLength += dx;
 		}
 		else if(vertical && newx === void)
 		{
-			// ï¿½cï¿½Ê’uï¿½Ì‚İ‚Ì•ÏX
+			// cˆÊ’u‚Ì‚İ‚Ì•ÏX
 			lineLayerPos += dy;
 			lineLayerLength += dy;
 		}
@@ -3629,7 +3629,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function processReturn()
 	{
-		// ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ‰üs‚ğˆ—‚·‚é
 		if(reline())
 		{
 			return autoReturn;
@@ -3639,7 +3639,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function processGraph(elm)
 	{
-		// ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½æ‘œï¿½ï¿½ elm ï¿½É]ï¿½ï¿½ï¿½Ä•\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒCƒ“ƒ‰ƒCƒ“‰æ‘œ‚ğ elm ‚É]‚Á‚Ä•\¦‚·‚é
 		var key = adjustColorKey(elm.key);
 		var char = true;
 		char = +elm.char if elm.char !== void;
@@ -3649,16 +3649,16 @@ class MessageLayer extends AnimKAGLayer
 
 	function setRuby(text)
 	{
-		// ï¿½ï¿½ï¿½Ì•ï¿½ï¿½ï¿½ï¿½É‘Î‚ï¿½ï¿½éƒ‹ï¿½rï¿½ï¿½İ’è‚·ï¿½ï¿½
+		// Ÿ‚Ì•¶š‚É‘Î‚·‚éƒ‹ƒr‚ğİ’è‚·‚é
 		currentRuby = text;
 	}
 
 	function showBreakGlyph(glyphobj, storage, key, baseLine=0)
 	{
-		// ï¿½ï¿½Ê‚Ésï¿½Ò‚ï¿½/ï¿½yï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		glyphobj.parent = this; // ï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
-		glyphobj.loadImages(storage, key); // ï¿½æ‘œï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
-		glyphobj.bringToFront(); // ï¿½Å‘Oï¿½Ê‚ï¿½
+		// ‰æ–Ê‚És‘Ò‚¿/ƒy[ƒW‘Ò‚¿‹L†‚ğ•\¦‚·‚é
+		glyphobj.parent = this; // e‚ğ©•ª‚É‚·‚é
+		glyphobj.loadImages(storage, key); // ‰æ‘œ‚ğ“Ç‚İ‚Ş
+		glyphobj.bringToFront(); // Å‘O–Ê‚É
 
 		if(glyphFixedSize)
 		{
@@ -3687,19 +3687,19 @@ class MessageLayer extends AnimKAGLayer
 
 	function showLineBreakGlyph(glyphobj)
 	{
-        // ï¿½sï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½
+        // s‘Ò‚¿‹L†‚ğ•\¦
         showBreakGlyph(glyphobj, lineBreakGlyph, lineBreakGlyphKey, lineBreakBaseLine);
 	}
 
 	function showPageBreakGlyph(glyphobj)
 	{
-		// ï¿½yï¿½[ï¿½Wï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½
+		// ƒy[ƒW‘Ò‚¿‹L†‚ğ•\¦
 		showBreakGlyph(glyphobj, pageBreakGlyph, pageBreakGlyphKey, pageBreakBaseLine);
 	}
 
 	function setGlyph(elm)
 	{
-		// ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½Ò‚ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½İ’ï¿½
+		// ƒNƒŠƒbƒN‘Ò‚¿‹L†‚ğİ’è
 		if(elm.line !== void)
 		{
 			lineBreakGlyph = elm.line;
@@ -3717,45 +3717,45 @@ class MessageLayer extends AnimKAGLayer
 
 	function setIndent()
 	{
-		// ï¿½Cï¿½ï¿½ï¿½fï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½İˆÊ’uï¿½Éİ’ï¿½
+		// ƒCƒ“ƒfƒ“ƒg‚ğŒ»İˆÊ’u‚Éİ’è
 		if(vertical) indentxpos = y - marginT; else indentxpos = x - marginL;
 	}
 
 	function resetIndent()
 	{
-		// ï¿½Cï¿½ï¿½ï¿½fï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒCƒ“ƒfƒ“ƒg‚ğ‰ğœ
 		indentxpos = 0;
 	}
 
 	function assignComp()
 	{
-		// ï¿½Î‚É‚È‚éƒŒï¿½Cï¿½ï¿½ï¿½Ì“ï¿½ï¿½eï¿½ï¿½ï¿½Rï¿½sï¿½[
+		// ‘Î‚É‚È‚éƒŒƒCƒ„‚Ì“à—e‚ğƒRƒs[
         assign(comp);
 	}
 
 	function beginTransition(elm)
 	{
-		// elm ï¿½É]ï¿½ï¿½ï¿½Äƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
+		// elm ‚É]‚Á‚Äƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ğs‚¤
 		super.beginTransition(elm, comp);
 	}
 
 	function internalAssign(src, copyvisiblestate)
 	{
-        // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[
-		// ( ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ñ‚ª–cï¿½ï¿½È‚Ì‚Å‚ï¿½ï¿½ï¿½ï¿½ï¿½Æï¿½ï¿½sï¿½ï¿½ï¿½Ô‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ )
+        // ƒŒƒCƒ„‚Ìî•ñ‚ğƒRƒs[
+		// ( ƒRƒs[‚·‚éî•ñ‚ª–c‘å‚È‚Ì‚Å‚¿‚å‚Á‚ÆÀsŠÔ‚ª‚©‚©‚é )
 
-		// ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ì‰æ‘œï¿½Aï¿½Ê’uï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½xï¿½È‚Ç‚ÌƒRï¿½sï¿½[
+		// ‚±‚ÌƒŒƒCƒ„©g‚Ì‰æ‘œAˆÊ’uA“§–¾“x‚È‚Ç‚ÌƒRƒs[
 		assignImages(src);
 		if(copyvisiblestate)
-			assignVisibleState(src); // assignImages ï¿½Í‰Âï¿½ï¿½Eï¿½sï¿½Âï¿½ï¿½È‚Ç‚Ìï¿½ï¿½ÍƒRï¿½sï¿½[ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½
+			assignVisibleState(src); // assignImages ‚Í‰Â‹E•s‰Â‹‚È‚Ç‚Ìî•ñ‚ÍƒRƒs[‚µ‚È‚¢‚½‚ß
 
 		focusable = src.focusable;
 
         eventTransparent = src.eventTransparent;
         
-		// links ï¿½ÌƒRï¿½sï¿½[
+		// links ‚ÌƒRƒs[
 		{
-			invalidateLinkObjects(); // ï¿½ê‰ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½Í‚ï¿½ï¿½×‚Ä–ï¿½ï¿½ï¿½
+			invalidateLinkObjects(); // ˆê‰ƒIƒuƒWƒFƒNƒg‚Í‚·‚×‚Ä–³Œø‰»
 			var tl = links, sl = src.links;
 			tl.count = sl.count;
 			for(var i = sl.count-1; i>=0; i--)
@@ -3764,22 +3764,22 @@ class MessageLayer extends AnimKAGLayer
 				var tl_d = (tl[i] = %[]);
 				var sl_d = sl[i];
 				(Dictionary.assign incontextof tl_d)(sl_d);
-				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ax, y, w, h, fixed ï¿½ÌŠeï¿½ï¿½ï¿½ï¿½ï¿½oï¿½Íï¿½ï¿½Û‚É“ï¿½ï¿½eï¿½ï¿½ assign
-				// ï¿½ï¿½ï¿½È‚ï¿½ï¿½Æ‘Ê–ï¿½
+				// ‚½‚¾‚µAx, y, w, h, fixed ‚ÌŠeƒƒ“ƒo‚ÍÀÛ‚É“à—e‚ğ assign
+				// ‚µ‚È‚¢‚Æ‘Ê–Ú
 				(tl_d.x = []).assign(sl_d.x);
 				(tl_d.y = []).assign(sl_d.y);
 				(tl_d.w = []).assign(sl_d.w);
 				(tl_d.h = []).assign(sl_d.h);
 				(tl_d.fixed = []).assign(sl_d.fixed);
 
-				// ï¿½^ï¿½Cï¿½vï¿½É]ï¿½ï¿½ï¿½ï¿½
+				// ƒ^ƒCƒv‚É]‚Á‚Ä
 				var type = tl_d.type;
 				if(type == ltButton || type == ltLayer)
 				{
-					// ï¿½{ï¿½^ï¿½ï¿½
+					// ƒ{ƒ^ƒ“
 					var sl_d_object = sl_d.object;
 					var object = new LinkButtonLayer(window, this);
-						// object ï¿½ÍÄì¬
+						// object ‚ÍÄì¬
 					object.assign(sl_d_object);
 					tl_d.object = object;
                     names[object.name] = object;
@@ -3787,29 +3787,29 @@ class MessageLayer extends AnimKAGLayer
 				}
 				else if(type == ltEdit)
 				{
-					// ï¿½Pï¿½ï¿½sï¿½Gï¿½fï¿½Bï¿½bï¿½g
+					// ’PˆêsƒGƒfƒBƒbƒg
 					var sl_d_object = sl_d.object;
 					var object = new LinkEditLayer(window, this);
-						// object ï¿½ÍÄì¬
+						// object ‚ÍÄì¬
 					object.assign(sl_d_object);
 					tl_d.object = object;
                     names[object.name] = object;
 				}
 				else if(type == ltCheckBox)
 				{
-					// ï¿½`ï¿½Fï¿½bï¿½Nï¿½{ï¿½bï¿½Nï¿½X
+					// ƒ`ƒFƒbƒNƒ{ƒbƒNƒX
 					var sl_d_object = sl_d.object;
 					var object = new LinkCheckBoxLayer(window, this);
-						// object ï¿½ÍÄì¬
+						// object ‚ÍÄì¬
 					object.assign(sl_d_object);
 					tl_d.object = object;
                     names[object.name] = object;
                 }else if(type == ltSlider)
 				{
-					// ï¿½`ï¿½Fï¿½bï¿½Nï¿½{ï¿½bï¿½Nï¿½X
+					// ƒ`ƒFƒbƒNƒ{ƒbƒNƒX
 					var sl_d_object = sl_d.object;
 					var object = new LinkSliderLayer(window, this);
-						// object ï¿½ÍÄì¬
+						// object ‚ÍÄì¬
 					object.assign(sl_d_object);
 					tl_d.object = object;
                     names[object.name] = object;
@@ -3818,7 +3818,7 @@ class MessageLayer extends AnimKAGLayer
 		}
 
 
-		// lineLayerLinks ï¿½ÌƒRï¿½sï¿½[
+		// lineLayerLinks ‚ÌƒRƒs[
 		{
 			var tl = lineLayerLinks, sl = src.lineLayerLinks;
 			tl.count = sl.count;
@@ -3828,7 +3828,7 @@ class MessageLayer extends AnimKAGLayer
 			}
 		}
 
-		// lineLayer ï¿½ÌˆÊ’uï¿½Aï¿½Tï¿½Cï¿½Yï¿½Aï¿½æ‘œï¿½Aï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[
+		// lineLayer ‚ÌˆÊ’uAƒTƒCƒYA‰æ‘œAƒtƒHƒ“ƒgî•ñ‚ğƒRƒs[
 		{
 			var tl = lineLayer, sl = src.lineLayer;
 			tl.assignImages(sl);
@@ -3841,15 +3841,15 @@ class MessageLayer extends AnimKAGLayer
 			tf.height = sf.height;
 		}
 
-		// ï¿½ï¿½ï¿½Ì‚Ù‚ï¿½
+		// ‚»‚Ì‚Ù‚©
 		highlightLayer.visible = false;
 		keyLink = -1;
 		imageModified = true;
 
-		// ï¿½ï¿½ï¿½Ì‘ï¿½ï¿½Ìï¿½ï¿½ÌƒRï¿½sï¿½[
-		// [start_assign_vars] ï¿½ï¿½ [end_assign_vars] ï¿½ÌŠÔ‚ï¿½
-		// perl ï¿½É‚ï¿½ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ÅAï¿½ï¿½ï¿½Ìƒ}ï¿½[ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½A
-		// ï¿½ï¿½Â‚Ìƒ}ï¿½[ï¿½Nï¿½ÌŠÔ‚ï¿½ÒWï¿½ï¿½ï¿½ï¿½ï¿½è‚µï¿½È‚ï¿½ï¿½ï¿½ï¿½ÆB
+		// ‚»‚Ì‘¼‚Ìî•ñ‚ÌƒRƒs[
+		// [start_assign_vars] ‚Æ [end_assign_vars] ‚ÌŠÔ‚Í
+		// perl ‚É‚æ‚Á‚Ä©“®¶¬‚³‚ê‚é‚Ì‚ÅA‚±‚Ìƒ}[ƒN‚ğÁ‚µ‚½‚èA
+		// “ñ‚Â‚Ìƒ}[ƒN‚ÌŠÔ‚ğ•ÒW‚µ‚½‚è‚µ‚È‚¢‚±‚ÆB
 		// [start_assign_vars]
 		frameGraphic = src.frameGraphic;
 		frameKey = src.frameKey;
@@ -3936,7 +3936,7 @@ class MessageLayer extends AnimKAGLayer
 		lastMouseY = src.lastMouseY;
 		// [end_assign_vars]
 
-        // ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½Cï¿½ï¿½
+        // –¼‘OƒŒƒCƒ„
         if (src.nameLayer !== void) {
             initNameLayer();
             nameLayer.assignImages(src.nameLayer, true);
@@ -3945,7 +3945,7 @@ class MessageLayer extends AnimKAGLayer
             invalidateNameLayer();
         }
 
-        // ï¿½\ï¿½îƒŒï¿½Cï¿½ï¿½
+        // •\îƒŒƒCƒ„
         if (src.faceLayer !== void) {
             initFaceLayer();
             faceLayer.assignImages(src.faceLayer, true);
@@ -3962,15 +3962,15 @@ class MessageLayer extends AnimKAGLayer
         clickTarget  = src.clickTarget;
         clickExp     = src.clickExp;
         
-        // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ÌƒRï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
+        // ƒVƒXƒeƒ€ƒ{ƒ^ƒ“‚ÌƒRƒs[ˆ—
         clearSystemButtons();
         foreach(src.buttons, function(name,value,srcbuttons,self) {
-            // ï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            // ƒNƒ[ƒ“ˆ—
             var b = new SystemButtonLayer(self.window, self);
             b.assign(value);
             self.buttons[name] = b;
         }, this);
-        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[
+        // ¶¬î•ñ‚ğƒRƒs[
         buttons_save.assign(src.buttons_save);
     }
 
@@ -3981,9 +3981,9 @@ class MessageLayer extends AnimKAGLayer
 
 	function store()
 	{
-		// ï¿½ï¿½ï¿½İ‚Ìï¿½Ô‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½ï¿½É‹Lï¿½^ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½zï¿½ï¿½ï¿½Ô‚ï¿½
-		// [start_store_vars] ï¿½ï¿½ [end_store_vars] ï¿½ÌŠÔ‚ï¿½
-		// (ï¿½ï¿½)
+		// Œ»İ‚Ìó‘Ô‚ğ«‘”z—ñ‚É‹L˜^‚µA‚»‚Ì«‘”z—ñ‚ğ•Ô‚·
+		// [start_store_vars] ‚Æ [end_store_vars] ‚ÌŠÔ‚Í
+		// (—ª)
 		var dic = super.store();
 		// [start_store_vars]
 		dic.frameGraphic = frameGraphic;
@@ -4038,9 +4038,9 @@ class MessageLayer extends AnimKAGLayer
 	function restore(dic)
 	{
 		imageModified = true;
-		// ï¿½ï¿½Ô‚ï¿½ dic ï¿½ï¿½ï¿½ï¿½Ç‚İoï¿½ï¿½
-		// [start_restore_vars] ï¿½ï¿½ [end_restore_vars] ï¿½ÌŠÔ‚ï¿½
-		// (ï¿½ï¿½)
+		// ó‘Ô‚ğ dic ‚©‚ç“Ç‚İo‚·
+		// [start_restore_vars] ‚Æ [end_restore_vars] ‚ÌŠÔ‚Í
+		// (—ª)
 		// [start_restore_vars]
 		frameGraphic = dic.frameGraphic if dic.frameGraphic !== void;
 		frameKey = dic.frameKey if dic.frameKey !== void;
@@ -4096,7 +4096,7 @@ class MessageLayer extends AnimKAGLayer
         } else {
             invalidateNameLayer();
         }
-        // ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½
+        // ƒVƒXƒeƒ€ƒ{ƒ^ƒ“•œ‹Aˆ—
         clearSystemButtons();
         var bt = dic.buttons;
         if (bt !== void) {
@@ -4109,19 +4109,19 @@ class MessageLayer extends AnimKAGLayer
 
 	function atEndOfTransition(src, withchildren, exchange)
 	{
-		// atEndOfTransition ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½h
+		// atEndOfTransition ƒI[ƒo[ƒ‰ƒCƒh
 		super.atEndOfTransition(...);
 		if(src == null)
 		{
-			//ï¿½Eï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Aï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Asrcï¿½È‚ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ (children=true)
-			//ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Ä‚æ‚¢ï¿½ï¿½ï¿½Aï¿½Iï¿½ï¿½ï¿½ã‚»ï¿½ï¿½ï¿½Ìqï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Íï¿½ï¿½ï¿½ï¿½Iï¿½É”ï¿½\ï¿½ï¿½ï¿½É‚È‚ï¿½B
+			//EƒƒbƒZ[ƒWƒŒƒCƒ„A‘OŒiƒŒƒCƒ„‚ªAsrc‚È‚µ‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ (children=true)
+			//@‰½‚à‚µ‚È‚­‚Ä‚æ‚¢‚ªAI—¹Œã‚»‚ê‚ç‚ÌqƒŒƒCƒ„‚Í©“®“I‚É”ñ•\¦‚É‚È‚éB
 		}
 		else
 		{
-			//ï¿½Eï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Aï¿½Oï¿½iï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Asrcï¿½ï¿½ï¿½ï¿½Åƒgï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ (children=true)
-			//ï¿½@ï¿½dï¿½vï¿½Èï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆŒï¿½ï¿½ï¿½ï¿½Aexchange=false ï¿½Ìê‡ï¿½Í‚ï¿½ï¿½ï¿½ï¿½
-			//ï¿½@ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÉƒRï¿½sï¿½[ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ÌƒRï¿½sï¿½[ï¿½ÌÛ‚ï¿½
-			//ï¿½@ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½Ì‰Âï¿½ï¿½Eï¿½sï¿½Âï¿½ï¿½Ìï¿½ï¿½ÍƒRï¿½sï¿½[ï¿½ï¿½ï¿½È‚ï¿½ï¿½B
+			//EƒƒbƒZ[ƒWƒŒƒCƒ„A‘OŒiƒŒƒCƒ„‚ªAsrc‚ ‚è‚Åƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ (children=true)
+			//@d—v‚Èî•ñ‚ğƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚ÆŒğŠ·Aexchange=false ‚Ìê‡‚Í‚³‚ç‚É
+			//@ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“Œ³‚Ìî•ñ‚ğƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“æ‚ÉƒRƒs[B‚½‚¾‚µA‚±‚ÌƒRƒs[‚ÌÛ‚É
+			//@ƒEƒBƒ“ƒhƒE‚Ì‰Â‹E•s‰Â‹‚Ìî•ñ‚ÍƒRƒs[‚µ‚È‚¢B
 			assign(src, false);
 			exchangeInfo();
 			window.swapMessageLayer(id);
@@ -4130,16 +4130,16 @@ class MessageLayer extends AnimKAGLayer
 
 	function assignTransSrc()
 	{
-		// ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
+		// ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚à‚Æ‚ğƒRƒs[‚·‚é
 		assign(comp, true);
 	}
 
 	function exchangeInfo()
 	{
-		// comp ï¿½Æï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
-		// ï¿½ï¿½ï¿½Å‚ï¿½ ï¿½æ‘œï¿½Ì“ï¿½ï¿½eï¿½Aï¿½cï¿½ï¿½ï¿½[ï¿½\ï¿½ï¿½ï¿½Íï¿½ï¿½Ï‚ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Ì‚ï¿½
-		// ï¿½ï¿½ï¿½Oï¿½È‚Ç‚ï¿½ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½
-		// ï¿½Ü‚ï¿½ï¿½Aï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ÌŠÇ—ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½Vï¿½ï¿½ï¿½ï¿½æ‚¤ï¿½É‚ï¿½ï¿½ï¿½
+		// comp ‚Æî•ñ‚ğæ‚è‘Ö‚¦‚é
+		// ‚·‚Å‚É ‰æ‘œ‚Ì“à—eAƒcƒŠ[\‘¢‚Íæ‚è•Ï‚í‚Á‚Ä‚¢‚é‚Ì‚Å
+		// –¼‘O‚È‚Ç‚ğæ‚è‘Ö‚¦‚é
+		// ‚Ü‚½AƒEƒBƒ“ƒhƒE‚ÌŠÇ—î•ñ‚àXV‚·‚é‚æ‚¤‚É‚·‚é
 		var src = comp;
 		var tmp = src.name;
 		src.name = name;
@@ -4162,29 +4162,29 @@ class MessageLayer extends AnimKAGLayer
 
 	function setHiddenStateByUser(b)
 	{
-		// ï¿½ï¿½ï¿½[ï¿½Uï¿½ï¿½ï¿½Eï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½È‚Ç‚Åƒï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½êï¿½Iï¿½É‰Bï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½
-		// ï¿½Ä‚Î‚ï¿½ï¿½
+		// ƒ†[ƒU‚ª‰EƒNƒŠƒbƒN‚È‚Ç‚ÅƒƒbƒZ[ƒWƒŒƒCƒ„‚ğˆê“I‚É‰B‚·‚Æ‚«‚É
+		// ŒÄ‚Î‚ê‚é
 		if(b)
 		{
 			visibleBeforeUserInvisible = visible;
-			invisibleByUser = true; // ï¿½ï¿½ï¿½[ï¿½Uï¿½É‚ï¿½ï¿½êï¿½Iï¿½É•sï¿½Âï¿½
+			invisibleByUser = true; // ƒ†[ƒU‚É‚æ‚èˆê“I‚É•s‰Â‹
 			visible = false;
 		}
 		else
 		{
-			invisibleByUser = false; // ï¿½Âï¿½
+			invisibleByUser = false; // ‰Â‹
 			visible = visibleBeforeUserInvisible;
 		}
 	}
 }
 
 
-// TJS ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½gï¿½Í‚ï¿½ï¿½ï¿½ï¿½ÅIï¿½ï¿½ï¿½
+// TJS ƒXƒNƒŠƒvƒg‚Í‚±‚±‚ÅI‚í‚è
 "
 END_OF_TJS_SCRIPT
 # "; /*
 
-# assign/store/restore ï¿½ÅƒRï¿½sï¿½[ï¿½ï¿½ï¿½×‚ï¿½ï¿½Ïï¿½ï¿½ÌÄï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ perl ï¿½Xï¿½Nï¿½ï¿½ï¿½vï¿½g
+# assign/store/restore ‚ÅƒRƒs[‚·‚×‚«•Ï”‚ÌÄ¶¬‚ğs‚¤ perl ƒXƒNƒŠƒvƒg
 
 open FH, "MessageLayer.tjs" or die;
 undef($/);

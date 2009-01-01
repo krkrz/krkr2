@@ -1,26 +1,26 @@
-// ButtonLayer.tjs - ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½
-// Copyright (C)2001-2009, W.Dee and contributors  ï¿½ï¿½ÏEï¿½zï¿½zï¿½Íï¿½ï¿½Rï¿½Å‚ï¿½
+// ButtonLayer.tjs - ƒ{ƒ^ƒ“ƒŒƒCƒ„
+// Copyright (C)2001-2009, W.Dee and contributors  ‰ü•ÏE”z•z‚Í©—R‚Å‚·
 
 /*
-ï¿½{ï¿½^ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä“ï¿½ï¿½ì‚·ï¿½éƒŒï¿½Cï¿½ï¿½ï¿½Å‚ï¿½ï¿½B
-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ê‚½ï¿½ï¿½ï¿½Ì‰æ‘œï¿½Aï¿½}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ì‰æ‘œï¿½Aï¿½Êï¿½Ì‰æ‘œ
-ï¿½ï¿½ï¿½ï¿½ï¿½ê‚¼ï¿½ï¿½Ï‚ï¿½ï¿½é‚±ï¿½Æ‚ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½B
+ƒ{ƒ^ƒ“‚Æ‚µ‚Ä“®ì‚·‚éƒŒƒCƒ„‚Å‚·B
+‰Ÿ‚µ‚Ü‚ê‚½‚Ì‰æ‘œAƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ªƒŒƒCƒ„“à‚É‚ ‚é‚Æ‚«‚Ì‰æ‘œA’Êí‚Ì‰æ‘œ
+‚ğ‚»‚ê‚¼‚ê•Ï‚¦‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B
 
-ï¿½ï¿½ï¿½ï¿½  new ButtonLayer(<window>, <parent>)
+‘®  new ButtonLayer(<window>, <parent>)
 
-<window> : ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ì¬ï¿½ï¿½ï¿½ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½E
-<parent> : ï¿½eï¿½ï¿½ï¿½Cï¿½ï¿½
+<window> : ‚±‚ÌƒŒƒCƒ„‚ğì¬‚·‚éƒEƒBƒ“ƒhƒE
+<parent> : eƒŒƒCƒ„
 
 */
 
 
 class ButtonLayer extends AnimKAGLayer
 {
-    var toggleButton; // ï¿½gï¿½Oï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½
-    var _toggle;      // ï¿½gï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½
+    var toggleButton; // ƒgƒOƒ‹ƒ{ƒ^ƒ“‚Æ‚µ‚Ä‰Šú‰»‚³‚ê‚Ä‚é
+    var _toggle;      // ƒgƒOƒ‹ó‘Ô
 
-    var groupName;    // ï¿½ï¿½ï¿½Wï¿½Iï¿½{ï¿½^ï¿½ï¿½ï¿½Ìê‡ï¿½ÌƒOï¿½ï¿½ï¿½[ï¿½vï¿½wï¿½ï¿½
-    var halftone;     // disable ï¿½ï¿½ï¿½É”ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
+    var groupName;    // ƒ‰ƒWƒIƒ{ƒ^ƒ“‚Ìê‡‚ÌƒOƒ‹[ƒvw’è
+    var halftone;     // disable ‚É”¼“§–¾‚É‚·‚é
     
     property toggle {
         getter() { return _toggle; }
@@ -30,13 +30,13 @@ class ButtonLayer extends AnimKAGLayer
         }
     }
 
-    var Butt_imageLoaded = false; // ï¿½æ‘œï¿½ï¿½ï¿½Ç‚İï¿½ï¿½Ü‚ê‚½ï¿½ï¿½
-	var Butt_mouseOn = false; // ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½Éƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½é‚©
-	var Butt_mouseDown = false; // ï¿½}ï¿½Eï¿½Xï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½é‚©
+    var Butt_imageLoaded = false; // ‰æ‘œ‚ª“Ç‚İ‚Ü‚ê‚½‚©
+	var Butt_mouseOn = false; // ƒŒƒCƒ„“à‚Éƒ}ƒEƒX‚ª‚ ‚é‚©
+	var Butt_mouseDown = false; // ƒ}ƒEƒXƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚Ä‚¢‚é‚©
 	var Butt_color = clNone;
     var Butt_oncolor = clNone;
-	var Butt_caption = ''; // ï¿½{ï¿½^ï¿½ï¿½ï¿½ÌƒLï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½
-	var Butt_captionColor = 0x000000; // ï¿½Lï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ÌF
+	var Butt_caption = ''; // ƒ{ƒ^ƒ“‚ÌƒLƒƒƒvƒVƒ‡ƒ“
+	var Butt_captionColor = 0x000000; // ƒLƒƒƒvƒVƒ‡ƒ“‚ÌF
 	var Butt_keyPressed = false;
 	var Butt_showFocusImage = false;
 
@@ -49,8 +49,8 @@ class ButtonLayer extends AnimKAGLayer
 
         hitType = htMask;
         hitThreshold = 0;
-		focusable = true; // ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½ï¿½ï¿½
-        toggleButton = toggle; // ï¿½gï¿½Oï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
+		focusable = true; // ƒtƒH[ƒJƒX‚ğ“¾‚ç‚ê‚é
+        toggleButton = toggle; // ƒgƒOƒ‹ƒ{ƒ^ƒ“‚©‚Ç‚¤‚©
 	}
 
 	function finalize()
@@ -60,7 +60,7 @@ class ButtonLayer extends AnimKAGLayer
 
 	function assign(src)
 	{
-		// src ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ÉƒRï¿½sï¿½[
+		// src ‚Ìî•ñ‚ğ‚±‚Ìƒ{ƒ^ƒ“ƒŒƒCƒ„‚ÉƒRƒs[
 		assignImages(src, true);
 		Butt_imageLoaded = src.Butt_imageLoaded;
         Butt_color = src.Butt_color;
@@ -77,14 +77,14 @@ class ButtonLayer extends AnimKAGLayer
 
 	function drawState(s)
 	{
-		// ï¿½ï¿½ï¿½ s ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½æ‘œï¿½ï¿½`ï¿½ï¿½
-		// s :  0 : ï¿½ï¿½ï¿½Ê‚Ìï¿½ï¿½
-		//      1 : ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½
-		//      2 : ï¿½{ï¿½^ï¿½ï¿½ï¿½Ìï¿½Éƒ}ï¿½Eï¿½Xï¿½Jï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		//     (3): ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡
+		// ó‘Ô s ‚É‘Î‰‚·‚é‰æ‘œ‚ğ•`‰æ
+		// s :  0 : •’Ê‚Ìó‘Ô
+		//      1 : ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½ó‘Ô
+		//      2 : ƒ{ƒ^ƒ“‚Ìã‚Éƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ª‚ ‚éó‘Ô
+		//     (3): ƒtƒH[ƒJƒX‚ª‚ ‚éê‡
 		if(!enabled)
 		{
-            s = 0; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            s = 0; // –³Œøó‘Ô
         }
 
 		if(Butt_imageLoaded)
@@ -92,19 +92,19 @@ class ButtonLayer extends AnimKAGLayer
             if (halftone) {
                 opacity = enabled ? 255 : 128;
             }
-            // ï¿½{ï¿½^ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½Ç‚İï¿½ï¿½Ü‚ï¿½Ä‚ï¿½ï¿½ï¿½
+            // ƒ{ƒ^ƒ“ƒCƒ[ƒW‚ª“Ç‚İ‚Ü‚ê‚Ä‚¢‚é
             // TODO: keyboard focus
             imageLeft = -s * width - (toggle ? imageWidth / 2: 0);
         }
 		else
 		{
-			if(Butt_keyPressed) s = 1; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+			if(Butt_keyPressed) s = 1; // ‰Ÿ‚³‚ê‚Ä‚¢‚é
 
-			// ï¿½gï¿½ÆƒLï¿½ï¿½ï¿½vï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½`ï¿½ï¿½
-			// ï¿½Nï¿½ï¿½ï¿½A
+			// ˜g‚ÆƒLƒƒƒvƒVƒ‡ƒ“‚ğ•`‰æ
+			// ƒNƒŠƒA
 			face = dfAlpha;
 			colorRect(0, 0, width, height, 0, -255);
-			// ï¿½ï¿½ï¿½nï¿½ï¿½hï¿½ï¿½
+			// ‰º’n‚ğ“h‚é
             if (toggle) {
                 if(Butt_oncolor != clNone)
                     colorRect(0, 0, width, height, Butt_oncolor, 128);
@@ -114,13 +114,13 @@ class ButtonLayer extends AnimKAGLayer
                 if(Butt_color != clNone)
                     colorRect(0, 0, width, height, Butt_color, 128);
             }
-			// ï¿½ï¿½ï¿½ï¿½ï¿½ÌƒTï¿½Cï¿½Yï¿½ğ“¾‚ï¿½
+			// •¶š‚ÌƒTƒCƒY‚ğ“¾‚é
 			var tw, th;
 			tw = font.getTextWidth(Butt_caption);
 			th = font.getTextHeight(Butt_caption);
 			if(s == 0 || s == 2)
 			{
-				// ï¿½Êí‚ ï¿½é‚¢ï¿½Íƒ}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½
+				// ’Êí‚ ‚é‚¢‚Íƒ}ƒEƒX‚ªã‚É‚ ‚é
 				colorRect(0, 0, width, 1, 0xffffff, 128);
 				colorRect(0, 1, 1, height-2, 0xffffff, 128);
 				colorRect(width-1, 1, 1, height-1, 0x000000, 128);
@@ -130,7 +130,7 @@ class ButtonLayer extends AnimKAGLayer
 			}
 			else
 			{
-				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
+				// ‰Ÿ‚³‚ê‚Ä‚¢‚é
 				colorRect(0, 0, width, 1, 0x000000, 128);
 				colorRect(0, 1, 1, height-2, 0x000000, 128);
 				colorRect(width-1, 1, 1, height-1, 0xffffff, 128);
@@ -140,11 +140,11 @@ class ButtonLayer extends AnimKAGLayer
 			}
 
 			if(s != 0)
-				colorRect(2, 2, width-4, height-4, clHighlight, 64); // ï¿½nï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½
+				colorRect(2, 2, width-4, height-4, clHighlight, 64); // ƒnƒCƒ‰ƒCƒg‚·‚é
 
 			if(focused)
 			{
-				// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Åƒnï¿½Cï¿½ï¿½ï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½
+				// ƒtƒH[ƒJƒX‚ª‚ ‚é‚Ì‚ÅƒnƒCƒ‰ƒCƒg‚·‚é
 				colorRect(2, 2, width-4, 1, clHighlight, 128);
 				colorRect(2, 3, 1, height-5, clHighlight, 128);
 				colorRect(3, height-3, width-5, 1, clHighlight, 128);
@@ -182,23 +182,23 @@ class ButtonLayer extends AnimKAGLayer
         }
     }
 
-	// offsï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½Äƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
+	// offs‚ğl—¶‚µ‚Äƒ{ƒ^ƒ“‚ğƒRƒs[‚·‚é
 	function _copyButton(w, h, num, temp, info) {
 		var ox = 0, oy = 0, cw = temp.imageWidth, ch = temp.imageHeight;
-		// oFFs ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ç‚·
+		// oFFs ƒ`ƒƒƒ“ƒN‚ª‚ ‚ê‚Î‚¸‚ç‚·
         if (sf && sf.offsetimage && info) {
             if (info.offs_x !== void) ox = (int)info.offs_x;
             if (info.offs_y !== void) oy = (int)info.offs_y;
 		}
-		// ï¿½×‚Éƒnï¿½~ï¿½oï¿½ï¿½ï¿½È‚ï¿½ï¿½æ‚¤ï¿½É’ï¿½ï¿½ï¿½
+		// —×‚Éƒnƒ~o‚³‚È‚¢‚æ‚¤‚É’²®
 		if (ox + cw > w) cw = w - ox;
 		if (oy + ch > h) ch = h - oy;
-		// ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
+		// ƒRƒs[‚·‚é
 		copyRect(w*num + ox, oy, temp, 0, 0, cw, ch);
 	}
 
     /**
-     * ï¿½ï¿½ï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½æ‘œï¿½Ì“Ç‚İï¿½ï¿½ï¿½
+     * •ª—£ƒ{ƒ^ƒ“‰æ‘œ‚Ì“Ç‚İ‚İ
      */
     function loadButtons(normal, over, on, focus, count, time, toggle=false) {
 
@@ -214,7 +214,7 @@ class ButtonLayer extends AnimKAGLayer
         var info = temp.loadImages(normal);
         var w = temp.imageWidth;
         var h = temp.imageHeight;
-        // vpAg ï¿½`ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½ç‚ªï¿½^ï¿½ÌƒTï¿½Cï¿½Y
+        // vpAg ƒ`ƒƒƒ“ƒN‚ª‚ ‚ê‚Î‚»‚¿‚ç‚ª^‚ÌƒTƒCƒY
         if (sf && sf.offsetimage && info) {
             if (info.vpag_w !== void) w = (int)info.vpag_w;
             if (info.vpag_h !== void) h = (int)info.vpag_h;
@@ -256,33 +256,33 @@ class ButtonLayer extends AnimKAGLayer
         }
     }
 
-	// offsï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½Äƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
+	// offs‚ğl—¶‚µ‚Äƒ{ƒ^ƒ“‚ğƒRƒs[‚·‚é
     function _copyButton2(w, h, num, temp, ox, oy) {
         var cw = temp.imageWidth, ch = temp.imageHeight;
-        // ï¿½×‚Éƒnï¿½~ï¿½oï¿½ï¿½ï¿½È‚ï¿½ï¿½æ‚¤ï¿½É’ï¿½ï¿½ï¿½
+        // —×‚Éƒnƒ~o‚³‚È‚¢‚æ‚¤‚É’²®
 		if (ox + cw > w) cw = w - ox;
 		if (oy + ch > h) ch = h - oy;
-		// ï¿½Rï¿½sï¿½[ï¿½ï¿½ï¿½ï¿½
+		// ƒRƒs[‚·‚é
 		operateRect(w*num + ox, oy, temp, 0, 0, cw, ch);
 	}
 
     /**
-     * ï¿½{ï¿½^ï¿½ï¿½ï¿½æ‘œUIï¿½ï¿½ï¿½Ì“Ç‚İï¿½ï¿½ï¿½
+     * ƒ{ƒ^ƒ“‰æ‘œUIî•ñ‚Ì“Ç‚İ‚İ
      */
     function loadUIInfo(uiinfo, noclear = false) {
         var temp = window.temporaryLayer;
         var states = uiinfo.uistates;
         
         if (states === void) {
-            throw new Exception("ï¿½æ‘œï¿½ï¿½ï¿½sï¿½ï¿½ï¿½Å‚ï¿½:" + uiinfo.name);
+            throw new Exception("‰æ‘œî•ñ•s³‚Å‚·:" + uiinfo.name);
         }
 
-        // ï¿½gï¿½Oï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½p
+        // ƒgƒOƒ‹ƒ{ƒ^ƒ“—p
         if (uiinfo.class == "toggle" || uiinfo.groupName != "") {
             toggleButton = true;
         }
         
-        // ï¿½ï¿½ï¿½Wï¿½Iï¿½{ï¿½^ï¿½ï¿½ï¿½p
+        // ƒ‰ƒWƒIƒ{ƒ^ƒ“—p
         groupName = uiinfo.groupName;
         
         if (states.focus !== void) {
@@ -337,7 +337,7 @@ class ButtonLayer extends AnimKAGLayer
             }
         }
 
-        // ï¿½gï¿½Oï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½p
+        // ƒgƒOƒ‹ƒ{ƒ^ƒ“—p
         if (toggleButton) {
 
             var base = toggleButton ? (Butt_showFocusImage ? 4 : 3) : 0;
@@ -392,7 +392,7 @@ class ButtonLayer extends AnimKAGLayer
     
 	function discardImage()
 	{
-		// ï¿½æ‘œï¿½ï¿½jï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ä“ï¿½ï¿½ì‚·ï¿½ï¿½æ‚¤ï¿½É‚ï¿½ï¿½ï¿½
+		// ‰æ‘œ‚ğ”jŠü‚µA•¶šƒ{ƒ^ƒ“ƒŒƒCƒ„‚Æ‚µ‚Ä“®ì‚·‚é‚æ‚¤‚É‚·‚é
 		Butt_imageLoaded = false;
 		imageLeft = imageTop = 0;
         animStop();
@@ -401,15 +401,15 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onExecute(x, y, button, shift)
 	{
-		// ï¿½}ï¿½Eï¿½Xï¿½{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄAï¿½ï¿½ê‚½ï¿½Æ‚ï¿½ï¿½ÉŒÄ‚Î‚ï¿½ï¿½
-		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìƒ{ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½Æ‚É‚ï¿½ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½È‚Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ï¿½
-		// onMouseUp ï¿½ï¿½ onClick ï¿½ï¿½ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		// ï¿½ï¿½ï¿½Ìƒï¿½ï¿½\ï¿½bï¿½hï¿½ï¿½ï¿½Iï¿½[ï¿½oï¿½[ï¿½ï¿½ï¿½Cï¿½hï¿½ï¿½ï¿½é‚±ï¿½Æ‚ğ„ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒ}ƒEƒXƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚ÄA•ú‚³‚ê‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
+		// ‰½‚©‚±‚Ìƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚±‚Æ‚É‚æ‚èƒRƒ}ƒ“ƒh‚È‚Ç‚ğÀ‘•‚µ‚½‚¢ê‡‚Í
+		// onMouseUp ‚â onClick ‚ğƒI[ƒo[ƒ‰ƒCƒh‚·‚é‚æ‚è‚à
+		// ‚±‚Ìƒƒ\ƒbƒh‚ğƒI[ƒo[ƒ‰ƒCƒh‚·‚é‚±‚Æ‚ğ„§‚·‚é
 	}
     
 	function onMouseDown(x, y, button)
 	{
-		// onMouseDown ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
+		// onMouseDown ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
         if (button == mbLeft) {
             Butt_mouseDown = true;
             focus();
@@ -420,7 +420,7 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onMouseUp()
 	{
-		// onMouseUp ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
+		// onMouseUp ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
         if(Butt_mouseDown) onExecute(...);
         if (isvalid this) {
             Butt_mouseDown = false;
@@ -431,13 +431,13 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onClick()
 	{
-		// onClick ï¿½Cï¿½xï¿½ï¿½ï¿½gï¿½nï¿½ï¿½ï¿½hï¿½ï¿½
+		// onClick ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰
 		super.onClick(...);
 	}
 
 	function draw()
 	{
-		// ï¿½ï¿½ï¿½İ‚Ìï¿½Ô‚É‚ï¿½ï¿½í‚¹ï¿½Ä•`ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½
+		// Œ»İ‚Ìó‘Ô‚É‚ ‚í‚¹‚Ä•`‰æ‚ğs‚¤
 		if(Butt_mouseDown) drawState(1);
 		else if(Butt_mouseOn) drawState(2);
 		else if(Butt_showFocusImage && focused) drawState(3);
@@ -446,14 +446,14 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onPaint()
 	{
-		// ï¿½`ï¿½ï¿½Ì’ï¿½ï¿½Oï¿½ÉŒÄ‚Î‚ï¿½ï¿½
+		// •`‰æ‚Ì’¼‘O‚ÉŒÄ‚Î‚ê‚é
 		super.onPaint(...);
 		draw();
 	}
 
 	function onMouseEnter()
 	{
-		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆï¿½ï¿½ï¿½É“ï¿½ï¿½ï¿½ï¿½
+		// ƒ}ƒEƒX‚ªƒŒƒCƒ„—Ìˆæ“à‚É“ü‚Á‚½
         update();
         Butt_mouseOn = true;
 		super.onMouseEnter(...);
@@ -461,7 +461,7 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onMouseLeave()
 	{
-		// ï¿½}ï¿½Eï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìˆæ‚©ï¿½ï¿½oï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒ}ƒEƒX‚ªƒŒƒCƒ„—Ìˆæ‚©‚ço‚Ä‚¢‚Á‚½
 		update();
 		Butt_mouseOn = false;
 		Butt_mouseDown = false;
@@ -470,7 +470,7 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onNodeDisabled()
 	{
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒmï¿½[ï¿½hï¿½ï¿½ï¿½sï¿½Â‚É‚È‚ï¿½ï¿½ï¿½
+		// ƒŒƒCƒ„‚Ìƒm[ƒh‚ª•s‰Â‚É‚È‚Á‚½
 		super.onNodeDisabled(...);
 		Butt_mouseDown = false;
 		update();
@@ -478,21 +478,21 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onNodeEnabled()
 	{
-		// ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Ìƒmï¿½[ï¿½hï¿½ï¿½ï¿½Lï¿½ï¿½É‚È‚ï¿½ï¿½ï¿½
+		// ƒŒƒCƒ„‚Ìƒm[ƒh‚ª—LŒø‚É‚È‚Á‚½
 		super.onNodeEnabled(...);
 		update();
 	}
 
 	function onFocus()
 	{
-		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ğ“¾‚ï¿½
+		// ƒtƒH[ƒJƒX‚ğ“¾‚½
 		super.onFocus(...);
 		update();
 	}
 
 	function onBlur()
 	{
-		// ï¿½tï¿½Hï¿½[ï¿½Jï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// ƒtƒH[ƒJƒX‚ğ¸‚Á‚½
 		super.onBlur(...);
 		Butt_mouseDown = false;
 		update();
@@ -500,15 +500,15 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onKeyDown(key, shift, process)
 	{
-		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
+		// ƒL[‚ª‰Ÿ‚³‚ê‚½
 		if(process)
 		{
 			if(key == VK_RETURN || key == VK_SPACE)
 			{
-				// ï¿½Xï¿½yï¿½[ï¿½Xï¿½Lï¿½[ï¿½Ü‚ï¿½ï¿½ÍƒGï¿½ï¿½ï¿½^ï¿½[ï¿½Lï¿½[
+				// ƒXƒy[ƒXƒL[‚Ü‚½‚ÍƒGƒ“ƒ^[ƒL[
 				Butt_keyPressed = true;
 				update();
-				super.onKeyDown(key, shift, false); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½processï¿½ï¿½falseï¿½ï¿½nï¿½ï¿½
+				super.onKeyDown(key, shift, false); // ˆ—‚ğ‚µ‚½‚Ì‚Åprocess‚Éfalse‚ğ“n‚·
 			}
 			else
 			{
@@ -517,24 +517,24 @@ class ButtonLayer extends AnimKAGLayer
 		}
 		else
 		{
-			// process ï¿½ï¿½ false ï¿½Ìê‡ï¿½Íï¿½ï¿½ï¿½ï¿½Ísï¿½ï¿½È‚ï¿½
+			// process ‚ª false ‚Ìê‡‚Íˆ—‚Ís‚í‚È‚¢
 			super.onKeyDown(...);
 		}
 	}
 
 	function onKeyUp(key, shift, process)
 	{
-		// ï¿½Lï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½
+		// ƒL[‚ª—£‚³‚ê‚½
 		if(process)
 		{
 			if(key == VK_RETURN || key == VK_SPACE)
 			{
-				// ï¿½Xï¿½yï¿½[ï¿½Xï¿½Lï¿½[ï¿½Ü‚ï¿½ï¿½ÍƒGï¿½ï¿½ï¿½^ï¿½[ï¿½Lï¿½[
+				// ƒXƒy[ƒXƒL[‚Ü‚½‚ÍƒGƒ“ƒ^[ƒL[
 				var flag = Butt_keyPressed;
 				Butt_keyPressed = false;
 				update();
 				super.onKeyUp(key, shift, false);
-				if(flag) onClick(width \ 2, height \ 2); // ï¿½Nï¿½ï¿½ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
+				if(flag) onClick(width \ 2, height \ 2); // ƒNƒŠƒbƒN“®ì
 			}
 			else
 			{

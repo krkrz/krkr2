@@ -17,17 +17,17 @@
 //---------------------------------------------------------------------------
 class TRelDirSearchForm : public TForm
 {
-__published:	// IDE ï¿½Ç—ï¿½ï¿½ÌƒRï¿½ï¿½ï¿½|ï¿½[ï¿½lï¿½ï¿½ï¿½g
+__published:	// IDE ŠÇ—‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg
 	TButton *AbortButton;
 	TLabel *Label1;
 	TLabel *CurrentLabel;
 	void __fastcall FormCloseQuery(TObject *Sender, bool &CanClose);
 	void __fastcall FormDestroy(TObject *Sender);
 	void __fastcall AbortButtonClick(TObject *Sender);
-private:	// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+private:	// ƒ†[ƒU[éŒ¾
 	bool Aborted;
 	void __fastcall GetFileList(AnsiString path, int baselen);
-public:		// ï¿½ï¿½ï¿½[ï¿½Uï¿½[ï¿½éŒ¾
+public:		// ƒ†[ƒU[éŒ¾
 	__fastcall TRelDirSearchForm(TComponent* Owner);
 	TStringList *FileList;
 	TStringList *ExtList;
