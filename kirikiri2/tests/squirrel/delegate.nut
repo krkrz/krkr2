@@ -31,3 +31,9 @@ dtest.test();
 
 local dtest2 = DelegateTest(DelegateTable);
 dtest2.test();
+
+local a = Object();
+print("a:" + a);
+print("a delegate:" + a.getDelegate());
+a.setDelegate(DelegateTable);
+print("a delegate:" + a.getDelegate());
