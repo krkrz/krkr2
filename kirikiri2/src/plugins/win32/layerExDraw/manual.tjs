@@ -311,7 +311,7 @@ class GdiPlus {
 		 * パラメータについては GDI+ のドキュメントを見て研究してください
 		 *
 		 *  width: ペン幅指定
-		 *  alighment: アラインメント：省略時は PenAlignmentCenter
+		 *  alignment: アラインメント：省略時は PenAlignmentCenter
 		 *  compoundArray: compound array 指定。数値配列
 		 *  dashCap: ダッシュの cap style の指定。省略時は DashCapFlat
 		 *  dashOffset: ダッシュのオフセット指定。省略時は0
