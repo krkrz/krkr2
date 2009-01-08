@@ -3,7 +3,7 @@
 #pragma comment (lib, "vfw32.lib")
 #pragma comment (lib, "winmm.lib")
 
-#include "../layerExText/layerExBase.hpp"
+#include "../layerExDraw/layerExBase.hpp"
 
 /**
  * ƒŒƒCƒ„‰æ‘œ/‰¹º˜^‰æ‹@\
