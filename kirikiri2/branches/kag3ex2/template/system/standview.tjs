@@ -1,0 +1,1228 @@
+//
+// 立ち絵表示用ウインドウ
+//
+
+class StandViewMenuItem extends MenuItem {
+	var owner;
+	var action;
+	var args;
+	var id; // 親に通知する時の識別子
+	function StandViewMenuItem(win, capt, act, ar*) {
+		super.MenuItem(win, capt);
+		owner = win;
+		action = act;
+		args = [];
+		args.assign(ar);
+	}
+	function onClick() {
+		switch (typeof action) {
+		case "Object": action( args*); break;
+		default: owner[action](args*); break;
+		}
+	}
+	property checked {
+		getter { return super.checked; }
+		setter(v) {     super.checked = v;
+			// 親に通知（モードレスダイアログの同期用）
+			owner.onMenuListChecked(id, this) if (v && id != "");
+		}
+	}
+}
+
+// ズーム制御用
+class ZoomMenuItem extends StandViewMenuItem {
+	function ZoomMenuItem(      window, caption,            numer, denom) {
+		super.StandViewMenuItem(window, caption, "setZoom", numer, denom);
+	}
+}
+
+// レベル制御用
+class LevelMenuItem extends StandViewMenuItem {
+	function LevelMenuItem(     window, caption,             level) {
+		super.StandViewMenuItem(window, caption, "setLevel", level);
+	}
+}
+
+// コマンド実行用
+class CommandMenuItem extends StandViewMenuItem {
+	function CommandMenuItem(   window, caption, func, *) {
+		super.StandViewMenuItem(window, caption, func, *);
+	}
+}
+
+// 各メニューの親
+class StandMenuItem extends MenuItem {
+	var owner, id;
+	function StandMenuItem(win, cap, id) {
+		super.MenuItem(win, cap);
+		this.owner = win;
+		this.id = id;
+	}
+	function clear() {
+		while (children.count > 0) {
+			remove(children[0]);
+		}
+		// 親に通知（モードレスダイアログの同期用）
+		owner.onMenuListCleared(id);
+	}
+	function add(item) {
+		// 親に通知（モードレスダイアログの同期用）
+		owner.onMenuListAdded(id, item, children.count);
+		super.add(...);
+	}
+	function restore() {
+		with (owner) {
+			.onMenuListCleared(id);
+			var cur = .currentCh;
+			if (cur !== void) cur = cur.name;
+			for (var i = 0; i < children.count; i++) {
+				var item =children[i];
+				.onMenuListAdded(id, item, i);
+				.onMenuListChecked(id, item) if (item.caption == cur);
+			}
+		}
+	}
+}
+
+// キャラ
+class StandChMenuItem extends StandViewMenuItem {
+	function StandChMenuItem(   window, caption, initName) {
+		super.StandViewMenuItem(window, caption, "setCharacter", this, caption, initName);
+		id = "char";
+	}
+}
+
+// 服装
+class StandDressMenuItem extends StandViewMenuItem {
+	function StandDressMenuItem(window, caption) {
+		super.StandViewMenuItem(window, caption, "setDress", this, caption);
+		id = "dres";
+	}
+}
+
+// ポーズ
+class StandPoseMenuItem extends StandViewMenuItem {
+	function StandPoseMenuItem( window, caption) {
+		super.StandViewMenuItem(window, caption, "setPose", this, caption);
+		id = "pose";
+	}
+}
+
+// 差分
+class StandDiffMenuItem extends StandViewMenuItem {
+	function StandDiffMenuItem( window, caption) {
+		super.StandViewMenuItem(window, caption, "setDiff", this, caption);
+		id = "diff";
+	}
+}
+
+// 表情
+class StandFaceMenuItem extends StandViewMenuItem {
+	function StandFaceMenuItem( window, caption) {
+		super.StandViewMenuItem(window, caption, "setFace", this, caption);
+		id = "face";
+	}
+}
+
+/**
+ * モードレスダイアログ
+ */
+class StandViewModelessDialog {
+	var dialog, window, maprect;
+	function StandViewModelessDialog(win) {
+		dialog = new WIN32DialogEX(this);
+		window = win;
+		with (dialog) {
+			.modeless = true;
+			var fh=9, w = 60, h = 22*fh-3;
+			var lbs = .LBS_NOTIFY |.WS_VSCROLL |.WS_BORDER;
+			.store(%[
+			exStyle: .WS_EX_TOOLWINDOW,
+			style: .WS_SYSMENU |.WS_THICKFRAME |.WS_CAPTION |.DS_SETFONT |.WS_VISIBLE |.DS_CENTER,
+			x:0,
+			y:0,
+			cx:w*5,
+			cy:h+fh,
+			title:"立ち絵変更",
+			pointSize: fh,
+			weight: .FW_NORMAL,
+			italic: false,
+			typeFace:"ＭＳ Ｐゴシック",
+			items : [
+				.LText("キャラ", "tag_char",  w*0, 0, w, fh),
+				.LText("服装"  , "tag_dres",  w*1, 0, w, fh),
+				.LText("ポーズ", "tag_pose",  w*2, 0, w, fh),
+				.LText("差分"  , "tag_diff",  w*3, 0, w, fh),
+				.LText("表情"  , "tag_face",  w*4, 0, w, fh),
+				.ListBox("char", w*0,  fh,  w, h, lbs),
+				.ListBox("dres", w*1,  fh,  w, h, lbs),
+				.ListBox("pose", w*2,  fh,  w, h, lbs),
+				.ListBox("diff", w*3,  fh,  w, h, lbs),
+				.ListBox("face", w*4,  fh,  w, h, lbs),
+				] ]);
+			numids = %[
+				.getNumberdId("char") => "charmenu",
+				.getNumberdId("dres") => "dressmenu",
+				.getNumberdId("pose") => "posemenu",
+				.getNumberdId("diff") => "diffmenu",
+				.getNumberdId("face") => "facemenu",
+				];
+			maprect = %[ left:w, top:fh, right:w*5, bottom:h+fh ];
+		}
+	}
+	var hwnds, numids;
+	function updateListHandles(vis) {
+		with (dialog) {
+			hwnds = vis ? %[
+				.getItem("char") => "charmenu",
+				.getItem("dres") => "dressmenu",
+				.getItem("pose") => "posemenu",
+				.getItem("diff") => "diffmenu",
+				.getItem("face") => "facemenu",
+				] : %[];
+		}
+	}
+	function onCommand(msg, wp, lp) {
+		if (!canUpdate) return;
+		with (dialog) {
+			if (wp == .IDCANCEL) return window.showModelessDialog(false);
+			else {
+				var id = wp & 0xFFFF;
+				var menu = numids[id];
+				if (menu != "" && (wp >> 16) == .LBN_SELCHANGE) {
+					var idx = .sendItemMessage(id, .LB_GETCURSEL, 0, 0);
+					window.onListBoxChanged(menu, idx);
+				}
+			}
+		}
+	}
+	function resize(tag, x1, x2, h) {
+		if (dialog !== void) with (dialog) {
+			var x = (int)x1;
+			var w = (int)x2 - (int)x1;
+			.setItemPos( "tag_"+tag, x, 0);
+			.setItemSize("tag_"+tag, w, maprect.top);
+			.setItemPos( tag,        x, maprect.top);
+			.setItemSize(tag,        w, h - maprect.top);
+		}
+	}
+	function onInit() {
+		maprect = dialog.mapRect(maprect);
+		dm("onInit", StructToString(maprect));
+		
+	}
+	function onSize(msg, wp, lp) {
+		var w = (lp&0xFFFF), h = (lp>>16)&0xFFFF;
+		if (wp != 0) return;
+		//dm("onSize", w, h);
+		resize("face", w*4/5, w*5/5, h);
+		resize("diff", w*3/5, w*4/5, h);
+		resize("pose", w*2/5, w*3/5, h);
+		resize("dres", w*1/5, w*2/5, h);
+		resize("char", w*0/5, w*1/5, h);
+		if (dialog !== void) dialog.invalidateRect(%[ left:0, top:0, right:w, bottom:h ], true);
+	}
+	function finalize() {
+		visible = false;
+		invalidate dialog if (dialog !== void);
+	}
+	var _visible = false;
+	property visible {
+		getter { return _visible; }
+		setter(v) {
+			v = !!v;
+			if (_visible != v) {
+				_visible =  v;
+				if (dialog !== void) with (dialog) {
+					try {
+						if (v) .open( window);
+						else   .close(-1);
+						updateListHandles(v);
+					} catch(e) {
+						Debug.message(e.message);
+					}
+				}
+			}
+		}
+	}
+	var listIndexMap = %[];
+	property canUpdate { getter { return dialog !== void && _visible; } }
+	function clear(id)       { if (canUpdate) with (dialog) .sendItemMessage(id, .LB_RESETCONTENT, 0, 0); listIndexMap[id] = %[]; }
+	function add(id, item, n){ if (canUpdate) with (dialog) .sendItemMessage(id, .LB_ADDSTRING, 0, item.caption); listIndexMap[id][item.caption] = n;}
+	function check(id, item) { if (canUpdate) with (dialog) .sendItemMessage(id, .LB_SETCURSEL, +listIndexMap[id][item.caption], 0); }
+	function uncheck(id)     { if (canUpdate) with (dialog) .sendItemMessage(id, .LB_SETCURSEL, -1, 0); }
+
+	function store(dic) {
+		dic.md_hidden = !_visible;
+	}
+	function restore(dic) {
+		visible = !dic.md_hidden;
+	}
+}
+
+/**
+ * 立ち絵参照用窓
+ */
+class StandViewWindow extends Window
+{
+	var kag;
+	var env;
+	
+	var base;
+	var dragmask;
+	var layers = %[];
+
+	var filemenu;
+	var zoommenu;
+	var clipmenu, copymenuitem, clipCopyMode;
+
+	var charmenu;
+	var dressmenu;
+	var posemenu;
+	var facemenu;
+	var diffmenu;
+
+	var limitmenuitem;
+	var limitMenuNames;
+
+	var characters = %[];
+	
+	var currentCh; //< 現在選択中のキャラクタオブジェクト
+
+	var scWidth;
+	var scHeight;
+
+	var mx = 0;
+	var my = 0;
+	var lastmousex;
+	var lastmousey;
+	var dragging;
+
+	var modelessDialog;
+
+	function StandViewWindow(kag) {
+		super.Window();
+
+		this.kag = kag;
+		env = global.world_object.env;
+		currentLevel = env.defaultLevel;
+		scWidth  = kag.scWidth;
+		scHeight = kag.scHeight;
+		
+		borderStyle = bsSingle;
+		innerSunken = true;
+
+		caption = "立ち絵表示";
+		menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+		{
+			var submenu, item;
+			filemenu.add(submenu = new MenuItem(this, "キャラ操作"));
+			submenu.add(item = new CommandMenuItem(this, "現在キャラ", loadCurrentCharacters)); item.shortcut="Shift+C";
+			submenu.add(item = new CommandMenuItem(this, "全キャラ",   loadAllCharacters));     item.shortcut="Shift+V";
+			submenu.add(item = new CommandMenuItem(this, "キャラ削除", clearCharacters));       item.shortcut="Shift+X";
+
+			filemenu.add(submenu = new MenuItem(this, "レイヤ操作"));
+			submenu.add(item = new CommandMenuItem(this, "全表示",     showLayers));  item.shortcut="Shift+S";
+			submenu.add(item = new CommandMenuItem(this, "レイヤ消去", function {
+				currentCh = void; clearLayers(); updateAllMenu(); } incontextof this)); item.shortcut="Shift+D";
+		}
+
+		var zoommenu = new MenuItem(this, "ズーム(&Z)");
+		zoommenu.add(new ZoomMenuItem(this, "100%", 1, 1));
+		zoommenu.add(new ZoomMenuItem(this, "90%", 9, 10));
+		zoommenu.add(new ZoomMenuItem(this, "80%", 4, 5));
+		zoommenu.add(new ZoomMenuItem(this, "75%", 3, 4));
+		zoommenu.add(new ZoomMenuItem(this, "50%", 1, 2));
+		zoommenu.add(new ZoomMenuItem(this, "33%", 1, 3));
+		zoommenu.add(new ZoomMenuItem(this, "25%", 1, 4));
+		zoommenu.add(new ZoomMenuItem(this, "20%", 1, 5));
+		filemenu.add(zoommenu);
+
+		var levelmenu = new MenuItem(this, "レベル(&L)");
+		for (var i=0;i<env.levels.count;i++) {
+			if (env.levels[i] !== void) {
+				levelmenu.add(new LevelMenuItem(this, "レベル:"+i, i));
+			}
+		}
+		filemenu.add(levelmenu);
+		filemenu.add(new MenuItem(this, "-"));
+
+		filemenu.add(limitmenuitem = new CommandMenuItem(this, "リスト表示を限定(&L)", toggleLimitMenuNames));
+		filemenu.add(new CommandMenuItem(this, "サブウィンドウ表示(&V)", showModelessDialog));
+
+		clipmenu = new MenuItem(this, "選択時クリップボード");
+		{
+			var item;
+			clipmenu.add(item = new CommandMenuItem(this, "コピーなし",             enableClipboard, 0)); item.radio = item.group = 1;
+			clipmenu.add(item = new CommandMenuItem(this, "選択文字のみ",           enableClipboard, 1)); item.radio = item.group = 1;
+			clipmenu.add(item = new CommandMenuItem(this, "キャラを含めたタグ生成", enableClipboard, 2)); item.radio = item.group = 1;
+			clipmenu.add(item = new CommandMenuItem(this, "完全タグを生成",         enableClipboard, 3)); item.radio = item.group = 1;
+		}
+		filemenu.add(clipmenu);
+
+		filemenu.add(new MenuItem(this, "-"));
+		
+		filemenu.add(new CommandMenuItem(this, "全画像保存", saveAll));
+		filemenu.add(new CommandMenuItem(this, "現在キャラ保存", saveOne));
+		
+		filemenu.add(new MenuItem(this, "-"));
+		
+		filemenu.add(new CommandMenuItem(this, "終了(&X)", close));
+		filemenu.children[filemenu.children.count-1].shortcut = global.StandViewWindow.OpenCloseShortcut;
+		
+		menu.add(charmenu  = new StandMenuItem(this, "キャラ(&C)", "char"));
+		menu.add(dressmenu = new StandMenuItem(this, "服装(&W)",   "dres"));
+		menu.add(posemenu  = new StandMenuItem(this, "ポーズ(&P)", "pose"));
+		menu.add(diffmenu  = new StandMenuItem(this, "差分(&D)",   "diff"));
+		menu.add(facemenu  = new StandMenuItem(this, "表情(&A)",   "face"));
+		
+		menu.add(copymenuitem = new CommandMenuItem(this, "コピー", copyCurrent));
+		copymenuitem.enabled = false;
+
+		setInnerSize(scWidth, scHeight);
+
+		// プライマリレイヤ
+		add(base = new Layer(this, null));
+		with (base) {
+			.setSize(scWidth, scHeight);
+			.fillRect(0,0,scWidth,scHeight,0xff000000);
+			.name = "プライマリレイヤ";
+		}
+
+		// ドラッグ中にマウスカーソルを変えたい用
+		add(dragmask = new Layer(this, base));
+		with (dragmask) {
+			.setSize(scWidth, scHeight);
+			.fillRect(0,0,scWidth,scHeight,0);
+			.cursor = crSizeAll;
+			.name = "ドラッグマスク";
+			.hitType = htMask;
+			.hitThreshold = 0;
+			.visible = false;
+		}
+
+		createModelessDialog();
+	}
+
+	// 全キャラ立ち絵・顔の切抜き画像保存
+	function saveAll() {
+		var fileDialog = %[
+		title:"全画像の保存",
+		filter: [ "bmpファイル(*.bmp)|*.bmp" ],
+		defaultExt : "bmp",
+		name : System.exePath+"allimage.bmp",
+		save : true,
+			];
+		if (!Storages.selectFile(fileDialog)) return;
+
+		var names = [], storage = Storages.chopStorageExt(fileDialog.name);
+		names.assign(characters);
+		for (var i = 0; i < names.count; i+=2) {
+			saveCharaIndexImage(names[i],  names[i+1], storage);
+		}
+		System.inform("完了");
+	}
+	// 現在のキャラ画像保存
+	function saveOne() {
+		if (currentCh === void) return;
+		saveCharaIndexImage(currentCh.name, currentCh, System.exePath+"_temp_fglist_");
+		System.inform("完了");
+	}
+	// 指定キャラ画像保存
+	var saveImageExt = [ "Pose", "Diff", "Dress", "Face" ]; // 展開する順番
+	function saveCharaIndexImage(name, ch, file) {
+		Plugins.link("layerExSave.dll") if (typeof global.Layer.getDiffRect == "undefined");
+		var tags = [];
+		tags.assign(saveImageExt);
+		tags.remove("Diff", true) if (typeof ch.diff == "undefined");
+
+		// 保存用ベースレイヤ
+		var savelay = new Layer(this, this.primaryLayer);
+		savelay.hasImage = false;
+
+		// フォントサイズ
+		var fontsz = 32;
+
+		// 文字レイヤ
+		var fontlay = new Layer(this, savelay);
+		with (fontlay) {
+			.font.angle = 0;
+			.font.height = fontsz;
+			.faceYoko = .font.face = "ＭＳ ゴシック";
+			.faceTate = "@" + .faceYoko;
+		}
+
+		// 展開
+		var lays = [], grps = [];
+		var elm = %[ ch:ch, grps:grps, lays:lays, tags:tags, base:savelay, font:fontlay.font, maxfw:0, maxnw:0 ];
+		clearLayers();
+		saveCharaExtractImages(elm, 0);
+		clearLayers();
+
+		// 再配置
+		var fstep = Math.max(elm.maxfw * 1.4, elm.maxnw) + fontsz;
+		var elm = %[ cury:0, xbase:0, maxx:0, ybases:[], ytexts:[], ttexts:[], fstep:fstep, sstep:300, fontsz:fontsz ];
+		var grpcnt = grps.count;
+		for (var i = 0; i < grpcnt; i++) saveCharaPlacePhase1(elm, grps[i], i);
+		for (var i = 0; i < grpcnt; i++) saveCharaPlacePhase2(elm, grps[i], i);
+
+		var w = elm.maxx, h = elm.cury;
+		with (fontlay) {
+			.setImageSize(w, h);
+			.setSizeToImageSize();
+			.absolute = 99999999;
+			.visible = true;
+			var texts = elm.ytexts, dt = .drawText;
+			for (var i = 0; i < texts.count; i++) with (texts[i])
+				dt(.x, .y, .text, 0, 255, true);
+			.font.angle = 2700;
+			.font.face  = .faceTate;
+			texts = elm.ttexts;
+			for (var i = 0; i < texts.count; i++) with (texts[i]) {
+				for (var y = -4; y <= 4; y++)
+					 for (var x = -4; x <= 4; x++)
+						 dt(.x+x, .y+y, .text, 0xFFFFFF, 255, true);
+				dt(.x, .y, .text, 0, 255, true);
+			}
+		}
+
+		// 保存
+		with (savelay) {
+			.hasImage = true;
+			.setImageSize(w, h);
+			.setSizeToImageSize();
+			.fillRect(0, 0, w, h, 0xFFFFFFFF);
+			.piledCopy(0, 0, savelay, 0, 0, w, h);
+			.saveLayerImage(file+name+".bmp", "bmp");
+		}
+
+		// 作業レイヤ破棄
+		for (var i = 0; i < lays.count; i++) invalidate lays[i];
+		invalidate fontlay;
+		invalidate savelay;
+	}
+	function saveCharaDrawText(elm, x, y, text, tate = false) {
+		var texts = tate ? elm.ttexts : elm.ytexts;
+		texts.add(%[ x:x, y:y, text:text  ]);
+	}
+	// 配置フェーズ１
+	function saveCharaPlacePhase1(elm, grp, num) {
+		var faces = grp.faces;
+		var xpos=0, ypos=0, base=elm.cury + elm.fontsz, mh;
+		// 顔レイヤを配置
+		for (var i = 0; i < faces.count; i++) with (faces[i]) {
+			// 表示サイズを顔範囲に
+			if (.faceRect.w === void) .setSize(1,1);
+			else .setSize(.faceRect.w, .faceRect.h);
+			.setImagePos(-.faceRect.x, -.faceRect.y);
+			mh = .faceRect.maxh if (mh === void);
+			var nh = .height + elm.fontsz * 2;
+			// 改カラムチェック
+			if (mh < ypos + nh) {
+				ypos = 0;
+				xpos += elm.fstep;
+				var next = xpos + elm.fstep;
+				elm.xbase = next if (elm.xbase < next);
+			}
+			.setPos(xpos, base + ypos);
+			saveCharaDrawText(elm, xpos, base+ypos+.height+elm.fontsz\4, .name);
+			ypos += nh;
+		}
+		elm.ybases.add(elm.cury);
+		elm.cury += elm.fontsz*2 + mh;
+	}
+	// 配置フェーズ２
+	function saveCharaPlacePhase2(elm, grp, num) {
+		var stands = grp.stands;
+		var base = elm.ybases[num];
+		var xpos = elm.xbase, ypos = base + elm.fontsz;
+		saveCharaDrawText(elm, xpos, base, grp.name);
+		for (var i = 0; i < stands.count; i++) with (stands[i]) {
+			.setPos(xpos, ypos);
+			saveCharaDrawText(elm, xpos + .faceRect.x + .faceRect.w\2, ypos + .faceRect.y2, .name, true);
+			elm.maxx = xpos + .width if (elm.maxx < xpos + .width);
+			xpos += elm.sstep;
+		}
+	}
+
+	// ポーズ・服装・差分・顔の一覧展開
+	function saveCharaExtractImages(elm, num) {
+		var ch, tag, nexttag, baselay, rect = %[];
+		with (elm) ch=.ch, tag=.tags[num], nexttag=.tags[num+1];
+
+		// 全状態取得
+		var list = ch[@"get${tag}Names"](true);
+		for (var i = 0; i < list.count; i++) {
+			var name = list[i];
+			// 状態設定
+			ch[@"set${tag}"](name, %[]);
+			if (num == 0) with (elm) {
+				.state  = "";
+				.lastgrp = %[ name:name, stands:[], faces:[], facemap:%[] ];
+				.grps.add(elm.lastgrp);
+			}
+
+			if (nexttag != "") with (elm) {
+				// 子がある
+				if (num > 0) {
+					.state += "／" if (.state != "");
+					.state += name;
+				}
+				saveCharaExtractImages(elm, num+1);
+				.state  = "";
+			} else {
+				// 最下層
+				var faces, fmap, stands, layer;
+				with (elm.lastgrp) faces=.faces, fmap=.facemap, stands=.stands;
+				// レイヤ取得
+				with (ch) {
+					if (!.isShowBU()) continue;
+					layer = getLayer(.name);
+					layer.reset();
+					.drawLayer(layer);
+					.setSize(layer);
+					.calcPosition(layer);
+				}
+				// レイヤ複製
+				var cp = new Layer(this, elm.base);
+				with (cp) {
+					.assignImages(layer._image);
+					.setSizeToImageSize();
+					.name = name;
+					.faceRect = rect;
+					.visible = true;
+				}
+				if (baselay === void) {
+					// 差分取得用の基本レイヤを複製
+					baselay = new Layer(this, elm.base);
+					with (baselay) {
+						.assignImages(cp);
+						.setSizeToImageSize();
+						.name = elm.state;
+						.faceRect = rect;
+						.visible = true;
+						rect.minw = rect.maxw = .width;
+						rect.minh = rect.maxh = .height;
+					}
+					// 立ち絵登録
+					elm.lays.add(baselay);
+					stands.add(baselay);
+				} else {
+					var r;
+					// 差分サイズ取得
+					try { r = cp.getDiffRect(baselay); }
+					catch {}
+					if (r !== void) with (r) {
+						rect.x  = .x    if (rect.x  === void || rect.x  > .x   );
+						rect.y  = .y    if (rect.y  === void || rect.y  > .y   );
+						rect.x2 = .x+.w if (rect.x2 === void || rect.x2 < .x+.w);
+						rect.y2 = .y+.h if (rect.y2 === void || rect.y2 < .y+.h);
+					}
+					with (cp) {
+						rect.minw = .width  if (rect.minw > .width );
+						rect.minh = .height if (rect.minh > .height);
+						rect.maxw = .width  if (rect.maxw < .width );
+						rect.maxh = .height if (rect.maxh < .height);
+					}
+				}
+				// 顔登録
+				if (!fmap[name]) {
+					fmap[name] = true;
+					var nw = elm.font.getTextWidth(name);
+					var fw = rect.x2 - rect.x;
+					elm.maxnw = nw if (elm.maxnw < nw);
+					elm.maxfw = fw if (elm.maxfw < fw);
+					elm.lays.add(cp);
+					faces.add(cp);
+				} else invalidate cp;
+			}
+		}
+		// 顔サイズ補正（広げる）
+		if (rect.x !== void) with (rect) {
+			var px = (.x2-.x)\6;
+			var py = (.y2-.y)\6;
+
+			.x -= px,   .x2 += px;
+			.y -= py*4, .y2 += py;
+			.x  = 0     if (.x < 0);
+			.y  = 0     if (.y < 0);
+			.x2 = .minw if (.minw < .x2);
+			.y2 = .minh if (.minh < .y2);
+
+			.w = .x2 - .x;
+			.h = .y2 - .y;
+		}
+	}
+
+	function createModelessDialog() {
+		if (typeof global.WIN32DialogEX == "undefined") {
+			try {
+				Plugins.link("win32dialog.dll");
+				Scripts.execStorage("win32dialog.tjs");
+			} catch (e) { Debug.message(e.message); }
+		}
+		if (typeof global.WIN32DialogEX == "undefined") return;
+		modelessDialog = new StandViewModelessDialog(this);
+	}
+	function showModelessDialog(vis = true) {
+		if (modelessDialog !== void) {
+			modelessDialog.visible = vis;
+			store();
+			if (vis) {
+				charmenu.restore();
+				updateAllMenu();
+			}
+		}
+	}
+	function onMenuListCleared() { modelessDialog.clear(...) if (modelessDialog !== void); }
+	function onMenuListAdded()   { modelessDialog.add(...)   if (modelessDialog !== void); }
+	function onMenuListChecked() { modelessDialog.check(...) if (modelessDialog !== void); }
+	function onListBoxChanged(id, idx) {
+		var item = this[id].children[idx];
+		item.onClick() if (item !== void);
+	}
+	function onCloseQuery(canclose) {
+		visible = false;
+		if (typeof kag.showStandViewWindowMenuItem == "Object")
+			/**/   kag.showStandViewWindowMenuItem.checked = false;
+		return super.onCloseQuery(false);
+	}
+	property visible {
+		getter { return super.visible; }
+		setter(v) {
+			super.visible = v;
+			if (v) restore();
+			else {
+				store();
+				modelessDialog.visible = false if (modelessDialog !== void);
+			}
+		}
+	}
+
+	// クリップボードへの転送を有効・無効
+	function enableClipboard(mode) {
+		clipCopyMode = (int)mode;
+		var item = clipmenu.children[clipCopyMode];
+		item.checked = true if (item !== void);
+		store();
+	}
+	// クリップボードへコピー
+	function copyClipboard(name, ischar = false) {
+		var cp = "";
+		switch (clipCopyMode) {
+		case 1: // 選択文字のみコピー
+			Clipboard.asText = name;
+			break;
+		case 2: // キャラと選択文字でタグを生成
+			Clipboard.asText = (currentCh !== void && !ischar) ? @"[${currentCh.name} ${name}]" : @"[${name}]";
+			break;
+		case 3: // 完全タグ生成
+			return copyCurrent();
+		}
+	}
+	// 現在の状態をコピー
+	function copyCurrent() {
+		if (currentCh !== void) with (currentCh) {
+			var tmp = [ .name ];
+			tmp.add(.dress) if (.dress != "");
+			tmp.add(.pose)  if (.pose  != "");
+			tmp.add(.diff)  if (typeof .diff != "undefined" && .diff != "");
+			tmp.add(.face)  if (.face  != "");
+			Clipboard.asText= @"[${tmp.join(' ')}]";
+		}
+	}
+
+	function updateMenu(menu, current) {
+		for (var i=0;i<menu.children.count;i++) {
+			with (menu.children[i]) {
+				.checked = (.caption == current);
+			}
+		}
+	}
+
+	// メニュー生成
+	function createMenu(menu, names, menuClass, current) {
+		for (var i=0;i<names.count;i++) {
+			menu.add(new menuClass(this, names[i]));
+		}
+		updateMenu(menu, current);
+	}
+
+	// メニュー生成
+	function nextMenu(menu, current) {
+		var count = menu.children.count;
+		var n;
+		for (var i=0;i<count;i++) {
+			if (menu.children[i].caption == current) {
+				n = i+1;
+				break;
+			}
+		}
+		if (n !== void) {
+			if (n >= count) {
+				n = 0;
+			}
+			menu.children[n].onClick();
+		}
+	}
+
+	
+	function finalize() {
+		invalidate modelessDialog if (modelessDialog !== void);
+		clearCharacters();
+	}
+
+	function setZoom(numer, denom) {
+		if (!fullScreen) {
+			super.setZoom(numer, denom);
+			setInnerSize(scWidth * zoomNumer / zoomDenom,
+						 scHeight * zoomNumer / zoomDenom);
+			top++, top--; // VCRなムービーが追従するようにおまじない XXX
+		}
+		store();
+	}
+
+	function stopAction() {
+	}
+	
+	// -------------------------------------------------------
+	// レイヤ
+	// -------------------------------------------------------
+
+	var dispx = 0;
+	var currentLevel;
+
+	function getLayer(name) {
+		var layer = layers[name];
+		if (layer === void) {
+			var ch = getCharacter(name);
+			layer = new ch.layerClass(this, base, ch);
+			layer.visible = true;
+			layers[name] = layer;
+		}
+		return layer;
+	}
+
+	// レイヤ消去
+	function clearLayers() {
+		var names = [];
+		names.assign(layers);
+		for (var i=0;i<names.count;i+=2) {
+			invalidate names[i+1];
+		}
+		(Dictionary.clear incontextof layers)();
+		dispx = 0;
+	}
+
+	function updateLayers() {
+		var names = [];
+		names.assign(layers);
+		for (var i=0;i<names.count;i+=2) {
+			var ch = characters[names[i]];
+			updateChLayer(ch) if (ch !== void);
+		}
+	}
+
+	// 該当キャラのレイヤを生成・更新
+	function updateChLayer(ch) {
+		// 表示更新
+		with (ch) {
+			if (.isShowBU()) {
+				var layer = getLayer(.name);
+				layer.reset();
+				.drawLayer(layer);
+				layer.updateOffsetInfo();
+				.setSize(layer);
+				.calcPosition(layer);
+				layer.left += mx;
+				layer.top  -= my;
+			}
+		}
+	}
+	
+	// レイヤ表示
+	function showLayers() {
+		var names = [];
+		names.assign(characters);
+		for (var i=0;i<names.count;i+=2) {
+			updateChLayer(names[i+1]);
+		}
+	}
+
+	// レベル指定
+	function setLevel(level) {
+		currentLevel = level;
+		var names = [];
+		names.assign(characters);
+		for (var i=0;i<names.count;i+=2) {
+			var ch = names[i+1];
+			ch.level = level;
+			updateChLayer(ch);
+		}
+	}
+	
+	// -------------------------------------------------------
+	// キャラクタ
+	// -------------------------------------------------------
+	
+	// キャラクタ情報を取得
+	function getCharacter(name, initName) {
+		var ch = characters[name];
+		if (ch === void) {
+			var init;
+			if ((init = env.characterInits[initName]) !== void) {
+				ch = env._getCharacter(name, initName, init);
+				characters[name] = ch;
+				ch.level = currentLevel;
+			} else {
+				System.inform("キャラクタ定義:" + initName + "がありません");
+				return;
+			}
+			ch.xpos = dispx++ * 200;
+		}
+		return ch;
+	}
+
+	// キャラクタ専用
+	function createChMenu(names, sync, newlay = false) {
+		charmenu.clear();
+		for (var i=0;i<names.count;i++) {
+			var name = names[i];
+			charmenu.add(new StandChMenuItem(this, name.name, name.initName));
+			var ch = getCharacter(name.name, name.initName);
+			if (ch !== void) {
+				with (ch) {
+					.disp = KAGEnvImage.BU;
+					if (sync) {
+						var orig = env.characters[name.name];
+						.setPose(orig.pose, %[]);
+						.setDress(orig.dress, %[]);
+						if (typeof orig.diff != "undefined") {
+							.setDiff(orig.diff, %[]);
+						}
+						.setFace(orig.face, %[]);
+					}
+					getLayer(.name) if (newlay);
+				}
+			}
+		}
+	}
+	
+	// 全キャラ表示
+	function loadAllCharacters() {
+		createChMenu(env.getPoseCharacterNames(), false);
+		showLayers();
+		updateAllMenu();
+	}
+
+	// 現在のキャラ表示
+	function loadCurrentCharacters() {
+		createChMenu(env.getCurrentPoseCharacterNames(), true, true);
+		updateAllMenu();
+	}
+
+	// キャラ消去
+	function clearCharacters() {
+		clearLayers();
+		var names = [];
+		names.assign(characters);
+		for (var i=0;i<names.count;i+=2) {
+			invalidate names[i+1];
+		}
+		(Dictionary.clear incontextof characters)();
+		charmenu.clear();
+		currentCh = void;
+		updateAllMenu();
+	}
+
+	// メニュー
+	function updateAllMenu() {
+		dressmenu.clear();
+		posemenu.clear();
+		diffmenu.clear();
+		facemenu.clear();
+		// メニュー再設定
+		if (currentCh !== void) {
+			with (currentCh) {
+				createMenu(posemenu,  .getPoseNames( limitMenuNames),  StandPoseMenuItem,  .pose);
+				createMenu(dressmenu, .getDressNames(limitMenuNames), StandDressMenuItem, .dress);
+				createMenu(facemenu,  .getFaceNames( limitMenuNames),  StandFaceMenuItem,  .face);
+				if (typeof .diff != "undefined") {
+					createMenu(diffmenu,  .getDiffNames(),  StandDiffMenuItem,  .diff);
+					diffmenu.visible = true;
+				} else {
+					diffmenu.visible = false;
+				}
+			}
+			// センターに移動
+			with (currentCh) {
+				var baseyoff = .init.yoffset !== void ? +.init.yoffset : +env.yoffset;
+				var basexoff = .init.xoffset !== void ? +.init.xoffset : +env.xoffset;
+				var yoff = (.yoffset !== void ? +.yoffset : 0) + baseyoff;
+				var xoff = (.xoffset !== void ? +.xoffset : 0) + basexoff;
+				dm("offset:" + xoff + "," + yoff);
+				var zoom = 100;
+				var levelYoffset = 0;
+				var levelXoffset = 0;
+				var levelInfo = env.levels[.level];
+				if (levelInfo !== void) {
+					zoom         = (int)levelInfo.zoom    if levelInfo.zoom    !== void;
+					levelYoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
+					levelXoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
+				}
+				mx = scWidth / 2 - (env.xmax + (((int).xpos) * zoom / 100) + levelXoffset);
+				caption = @"キャラ:${.name} 服装:${.dress} ポーズ:${.pose}${(typeof .diff != 'undefined' ? ' 差分:'+.diff: '')} 表情:${.face}";
+			}
+			copymenuitem.enabled = true;
+			updateChLayer(currentCh);
+		} else {
+			caption = "立ち絵表示";
+			copymenuitem.enabled = false;
+			modelessDialog.uncheck("char") if (modelessDialog !== void);
+		}
+		var list = charmenu.children;
+		for (var i = 0; i < list.count; i++) {
+			var name = list[i].caption, tab = name.indexOf("\t");
+			name = name.substr(0,tab) if (tab >= 0);
+			name += "\t*" if (layers[name] !== void);
+			list[i].caption = name;
+		}
+		updateLayers();
+	}
+	// メニューの一覧を限定するモード設定
+	function setLimitMenuNames(en) {
+		limitMenuNames = en;
+		var item = limitmenuitem;
+		item.checked = en if (item !== void);
+		store();
+	}
+	function toggleLimitMenuNames() { setLimitMenuNames(!limitMenuNames); }
+
+	// -------------------------------------------------------
+	// キャラ指定
+	// -------------------------------------------------------
+	
+	/**
+	 * 処理対象キャラを選択
+	 */
+	function setCharacter(sender, name, initName) {
+		// キャラ情報を取得して現在のキャラを設定
+		currentCh = getCharacter(name, initName);
+		if (currentCh !== void) {
+			with (currentCh) {
+				updateMenu(charmenu, .name);
+				updateAllMenu();
+				var layer = getLayer(.name);
+				layer.bringToFront();
+			}
+		} else updateAllMenu();
+
+		copyClipboard(name, true);
+	}
+
+	// -------------------------------------------------------
+	// ポーズ指定
+	// -------------------------------------------------------
+
+	/**
+	 * ポーズを選択
+	 */
+	function setPose(sender, name) {
+		if (currentCh !== void) {
+			currentCh.setPose(name, %[]);
+			updateAllMenu();
+		}
+		copyClipboard(name);
+	}
+	
+	/**
+	 * 服装を選択
+	 */
+	function setDress(sender, name) {
+		if (currentCh !== void) {
+			currentCh.setDress(name, %[]);
+			updateAllMenu();
+		}
+		copyClipboard(name);
+	}
+
+	/**
+	 * 差分を選択
+	 */
+	function setDiff(sender, name) {
+		if (currentCh !== void) {
+			currentCh.setDiff(name, %[]);
+			updateAllMenu();
+		}
+		copyClipboard(name);
+	}
+	
+	/**
+	 * 表情を選択
+	 */
+	function setFace(sender, name) {
+		if (currentCh !== void) {
+			currentCh.setFace(name, %[]);
+			updateAllMenu();
+		}
+		copyClipboard(name);
+	}
+
+	// -----------------------------------------------------------------
+	
+	function infoSaveDialog() {
+		var fileDialog = %[
+		title:"定義情報ファイルの保存",
+		filter: [ "TXTファイル(*.txt)|*.txt" ],
+		defaultExt : "txt",
+		save : true,
+			];
+		if (defaultBase != "") {
+			fileDialog.name = defaultBase + "_info.txt";
+		}
+		if (Storages.selectFile(fileDialog))	{
+		}
+	}
+
+	// -----------------------------------------------------------------
+
+	function onMouseDown(x, y, button) {
+		if (button == mbLeft) {
+			dragmask.visible = dragging = true;
+			dragmask.absolute = 99999999;
+			lastmousex = x;
+			lastmousey = y;
+		}
+	}
+
+	function onMouseUp(x, y, button) {
+		if (button == mbLeft) {
+			dragmask.visible = dragging = false;
+		}
+	}
+	
+	function onMouseMove(x, y, shift) {
+		if (dragging) {
+			var diffx = x - lastmousex;
+			var diffy = y - lastmousey;
+			mx += diffx * zoomDenom / zoomNumer;
+			my += diffy * zoomDenom / zoomNumer;
+			lastmousex = x;
+			lastmousey = y;
+			updateLayers();
+		}
+	}
+
+	function nextPose() {
+		if (currentCh !== void && currentCh.pose !== void) {
+			nextMenu(posemenu, currentCh.pose);
+		}
+	}
+
+	function nextDiff() {
+		if (currentCh !== void && typeof currentCh.diff != "undefined") {
+			nextMenu(diffmenu, currentCh.diff);
+		}
+	}
+
+	function nextFace() {
+		if (currentCh !== void && currentCh.face !== void) {
+			nextMenu(facemenu, currentCh.face);
+		}
+	}
+
+	function onKeyDown(key, shift) {
+		var diff = (shift & ssShift) ? 10 : 1;
+		if ((shift & ssCtrl)) {
+			diff *= 10;
+		}
+		switch (key) {
+		case VK_P:
+			nextPose();
+			break;
+		case VK_D:
+			nextDiff();
+			break;
+		case VK_F:
+			nextFace();
+			break;
+		case VK_C:
+			if ((shift & ssCtrl)) copyCurrent();
+			break;
+		}
+	}
+
+	// -------------------------------------------------------
+	// 状態の保存・復帰
+	// -------------------------------------------------------
+
+	/**
+	 * 保存する辞書を取得
+	 */
+	function getStoreDic() {
+		var tag = "standview";
+		if (kag.scflags[tag] === void)
+			kag.scflags[tag] = %[];
+		return kag.scflags[tag];
+	}
+
+	/**
+	 * 状態を復帰
+	 */
+	function restore() {
+		dontstore = true;
+		var dic = getStoreDic();
+		with (dic) {
+			enableClipboard(.clipCopyMode);
+			setLimitMenuNames(.limitMenuNames);
+			setZoom(.zoomNumer, .zoomDenom) if (.zoomNumer !== void && .zoomDenom !== void);
+		}
+		modelessDialog.restore(dic) if (modelessDialog !== void);
+
+		// 起動時は非表示で全キャラ
+		createChMenu(env.getPoseCharacterNames(), false);
+		clearLayers();
+
+		dontstore = false;
+	}
+	// restore中にstoreを実行しないようにするフラグ（復帰処理中にstoreが呼ばれるため）
+	var dontstore;
+
+	/**
+	 * 状態を保存
+	 */
+	function store() {
+		if (dontstore) return;
+		var dic = getStoreDic();
+		with (dic) {
+			.clipCopyMode = clipCopyMode;
+			.limitMenuNames = limitMenuNames;
+			.zoomNumer = zoomNumer;
+			.zoomDenom = zoomDenom;
+		}
+		modelessDialog.store(dic) if (modelessDialog !== void);
+	}
+}
+StandViewWindow.OpenCloseShortcut = "Alt+F1";
+
+/**
+ * 立ち絵表示窓の表示
+  
+ */
+function showStandView(sender)
+{
+	with (kag) {
+		if (typeof .standViewWindow == "undefined") {
+			.add(  .standViewWindow = new StandViewWindow(kag));
+			/**/   .standViewWindow.visible = true;
+		} else     .standViewWindow.visible = !.standViewWindow.visible;
+		if (sender !== void) sender.checked =  .standViewWindow.visible;
+	}
+};
+
+// メニューに項目追加
+if (typeof kag.debugMenu != "undefined") {
+	var item = new KAGMenuItem(kag, "立ち絵参照ウィンドウ(&S)", 0, showStandView, false);
+	kag.debugMenu.add(kag.showStandViewWindowMenuItem = item);
+	item.shortcut = StandViewWindow.OpenCloseShortcut if (debugWindowEnabled);
+}

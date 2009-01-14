@@ -13,6 +13,301 @@ KAGLoadScript('YAML.tjs');
  */
 var EMPTY = %[];
 
+class EnvGraphicLayer extends GraphicLayerEx
+{
+	var owner;
+	var ownerenv;
+
+	var originMode; // 原点モード
+	var viewOriginMode; // 表示原点モード
+	var xoffset; // 表示補正X
+	var yoffset; // 表示補正Y
+	var levelz;  // 表示用Z位置
+	var levelxoffset; // Z補正後の表示補正X
+	var levelyoffset; // Z補正後の表示補正Y
+
+	var xmax; // X方向最大値
+	var ymax; // Y方向最大値
+
+	var noshiftMode;  // シフト補正なし
+	var nocameraMode; // カメラ補正なし
+	
+	function EnvGraphicLayer(win, par, owner) {
+		this.owner = owner;
+		this.ownerenv  = owner.env;
+		super.GraphicLayerEx(win, par, owner.name, 0);
+		freeImage();
+		type = ltAlpha;
+		hitType = htMask;
+		hitThreshold = 256;
+		originMode     = owner.originMode;
+		viewOriginMode = owner.viewOriginMode;
+		noshiftMode   = owner.noshiftMode;
+		nocameraMode  = owner.nocameraMode | owner.noshiftMode;
+		levelz  = owner.levelz !== void ? owner.levelz : 100;
+		xoffset = 0;
+		yoffset = 0;
+		levelxoffset = 0;
+		levelyoffset = 0;
+	}
+
+	function finalize()	{
+		super.finalize(...);
+	}
+
+	// assign オーバーライド
+	function assign(src) {
+		if (src instanceof "EnvGraphicLayer") {
+			_left = src._left;
+			_top  = src._top;
+			__zoomx = src.__zoomx;
+			__zoomy = src.__zoomy;
+			xoffset = src.xoffset;
+			yoffset = src.yoffset;
+			levelz   = src.levelz;
+			levelxoffset = src.levelxoffset;
+			levelyoffset = src.levelyoffset;
+			noshiftMode  = src.noshiftMode;
+			nocameraMode = src.nocameraMode;
+			originMode = src.originMode;
+			viewOriginMode = src.viewOriginMode;
+		}
+		super.assign(src);
+		assignVisibleState(src);
+	}
+
+	/**
+	 * オフセット情報更新用
+	 */
+	function updateOffsetInfo() {
+	}
+
+	// ---------------------------------------------
+	
+	// アクション終了後に自滅
+	var actionDel;
+	
+	function beginAction(elm) {
+		if (elm && !(elm instanceof "Array")) {
+			actionDel = elm.del;
+		}
+		super.beginAction(elm);
+	}
+
+	function onActionCompleted() {
+		super.onActionCompleted();
+		if (actionDel) {
+			invalidate this;
+		}
+	}
+
+	// トランジション終了後に自滅
+	var transDelDest;
+	var transDelSrc;
+	
+	function beginLayerTransition(elm) {
+		transDelDest = elm.deldest;
+		transDelSrc  = elm.delsrc;
+		(global.KAGLayer.beginTransition incontextof this)(elm, elm.src);
+	}
+	
+	function atEndOfTransition(src, withchildren, exchange)	{
+	}
+
+	function stopTransition() {
+		//dm(name + ":トランジション停止呼び出し");
+		super.stopTransition(); // この中で破棄される可能性がある
+	}
+	
+	function onTransitionCompleted(dest, src) {
+		//dm(name + ":トランジション完了呼び出し");
+		super.onTransitionCompleted(...);
+		if (transDelSrc && src !== void) {
+			//dm(src.name + ":元を削除");
+			invalidate src;
+		}
+		if (transDelDest) {
+			//dm(name + ":先を削除");
+			invalidate this;
+		}
+	}
+
+	// ---------------------------------------------
+
+	var _left = 0;
+	property left {
+		getter() {
+			return _left;
+		}
+		setter(v) {
+			_left = +v;
+			recalcPosition();
+		}
+	}
+
+	var _top = 0;
+	property top {
+		getter() {
+			return _top;
+		}
+		setter(v) {
+			_top = v;
+			recalcPosition();
+		}
+	}
+
+	var __zoomx = 100;
+	var __zoomy = 100;
+
+	property zoom {
+		getter() {
+			return __zoomx;
+		}
+		setter(v) {
+			__zoomx = +v;
+			__zoomy = +v;
+			recalcPosition();
+		}
+	}
+
+	property zoomx {
+		getter() {
+			return __zoomx;
+		}
+		setter(v) {
+			__zoomx = +v;
+			recalcPosition();
+		}
+	}
+
+	property zoomy {
+		getter() {
+			return __zoomy;
+		}
+		setter(v) {
+			__zoomy = +v;
+			recalcPosition();
+		}
+	}
+	
+	function setPos(left, top, width, height) {
+		this.width  = width if width !== void;
+		this.height = height if height !== void;
+		_left = left;
+		_top  = top;
+		recalcPosition();
+	}
+
+	// ----------------------------------------------------------
+	// 再配置調整用
+	// ----------------------------------------------------------
+
+	/**
+	 * カメラの配置基準になる座標値x
+	 */
+	property xpos {
+		getter() {
+			return left;
+		}
+	}
+
+	/**
+	 * カメラの配置基準になる座標値y
+	 */
+	property ypos {
+		getter() {
+			return top;
+		}
+	}
+
+	property shiftx {
+		getter() {
+			switch (originMode) {
+			case 1:
+			case 7:
+			case 8:
+				return 0;
+			case 3:
+			case 4:
+			case 5:
+				return width;
+			default:
+				return (int)(width / 2);
+			}
+		}
+	}
+
+	property shifty {
+		getter() {
+			switch (originMode) {
+			case 1:
+			case 2:
+			case 3:
+				return 0;
+			case 5:
+			case 6:
+			case 7:
+				return height;
+			default:
+				return (int)(height / 2);
+			}
+		}
+	}
+
+	property originx {
+		getter() {
+			switch (viewOriginMode) {
+			case 1:
+			case 7:
+			case 8:
+				return 0;
+			case 3:
+			case 4:
+			case 5:
+				return ownerenv.xmax*2;
+				break;
+			default:
+				return ownerenv.xmax;
+			}
+		}
+	}
+
+	property originy {
+		getter() {
+			switch (viewOriginMode) {
+			case 1:
+			case 2:
+			case 3:
+				return 0;
+			case 5:
+			case 6:
+			case 7:
+				return ownerenv.ymax*2;
+				break;
+			default:
+				return ownerenv.ymax;
+			}
+		}
+	}
+	
+	/**
+	 * 配置位置調整
+	 */
+	function recalcPosition() {
+		//dm(name + ":位置再計算");
+		var cz = nocameraMode ? 1 : (real)ownerenv.cameraZoom / 100.0;
+		var cx = nocameraMode ? 0 : ownerenv.cameraX;
+		var cy = nocameraMode ? 0 : ownerenv.cameraY;
+		var z  = nocameraMode ? 1 : +levelz / 100.0;
+		var sx = noshiftMode  ? 0 : ownerenv.shiftX;
+		var sy = noshiftMode  ? 0 : ownerenv.shiftY;
+		super.left = originx + (((xpos - cx) * z +(int)(xoffset * z)) + +levelxoffset) * cz - shiftx - sx;
+		super.top  = originy + (((ypos - cy) * z +(int)(yoffset * z)) + +levelyoffset) * cz - shifty - sy;
+		super.zoomx = __zoomx * cz;
+		super.zoomy = __zoomy * cz;
+	}
+};
+
 /**
  * 鍵の内容を表示する
  * @param name 名称
@@ -42,13 +337,14 @@ function showKeys(name, dict) {
 function getTo(value)
 {
     var p;
-    if ((p = value.indexOf(":")) > 0) {
-        return value.substring(0, p);
-    } else  if (p == 0) {
-        return void;
-    } else  {
-        return value;
-    }
+	if (typeof value == "String") {
+		if ((p = value.indexOf(":")) > 0) {
+			return value.substring(0, p);
+		} else  if (p == 0) {
+			return void;
+		}
+	}
+	return value;
 }
 
 /*
@@ -56,12 +352,13 @@ function getTo(value)
  * @param value パラメータ
  */
 function getFrom(value) {
-    var p;
-    if ((p = value.indexOf(":")) >= 0) {
-        return value.substring(p+1);
-    } else {
-        return void;
-    }
+	var p;
+	if (typeof value == "String") {
+		if ((p = value.indexOf(":")) >= 0) {
+			return value.substring(p+1);
+		}
+	}
+	return void;
 }
 
 /**
@@ -210,10 +507,6 @@ class KAGWorldPlugin extends KAGPlugin
 		env.onCopyLayer(toback, backlay);
 	}
 	
-	function onExchangeForeBack() {
-		env.onExchangeForeBack();
-	}
-
 	function onResetAll() {
 		env.resetEnv();
 		env.update(kag.fore);

@@ -6,8 +6,10 @@ class KAGEnvSE {
     var env;
     var id;
     var name;  // 参照しているファイル名
-    var count; // 参照されたカウント値
-
+	var loop;  // ループしてるか
+	var volume;
+	var count; // 参照されたカウント値
+	
 	var play;
 	var stop;
 	var fade;
@@ -19,34 +21,23 @@ class KAGEnvSE {
      */
     function onStore(f) {
 		f.name  = name;
+		f.loop  = loop;
+		f.volume = volume;
 		f.id    = id;
 		f.count = count;
-		if (play !== void) {
-			f.play = %[];
-			(Dictionary.assign incontextof f.play)(play, false);
-		}
-		if (stop !== void) {
-			f.stop  = stop;
-		}
-		if (fade !== void) {
-			f.fade = %[];
-			(Dictionary.assign incontextof f.fade)(fade, false);
-		}
 	}
 
 	function onRestore(f) {
 		if (f !== void) {
 			name = f.name;
+			loop = f.loop;
 			id   = f.id;
 			count = f.count;
-			if (f.play !== void) {
-				play = f.play;
-			}
-			if (f.stop !== void) {
-				stop = f.stop;
-			}
-			if (f.fade !== void) {
-				f.fade = %[];
+			if (name != "" && loop) {
+				setPlay(name, %[loop:loop]);
+				if (f.volume !== void) {
+					fade.volume = f.volume;
+				}
 			}
 		}
 	}
@@ -68,15 +59,17 @@ class KAGEnvSE {
 			stop = void;
 			if (kag.skipMode<SKIP_STOP || elm.loop) {
 				name = param;
+				loop = elm.loop;
 				play = %[];
 				(Dictionary.assign incontextof play)(elm, false);
 				if (play.fade === void && play.time === void) {
 					fade = %[];
-					fade.volume = 100;
+					fade.volume = volume = 100;
 				}
 			} else {
 				play = void;
 				name = void;
+				loop = void;
 			}
 		}
     }
@@ -89,6 +82,7 @@ class KAGEnvSE {
 		play = void;
 		fade = void;
 		name = void;
+		loop = void;
 		var time;
 		if (elm !== void && elm.time !== void) {
 			time = +elm.time;
@@ -104,7 +98,7 @@ class KAGEnvSE {
      */
 	function setFade(param, elm) {
 		fade = %[];
-		fade.volume = param;
+		fade.volume = volume = +param;
 		fade.time   = elm.time;
     }
 

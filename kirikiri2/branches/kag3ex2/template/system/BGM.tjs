@@ -1,5 +1,5 @@
 // BGM.tjs - BGM管理
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 class KAGSoundBuffer
 {
@@ -556,6 +556,15 @@ class BGM
 		getter { return currentBuffer.status == "play" && !currentBuffer.looping; }
 	}
 
+	// ラベル待ち
+	function canWaitLabel(name) {
+		var linfo = currentBuffer.labels[name];
+		if (linfo !== void) {
+			dm(name + " ラベル位置:" + linfo.samplePosition);
+			dm("現在再生位置:" + currentBuffer.samplePosition);
+		}
+		return linfo !== void && linfo.samplePosition > currentBuffer.samplePosition;
+	}
 
 	function onSoundBufferFadeCompleted(source)
 	{
@@ -631,7 +640,7 @@ class BGM
             _voldown = v;
             if (_enabled &&  currentStorage != "") {
                 if (_voldown) {
-                    currentBuffer.fade(volume * 0.5, 300);
+                    currentBuffer.fade(volume * owner.bgmdownlevel / 100, 300);
                 } else {
                     currentBuffer.fade(volume, 300);
                 }

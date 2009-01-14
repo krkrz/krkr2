@@ -1,5 +1,5 @@
 // MapMapSelectLayer.tjs - マップ選択肢レイヤ
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 
 class MapSelectButtonLayer extends Layer
@@ -85,7 +85,9 @@ class MapSelectButtonLayer extends Layer
 		update();
 		Butt_mouseOn = true;
 		super.onMouseEnter(...);
+		_ignoreFocusJump = true;
         focus();
+		_ignoreFocusJump = void;
 	}
 
 	function onMouseLeave()	{
@@ -106,16 +108,19 @@ class MapSelectButtonLayer extends Layer
         if (this isvalid) super.onKeyDown(...);
     }
 
+	var _ignoreFocusJump;
 	function onFocus(prevfocused, direction)
 	{
         // キー操作によるフォーカス変動の場合にマウスカーソルも移動
         var sgks = window.getKeyState;
-        var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
-            sgks(VK_DOWN) || sgks(VK_TAB);
+        var process = !_ignoreFocusJump && (sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
+											sgks(VK_DOWN) || sgks(VK_TAB));
         if(process) {
             cursorX = (width>>1);
             cursorY = (height>>1);
+			releaseCapture();
         }
+		return super.onFocus(...);
     }
 }
 

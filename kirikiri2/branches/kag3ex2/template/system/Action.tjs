@@ -9,18 +9,24 @@
  */
 class PropActionInfo {
 
-    var propName;      // プロパティ名
-    var absolute;      // 絶対アクションハンドラ
-    var relative = []; // 相対アクションハンドラ
+	var propName;      // プロパティ名
+	var absolute;      // 絶対アクションハンドラ
+	var relative = []; // 相対アクションハンドラ
     var first;     // 初回実行
-    var startTime; // 開始時刻
-    
+	var startTime; // 開始時刻
+	
     /**
-     * コンストラクタ
-     */
-    function PropActionInfo(propName) {
-        this.propName = propName;
-        first = true;
+	 * コンストラクタ
+	 */
+	function PropActionInfo(propName) {
+		this.propName = propName;
+		first = true;
+	}
+
+	// やり直し用
+	function next() {
+		first = true;
+		startTime = void;
 	}
 
 	/**
@@ -79,9 +85,8 @@ class PropActionInfo {
 		}
 	}
 
-	
-    /**
-     * アクション処理実行
+	/**
+	 * アクション処理実行
      * @param target ターゲットオブジェクト
      * @param now 時間
      * @param stopFlag 強制終了指定
@@ -115,7 +120,7 @@ class PropActionInfo {
                     done = false;
                 }
             }
-        }
+		}
         return done;
     }
 };
@@ -225,7 +230,55 @@ class ActionInfo {
         }
         return done;
     }
+
+	function next() {
+		for (var i=0; i<actionList.count; i++) {
+			actionList[i].next();
+		}
+	}
+
 };
+
+class ActionLoopInfo {
+
+	var count; // ループ回数
+	var point; // ループ先ポイント
+
+	/**
+	 * コンストラクタ
+	 */
+	function ActionLoopInfo(point, count) {
+		this.point = point;
+		this.count = count;
+	}
+
+	/**
+	 * 複製の生成
+	 */
+	function clone() {
+		return new global.ActionLoopInfo(point, count);
+	}
+
+    /**
+	 * ループ処理実行
+     * @param stopFlag 強制終了指定
+	 * @return 戻り先(-1なら終了)
+     */
+	function doLoop(stopFlag) {
+		if (stopFlag) {
+			return -1;
+		}
+		if (count === void) {
+			return +point;
+		} else {
+			if (--count <= 0) {
+				return -1;
+			}
+			return +point;
+		}
+	}
+};
+
 
 /**
  * 一連のアクション
@@ -234,9 +287,10 @@ class ActionSequense {
 
     var actions = [];
 
-    var target; // 対象オブジェクト
+	var target; // 対象オブジェクト
 	var create; // アクション追加フラグ
 	var nowait; // 待ちなしフラグ
+	var cur;    // 現在実行中のアクション位置
 	
     /**
      * コンストラクタ
@@ -244,7 +298,15 @@ class ActionSequense {
 	function ActionSequense(target) {
 		this.target = target;
 		create = true;
+		cur = 0;
     }
+
+	function finalize() {
+		while (actions.count > 0) {
+			invalidate actions[0] if (isvalid actions[0]);
+			actions.erase(0);
+		}
+	}
 
 	/**
 	 * 複製の生成
@@ -253,6 +315,7 @@ class ActionSequense {
 		var ret = new global.ActionSequense(target);
 		ret.create = create;
 		ret.nowait = nowait;
+		ret.cur    = cur;
 		for (var i=0;i<actions.count;i++) {
 			ret.actions.add(actions[i].clone());
 		}
@@ -284,14 +347,25 @@ class ActionSequense {
         }
     }
 
+	/**
+	 * ループ追加
+	 * @param point ループポイント (省略すると0)
+	 * @param count ループ回数 (省略すると無限)
+	 */
+	function addLoop(point, count) {
+		dm("ループアクションを追加");
+		actions.add(new ActionLoopInfo(point, count));
+		create = true;
+	}
+
     /**
-     * アクションを消去する
-     * @param propName プロパティ名
+	 * アクションを消去する
+	 * @param propName プロパティ名
      */
     function delAction(propName) {
-        if (actions.count > 0) {
-            actions[actions.count - 1].delAction(target, propName);
-        }
+		if (actions.count > 0 && actions[actions.count-1] instanceof "ActionInfo") {
+			actions[actions.count - 1].delAction(target, propName);
+		}
     }
     
     /**
@@ -351,14 +425,15 @@ class ActionSequense {
 
     // -----------------------------------------------
 
-
     /**
 	 * アクションの結果を取得する
      */
 	function getResultValue() {
 		var ret = %[];
-		for (var i=0;i<actions.count;i++) {
-			actions[i].getResultValue(ret);
+		for (var i=cur;i<actions.count;i++) {
+			if (actions[i] instanceof "ActionInfo") {
+				actions[i].getResultValue(ret);
+			}
 		}
 		return ret;
 	}
@@ -370,24 +445,36 @@ class ActionSequense {
      * @param 終了したら true
      */
     function doAction(now, stopFlag) {
-		if (actions.count > 0) {
-			if (actions[0].doAction(target, now, stopFlag)) {
-				invalidate actions[0] if (isvalid actions[0]);
-				actions.erase(0);
+		if (cur < actions.count) {
+			var action = actions[cur];
+			if (action instanceof "ActionInfo") {
+				if (action.doAction(target, now, stopFlag)) {
+					action.next();
+					cur++;
+				}
+			} else if (action instanceof "ActionLoopInfo") {
+				var loop;
+				if ((loop = action.doLoop(stopFlag)) >= 0 && loop < cur) {
+					cur = loop;
+				} else {
+					cur++;
+				}
+			} else {
+				cur++;
 			}
 		}
-		return actions.count <= 0;
+		return cur >= actions.count;
     }
 
     /**
      * 強制停止
      */
 	function stopAction() {
-		while (actions.count > 0) {
-			//dm("アクション停止:" + actions.count);
-			try { actions[0].doAction(target, 0, true); } catch {} // エラーが発生しても無視する
-			invalidate actions[0] if (isvalid actions[0]);
-			actions.erase(0);
+		for (var i=cur;i<actions.count;i++) {
+			var action = actions[i];
+			if (action instanceof "ActionInfo") {
+				try { action.doAction(target, 0, true); } catch {} // エラーが発生しても無視する
+			}
         }
     }
 };
@@ -522,18 +609,40 @@ class DefaultAction extends AbsoluteActionHandler {
 class MoveAction extends AbsoluteActionHandler {
 
 	var initValue; // 初期時の値
-	var start;     // 始点指定 
+	var setstart;     // 始点指定 
+	var start;
 	var value;     // 終点指定
-    var accel;     // 加減速指定
+	var accel;     // 加減速指定
 	var diff;      // 移動差分
+	var moveFunc;  // 移動関数
     
     function MoveAction(target, propName, elm) {
 		super.AbsoluteActionHandler(target, propName, elm);
 		initValue = target[propName];
-		start     = elm.start !== void ? getRelative(elm.start, initValue) : void;
+		setstart  = elm.start !== void ? getRelative(elm.start, initValue) : void;
 		value     = getRelative(elm.value, initValue);
-		accel     = +elm.accel;
-    }
+
+		accel = elm.accel;
+		moveFunc = void;
+		if (typeof accel == "String") {
+			// accelに渡された文字で移動関数を決定
+			switch (accel.toLowerCase()) {
+			case "accel": moveFunc = getAccelMove; break;
+			case "decel": moveFunc = getDecelMove; break;
+			case "acdec": moveFunc = getAcDecMove; break;
+			case "accos": moveFunc = getAcCosMove; break;
+			case "const": moveFunc = getConstMove; break;
+			}
+		} else if (typeof accel == "Object" && accel instanceof "Function") {
+			moveFunc = accel; // accelが関数ならそのまま移動関数として使用する
+		}
+		if (moveFunc === void) {
+			// 旧来の指定方法
+			accel = +accel;
+			moveFunc = (accel == 0) ? getConstMove : (accel > 0) ? getAccelMove : getDecelMove;
+		}
+		//dm("MoveAction", typeof accel, accel, moveFunc);
+	}
 
 	/**
 	 * 移動の結果
@@ -546,33 +655,29 @@ class MoveAction extends AbsoluteActionHandler {
 	 * 実行初回処理
 	 */
 	function init(target, propName) {
-		if (start === void) {
+		if (setstart !== void) {
+			start = setstart;
+		} else {
 			start = target[propName];
 		}
 		diff  = value - start;
 		//dm("MoveAction:" + propName + " start:" + start + " diff:" + diff);
 	}
 
-	
-    function doAction(target, propName, now, stopFlag) {
+	function doAction(target, propName, now, stopFlag) {
 		if (time == 0 || stopFlag) {
 			target[propName] = start + diff;
 			return true;
-        } else {
-			var n;
-			if (accel == 0) {
-				n = now / time;
-			} else if (accel > 0) {
-				var t = now / time;
-				n = t*t;
-            } else {
-				var t = now/time;
-				n = ( 1-(1-t)*(1-t) );
-			}
-			target[propName] = start + diff * n;
+		} else {
+			target[propName] = start + diff * moveFunc(now/time);
 			return false;
-        }
-    }
+		}
+	}
+	function getConstMove(t) { return t; }             //等速度
+	function getAccelMove(t) { return t*t; }           //加速
+	function getDecelMove(t) { return t*(2-t); }       //減速
+	function getAcDecMove(t) { return (t*t*(3-2*t)); } //加減速
+	function getAcCosMove(t) { return (1-Math.cos(t*Math.PI))/2; } //加減速(cos使用)
 }
 
 /**
@@ -625,7 +730,10 @@ class ParabolaMoveAction extends AbsoluteActionHandler {
 class LoopMoveAction extends AbsoluteActionHandler {
 
 	var initValue; // 初期時の値
-	var start;     // 始点指定 
+	var setstart;     // 始点指定 
+	var setmin;
+	var setmax;
+	var start;
 	var min;       // ループ最少値
 	var max;       // ループ最大値
 	var loop;      // ループ時間
@@ -636,9 +744,11 @@ class LoopMoveAction extends AbsoluteActionHandler {
     function LoopMoveAction(target, propName, elm) {
 		super.AbsoluteActionHandler(target, propName, elm);
 		initValue = target[propName];
-		start  = elm.start;
-		min    = elm.min;
-		max    = elm.max;
+		if (elm.start !== void) {
+			setstart  = getRelative(elm.start, initValue);
+		}
+		setmin    = getRelative(elm.min, initValue);
+		setmax    = getRelative(elm.max, initValue);
 		loop   = elm.loop !== void ? +elm.loop : time;
     }
 
@@ -653,13 +763,13 @@ class LoopMoveAction extends AbsoluteActionHandler {
 	 * 実行初回処理
 	 */
 	function init(target, propName) {
-		if (start === void) {
-			start = target[propName];
+		if (setstart !== void) {
+			start = setstart;
 		} else {
-			start = getRelative(start, initValue);
+			start = target[propName];
 		}
-		min = getRelative(min, initValue);
-		max = getRelative(max, initValue);
+		min = setmin;
+		max = setmax;
 		max   -= min;
 		start -= min;
 	}

@@ -7,7 +7,7 @@ class VoiceTrack extends WaveSoundBuffer {
     
     function VoiceTrack(owner) {
         this.owner = owner;
-        super.WaveSoundBuffer(owner);
+		super.WaveSoundBuffer(owner);
     }
 
     function play() {
@@ -56,10 +56,66 @@ class EmotionLayer extends GraphicLayerEx {
 }
 
 /**
+ * キャラクタ用座標補正対応レイヤ
+ */
+class EnvCharacterGraphicLayer extends EnvGraphicLayer {
+
+	/**
+	 * コンストラクタ
+	 */
+	function EnvCharacterGraphicLayer(win, par, owner, noshift, nocamera) {
+		// 親コンストラクタ
+		super.EnvGraphicLayer(win, par, owner, noshift, nocamera);
+	}
+
+	/**
+	 * オフセット情報の初期化
+	 */
+	function updateOffsetInfo() {
+		if (owner !== void) {
+			var init = owner.init;
+			var basexoff = init.xoffset !== void ? +init.xoffset : +ownerenv.xoffset;
+			var baseyoff = init.yoffset !== void ? +init.yoffset : +ownerenv.yoffset;
+			if (owner.levels !== void) {
+				// 強制全レベルオフセット指定モード
+				var levelInfo = owner.levels[owner.level];
+				xoffset = (int)(levelInfo !== void ? levelInfo.xoffset : 0) + basexoff;
+				yoffset = (int)(levelInfo !== void ? levelInfo.yoffset : 0) + baseyoff;
+			} else {
+				// env 定義によるレベル補正
+				xoffset = (int)(owner.xoffset !== void ? +owner.xoffset : 0) + basexoff;
+				yoffset = (int)(owner.yoffset !== void ? +owner.yoffset : 0) + baseyoff;
+				var levelInfo = ownerenv.levels[owner.level];
+				if (levelInfo !== void) {
+					levelz       = (int)levelInfo.zoom    if levelInfo.zoom    !== void;
+					levelxoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
+					levelyoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
+				}
+			}
+			//dm("リセット処理 level:" + owner.level);
+			//dm("owner offset:" + owner.xoffset + "," + owner.yoffset);
+			//dm("offset:" + xoffset + "," + yoffset);
+			//dm("levelz:" + levelz);
+		}
+	}
+
+	/**
+	 * カメラの配置基準になる座標値y
+	 * ※反転してある
+	 */
+	property ypos {
+		getter() {
+			return -top;
+		}
+	}
+};
+
+
+/**
  * キャラクタレイヤ
  * ポーズの指定他
  */
-class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
+class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 
     // kag の参照
     property kag {
@@ -83,9 +139,6 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
     }
 
-    /// 名前
-    var name;
-
 	/**
 	 * 表示処理用の自動トランジションの指定
 	 */
@@ -101,35 +154,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 
     // 画像ファイル直接指定
     var image;
-    // 個別オフセット補正
+	// ポーズ個別オフセット補正
 	var yoffset;
 	var xoffset;
 	var levels;
     
     /// ポーズ
-    var _pose;
-	property pose {
-		getter() {
-			if (init.noPose || poses === void) {
-				return void;
-			}
-			if (_pose === void) {
-				if (init.defaultPose !== void) {
-					setPose(init.defaultPose, EMPTY);
-				} else if (env.envinfo.defaultPose !== void) {
-					setPose(env.envinfo.defaultPose, EMPTY);
-				}
-			}
-			if (_pose === void) {
-				throw new Exception(name + ":未指定時のポーズ指定がありません");
-			}
-			return _pose;
-        }
-        setter(v) {
-            _pose = v;
-        }
-    };
-
+	var pose;
     /// 服装
     var dress;
     /// 表情
@@ -160,19 +191,22 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * @param name キャラクタ名
      * @param init キャラクタ初期化データ
      */
-    function KAGEnvCharacter(env, name, initName, init) {
+	function KAGEnvCharacter(env, name, initName, init) {
 
-		global.KAGEnvImage.KAGEnvImage(env);
+		global.KAGEnvImage.KAGEnvImage(env, name);
 		global.KAGEnvLevelLayer.KAGEnvLevelLayer();
-        
-        //dm("キャラクタ登録:" + name); 
 
-        this.name     = name;
-        this.initName = initName;
+		layerClass = global.EnvCharacterGraphicLayer;
+		originMode = 6;
+        
+		//dm("キャラクタ登録:" + name); 
+		this.initName = initName;
         this.init     = init;
         if (init) {
-            poses = init.poses; //showKeys("poses", poses);
-            
+			poses = init.poses; //showKeys("poses", poses);
+			if (poses !== void && init.defaultPose !== void) {
+				_setPose(init.defaultPose);
+			}
             // 表情ポーズ同期機能
             if (init.facePose) {
                 // 表情からポーズに対するマップを作成する
@@ -186,7 +220,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 }, facePoseMap);
             }
 
-        }
+		}
+
+		if (env.envinfo.voiceInit !== void && init.voiceFile !== void) {
+			voice = env.envinfo.voiceInit;
+		}
     }
     
     function finalize() {
@@ -213,13 +251,12 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 	function onStore(f) {
         global.KAGEnvImage.onStore(f);
 		global.KAGEnvLevelLayer.onStore(f);
-        f.name = name;
         f.initName = initName;
         f.image = image;
         f.yoffset = yoffset;
 		f.xoffset = xoffset;
 		f.levels = levels;
-		f.pose = _pose;
+		f.pose = pose;
 		f.dress = dress;
         f.face = face;
         f.voice = voice;
@@ -235,7 +272,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         yoffset = f.yoffset;
 		xoffset = f.xoffset;
 		levels = f.levels;
-		_pose  = f.pose;
+		pose  = f.pose;
         dress = f.dress;
         face  = f.face;
         voice = f.voice;
@@ -261,49 +298,59 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 			setAutoTrans([init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
 		}
     }
-    
+
+	function _setPose(poseName) {
+		var info = poses[poseName];
+		if (info !== void) {
+			pose = poseName;
+			yoffset = info.yoffset;
+			xoffset = info.xoffset;
+			levels  = info.levels !== void ? info.levels : init.levels;
+		}
+	}
+	
     /**
      * ポーズの設定
      */
     function setPose(poseName, elm) {
-        var info = poses[poseName];
-        if (info !== void) {
-			if (poseName != _pose || isClear()) {
-				pose = poseName;
-				yoffset = info.yoffset;
-				xoffset = info.xoffset;
-				levels  = info.levels !== void ? info.levels : init.levels;
-				//dm(poseName + ":レベル設定:" + levels);
-				disp = SHOW;
-				redraw = true;
-				setAutoTrans([info.trans, init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
+		if (poses !== void) {
+			var info = poses[poseName];
+			if (info !== void) {
+				if (poseName != pose || isClear()) {
+					initFile(elm);
+					_setPose(poseName);
+					//dm(poseName + ":レベル設定:" + levels);
+					disp = SHOW;
+					redraw = true;
+					setAutoTrans([info.trans, init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
 					
-                // 表情表示取得
-				if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-					redrawFace = true;
+					// 表情表示取得
+					if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+						redrawFace = true;
+					}
 				}
-            }
-			// 服装初期化処理
-			if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
-				dress = void;
+				// 服装初期化処理
+				if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
+					dress = void;
+				}
+				// 表情初期化処理
+				if (face !== void && (info.faces == void || info.faces[face] == void)) {
+					face = void;
+				}
 			}
-			// 表情初期化処理
-			if (face !== void && (info.faces == void || info.faces[face] == void)) {
-				face = void;
-			}
-        }
-
-        // イメージを破棄
-        image = void;
-        // ypos はポーズ設定したときに0に戻す
-        ypos = 0;
-    }
+		}
+		// イメージを破棄
+		image = void;
+		// ypos はポーズ設定したときに0に戻す
+		ypos = 0;
+	}
 
     /**
      * 服装の設定
      */
     function setDress(dressName, elm) {
 		if (dressName != dress || isClear()) {
+			initFile(elm);
 			dress = dressName;
 			disp = SHOW;
 			redraw = true;
@@ -356,7 +403,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             var fromInfo;
 			if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
 				moveTime = info.time !== void ? info.time : elm.time;
-				moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+				moveAccel = (elm.accel === void) ? 0 : elm.accel;
 				if (fromInfo.xpos !== void) {
 					xposFrom   = calcRelative(xpos, fromInfo.xpos, env.xmax);
 				}
@@ -378,7 +425,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 					if (moveTime !== void && xpos === void) {
 						moveTime = 0;
 					}
-					moveAccel = (elm.accel === void) ? 0 : +elm.accel;
+					moveAccel = (elm.accel === void) ? 0 : elm.accel;
 					xpos = newxpos;
 					ypos = newypos;
 					reposition = true;
@@ -401,11 +448,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 
 		if (info.level !== void) {
 			level = info.level;
-			redraw = true;
 			if (elm.hide === void && disp == CLEAR) {
 				disp = SHOW;
-				istrans = true;
 			}
+			istrans = true;
 		}
 
 		if (info.trans !== void) {
@@ -452,7 +498,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     back    : this.setBack incontextof this,
     level   : this.setLevel incontextof this,
     voice   : this.setVoice incontextof this,
-    nextvoice : this.setNextVoice incontextof this,
+    nextvoice : this.entryNextVoice incontextof this,
     clearvoice : this.clearVoice incontextof this,
     playvoice : this.playVoice2 incontextof this,
 	stopvoice : this.stopVoice incontextof this,
@@ -518,14 +564,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         var info;
         var find = false;
 
-        if (!find && poses !== void && pose !== void && image === void) {
-            var poseInfo;
-            if ((poseInfo = poses[pose]) !== void) {
-                var dresses       = poseInfo.dresses;
-                var faces         = poseInfo.faces;
-                if (dresses !== void && dresses[cmd] !== void) {
-                    //dm("服装を設定");
-                    find = true;
+		if (!find && poses !== void && pose !== void && image === void) {
+			var poseInfo;
+			if ((poseInfo = poses[pose]) !== void) {
+				var dresses       = poseInfo.dresses;
+				var faces         = poseInfo.faces;
+				if (dresses !== void && dresses[cmd] !== void) {
+					//dm("服装を設定");
+					find = true;
                     setDress(cmd,elm);
                 } else if (faces !== void && faces[cmd] !== void) {
                     //dm("表情を設定");
@@ -595,17 +641,17 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * 立ち絵の描画
      * @param layer 描画対象レイヤ
      * @param levelName レベル名
-     * @param pose ポーズ指定
+	 * @param _pose ポーズ指定
      * @oaram face 顔描画を示すフラグ
      * @return 成功したら true
      */
-    function _drawLayerPose(layer, levelName, pose) {
+	function _drawLayerPose(layer, levelName, _pose) {
 
-        var poseInfo;
-		if (poses !== void && (poseInfo = poses[pose]) !== void) {
-
-            // 顔描画の場合は msgImage / msgFaceImage を優先
-            var imageName     = (levelName == env.faceLevelName && poseInfo.msgImage !== void)     ? poseInfo.msgImage : poseInfo.image;
+		var poseInfo;
+		if (poses !== void && (poseInfo = poses[_pose]) !== void) {
+			
+			// 顔描画の場合は msgImage / msgFaceImage を優先
+			var imageName     = (levelName == env.faceLevelName && poseInfo.msgImage !== void)     ? poseInfo.msgImage : poseInfo.image;
             var faceImageName = (levelName == env.faceLevelName && poseInfo.msgFaceImage !== void) ? poseInfo.msgFaceImage : poseInfo.faceImage;
             var dresses       = poseInfo.dresses;
             var faces         = poseInfo.faces;
@@ -613,11 +659,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             imageName = imageName.replace(/LEVEL/, levelName);
 
             // 服装指定が無い場合はデフォルトを参照
-            var dressName;
-            if (dress !== void) {
-                dressName = dresses[dress];
+			var dressName;
+			if (dress !== void) {
+				dressName = dresses[dress];
             } 
-            dressName = poseInfo.defaultDress if dressName === void;
+			dressName = poseInfo.defaultDress if dressName === void;
 
             // 表情指定が無い場合はデフォルトを参照
             var faceName;
@@ -772,13 +818,13 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 					applyColor(layer);
 				}
             } catch (e) {
-                kag.errorImage(image+ ":立ち絵画像がロードできません");
+				kag.errorImage(image+ ":立ち絵画像がロードできません name:" + name);
                 return;
             }
-        } else {
+		} else {
 			if (!_drawLayerPose(layer, levelName, pose) &&
 				!(pose != init.defaultPose && _drawLayerPose(layer, levelName, init.defaultPose))) {
-				kag.errorImage(imageFile + ":立ち絵画像がロードできません pose:" + pose + " dress:" + dress + " face:" + face);
+				kag.errorImage(imageFile + ":立ち絵画像がロードできません name:" + name + " pose:" + pose + " dress:" + dress + " face:" + face);
 				return;
 			}
         }
@@ -806,6 +852,14 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
 				levelName = level;
 			}
 			_drawLayer(layer, levelName);
+
+			// 未初期化時デフォルト
+			if (xpos === void) {
+				xpos = env.defaultXpos;
+			}
+			if (ypos === void) {
+				ypos = env.defaultYpos;
+			}
 		}
 	}
 
@@ -822,135 +876,8 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         }
     }
 
-	/**
-	 * アクション座標計算
-	 */
-	function calcActionPosition(left, top) {
-		if (level === void) {
-			level = env.defaultLevel;
-		}
-		if (levels !== void) {
-			var levelInfo = levels[level];
-			var xoff = levelInfo !== void ? levelInfo.xoffset : 0;
-			var yoff = levelInfo !== void ? levelInfo.yoffset : 0;
-			xpos = -xoff + (getRelative(left, env.xmax + xoff + (int)xpos) - env.xmax) if left !== void;
-			ypos =  yoff - (getRelative(top,  env.ymax + yoff - (int)ypos) - env.ymax) if top !== void;
-		} else {
-			var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
-			var xoff = xoffset !== void ? +xoffset : init.xoffset !== void ? +init.xoffset : +env.xoffset;
-			var zoom = 100;
-			var levelYoffset = 0;
-			var levelXoffset = 0;
-			var levelInfo = env.levels[level];
-			if (levelInfo !== void) {
-				zoom         = (int)levelInfo.zoom    if levelInfo.zoom    !== void;
-				levelYoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
-				levelXoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
-			}
-			xpos = -xoff + (getRelative(left, env.xmax + ((xoff + (int)xpos) * zoom / 100) + levelXoffset) - env.xmax - levelXoffset) * 100 / zoom if left !== void;
-			ypos =  yoff - (getRelative(top,  env.ymax + ((yoff - (int)ypos) * zoom / 100) + levelYoffset) - env.ymax - levelYoffset) * 100 / zoom if top !== void;
-		}
-	}
-	
-	/**
-	 * レイヤ位置の逆計算
-	 */
-	function reversePosition(layer, left, top) {
-		if (levels !== void) {
-			// 強制全レベルオフセット指定モード
-			var levelInfo = levels[level];
-			var xoff = levelInfo !== void ? levelInfo.xoffset : 0;
-			var yoff = levelInfo !== void ? levelInfo.yoffset : 0;
-			xpos = -xoff + (left - env.xmax  + layer.width / 2) if left !== void;
-			ypos =  yoff - (top  - env.ymax  + layer.height   ) if top !== void;
-		} else {
-			var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
-			var xoff = yoffset !== void ? +xoffset : init.xoffset !== void ? +init.xoffset : +env.xoffset;
-			var zoom = 100;
-			var levelYoffset = 0;
-			var levelXoffset = 0;
-			var levelInfo = env.levels[level];
-			if (levelInfo !== void) {
-				zoom         = (int)levelInfo.zoom    if levelInfo.zoom    !== void;
-				levelYoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
-				levelXoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
-			}
-			xpos = -xoff + (left - env.xmax  + layer.width / 2 - levelXoffset) * 100 / zoom if left !== void;
-			ypos =  yoff - (top  - env.ymax  + layer.height    - levelYoffset) * 100 / zoom if top !== void;
-		}
-	}
-		
-	/**
-     * レイヤ配置処理(キャラクタ用)：中央原点＋レベル補正
-     * @param layer 処理対象レイヤ
-     */
-    function calcPosition(layer) {
-		//dm("位置指定3");
-
-		// 未初期化時デフォルト
-		if (xpos === void) {
-			xpos = env.defaultXpos;
-		}
-		if (ypos === void) {
-			ypos = env.defaultYpos;
-		}
-
-		if (levels !== void) {
-			// 強制全レベルオフセット指定モード
-			var levelInfo = levels[level];
-			var xoff = levelInfo !== void ? levelInfo.xoffset : 0;
-			var yoff = levelInfo !== void ? levelInfo.yoffset : 0;
-			//dm("yoffset:" + yoff);
-			var l = env.xmax + (xoff + (int)xpos) - layer.width / 2;
-			var t = env.ymax + (yoff - (int)ypos) - layer.height;
-			if (moveTime) {
-				if (xposFrom !== void || yposFrom !== void) {
-					var fl = xposFrom !== void ? env.xmax + (xoff + (int)xposFrom) - layer.width / 2 : l;
-					var ft = yposFrom !== void ? env.ymax + (yoff - (int)yposFrom) - layer.height: t;
-					layer.setPos(fl, ft);
-				} 
-				//dm("layer位置", layer.left, layer.top, l, t);
-				layer.setMove(l, t, moveTime, moveAccel);
-			} else {
-				layer.setMove(l, t);
-			}
-		} else {
-			var yoff = yoffset !== void ? +yoffset : init.yoffset !== void ? +init.yoffset : +env.yoffset;
-			var xoff = xoffset !== void ? +xoffset : init.xoffset !== void ? +init.xoffset : +env.xoffset;
-			// レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
-			var zoom = 100;
-			var levelYoffset = 0;
-			var levelXoffset = 0;
-			var levelInfo = env.levels[level];
-			if (levelInfo !== void) {
-				zoom         = (int)levelInfo.zoom    if levelInfo.zoom    !== void;
-				levelYoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
-				levelXoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
-			}
-			var l = env.xmax + ((xoff + (int)xpos) * zoom / 100) - layer.width / 2 + levelXoffset;
-			var t = env.ymax + ((yoff - (int)ypos) * zoom / 100) - layer.height    + levelYoffset;
-			if (moveTime) {
-				if (xposFrom !== void || yposFrom !== void) {
-					var fl = xposFrom !== void ? env.xmax + ((xoff + (int)xposFrom) * zoom / 100) - layer.width / 2 + levelXoffset: l;
-					var ft = yposFrom !== void ? env.ymax + ((yoff - (int)yposFrom) * zoom / 100) - layer.height    + levelYoffset: t;
-					layer.setPos(fl, ft);
-				} 
-				//dm("layer位置", layer.left, layer.top, l, t);
-				layer.setMove(l, t, moveTime, moveAccel);
-			} else {
-				layer.setMove(l, t);
-			}
-		}
-		xposFrom = void;
-		yposFrom = void;
-		moveTime = void;
-	}
-
 	function emoConv(emo) {
 		if (emo instanceof "Array") {
-			if (level === void) {
-				level = env.defaultLevel;
-			}
 			dm("エモーションレベル:" + level);
 			return emo[level];
 		}
@@ -1108,8 +1035,24 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
     /**
      * ボイスファイル指定＋次回再生エントリ
      */
-    function setNextVoice(param) {
-        env.entryNextVoice(this);
+	function entryNextVoice() {
+		var voicename = strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
+		if (strVoice === void || incVoice) {
+			if (typeof voice == "Integer") {
+				if (!noincVoice) {
+					voice++;
+				}
+			} else {
+				voice = void;
+			}
+		}
+		incVoice   = void;
+		noincVoice = void;
+		strVoice   = void;
+
+		if (voicename !== void) {
+			env.entryNextVoice(name, voicename);
+		}
     }
     
     /**
@@ -1145,27 +1088,11 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
         return void;
     }
 
-    function getCurrentVoice(check=false) {
-        var voicename = strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
-        if (check) {
-            if (voicename !== void) {
-                if (!Storages.isExistentStorage(voicename)) {
-                    var test;
-                    if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
-                        voicename = test;
-                    } else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
-                        voicename = test;
-                    } else {
-                        kag.errorVoice(voicename + ":ボイスがロードできません name:" + name);
-                        voicename = void;
-                    }
-                }
-            }
-        }
-        return voicename;
-    }
-
-    var initSound;
+	function showVoiceInfo() {
+		dm("[" + name + " voice=" + voice + "]");
+	}
+	
+	var initSound;
     var soundBuffer;
     var voiceEndTime;
 
@@ -1198,39 +1125,25 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      * ボイスの再生
      */
     function playVoice(voicename=void) {
-        voiceEndTime = void;
-        var ret = void;
-        if (voicename === void) {
-            voicename = getCurrentVoice();
-            if (strVoice === void || incVoice) {
-                if (typeof voice == "Integer") {
-                    if (!noincVoice) {
-                        voice++;
-                    }
-                } else {
-                    voice = void;
-                }
-            }
-            incVoice   = void;
-            noincVoice = void;
-            strVoice   = void;
-        }
+		voiceEndTime = void;
+		var ret = void;
 
 		if (!kag.skipNoDisp && voicename !== void && voicename != ""){
 			//dm("再生処理:" + voicename);
-
-            // 拡張子補完処理
+			
+			// 拡張子補完処理
+			kag.errorLine(void, name + ":ボイス再生:" + voicename);
 			if (!Storages.isExistentStorage(voicename)) {
-                var test;
-                if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
-                    voicename = test;
-                } else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
-                    voicename = test;
-                } else {
-                    kag.errorVoice(voicename + ":ボイスがロードできません name:" + name);
-                    voicename = void;
-                }
-            }
+				var test;
+				if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
+					voicename = test;
+				} else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
+					voicename = test;
+				} else {
+					kag.errorVoice(name + ":ボイスがロードできません:" + voicename);
+					voicename = void;
+				}
+			}
             if (voicename !== void && kag.getVoiceOn(init.voiceName) && !kag.skipMode && kag.voiceenable) {
                 if (initSound) {
                     if (soundBuffer !== void) {
@@ -1242,8 +1155,7 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
                 if (soundBuffer === void) {
                     soundBuffer = new VoiceTrack(this);
                 }
-                //dm("ボイスボリューム" + kag.voicevolume);
-                soundBuffer.volume2 = kag.getVoiceVolume(init.voiceName) * 1000;
+				resetVoiceVolume();
                 try {
                     if (kag.voicespeed != 1.0 && typeof soundBuffer.filters != "undefined") {
                         soundBuffer.filters.clear();
@@ -1277,10 +1189,10 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
             if (reNumber.test(param)) {
                 param = (int)(cutZero.replace(param, ""));
             }
-        } else {
-            param = void;
-        }
-        playVoice(getVoice(param));
+		} else {
+			param = void;
+		}
+		playVoice(getVoice(param));
     }
 
     /**
@@ -1314,7 +1226,56 @@ class KAGEnvCharacter extends KAGEnvLevelLayer, KAGEnvImage {
      */
     function resetVoiceVolume() {
         if (soundBuffer !== void) {
-            soundBuffer.volume2 = kag.getVoiceVolume(init.voiceName) * 1000;
+			var per  = init.voiceVolume;
+			var vol = kag.getVoiceVolume(init.voiceName);
+			//dm("ボイスボリューム" + kag.voicevolume, per, vol);
+			soundBuffer.volume2 = ((per !== void) ? (vol * +per / 100) : vol) * 1000;
         }
     }
+
+	// -----------------------------------------------------------------
+	// 立ち絵情報参照用
+	// -----------------------------------------------------------------
+
+	// ポーズ名前一覧取得
+	function getPoseNames() {
+		var ret = [];
+		var names = [];
+		names.assign(poses);
+		for (var i=0;i<names.count;i+=2) {
+			ret.add(names[i]);
+		}
+		ret.sort();
+		return ret;
+	}
+	
+	// 服装名前一覧取得
+	function getDressNames() {
+		var ret = [];
+		var info = poses[pose];
+		if (info !== void && info.dresses !== void) {
+			var names = [];
+			names.assign(info.dresses);
+			for (var i=0;i<names.count;i+=2) {
+				ret.add(names[i]);
+			}
+		}
+		ret.sort();
+		return ret;
+	}
+
+	// 表情名前一覧取得
+	function getFaceNames() {
+		var ret = [];
+		var info = poses[pose];
+		if (info !== void && info.faces !== void) {
+			var names = [];
+			names.assign(info.faces);
+			for (var i=0;i<names.count;i+=2) {
+				ret.add(names[i]);
+			}
+		}
+		ret.sort();
+		return ret;
+	}
 };

@@ -42,7 +42,13 @@ class DialogButtonLayer extends ButtonLayer
 	function onMouseEnter()
 	{
         parent.keyLink = linkNum;
-		parent.focus() if (window.focusedLayer === null);
+		if (window.focusedLayer === null) with (parent) {
+			// 一時的に親をロックしてフォーカス
+			var lock = .selProcessLock;
+			.selProcessLock = true;
+			.focus();
+			.selProcessLock = lock;
+		}
 		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
 		super.onMouseEnter(...);
 	}
@@ -132,8 +138,9 @@ class DialogCheckBoxLayer extends CheckBoxLayer
 
 	function commit()
 	{
+		if (exp == "") return;
 		kag.inputTemp = checked;
-		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+		try { Scripts.eval(("(" + exp + ") = kag.inputTemp")); } catch {}
 	}
 
     function onChange(checked)
@@ -203,8 +210,9 @@ class DialogEditLayer extends EditLayer
 
 	function commit()
 	{
+		if (exp == "") return;
 		kag.inputTemp = text;
-		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+		try { Scripts.eval(("(" + exp + ") = kag.inputTemp")); } catch{}
 	}
 }
 
@@ -250,8 +258,9 @@ class DialogSliderLayer extends SliderLayer
 
 	function commit()
 	{
+		if (exp == "") return;
 		kag.inputTemp = position;
-		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+		try { Scripts.eval(("(" + exp + ") = kag.inputTemp")); } catch {}
 	}
 
     function onChange(position, dragging)
@@ -287,7 +296,14 @@ class DialogLayer extends KAGLayer
     var numLinks = 0; // レイヤ内のリンクの数
 
 	var lastLink = -1; // 最後に選択したリンク番号
-	var keyLink = -1; // キーボードで選択したリンク番号
+	var _keyLink = -1; // キーボードで選択したリンク番号（keyLinkはproperty化：lastLinkと２重に持つ）
+	property keyLink {
+		getter { return _keyLink; }
+		setter(v) {
+			_keyLink = v;
+			lastLink = v if (v >= 0);
+		}
+	}
 	var selProcessLock = false; // process 後にリンクが操作されるのを防ぐためのフラグ
 
 	// リンクタイプ
@@ -398,8 +414,7 @@ class DialogLayer extends KAGLayer
         links.clear();
         numLinks = 0;
 
-		lastLink = -1;
-		keyLink = -1;
+		lastLink = keyLink = -1;
 
         // 場所の初期化
         //setPos(((parent.width  - width)>>1), ((parent.height - height)>>1));
@@ -467,10 +482,10 @@ class DialogLayer extends KAGLayer
 		// サウンドを鳴らすための式を作成する
 		// exp になにか式があった場合はカンマでつなぐ
 		// この仕様は後で変更するかも
-		if(storage === void) return exp;
+		if(storage == "") return exp;
 		if(buf === void) buf = 0;
 		var seexp = "(kag.se["+buf+"].play(%[storage:\"" + storage.escape() +"\"]))";
-		if(exp !== void)
+		if(exp != "")
 			exp = seexp + ",("+exp+")";
 		else
 			exp = seexp;
@@ -519,7 +534,7 @@ class DialogLayer extends KAGLayer
 		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
         object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
         if (elm.enabled !== void) {
-            object.enabled = (elm.enabled != 0);
+            object.enabled = !!elm.enabled;
         } else if (elm.disabled !== void && elm.disabled) {
             object.enabled = false;
         }
@@ -658,8 +673,7 @@ class DialogLayer extends KAGLayer
         var object = new DialogSliderLayer(window, this, vert);
         object.name = elm.name !== void ? elm.name : "slider" + numLinks;
         object.linkNum = numLinks;
-		var exp = (elm.exp != "") ? elm.exp : elm.name;
-		object.exp     = exp;
+		object.exp     = elm.exp;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
         object.bgOpacity = elm.opacity if elm.opacity !== void;
 		object.min  = +elm.min  if elm.min  !== void;
@@ -700,7 +714,7 @@ class DialogLayer extends KAGLayer
 
         links[numLinks] = %[
 			type :			ltSlider,
-			exp :			exp,
+			exp :			elm.exp,
 			object :		object,
 			x :				[object.left],
 			y :				[object.top],
@@ -824,35 +838,37 @@ class DialogLayer extends KAGLayer
     }
 
     function tabPrev() {
-			if(keyLink == -1 || keyLink == 0)
-			{
-//				var l = focusPrev();
-//				if(l !== null) return;
-				keyLink = numLinks - 1;
-			}
-			else
-			{
-				keyLink--;
-			}
-            keyLink = checkFocus(keyLink, -1);
-            var obj = setFocusToLink(keyLink);
-			if(obj !== void) obj.focus();
+		keyLink = lastLink if (keyLink < 0 && lastLink >= 0);
+		if(keyLink == -1 || keyLink == 0)
+		{
+//			var l = focusPrev();
+//			if(l !== null) return;
+			keyLink = numLinks - 1;
+		}
+		else
+		{
+			keyLink--;
+		}
+		keyLink = checkFocus(keyLink, -1);
+		var obj = setFocusToLink(keyLink);
+		if(obj !== void) obj.focus();
     }
     
     function tabNext() {
-			if(keyLink == -1 || keyLink == numLinks -1)
-			{
-//				var l = focusNext();
-//				if(l !== null) return;
-				keyLink = 0;
-			}
-			else
-			{
-				keyLink ++;
-			}
-            keyLink = checkFocus(keyLink, 1);
-            var obj = setFocusToLink(keyLink);
-            if(obj !== void) obj.focus();
+		keyLink = lastLink if (keyLink < 0 && lastLink >= 0);
+		if(keyLink == -1 || keyLink == numLinks -1)
+		{
+//			var l = focusNext();
+//			if(l !== null) return;
+			keyLink = 0;
+		}
+		else
+		{
+			keyLink ++;
+		}
+		keyLink = checkFocus(keyLink, 1);
+		var obj = setFocusToLink(keyLink);
+		if(obj !== void) obj.focus();
     }
     
 	function onKeyDown(key, shift)
@@ -982,7 +998,13 @@ class DialogLayer extends KAGLayer
         if (enabled && button == mbRight) close();
         if (this isvalid) super.onMouseUp(...);
 	}
-    
+
+	/**
+	  * ホイール処理の受け取り用stubs
+	  */
+	function hasWheel() { return false; } // trueにするとホイールを受け取る
+	function processWheel(shift, delta, x, y) {} // ホイール処理
+
     // -----------------------------------------------------------------
 
     var handlers = %[

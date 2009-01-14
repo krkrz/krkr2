@@ -38,7 +38,7 @@
 [stoptrans]
 [backlay]
 [position page=back layer=message1 frame="" left=0 top=0 width=800 height=600 visible=false]
-[position page=back layer=message0 frame="title" opacity=0 left=0 top=0 width=800 height=600 marginT=0 marginL=0 marginR=0 marginB=0 visible=true]
+[position page=back layer=message0 frame="title" opacity=255 left=0 top=0 width=800 height=600 marginT=0 marginL=0 marginR=0 marginB=0 visible=true]
 [current page=back layer=message0]
 
 ; ボタンの配置

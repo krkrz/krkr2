@@ -7,13 +7,92 @@ class KAGEnvImage {
 		global.dm(...) if (kag.debugLevel >= tkdlSimple);
 	}
 
+	var layerClass = global.EnvGraphicLayer;
+	
+	// 処理対象レイヤ
+	var targetLayer;
+	// トランジション処理中レイヤ(validとは限らない)
+	var transLayer;
+	// トランジションを待たない
+	var transNowait;
+
+	// アクション処理中レイヤ
+	var actionLayer;
+	var actionTime;
+
+	/// 表示絶対レベル
+	var _absolute;
+
+	property absolute {
+		getter() {
+			return _absolute;
+		}
+		setter(v) {
+			_absolute = v;
+			updateFlag = true;
+		}
+	}
+
+	// 表示処理用原点計算
+	var originMode = 9;
+	var viewOriginMode = 9;
+
+	// カメラ制御用
+	var noshiftMode;
+	var nocameraMode;
+
+	// カメラ処理用level指定
+	var levelz;
+	
+	/**
+	 * レイヤのコピー処理
+	 */
+	function onCopyLayer(toback, backlay) {
+		if (backlay) {
+			stopTransition(true);
+			if (toback) {
+				if (targetLayer !== void) {
+					//dm("裏画面にコピー:" + name);
+					//dm("元レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
+					if (targetLayer.parent === kag.fore.base && targetLayer.visible) {
+						var absolute = targetLayer.absolute;
+						var layer = createLayer(kag.back);
+						layer.assign(targetLayer);
+						transLayer = targetLayer;
+						layer.absolute = absolute;
+						targetLayer = layer;
+						//dm("複製レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
+					} else {
+						//dm("廃棄");
+						transLayer = targetLayer;
+						targetLayer = void;
+					}
+				}
+			} else {
+				if (targetLayer !== void) {
+					//dm("表画面にコピー:" + name);
+					if (targetLayer.parent === kag.back.base && targetLayer.visible) {
+						//dm("表に移動");
+						var absolute = targetLayer.absolute;
+						targetLayer.parent = kag.fore.base;
+						targetLayer.absolute = absolute;
+					} else {
+						//dm("廃棄");
+						transLayer = targetLayer;
+						targetLayer = void;
+					}
+				}
+			}
+		}
+	}
+	
 	// デフォルト情報
 	var init;
 	var name;
 	
     // スキップ状態か
     function isSkip() {
-        return env.kag.skipMode != SKIP_FORCE && (env.kag.skipMode || env.kag.noeffect);
+        return env.kag.skipMode != SKIP_FORCE && (env.kag.skipMode || (env.kag.noeffect && env.kag.noeffectEnabled));
     }
 
     // 各種情報を保持する環境
@@ -32,21 +111,25 @@ class KAGEnvImage {
 			return _disp;
 		}
 		setter(v) {
-			if (v !== _disp) {
-				if (v == SHOW) {
-					if (isClear()) {
-						if (init !== void && init.noPose !== void) {
-							_disp = init.noPose ? FACE : BOTH;
-						} else {
-							_disp = BOTH;
-						}
+			if (v == SHOW) {
+				if (isClear()) {
+					if (init !== void && init.noPose !== void) {
+						v = init.noPose ? FACE : BOTH;
+					} else {
+						v = BOTH;
 					}
 				} else {
-					_disp = v;
+					v = _disp;
 				}
-				show = isShowBU() ? 1 : 0;
+			}
+			if (v !== _disp) {
+				_disp = v;
+				doShow = true;
 				redraw = true;
 				reposition = true;
+				if (type !== void) {
+					doType = true;
+				}
 			}
 		}
 	}
@@ -74,16 +157,35 @@ class KAGEnvImage {
 	// 更新フラグ
 	var updateFlag;
     // 再描画指示フラグ
-    var redraw;
+	var _redraw;
+	property redraw {
+		getter() {
+			return _redraw;
+		}
+		setter(v) {
+			_redraw = v;
+			//dm(name + ":redraw:" + Scripts.getTraceString());
+		}
+	}
+	
     // 初期化処理
     var resetFlag;
 
     /**
      * 時間用最初期化処理
      */
-    function setRedraw() {
+	function setRedraw() {
 		if (isShowBU()) {
 			redraw = true;
+		}
+    }
+
+	/**
+	 * 配置再調整用
+	 */
+	function recalcPosition() {
+		if (targetLayer !== void) {
+			targetLayer.recalcPosition();
 		}
     }
 	
@@ -91,26 +193,8 @@ class KAGEnvImage {
 	// レイヤ制御
 	// -----------------------------------------------------------------------
 
-	// レイヤが有効になっている
-	var layerOn;
-	
 	// 表示状態
-	// -1:アクション完了後消去 0:消去 1:表示
-	var _show;
 	var doShow;
-	property show {
-		getter() {
-			return _show;
-		}
-		setter(v) {
-			_show = v;
-			doShow = v !== void;
-			if (isShowBU()) {
-				layerOn = true;
-			}
-			updateFlag = true;
-		}
-	}
 	
     // 種別
     var _type;
@@ -130,6 +214,7 @@ class KAGEnvImage {
     var opacityFrom;
     var opacityTime;
     var opacityAccel;
+	var opacityNowait;
     var _opacity;
     var doOpacity;
     property opacity {
@@ -147,6 +232,7 @@ class KAGEnvImage {
     var rotateFrom;
     var rotateTime;
     var rotateAccel;
+	var rotateNowait;
     var _rotate;
     var doRotate;
     property rotate {
@@ -164,15 +250,16 @@ class KAGEnvImage {
     var zoomFrom;
     var zoomTime;
     var zoomAccel;
+	var zoomNowait;
     var _zoom;
-    var doZoom;
+	var doZoom;
     property zoom {
         getter() {
             return _zoom;
         }
         setter(v) {
-            _zoom = v;
-            doZoom = (v !== void);
+			_zoom = v;
+			doZoom = (v !== void);
 			updateFlag = true;
         }
     }
@@ -202,13 +289,34 @@ class KAGEnvImage {
         }
     }
 
+	// ラスター処理
+	var rasterFrom;
+	var rasterTime;
+	var rasterAccel;
+	var rasterNowait;
+	var rasterLines;
+	var rasterCycle;
+    var _raster;
+	var doRaster;
+    property raster {
+        getter() {
+			return _raster;
+		}
+        setter(v) {
+			_raster = v;
+			doRaster = (v !== void);
+			updateFlag = true;
+        }
+    }
+	
     // 表示位置座標
     var xpos;
     var ypos;
     var xposFrom;
     var yposFrom;
-    var moveTime;
-    var moveAccel;
+	var moveTime;
+	var moveAccel;
+	var moveNowait;
 
     // 位置変更
     var reposition;
@@ -219,7 +327,7 @@ class KAGEnvImage {
 	var currentActionList;
 
     // 画像補整指定
-    var _grayscale;
+	var _grayscale;
     property grayscale {
         getter() {
             if (env.colorall) {
@@ -231,7 +339,7 @@ class KAGEnvImage {
         setter(v) {
             _grayscale = v;
             if (!env.colorall) {
-                redraw = true;
+				redraw = true;
             }
         }
     }
@@ -287,12 +395,49 @@ class KAGEnvImage {
         }
     }
 
+    // 画像補整指定
+	var _blurx;
+	property blurx {
+		getter() {
+			if (env.colorall) {
+				return env.blurx;
+            } else {
+				return _blurx;
+            }
+        }
+		setter(v) {
+			_blurx = v;
+			if (!env.colorall) {
+				redraw = true;
+            }
+        }
+    }
+
+	var _blury;
+	property blury {
+		getter() {
+			if (env.colorall) {
+				return env.blury;
+            } else {
+				return _blury;
+            }
+        }
+		setter(v) {
+			_blury = v;
+			if (!env.colorall) {
+				redraw = true;
+            }
+        }
+    }
+	
 	// 色状態の初期化
     function resetColor(param, elm) {
-        _grayscale = void;
-        _rgamma = void;
+		_grayscale = void;
+		_rgamma = void;
         _ggamma = void;
-        _bgamma = void;
+		_bgamma = void;
+		_blurx  = void;
+		_blury  = void;
         if (!env.colorall) {
             redraw = true;
         }
@@ -309,41 +454,55 @@ class KAGEnvImage {
      * コンストラクタ
      * @param env 環境
      */
-    function KAGEnvImage(env) {
-        this.env = env;
+	function KAGEnvImage(env, name) {
+		this.env = env;
+		this.name = name;
 		actionList = new Array();
 		currentActionList = new Array();
-        _disp = CLEAR;
+		_disp = CLEAR;
     }
 
-    function initImage() {
+	function initImage() {
         type = void;
         opacityFrom = void;
         opacityTime = void;
         opacityAccel = void;
+		opacityNowait = void;
         opacity = void;
         rotateFrom = void;
         rotateTime = void;
         rotateAccel = void;
+		rotateNowait = void;
         rotate = void;
         zoomFrom = void;
         zoomTime = void;
         zoomAccel = void;
+		zoomNowait = void;
         zoom = void;
         afx = void;
         afy = void;
-        xpos     = void;
+        rasterFrom = void;
+        rasterTime = void;
+        rasterAccel = void;
+		rasterNowait = void;
+		rasterLines = void;
+		rasterCycle = void;
+		raster = void;
+		xpos     = void;
         ypos     = void;
         xposFrom = void;
         yposFrom = void;
         moveTime = void;
-        moveAccel = void;
+		moveAccel = void;
+		moveNowait = void;
         reposition = false;
 
-        rgamma = void;
-        ggamma = void;
-        bgamma = void;
-        grayscale = void;
+        _rgamma = void;
+		_ggamma = void;
+		_bgamma = void;
+		_grayscale = void;
+		_blurx = void;
+		_blury = void;
         
         resetFlag = false;
         actionList.clear();
@@ -351,52 +510,52 @@ class KAGEnvImage {
         _disp = CLEAR;
     }
 
-    function initLayer(layer) {
-		layer.reset();
-		if (!doType) {
-			_type    = void;
-        }
-		if (!doOpacity) {
-			_opacity = void;
-		}
-        if (!doRotate) {
-			_rotate = void;
-		}
-        if (!doZoom) {
-			_zoom = void;
-		}
-		if (!doAffine) {
-            _afx = void;
-			_afy = void;
+	/**
+	 * 表示諸元を初期化する
+	 * @param elm パラメータ指定
+	 */
+	function initFile(elm) {
+		if (elm.type === void) type = void;
+		if (elm.opacity === void) opacity = void;
+		if (elm.rotate === void) rotate = void;
+		if (elm.zoom === void) zoom = void;
+		if (elm.raster === void) raster = void;
+		if (elm.afx === void) afx = void;
+		if (elm.afy === void) afy = void;
+		clearAction(true);
+	}
+	
+    function finalize() {
+		stopTransition(true);
+		if (targetLayer !== void) {
+			invalidate targetLayer;
 		}
 		clearAction(true);
-    }
-    
-    function finalize() {
-        clearAction(true);
-        invalidate actionList;
-        invalidate currentActionList;
+		invalidate actionList;
+		invalidate currentActionList;
     }
 
     function setXPos(cmd, elm) {
-        if (xpos !== void && moveTime === void) {
-            moveTime  = elm.time;
-            moveAccel = elm.accel;
-        }
-        xposFrom = calcRelative(xpos, getFrom(cmd), env.xmax);
-        xpos     = calcRelative(xpos, getTo(cmd), env.xmax);
-        //dm("X位置指定:", xpos, xposFrom, moveTime);
+		if (moveTime === void) {
+			moveTime  = elm.time;
+			moveAccel = elm.accel;
+			moveNowait = elm.nowait;
+		}
+		xposFrom = calcRelative(xpos, getFrom(cmd), env.xmax);
+		xpos     = calcRelative(xpos, getTo(cmd), env.xmax);
+		//dm("X位置指定:", xpos, xposFrom, moveTime);
         reposition = true;
     } 
 
     function setYPos(cmd, elm) {
-        if (ypos !== void && moveTime === void) {
-            moveTime  = elm.time;
-            moveAccel = elm.accel;
+		if (moveTime === void) {
+			moveTime  = elm.time;
+			moveAccel = elm.accel;
+			moveNowait = elm.nowait;
         }
-        yposFrom = calcRelative(ypos, getFrom(cmd), env.ymax);
-        ypos     = calcRelative(ypos, getTo(cmd), env.ymax);
-        //dm("Y位置指定:", ypos, yposFrom, moveTime);
+		yposFrom = calcRelative(ypos, getFrom(cmd), env.ymax);
+		ypos     = calcRelative(ypos, getTo(cmd), env.ymax);
+		//dm("Y位置指定:", ypos, yposFrom, moveTime);
         reposition = true;
     }
 
@@ -411,31 +570,37 @@ class KAGEnvImage {
 				opacity     = action.opacity;
 				opacityTime = action.time;
 				opacityAccel = action.accel;
+				opacityNowait = action.nowait;
 			} else if (action.module == "LayerToRotateModule") {
 				rotate = action.angle;
 				rotateTime = action.time;
 				rotateAccel = action.accel;
+				rotateNowait = action.nowait;
 			} else if (action.module == "LayerNormalZoomModule") {
 				zoom = action.zoom;
 				zoomTime = action.time;
 				zoomAccel = action.accel;
+				zoomNowait = action.nowait;
 			} else if (action.module == "LayerAccelMoveModule") {
 				xpos = action.x;
 				ypos = action.y;
 				moveTime = action.time;
 				moveAccel = 1;
+				moveNowait = action.nowait;
 				reposition = true;
 			} else if (action.module == "LayerNormalMoveModule") {
 				xpos = action.x;
 				ypos = action.y;
 				moveTime = action.time;
 				moveAccel = 0;
+				moveNowait = action.nowait;
 				reposition = true;
 			} else if (action.module == "LayerDecelMoveModule") {
 				xpos = action.x;
 				ypos = action.y;
 				moveTime = action.time;
 				moveAccel = -1;
+				moveNowait = action.nowait;
 				reposition = true;
 			} else {
 				actionList.add(action);
@@ -447,6 +612,27 @@ class KAGEnvImage {
 		}
 	}
 
+	// nowait つきのアクションかどうか
+	function isNowaitAction(action) {
+		if (typeof action == "Object")  {
+			if (action instanceof "Dictionary") {
+				if (action.nowait !== void) {
+					return action.nowait;
+				}
+			} else if (action instanceof "Array") {
+				for (var i=0;i<action.count;i++) {
+					var ac = action[i];
+					if (typeof ac == "Object" && ac instanceof "Dictionary") {
+						if (ac.nowait !== void) {
+							return ac.nowait;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
     /**
 	 * アクション情報の消去
 	 * @param all 全アクション指定
@@ -455,7 +641,7 @@ class KAGEnvImage {
 		//dm("アクション解除指示:" + name + ":" + all);
 		for (var i=currentActionList.count-1;i>=0;i--) {
 			var info = currentActionList[i];
-			if (all || !info.nowait) {
+			if (all || !isNowaitAction(info)) {
 				currentActionList.erase(i);
 			}
 		}
@@ -468,7 +654,7 @@ class KAGEnvImage {
 	 * @param elm  タグによる上書き用パラメータ情報
 	 * @return システム登録用アクション情報
 	 */
-	function copyActionInfo(act, time, elm) {
+	function copyActionInfo(act, time, over) {
 		var action = %[];
 		if (act !== void) {
 			var names = [];
@@ -484,8 +670,8 @@ class KAGEnvImage {
 					action.time = time;
 				}
 				// パラメータのコピー
-				if (elm !== void) {
-					foreach(elm, function(name, value, elm, action) {
+				if (over !== void) {
+					foreach(over, function(name, value, over, action) {
 						if (actionParam[name] !== void) {
 							action[name] = value;
 						}
@@ -504,10 +690,10 @@ class KAGEnvImage {
 							e.time = time;
 						}
 						// パラメータのコピー
-						if (elm !== void) {
-							e.time   = +elm.time if elm.time !== void;
-							e.delay  = +elm.delay if elm.delay !== void;
-							e.nowait = +elm.nowait if elm.nowait !== void;
+						if (over !== void) {
+							e.time   = +over.time if over.time !== void;
+							e.delay  = +over.delay if over.delay !== void;
+							e.nowait = +over.nowait if over.nowait !== void;
 						}
 						action[name] = e;
 					} else {
@@ -558,29 +744,31 @@ class KAGEnvImage {
                 return false;
             }
 			// 個別記述
-            if (elm !== void && name.substring(0,5) == "Layer") {
+			if (elm !== void && name.substring(0,5) == "Layer") {
 				var moduleType;
-				try {
-                    moduleType = global[name];
+				if (typeof global[name] != "undefined") {
+					moduleType = global[name];
 					if (typeof moduleType == "Object") {
 						// アクションモジュール名の場合
 						var action = %[];
 						foreach(elm, function(name, value, elm, action) {
 							if (actionParam[name] !== void) {
 								action[name] = value;
-                            }
+							}
 						}, action);
 						action.module = name;
 						action.time   = +elm.time   if elm.time !== void;
 						action.delay  = +elm.delay  if elm.time !== void;
 						action.nowait = +elm.nowait if elm.nowait !== void;
 						addAction(action);
-                        return true;
-                    }
-                } catch() {
-                    // 無視
-                }
-            }
+						return true;
+					} else {
+						kag.errorCmd("不明なレイヤアクション指定:" + name);
+					}
+				} else {
+					kag.errorCmd("不明なレイヤアクション指定:" + name);
+				}
+			}
         }
         return false;
     }
@@ -600,6 +788,7 @@ class KAGEnvImage {
 	
     // 画面更新設定
     var trans;
+	var transall; // 全トランジションが必要かどうかのフラグ
 	
     /**
      * トランジション情報の取得
@@ -670,7 +859,8 @@ class KAGEnvImage {
 						return;
 					}
 				} else if (param instanceof "Dictionary") {
-					autoTrans = param;
+					autoTrans = %[];
+					(Dictionary.assign incontextof autoTrans)(param); 
 					return;
 				}
 			}
@@ -685,9 +875,6 @@ class KAGEnvImage {
 	
 	// --------------------------------------------------------------
 	
-	var syncMode;
-	var movieSyncMode;
-	
 	/**
 	 * 状態更新処理
      */
@@ -696,11 +883,11 @@ class KAGEnvImage {
 		if (resetFlag) {
 			layer.visible = isShowBU();
 			layer.reset();
-			_show    = isShowBU();
             _type    = void;
 			_opacity = void;
 			_rotate = void;
 			_zoom = void;
+			_raster = void;
 			_afx = void;
             _afy = void;
 			clearAction(true);
@@ -708,18 +895,19 @@ class KAGEnvImage {
 			_ggamma = void;
 			_bgamma = void;
             _grayscale = void;
+			_blurx = void;
+			_blury = void;
 			resetFlag = false;
 		}
 
 		if (doShow) {
-			//dm("表示指定:" + show);
-			layer.visible = show > 0;
+			layer.visible = isShowBU();
 			doShow = false;
 		}
 		if (doAffine) {
 			layer.afx = afx;
 			layer.afy = afy;
-				doAffine = false;
+			doAffine = false;
 		}
 		if (doOpacity) {
 			//dm("透明度変更:" + opacity + ":" + opacityTime); 
@@ -727,7 +915,7 @@ class KAGEnvImage {
 				layer.opacity = opacityFrom;
 				opacityFrom = void;
 			}
-			layer.setOpacityTime(opacity, opacityTime, opacityAccel);
+			layer.setOpacityTime(opacity, opacityTime, opacityAccel, opacityNowait);
 			doOpacity = false;
 		}
 		if (doRotate) {
@@ -736,7 +924,7 @@ class KAGEnvImage {
 				layer.rotate = rotateFrom;
 				rotateFrom = void;
 			}
-			layer.setRotateTime(rotate, rotateTime, rotateAccel);
+			layer.setRotateTime(rotate, rotateTime, rotateAccel, rotateNowait);
 			doRotate = false;
 		}
 		if (doZoom) {
@@ -745,9 +933,19 @@ class KAGEnvImage {
 				layer.zoom = zoomFrom;
 				zoomFrom = void;
 			}
-			layer.setZoomTime(zoom, zoomTime, zoomAccel);
+			layer.setZoomTime(zoom, zoomTime, zoomAccel, zoomNowait);
 			doZoom = false;
 		}
+		if (doRaster) {
+			//dm("ズーム変更:" + zoom + ":" + zoomTime);
+			if (rasterFrom !== void) {
+				layer.raster = rasterFrom;
+				rasterFrom = void;
+			}
+			layer.setRasterTime(raster, rasterLines, rasterCycle, rasterTime, rasterAccel, rasterNowait);
+			doRaster = false;
+		}
+
 		if (doType) {
 			//dm("合成種別変更");
 			layer.type = type;
@@ -763,6 +961,7 @@ class KAGEnvImage {
 			//dm("アクション適用開始:" + actionList.count);
 			for (var i=0;i<actionList.count;i++) {
 				var action = actionList[i];
+				dm("アクション開始:" + typeof action + ":" + action);
 				layer.beginAction(action);
 				// 実行中アクションの記録（保存用）
 				if (action instanceof "Dictionary") {
@@ -791,18 +990,9 @@ class KAGEnvImage {
 			_opacity = result.opacity if result.opacity !== void;
 			_rotate  = result.rotate  if result.rotate  !== void;
 			_zoom    = result.zoom    if result.zoom    !== void;
-			if (result.left !== void || result.top  !== void) {
-				//dm("処理前:" + xpos + "," + ypos);
-				reversePosition(layer, result.left, result.top);
-				//dm("処理後:" + xpos + "," + ypos);
-			}
-		}
-		// シンクロ指定
-		if (syncMode) {
-			ret = kag.waitAction(layer);
-		}
-		if (movieSyncMode) {
-			ret = kag.waitLayerMovie(layer);
+			_raster  = result.raster  if result.raster  !== void;
+			xpos = result.left if result.left !== void;
+			ypos = result.top  if result.top  !== void;
 		}
 	}
 
@@ -819,11 +1009,14 @@ class KAGEnvImage {
 		}
 	}
 	
-	function applyPropMoveAction(action, prop) {
+	function applyPropMoveAction(action, prop, thisprop) {
+		if (thisprop === void) {
+			thisprop = prop;
+		}
 		var info = action[prop];
 		if (info !== void && info.handler == "MoveAction") {
 			if (info.value !== void) {
-				this[prop] = getRelative(info.value, this[prop]);
+				this[thisprop] = getRelative(info.value, this[thisprop]);
 			}
 		}
 	}
@@ -836,16 +1029,9 @@ class KAGEnvImage {
 		applyPropMoveAction(action, "opacity");
 		applyPropMoveAction(action, "rotate");
 		applyPropMoveAction(action, "zoom");
-		var left, top;
-		if (action.left !== void && action.left.handler == "MoveAction") {
-			left = action.left.value;
-		}
-		if (action.top !== void && action.top.handler == "MoveAction") {
-			top = action.top.value;
-		}
-		if (left !== void || top !== void) {
-			calcActionPosition(left, top);
-		}
+		applyPropMoveAction(action, "raster");
+		applyPropMoveAction(action, "left", "xpos");
+		applyPropMoveAction(action, "top",  "ypos");
 	}
 
 	function updateSkip() {
@@ -872,7 +1058,7 @@ class KAGEnvImage {
         type =  global[param];
     } incontextof this,
     opacity : function(param, elm) {
-        opacityFrom = calcRelative(opacity, getFrom(param), 100);
+		opacityFrom = calcRelative(opacity, getFrom(param), 100);
         opacity     = calcRelative(opacity, getTo(param), 100);
         opacityTime = isSkip() ? 0 : +elm.time;
         opacityAccel = +elm.accel;
@@ -883,7 +1069,7 @@ class KAGEnvImage {
         rotateTime = isSkip() ? 0 : +elm.time;
         rotateAccel = +elm.accel;
     } incontextof this,
-    zoom : function(param, elm) {
+	zoom : function(param, elm) {
         zoomFrom = calcRelative(zoom, getFrom(param), 100);
         zoom     = calcRelative(zoom, getTo(param), 100);
         zoomTime = isSkip() ? 0 : +elm.time;
@@ -895,6 +1081,16 @@ class KAGEnvImage {
     afy : function(param, elm) {
         afy = param;
     } incontextof this,
+	raster : function(param, elm) {
+		rasterFrom = calcRelative(raster, getFrom(param), 100);
+        raster     = calcRelative(raster, getTo(param), 100);
+        rasterTime = isSkip() ? 0 : +elm.time;
+		rasterAccel = +elm.accel;
+		rasterLines = elm.rasterlines;
+		rasterCycle = elm.rastercycle;
+    } incontextof this,
+	rasterlines : null,
+	rastercycle : null,
     reset : function(param, elm) {
 		resetFlag = true;
 		updateFlag = true;
@@ -911,21 +1107,37 @@ class KAGEnvImage {
     bgamma : function(param, elm) {
         bgamma = param;
     } incontextof this,
+	blurx : function(param, elm) {
+        blurx = param;
+    } incontextof this,
+	blury : function(param, elm) {
+        blury = param;
+    } incontextof this,
+	blur : function(param, elm) {
+		blurx = blury = param;
+    } incontextof this,
     resetcolor : this.resetColor incontextof this,
     action : setAction incontextof this,
     stopaction : stopAction incontextof this,
-	sync : function(param) { if (param) { syncMode = true; updateFlag=true; } } incontextof this,
-	waitmovie : function(param) { if (param) { movieSyncMode = true; updateFlag=true; } } incontextof this,
+	stoptrans : function(param) { stopTransition(true); } incontextof this,
 	xpos : this.setXPos incontextof this,
 	ypos : this.setYPos incontextof this,
+	origin : function(cmd,elm) { originMode = +cmd; reposition = true; } incontextof this,
+    vorigin : function(cmd,elm) { viewOriginMode = +cmd; reposition = true; } incontextof this,
+	noshift : function(cmd,elm) { noshiftMode = +cmd; } incontextof this,
+	nocamera : function(cmd,elm) { nocameraMode = +cmd; } incontextof this,
 	trans : this.setTrans incontextof this,
+	notrans : function(param) { trans = %[]; } incontextof this,
 	show : function(param) { disp = SHOW; },
 	hide : function(param) { disp = CLEAR; },
 	accel : null, // 無視
 	fade : null, // 無視
+	sync : null, // 無視
 	nosync : null, // 無視
 	nowait : null, // 無視
-        ];
+	waitmovie : null,
+	waitanime : null,
+		];
 
     /**
      * コマンドの実行
@@ -934,7 +1146,7 @@ class KAGEnvImage {
      * @param elm 他のコマンドも含む全パラメータ
      * @return 実行が行われた場合 true
      */
-    function doCommand(cmd, param, elm) {
+	function doCommand(cmd, param, elm) {
         //dm("コマンド処理:" + cmd + " パラメータ:" + param);
         var func;
         if ((func = commands[cmd]) !== void) {
@@ -957,13 +1169,15 @@ class KAGEnvImage {
      * セーブ処理
      */
     function onStore(f) {
-		f.show    = show;
+		f.name    = name;
+
 		f.type    = type;
 		f.opacity = opacity;
         f.rotate  = rotate;
         f.zoom    = zoom;
 		f.afx     = afx;
 		f.afy     = afy;
+        f.raster  = raster;
         f.xpos    = xpos;
         f.ypos    = ypos;
         f.disp    = disp;
@@ -977,14 +1191,20 @@ class KAGEnvImage {
         f.rgamma    = _rgamma;
         f.ggamma    = _ggamma;
         f.bgamma    = _bgamma;
-    }
+		f.blurx     = _blurx;
+		f.blury     = _blury;
+
+		f.absolute = absolute;
+		f.originMode = originMode;
+        f.viewOriginMode = viewOriginMode;
+	}
 
     /**
      * ロード処理
      */
     function onRestore(f) {
+		name = f.name;
 		
-		show = f.show;
         type = f.type;
         opacity     = f.opacity;
         opacityFrom = void;
@@ -998,6 +1218,12 @@ class KAGEnvImage {
         zoomFrom    = void;
         zoomTime    = void;
         zoomAccel   = void;
+		raster      = f.raster;
+        rasterFrom    = void;
+        rasterTime    = void;
+		rasterAccel   = void;
+		rasterLines   = void;
+		rasterCycle   = void;
 		afx         = f.afx;
 		afy         = f.afy;
 		if (f.actionList !== void) {
@@ -1011,56 +1237,47 @@ class KAGEnvImage {
 		xposFrom  = void;
         ypos      = f.ypos;
         yposFrom  = void;
-        moveTime  = void;
+		moveTime  = void;
         moveAccel = void;
+		moveNowait = void;
 
         if (isShowBU()) {
             reposition = true;
         }
 
-        _grayscale = f.grayscale;
+		_grayscale = f.grayscale;
         _rgamma    = f.rgamma;
         _ggamma    = f.ggamma;
         _bgamma    = f.bgamma;
-        if (_grayscale != void ||
+		_blurx     = f.blurx;
+		_blury     = f.blury;
+		if (_grayscale != void ||
             _rgamma    != void ||
-            _ggamma    != void ||
-            _bgamma    != void) {
+			_ggamma    != void ||
+			_bgamma    != void ||
+			_blurx     != void ||
+			_blury     != void) {
             redraw = true;
         }
-        
-    }
+
+		absolute = f.absolute;
+		originMode = f.originMode;
+        viewOriginMode = f.viewOriginMode;
+	}
 
 	// レイヤのサイズ調整用
 	function setSize(layer) {
 	}
 	
-    // このメソッドを実装する
-    // function getLayer(base);
+	// このメソッドを実装する
 	// function drawLayer(layer)
-
-	/**
-	 * アクション座標計算
-	 */
-	function calcActionPosition(left, top) {
-		xpos = getRelative(left, xpos) if left !== void;
-		ypos = getRelative(top, ypos)  if top  !== void;
-	}
-	
-	/**
-	 * 座標逆計算
-	 */
-	function reversePosition(layer, left, top) {
-		xpos = left if left !== void;
-		ypos = top  if top  !== void;
-	}
 
     /**
      * レイヤ配置処理(標準)：左上原点
      * @param layer 処理対象レイヤ
      */
-    function calcPosition(layer) {
-		//dm("位置指定1",xpos,ypos);
+	function calcPosition(layer) {
+		//dm(name + ":位置指定:" + xpos + "," + ypos + " time:" + moveTime);
 		var l = (int)xpos;
 		var t = (int)ypos;
 		if (moveTime !== void && moveTime > 0) {
@@ -1069,13 +1286,31 @@ class KAGEnvImage {
 				var ft = yposFrom !== void ? (int)yposFrom : t;
 				layer.setPos(fl, ft);
 			}
-			layer.setMove(l, t, moveTime, moveAccel);
+			layer.setMove(l, t, moveTime, moveAccel, moveNowait);
 		} else {
 			layer.setMove(l, t);
 		}
 		xposFrom = void;
 		yposFrom = void;
 		moveTime = void;
+	}
+
+	/**
+	 * トランジションの強制中断
+	 */
+	function stopTransition(all) {
+		if (transLayer !== void) {
+			if (all || !transNowait) {
+				//dm(name + "トランジション中断");
+				if (isvalid transLayer) {
+					transLayer.stopTransition();
+				}
+				if (isvalid transLayer) {
+					invalidate transLayer;
+				}
+				transLayer = void;
+			}
+		}
 	}
 
 	/*
@@ -1085,54 +1320,189 @@ class KAGEnvImage {
 	 */
 	function beginTransition(trans) {
 		if (trans === void || trans.method === void || trans.time == 0 || isSkip()) {
-			kag.insertTag("forelay");
-			env.clearTrash();
+			kag.addTag("forelay");
 		} else {
-			// メッセージ窓状態同期
-			kag.insertTag("syncmsg");
-			if (trans.transwait !== void) {
-				// 時間待ち
-				kag.insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
-			} else {
-				// トランジション待ち
-				kag.insertTag("wt");
-			}
 			// 実際のトランジション実行
 			trans.children = true;
 			if (trans.method === void) {
 				trans.method = "crossfade";
 			}
-			kag.insertTag("trans", trans);
+			kag.addTag("trans", trans);
+			if (trans.transwait !== void) {
+				// 時間待ち
+				kag.addTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
+			} else {
+				// トランジション待ち
+				kag.addTag("wt");
+			}
+			// メッセージ窓状態同期
+			kag.addTag("syncmsg");
 		}
     }
 
-	function beginTransActionUpdate(trans, layer) {
-		//dm("更新アクション実行");
-		if (trans.showaction !== void) {
-			var action = copyActionInfo(trans.showaction, trans.time);
-			kag.insertTag("action", %[target:layer, action:action]);
-		}
-		if (trans.hideaction !== void) {
-			var action = copyActionInfo(trans.hideaction, trans.time);
-			kag.insertTag("action", %[target:layer.comp, action:action]);
-		}
+	/*
+	 * トランジション実行エントリ
+	 * @param trans トランジション情報
+	 * KAG にトランジション実行命令を差し込む
+	 */
+	function beginTransShow(trans) {
+		//dm("トランジション表示実行");
+		
+		stopTransition(true);
+		
+		// 新レイヤの準備（裏につくる）
+		_update(kag.back);
+
+		// 旧レイヤを準備
+		transLayer          = createLayer(kag.fore);
+		transLayer.visible  = true;
+		transLayer.absolute = targetLayer.absolute;
+		transLayer.name = "old_" + transLayer.name;
+
+		// トランジション実行
+		trans.deldest = true;
+		trans.children = true;
+		trans.target = transLayer;
+		trans.src    = targetLayer;
+		kag.addTag("laytrans", trans);
 	}
 	
-	function beginTransAction(trans, layer, hide, nosync) {
-		//dm("表示アクション実行");
-		if (!nosync && !trans.nosync) {
-			if (trans.transwait !== void) {
-				// 時間待ち
-				kag.insertTag("wait", %[ time : (int)trans.time + (int)trans.transwait, action:true ]);
-			} else {
-				// アクション待ち
-				kag.insertTag("wact", %[ target:layer ]);
-			}
+	/*
+	 * トランジション実行エントリ
+	 * @param trans トランジション情報
+	 * KAG にトランジション実行命令を差し込む
+	 */
+	function beginTransHide(trans) {
+		//dm("トランジション消去実行");
+
+		stopTransition(true);
+		
+		// 旧レイヤの破棄準備
+		transLayer      = targetLayer;
+		transLayer.name = "old_" + transLayer.name;
+		targetLayer = void;
+
+		// 新レイヤの準備（裏につくる：生成されないはず）
+		_update(kag.back);
+
+		var layer = createLayer(kag.back);
+		layer.visible  = true;
+		layer.absolute = transLayer.absolute;
+		trans.delsrc = true;
+
+		// トランジション実行
+		trans.deldest = true;
+		trans.children = true;
+		trans.target = transLayer;
+		trans.src    = layer;
+		kag.addTag("laytrans", trans);
+	}
+
+	/*
+	 * トランジション実行エントリ
+	 * @param trans トランジション情報
+	 * KAG にトランジション実行命令を差し込む
+	 */
+	function beginTransUpdate(trans) {
+		//dm("トランジション更新実行");
+
+		stopTransition(true);
+		
+		// 旧レイヤの破棄準備
+		if (targetLayer !== void && targetLayer.visible) {
+			transLayer = targetLayer;
+			targetLayer = createLayer(kag.back);
+			targetLayer.assign(transLayer);
+		} else {
+			transLayer  = targetLayer;
+			targetLayer = void;
 		}
+		transLayer.name = "old_" + transLayer.name;
+
+		// 新レイヤの準備（裏につくる）
+		_update(kag.back);
+		
+		//dm("旧レイヤ表示状態:" + transLayer  + ":" + transLayer.visible);	
+		//dm("新レイヤ表示状態:" + targetLayer + ":" + targetLayer.visible);
+		
+		// トランジション実行
+		trans.children = true;
+		trans.deldest = true;
+		trans.target = transLayer;
+		trans.src    = targetLayer;
+		kag.addTag("laytrans", trans);
+	}
+
+	function beginTransActionShow(trans) {
+		//dm("アクション表示実行");
+		doShow = false;
+		_update(kag.fore);
+		var action = copyActionInfo(trans.showaction, trans.time);
+		action["visvalue"] = %[ handler:MoveAction, value:100, time:trans.time ];
+		action.target = targetLayer;
+		kag.addTag("action", action);
+		actionLayer = targetLayer;
+	}
+	
+	function beginTransActionHide(trans) {
+		//dm("アクション消去実行");
 		// アクション実行
-		var action = copyActionInfo(hide ? trans.hideaction : trans.showaction, trans.time);
-		action["visvalue"] = %[ handler:MoveAction, value: hide ? 0 : 100, time:trans.time ];
-		kag.insertTag("action", %[target:layer, action:action]);
+		doShow = false;
+		_update(kag.fore);
+		var layer = targetLayer;
+		var action = copyActionInfo(trans.hideaction, trans.time);
+		action["visvalue"] = %[ handler:MoveAction, value:0, time:trans.time ];
+		action.target = targetLayer;
+		action.del = true; // 終了時にレイヤを破棄
+		kag.addTag("action", action);
+		actionLayer = targetLayer;
+		targetLayer = void;
+	}
+	
+	function beginTransActionUpdate(trans) {
+		//dm("アクション更新実行");
+
+		var hidetime = 0;
+		var showtime = 0;
+		
+		// 古いレイヤの処理
+		var oldlayer = targetLayer;
+		targetLayer = void;
+
+		if (oldlayer !== void) {
+			targetLayer = createLayer(kag.fore);
+			targetLayer.assign(oldlayer);
+			targetLayer.visible = false;
+
+			oldlayer.name = "old_" + oldlayer.name;
+			var time = trans.hidetime !== void ? trans.hidetime : trans.time;
+			var delay = trans.hidedelay;
+			var action = copyActionInfo(trans.hideaction, time, %[delay:delay]);
+			action["visvalue"] = %[ handler:MoveAction, value:0, time:time, delay:delay];
+			action.target = oldlayer;
+			action.del = true;
+			kag.addTag("action", action);
+			hidetime = delay + time;
+		}
+
+		// 新しいレイヤの処理
+		doShow = false;
+		_update(kag.fore);
+		if (targetLayer !== void) {
+			var time = trans.showtime !== void ? trans.showtime : trans.time;
+			var delay = trans.showdelay;
+			var action = copyActionInfo(trans.showaction, time, %[delay:delay]);
+			action["visvalue"] = %[ handler:MoveAction, value:100, time:time, delay:delay];
+			action.target = targetLayer;
+			kag.addTag("action", action);
+			showtime = delay + time;
+		}
+
+		//dm("旧レイヤ表示状態:" + oldlayer  + ":" + oldlayer.visible);	
+		//dm("新レイヤ表示状態:" + targetLayer + ":" + targetLayer.visible);
+		
+		actionLayer = showtime > hidetime ? targetLayer : oldlayer;
+		actionTime  = showtime > hidetime ? showtime : hidetime;
 	}
 	
 	/**
@@ -1140,45 +1510,55 @@ class KAGEnvImage {
 	 */
 	function hideMessage(trans) {
 		if (trans !== void && trans.msgoff) {
-			kag.insertTag("msgoff");
+			if (isSkip()) kag.addTag("msgoff");
+			else       kag.insertTag("msgoff");
 		}
     }
 
 	/**
 	 * 単純更新
 	 */
-	function update(base) {
-		//dm("更新処理実行:" + name);
-		if (layerOn && (updateFlag || redraw || reposition)) {
-			var layer = getLayer(base);
+	function _update(base) {
+		if ((isShowBU() || targetLayer !== void) && (updateFlag || redraw || reposition)) {
+			//dm("更新処理実行:" + name + " updateFlag:" + updateFlag + " redraw:" + redraw + " reposition:" + reposition);
+			if (targetLayer === void || targetLayer.parent !== base.base) {
+				var layer = createLayer(base);
+				if (targetLayer !== void) {
+					layer.assign(targetLayer);
+					invalidate targetLayer;
+				}
+				targetLayer = layer;
+			}
+			// 変更されてることがあるので常に反映
+			targetLayer.absolute = +absolute if (absolute !== void);
+
 			if (redraw) {
-				initLayer(layer);
-				drawLayer(layer);
+				targetLayer.reset();
+				drawLayer(targetLayer);
 				if (grayscale) {
-					layer.doGrayScale();
+					targetLayer.doGrayScale();
 				}
 				if (rgamma != void || ggamma != void || bgamma != void) {
-					layer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
+					targetLayer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
 									  ggamma == void ? 1.0 : ggamma, 0, 255,
 									  bgamma == void ? 1.0 : bgamma, 0, 255);
 				}
+				if (blurx || blury) {
+					targetLayer.doBoxBlur(blurx, blury);
+				}
+				// 描画処理中に必要な情報更新が行われる場合があるので
+				// オフセット調整はこの位置で行う
+				targetLayer.updateOffsetInfo();
 			}
 			if (redraw || reposition) {
-				setSize(layer);
-				calcPosition(layer);
+				setSize(targetLayer);
+				calcPosition(targetLayer);
 			}
 			redraw = false;
 			reposition = false;
-			updateLayer(layer);
-
-			// レイヤ処理がおわった段階で
-			// レイヤ消去されてたら
-			// 次は処理対象からはずす
-			if (!isShowBU()) {
-				layerOn = false;
-			}
-			updateFlag = false;
-			return layer;
+			updateLayer(targetLayer);
+		} else {
+			updateSkip();
 		}
 		updateFlag = false;
 	}
@@ -1212,27 +1592,28 @@ class KAGEnvImage {
 				kag.errorCmd(name + ":未知のコマンド:" + names[i]);
 			}
 		}
-    }
+	}
 	
 	/**
 	 * KAG タグ処理
 	 * @param elm 要素
 	 */
 	function tagfunc(elm) {
-
+		
 		kag.updateBeforeCh = 1;
 		ret = void;
 		trans = void;
+		transall = false;
 		autoTrans = void;
-		syncMode = void;
-		movieSyncMode = void;
 		
 		// コマンド実行前の表示状態
+		var prevAbsolute = absolute;
 		var prevShow = isShowBU();
 
 		command(elm);
 
 		// 0:非表示 1:表示 2:消去 3:更新
+		var isAbsoluteChange = prevAbsolute != absolute;
 		var mode = (prevShow ? 2 : 0) + (isShowBU() ? 1 : 0);
 		//dm("表示モード:" + mode);
 
@@ -1254,56 +1635,119 @@ class KAGEnvImage {
 
 		// キャラクタ強制消去
 		if (trans !== void && trans.charoff) {
-			foreach(characters, function(name,value,dict) {
+			foreach(env.characters, function(name,value,dict) {
 				value.disp = CLEAR;
 			} incontextof this);
 		}
 
+		var waitMode = 0; // 0:待ちなし 1:アクションまち 2:トランジションまち
+		
 		if (!kag.skipNoDisp) {
 			//dm("更新処理開始" + name);
 			if (env.transMode) {
 				//dm("トランジション処理中");
-				update(env.transMode == 1 ? kag.back : kag.fore);
+				env.update(env.transMode == 1 ? kag.back : kag.fore);
 			} else if (isSkip()) {
 				// スキップ中または描画なし
-				update(kag.fore);
-				env.clearTrash();
+				env.update(kag.fore);
 			} else {
-				if (trans === void) {
-					update(kag.fore);
-				} else if (trans.time == 0) {
-					update(kag.fore);
-					env.clearTrash();
-				} else {
-					if (trans.method !== void || mode == 3) {
-						//dm("画像更新:" + trans.method + ":" + trans.showaction + ":" + trans.hideaction);
-						kag.fore.base.stopTransition();
-						kag.backupLayer(EMPTY, true);
-						var layer = update(kag.back);
-						beginTransition(trans);
-						if (layer !== void) {
-							beginTransActionUpdate(trans, layer);
-						}
+				if (trans === void || trans.time == 0) {
+					//dm("瞬間更新");
+					env.update(kag.fore);
+				} else if (trans.method !== void) {
+					//dm("画像変更（トランジション）");
+					waitMode = 2;
+					if (mode == 1) {
+						beginTransShow(trans);
+						transNowait = elm.nowait;
 					} else if (mode == 2) {
-						//dm("画像消去");
-						doShow = false;
-						var layer = update(kag.fore);
-						beginTransAction(trans, layer, true, elm.nosync);
-					} else if (mode == 1) {
-						//dm("画像表示");
-						doShow = false;
-						var layer = update(kag.fore);
-						beginTransAction(trans, layer, false, elm.nosync);
+						beginTransHide(trans);
+						transNowait = elm.nowait;
 					} else {
-						update(kag.fore);
+						if (transall || trans.transall || isAbsoluteChange) {
+							//dm("色合い変更またはabsolute変更あり");
+							// absolute が変化する場合は強制で全体トランジション
+							if (elm.nosync || trans.nosync) {
+								kag.errorCmd("absolute変化・色変化・transall指定の場合は nosync できません:" + name);
+							}
+							kag.stopAllTransitions();
+							kag.backupLayer(EMPTY, true);
+							env.update(kag.back);
+							beginTransition(trans);
+							waitMode = 0;
+						} else {
+							//dm("absolute変更なし");
+							beginTransUpdate(trans);
+							transNowait = elm.nowait;
+						}
+					}
+				} else {
+					waitMode = 1;
+					if (mode == 1) {
+						beginTransActionShow(trans);
+					} else if (mode == 2) {
+						beginTransActionHide(trans);
+					} else {
+						beginTransActionUpdate(trans);
 					}
 				}
 			}
 			hideMessage(trans);
+
+			var syncMode;
+			if (!env.envinfo.nosynctrans) {
+				syncMode = !elm.nosync && !(trans !== void && trans.nosync);
+			} else {
+				syncMode = elm.sync || (trans !== void && trans.sync);
+			}
+			
+			// シンクロ指定
+			if (waitMode == 1) {
+				// アクショントランス待ち
+				if (syncMode) {
+					if (trans.transwait !== void) {
+						// 時間待ち
+						kag.addTag("wait", %[ time:actionTime + (int)trans.transwait, action:true ]);
+					} else {
+						// アクション待ち
+						kag.addTag("wact", %[ target:actionLayer ]);
+					}
+				}
+			} else if (waitMode == 2) {
+				// 通常トランジション待ち
+				if (syncMode) {
+					if (trans.transwait !== void) {
+						// 時間待ち
+						kag.addTag("wait", %[ time:(int)trans.time + (int)trans.transwait, trans:true ]);
+					} else {
+						// トランジション待ち
+						kag.addTag("wt", %[]);
+						//kag.addTag("wt", %[ target:transLayer ]);
+					}
+				}
+			} else {
+				if (targetLayer !== void && targetLayer.visible) {
+					if (elm.sync) {
+						ret = kag.waitAction(targetLayer);
+					}
+					if (elm.waitmovie) {
+						ret = kag.waitLayerMovie(targetLayer);
+					}
+					if (elm.waitanime) {
+						ret = kag.waitLayerAnimation(targetLayer);
+					}
+				}
+			}
+
 		} else {
 			updateSkip();
 		}
+		//dm("タグ処理完了 targetLayer:" + targetLayer);
+
 		return ret;
 	}
 
+	function createLayer(base) {
+		return new layerClass(base.base.window, base.base, this);
+	}
 }

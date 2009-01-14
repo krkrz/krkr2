@@ -3,58 +3,45 @@
  */
 class KAGEnvBgm {
 	
-    var env;
+	var env;
 	var name;
+	var loop;
+	var paused;
+	var volume;
 	
 	var play;
 	var stop;
 	var pause;
 	var resume;
 	var fade;
-    var wait;
+	var wait;
     var waitFade;
 
     /**
      * セーブ処理
      */
     function onStore(f) {
-		f.name  = name;
-		if (play !== void) {
-			f.play = %[];
-			(Dictionary.assign incontextof f.play)(play, false);
-		}
-		if (stop !== void) {
-			f.stop  = stop;
-		}
-		if (pause !== void) {
-			f.pause  = pause;
-		}
-		if (resume !== void) {
-			f.resume  = resume;
-		}
-		if (fade !== void) {
-			f.fade = %[];
-			(Dictionary.assign incontextof f.fade)(fade, false);
-		}
+		//dm("BGM保存:" + name);
+		f.name = name;
+		f.loop = loop;
+		f.paused = paused;
+		f.volume = volume;
 	}
 
 	function onRestore(f) {
 		if (f !== void) {
+			//dm("BGM復帰:" + f.name);
 			name = f.name;
-			if (f.play !== void) {
-				play = f.play;
-			}
-			if (f.stop !== void) {
-				stop = f.stop;
-			}
-			if (f.pause !== void) {
-				pause = f.pause;
-			}
-			if (f.resume !== void) {
-				resume = f.resume;
-			}
-			if (f.fade !== void) {
-				f.fade = %[];
+			loop = f.loop;
+			paused = f.paused;
+			if (name != "") {
+				setPlay(name, %[loop:loop]);
+				if (f.volume !== void) {
+					fade.volume = f.volume;
+				}
+				if (paused) {
+					setPause(0);
+				}
 			}
 		}
 	}
@@ -71,20 +58,23 @@ class KAGEnvBgm {
      * @param param 再生対象ファイル
      */
     function setPlay(param, elm) {
-        if (param !== void) {
+		if (param !== void) {
 			stop = void;
 			pause = void;
 			resume = void;
-
 			name = param;
+			loop = elm.loop;
+			paused = false;
 			play = %[];
 			(Dictionary.assign incontextof play)(elm, false);
 			if (play.fade === void && play.time === void) {
 				fade = %[];
-				fade.volume = 100;
+				fade.volume = volume = 100;
 			}
 			// 再生既読フラグ
-			kag.sflags["bgm_" + (param.toUpperCase())] = true;
+			if (elm.noflag === void) {
+				kag.sflags["bgm_" + (param.toUpperCase())] = true;
+			}
         }
     }
 
@@ -98,6 +88,7 @@ class KAGEnvBgm {
 		pause = void;
 		resume = void;
 		name = void;
+		paused = false;
 		var time;
 		if (elm !== void && elm.time !== void) {
 			time = +elm.time;
@@ -115,6 +106,7 @@ class KAGEnvBgm {
 		if (name !== void) {
 			resume = void;
 			pause = +param;
+			paused = true;
 		}
     }
 
@@ -125,6 +117,7 @@ class KAGEnvBgm {
 		if (name !== void) {
 			pause = void;
 			resume = true;
+			paused = false;
 		}
     }
 
@@ -134,7 +127,7 @@ class KAGEnvBgm {
      */
 	function setFade(param, elm) {
 		fade = %[];
-		fade.volume = param;
+		fade.volume = volume = +param;
 		fade.time   = elm.time;
     }
 
@@ -181,6 +174,7 @@ class KAGEnvBgm {
     outtime : null,
     overlap : null,
     canskip : null,
+	noflag : null,
         ];
 
     var doflag;
@@ -241,18 +235,20 @@ class KAGEnvBgm {
 				fade = void;
 			}
 			if (play !== void) {
-				var time = +play.time;
-				if (play.noxchg) {
-					if (kag.skipMode == SKIP_NONE && time > 0)  {
-						kag.bgm.fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
+				if (kag.bgm.playingStorage != name) {
+					var time = +play.time;
+					if (play.noxchg) {
+						if (kag.skipMode == SKIP_NONE && time > 0)  {
+							kag.bgm.fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
+						} else {
+							kag.bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
+						}
 					} else {
-						kag.bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
-					}
-				} else {
-					if (kag.skipMode == SKIP_NONE && (time > 0 || +play.intime > 0)) {
-						kag.bgm.exchange(%[ storage:name, loop:play.loop, time:time, intime:play.intime, outtime:play.outtime, overlap:play.overlap, start:play.start]);
-					} else {
-						kag.bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
+						if (kag.skipMode == SKIP_NONE && (time > 0 || +play.intime > 0)) {
+							kag.bgm.exchange(%[ storage:name, loop:play.loop, time:time, intime:play.intime, outtime:play.outtime, overlap:play.overlap, start:play.start]);
+						} else {
+							kag.bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
+						}
 					}
 				}
 				kag.clearBgmStop();

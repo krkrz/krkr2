@@ -1,6 +1,6 @@
 /**
  * レイヤ系基底クラス
- * 画像表示が実装されている
+ * 画像表示処理が実装されている
  */
 class KAGEnvLayer extends KAGEnvImage {
 
@@ -68,8 +68,8 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 	}
 	
-	function KAGEnvLayer(env) {
-		super.KAGEnvImage(env);
+	function KAGEnvLayer(env, name) {
+		super.KAGEnvImage(env, name);
 		redraw = false;
 	}
 
@@ -100,16 +100,6 @@ class KAGEnvLayer extends KAGEnvImage {
 		super.onRestore(f);
     }
 
-	function initFile(elm) {
-		if (elm.type === void) type = void;
-		if (elm.opacity === void) opacity = void;
-		if (elm.rotate === void) rotate = void;
-		if (elm.zoom === void) zoom = void;
-		if (elm.afx === void) afx = void;
-		if (elm.afy === void) afy = void;
-	}
-
-	
 	// 画像ファイルを指定
 	function setImageFile(file, elm) {
 
@@ -127,11 +117,15 @@ class KAGEnvLayer extends KAGEnvImage {
             ypos = void;
         }
 
-		disp = SHOW;
-		redraw = true;
+		if (elm.hide === void) {
+			disp = SHOW;
+			redraw = true;
+		}
 
-        // 記録
-        kag.sflags["cg_" + (file.toUpperCase())] = true;
+		if (elm.noflag === void) {
+			// 記録
+			kag.sflags["cg_" + (file.toUpperCase())] = true;
+		}
 
         return true;
     }
@@ -155,11 +149,15 @@ class KAGEnvLayer extends KAGEnvImage {
 			ypos = void;
         }
 
-		disp = SHOW;
-		redraw = true;
+		if (elm.hide === void) {
+			disp = SHOW;
+			redraw = true;
+		}
 
-		// 記録
-		kag.sflags["movie_" + (file.toUpperCase())] = true;
+		if (elm.noflag === void) {
+			// 記録
+			kag.sflags["movie_" + (file.toUpperCase())] = true;
+		}
 
 		return true;
     }
@@ -184,11 +182,15 @@ class KAGEnvLayer extends KAGEnvImage {
             ypos = void;
 		}
 
-		disp = SHOW;
-        redraw = true;
+		if (elm.hide === void) {
+			disp = SHOW;
+			redraw = true;
+		}
 
-        // 記録
-        kag.sflags["tile_" + (file.toUpperCase())] = true;
+		if (elm.noflag === void) {
+			// 記録
+			kag.sflags["tile_" + (file.toUpperCase())] = true;
+		}
 
         return true;
     }
@@ -203,8 +205,11 @@ class KAGEnvLayer extends KAGEnvImage {
 	tile : function(param, elm) {
 		setTileFile(param, elm);
 	} incontextof this,
+	tilex : null,
+	tiley : null,
 	loop : null,
 	alpha : null,
+	noflag : null,
 	width : function(param, elm) { width = param; } incontextof this,
 	height : function(param, elm) { height = param; } incontextof this,
 		];
@@ -258,13 +263,9 @@ class KAGEnvLayer extends KAGEnvImage {
 		return find;
     }
 
-    // このメソッドを実装する
-    // function getLayer(base);
-    // 
 	function drawLayer(layer) {
 		if (isShowBU()) {
 			if (tileFile !== void) {
-				dm("タイル画像");
 				// タイル画像ロード
 				if (moviePlaying) {
 					layer.stopMovie();
@@ -310,7 +311,7 @@ class KAGEnvLayer extends KAGEnvImage {
 				//dm("ムービーのロード:" + movieFile);
 				layer.clearTile();
 				//try {
-					layer.startMovie(movieFile, movieAlpha, movieLoop);
+					layer.startMovie(movieFile, movieAlpha, movieLoop, type);
 					_width  = layer.width;
 					_height = layer.height;
 					moviePlaying = true;
