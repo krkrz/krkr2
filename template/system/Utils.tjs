@@ -1,5 +1,5 @@
 // Utils.tjs - ユーティリティ関数
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 
 property random
@@ -188,12 +188,12 @@ function number_format(n)
  * @param dict 辞書
  * @func 処理ファンクション func(name, value, dict);
  */
-function foreach(dict, func, param) {
+function foreach(dict, func, *) {
     if (dict) {
         var names = [];
         names.assign(dict);
         for (var i=0; i<names.count; i+= 2) {
-            func(names[i], names[i+1], dict, param);
+            func(names[i], names[i+1], dict, *);
         }
     }
 }
@@ -207,6 +207,8 @@ function getExistImageName(storage)
 	var test;
 	if(!Storages.isExistentStorage(storage)) {
 		if (test = storage + ".png", Storages.isExistentStorage(test))
+			storage = test;
+		else if (test = storage + ".tlg", Storages.isExistentStorage(test))
 			storage = test;
 		else if (test = storage + ".tlg5", Storages.isExistentStorage(test))
 			storage = test;

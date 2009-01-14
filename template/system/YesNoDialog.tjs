@@ -1,5 +1,5 @@
 // YesNoDialog.tjs - はい/いいえを選択するダイアログボックス
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 class YesNoDialogWindow extends Window
 {
@@ -64,13 +64,25 @@ class YesNoDialogWindow extends Window
 		if(global.Window.mainWindow !== null && global.Window.mainWindow isvalid)
 		{
 			var win = global.Window.mainWindow;
-			var l, t;
-			l = ((win.width - width)>>1) + win.left;
-			t = ((win.height - height)>>1) + win.top;
-			if(l < 0) l = 0;
-			if(t < 0) t = 0;
-			if(l + width > System.screenWidth) l = System.screenWidth - width;
-			if(t + height > System.screenHeight) t = System.screenHeight - height;
+			var x1, y1, x2, y2, monitor;
+
+			// モニタ情報の取得
+			if (typeof System.getMonitorInfo != "undefined") {
+				var info = System.getMonitorInfo(true, win);
+				monitor = info.work if (typeof info == "Object");
+			}
+			monitor = %[ x:0, y:0, w:System.screenWidth, h:System.screenHeight ] if (monitor === void);
+			with (monitor) x1=.x, y1=.y, x2=.w+x1, y2=.h+y1;
+
+			// ウィンドウの中央へ
+			var l = (win.width  - width )\2 + win.left;
+			var t = (win.height - height)\2 + win.top;
+
+			// モニタからはみ出ていたら内側へ移動
+			l = x2 - width  if (l + width  > x2);
+			t = y2 - height if (t + height > y2);
+			l = x1          if (l < x1);
+			t = y1          if (t < y1);
 			setPos(l, t);
 		}
 		else

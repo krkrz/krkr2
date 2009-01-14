@@ -1,5 +1,5 @@
 // KAGLayer.tjs - KAG のレイヤの基本クラス
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 /*
  レイヤ関連のクラス階層
@@ -399,7 +399,7 @@ class AnimKAGLayer extends KAGLayer {
         if (animCount !== void && animCount > 0 && animTime > 0) {
             var now = System.getTickCount() - animStartTime;
             var t = ((now / animTime) % animCount) * imageHeight / animCount;
-            if (t < imageHeight - height) {
+            if (t <= imageHeight - height) {
                 imageTop = -t;
             }
         }

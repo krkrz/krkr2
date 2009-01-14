@@ -1,5 +1,5 @@
 // GraphicLayer.tjs - グラフィック系レイヤ(背景,キャラクタ)
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 class ProvinceContext
 {
@@ -509,13 +509,18 @@ class MovieControlLayer extends Layer {
 	}
 
 	// ムービー再生開始
-	function start(filename, alpha, loop) {
+	function start(filename, alpha, loop, ovtype) {
 		openMovie(filename, alpha);
+		type = ovtype if (ovtype !== void);
 		startMovie(loop);
-		for (var i=0;i<layers.count;i++) {
-			layers[i].setImageSize(imageWidth, imageHeight);
-			layers[i].setSizeToImageSize();
-			layers[i].type = type;
+		for (var i=0;i<layers.count;i++) with (layers[i]) {
+			.setImageSize(imageWidth, imageHeight);
+			.setSizeToImageSize();
+			var face = .face;
+			.face = dfBoth;
+			.fillRect(0, 0, imageWidth, imageHeight, 0);
+			.face = face;
+			.type = type;
 		}
 	}
 
@@ -632,11 +637,17 @@ class GraphicLayerEx extends GraphicLayer {
 		dic.tileImage = tileImage;
 		dic.tilex = tilex;
 		dic.tiley = tiley;
+		if (_rasterStart !== void) {
+			dic.rasterMaxh = _rasterMaxh;
+			dic.rasterOmega = _rasterOmega;
+			dic.rasterCycle = _rasterCycle;
+		}
 		return dic;
     }
 
 	function restore(dic)
 	{
+		stopRaster();
 		super.restore(dic);
 		rotate = dic.rotate if dic.rotate !== void; 
 		zoomx  = dic.zoomx  if dic.zoomx  !== void;
@@ -654,6 +665,9 @@ class GraphicLayerEx extends GraphicLayer {
 			}
 			setTilePos(dic.tilex, dic.tiley);
 		}
+		if (dic.rasterMaxh !== void && dic.rasterOmega !== void && dic.rasterCycle !== void) {
+			startRaster(dic.rasterMaxh, dic.rasterOmega, dic.rasterCycle);
+		}
 	}
 
     // --------------------------------------------
@@ -666,12 +680,12 @@ class GraphicLayerEx extends GraphicLayer {
 	/**
 	 * ムービー再生開始
 	 */
-	function startMovie(filename, alpha, loop) {
+	function startMovie(filename, alpha, loop, type) {
 		stopMovie();
 		//dm("ムービー開始");
 		movie = window.getLayerMovie();
 		movie.entry(this);
-		movie.start(filename, alpha, loop);
+		movie.start(filename, alpha, loop, type);
 	}
 
 	/**
@@ -704,6 +718,12 @@ class GraphicLayerEx extends GraphicLayer {
 			movie = src.movie;
 			movie.entry(this);
 		}
+		// タイル情報をコピー
+		clearTile();
+		if (src.tileImage !== void) {
+			setTileImage(src.tileImage);
+			updateTile();
+		}
 		// アクションもコピー
 		window.copyAction(src, this, onActionCompleted);
 	}
@@ -715,18 +735,19 @@ class GraphicLayerEx extends GraphicLayer {
     var hide; // アクション終了時に消去
 
 	function onActionCompleted() {
-		if (hide) {
-			visible = false;
-		}
-		window.onActionCompleted(this);
+		visible = false if (hide);
     }
 
 	function getActionResult() {
 		return window.getActionResult(this);
 	}
 	
-	function beginAction(elm, hide, nowait) {
-		this.hide = hide if hide !== void;
+	function beginAction(elm) {
+		var nowait;
+		if (elm && !(elm instanceof "Array")) {
+			this.hide = elm.hide if elm.hide !== void;
+			nowait = elm.nowait;
+		}
 		return window.beginAction(this, elm, onActionCompleted, nowait);
     }
 
@@ -780,9 +801,9 @@ class GraphicLayerEx extends GraphicLayer {
      * @time 変更にかかる時間
      * @accel 加減速指定
      */
-	function setOpacityTime(o, time, accel=0) {
+	function setOpacityTime(o, time, accel=0, nowait=false) {
 		if (time) {
-			beginAction(%[opacity:%[handler:MoveAction, value:o, time:time, accel:accel]]);
+			beginAction(%[opacity:%[handler:MoveAction, value:o, time:time, accel:accel, nowait:nowait]]);
 		} else {
             opacity = o;
         }
@@ -793,9 +814,9 @@ class GraphicLayerEx extends GraphicLayer {
      * @param r 回転量
      * @time 変更にかかる時間
      */
-    function setRotateTime(r, time, accel=0) {
-        if (time) {
-            beginAction(%[rotate:%[handler:MoveAction, value:r, time:time, accel:accel]]);
+    function setRotateTime(r, time, accel=0, nowait=false) {
+		if (time) {
+			beginAction(%[rotate:%[handler:MoveAction, value:r, time:time, accel:accel, nowait:nowait]]);
         } else {
             rotate = r;
         }
@@ -806,28 +827,44 @@ class GraphicLayerEx extends GraphicLayer {
      * @param zoom 回転量
      * @time 変更にかかる時間
      */
-    function setZoomTime(z, time, accel=0) {
+	function setZoomTime(z, time, accel=0, nowait=false) {
         if (time) {
-			beginAction(%[zoom:%[handler:MoveAction, value:z, time:time, accel:accel]]);
+			beginAction(%[zoom:%[handler:MoveAction, value:z, time:time, accel:accel, nowait:nowait]]);
 		} else {
-            zoom = z;
-        }
-    }
+			zoom = z;
+		}
+	}
 
+    /**
+     * ラスタ量を指定する
+	 * @param raster 回転量
+     * @time 変更にかかる時間
+     */
+	function setRasterTime(r, lines, cycle, time, accel=0, nowait=false) {
+		rasterLines = lines if lines !== void;
+		rasterCycle = cycle if cycle !== void;
+		if (time) {
+			beginAction(%[raster:%[handler:MoveAction, value:r, time:time, accel:accel, nowait:nowait]]);
+		} else {
+			raster = r;
+		}
+    }
+	
     /**
      * 自動移動を指定する
      * @param x X位置
      * @param y Y位置
-     * @param accele 負:減速 0:線形 正:加速
+	 * @param accele 負:減速 0:線形 正:加速
+	 * @param nowait 待たない
      * @time 変更にかかる時間
      */
-    function setMove(x, y, time, accel=0) {
-        if (time) {
+	function setMove(x, y, time, accel=0, nowait=false) {
+		if (time) {
 			beginAction(%[left:%[handler:MoveAction, value:x, time:time, accel:accel],
-					  top:%[handler:MoveAction, value:y, time:time, accel:accel]]);
+					  top:%[handler:MoveAction, value:y, time:time, accel:accel], nowait:nowait]);
         } else {
-            stopAction();
-            setPos(x, y);
+			stopAction();
+			setPos(x, y);
         }
     }
 
@@ -909,77 +946,6 @@ class GraphicLayerEx extends GraphicLayer {
 		_tilex = x;
 		_tiley = y;
 		updateTile();
-	}
-}
-
-class StageLayer extends GraphicLayerEx
-{
-    // 舞台・イベント用特殊固定レイヤ
-
-    function StageLayer(win, par, name, id)
-	{
-		super.GraphicLayerEx(win, par, name, id);
-		type = ltCoverRect;
-		hitType = htMask;
-		hitThreshold = 0;
-	}
-
-	function finalize()
-	{
-		super.finalize(...);
-	}
-
-	function internalOnMouseDown(x, y, button, processprovince = true)
-	{
-		// 内部関数
-		var provinceprocessed = false;
-		if(button == mbLeft && processprovince && !window.messageLayerHiding)
-			provinceprocessed = processProvince(x, y);
-		if(button == mbLeft && !provinceprocessed)
-		{
-            window.onPrimaryClick();
-		}
-		else if(button == mbRight)
-		{
-            window.onPrimaryRightClick();
-		}
-	}
-
-	function onMouseDown(x, y, button)
-	{
-		// マウスが押された
-		super.onMouseDown(...);
-		internalOnMouseDown(x, y, button);
-	}
-    
-	function assign(src)
-	{
-		// assign オーバーライド
-		super.assign(src);
-		assignVisibleState(src);
-	}
-
-	function atEndOfTransition(src, withchildren, exchange)
-	{
-		// atEndOfTransition オーバーライド
-		super.atEndOfTransition(...);
-		if(src == null)
-		{
-			//・ステージレイヤ、イベント絵レイヤが、srcなしでトランジション (children=true)
-			//　何もしなくてよいが、終了後それらの子レイヤは自動的に非表示になる。
-		}
-		else
-		{
-            super.assign(src);
-            exchangeInfo();
-            window.swapStageLayer(id);
-		}
-	}
-
-	function assignTransSrc()
-	{
-		// トランジションもと(comp)をコピーする
-		assign(comp);
 	}
 }
 

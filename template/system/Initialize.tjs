@@ -1,14 +1,5 @@
 // Initialize.tjs - システムの初期化
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
-
-try {
-	Plugins.link("layerExMovie.dll");
-} catch(e) {
-}
-try {
-    Plugins.link("tools/msgreceiver.dll");
-} catch(e) {
-}
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 // ロック区分用
 var lockKey = "";
@@ -22,36 +13,16 @@ var kagVersion = "EX 3.27-dev.20070519";
 
 var dm = Debug.message; // これで dm("message"); でコンソールに message を表示できる
 
-
 /*
-	デフォルトの「捕捉されない例外」ハンドラ
+	デバッグウィンドウが有効かどうか
 */
-if (System.getArgument("-debugwin") != "no") {
 
-System.exceptionHandler = function (e)
-{
-	// どこにも捕捉されない例外がシステム側で捕捉された場合、この関数が
-	// 呼ばれる。e は例外オブジェクト。
-	if(e instanceof "ConductorException")
-	{
-		// コンダクタの投げた例外の場合
-		Debug.logAsError(); // ログのファイルへの書き出し動作の開始など
-		var event_disabled = System.eventDisabled;
-		System.eventDisabled = true;
-			// エラーの理由を表示させている間にイベントが発生すると
-			// やっかいなのでいったんイベント発生を停止させる
-		System.inform(e.message);
-		System.eventDisabled = event_disabled;
-			// イベントを発生するかどうかを元の状態に
-		return true; // true を返すと本体側で例外の処理は行わなくなる
-	}
-	else
-	{
-		return false; // false を返すと通常の例外処理
-	}
-};
+property debugWindowEnabled { getter() { return System.getArgument("-debugwin") != "no"; } }
 
-} else {
+if (!debugWindowEnabled) {
+	/*
+		デフォルトの「捕捉されない例外」ハンドラ
+	 */
 	// リリース時処理
 	System.exceptionHandler = function (e) {
 		Debug.logAsError(); // ログのファイルへの書き出し動作の開始など
@@ -61,6 +32,28 @@ System.exceptionHandler = function (e)
 		System.terminate();
 		return true;
 	};
+} else {
+	// デバッグ時処理
+	System.exceptionHandler = function (e) {
+		// どこにも捕捉されない例外がシステム側で捕捉された場合、この関数が
+		// 呼ばれる。e は例外オブジェクト。
+		if (e instanceof "ConductorException") {
+			// コンダクタの投げた例外の場合
+			Debug.logAsError(); // ログのファイルへの書き出し動作の開始など
+			var event_disabled = System.eventDisabled;
+			System.eventDisabled = true;
+			// エラーの理由を表示させている間にイベントが発生すると
+			// やっかいなのでいったんイベント発生を停止させる
+			System.inform(e.message);
+			System.eventDisabled = event_disabled;
+			// イベントを発生するかどうかを元の状態に
+			return true; // true を返すと本体側で例外の処理は行わなくなる
+		}
+		return false; // false を返すと通常の例外処理
+	};
+
+	// msgreceiver.dll読み込みはデバッグ時のみ
+	try { Plugins.link("tools/msgreceiver.dll"); } catch(e) {}
 };
 
 /*
@@ -102,14 +95,34 @@ function addArchiveWithSubFolder(name, arr*)
 		Storages.addAutoPath(arcname + ">" + sub + "/") if (isexist);
 	}
 }
+
+// サブフォルダ検索パス登録
+function setupSubFolders(list) {
+	var binds = %[], names = [];
+	for (var path, i = 0; i < list.count; i++) {
+		if ((path = list[i]) == "") continue;
+		var div = path.split("/");
+		var name = div[0];
+		if (name == "" || div.count <= 1) continue;
+		div.erase(0);
+		if (binds[name] === void) {
+			binds[name] = [];
+			names.add(name);
+		}
+		binds[name].add(div.join("/",,true));
+	}
+	for (var i = 0; i < names.count; i++) {
+		//dm("setupSubFolders", names[i], binds[names[i]]*);
+		addArchiveWithSubFolder(names[i], binds[names[i]]*);
+	}
+}
+
 // (obsolete) 旧互換用
 function addVoiceArchive(name) {
 	addArchiveWithSubFolder("voice", name);
 }
 
-if (System.getArgument("-debugwin") != "no") {
-	Storages.addAutoPath(System.exePath + "tools/"); // exePath 以下の tools/
-}
+Storages.addAutoPath(System.exePath + "tools/") if debugWindowEnabled; // exePath 以下の tools/
 Storages.addAutoPath(System.exePath + "video/"); // exePath 以下の video/
 Storages.addAutoPath("data/"); // data フォルダ
 Storages.addAutoPath("video/"); // video フォルダ
@@ -278,6 +291,13 @@ property uiloadSystem { getter() { KAGLoadScript("UILoader.tjs"); return global.
 */
 dm("KAG System スクリプトを読み込んでいます...");
 
+// add by takas, modified by miahmie.
+if (typeof global.ratPlayerEnabled != "undefined" && global.ratPlayerEnabled) {
+	KAGLoadScript("RATParser.tjs");
+	KAGLoadScript("RATPlayer.tjs");
+	KAGLoadScript("RATKAGParser.tjs");
+} else global.ratPlayerEnabled = false;
+
 // add by GoWatanabe
 KAGLoadScript("LayerEx.tjs");
 
@@ -296,6 +316,7 @@ KAGLoadScript("SE.tjs");
 KAGLoadScript("Movie.tjs");
 KAGLoadScript("Conductor.tjs");
 
+KAGLoadScript("UpdateRegion.tjs");
 KAGLoadScript("AffineLayer.tjs");
 KAGLoadScript("AnimationLayer.tjs");
 KAGLoadScript("GraphicLayer.tjs");
@@ -307,8 +328,8 @@ KAGLoadScript("MainWindow.tjs");
 
 if(Storages.isExistentStorage("Override.tjs"))
 	KAGLoadScript("Override.tjs");
-if(Storages.isExistentStorage(System.exePath + "Override2.tjs"))
-	KAGLoadScript(System.exePath + "Override2.tjs");
+//if(Storages.isExistentStorage(System.exePath + "Override2.tjs"))
+//	KAGLoadScript(System.exePath + "Override2.tjs");
 
 /*
 	( デバッグ ) 時間計測
@@ -355,6 +376,11 @@ property mp
 }
 
 /*
+	RAT Player の組み込み
+*/
+KAGLoadScript("RATInit.tjs") if (global.ratPlayerEnabled);
+
+/*
 	( デバッグ ) 時間計測
 */
 dm("KAGMainWindow のコンストラクタで " + (System.getTickCount() - parseStartTick) + "ms かかりました");
@@ -366,17 +392,17 @@ delete parseStartTick;
 */
 if(Storages.isExistentStorage("AfterInit.tjs"))
 	KAGLoadScript("AfterInit.tjs");
-if(Storages.isExistentStorage(System.exePath + "AfterInit2.tjs"))
-	KAGLoadScript(System.exePath + "AfterInit2.tjs");
+//if(Storages.isExistentStorage(System.exePath + "AfterInit2.tjs"))
+//	KAGLoadScript(System.exePath + "AfterInit2.tjs");
 
 /*
 	コマンドラインパラメータとして -ovr が指定されていれば
 	そのパラメータを TJS 式として実行
 */
-{
-	var ovr = System.getArgument('-ovr');
-	if(ovr !== void && ovr != 'yes') Scripts.eval(ovr);
-}
+//{
+//	var ovr = System.getArgument('-ovr');
+//	if(ovr !== void && ovr != 'yes') Scripts.eval(ovr);
+//}
 
 /*
 	first.ks の実行

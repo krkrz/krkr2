@@ -1,5 +1,5 @@
 // Conductor.tjs - KAG シナリオ進行処理
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 
 class ConductorException extends Exception
@@ -10,7 +10,29 @@ class ConductorException extends Exception
 	function finalize() { super.finalize(...); }
 };
 
-class BaseConductor extends KAGParser
+// コンダクタ再キック用AsyncTrigger
+class OneShotAsyncTrigger extends AsyncTrigger {
+	var _triggered; // トリガが引かれているかどうか
+	function finalize() {
+		super.finalize(...);
+	}
+	function OneShotAsyncTrigger() {
+		super.AsyncTrigger(...);
+		cached = true; // イベントのキャッシュを有効に
+	}
+	// オーバーライド
+	function trigger() { _triggered = true;  return super.trigger(...); }
+	function cancel()  { _triggered = false; return super.cancel(...); }
+	function onFire()  { _triggered = false; return super.onFire(...); }
+	// トリガーが引かれている状態をコピー
+	function assign(src) {
+		if (src._triggered) trigger();
+		else                cancel();
+	}
+}
+
+global.BaseConductorExtendClass = KAGParser if (typeof global.BaseConductorExtendClass == "undefined");
+class BaseConductor extends global.BaseConductorExtendClass
 {
 	// BaseConductor - シナリオ進行処理のベースクラス
 	var timer;
@@ -34,15 +56,37 @@ class BaseConductor extends KAGParser
 
 	function BaseConductor()
 	{
+		// 親コンストラクタを取得
+		var ctor;
+		if (typeof global.BaseConductor.SuperConstructor != "undefined") {
+			ctor = global.BaseConductor.SuperConstructor;
+		} else {
+			// クラス名一覧
+			var clsnames = [];
+			clsnames.assign(Scripts.getClassNames(this));
+
+			// 親クラスのコンストラクタを取得
+			var pos = clsnames.find("BaseConductor");
+			if (pos >= 0) for (var cnt = clsnames.count; ++pos < cnt;) {
+				if (typeof super[clsnames[pos]] == "Object") {
+					//dm("BaseConductor.super: "+ clsnames[pos]);
+					ctor = super[clsnames[pos]];
+					break;
+				}
+			}
+
+			// キャッシュに保存
+			global.BaseConductor.SuperConstructor = ctor;
+		}
+
 		// コンストラクタ
-		super.KAGParser(...);
+		ctor(...) if (ctor !== void);
 
 		timer = new Timer(timerCallback, '');
 			// Timerの第二引数に空文字列を指定すると
 			// 第１引数に指定した関数を直接呼び出すようになる
-		oneshot = new AsyncTrigger(timerCallback, '');
+		oneshot = new OneShotAsyncTrigger(timerCallback, '');
 			// これも同様
-		oneshot.cached = true; // イベントのキャッシュを有効に
 
 		pendings = [];
 	}
@@ -68,7 +112,7 @@ class BaseConductor extends KAGParser
 		super.clear();
 	}
 
-    function checkTagExtract(cd, elm, voiceMode) {
+    function checkTagExtract(cd, elm, voiceMode, isload) {
         // 特殊タグ展開処理用フック
         return false;
     }
@@ -170,7 +214,7 @@ class BaseConductor extends KAGParser
 						}
 
 						// タグ展開
-						if (checkTagExtract(this, obj)) {
+						if (checkTagExtract(this, obj, false, targetLine !== void)) {
 							continue;
 						} 
 
@@ -415,6 +459,10 @@ class BaseConductor extends KAGParser
 			pendings.assignStruct(src.pendings);
 		else
 			pendings.clear();
+
+		// oneshotの状態もコピー
+		oneshot.assign(src.oneshot);
+
 		super.assign(src);
 	}
 
@@ -486,7 +534,7 @@ class BaseConductor extends KAGParser
 					runLine = curLine;
 				}
 				enqueueTag(%[tagname:"count"]);
-				if (!checkTagExtract(this, obj, true)) {
+				if (!checkTagExtract(this, obj, true, true)) {
 					var e = %[];
 					(Dictionary.assign incontextof e)(obj, false);
 					enqueueTag(e);
@@ -616,8 +664,8 @@ class Conductor extends BaseConductor
 		super.finalize(...);
 	}
 
-    function checkTagExtract(cd, elm, voiceMode) {
-        return owner.checkTagExtract(cd, elm, voiceMode);
+    function checkTagExtract(cd, elm, voiceMode, isload) {
+		return owner.checkTagExtract(cd, elm, voiceMode, isload);
     }
 
 	function run(immediate = false)

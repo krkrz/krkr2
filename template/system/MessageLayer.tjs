@@ -1,5 +1,5 @@
 //;# MessageLayer.tjs - メッセージレイヤ
-//;# Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+//;# Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 //;<<'END_OF_TJS_SCRIPT';
 
 // このスクリプトは有効な perl5 スクリプトでもあって、
@@ -58,7 +58,13 @@ class LinkButtonLayer extends ButtonLayer
 	function onMouseEnter()
 	{
 		parent.keyLink = linkNum;
-		parent.focus() if (window.focusedLayer === null);
+		if (window.focusedLayer === null) with (parent) {
+			// 一時的に親をロックしてフォーカス
+			var lock = .selProcessLock;
+			.selProcessLock = true;
+			.focus();
+			.selProcessLock = lock;
+		}
 		if(!parent.selProcessLock && onenter !== void) Scripts.eval(onenter);
 		super.onMouseEnter(...);
 	}
@@ -219,8 +225,9 @@ class LinkCheckBoxLayer extends CheckBoxLayer
 
 	function commit()
 	{
+		if (exp == "") return;
 		kag.inputTemp = checked;
-		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+		try { Scripts.eval(("(" + exp + ") = kag.inputTemp")); } catch {}
 	}
 
     function onChange(checked)
@@ -310,8 +317,9 @@ class LinkEditLayer extends EditLayer
 
 	function commit()
 	{
+		if (exp == "") return;
 		kag.inputTemp = text;
-		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+		try { Scripts.eval(("(" + exp + ") = kag.inputTemp")); } catch {}
 	}
 
 	function onMouseDown(x, y, button)
@@ -375,15 +383,16 @@ class LinkSliderLayer extends SliderLayer
 	}
 
 	function onFocus(prevfocused, direction)
-        {
+    {
         parent.keyLink = linkNum;
         super.onFocus(...);
 	}
 
 	function commit()
 	{
+		if (exp == "") return;
 		kag.inputTemp = position;
-		Scripts.eval(("(" + exp + ") = kag.inputTemp"));
+		try { Scripts.eval(("(" + exp + ") = kag.inputTemp")); } catch {}
 	}
 
     function onChange(position, dragging)
@@ -497,6 +506,8 @@ class SystemButtonLayer extends ButtonLayer
         noStable = src.noStable;
         enabled = src.enabled;
 		hint = src.hint;
+		hitType  = src.hitType;
+		absolute = src.absolute if (src.absoluteOrderMode);
     }
 }
 
@@ -505,103 +516,99 @@ class SystemButtonLayer extends ButtonLayer
  */
 class RelativeLayer extends AnimKAGLayer
 {
-    var owner;
-    
-    var _visible;
-    property visible {
-        setter(v) {
-            _visible = v;
-            super.visible = owner.visible && _visible;
-        }
-        getter() {
-            return _visible;
-        }
-    }
+	var owner;
 
-    var _absolute;
-    property absolute {
-        setter(v) {
-            _absolute = v;
-            super.absolute = owner.absolute + _absolute;
-        }
-        getter() {
-            return _absolute;
-        }
-    }
+	var _visible;
+	property visible {
+		getter()  { return _visible; }
+		setter(v) {
+			_visible = v;
+			v = v && owner.visible if (!_noRelative);
+			super.visible = v;
+		}
+	}
+
+	var _absolute;
+	property absolute {
+		getter()  { return _absolute; }
+		setter(v) {
+			_absolute = v;
+			v += owner.absolute if (!_noRelative);
+			super.absolute = v;
+		}
+	}
+
+	var _noRelative;
+	property noRelative {
+		getter()  { return _noRelative; }
+		setter(v) {
+			_noRelative = v;
+			rerelative();
+			repos();
+		}
+	}
 
     // 原点補正処理
-    var _originMode = 0;
-    property originMode {
-        setter(v) {
-            _originMode = v;
-            left = left;
-            top = top;
-        }
-        getter() {
-            return _originMode;
-        }
-    }
-    
-    var _left;
-    property left {
-        setter(v) {
-            _left = v;
-            switch (_originMode) {
-            case 0:
-            case 6:
-            case 7:
-                super.left = owner.left + owner.diffx + _left;
-                break;
-            case 1:
-            case 5:
-            case 8:
-                super.left = owner.left + owner.diffx + _left - width / 2;
-                break;
-            case 2:
-            case 3:
-            case 4:
-                super.left = owner.left + owner.diffx + _left - width;
-                break;
-            }
-        }
-        getter() {
-            return _left;
-        }
-    }
+	var _originMode = 0;
+	property originMode {
+		getter()  { return _originMode; }
+		setter(v) {
+			_originMode = v;
+			repos();
+		}
+	}
 
-    var _top;
-    property top {
-        setter(v) {
-            _top = v;
-            switch (_originMode) {
-            case 0:
-            case 1:
-            case 2:
-                super.top = owner.top + owner.diffy + _top;
-                break;
-            case 3:
-            case 7:
-            case 8:
-                super.top = owner.top + owner.diffy + _top - height / 2;
-                break;
-            case 4:
-            case 5:
-            case 6:
-                super.top = owner.top + owner.diffy + _top - height;
-                break;
-            }
-        }
-        getter() {
-            return _top;
-        }
-    }
+	property baseLeft { getter { return _noRelative ? 0 : owner.left + owner.diffx; } }
+	property baseTop  { getter { return _noRelative ? 0 : owner.top  + owner.diffy; } }
 
-    function setPos(l, t, w=void, h=void) {
-        left = (int)l;
-        top  = (int)t;
-        width  = (int)w if w !== void;
-        height = (int)h if h !== void;
-    }
+	var _left;
+	property left {
+		setter(v) {
+			var x = baseLeft + (_left = +v);
+			switch (_originMode) {
+			case 0: case 7: case 6:                 break;
+			case 1: case 8: case 5: x -= width / 2; break;
+			case 2: case 3: case 4: x -= width;     break;
+			}
+			super.left = x;
+		}
+		getter() {
+			return _left;
+		}
+	}
+
+	var _top;
+	property top {
+		setter(v) {
+			var y = baseTop + (_top = +v);
+			switch (_originMode) {
+			case 0: case 1: case 2:                  break;
+			case 7: case 8: case 3: y -= height / 2; break;
+			case 6: case 5: case 4: y -= height;     break;
+			}
+			super.top = y;
+		}
+		getter() {
+			return _top;
+		}
+	}
+
+	function setPos(l, t, w=void, h=void) {
+		super.width  = (int)w if w !== void;
+		super.height = (int)h if h !== void;
+		left = (int)l;
+		top  = (int)t;
+	}
+	function setSize() {
+		super.setSize(...);
+		repos();
+	}
+	function setSizeToImageSize() {
+		super.setSizeToImageSize(...);
+		repos();
+	}
+	property width  { getter { return super.width;  } setter(v) { super.width  = v; repos(); } }
+	property height { getter { return super.height; } setter(v) { super.height = v; repos(); } }
 
 	function assignImages(src, copyvisiblestate = false)
 	{
@@ -612,6 +619,10 @@ class RelativeLayer extends AnimKAGLayer
             opacity  = src.opacity;
             absolute = src.absolute if !src.isPrimary && src.parent.absoluteOrderMode;
             _originMode = src._originMode;
+			if (_noRelative != src._noRelative) {
+				_noRelative  = src._noRelative;
+				rerelative();
+			}
             su.type = src.type;
             setPos(src.left, src.top, src.width, src.height);
             su.setImagePos(src.imageLeft, src.imageTop);
@@ -620,29 +631,42 @@ class RelativeLayer extends AnimKAGLayer
 
 	function loadImages(storage, key)
 	{
-        var ret = super.loadImages(...);
-        top  = top;
-        left = left;
+		var ret = super.loadImages(...);
+		repos();
+		return ret;
+	}
+	function repos() {
+		top  = _top;
+		left = _left;
+	}
+	function rerelative() {
+		parent   = _noRelative ? owner : owner.parent;
+		absolute = absolute;
 	}
 
 	function store() {
-        var dic = super.store();
-        dic.originMode = originMode;
-        return dic;
-    }
-    
-    function restore(dic) {
-        originMode = dic.originMode if dic.originMode !== void;
-        super.restore(dic);
-    }
-    
-    function RelativeLayer(owner) {
-        this.owner = owner;
-        super.AnimKAGLayer(owner.window, owner.parent);
-        setPos(0,0,8,8);
-        absolute = 1;
-        visible = false;
-    }
+		var dic = super.store();
+		dic.originMode = originMode;
+		dic.noRelative = noRelative;
+		return dic;
+	}
+
+	function restore(dic) {
+		super.restore(dic);
+		_originMode = dic.originMode if dic.originMode !== void;
+		_noRelative = dic.noRelative if dic.noRelative !== void;
+		rerelative();
+		repos();
+	}
+
+	function RelativeLayer(owner) {
+		this.owner = owner;
+		super.AnimKAGLayer(owner.window, owner.parent);
+		_noRelative = false;
+		setPos(0,0,8,8);
+		absolute = 1;
+		visible = false;
+	}
 }
 
 class NameLayer extends RelativeLayer
@@ -658,47 +682,56 @@ class NameLayer extends RelativeLayer
      * @param text 表示テキスト
      */
     function draw(x, y, text) {
-		with (owner) {
-			if (.edge)       drawText(x, y, text, .chColor, 255, .antialiased, 512, .edgeColor, .edgeExtent, 0, 0); // 文字
-			else if(.shadow) drawText(x, y, text, .chColor, 255, .antialiased, 255, .shadowColor, 0, .shadowOffsetX, .shadowOffsetY); // 文字
-			else             drawText(x, y, text, .chColor, 255, .antialiased); // 文字
-		}
+		with (owner) .drawTextToLayer(this, x, y, text, .chColor);
     }
 
 	// テキストの横方向アライン (-1:左, 0:中央, 1:右
 	var align = -1;
 
-    /**
-     * 名前処理
-     */
-    function processName(text) {
-        if (owner.nameImageMap !== void ) {
-            if (text != "") {
-                var image = owner.nameImageMap[text];
-                if (image === void) {
-                    image = owner.defaultNameImage;
-                }
-                loadImages(image);
-                visible = true;
-            } else {
-                visible = false;
-            }
-        } else {
-            if (text != "") {
-                fillRect(0, 0, width, height, 0);
-				var x = 0;
-				if (align >= 0) {
-					var w = font.getTextWidth(text);
-					x = width - w;
-					x \= 2 if (align == 0);
-				}
-                draw(x, 0, text);
-                visible = true;
-            } else {
-                visible = false;
-            }
-        }
-    }
+	/**
+	 * 名前処理
+	 */
+	function processName() {
+		if (owner.nameImageMap !== void) processNameImage(...);
+		else                             processNameText( ...);
+	}
+
+	/**
+	 * 名前処理（テキスト版）
+	 */
+	function processNameText(text) {
+		if (text != "") {
+			fillRect(0, 0, width, height, 0);
+			var x = 0;
+			if (align >= 0) {
+				var w = font.getTextWidth(text);
+				x = width - w;
+				x \= 2 if (align == 0);
+			}
+			draw(x, 0, text);
+			visible = true;
+		} else {
+			visible = false;
+		}
+	}
+
+	/**
+	 * 名前処理（画像版）
+	 */
+	function processNameImage(text) {
+		if (text != "") {
+			var image = owner.nameImageMap[text];
+			// 見つからない場合はデフォルトを使用
+			if (image == "") image = owner.defaultNameImage;
+			// それでも画像がない場合はテキストで
+			if (image == "") return processNameText(...);
+			loadImages(image);
+			visible = true;
+		} else {
+			visible = false;
+		}
+	}
+	
 }
 
 class FaceLayer extends RelativeLayer
@@ -877,7 +910,7 @@ class MessageLayer extends AnimKAGLayer
                 "ゞ々’”）〕］｝〉》」』】°′″℃￠％‰　"; // 行頭禁則文字
 	var wwFollowingWeak="!.?､･ｧｨｩｪｫｬｭｮｯｰ・？！ーぁぃぅぇぉっゃゅょゎァィ"
                 "ゥェォッャュョヮヵヶ"; // 行頭(弱)禁則文字
-	var wwLeading="\\$([{｢‘“（〔［｛〈《「『【￥＄￡"; // 行末禁則文字
+    var wwLeading="\\$([{｢‘“（〔［｛〈《「『【￥＄￡"; // 行末禁則文字
 
 	wwFollowing += wwFollowingWeak;
 
@@ -914,8 +947,16 @@ class MessageLayer extends AnimKAGLayer
     /*C*/var linkFilled; // リンク領域画像を塗りつぶしたかどうか
 	/*C*/var numLinks = 0; // レイヤ内のリンクの数
 
-	var lastLink = -1; // 最後に選択したリンク番号
-	var keyLink = -1; // キーボードで選択したリンク番号
+	var lastLink = -1; // 最後に選択したリンク番号（ハイライト描画オフ用）
+	var _keyLink = -1; // キーボードで選択したリンク番号（keyLinkはproperty化：lastKeyLinkと２重に持つ）
+	var lastKeyLink = -1; // キーボードで最後に選択したリンク番号（再選択用）
+	property keyLink {
+		getter { return _keyLink; }
+		setter(v) {
+			_keyLink = v;
+			lastKeyLink = v if (v >= 0);
+		}
+	}
 	var inLink = -1; // リンクを描画中か
 	var highlightLayer; // リンクを強調表示するためのレイヤ
 	/*C*/var selProcessLock = false; // process 後にリンクが操作されるのを防ぐためのフラグ
@@ -966,17 +1007,20 @@ class MessageLayer extends AnimKAGLayer
 	/*CS*/var edgeEmphasis = 512; // 袋文字の強調度
 	/*CS*/var shadowOffsetX = 2; // 影のオフセット
 	/*CS*/var shadowOffsetY = 2; // 影のオフセット
+	/*CS*/var shadowWidth   = 0; // 影ぼかし度
 
 	/*C*/var sizeChanged = false; // フォントサイズが変更されると true
 
 	/*C*/var nextClearFlag = false; // 下端に達したとき、次の文字表示でレイヤをクリアするかどうか
 
 	var lineLayer; // 行描画用のレイヤ
+	var textLayer; // テキストを保持するレイヤ(optional) ⇒ hasTextLayerプロパティを参照
 	/*C*/var lineLayerBase; // ベースライン(横書き:下線位置/縦書き:中央位置)
 	/*C*/var lineLayerPos; // lineLayer 中の文字表示位置
 	/*C*/var lineLayerLength; // lineLayer 中の文字幅
 	/*C*/var lineLayerOriginX; // 表示オフセットX
 	/*C*/var lineLayerOriginY; // 表示オフセットY
+	/*C*/var lineLayerPadding = 4; // 上下左右の余白ドット分（袋文字・影描画用）
 	var lineLayerLinks = []; // lineLayer が管理しているリンク
 
 	/*C*/var align=-1; // -1=左/上そろえ  0=中央揃え   1=右/下そろえ
@@ -1248,8 +1292,8 @@ class MessageLayer extends AnimKAGLayer
             nameLayer.type = layerType;
             nameLayer.name = name + ":名前";
             nameLayer.hitType = htProvince;
-            resetNameLayerFont();
         }
+		resetNameLayerFont();
     }
 
     function invalidateNameLayer() {
@@ -1282,6 +1326,7 @@ class MessageLayer extends AnimKAGLayer
         invalidate highlightLayer;
         invalidate lineLayer;
         invalidate timeoutTimer if timeoutTimer !== void;
+        invalidate textLayer if (textLayer !== void);
 
         super.finalize();
         
@@ -1295,15 +1340,11 @@ class MessageLayer extends AnimKAGLayer
 
 	function setCompLayer(lay) { comp = lay; }
 
-    function clearLayer(all)
+	function redrawFrame(force = false)
 	{
-		// レイヤをクリア
-		window.updateBeforeCh = 1;
-
-		cancelDrag();
-
-		if(imageModified)
+		if(imageModified || force)
 		{
+			window.updateBeforeCh = 1;
 			if(frameGraphic == "")
 			{
 				// フレーム画像が指定されていない場合
@@ -1325,6 +1366,13 @@ class MessageLayer extends AnimKAGLayer
                 var anim = sf === void || sf.frameanimation === void || sf.frameanimation;
                 loadImages(frameGraphic, frameKey, frameAnimCount, anim ? frameAnimTime : 0);
                 setSizeToImageSize();
+
+				// frameOpacityを適用する
+				if (frameOpacity < 255) {
+					face = dfAlpha;
+					colorRect(0, 0, imageWidth, imageHeight, 0, -255 + frameOpacity);
+					face = dfAuto;
+				}
 			}
 
 			face = dfProvince;
@@ -1333,6 +1381,17 @@ class MessageLayer extends AnimKAGLayer
 		}
 
 		imageModified = false;
+	}
+
+    function clearLayer(all)
+	{
+		// レイヤをクリア
+		window.updateBeforeCh = 1;
+
+		cancelDrag();
+
+		redrawFrame();
+		clearTextLayer();
 
 		invalidateLinkObjects(); // リンクに関連づけられたオブジェクトを無効化
 
@@ -1343,7 +1402,7 @@ class MessageLayer extends AnimKAGLayer
 		inLink = -1;
 		highlightLink(lastLink, false); // ハイライトを消す
 		highlightLayer.visible = false;
-		lastLink = -1;
+		lastLink = lastKeyLink = -1;
 		keyLink = -1;
 		linkFilled = false;
 		lastDrawnCh = ""; // 最後に描画した文字
@@ -1374,6 +1433,7 @@ class MessageLayer extends AnimKAGLayer
 		setSizeToImageSize();
 
         frameGraphic = elm.frame if elm.frame !== void;
+		frameOpacity = 255       if elm.frame !=  ""; // frameGraphicが指定された時はframeOpacityを初期化する（互換用）
         frameKey = elm.framekey if elm.framekey !== void;
         frameAnimCount = elm.frame !== void ? +elm.animcount : void; // frame 指定があれば初期化
         frameAnimTime  = elm.frame !== void ? +elm.animtime : void;
@@ -1413,6 +1473,7 @@ class MessageLayer extends AnimKAGLayer
             faceLayer.height   = +elm.faceheight if elm.faceheight !== void;
             faceLayer.absolute = +elm.faceabsolute if elm.faceabsolute !== void;
             faceLayer.originMode = +elm.faceorigin if elm.faceorigin !== void;
+			faceLayer.noRelative = +elm.faceindepend if elm.faceindepend !== void;
         } else {
             invalidateFaceLayer();
         }
@@ -1422,7 +1483,10 @@ class MessageLayer extends AnimKAGLayer
 
         // 消去
         clear(true);
-    }
+
+		// 追加 edge 太さ指定
+		edgeExtent = +elm.edgeextent if elm.edgeextent !== void;
+	}
 
 	function clear(all=false)
 	{
@@ -1522,7 +1586,9 @@ class MessageLayer extends AnimKAGLayer
 			relinexpos = imageWidth - marginR - marginRCh * _fontSize;
         else
             relinexpos = imageHeight - marginB - marginRCh * _fontSize;
-    }
+
+		resetNameLayerFont();
+	}
 
 	function setFont(elm)
 	{
@@ -1745,7 +1811,7 @@ class MessageLayer extends AnimKAGLayer
 		else
 			// 縦書き
 			// 中央線(レイヤ左端からの位置)
-			return 4 + (lineSize>>1);
+			return lineLayerPadding + (lineSize>>1);
 	}
 
 	function initLineLayer()
@@ -1757,13 +1823,13 @@ class MessageLayer extends AnimKAGLayer
 		lineLayerOriginX = x;
 		lineLayerOriginY = y;
 		if(!vertical)
-			ll.imageWidth = imageWidth + 8;
+			ll.imageWidth = imageWidth + lineLayerPadding*2;
 		else
-			ll.imageHeight = imageHeight + 8;
+			ll.imageHeight = imageHeight + lineLayerPadding*2;
 		ll.setSizeToImageSize();
 		changeLineSize(/*forceresize=*/true);
 		lineLayerLength = 0;
-		lineLayerPos = 4;
+		lineLayerPos = lineLayerPadding;
 		ll.visible = false;
 		ll.face = dfAuto;
 		var lliw = ll.imageWidth;
@@ -1776,6 +1842,48 @@ class MessageLayer extends AnimKAGLayer
 			// 領域をクリア
 	}
 
+	// テキストレイヤの有無を取得・設定するプロパティ（redrawFrameを直で呼ぶような特殊用途用）
+	// ※MessageLayer_configで設定すると非常に問題があるので，AfterInitなどで個別に設定してください
+	property hasTextLayer {
+		getter { return textLayer !== void; }
+		setter(v) {
+			if        ( v && textLayer === void) {
+				textLayer = new global.KAGLayer(window, this);
+				with (textLayer) {
+					.hitType = htMask;
+					.hitThreshold = 256; // マウスメッセージは全域透過
+					.type = layerType;
+					.name = "テキスト描画用レイヤ";
+					.order = lineLayer.order if (lineLayer !== void);
+
+					setSizeToImageSize(); // サイズ同期
+					clearTextLayer();
+					.visible = true;
+				}
+			} else if (!v && textLayer !== void) {
+				invalidate textLayer;
+				textLayer = void;
+			}
+		}
+	}
+	function clearTextLayer() {
+		if (hasTextLayer) with (textLayer) {
+			.face = dfAuto;
+			.fillRect( 0, 0, .imageWidth, .imageHeight, 0);
+			.face = dfProvince;
+			.colorRect(0, 0, .imageWidth, .imageHeight, 0); // 領域もクリア
+			.face = dfAuto;
+		}
+	}
+	function setSizeToImageSize() {
+		super.setSizeToImageSize();
+		// textLayerのサイズを同期する
+		if (hasTextLayer) with (textLayer) {
+			.setImageSize(width, height);
+			.setSizeToImageSize();
+		}
+	}
+
 	function fixLineLayer()
 	{
 		// lineLayer を現在の表示位置に確定
@@ -1785,22 +1893,20 @@ class MessageLayer extends AnimKAGLayer
 		var llox = lineLayerOriginX + getLineLayerLeftOffset();
 		var lloy = lineLayerOriginY + getLineLayerTopOffset();
 
-        face = dfAuto;
-        if (animCount > 0) {
-            for (var j=0;j<animCount;j++) {
-                operateRect(
-                    llox,
-                    lloy + height * j,
-                    ll, 0, 0, ll.imageWidth, ll.imageHeight);
-            }
-        } else {
-            operateRect(
-                llox,
-                lloy,
-                ll, 0, 0, ll.imageWidth, ll.imageHeight);
-        }
-        
-		face = dfProvince;
+		var target =   hasTextLayer ? textLayer : this; // 描画先
+		var cnt    = (!hasTextLayer && animCount > 0) ? animCount : 1; // コピー枚数
+
+		// lineLayerを描画
+		target.face = dfAuto;
+		for (var j=0;j<cnt;j++) {
+			target.operateRect(
+				llox,
+				lloy + height * j,
+				ll, 0, 0, ll.imageWidth, ll.imageHeight);
+		}
+
+		// ハイパーリンク領域を設定
+		target.face = dfProvince;
 		var i;
 		var lll = lineLayerLinks;
 		var lllcount = lll.count;
@@ -1816,15 +1922,12 @@ class MessageLayer extends AnimKAGLayer
 			var h = linkn.h[l];
 			linkn.fixed[l] = true; // 固定された
 
-            if (animCount > 0) {
-                for (var j=0;j<animCount;j++) {
-                    colorRect(x, y + height * j, w, h, n+1); // このレイヤの該当する部分を塗りつぶす
-                }
-            } else {
-                colorRect(x, y, w, h, n+1); // このレイヤの該当する部分を塗りつぶす
-            }
+			for (var j=0;j<cnt;j++) {
+				target.colorRect(x, y + height * j, w, h, n+1); // このレイヤの該当する部分を塗りつぶす
+			}
 		}
 
+		target.face = dfAuto;
 		ll.visible = false;
 	}
 
@@ -1847,7 +1950,7 @@ class MessageLayer extends AnimKAGLayer
 			newlinelayersize += rubySize+rubyOffset - lineSpacing;
 		}
 
-		newlinelayersize += 8; // 袋文字・影描画用の余裕
+		newlinelayersize += lineLayerPadding*2; // 袋文字・影描画用の余裕
 		if(!vertical)
 		{
 			// 横書きの場合
@@ -1949,15 +2052,15 @@ class MessageLayer extends AnimKAGLayer
 		if(!vertical)
 		{
 			if(align == -1)
-				return -4;
+				return -lineLayerPadding;
 			else if(align == 0)
-				return ((imageWidth - marginR - marginL - lineLayerLength)>>1) - 4;
+				return ((imageWidth - marginR - marginL - lineLayerLength)>>1) - lineLayerPadding;
 			else if(align == 1)
-				return imageWidth - marginR - marginL - lineLayerLength - 4;
+				return imageWidth - marginR - marginL - lineLayerLength - lineLayerPadding;
 		}
 		else
 		{
-			return -lineSize - lineSpacing - 4;
+			return -lineSize - lineSpacing - lineLayerPadding;
 		}
 	}
 
@@ -1966,17 +2069,17 @@ class MessageLayer extends AnimKAGLayer
 		// 行描画用レイヤ内での上オフセットを取得
 		if(!vertical)
 		{
-			return -(lineLayer.imageHeight - 4 - lineSize - lineSpacing);
+			return -(lineLayer.imageHeight - lineLayerPadding - lineSize - lineSpacing);
 		}
 		else
 		{
 			if(align == -1)
-				return -4;
+				return -lineLayerPadding;
 			else if(align == 0)
-				return ((imageHeight - marginB - marginT - lineLayerLength)>>1) - 4;
+				return ((imageHeight - marginB - marginT - lineLayerLength)>>1) - lineLayerPadding;
 			else if(align == 1)
-				return imageHeight - marginB - marginT - lineLayerLength - 4;
-			return -4;
+				return imageHeight - marginB - marginT - lineLayerLength - lineLayerPadding;
+			return -lineLayerPadding;
 		}
 	}
 
@@ -2099,12 +2202,7 @@ class MessageLayer extends AnimKAGLayer
 			dx = int(lineLayerPos), dy = int(lineLayerBase-fontSize);
 
 
-		if(edge)
-			ll.drawText(dx, dy, ch, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // 文字
-		else if(shadow)
-			ll.drawText(dx, dy, ch, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
-		else
-			ll.drawText(dx, dy, ch, chColor, 255, antialiased); // 文字
+		drawTextToLayer(ll, dx, dy, ch, chColor);
 
 		if(currentRuby != "")
 		{
@@ -2125,12 +2223,7 @@ class MessageLayer extends AnimKAGLayer
 				ry = int(dy + (cw>>1) - (rw>>1));
 			}
 
-			if(edge)
-				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // 文字
-			else if(shadow)
-				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
-			else
-				ll.drawText(rx, ry, currentRuby, chColor, 255, antialiased); // 文字
+			drawTextToLayer(ll, rx, ry, currentRuby, chColor);
 
 			llfont.height = orgsize;
 			currentRuby = '';
@@ -2166,6 +2259,70 @@ class MessageLayer extends AnimKAGLayer
 		adjustAlign() if(align >= 0);
 
 		return false;
+	}
+	function drawTextToLayer(lay, x, y, text, color) {
+		var dt = lay.drawText;
+		if (!vertical && edge && antialiased && typeof lay.drawString != "undefined") drawTextToLayerGdiPlus(...); // layerExDraw拡張
+		else if(edge)   dt(x, y, text, color, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0);
+		else if(shadow) dt(x, y, text, color, 255, antialiased, 255, shadowColor, shadowWidth, shadowOffsetX, shadowOffsetY);
+		else            dt(x, y, text, color, 255, antialiased);
+	}
+	function drawTextToLayerGdiPlus(lay, x, y, text, color) {
+		if (typeof lay.__gdiplusfontapp == "undefined") {
+			/**/   lay.__gdiplusfontapp = %[
+			appCache: %[], fontCache: %[],
+			appTags: [ "edge",   "edgeColor",   "edgeExtent",
+					   "shadow", "shadowColor", "shadowWidth",
+					   "shadowOffsetX", "shadowOffsetY" ],
+			fontTags:[ "height", "bold", "italic", "strikeout", "underline" ],
+			getcolor: function (col, al=(col>>24)&0xFF) { return (al > 0) ? col : (0xFF000000 | col & 0x00FFFFFF);  },
+			check: function(base, list, dic) {
+				for (var tag, i = list.count-1; i >= 0; i--)
+					if ((tag = list[i]) != "" && dic[tag] !== base[tag]) return true;
+			},
+			update: function(base, list, dic) {
+				for (var tag, i = list.count-1; i >= 0; i--)
+					if ((tag = list[i]) != "") dic[tag] = base[tag];
+			} ];
+		}
+		var info = lay.__gdiplusfontapp, lf = lay.font, gp = global.GdiPlus;
+		with (info) {
+			.app  = new gp.Appearance() if (typeof .app  == "undefined");
+			var app = .app;
+			if (.color !== color || .check(this, .appTags, .appCache)) {
+				.color  =  color,  .update(this, .appTags, .appCache);
+				app.clear();
+				if (shadow) {
+					app.addPen(  .getcolor(shadowColor), shadowWidth, shadowOffsetX, shadowOffsetY) if (shadowWidth > 0);
+					app.addBrush(.getcolor(shadowColor),              shadowOffsetX, shadowOffsetY);
+				}
+				app.addPen(      .getcolor(edgeColor  ), edgeExtent,  0, 0) if (edge);
+				app.addBrush(    .getcolor(color      ),              0, 0);
+			}
+			var noFont   = (typeof .font == "undefined");
+			var faceChgd = (.face !== lf.face);
+			if (noFont  || faceChgd || .check(lf, .fontTags, .fontCache)) {
+				.face = lf.face,      .update(lf, .fontTags, .fontCache);
+				var style = lf.bold ? gp.FontStyleBold : gp.FontStyleRegular;
+				style |= gp.FontStyleItalic    if (lf.italic);
+				style |= gp.FontStyleUnderline if (lf.underline);
+				style |= gp.FontStyleStrikeout if (lf.strikeout);
+				if (noFont) {
+					.font = new gp.Font(.face, lf.height, style);
+				} else {
+					.font.familyName = .face if (faceChgd);
+					.font.emSize = lf.height;
+					.font.style  = style;
+				}
+			}
+			if (text == "") return;
+			var gtw=lf.getTextWidth, ds=lay.drawString;
+			var font=.font, fw=0, fh=.size, len=text.length;
+			for (var i = 0; i < len; i++, x+=fw) {
+				var ch = text.charAt(i);
+				ds(font, app, x-(fh*100/600)-((fw=gtw(ch))*10/600), y, ch);
+			}
+		}
 	}
 
 	function putGraph(storage, key, ischar)
@@ -2244,7 +2401,7 @@ class MessageLayer extends AnimKAGLayer
 			{
 				// 影
 				lay.fillRect(0, 0, lw, lh, shadowColor);
-				lineLayer.operateRect(cx+2, cy+2, lay, 0, 0, lw, lh);
+				lineLayer.operateRect(cx+shadowOffsetX, cy+shadowOffsetY, lay, 0, 0, lw, lh);
 			}
 
 		}
@@ -2336,12 +2493,7 @@ class MessageLayer extends AnimKAGLayer
 		var dx = lineLayerBase - (cw>>1);
 		var dy = lineLayerPos;
 
-        if(edge)
-			ll.drawText(dx, dy, text, chColor, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0); // 文字
-		else if(shadow)
-			ll.drawText(dx, dy, text, chColor, 255, antialiased, 255, shadowColor, 0, shadowOffsetX, shadowOffsetY); // 文字
-		else
-			ll.drawText(dx, dy, text, chColor, 255, antialiased); // 文字
+		drawTextToLayer(ll, dx, dy, text, chColor);
 
 		// 描画おわり
 		lastDrawnCh="";
@@ -2463,10 +2615,10 @@ class MessageLayer extends AnimKAGLayer
 		// サウンドを鳴らすための式を作成する
 		// exp になにか式があった場合はカンマでつなぐ
 		// この仕様は後で変更するかも
-		if(storage === void) return exp;
+		if(storage == "") return exp;
 		if(buf === void) buf = 0;
 		var seexp = "(kag.se["+buf+"].play(%[storage:\"" + storage.escape() +"\"]))";
-		if(exp !== void)
+		if(exp != "")
 			exp = seexp + ",("+exp+")";
 		else
 			exp = seexp;
@@ -2528,7 +2680,11 @@ class MessageLayer extends AnimKAGLayer
 				i = lineLayer.getProvincePixel(x - lineLayer.left, y - lineLayer.top);
 			}
 		}
-		if(i == 0) i = getProvincePixel(x, y);
+		if(i == 0) {
+			// textLayerがある場合はそちらから取得
+			var target = hasTextLayer ? textLayer : this;
+			i = target.getProvincePixel(x, y);
+		}
 		if(i == -1) return -1;
 		if(i != 0) return i - 1;
 		return -1;
@@ -2569,7 +2725,7 @@ class MessageLayer extends AnimKAGLayer
                 object.groupName = elm.group;
             }
         } else {
-            if (elm.name !== void) {
+            if (elm.graphic == "") {
                 var normal = elm.name + "_normal";
                 var over   = elm.over !== void ? elm.over  : getExistName(elm.name + "_over");
                 var on     = elm.on   !== void ? elm.on    : getExistName(elm.name + "_on");
@@ -2581,8 +2737,13 @@ class MessageLayer extends AnimKAGLayer
                 }
             } else {
                 object.loadImages(elm.graphic, elm.graphickey, elm.animcount, elm.animtime);
-                if (elm.trigger || elm.group) {
-                    object.loadImages(elm.graphicon, elm.graphickey, elm.animcount, elm.animtime, true);
+                if (elm.trigger || elm.group != "") {
+					if (elm.graphicon != "") {
+						object.loadImages(elm.graphicon, elm.graphickey, elm.animcount, elm.animtime, true);
+					} else {
+						//dm("makeToggle", elm.name);
+						object.makeToggle();
+					}
                     object.groupName = elm.group;
                 }
             }
@@ -2595,7 +2756,7 @@ class MessageLayer extends AnimKAGLayer
 		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
         object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
         if (elm.enabled !== void) {
-            object.enabled = (elm.enabled != 0);
+            object.enabled = !!elm.enabled;
         } else if (elm.disabled !== void && elm.disabled) {
             object.enabled = false;
         }
@@ -2631,8 +2792,9 @@ class MessageLayer extends AnimKAGLayer
 	{
 		// 単一行エディットを配置
 		changeLineSize() if sizeChanged;
+
 		var object = new LinkEditLayer(window, this, vertical);
-        object.name = elm.name !== void ? elm.name : "edit" + numLinks;
+		object.name = elm.name !== void ? elm.name : "edit" + numLinks;
 		var of = object.font;
 		var lf = lineLayer.font;
 		of.face   = (elm.fontface   !== void) ? elm.fontface   : lf.face;
@@ -2640,11 +2802,12 @@ class MessageLayer extends AnimKAGLayer
 		of.bold   = (elm.fontbold   !== void) ? elm.fontbold   : lf.bold;
 		of.italic = (elm.fontitalic !== void) ? elm.fontitalic : lf.italic;
 		of.height = (elm.fontheight !== void) ? elm.fontheight : lf.height;
+
 		object.linkNum = numLinks;
-		object.text = Scripts.eval(elm.name);
 		var exp = (elm.exp != "") ? elm.exp : elm.name;
-		object.exp     = exp;
-        object.antialiased = antialiased;
+		object.text = Scripts.eval(exp);
+		object.exp  = exp;
+		object.antialiased = antialiased;
 		object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
 		object.textColor = elm.color if elm.color !== void; // textColor でないことに注意
 		object.maxChars = elm.maxchars if elm.maxchars !== void;
@@ -2657,21 +2820,34 @@ class MessageLayer extends AnimKAGLayer
 		object.setDrawTextOffset(ox, oy) if (ox != 0 || oy != 0);
 
 		var len = elm.length === void ? 200: +elm.length;
-		if(vertical)
-		{
-			object.setPos(lineLayer.left + lineLayerBase - ((lf.height + 6)>>1),
-				lineLayer.top + lineLayerPos);
-			object.height = len;
-			object.width = lf.height + 6;
-			y += len;
-		}
-		else
-		{
-			object.setPos(lineLayer.left + lineLayerPos,
-					lineLayer.top + lineLayerBase - fontSize - 3);
-			object.width = elm.length === void ? 200: +elm.length;
-			object.height = lf.height + 6;
-			x += len;
+		var fh = Math.abs(of.height);
+		if (elm.nofixpos) {
+			// 位置補正をしないオプションを追加
+			object.setPos(x, y);
+			if(vertical) {
+				object.height = len;
+				object.width = fh + 6;
+			} else {
+				object.width  = len;
+				object.height = fh + 6;
+			}
+		} else {
+			if(vertical)
+			{
+				object.setPos(lineLayer.left + lineLayerBase - ((lf.height + 6)>>1),
+							  lineLayer.top + lineLayerPos);
+				object.height = len;
+				object.width = lf.height + 6;
+				y += len;
+			}
+			else
+			{
+				object.setPos(lineLayer.left + lineLayerPos,
+							  lineLayer.top + lineLayerBase - fontSize - 3);
+				object.width = elm.length === void ? 200: +elm.length;
+				object.height = lf.height + 6;
+				x += len;
+			}
 		}
 		object.visible = (elm.visible !== void) ? elm.visible : true;
 
@@ -2777,8 +2953,7 @@ class MessageLayer extends AnimKAGLayer
         object.linkNum = numLinks;
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
 		object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
-		var exp = (elm.exp != "") ? elm.exp : elm.name;
-		object.exp     = exp;
+		object.exp     = elm.exp;
         object.color = elm.bgcolor if elm.bgcolor !== void; // color でない事に注意
         object.bgOpacity = elm.opacity if elm.opacity !== void;
 		object.min  = +elm.min  if elm.min  !== void;
@@ -2858,7 +3033,7 @@ class MessageLayer extends AnimKAGLayer
 
         links[numLinks] = %[
 			type :			ltSlider,
-			exp :			exp,
+			exp :			elm.exp,
 			object :		object,
 			onenter :		object.onenter,
 			onleave :		object.onleave,
@@ -2882,7 +3057,7 @@ class MessageLayer extends AnimKAGLayer
      */
     function addSystemButton(elm) {
         var object = new SystemButtonLayer(window, this);
-        object.name =  elm.name !== void ? elm.name : "sysbutton" + numLinks;
+        object.name =  elm.name != "" ? elm.name : ("sysbutton" + buttons_save.count);
         if (elm.uistates !== void) {
             object.loadUIInfo(elm);
 			object.uiname = elm.uiname;
@@ -2892,7 +3067,7 @@ class MessageLayer extends AnimKAGLayer
             var focus  = elm.over !== void ? elm.focus : getExistName(elm.normal.replace(/_normal/, "_focus"));
             object.loadButtons(elm.normal, over, on, focus, elm.animcount, elm.animtime);
         } else {
-            if (elm.name !== void) {
+            if (elm.graphic == "") {
                 var normal = elm.name + "_normal";
                 var over   = elm.over !== void ? elm.over  : getExistName(elm.name + "_over");
                 var on     = elm.on   !== void ? elm.on    : getExistName(elm.name + "_on");
@@ -2900,6 +3075,9 @@ class MessageLayer extends AnimKAGLayer
                 object.loadButtons(normal, over, on, focus, elm.animcount, elm.animtime);
             } else {
                 object.loadImages(elm.graphic, elm.graphickey, elm.animcount, elm.animtime);
+                if (elm.graphicon != "") {
+                    object.loadImages(elm.graphicon, elm.graphickey, elm.animcount, elm.animtime, true);
+                }
             }
         }
         object.setPos(elm.x, elm.y);
@@ -2909,9 +3087,10 @@ class MessageLayer extends AnimKAGLayer
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
         object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
         object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
-		object.absolute = +elm.absolute if (elm.absolute !== void);
+		object.hitType      = (!+elm.nohit) ? htMask : htProvince;
+		object.absolute     = +elm.absolute if (elm.absolute !== void);
         if (elm.enabled !== void) {
-            object.enabled = (elm.enabled != 0);
+            object.enabled = !!elm.enabled;
         } else if (elm.disabled !== void && elm.disabled) {
             object.enabled = false;
         }
@@ -2993,14 +3172,12 @@ class MessageLayer extends AnimKAGLayer
 				highlightLayer.setSizeToImageSize();
 			}
 
-			highlightLayer.fillRect(0, 0,
-				highlightLayer.imageWidth,
-				highlightLayer.imageHeight, 0);
-			highlightLayer.face = dfProvince;
-			highlightLayer.fillRect(0, 0,
-				highlightLayer.imageWidth,
-				highlightLayer.imageHeight, 0);
-			highlightLayer.face = dfAuto;
+			with (highlightLayer) {
+				.fillRect(0, 0, .imageWidth, .imageHeight, 0);
+				.face = dfProvince;
+				.fillRect(0, 0, .imageWidth, .imageHeight, 0);
+				.face = dfAuto;
+			}
 
 			var i;
 			for(i = 0; i < linkn.lineCount; i++)
@@ -3009,10 +3186,7 @@ class MessageLayer extends AnimKAGLayer
 				var y = linkn.y[i];
 				if(!linkn.fixed[i]) x += xofs, y += yofs;
 
-				highlightLayer.colorRect(
-					x - highlightLayer.left,
-					y - highlightLayer.top,
-					linkn.w[i], linkn.h[i], linkn.color, linkn.opacity);
+				drawHighlight(highlightLayer, linkn, i, x, y, linkn.w[i], linkn.h[i], linkn.color, linkn.opacity);
 			}
 
 			highlightLayer.visible = true;
@@ -3051,6 +3225,10 @@ class MessageLayer extends AnimKAGLayer
 
 			showParentHint = false;
 		}
+	}
+	function drawHighlight(layer, linkn, i, x, y, w, h, color, opacity) {
+		// ハイライト塗りつぶし処理
+		with (layer) .colorRect(x - .left, y - .top, w, h, color, opacity);
 	}
 
     function updateRadio(button) {
@@ -3429,39 +3607,41 @@ class MessageLayer extends AnimKAGLayer
     }
 
     function tabPrev() {
-			selClickLock = false;
-			if(keyLink == -1 || keyLink == 0)
-			{
-//				var l = focusPrev();
-//				if(l !== null) return;
-				keyLink = numLinks - 1;
-			}
-			else
-			{
-				keyLink--;
-			}
-            keyLink = checkFocus(keyLink, -1);
-			if (keyLink < 0) return;
-            var obj = setFocusToLink(keyLink);
-			if(obj !== void) obj.focus();
+		selClickLock = false;
+		keyLink = lastKeyLink if (keyLink < 0 && lastKeyLink >= 0);
+		if(keyLink == -1 || keyLink == 0)
+		{
+//			var l = focusPrev();
+//			if(l !== null) return;
+			keyLink = numLinks - 1;
+		}
+		else
+		{
+			keyLink--;
+		}
+		keyLink = checkFocus(keyLink, -1);
+		if (keyLink < 0) return;
+		var obj = setFocusToLink(keyLink);
+		if(obj !== void) obj.focus();
     }
     
     function tabNext() {
-        selClickLock = false;
-			if(keyLink == -1 || keyLink == numLinks -1)
-			{
-//				var l = focusNext();
-//				if(l !== null) return;
-				keyLink = 0;
-			}
-			else
-			{
-				keyLink ++;
-			}
-            keyLink = checkFocus(keyLink, 1);
-			if (keyLink < 0) return;
-            var obj = setFocusToLink(keyLink);
-            if(obj !== void) obj.focus();
+		selClickLock = false;
+		keyLink = lastKeyLink if (keyLink < 0 && lastKeyLink >= 0);
+		if(keyLink == -1 || keyLink == numLinks -1)
+		{
+//			var l = focusNext();
+//			if(l !== null) return;
+			keyLink = 0;
+		}
+		else
+		{
+			keyLink ++;
+		}
+		keyLink = checkFocus(keyLink, 1);
+		if (keyLink < 0) return;
+		var obj = setFocusToLink(keyLink);
+		if(obj !== void) obj.focus();
     }
     
 	function onKeyDown(key, shift)
@@ -3552,7 +3732,7 @@ class MessageLayer extends AnimKAGLayer
 					keyLink = numLinks-1;
 				}
                 keyLink = checkFocus(keyLink, direction ? 1 : -1);
-                var obj = setFocusToLink(keyLink);
+				var obj = setFocusToLink(keyLink);
 				if(obj !== void)
 				{
 					super.onBeforeFocus(obj, blured, direction);
@@ -3841,6 +4021,16 @@ class MessageLayer extends AnimKAGLayer
 			tf.height = sf.height;
 		}
 
+		// textLayerがあればコピー
+		if (src.hasTextLayer) {
+			hasTextLayer = true if (!hasTextLayer);
+			var st = src.textLayer;
+			with (textLayer) {
+				.assignImages(st);
+				.assignVisibleState(st);
+			}
+		}
+
 		// そのほか
 		highlightLayer.visible = false;
 		keyLink = -1;
@@ -3913,6 +4103,7 @@ class MessageLayer extends AnimKAGLayer
 		edgeEmphasis = src.edgeEmphasis;
 		shadowOffsetX = src.shadowOffsetX;
 		shadowOffsetY = src.shadowOffsetY;
+		shadowWidth   = src.shadowWidth;
 		sizeChanged = src.sizeChanged;
 		nextClearFlag = src.nextClearFlag;
 		lineLayerBase = src.lineLayerBase;
@@ -3920,6 +4111,7 @@ class MessageLayer extends AnimKAGLayer
 		lineLayerLength = src.lineLayerLength;
 		lineLayerOriginX = src.lineLayerOriginX;
 		lineLayerOriginY = src.lineLayerOriginY;
+		lineLayerPadding = src.lineLayerPadding;
 		align = src.align;
 		defaultAutoReturn = src.defaultAutoReturn;
 		autoReturn = src.autoReturn;
@@ -3963,15 +4155,34 @@ class MessageLayer extends AnimKAGLayer
         clickExp     = src.clickExp;
         
         // システムボタンのコピー処理
-        clearSystemButtons();
+		clearSystemButtons();
+		// 生成情報をコピー
+		buttons_save.assign(src.buttons_save);
+
+		// dictionary の foreach では追加順が変わってしまうために使えないので
+		/*
         foreach(src.buttons, function(name,value,srcbuttons,self) {
             // クローン処理
             var b = new SystemButtonLayer(self.window, self);
             b.assign(value);
             self.buttons[name] = b;
         }, this);
-        // 生成情報をコピー
-        buttons_save.assign(src.buttons_save);
+		 */
+
+		// buttons_saveの情報からクローン処理を行う
+		for (var i = 0; i < buttons_save.count; i++) {
+			var elm = buttons_save[i];
+			var to = new SystemButtonLayer(window, this);
+			var name = elm.name != "" ? elm.name : ("sysbutton" + i);
+			var from = src.buttons[name];
+			if (from !== void) to.assign(from);
+			else {
+				dm("MessageLayer.internalAssign: SystemButtonが見つかりません:" + name);
+				to.name = name;
+				to.visible = false;
+			}
+			buttons[name] = to;
+		}
     }
 
 	function assign(src)
@@ -4017,6 +4228,7 @@ class MessageLayer extends AnimKAGLayer
 		dic.edgeEmphasis = edgeEmphasis;
 		dic.shadowOffsetX = shadowOffsetX;
 		dic.shadowOffsetY = shadowOffsetY;
+		dic.shadowWidth   = shadowWidth;
 		dic.defaultAutoReturn = defaultAutoReturn;
 		dic.lineBreakGlyph = lineBreakGlyph;
 		dic.lineBreakGlyphKey = lineBreakGlyphKey;
@@ -4073,6 +4285,7 @@ class MessageLayer extends AnimKAGLayer
 		edgeEmphasis = dic.edgeEmphasis if dic.edgeEmphasis !== void;
 		shadowOffsetX = dic.shadowOffsetX if dic.shadowOffsetX !== void;
 		shadowOffsetY = dic.shadowOffsetY if dic.shadowOffsetY !== void;
+		shadowWidth   = dic.shadowWidth   if dic.shadowWidth   !== void;
 		defaultAutoReturn = dic.defaultAutoReturn if dic.defaultAutoReturn !== void;
 		lineBreakGlyph = dic.lineBreakGlyph if dic.lineBreakGlyph !== void;
 		lineBreakGlyphKey = dic.lineBreakGlyphKey if dic.lineBreakGlyphKey !== void;

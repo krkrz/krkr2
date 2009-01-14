@@ -1,5 +1,5 @@
 // AnimationLayer.tjs - アニメーションを行うレイヤ
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 
 /*
@@ -498,9 +498,10 @@ class AnimationLayer extends AffineLayer
 		Anim_partialImageInfo = void;
 
 		if (elm.color !== void) {
+			var opac = (elm.coloropacity !== void) ? +elm.coloropacity : 255;
 			// 塗りつぶし指定
 			setSize(+elm.width, +elm.height);
-			fillRect(0, 0, +elm.width, +elm.height, 0xff000000 | +elm.color);
+			fillRect(0, 0, +elm.width, +elm.height, (opac << 24) | +elm.color);
 		} else {
 			// 画像を読み込む
 			var taginfo = super.loadImages(elm.storage, elm.key);
@@ -1047,6 +1048,23 @@ class AnimationLayer extends AffineLayer
 		}
 
 		super.restore(dic);
+	}
+
+	/*タグハンドラ*/function load(elm)
+	{
+		// 画像を読み込む
+		var key = (elm.key !== void) ? elm.key : Anim_loadParams.key;
+		var storage = elm.storage;
+		var otype = type;
+		super.loadImages(storage, key);
+		type = otype;
+		applyColorCorrection(this, Anim_loadParams);
+		// 上下反転
+		flipUD() if (Anim_loadParams.flipud !== void && +Anim_loadParams.flipud);
+		// 左右反転
+		flipLR() if (Anim_loadParams.fliplr !== void && +Anim_loadParams.fliplr);
+
+		return -4; // 一旦イベント処理
 	}
 
 	/*タグハンドラ*/function loadcell(elm)

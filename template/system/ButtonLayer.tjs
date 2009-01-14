@@ -1,5 +1,5 @@
 // ButtonLayer.tjs - ボタンレイヤ
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 /*
 ボタンとして動作するレイヤです。
@@ -94,7 +94,8 @@ class ButtonLayer extends AnimKAGLayer
             }
             // ボタンイメージが読み込まれている
             // TODO: keyboard focus
-            imageLeft = -s * width - (toggle ? imageWidth / 2: 0);
+			try { imageLeft = -s * width - (toggle ? imageWidth / 2: 0); }
+			catch (e) { throw new Exception(@"ボタン名'${name}'で${e.message}"); }
         }
 		else
 		{
@@ -170,7 +171,7 @@ class ButtonLayer extends AnimKAGLayer
             var w = temp.imageWidth;
             super.width  = w \ (Butt_showFocusImage ? 4 : 3);
             imageWidth   = w * 2;
-            copyRect(toggle ? 2 : 0, 0, temp, 0, 0, temp.imageWidth, temp.imageHeight);
+            copyRect(w, 0, temp, 0, 0, temp.imageWidth, temp.imageHeight);
         } else {
             super.loadImages(storage, key);
             super.width = imageWidth \ (Butt_showFocusImage ? 4 : 3);
@@ -181,6 +182,16 @@ class ButtonLayer extends AnimKAGLayer
             animStart(count, time);
         }
     }
+	function makeToggle() {
+		var w = width, h = imageHeight;
+		var base = w * (Butt_showFocusImage ? 4 : 3);
+		imageWidth *= 2;
+		copyRect(base + 0,   0, this, w,   0, w, h);
+		copyRect(base + w,   0, this, w,   0, w, h);
+		copyRect(base + w+w, 0, this, 0,   0, w, h);
+		copyRect(base + w*3, 0, this, w*3, 0, w, h) if Butt_showFocusImage;
+		toggleButton = true;
+	}
 
 	// offsを考慮してボタンをコピーする
 	function _copyButton(w, h, num, temp, info) {
@@ -266,15 +277,32 @@ class ButtonLayer extends AnimKAGLayer
 		operateRect(w*num + ox, oy, temp, 0, 0, cw, ch);
 	}
 
+	// uistatesを取得しつつボタンコピーをする
+	function _copyButtonUIStates(num, uiinfo, nomatch, list*) {
+		var match = nomatch;
+		with (uiinfo) {
+			// マッチする state を取得
+			for (var s, i = 0; i < list.count; i++)
+				if ((s = .uistates[list[i]]) !== void) { match = s; break; }
+
+			// ボタン画像があればコピーする
+			if (match !== void && match.storage != "") {
+				var temp = window.temporaryLayer;
+				temp.loadImages(match.storage);
+				_copyButton2(.width, .height, num, temp, match.ox, match.oy);
+			}
+		}
+		return match;
+	}
+
     /**
      * ボタン画像UI情報の読み込み
      */
     function loadUIInfo(uiinfo, noclear = false) {
-        var temp = window.temporaryLayer;
         var states = uiinfo.uistates;
         
         if (states === void) {
-            throw new Exception("画像情報不正です:" + uiinfo.name);
+            throw new Exception("画像情報が不正です:" + uiinfo.name);
         }
 
         // トグルボタン用
@@ -299,91 +327,23 @@ class ButtonLayer extends AnimKAGLayer
         Butt_imageLoaded = true;
         fillRect(0, 0, imageWidth, imageHeight, 0) if (!noclear);
 
-        var normal;
-        if (states.off !== void) {
-            normal = states.off;
-        } else if (states.normal !== void) {
-            normal = states.normal;
-        }
-        if (normal) {
-            temp.loadImages(normal.storage);
-            _copyButton2(w, h, 0, temp, normal.ox, normal.oy);
+		// ボタン画像をコピーする
+		var normal, over;
+		normal = _copyButtonUIStates(0, uiinfo, void, "off", "normal_off", "normal");
+		over   = _copyButtonUIStates(2, uiinfo, normal,        "over_off", "over");
+		/*     */_copyButtonUIStates(1, uiinfo, over,            "on_off", "on");
+		if (Butt_showFocusImage)
+			/* */_copyButtonUIStates(3, uiinfo, over,         "focus_off", "focus");
 
-            var over = normal;
-            if (states.over_off !== void) {
-                over = states.over_off;
-            } else if (states.over !== void) {
-                over = states.over;
-            }
-            temp.loadImages(over.storage);
-            _copyButton2(w, h, 2, temp, over.ox, over.oy);
-            
-            var on = over;
-            if (states.on_off !== void) {
-                on = states.on_off;
-            } else if (states.on !== void) {
-                on = states.on;
-            }
-            temp.loadImages(on.storage);
-            _copyButton2(w, h, 1, temp, on.ox, on.oy);
-            
-            if (Butt_showFocusImage) {
-                var focus = over;
-                if (states.focus !== void) {
-                    focus = states.focus;
-                }
-                temp.loadImages(focus.storage);
-                _copyButton2(w, h, 3, temp, focus.ox, focus.oy);
-            }
-        }
-
-        // トグルボタン用
-        if (toggleButton) {
-
-            var base = toggleButton ? (Butt_showFocusImage ? 4 : 3) : 0;
-            var normal;
-            if (states.normal_on !== void) {
-                normal = states.normal_on;
-            } else if (states.on !== void) {
-                normal = states.on;
-            } else if (states.over !== void) {
-                normal = states.over;
-            } else if (states.normal) {
-                normal = states.normal;
-            }
-            
-            if (normal) {
-                temp.loadImages(normal.storage);
-                _copyButton2(w, h, base, temp, normal.ox, normal.oy);
-                
-                var over = normal;
-                if (states.over_on !== void) {
-                    over = states.over_on;
-                } else if (states.over !== void) {
-                    over = states.over;
-                }
-                temp.loadImages(over.storage);
-                _copyButton2(w, h, base+2, temp, over.ox, over.oy);
-                
-                var on = over;
-                if (states.on_on !== void) {
-                    on = states.on_on;
-                } else if (states.on !== void) {
-                    on = states.on;
-                }
-                temp.loadImages(on.storage);
-                _copyButton2(w, h, base+1, temp, on.ox, on.oy);
-                
-                if (Butt_showFocusImage) {
-                    var focus = over;
-                    if (states.focus !== void) {
-                        focus = states.focus;
-                    }
-                    temp.loadImages(focus.storage);
-                    _copyButton2(w, h, base+3, temp, focus.ox, focus.oy);
-                }
-            }
-        }
+		// トグルボタン用
+		if (toggleButton) {
+			var base = Butt_showFocusImage ? 4 : 3;
+			normal = _copyButtonUIStates(base+0, uiinfo, void, "normal_on", "on", "over", "normal");
+			over   = _copyButtonUIStates(base+2, uiinfo, normal, "over_on", "over");
+			/*     */_copyButtonUIStates(base+1, uiinfo, over,     "on_on", "on");
+			if (Butt_showFocusImage)
+				/* */_copyButtonUIStates(base+3, uiinfo, over,  "focus_on", "focus");
+		}
 
         if (uiinfo.time > 0) {
             animStart(uiinfo.count, uiinfo.time);

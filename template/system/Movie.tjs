@@ -1,5 +1,5 @@
 // Movie.tjs - ムービー再生
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 class Movie extends VideoOverlay
 {
@@ -185,6 +185,7 @@ class Movie extends VideoOverlay
 				super.open(storage);
 				opened = true;
 			} catch(e) {
+				stop();
 				if(e.message.indexOf(".dll") != -1) throw e;
 				errmes = e.message;
 			}
@@ -281,8 +282,8 @@ class Movie extends VideoOverlay
 			dm("video mode:" + ((mode == vomOverlay) ? "overlay" : (mode == vomMixer) ? "mixer" : (mode == vomLayer) ? "layer" : "unknown"));
 		}
 		playRate = +elm.playrate if elm.playrate !== void;
-		audioVolume = +elm.volume * 1000 if elm.volume !== void;
-		audioBalance = +elm.pan * 1000 if elm.pan !== void;
+		if (elm.volume !== void) try { audioVolume  = +elm.volume * 1000; } catch {}
+		if (elm.pan    !== void) try { audioBalance = +elm.pan    * 1000; } catch {}
 		if( elm.audiostreamnum !== void )
 		{
 			selectAudioStream( +elm.audiostreamnum );

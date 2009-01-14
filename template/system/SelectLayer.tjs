@@ -1,5 +1,5 @@
 // SelectLayer.tjs - 選択肢レイヤ
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 /**
  * 選択肢処理用ボタン
@@ -13,6 +13,10 @@ class SelectButtonLayer extends ButtonLayer
     var onleave; // マウスが出ていったときに実行するもの
     var storage; // 処理終了後のジャンプ先
     var target;  // 処理終了後のジャンプ先
+	var tag;     // ボタン固有名称（フラグ用）
+	var selected;// 過去に選択したことがある
+
+	var __gdiplusfontapp; // for GDI+ hack
 
     /**
      * メッセージの描画
@@ -27,7 +31,7 @@ class SelectButtonLayer extends ButtonLayer
         for (var i=0;i<cnt;i++) {
             var x = i*width + dx;
             //dm("メッセージ:" + x);
-            drawText(x, y, message, (owner.getDrawTextArgs(i))*);
+			owner.drawTextToLayer(this, x, y, message, i, selected);
         }
     }
     
@@ -36,9 +40,11 @@ class SelectButtonLayer extends ButtonLayer
      * @param owner   選択レイヤ
      * @param message 表示するメッセージを指定
      */
-    function SelectButtonLayer(owner, message) {
+    function SelectButtonLayer(owner, message, selected) {
 
         this.owner = owner;
+		this.selected = selected;
+		this.__gdiplusfontapp = owner.fontAppearance;
         
         // レイヤ初期化
         super.ButtonLayer(owner.window, owner.window.primaryLayer);
@@ -49,26 +55,40 @@ class SelectButtonLayer extends ButtonLayer
         font.italic = owner.fontItalic;
         font.height = owner.fontSize;
 
-        if (owner.normalImage !== void) {
-            // 画像がある場合はロード
-            loadButtons(owner.normalImage, owner.overImage, owner.onImage, owner.focusImage);
-            drawMessage(message);
-        } else if (owner.graphic !== void) {
-            // 画像がある場合はロード
-            loadImages(owner.graphic, owner.graphickey);
-            drawMessage(message);
-        } else {
-            // ない場合は組み込みボタンとして処理
-            width        = owner.selectWidth;
-            height       = owner.selectHeight;
-            captionColor = owner.selectColor;
-            color        = owner.selectBaseColor;
-            caption      = message;
-        }
+		var hasimg = true;
+		with (owner) {
+			// 画像がある場合はロード
+			if (.normalImage   != "") loadButtons(.normalImage, .overImage, .onImage, .focusImage);
+			else if (.graphic  != "") loadImages(.graphic, .graphickey);
+			else if (.uibutton !== void) loadUIInfo(.getUIInfo(this));
+			else hasimg = false;
+			if (hasimg) {
+				modifyOpacity(.frameOpacity);
+				drawMessage(message);
+			} else {
+				// ない場合は組み込みボタンとして処理
+				width        = .selectWidth;
+				height       = .selectHeight;
+				captionColor = .selectColor;
+				color        = .selectBaseColor;
+				caption      = message;
+			}
+		}
     }
 
     function finalize() {
         super.finalize(...);
+	}
+
+	// 不透明度を調整
+	function modifyOpacity(opac) {
+		if (opac >= 255) return;
+		opac = 0 if (opac < 0);
+		var origFace = face;
+		face = dfAlpha;
+		// frameOpacityを適用する
+		colorRect(0, 0, imageWidth, imageHeight, 0, -255 + opac);
+		face = origFace;
 	}
 
 	function onMouseEnter()
@@ -114,26 +134,28 @@ class SelectButtonLayer extends ButtonLayer
 		if (this isvalid) super.onKeyDown(...);
 	}
 
+	var _ignoreFocusJump;
 	function onFocus(prevfocused, direction)
 	{
         // キー操作によるフォーカス変動の場合にマウスカーソルも移動
         var sgks = window.getKeyState;
-        var process = sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
-            sgks(VK_DOWN) || sgks(VK_TAB);
+        var process = !_ignoreFocusJump && (sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
+											sgks(VK_DOWN) || sgks(VK_TAB));
         if(process) {
             cursorX = (width>>1);
             cursorY = (height>>1);
 			releaseCapture();
         }
+		return super.onFocus(...);
     }
 }
 
 /**
  * 選択ボタン取得用
  */
-function getSelectButtonLayer(owner, name)
+function getSelectButtonLayer()
 {
-    return new SelectButtonLayer(owner, name);
+    return new SelectButtonLayer(...);
 }
 
 /**
@@ -166,6 +188,9 @@ class SelectLayer {
     var overImage;
     var onImage;
     var focusImage;
+	var uibutton; // uiload用
+	var uiname = "select";
+	var frameOpacity = 255; // 不透明度
 
     // フォント
     var fontFace;
@@ -174,16 +199,21 @@ class SelectLayer {
     var fontShadow;
     var fontEdge;
     var fontColor       = 0xffffff;
+    var fontSelectedColor = void;
     var fontEdgeColor   = 0x0080ff;
     var fontShadowColor = 0000000;
 	var fontShadowOffsetX = 2;
 	var fontShadowOffsetY = 2;
+	var fontShadowWidth   = 0;
     var fontEdgeEmphasis = 512;
     var fontEdgeExtent = 0;
 	// 選択時にフォントの色を変更する場合の値(voidなら変更しない)
 	var otherFontColors       = %[];
 	var otherFontEdgeColors   = %[];
 	var otherFontShadowColors = %[];
+
+	// for GDI+
+	var fontAppearance = %[];
 
     // 効果音
     var enterse;
@@ -210,6 +240,7 @@ class SelectLayer {
         focusImage  = elm.focus  if elm.focus  !== void;
         graphic     = elm.graphic    if elm.graphic !== void;
         graphickey  = elm.graphickey if elm.graphickey !== void;
+		frameOpacity=+elm.opacity if (elm.opacity !== void);
 
         // サイズ指定
         selectWidth  = +elm.selectwidth  if elm.selectwidth  !== void;
@@ -221,6 +252,8 @@ class SelectLayer {
         fontFace   =  elm.fontface if elm.fontface !== void;
         fontSize   = +elm.size if elm.size !== void;
         fontColor  = +elm.color if elm.color !== void;
+		fontSelectedColor = +elm.selectedcolor if (elm.selectedcolor !== void);
+
         fontItalic = +elm.italic if elm.italic !== void;
         fontShadow = +elm.shadow if elm.shadow !== void;
         fontEdge   = +elm.edge   if elm.edge   !== void;
@@ -232,6 +265,7 @@ class SelectLayer {
         fontShadowColor = +elm.shadowcolor if elm.shadowcolor !== void;
 		fontShadowOffsetX = +elm.shadowoffsetx if elm.shadowoffsetx !== void;
 		fontShadowOffsetY = +elm.shadowoffsety if elm.shadowoffsety !== void;
+		fontShadowWidth   = +elm.shadowwidth   if elm.shadowwidth   !== void;
 
 		// 通常状態以外の色指定
 		otherFontColors.over  = +elm.overcolor   if elm.overcolor   !== void;
@@ -259,7 +293,64 @@ class SelectLayer {
 
         // フェード時間
         fadeTime = +elm.fadetime if elm.fadetime !== void;
+
+		// uiload用
+		uiname = elm.uiname if (elm.uiname != "");
+		if (elm.uistorage !== void) {
+			uibutton = void;
+			if (Storages.isExistentStorage(elm.uistorage+".csv")) {
+				var r = uiload;
+				r = uiloadParse(%[ storage:elm.uistorage ]);
+				uibutton = r.result;
+			}
+		}
+
+		// フォントの色を再設定
+		createFontColorList();
     }
+
+    /**
+     * 選択肢UI名取得
+     */
+	function getUIName(num, cnt) {
+		return @"${uiname}${num+1}_${cnt}";
+	}
+    /**
+     * UILoader用の情報を返す
+     */
+	function getUIInfo(sel) {
+		var name, num = selects.find(sel), cnt = selects.count;
+		if (num < 0) name = uiname;
+		else {
+			name = getUIName(num, cnt);
+			name = uiname if (uibutton[name] === void);
+		}
+		var ret = uibutton[name];
+		if (ret === void) throw new Exception(@"選択肢UI「${name}」が見つかりません");
+		return ret;
+	}
+
+	/**
+	 * フォントの色を再設定
+	 */
+	function createFontColorList() {
+		var list = fontAppearance.contexts = [];
+		for (var ted = 0; ted < 2; ted++) {
+			var col = (!ted || fontSelectedColor === void) ? fontColor : fontSelectedColor;
+			for (var sel = 0; sel < 4; sel++) list.add(%[
+			color:         getFontColor(sel, col,             otherFontColors),
+			edgeColor:     getFontColor(sel, fontEdgeColor,   otherFontEdgeColors),
+			shadowColor:   getFontColor(sel, fontShadowColor, otherFontShadowColors),
+			edge:          fontEdge,
+			edgeEmphasis:  fontEdgeEmphasis,
+			edgeExtent:    fontEdgeExtent,
+			shadow:        fontShadow,
+			shadowWidth:   fontShadowWidth,
+			shadowOffsetX: fontShadowOffsetX,
+			shadowOffsetY: fontShadowOffsetY,
+				]);
+		}
+	}
 
     /**
      * フォントの色を取得する
@@ -276,14 +367,19 @@ class SelectLayer {
 		return normal; // 通常
 	}
     /**
-     * 文字描画のエフェクトを取得する(SelectButtonLayerから呼ばれる)
+     * エフェクトつき文字描画(SelectButtonLayerから呼ばれる)
      */
-	function getDrawTextArgs(sel) {
-		var args, color = getFontColor(sel, fontColor, otherFontColors);
-		if (    fontEdge)   args = [color, 255, true, fontEdgeEmphasis, (getFontColor(sel, fontEdgeColor,   otherFontEdgeColors)),   fontEdgeExtent, 0, 0];
-		else if(fontShadow) args = [color, 255, true,              255, (getFontColor(sel, fontShadowColor, otherFontShadowColors)), 0, fontShadowOffsetX, fontShadowOffsetY];
-		else                args = [color, 255, true];
-		return args;
+	function drawTextToLayer(lay, x, y, text, sel, ted = false) {
+		sel += 4 if (ted);
+		var ref = fontAppearance.contexts[sel], context = %[];
+		if (ref === void) return;
+		(Dictionary.assign incontextof context)(ref, true);
+
+		// MessageLayer.drawTextToLayerに投げるためのhack
+		context.antialiased = true; //window.chDefaultAntialiased;
+		context.drawTextToLayerGdiPlus = (MessageLayer.drawTextToLayerGdiPlus incontextof context);
+		(MessageLayer.drawTextToLayer incontextof context)(lay, x, y, text, context.color);
+		invalidate context;
 	}
 
     // 登録済み選択肢
@@ -298,60 +394,40 @@ class SelectLayer {
         top    = 0;
         width  = window.primaryLayer.width;
         height = window.primaryLayer.height;
-
-        _fadeTimer = new Timer(fadeHandler, '');
-        _fadeTimer.capacity = 1;
-        _fadeTimer.interval = 10;
-        _fadeTimer.enabled  = false;
     }
 
     function finalize() {
+		stopAction();
         clearButtons();
-        invalidate _fadeTimer;
     }
+
+    /**
+     * 個々の選択肢レイヤのプロパティ変更
+     */
+	function setInnerProps(prop, value) {
+		for (var i = selects.count-1; i >= 0; i--) {
+			var select = selects[i];
+			select[prop] = value;
+		}
+	}
 
     /**
      * 不透明度変更処理
      * 関連レイヤもあわせて制御
      */
-    function setInnerOpacity(v) {
-        if (v !== void) {
-            for (var i=0; i<selects.count;i++) {
-                var select = selects[i];
-                select.opacity = v;
-            }
-        }
-    }
+	function setInnerOpacity(v) { setInnerProps("opacity", v) if (v !== void); }
 
     /**
      * 表示状態変更処理
      * 関連レイヤもあわせて制御
      */
-    function setInnerVisible(v) {
-        if (v !== void) {
-            for (var i=0; i<selects.count;i++) {
-                var select = selects[i];
-                select.visible = v;
-            }
-        }
-    }
+	function setInnerVisible(v) { setInnerProps("visible", v) if (v !== void); }
 
-    /**
-     * 本来指定されている最終的な表示状態・不透明度にもどして
-     * 実行中のフェードを中止する
-     */
-    function fadeDone() {
-        setInnerOpacity(_opacity);
-        setInnerVisible(_visible);
-        _fadeTimer.enabled = false;
-    }
-    
     // 不透明度
     var _opacity;
     property opacity {
         setter(v) {
-            _opacity = v;
-            fadeDone();
+			setInnerOpacity(_opacity = v);
         }
         getter() {
             return _opacity;
@@ -362,56 +438,53 @@ class SelectLayer {
     var _visible = false;
     property visible {
         setter(v) {
-            _visible = v;
-            fadeDone();
+			setInnerVisible(_visible = !!v);
         }
         getter() {
             return _visible;
         }
     }
+	var _enabled = true;
+	property enabled {
+		setter(v) {
+			setInnerProps("enabled", v);
+		}
+		getter {
+			return _enabled;
+		}
+	}
 
-    var _fadeTimer;
-    var _fadeStartTime;
-    var _fadeTime;
-    var _startOpacity;
-    var _fadeDoneFunc;
-    
-    function fadeHandler() {
-        var now = System.getTickCount() - _fadeStartTime;
-        if (now >= _fadeTime) {
-            fadeDone();
-            if (_fadeDoneFunc !== void) {
-                _fadeDoneFunc();
-            }
-        } else {
-            setInnerOpacity(_startOpacity + (_opacity - _startOpacity) * now / _fadeTime);
-        }
-    }
+	// アクションラッパ
+	function beginAction(act, comp) {
+		window.beginAction(this, act, comp, true);
+	}
+	function stopAction()  {
+		window.stopAction(this);
+	}
+	function doneActFadeIn() {
+		enabled = true;
+	}
 
     /**
      * visible に応じてフェードも自動調整する
      */
-    function setVisibleTime(v, time, done=void) {
-        if (v != visible) {
-//            dm("窓フェード表示処理:" + v);
-            _visible = v;
-            _opacity = v ? 255 : 0;
-            if (time > 0) {
-                _fadeStartTime = System.getTickCount();
-                _fadeTime      = time;
-                setInnerOpacity(v ? 0 : 255);
-                setInnerVisible(true);
-                _startOpacity = v ? 0 : 255;
-                _fadeDoneFunc = done;
-                _fadeTimer.enabled = true;
-            } else {
-                fadeDone();
-                if (done !== void) {
-                    done();
-                }
-            }
-        } 
-    }
+	function setVisibleTime(v, time, done=void) {
+		v = !!v;
+		if (v == visible) return false;
+		stopAction();
+		if (+time <= 0) {
+			visible = v;
+			opacity = 255;
+			enabled = true;
+			return false;
+		}
+		_visible = v;
+		enabled = false;
+		opacity = v ? 0 : 255;
+		beginAction(%[ opacity: %[ handler:MoveAction, start:_opacity, value:v ? 255 : 0, time:time ] ], done);
+		setInnerVisible(true);
+		return true;
+	}
 
     /**
      * ボタン消去
@@ -435,8 +508,8 @@ class SelectLayer {
         var entersebuf = elm.entersebuf !== void ? elm.entersebuf : kag.numSEBuffers - 2;
         var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : kag.numSEBuffers - 2;
         var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : kag.numSEBuffers - 1;
-        
-        var select = getSelectButtonLayer(this, elm.text);
+
+        var select = getSelectButtonLayer(this, elm.text, elm.selected);
         select.name = "選択肢ボタン" + elm.text;
         
         select.onenter = MessageLayer.createSoundExpression(elm.onenter, enterse, entersebuf);
@@ -444,6 +517,7 @@ class SelectLayer {
         select.onclick = MessageLayer.createSoundExpression(elm.exp,     clickse, clicksebuf),
         select.storage = elm.storage;
         select.target  = elm.target;
+		select.tag     = elm.tag;
         
         selects.add(select);
     }
@@ -458,63 +532,81 @@ class SelectLayer {
             select.absolute = absolute + 4 + i;
         }
     }
+
+    /**
+     * 選択肢座標取得
+     */
+	function getSelectPositions(count) {
+		var ret = [];
+		if (uibutton !== void) {
+			// uiloadで位置情報がある場合はそちらを優先する
+			for (var i=0; i<count; i++) {
+				var info = uibutton[getUIName(i, count)];
+				if (info === void) break;
+				with (info) ret.add([ .x + .width/2, .y + .height/2 ]);
+			}
+			if (ret.count == count) return ret;
+			ret.clear();
+		}
+		var x = left + width / 2;
+		var h = height / (count + 1);
+		for (var i=0, y=top+h; i<count; i++, y+=h) ret.add([ x, y ]);
+		return ret;
+	}
     
     /**
      * 選択処理開始
      */
     function start(parent, absolute) {
-        var h = height / (selects.count + 1);
-        var y = h;
-        for (var i=0; i<selects.count;i++) {
-            var select = selects[i];
-            select.parent   = parent;
-            select.absolute = absolute + 4 + i;
-            select.setPos(left + width/2 - select.width / 2, top  + y - select.height / 2);
-            y += h;
-        }
-        if (fadeTime > 0) {
-            setVisibleTime(true, fadeTime);
-        } else {
-            visible = true;
-        }
-
-        if (opense !== void) {
-            kag.se[opensebuf].play(%[storage:opense]);
-        }
+		var cnt = selects.count;
+		var pos = getSelectPositions(cnt);
+		for (var i=0; i<cnt; i++) {
+			with (selects[i]) {
+				var xy = pos[i];
+				.parent   = parent;
+				.absolute = absolute + 4 + i;
+				.setPos(xy[0] - .width/2, xy[1] - .height/2);
+			}
+		}
+		setVisibleTime(true, fadeTime, doneActFadeIn);
+		playSE(opense, opensebuf);
     }
 
     /**
      * 完了
      */
     function done() {
-// 対応めんどいのでとりあえず一瞬消去で対応
-//        if (fadeTime !== void) {
-//            setVisibleTime(false, fadeTime, clearButtons);
-//        } else {
-            visible = false;
-            clearButtons();
-//        }
-        if (closese !== void) {
-            kag.se[closesebuf].play(%[storage:closese]);
-        }
+		playSE(closese, closesebuf) if (visible);
+		visible = false;
+		clearButtons();
+		invisibleByUser = false;
     }
-    
+
+	/**
+	 * 効果音
+	 */
+	function playSE(se, buf) {
+		kag.se[buf].play(%[storage:se]) if (se != "");
+	}
+
     /**
      * 処理終了
      */
     function onButtonClick(select) {
-        if (select !== void) {
-            Scripts.eval(select.onclick) if select.onclick != '';
-            if (select isvalid) {
-                if (select.storage != '' || select.target != '')	{
-                    window.process(select.storage, select.target);
-                } else {
-                    window.processGo();
-                }
-                window.insertTag("doneselect");
-            }
-        }
-    }
+		if (select === void) return;
+		Scripts.eval(select.onclick) if select.onclick != '';
+		if (select isvalid) {
+			if (select.storage != '' || select.target != '')	{
+				window.process(select.storage, select.target);
+			} else {
+				window.processGo();
+			}
+			window.insertTag("doneselect", %[ tag:select.tag ]);
+			if (setVisibleTime(false, fadeTime)) {
+				window.insertTag("wact", %[ target:this ]);
+			}
+		}
+	}
 
 	var invisibleByUser = false; // ユーザにより一時的に不可視
 	var visibleBeforeUserInvisible  = false;
@@ -523,13 +615,13 @@ class SelectLayer {
 	{
         // ユーザが右クリックなどでメッセージレイヤを一時的に隠すときに
 		// 呼ばれる
-		if(b)
+		if(b && !invisibleByUser)
 		{
 			visibleBeforeUserInvisible = visible;
 			invisibleByUser = true; // ユーザにより一時的に不可視
 			visible = false;
 		}
-		else
+		else if (!b && invisibleByUser)
 		{
 			invisibleByUser = false; // 可視
 			visible = visibleBeforeUserInvisible;

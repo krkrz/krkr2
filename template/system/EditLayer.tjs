@@ -1,5 +1,5 @@
 // EditLayer.tjs - 一行編集用コントロールレイヤ
-// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+// Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
 /*
 単一行の編集コントロールとして動作するレイヤです。
@@ -180,29 +180,25 @@ class EditLayer extends KAGLayer
 		Edit_caretLayer.visible = ! Edit_caretLayer.visible;
 	}
 
-	function stepLeft(keepAnchor = false)
+	function moveCaret(pos, keepAnchor, step = 1)
 	{
 		var oldAnchor = Edit_selAnchor;
+		var oldStart  = Edit_selStart;
 
-		// キャレットを左へ
-		if(Edit_selStart > 0) Edit_selStart --, ensureCaretVisible(3);
-		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
-		if(keepAnchor || oldAnchor != Edit_selAnchor)
-			update();
+		// キャレットを移動
+		pos = 0                if (pos < 0);
+		pos = Edit_text.length if (pos > Edit_text.length);
+		Edit_selStart  = pos;
+		Edit_selAnchor = pos if (!keepAnchor);
+		ensureCaretVisible(step) if (pos != oldStart);
+		update() if (oldAnchor != Edit_selAnchor || pos != oldStart);
 		showCaret();
 	}
 
-	function stepRight(keepAnchor = false)
-	{
-		var oldAnchor = Edit_selAnchor;
-
-		// キャレットを右へ
-		if(Edit_selStart < Edit_text.length) Edit_selStart ++, ensureCaretVisible(3);
-		if(!keepAnchor) Edit_selAnchor = Edit_selStart;
-		if(keepAnchor || oldAnchor != Edit_selAnchor)
-			update();
-		showCaret();
-	}
+	function stepLeft( keepAnchor = false) { moveCaret(Edit_selStart - 1, keepAnchor, 3); }
+	function stepRight(keepAnchor = false) { moveCaret(Edit_selStart + 1, keepAnchor, 3); }
+	function moveHead( keepAnchor = false) { moveCaret(0,                 keepAnchor   ); }
+	function moveTail( keepAnchor = false) { moveCaret(Edit_text.length,  keepAnchor   ); }
 
 	function getCaretPosFromX(x)
 	{
@@ -521,11 +517,18 @@ class EditLayer extends KAGLayer
 			}
 		}
 
-		if(key == (Edit_vertical?VK_UP:VK_LEFT)) stepLeft((shift & ssShift) == ssShift);
-		else if(key == (Edit_vertical?VK_DOWN:VK_RIGHT)) stepRight((shift & ssShift) == ssShift);
-		else if(key == VK_DELETE) deleteAfterCaret();
-		else if(key == VK_BACK) deleteBeforeCaret();
-		else super.onKeyDown(...);
+		var sft = ((shift & ssShift) == ssShift);
+		switch (key) {
+		case VK_UP:     if ( Edit_vertical) return stepLeft (sft); break;
+		case VK_LEFT:   if (!Edit_vertical) return stepLeft (sft); break;
+		case VK_DOWN:   if ( Edit_vertical) return stepRight(sft); break;
+		case VK_RIGHT:  if (!Edit_vertical) return stepRight(sft); break;
+		case VK_HOME:   return moveHead(sft);
+		case VK_END:    return moveTail(sft);
+		case VK_DELETE: return deleteAfterCaret();
+		case VK_BACK:   return deleteBeforeCaret();
+		}
+		super.onKeyDown(...);
 	}
 
 

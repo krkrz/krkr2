@@ -5,11 +5,6 @@
 class KAGEnvBaseLayer extends KAGEnvLayer {
 
 	/**
-	 * レイヤ名称
-	 */
-    var name;
-
-	/**
 	 * 表示処理用の自動トランジションの指定
 	 */
 	function setDispAutoTrans() {
@@ -21,9 +16,9 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
      * @param env 環境
 	 * @param name 環境のレイヤ名
 	 */
-    function KAGEnvBaseLayer(env, name) {
-        super.KAGEnvLayer(env);
-        this.name = name;
+	function KAGEnvBaseLayer(env, name, absolute) {
+		super.KAGEnvLayer(env, name);
+		this.absolute = absolute;
     }
 
     function setImageFile(file, elm) {
@@ -52,16 +47,11 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 		setAutoTrans([eventTrans, env.envinfo.eventTrans, env.envinfo.envTrans]);
 		
 		// 記録
-		kag.sflags["cg_" + (file.toUpperCase())] = true;
+		if (elm.noflag === void) {
+			kag.sflags["cg_" + (file.toUpperCase())] = true;
+		}
 		
         return true;
-    }
-
-    function getLayer(base) {
-        if (base === void) {
-            base = env.transMode == 1 ? kag.back : kag.fore;
-        }
-        return base[name];
     }
 
     var layerCommands = %[];

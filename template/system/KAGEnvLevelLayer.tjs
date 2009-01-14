@@ -3,105 +3,116 @@
  */
 class KAGEnvLevelLayer {
 
-    /// 表示レベル
-    var level;
-    /// 表示絶対レベル
-	var absolute;
-	/// 復帰フラグ
-	var restore;
-	
-	// 描画対象レイヤ
-	var targetLayer;
-	
-    /// 位置変更
-    var front;
-    var back;
+	/// 表示レベル
+	var _level;
 
-    /**
-     * コンストラクタ
-     */
-    function KAGEnvLevelLayer() {
-		level = void;
-    }
+	property level {
 
-    function finalize() {
-		env.trashLayer(targetLayer);
-    }
+		getter() {
+			return _level;
+		}
 
-	/**
-	 * レイヤのコピー処理
-	 */
-	function onCopyLayer(toback, backlay) {
-		if (backlay) {
-			if (toback) {
-				if (targetLayer !== void) {
-					//dm("裏画面にコピー:" + name);
-					//dm("元レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
-					if (targetLayer.parent === kag.fore.base && targetLayer.visible) {
-						targetLayer = env.getNewLayer(name, kag.back, targetLayer);
-						//dm("複製レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
-					} else {
-						//dm("廃棄");
-						targetLayer = env.trashLayer(targetLayer);
-					}
+		/**
+		 * 指定したレイヤを指定したレベルに移動する
+		 */
+		setter(newlevel) {
+			//dm(name + ":レベル指定:" + newlevel);
+			var forelayers = env.getLevelLayers();
+			if (_level !== void) {
+				if (_level === newlevel) {
+					//dm("同一レベルなので処理しない");
+					return;
 				}
-			} else {
-				if (targetLayer !== void) {
-					//dm("表画面にコピー:" + name);
-					if (targetLayer.parent === kag.back.base && targetLayer.visible) {
-						//dm("表に移動");
-						var absolute = targetLayer.absolute;
-						targetLayer.parent = kag.fore.base;
-						targetLayer.absolute = absolute;
-					} else {
-						//dm("廃棄");
-						targetLayer = env.trashLayer(targetLayer);
+				var index = absolute;
+				// もともといたレベルの調整
+				for (var i = 0; i<forelayers.count; i++) {
+					var target = forelayers[i];
+					if (target !== this && target.level == _level) {
+						if (target.absolute > index) {
+							target.absolute -= 100;
+						}
 					}
 				}
 			}
+			// 新規レベルの一番上にもっていく
+			var newindex = (newlevel + 1) * 100000 + 200; // stage が 100
+			for (var i = 0; i<forelayers.count; i++) {
+				var target = forelayers[i];
+				if (target !== this && target.level == newlevel && target.absolute > newindex) {
+					newindex = target.absolute;
+				}
+			}
+			newindex += 100;
+			//dm(name + ":レベル設定:" + newlevel + ":" + newindex);
+			absolute = newindex;
+			_level    = newlevel;
+			redraw = true;
 		}
 	}
 	
-    /**
-     * レイヤ情報の取得
-     * @param base fore / back      
-     * 同時にレベルに応じた front/back の処理も実行する
-     */
-	function getLayer(base) {
-		//dm("レイヤ取得:" + name + ":" + (base == kag.back ? "裏" : "表"));
-		//if (targetLayer !== void) {
-		//dm(" 現在レイヤ:" + targetLayer + "/" + (targetLayer.parent == kag.back.base ? "裏":"表"));
-		//}
-		if (targetLayer === void || targetLayer.parent !== base.base) {
-			//dm("新規レイヤ生成:" + name);
-			targetLayer = env.getNewLayer(name, base, targetLayer);
-		}
-		if (restore) {
-			//dm("復帰実行:" + level + "/" + absolute);
-			targetLayer.level    = +level    if (level !== void);
-			targetLayer.absolute = +absolute if (absolute !== void);
-			restore = false;
-		}
+	/**
+	 * コンストラクタ
+	 */
+	function KAGEnvLevelLayer() {
+    }
 
-		if (level === void) {
+	function finalize() {
+	}
+
+	function _update(base) {
+		if (isShowBU() && level === void) {
 			level = env.defaultLevel;
 		}
-		env.toLevel(targetLayer, level);
-		if (front) {
-			env.toFront(targetLayer);
-		} else if (back) {
-			env.toBack(targetLayer);
-        }
-		front = back = void;
-		absolute = targetLayer.absolute;
-		return targetLayer;
+		(global.KAGEnvImage._update incontextof this)(base);
+	}
+	
+    /**
+     * レベル内最前列
+     */
+	function toFront() {
+		var forelayers = env.getLevelLayers();
+		var index = absolute;
+		var maxindex = index;
+		for(var i = 0; i<forelayers.count; i++) {
+			var target = forelayers[i];
+			if (target !== this && target.level == level) {
+				if (target.absolute > maxindex) {
+					maxindex = target.absolute;
+				}
+				if (target.absolute > index) {
+					target.absolute -= 100;
+				}
+			}
+		}
+		absolute = maxindex;
     }
+
+    /**
+     * レベル内最後列
+     */
+	function toBack() {
+		var forelayers = env.getLevelLayers();
+		var index = absolute;
+		var minindex = index;
+		for(var i = 0; i<forelayers.count; i++) {
+			var target = forelayers[i];
+			if (target !== this && target.level == level) {
+				if (target.absolute < minindex) {
+					minindex = target.absolute;
+				}
+				if (target.absolute < index) {
+					target.absolute += 100;
+				}
+			}
+		}
+		absolute = minindex;
+	}
 
     /**
      * レベル内最前列
      */
     function setFront() {
-		front = true;
+		toFront();
 		updateFlag = true;
     }
 
@@ -109,30 +120,22 @@ class KAGEnvLevelLayer {
      * レベル内最後列
      */
     function setBack() {
-        back = true;
+		toBack();
 		updateFlag = true;
     }
 
     /**
      * レベルの指定
      */
-    function setLevel(cmd, elm) {
-		level = cmd;
-		absolute = void;
-		reposition = true;
+	function setLevel(cmd, elm) {
+		level = +cmd;
     } 
 
     function onStore(f) {
 		f.level = level;
-        f.absolute = absolute;
     }
 
     function onRestore(f) {
-		level    = f.level;
-		absolute = f.absolute;
-		if (level !== void && absolute !== void && isShowBU()) {
-			//dm("表示復帰:" + name + " " + level + "/" + absolute);
-			restore = true;
-		}
+		_level  = f.level;
 	}
 }

@@ -18,6 +18,7 @@ class UIListParser extends CSVParser {
     var result;
     var names;
 	var evals;
+	var order;
     var check;
 
     /**
@@ -53,6 +54,7 @@ class UIListParser extends CSVParser {
 		case "func": doFunc(info, columns); break;
 		case "part": doPart(info, columns); break;
 		case "copy": doCopy(info, columns); break;
+		case "ordr": doOrdr(info, columns); break;
 		default: knownType = false; break;
 		}
 		check = true if (knownType);
@@ -78,6 +80,13 @@ class UIListParser extends CSVParser {
 		info.class  = "copy";
 		info.copy   = columns[2];
 		info.subref = columns[3];
+	}
+
+	// ordr 順序指定(.func用)
+	function doOrdr(info, columns) {
+		order = [] if (order === void);
+		for (var i=1; i<columns.count; i++)
+			if (columns[i] != "") order.add(columns[i].trim());
 	}
 
 	// state 保存
@@ -154,7 +163,8 @@ class UIListParser extends CSVParser {
 		else if (info.class !== "part") kag.error("part名に実体が存在します:" + info.name);
 		info.part = [] if (info.part === void);
 		var part = info.part;
-		for (var i=2; i<columns.count; i++) part.add(columns[i]);
+		for (var i=2; i<columns.count; i++)
+			if (columns[i] != "") part.add(columns[i].trim());
 	}
 
 	// eval 指定
@@ -200,6 +210,7 @@ class UIListParser extends CSVParser {
         result = %[];
         names = [];
 		evals = %[];
+		order = void;
     }
 };
 
@@ -232,7 +243,7 @@ function uiloadParse(elm)
         parser.parseStorage(funcName);
     }
 
-	return %[names: parser.names, result:parser.result, evals: parser.evals];
+	with (parser) return %[ names:.names, result:.result, evals:.evals, order:.order ];
 }
 
 function uiloadCopyElement(dic, elm, name)
@@ -254,11 +265,19 @@ function uiloadCopyElement(dic, elm, name)
 // part中にサブpartを含む場合は展開する
 function uiloadPartExtract(dic, part)
 {
+	part = part.split(",",,true) if (typeof part == "String");
+	if (typeof part != "Object" || !(part instanceof "Array")) return [];
 	var result = [], append = [];
-	result.assign(part);
 	for (var i = 0; i < part.count; i++) {
-		var item = dic[part[i]];
-		if (item !== void && item.class == "part") {
+		var name = part[i];
+		result.add(name.trim()) if (typeof name == "String" && name != "");
+	}
+	part.assign(result);
+	for (var i = 0; i < part.count; i++) {
+		var item = (part[i] != "") ? dic[part[i]] : void;
+		if (item === void) {
+			result.remove(part[i], true);
+		} else if (item !== void && item.class == "part") {
 			result.remove(part[i], true);
 			append.add(uiloadPartExtract(dic, item.part));
 		}
@@ -271,53 +290,40 @@ function uiloadPartExtract(dic, part)
 	return result;
 }
 
-function uiloadEntry(layer, names, dic, elm, table, evals)
+function uiloadEntry(layer, names, dic, elm, table, evals, order)
 {
+	evals = %[] if (evals === void);
+
 	// elm 加工フック
-	uiloadEvals(elm, evals.pre, dic) if (evals !== void);
+	uiloadEvals(elm, evals.pre, dic);
 
-	// part除外処理
-	var pr = (typeof elm.partremove === "String");
-	var pe = (typeof elm.partexcept === "String");
-	if (pr || pe) {
-		var temp = [];
-		temp.assign(names);
-
-		// 指定part削除動作
-		var parts = [];
-		parts.split(",",elm.partremove,,true) if pr;
-		for (var i = 0; i < parts.count; i++) {
-			var part = dic[parts[i].trim()];
-			if (part === void) dm("partが見つかりません:" + parts[i]);
-			else if (part.class == "part") {
-				part = uiloadPartExtract(dic, part.part);
-				for (var j = 0; j < part.count; j++) temp.remove(part[j], true);
-			} else                                   temp.remove(part.name, true);
-		}
-
-		// 指定part以外削除動作
-		parts.clear();
-		parts.split(",",elm.partexcept,,true) if pe;
-		for (var i = 0; i < parts.count; i++) {
-			var part = dic[parts[i].trim()];
-			if (part === void) dm("partが見つかりません:" + parts[i]);
-			else if (part.class == "part") {
-				part = uiloadPartExtract(dic, part.part);
-				for (var j = 0; j < temp.count; j++) if (part.find(temp[j]) < 0) temp[j] = void;
-				temp.remove(void, true);
-			} else {
-				var hasPart = (temp.find(part.name) >= 0);
-				temp.clear();
-				temp.add(part.name) if hasPart;
-			}
-		}
-
-		// 結果差し替え
-		names = temp;
+	// 指定part削除動作
+	if (elm.partremove != "") {
+		var parts = uiloadPartExtract(dic, elm.partremove);
+		for (var i = parts.count-1; i >= 0 ; i--) names.remove(parts[i], true);
 	}
 
-	// names加工フック
-	uiloadEvals(names, evals.names, dic) if (evals !== void);
+	// 指定part以外削除動作
+	if (elm.partexcept != "") {
+		var parts = uiloadPartExtract(dic,   elm.partexcept);
+		if (parts.count > 0) {
+			for (var i = names.count-1; i >= 0; i--) if (parts.find(names[i]) < 0) names[i] = void;
+			names.remove(void, true);
+		}
+	}
+
+	// ordr 順序指定
+	if (typeof order == "Object" && order instanceof "Array") {
+		for (var i = order.count-1; i >= 0; i--) {
+			var name = order[i];
+			if (name == "" || dic[name] === void) continue;
+			with (names) .remove(name, true), .insert(0, name);
+		}
+	}
+
+	// names/dic加工フック
+	uiloadEvals(names, evals.names, dic);
+	uiloadEvals(dic,   evals.funcs, dic);
 
 	var basex = 0, basey = 0;
 
@@ -327,7 +333,7 @@ function uiloadEntry(layer, names, dic, elm, table, evals)
 		var value = dic[names[i]];
 		if (value !== void && value.class == "base") {
 			base = names[i];
-			uiloadEvals(elm, evals.elm, dic, base) if (evals !== void);
+			uiloadEvals(elm, evals.elm, dic, base);
 
 			var value = dic[base];
 			table[value.class](layer, base, value, elm);
@@ -338,7 +344,7 @@ function uiloadEntry(layer, names, dic, elm, table, evals)
 	}
 	// 背景がなかったときの処理
 	if (base === void) {
-		uiloadEvals(elm, evals.elm, dic, base) if (evals !== void);
+		uiloadEvals(elm, evals.elm, dic, base);
 		var tmp = %[];
 		(global.Dictionary.assign incontextof tmp)(elm,false);
 		with (tmp) {
@@ -348,65 +354,58 @@ function uiloadEntry(layer, names, dic, elm, table, evals)
 		table.base(layer, base, %[ x:0, y:0, width:layer.parent.width, height:layer.parent.height, storage:"" ], tmp);
 	}
 
-	var links = (typeof layer.numLinks != "undefined") ? layer.numLinks : void;
-	for (var i=0; i<names.count; i++) {
-		var name  = names[i];
-		var value = dic[name];
-		if (value !== void) {
-			switch (value.class) {
-			case void:
-				kag.error("クラスが指定されていません:" + name);
-				break;
-			case "base":
-			case "part":
-				break;
-			case "copy":
-				/*
-				var target;
-				try { target = dic[value.copy]; } catch {}
-				if (target === void) {
-					kag.error("コピー対象がありません:" + name);
-					break;
-				}
-				var temp = %[];
-				(global.Dictionary.assign incontextof temp)(target, true);
-				(global.Dictionary.assign incontextof temp)(value,  false);
-				 */
-				var temp = %[];
-				var target = uiloadCopyElement(dic, temp, value.copy);
-				if (target === void) break;
-				(global.Dictionary.assign incontextof temp)(value,  false);
-				/**/
-				temp.class = target.class;
-				temp.groupName = value.subref if (temp.class == "radio" && value.subref !== void);
-				temp.uistates = target.uistates;
-				value = temp;
-				/* not break */
-			default:
-				var func = table[value.class];
-				if (func !== void) {
-					value.x -= basex;
-					value.y -= basey;
-					var target = func(layer, name, value, elm);
-					if (evals !== void && target !== void)
-						uiloadEvals(target, evals[value.name], dic, base);
-				}
+	var links = table._preorder(layer);
+	var ncnt  = names.count;
+	for (var i = 0; i < ncnt; i++) {
+		var name  = names[table._order(i, ncnt)];
+		var value = (name != "") ? dic[name] : void;
+		if (value === void) continue;
+		switch (value.class) {
+		case void:
+			kag.error("クラスが指定されていません:" + name);
+			break;
+		case "base":
+		case "part":
+			break;
+		case "copy":
+			/*
+			var target;
+			try { target = dic[value.copy]; } catch {}
+			if (target === void) {
+				kag.error("コピー対象がありません:" + name);
 				break;
 			}
+			var temp = %[];
+			(global.Dictionary.assign incontextof temp)(target, true);
+			(global.Dictionary.assign incontextof temp)(value,  false);
+			 */
+			var temp = %[];
+			var target = uiloadCopyElement(dic, temp, value.copy);
+			if (target === void) break;
+			(global.Dictionary.assign incontextof temp)(value,  false);
+			/**/
+			temp.class = target.class;
+			temp.groupName = value.subref if (temp.class == "radio" && value.subref !== void);
+			temp.uistates = target.uistates;
+			value = temp;
+			/* not break */
+		default:
+			var func = table[value.class];
+			if (func !== void) {
+				value.x -= basex;
+				value.y -= basey;
+				uiloadEvals(value,  evals["-"+value.name], dic, base);
+				var target = func(layer, name, value, elm);
+				uiloadEvals(target, evals[value.name], dic, base) if (target !== void);
+			}
+			break;
 		}
 	}
 
 	// 優先順位逆転
-	if (links !== void) {
-		var cnt = layer.numLinks - links;
-		if (cnt > 0) {
-			var min = layer.links[links].object.order;
-			for (var i = 0; i < cnt; i++)
-				layer.links[links + i].object.order = min;
-		}
-	}
+	table._reorder(layer, links);
 
-	uiloadEvals(layer, evals.base, dic, base) if (evals !== void);
+	uiloadEvals(layer, evals.base, dic, base);
 }
 
 function uiloadGetRect(tag, result) {
@@ -446,8 +445,11 @@ function uiloadEvals(target, evals, result, base) {
 		case "glyph": uiloadSetRect(target, uiloadGetRect(cur[1], result), brect, "glyphFixedLeft", "glyphFixedTop", "glyphFixedWidth", "glyphFixedHeight"); break;
 		case "margin": // pos,ref
 			var rect = uiloadGetRect(cur[1], result);
-			rect.w = brect.w - (rect.x + rect.w);
-			rect.h = brect.h - (rect.y + rect.h);
+			var bw, bh;
+			if (brect !== void) bw = brect.x + brect.w, bh = brect.y + brect.h;
+			else                bw = kag.scWidth, bh = kag.scHeight; // [XXX] 画面サイズを直参照している
+			rect.w = bw - (rect.x + rect.w);
+			rect.h = bh - (rect.y + rect.h);
 			if (typeof target.marginL !== "undefined") 
 				uiloadSetRect(target, rect, brect, "marginL", "marginT", "marginR", "marginB");
 			else 
@@ -478,37 +480,11 @@ function uiloadEvals(target, evals, result, base) {
 function uiloadWithFuncTable(layer, elm, funcTable) {
 	var parse = uiloadParse(elm);
 	if (parse === void) return %[];
-	with (parse) uiloadEntry(layer, .names, .result, elm, funcTable, .evals);
+	with (parse) uiloadEntry(layer, .names, .result, elm, funcTable, .evals, .order);
 	return parse.result;
 }
 
-
-function uiEntryBase(layer, name, value, elm) {
-	var e = %[];
-	(global.Dictionary.assign incontextof e)(elm,false); 
-	e.left   = value.x + e.baseoffsetx;
-	e.top    = value.y + e.baseoffsety;
-	e.width  = value.width;
-	e.height = value.height;
-	e.frame  = value.storage;
-	e.margint = 0 if e.margint === void;
-	e.marginl = 0 if e.marginl === void;
-	e.marginr = 0 if e.marginr === void;
-	e.marginb = 0 if e.marginb === void;
-	e.transparent = false if e.transparent === void;
-	e.visible = true if e.visible === void;
-	layer.setPosition(e);
-}
-function uiEntryButton(layer, name, value) {
-	layer.locate(value.x, value.y);
-	layer.addButton(value);
-	return layer.names[value.name];
-}
-function uiEntrySlider(layer, name, value) {
-	layer.locate(value.x, value.y);
-	layer.addSlider(value);
-	return layer.names[value.name];
-}
+// ボタンレイヤを単純なレイヤに変更する
 function uiSetLayerOption(target) {
 	with (target) {
 		.setImageSize(.width, .height); // ボタン分を使わないのでサイズを縮める
@@ -518,29 +494,115 @@ function uiSetLayerOption(target) {
 	}
 	return target;
 }
-function uiAddLayer(layer, method, value) {
-	with (value) {
-		var s = .uistates;
-		.uistates = %[ normal: s[value.layer] ];
-		layer[method](value);
-		.uistates = s;
+
+// MessageLayer/DialogLayerにUIを登録するためのクラス
+class uiEntryNormal {
+	// ベース
+	function base(layer, name, value, elm) {
+		var e = %[];
+		(global.Dictionary.assign incontextof e)(elm,false);
+		e.left   = value.x + e.baseoffsetx;
+		e.top    = value.y + e.baseoffsety;
+		e.width  = value.width;
+		e.height = value.height;
+		e.frame  = value.storage if e.frame === void;
+		e.margint = 0 if e.margint === void;
+		e.marginl = 0 if e.marginl === void;
+		e.marginr = 0 if e.marginr === void;
+		e.marginb = 0 if e.marginb === void;
+		e.transparent = false if e.transparent === void;
+		e.visible = true if e.visible === void;
+		layer.setPosition(e);
 	}
-}
-function uiEntryLayer(layer, name, value) {
-	layer.locate(value.x, value.y);
-	uiAddLayer(layer, "addButton", value);
-	return uiSetLayerOption(layer.names[value.name]);
+	function _order(num,max) { return num; }
+	function _preorder(layer) {
+		return (typeof layer.numLinks != "undefined") ? layer.numLinks : void;
+	}
+	// 優先順位逆転
+	function _reorder(layer, links) {
+		if (links === void) return;
+		var cnt = layer.numLinks - links;
+		if (cnt > 0) {
+			var min = layer.links[links].object.order;
+			for (var i = 0; i < cnt; i++)
+				layer.links[links + i].object.order = min;
+		}
+	}
+
+	// virtual
+	function _pos(layer, x, y)        { layer.locate(x, y); }
+	function _add(layer, type, value) { layer["add"+type](value); }
+	function _get(layer, name) { return layer.names[name]; }
+
+	// 通常登録処理
+	function _entry(type, layer, name, value) {
+		with (value) {
+			_pos(layer, .x, .y);
+			var s;
+			if (.nouiload) s = .uistates, .uistates = void;
+			_add(layer, type, value);
+			if (s !== void) .uistates = s;
+			return _get(layer, .name);
+		}
+	}
+	// 各ui type登録
+	function button(*) { return _entry("Button", *); }
+	function toggle()  { return button(...); }
+	function radio()   { return button(...); }
+	function slider(layer, name, value) {
+		var v = %[];
+		(global.Dictionary.assign incontextof v)(value,false);
+		with (v) {
+			// デフォルト値の設定
+			.nohilight = true if .nohilight === void;
+			.nofixpos  = true if .nofixpos  === void;
+			.bgcolor   = 0    if .bgcolor   === void;
+			.opacity   = 0    if .opacity   === void;
+		}
+		return _entry("Slider", layer, name, v);
+	}
+
+	// レイヤを登録する
+	function layer(layer, name, value) {
+		var ns = %[ normal: value.uistates[value.layer] ];
+		ns <-> value.uistates;
+		var target = _entry("Button", layer, name, value);
+		ns <-> value.uistates;
+		return uiSetLayerOption(target);
+	}
+
+	function _sysentry(cls, layer, name, value) {
+		var v = %[];
+		(global.Dictionary.assign incontextof v)(value,false);
+//		dm("_sysentry", cls, name);
+		v.class = cls;
+		_entry("SystemButton", layer, name, v);
+		return layer.buttons[v.name];
+	}
+	// systemボタン
+	function sysbutton(*) { return _sysentry("button", *); }
+	function systoggle(*) { return _sysentry("toggle", *); }
+	function sysradio(*)  { return _sysentry("radio",  *); }
 }
 
+// システムボタン用
+class uiEntrySystem extends uiEntryNormal {
+	// 処理の上書き
+	function _pos(layer, x, y) {}
+	function _add(layer, type, value) { layer["addSystem"+type](value); }
+	function _get(layer, name) { return layer.buttons[name]; }
+	function slider() { throw new Exception("sysuiloadではスライダをサポートしません"); }
 
-var uiEntryFuncs = %[
-base:   uiEntryBase,
-button: uiEntryButton,
-toggle: uiEntryButton,
-radio:  uiEntryButton,
-slider: uiEntrySlider,
-layer:  uiEntryLayer,
-];
+	function _sysentry(cls, *) { return _entry(*); }
+
+	function _order(num,max) { return max-num-1; }
+	function _preorder(layer) {}
+	function _reorder(layer, links) {}
+}
+
+// uiload/uiloadSystem参照用インスタンスを生成
+var uiEntryFuncs       = new uiEntryNormal();
+var uiEntrySystemFuncs = new uiEntrySystem();
 
 /**
  * UIのロード処理
@@ -552,21 +614,6 @@ function uiload(layer, elm)
 	return uiloadWithFuncTable(layer, elm, uiEntryFuncs);
 }
 
-function uiEntrySystemButton(layer, name, value) {
-	layer.addSystemButton(value);
-	return layer.buttons[value.name];
-}
-function uiEntrySystemLayer(layer, name, value) {
-	uiAddLayer(layer, "addSystemButton", value);
-	return uiSetLayerOption(layer.buttons[value.name]);
-}
-var uiEntrySystemFuncs = %[
-base:   uiEntryBase,
-button: uiEntrySystemButton,
-toggle: uiEntrySystemButton,
-radio:  uiEntrySystemButton,
-layer:  uiEntrySystemLayer,
-];
 /**
  * UIのロード処理
  * @param layer レイヤ名
