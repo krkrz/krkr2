@@ -1,0 +1,138 @@
+/**
+ * KAG 前景レイヤのレベル制御用
+ */
+class KAGEnvLevelLayer {
+
+    /// 表示レベル
+    var level;
+    /// 表示絶対レベル
+	var absolute;
+	/// 復帰フラグ
+	var restore;
+	
+	// 描画対象レイヤ
+	var targetLayer;
+	
+    /// 位置変更
+    var front;
+    var back;
+
+    /**
+     * コンストラクタ
+     */
+    function KAGEnvLevelLayer() {
+		level = void;
+    }
+
+    function finalize() {
+		env.trashLayer(targetLayer);
+    }
+
+	/**
+	 * レイヤのコピー処理
+	 */
+	function onCopyLayer(toback, backlay) {
+		if (backlay) {
+			if (toback) {
+				if (targetLayer !== void) {
+					//dm("裏画面にコピー:" + name);
+					//dm("元レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
+					if (targetLayer.parent === kag.fore.base && targetLayer.visible) {
+						targetLayer = env.getNewLayer(name, kag.back, targetLayer);
+						//dm("複製レイヤ:" + targetLayer + ":" + (targetLayer.parent === kag.back.base ? "裏" : "表"));
+					} else {
+						//dm("廃棄");
+						targetLayer = env.trashLayer(targetLayer);
+					}
+				}
+			} else {
+				if (targetLayer !== void) {
+					//dm("表画面にコピー:" + name);
+					if (targetLayer.parent === kag.back.base && targetLayer.visible) {
+						//dm("表に移動");
+						var absolute = targetLayer.absolute;
+						targetLayer.parent = kag.fore.base;
+						targetLayer.absolute = absolute;
+					} else {
+						//dm("廃棄");
+						targetLayer = env.trashLayer(targetLayer);
+					}
+				}
+			}
+		}
+	}
+	
+    /**
+     * レイヤ情報の取得
+     * @param base fore / back      
+     * 同時にレベルに応じた front/back の処理も実行する
+     */
+	function getLayer(base) {
+		//dm("レイヤ取得:" + name + ":" + (base == kag.back ? "裏" : "表"));
+		//if (targetLayer !== void) {
+		//dm(" 現在レイヤ:" + targetLayer + "/" + (targetLayer.parent == kag.back.base ? "裏":"表"));
+		//}
+		if (targetLayer === void || targetLayer.parent !== base.base) {
+			//dm("新規レイヤ生成:" + name);
+			targetLayer = env.getNewLayer(name, base, targetLayer);
+		}
+		if (restore) {
+			//dm("復帰実行:" + level + "/" + absolute);
+			targetLayer.level    = +level    if (level !== void);
+			targetLayer.absolute = +absolute if (absolute !== void);
+			restore = false;
+		}
+
+		if (level === void) {
+			level = env.defaultLevel;
+		}
+		env.toLevel(targetLayer, level);
+		if (front) {
+			env.toFront(targetLayer);
+		} else if (back) {
+			env.toBack(targetLayer);
+        }
+		front = back = void;
+		absolute = targetLayer.absolute;
+		return targetLayer;
+    }
+
+    /**
+     * レベル内最前列
+     */
+    function setFront() {
+		front = true;
+		updateFlag = true;
+    }
+
+    /**
+     * レベル内最後列
+     */
+    function setBack() {
+        back = true;
+		updateFlag = true;
+    }
+
+    /**
+     * レベルの指定
+     */
+    function setLevel(cmd, elm) {
+		level = cmd;
+		absolute = void;
+		reposition = true;
+    } 
+
+    function onStore(f) {
+		f.level = level;
+        f.absolute = absolute;
+    }
+
+    function onRestore(f) {
+		level    = f.level;
+		absolute = f.absolute;
+		if (level !== void && absolute !== void && isShowBU()) {
+			//dm("表示復帰:" + name + " " + level + "/" + absolute);
+			restore = true;
+		}
+	}
+}

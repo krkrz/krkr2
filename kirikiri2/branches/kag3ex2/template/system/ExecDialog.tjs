@@ -1,0 +1,166 @@
+class ExecEditLayer extends EditLayer
+{
+    function ExecEditLayer() {
+        super.EditLayer(...);
+    }
+
+    function onKeyDown(key)
+	{
+        if(key == VK_RETURN) {
+            window.exec();
+        } else super.onKeyDown(...);
+    }
+}
+
+class ExecDialogWindow extends Window
+{
+    var edit;         // 編集欄
+    var okButton;     // [OK] ボタン
+	var cancelButton; // [キャンセル] ボタン
+
+	function ExecDialogWindow()
+	{
+		super.Window();
+
+		borderStyle = bsDialog;
+		innerSunken = false;
+		caption = "シナリオの読込み";
+
+		// プライマリレイヤの作成
+		add(new Layer(this, null));
+
+		// サイズを決定
+		var w = 200;
+		var h = 100;
+
+		setInnerSize(w, h);
+		primaryLayer.width = w;
+		primaryLayer.height = h;
+		primaryLayer.colorRect(0, 0, w, h, clBtnFace, 255);
+
+		// ウィンドウ位置の調整
+		if(global.Window.mainWindow !== null && global.Window.mainWindow isvalid)
+		{
+			var win = global.Window.mainWindow;
+			var l, t;
+			l = ((win.width - width)>>1) + win.left;
+			t = ((win.height - height)>>1) + win.top;
+			if(l < 0) l = 0;
+			if(t < 0) t = 0;
+			if(l + width > System.screenWidth) l = System.screenWidth - width;
+			if(t + height > System.screenHeight) t = System.screenHeight - height;
+			setPos(l, t);
+		}
+		else
+		{
+			setPos((System.screenWidth - width)>>1, (System.screenHeight - height)>>1);
+		}
+
+		// エディット
+        add(edit = new ExecEditLayer(this, primaryLayer));
+        edit.width = 150;
+        edit.height = 25;
+        edit.top  = 10;
+        edit.left = (w - (150 + 10)>>1);
+        edit.visible = true;
+        
+		// Yesボタン
+		add(okButton = new ButtonLayer(this, primaryLayer));
+		okButton.caption = "OK";
+		okButton.captionColor = clBtnText;
+		okButton.width = 70;
+		okButton.height = 25;
+		okButton.top  = 50;
+		okButton.left = (w - (70*2 + 10)>>1);
+		okButton.visible = true;
+
+		// Noボタン
+		add(cancelButton = new ButtonLayer(this, primaryLayer));
+		cancelButton.caption = "CANCEL";
+		cancelButton.captionColor = clBtnText;
+		cancelButton.width = 70;
+		cancelButton.height = 25;
+		cancelButton.top = 50;
+		cancelButton.left = ((w - (70*2 + 10))>>1) + 70 + 10;
+		cancelButton.visible = true;
+
+        edit.focus();
+	}
+
+    function exec() {
+        try {
+            if (edit.Edit_text != "") {
+                kag.process(edit.Edit_text, "");
+            }
+        } catch(e) {
+            Debug.notice("シナリオを実行できませんでした : " + e.message);
+        }
+        close();
+    }
+    
+	function finalize()
+	{
+		super.finalize(...);
+	}
+
+	function action(ev)
+	{
+		// action
+		if(ev.type == "onClick")
+		{
+			if(ev.target == okButton)
+			{
+				exec();
+			}
+			else if(ev.target == cancelButton)
+			{
+				close();
+			}
+		}
+		else if(ev.type == "onKeyDown" && ev.target === this)
+		{
+			// パッド入力に対応する処理
+			switch(ev.key)
+			{
+			case VK_PADLEFT:
+				okButton.focus();
+				break;
+			case VK_PADRIGHT:
+				cancelButton.focus();
+				break;
+			case VK_PAD1:
+				if(focusedLayer == okButton)
+				{
+                    exec();
+				}
+				else if(focusedLayer == cancelButton)
+				{
+					close();
+				}
+				break;
+			case VK_PAD2:
+				close();
+				break;
+			}
+		}
+	}
+
+	function onKeyDown(key, shift)
+	{
+		super.onKeyDown(...);
+		if(key == VK_ESCAPE)
+		{
+			// ESC キーが押された
+			// 「いいえ」として処理
+			close();
+		}
+	}
+}
+
+// Yes か No かはっきりさせる関数
+function execDialog()
+{
+	var win = new ExecDialogWindow();
+	win.showModal();
+	invalidate win;
+}
