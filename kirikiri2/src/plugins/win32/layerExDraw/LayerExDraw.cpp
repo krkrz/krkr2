@@ -549,6 +549,7 @@ Brush* createBrush(const tTJSVariant colorOrBrush)
 				PathGradientBrush *pbrush;
 				vector<PointF> points;
 				getPoints(info, L"points", points);
+				if ((int)points.size() == 0) TVPThrowExceptionMessage(L"must set poins");
 				WrapMode wrapMode = (WrapMode)info.getIntValue(L"wrapMode", WrapModeTile);
 				pbrush = new PathGradientBrush(&points[0], (int)points.size(), wrapMode);
 
@@ -576,7 +577,7 @@ Brush* createBrush(const tTJSVariant colorOrBrush)
 					}
 				}
 				//SetSurroundColors
-				if (info.checkVariant(L"interpolationColors", var)) {
+				if (info.checkVariant(L"surroundColors", var)) {
 					vector<Color> colors;
 					getColors(var, colors);
 					int size = (int)colors.size();
