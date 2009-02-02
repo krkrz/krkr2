@@ -189,6 +189,21 @@ class Window {
 	 * 最大化など他の方法でのサイズ変更は有効(onResizeも飛ぶ)
 	 */
 	property disableResize { getter; setter; }
+
+	/**
+	 * 拡張イベント：アクティブ状態変更通知
+	 * @param active 0:非アクティブ化 1:マウスクリック以外でアクティブ化 2:マウスクリックでアクティブ化
+	 * @param minimize 0:ウィンドウは最小化されていない それ以外:最小化されている
+	 *
+	 * ※Window.onActivate や Window.onDeactivate と違うのは、（これは拡張イベント全般に言えることだが）
+	 * System.eventDisabled == true でもイベントコールバックが飛んでくるという点
+	 *
+	 * 例えば System.onDeactivate 時に System.eventDisabled=true（こうすると System.onActivateは
+	 * 飛んでこない）にして，このイベント通知で復帰させると「非アクティブ時に動作停止」といった機能を
+	 * 追加できるかもしれない（ただしこれはイベントを配信停止するだけなので，前との時間差を見るような
+	 * タイマーを使ったアプリではあまり意味が無い）
+	 */
+	function onActivateChanged(active, minimize);
 }
 
 /**

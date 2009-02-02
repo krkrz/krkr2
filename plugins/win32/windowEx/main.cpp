@@ -15,6 +15,7 @@
 #define EXEV_DISPCHG   TJS_W("onDisplayChanged")
 #define EXEV_ENTERMENU TJS_W("onEnterMenuLoop")
 #define EXEV_EXITMENU  TJS_W("onExitMenuLoop")
+#define EXEV_ACTIVATE  TJS_W("onActivateChanged")
 
 ////////////////////////////////////////////////////////////////
 
@@ -266,6 +267,9 @@ struct WindowEx
 		case WM_DISPLAYCHANGE:
 			callback(EXEV_DISPCHG);
 			break;
+
+		case WM_ACTIVATE:
+			return callback(EXEV_ACTIVATE, (int)(mes->WParam & 0xFFFF), (int)((mes->WParam >> 16) & 0xFFFF));
 		}
 		return false;
 	}
