@@ -894,6 +894,10 @@ void TVPBeforeSystemInit()
 		{
 			for(tjs_int i = 1; i<_argc; i++)
 			{
+				if(_argv[i][0] == '-' &&
+					_argv[i][1] == '-' && _argv[i][2] == 0)
+					break;
+
 				if(_argv[i][0] != '-')
 				{
 					// TODO: set the current directory
@@ -1476,14 +1480,34 @@ void TVPEnsureDataPathDirectory()
 static void PushAllCommandlineArguments()
 {
 	// store arguments given by commandline to "TVPProgramArguments"
+	bool argument_stopped = false;
+	int file_argument_count = 0;
 	for(tjs_int i = 1; i<_argc; i++)
 	{
-		if(_argv[i][0] == '-')
+		if(argument_stopped)
 		{
-			ttstr value(_argv[i]);
-			if(!TJS_strchr(value.c_str(), TJS_W('=')))
-				value += TJS_W("=yes");
-			TVPProgramArguments.push_back(TVPParseCommandLineOne(value));
+			ttstr arg_name_and_value = TJS_W("-arg") + ttstr(file_argument_count) + TJS_W("=")
+				+ ttstr(_argv[i]);
+			file_argument_count++;
+			TVPProgramArguments.push_back(arg_name_and_value);
+		}
+		else
+		{
+			if(_argv[i][0] == '-')
+			{
+				if(_argv[i][1] == '-' && _argv[i][2] == 0)
+				{
+					// argument stopper
+					argument_stopped = true;
+				}
+				else
+				{
+					ttstr value(_argv[i]);
+					if(!TJS_strchr(value.c_str(), TJS_W('=')))
+						value += TJS_W("=yes");
+					TVPProgramArguments.push_back(TVPParseCommandLineOne(value));
+				}
+			}
 		}
 	}
 }
