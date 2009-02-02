@@ -1269,7 +1269,8 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 
 	if(!dw || !rw || !dh || !rh) return false; // nothing to do
 
-	if(dw == rw && dh == rh)
+	// quick check for simple blt
+	if(dw == rw && dh == rh && destrect.included_in(cliprect))
 	{
 		return Blt(destrect.left, destrect.top, ref, refrect, method, opa, hda);
 			// no stretch; do normal blt
