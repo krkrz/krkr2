@@ -49,12 +49,6 @@ class Window {
 	function getNormalRect(); //< 非最大化通常表示領域
 
 	/**
-	 * マウスカーソルのスクリーン座標を取得
-	 * @return %[ x, y ] または void(取得失敗時)
-	 */
-	function getMouseCursorPos();
-
-	/**
 	 * 拡張イベントを有効にする
 	 * 拡張イベントとして以下が発生：
 	 *  onMaximizeQuery  最大化許可確認
@@ -202,8 +196,23 @@ class Window {
 	 * 飛んでこない）にして，このイベント通知で復帰させると「非アクティブ時に動作停止」といった機能を
 	 * 追加できるかもしれない（ただしこれはイベントを配信停止するだけなので，前との時間差を見るような
 	 * タイマーを使ったアプリではあまり意味が無い）
+	 * なお，System.eventDisabled=true 時は画面更新すら走らないので，他のウィンドウを上にするなどして
+	 * WM_PAINT が発生すると画面が崩れる問題がある（後述の OverlayBitmap を使うなどする）
 	 */
 	function onActivateChanged(active, minimize);
+
+	/**
+	 * オーバーレイビットマップを表示・消去する
+	 * @param layer ビットマップ画像にコピーするレイヤ（void or省略時はオーバーレイ消去）
+	 *
+	 * 指定画像でクライアント領域に子ウィンドウ（吉里吉里のではなくWindowsのそれ）をかぶせる
+	 * ・拡張イベントが有効でないと例外が発生する
+	 * ・オーバーレイ表示中は吉里吉里のレイヤ側にマウス系のメッセージが一切行かない
+	 * ・実質的に System.eventDisabled=true の時専用
+	 * ・TVP_WM_DETACH で自動消去される
+	 *
+	 */
+	function setOverlayBitmap(layer)
 }
 
 /**
@@ -280,4 +289,13 @@ class System
 	function getMonitorInfo(near, x, y);       //< 指定座標の位置のモニタを返す
 	function getMonitorInfo(near, x, y, w, h); //< 指定座標の範囲にもっとも多く交わるモニタを返す
 	function getMonitorInfo(near, window);     //< 指定ウィンドウの範囲にもっとも多く交わるモニタを返す
+
+	/**
+	 * マウスカーソルのスクリーン座標を設定・取得
+	 * @param  set時：   x, y スクリーン座標
+	 * @return get時：%[ x, y ] または void(取得失敗時)
+	 */
+	function setCursorPos(x, y);
+	function getCursorPos();
+
 }
