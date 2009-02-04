@@ -1,6 +1,9 @@
 #include <windows.h>
 #include "ncbind.hpp"
 
+// ウィンドウクラス名取得用のバッファサイズ
+#define CLASSNAME_MAX 1024
+
 // イベント名一覧
 #define EXEV_MINIMIZE  TJS_W("onMinimize")
 #define EXEV_MAXIMIZE  TJS_W("onMaximize")
@@ -24,6 +27,11 @@ struct WindowEx
 	//--------------------------------------------------------------
 	// ユーティリティ
 
+	// ネイティブインスタンスポインタを取得
+	static inline WindowEx * GetInstance(iTJSDispatch2 *obj) {
+		return ncbInstanceAdaptor<WindowEx>::GetNativeInstance(obj);
+	}
+
 	// ウィンドウハンドルを取得
 	static HWND GetHWND(iTJSDispatch2 *obj) {
 		tTJSVariant val;
@@ -41,6 +49,16 @@ struct WindowEx
 			rdic.SetValue(TJS_W("h"), lprect->bottom - lprect->top );
 		}
 		return r;
+	}
+	// 辞書からRECTに保存
+	static void GetRect(LPRECT rect, ncbPropAccessor &dict) {
+		ncbTypedefs::Tag<LONG> LongTypeTag;
+		rect->left   = dict.GetValue(TJS_W("x"), LongTypeTag);
+		rect->top    = dict.GetValue(TJS_W("y"), LongTypeTag);
+		rect->right  = dict.GetValue(TJS_W("w"), LongTypeTag);
+		rect->bottom = dict.GetValue(TJS_W("h"), LongTypeTag);
+		rect->right  += rect->left;
+		rect->bottom += rect->top;
 	}
 
 	// SYSCOMMANDを送る
@@ -109,21 +127,6 @@ struct WindowEx
 		return TJS_S_OK;
 	}
 
-	// getMouseCursorPos
-	static tjs_error TJS_INTF_METHOD getMouseCursorPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
-		POINT pt = { 0, 0 };
-		if (r) r->Clear();
-		if (::GetCursorPos(&pt)) {
-			ncbDictionaryAccessor dict;
-			if (dict.IsValid()) {
-				dict.SetValue(TJS_W("x"), pt.x);
-				dict.SetValue(TJS_W("y"), pt.y);
-				if (r) *r = tTJSVariant(dict, dict);
-			}
-		}
-		return TJS_S_OK;
-	}
-
 	// property maximized
 	static bool isMaximized(iTJSDispatch2 *obj) {
 		HWND hwnd = GetHWND(obj);
@@ -141,15 +144,21 @@ struct WindowEx
 
 	// property disableResize
 	static tjs_error TJS_INTF_METHOD getDisableResize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
-		WindowEx *self = ncbInstanceAdaptor<WindowEx>::GetNativeInstance(obj);
+		WindowEx *self = GetInstance(obj);
 		if (r) *r = (self != NULL && self->disableResize);
 		return TJS_S_OK;
 	}
 	static tjs_error TJS_INTF_METHOD setDisableResize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
-		WindowEx *self = ncbInstanceAdaptor<WindowEx>::GetNativeInstance(obj);
+		WindowEx *self = GetInstance(obj);
 		if (self == NULL) return TJS_E_ACCESSDENYED;
 		self->disableResize = !!p[0]->AsInteger();
 		return TJS_S_OK;
+	}
+
+	// setOverlayBitmap
+	static tjs_error TJS_INTF_METHOD setOverlayBitmap(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		WindowEx *self = GetInstance(obj);
+		return (self != NULL) ? self->_setOverlayBitmap(n, p) : TJS_E_ACCESSDENYED;
 	}
 
 	//--------------------------------------------------------------
@@ -191,13 +200,7 @@ struct WindowEx
 			tTJSVariant rslt, *params[] = { &pdic };
 			funcCall(name, &rslt, 1, params);
 			if (rslt.AsInteger()) {
-				ncbTypedefs::Tag<LONG> LongTypeTag;
-				rect->left   = dict.GetValue(TJS_W("x"), LongTypeTag);
-				rect->top    = dict.GetValue(TJS_W("y"), LongTypeTag);
-				rect->right  = dict.GetValue(TJS_W("w"), LongTypeTag);
-				rect->bottom = dict.GetValue(TJS_W("h"), LongTypeTag);
-				rect->right  += rect->left;
-				rect->bottom += rect->top;
+				GetRect(rect, dict);
 				return true;
 			}
 		}
@@ -270,13 +273,17 @@ struct WindowEx
 
 		case WM_ACTIVATE:
 			return callback(EXEV_ACTIVATE, (int)(mes->WParam & 0xFFFF), (int)((mes->WParam >> 16) & 0xFFFF));
+
+		case TVP_WM_DETACH:
+			if (ovbmp) ovbmp->hide();
+			break;
 		}
 		return false;
 	}
 
 	// メッセージレシーバ
 	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *mes) {
-		WindowEx *inst = ncbInstanceAdaptor<WindowEx>::GetNativeInstance((iTJSDispatch2*)userdata);
+		WindowEx *inst = GetInstance((iTJSDispatch2*)userdata);
 		return inst ? inst->onMessage(mes) : false;
 	}
 
@@ -295,21 +302,164 @@ struct WindowEx
 			hasResizing(false),
 			hasMoving(false),
 			hasMove(false),
-			disableResize(false)
+			disableResize(false),
+			ovbmp(NULL)
 		{ regist(true); }
 
-	~WindowEx() { regist(false); }
+	~WindowEx() {
+		if (ovbmp) delete ovbmp;
+		regist(false);
+	}
 
 	void checkExEvents() {
 		hasResizing = hasMember(EXEV_RESIZING);
 		hasMoving   = hasMember(EXEV_MOVING);
 		hasMove     = hasMember(EXEV_MOVE);
 	}
+
+protected:
+	tjs_error _setOverlayBitmap(tjs_int n, tTJSVariant **p) {
+		if (ovbmp) ovbmp->hide();
+		if (n > 0 && p[0]->Type() == tvtObject) {
+			if (!ovbmp) {
+				ovbmp = new OverlayBitmap();
+				if (!ovbmp) return TJS_E_FAIL;
+			}
+			if (!ovbmp->setBitmap(self, p[0]->AsObjectNoAddRef())) {
+				ovbmp->hide();
+				return TJS_E_FAIL;
+			}
+		}
+		return TJS_S_OK;
+	}
 private:
 	iTJSDispatch2 *self;
 	bool hasResizing, hasMoving, hasMove; //< メソッドが存在するかフラグ
 	bool disableResize; // サイズ変更禁止
+
+	struct OverlayBitmap {
+		OverlayBitmap() : overlay(0), bitmap(0), bmpdc(0) {}
+		~OverlayBitmap() {
+			if (overlay) ::DestroyWindow(overlay);
+			removeBitmap();
+		}
+		static BOOL CALLBACK SearchScrollBox(HWND hwnd, LPARAM lp) {
+			HWND *result = (HWND*)lp;
+			tjs_char name[CLASSNAME_MAX];
+			::GetClassNameW(hwnd, name, CLASSNAME_MAX);
+			if (ttstr(name) == TJS_W("TScrollBox")) {
+				*result = hwnd;
+				return FALSE;
+			}
+			return TRUE;
+		}
+		static LRESULT WINAPI WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+			OverlayBitmap *self = reinterpret_cast<OverlayBitmap*>(::GetWindowLong(hwnd, GWL_USERDATA));
+			if (self != NULL && msg == WM_PAINT) {
+				self->onPaint(hwnd);
+				return 0;
+			}
+			return DefWindowProc(hwnd, msg, wp, lp);
+		}
+		void drawBitmap(HDC dc) {
+			if (bitmap) ::BitBlt(dc, bmpx, bmpy, bmpw, bmph, bmpdc, 0, 0, SRCCOPY);
+		}
+		void removeBitmap() {
+			if (bmpdc)  ::DeleteDC(bmpdc);
+			if (bitmap) ::DeleteObject(bitmap);
+			bmpdc  = NULL;
+			bitmap = NULL;
+		}
+		void onPaint(HWND hwnd) {
+			PAINTSTRUCT ps;
+			drawBitmap(::BeginPaint(hwnd, &ps));
+			::EndPaint(hwnd, &ps);
+		}
+		bool setBitmap(iTJSDispatch2 *win, iTJSDispatch2 *lay) {
+			typedef unsigned char PIX;
+
+			if (!initOverlay()) return false;
+			HWND base = GetHWND(win);
+			HWND hwnd = NULL;
+			::EnumChildWindows(base, SearchScrollBox, (LPARAM)&hwnd);
+			if (!hwnd) return false;
+
+			ncbPropAccessor obj(lay);
+			bmpx = obj.getIntValue(TJS_W("left"));
+			bmpy = obj.getIntValue(TJS_W("top"));
+			bmpw = obj.getIntValue(TJS_W("imageWidth"));
+			bmph = obj.getIntValue(TJS_W("imageHeight"));
+			tjs_int ln = obj.getIntValue(TJS_W("mainImageBufferPitch"));
+			PIX *pw, *pr = reinterpret_cast<unsigned char *>(obj.getIntValue(TJS_W("mainImageBuffer")));
+
+			BITMAPINFO info;
+			ZeroMemory(&info, sizeof(info));
+			info.bmiHeader.biSize = sizeof(BITMAPINFO);
+			info.bmiHeader.biWidth = bmpw;
+			info.bmiHeader.biHeight = bmph;
+			info.bmiHeader.biPlanes = 1;
+			info.bmiHeader.biBitCount = 24;
+
+			removeBitmap();
+			HDC dc = ::GetDC(overlay);
+			bitmap = ::CreateDIBSection(dc, (LPBITMAPINFO)&info, DIB_RGB_COLORS, (LPVOID*)&pw, NULL, 0);
+			bmpdc  = ::CreateCompatibleDC(dc);
+			::SelectObject(bmpdc, bitmap);
+
+			if (!bitmap || !bmpdc) return false;
+			for (int y = bmph-1; y >= 0; y--) {
+				PIX *src = pr + (y * ln);
+				PIX *dst = pw + ((bmph-1 - y) * ((bmpw*3+3) & ~3L));
+				for (int n = bmpw-1; n >= 0; n--, src+=4, dst+=3) {
+					dst[0] = src[0];
+					dst[1] = src[1];
+					dst[2] = src[2];
+				}
+			}
+			RECT rect;
+			::GetWindowRect(hwnd, &rect);
+			::SetParent(     overlay, hwnd);
+			::SetWindowPos(  overlay, HWND_TOP, 0, 0, (rect.right-rect.left), (rect.bottom-rect.top), 0); //SWP_HIDEWINDOW);
+
+			::InvalidateRect(overlay, NULL, TRUE);
+			::UpdateWindow(  overlay);
+			::ShowWindow(    overlay, SW_SHOWNORMAL);
+			drawBitmap(dc);
+
+			::ReleaseDC(overlay, dc);
+			return true;
+		}
+		bool initOverlay() {
+			HINSTANCE hinst = ::GetModuleHandle(NULL);
+			if (!hinst) return false;
+			if (!WindowClass) {
+				WNDCLASSEXW wcex = {
+					/*size*/sizeof(WNDCLASSEX), /*style*/CS_PARENTDC|CS_VREDRAW|CS_HREDRAW, /*proc*/WndProc, /*extra*/0L,0L, /*hinst*/hinst,
+					/*icon*/NULL, /*cursor*/::LoadCursor(NULL, IDC_ARROW), /*brush*/(HBRUSH)::GetStockObject(BLACK_BRUSH), /*menu*/NULL,
+					/*class*/TJS_W("WindowEx OverlayBitmap Window Class"), /*smicon*/NULL };
+				WindowClass = ::RegisterClassExW(&wcex);
+				if (!WindowClass) return false;
+			}
+			if (!overlay) {
+				overlay = ::CreateWindowExW(WS_EX_TOPMOST, (LPCWSTR)MAKELONG(WindowClass, 0), TJS_W("WindowExOverlayBitmap"),
+											WS_CHILDWINDOW, 0, 0, 1, 1, TVPGetApplicationWindowHandle(), NULL, hinst, NULL);
+				if (!overlay) return false;
+				::SetWindowLong(overlay, GWL_USERDATA, (LONG)this);
+			}
+			return true;
+		}
+		void show() const { if (overlay) ::ShowWindow(overlay, SW_SHOWNORMAL); }
+		void hide() const { if (overlay) ::ShowWindow(overlay, SW_HIDE);       }
+
+	private:
+		HWND overlay;
+		HBITMAP bitmap;
+		HDC bmpdc;
+		tjs_int bmpx, bmpy, bmpw, bmph;
+		static ATOM WindowClass;
+	} *ovbmp;
 };
+ATOM WindowEx::OverlayBitmap::WindowClass = 0;
 
 // 拡張イベント用ネイティブインスタンスゲッタ
 NCB_GET_INSTANCE_HOOK(WindowEx)
@@ -333,8 +483,8 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 	RawCallback(TJS_W("getWindowRect"),       &Class::getWindowRect,     0);
 	RawCallback(TJS_W("getClientRect"),       &Class::getClientRect,     0);
 	RawCallback(TJS_W("getNormalRect"),       &Class::getNormalRect,     0);
-	RawCallback(TJS_W("getMouseCursorPos"),   &Class::getMouseCursorPos, 0);
 	RawCallback(TJS_W("disableResize"),       &Class::setDisableResize,  &Class::setDisableResize, 0);
+	RawCallback(TJS_W("setOverlayBitmap"),    &Class::setOverlayBitmap,  0);
 
 	Method(     TJS_W("registerExEvent"),     &Class::checkExEvents);
 }
@@ -475,7 +625,6 @@ struct ConsoleEx
 		ttstr name;
 		HWND result;
 	};
-#define CLASSNAME_MAX 1024
 	static BOOL CALLBACK SearchWindowClass(HWND hwnd, LPARAM lp) {
 		SearchWork *wk = (SearchWork*)lp;
 		tjs_char name[CLASSNAME_MAX];
@@ -717,8 +866,35 @@ struct System
 		}
 		return TJS_S_OK;
 	}
+
+	// System.getMouseCursorPos
+	static tjs_error TJS_INTF_METHOD getCursorPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		POINT pt = { 0, 0 };
+		if (r) r->Clear();
+		if (::GetCursorPos(&pt)) {
+			ncbDictionaryAccessor dict;
+			if (dict.IsValid()) {
+				dict.SetValue(TJS_W("x"), pt.x);
+				dict.SetValue(TJS_W("y"), pt.y);
+				if (r) *r = tTJSVariant(dict, dict);
+			}
+		}
+		return TJS_S_OK;
+	}
+	// System.setMouseCursorPos
+	static tjs_error TJS_INTF_METHOD setCursorPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		if (n < 2) return TJS_E_BADPARAMCOUNT;
+		BOOL rslt = ::SetCursorPos((int)p[0]->AsInteger(), (int)p[1]->AsInteger());
+		if (r) {
+			r->Clear();
+			*r = rslt ? true : false;
+		}
+		return TJS_S_OK;
+	}
 };
 
 // Systemに関数を追加
 NCB_ATTACH_FUNCTION(getDisplayMonitors, System, System::getDisplayMonitors);
 NCB_ATTACH_FUNCTION(getMonitorInfo,     System, System::getMonitorInfo);
+NCB_ATTACH_FUNCTION(getCursorPos,       System, System::getCursorPos);
+NCB_ATTACH_FUNCTION(setCursorPos,       System, System::setCursorPos);
