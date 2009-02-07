@@ -119,10 +119,24 @@ struct WindowEx
 		WINDOWPLACEMENT place;
 		ZeroMemory(&place, sizeof(place));
 		place.length = sizeof(place);
+
+		MONITORINFOEXW mi;
+		ZeroMemory(&mi, sizeof(mi));
+		mi.cbSize = sizeof(mi);
+
 		if (r) r->Clear();
 		if (hwnd != NULL && ::GetWindowPlacement(hwnd, &place)) {
+			RECT *rc = &place.rcNormalPosition;
 			ncbDictionaryAccessor dict;
-			if (SetRect(dict, &place.rcNormalPosition) && r) *r = tTJSVariant(dict, dict);
+			ncbPropAccessor   prop(obj);
+			bool nofix = (n > 0 && !!p[0]->AsInteger());
+			if (!nofix && ::GetMonitorInfoW(::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &mi)) {
+				LONG ox = mi.rcWork.left - mi.rcMonitor.left;
+				LONG oy = mi.rcWork.top  - mi.rcMonitor.top;
+				rc->left += ox, rc->right  += ox;
+				rc->top  += oy, rc->bottom += oy;
+			}
+			if (SetRect(dict, rc) && r) *r = tTJSVariant(dict, dict);
 		}
 		return TJS_S_OK;
 	}
