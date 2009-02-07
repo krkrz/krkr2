@@ -46,7 +46,7 @@ class Window {
 	 */
 	function getClientRect(); //< クライアント領域
 	function getWindowRect(); //< ウィンドウ領域
-	function getNormalRect(); //< 非最大化通常表示領域
+	function getNormalRect(nofix=false); //< 非最大化通常表示領域(@param nofix true:ワークエリア補正を行わない)
 
 	/**
 	 * 拡張イベントを有効にする
