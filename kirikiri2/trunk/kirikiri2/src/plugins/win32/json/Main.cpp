@@ -516,7 +516,7 @@ public:
 				} else if (s == L"false") {
 					var = false;
 				} else if (s == L"null") {
-					var = tTJSVariant((iTJSDispatch2*)NULL);
+					var.Clear();
 				} else if (s == L"void") {
 					var.Clear();
 				} else {
@@ -848,7 +848,7 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 	switch(var.Type()) {
 
 	case tvtVoid:
-		writer->write(L"void");
+		writer->write(L"null");
 		break;
 		
 	case tvtObject:
