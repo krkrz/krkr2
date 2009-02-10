@@ -236,6 +236,13 @@ private:
 			const tTVPRect & srccliprect,
 			const tTVPRect & srcrect);
 
+	int InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
+		tTVPRect refrect, const tTVPPointD * points,
+			tTVPBBBltMethod method, tjs_int opa,
+			tTVPRect * updaterect = NULL,
+			bool hda = true, tTVPBBStretchType mode = stNearest, bool clear = false,
+				tjs_uint32 clearcolor = 0);
+
 public:
 	bool AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const tTVPPointD * points,
