@@ -2092,7 +2092,7 @@ static inline tjs_int mul_16(tjs_int x, tjs_int y)
 	return (tjs_int)((tjs_int64)x * y / 65536);
 }
 //---------------------------------------------------------------------------
-bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
+int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const tTVPPointD * points_in,
 			tTVPBBBltMethod method, tjs_int opa,
 			tTVPRect * updaterect,
@@ -2110,14 +2110,15 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	// if 'clear' is true, area which is out of the affine destination and
 	// within the destination bounding box, is to be filled with value 'clearcolor'.
 
-	// returns false if the updating rect is not updated
+	// returns 0 if the updating rect is not updated, 1 if error
+	// otherwise returns 2
 
 	// extract stretch type
 	tTVPBBStretchType type = (tTVPBBStretchType)(mode & stTypeMask);
 
 	// check source rectangle
 	if(refrect.left >= refrect.right ||
-		refrect.top >= refrect.bottom) return false;
+		refrect.top >= refrect.bottom) return 1;
 	if(refrect.left < 0 || refrect.top < 0 ||
 		refrect.right > (tjs_int)ref->GetWidth() ||
 		refrect.bottom > (tjs_int)ref->GetHeight())
@@ -2144,7 +2145,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	if(destrect.bottom > (tjs_int)GetHeight()) destrect.bottom = GetHeight();
 
 	if(destrect.left >= destrect.right ||
-		destrect.top >= destrect.bottom) return false; // not drawable
+		destrect.top >= destrect.bottom) return 1; // not drawable
 
 	// vertex points
 	tjs_int points_x[4];
@@ -2187,10 +2188,10 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	if(scanlineend < points_y[3]) scanlineend = points_y[3];
 
 	// rough check destrect intersections
-	if(floor_16(leftlimit) >= destrect.right) return false;
-	if(floor_16(rightlimit) < destrect.left) return false;
-	if(floor_16(scanlinestart) >= destrect.bottom) return false;
-	if(floor_16(scanlineend) < destrect.top) return false;
+	if(floor_16(leftlimit) >= destrect.right) return 0;
+	if(floor_16(rightlimit) < destrect.left) return 0;
+	if(floor_16(scanlinestart) >= destrect.bottom) return 0;
+	if(floor_16(scanlineend) < destrect.top) return 0;
 
 	// compute sxstep and systep (step count for source image)
 	tjs_int sxstep, systep;
@@ -2235,7 +2236,7 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 	if(destrect.top > yc) yc = destrect.top;
 	if(destrect.bottom <= yclim) yclim = destrect.bottom - 1;
 	if(yc >= destrect.bottom || yclim < 0)
-		return false; // not drawable
+		return 0; // not drawable
 
 	tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(yc);
 	tjs_int destpitch = GetPitchBytes();
@@ -2770,7 +2771,29 @@ bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		}
 	}
 
-	return clear || !firstline;
+	return (clear || !firstline)?2:0;
+}
+//---------------------------------------------------------------------------
+bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
+		tTVPRect refrect, const tTVPPointD * points_in,
+			tTVPBBBltMethod method, tjs_int opa,
+			tTVPRect * updaterect,
+			bool hda, tTVPBBStretchType mode, bool clear, tjs_uint32 clearcolor)
+{
+	if(0 == InternalAffineBlt(destrect, ref, refrect, points_in, method, opa, updaterect, hda,
+		mode, clear, clearcolor))
+	{
+		if(clear)
+		{
+			if(hda)
+				FillColor(destrect, clearcolor, 255);
+			else
+				Fill(destrect, clearcolor);
+			return true;
+		}
+		return false;
+	}
+	return true;
 }
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
