@@ -1125,7 +1125,7 @@ void TVPRevertFromFullScreen(HWND window)
 		{
 			TVPDirectDraw2->RestoreDisplayMode();
 			TVPDirectDraw2->SetCooperativeLevel(window, DDSCL_NORMAL);
-			::ChangeDisplaySettings(NULL, 0)
+			ChangeDisplaySettings(NULL, 0);
 		}
 	}
 	TVPUninitDirectDraw();
