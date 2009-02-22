@@ -910,6 +910,62 @@ struct System
 		}
 		return TJS_S_OK;
 	}
+	// System.getSystemMetrics
+	static tjs_error TJS_INTF_METHOD getSystemMetrics(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		if (n < 1) return TJS_E_BADPARAMCOUNT;
+
+		if (p[0]->Type() != tvtString) return TJS_E_INVALIDPARAM;
+		ttstr key(p[0]->AsString());
+		if (key == TJS_W("")) return TJS_E_INVALIDPARAM;
+		key.ToUppserCase();
+
+		tTJSVariant tmp;
+		iTJSDispatch2 *obj =  TVPGetScriptDispatch();
+		bool hasval = TJS_SUCCEEDED(obj->PropGet(TJS_MEMBERMUSTEXIST, TJS_W("System"), 0, &tmp, obj));
+		obj->Release();
+		if (!hasval) return TJS_E_FAIL;
+
+		obj = tmp.AsObjectNoAddRef();
+		tmp.Clear();
+		if (TJS_FAILED(obj->PropGet(TJS_MEMBERMUSTEXIST, TJS_W("metrics"), 0, &tmp, obj))) {
+			ncbDictionaryAccessor dict;
+#define SM(key) dict.SetValue(TJS_W(# key), SM_ ## key)
+			SM(ARRANGE);				SM(CLEANBOOT);				SM(CMONITORS);				SM(CMOUSEBUTTONS);
+			SM(CXBORDER);				SM(CXCURSOR);				SM(CXDLGFRAME);				SM(CXDOUBLECLK);
+			SM(CXDRAG);					SM(CXEDGE);					SM(CXFIXEDFRAME);			SM(CXFOCUSBORDER);
+			SM(CXFRAME);				SM(CXFULLSCREEN);			SM(CXHSCROLL);				SM(CXHTHUMB);
+			SM(CXICON);					SM(CXICONSPACING);			SM(CXMAXIMIZED);			SM(CXMAXTRACK);
+			SM(CXMENUCHECK);			SM(CXMENUSIZE);				SM(CXMIN);					SM(CXMINIMIZED);
+			SM(CXMINSPACING);			SM(CXMINTRACK);				SM(CXPADDEDBORDER);			SM(CXSCREEN);
+			SM(CXSIZE);					SM(CXSIZEFRAME);			SM(CXSMICON);				SM(CXSMSIZE);
+			SM(CXVIRTUALSCREEN);		SM(CXVSCROLL);				SM(CYBORDER);				SM(CYCAPTION);
+			SM(CYCURSOR);				SM(CYDLGFRAME);				SM(CYDOUBLECLK);			SM(CYDRAG);
+			SM(CYEDGE);					SM(CYFIXEDFRAME);			SM(CYFOCUSBORDER);			SM(CYFRAME);
+			SM(CYFULLSCREEN);			SM(CYHSCROLL);				SM(CYICON);					SM(CYICONSPACING);
+			SM(CYKANJIWINDOW);			SM(CYMAXIMIZED);			SM(CYMAXTRACK);				SM(CYMENU);
+			SM(CYMENUCHECK);			SM(CYMENUSIZE);				SM(CYMIN);					SM(CYMINIMIZED);
+			SM(CYMINSPACING);			SM(CYMINTRACK);				SM(CYSCREEN);				SM(CYSIZE);
+			SM(CYSIZEFRAME);			SM(CYSMCAPTION);			SM(CYSMICON);				SM(CYSMSIZE);
+			SM(CYVIRTUALSCREEN);		SM(CYVSCROLL);				SM(CYVTHUMB);				SM(DBCSENABLED);
+			SM(DEBUG);					SM(IMMENABLED);				SM(MEDIACENTER);			SM(MENUDROPALIGNMENT);
+			SM(MIDEASTENABLED);			SM(MOUSEPRESENT);			SM(MOUSEHORIZONTALWHEELPRESENT);	SM(MOUSEWHEELPRESENT);
+			SM(NETWORK);				SM(PENWINDOWS);				SM(REMOTECONTROL);			SM(REMOTESESSION);
+			SM(SAMEDISPLAYFORMAT);		SM(SECURE);					SM(SERVERR2);				SM(SHOWSOUNDS);
+			SM(SHUTTINGDOWN);			SM(SLOWMACHINE);			SM(STARTER);				SM(SWAPBUTTON);
+			SM(TABLETPC);				SM(XVIRTUALSCREEN);			SM(YVIRTUALSCREEN);
+//			SM(DIGITIZER);
+//			SM(MAXIMUMTOUCHES);
+#undef SM
+			tmp = dict;
+			if (TJS_FAILED(obj->PropSet(TJS_MEMBERENSURE, TJS_W("metrics"), 0, &tmp, obj)))
+				return TJS_E_FAIL;
+		}
+		ncbPropAccessor metrics(tmp);
+		tjs_int num = metrics.getIntValue(key.c_str(), -1);
+		if (num < 0) return TJS_E_INVALIDPARAM;
+		*r = (tjs_int)::GetSystemMetrics((int)num);
+		return TJS_S_OK;
+	}
 };
 
 // System‚ÉŠÖ”‚ð’Ç‰Á
@@ -917,3 +973,5 @@ NCB_ATTACH_FUNCTION(getDisplayMonitors, System, System::getDisplayMonitors);
 NCB_ATTACH_FUNCTION(getMonitorInfo,     System, System::getMonitorInfo);
 NCB_ATTACH_FUNCTION(getCursorPos,       System, System::getCursorPos);
 NCB_ATTACH_FUNCTION(setCursorPos,       System, System::setCursorPos);
+NCB_ATTACH_FUNCTION(getSystemMetrics,   System, System::getSystemMetrics);
+
