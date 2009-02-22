@@ -289,7 +289,7 @@ struct WindowEx
 			return callback(EXEV_ACTIVATE, (int)(mes->WParam & 0xFFFF), (int)((mes->WParam >> 16) & 0xFFFF));
 
 		case TVP_WM_DETACH:
-			if (ovbmp) ovbmp->hide();
+			deleteOverlayBitmap();
 			break;
 		}
 		return false;
@@ -321,7 +321,7 @@ struct WindowEx
 		{ regist(true); }
 
 	~WindowEx() {
-		if (ovbmp) delete ovbmp;
+		deleteOverlayBitmap();
 		regist(false);
 	}
 
@@ -329,6 +329,10 @@ struct WindowEx
 		hasResizing = hasMember(EXEV_RESIZING);
 		hasMoving   = hasMember(EXEV_MOVING);
 		hasMove     = hasMember(EXEV_MOVE);
+	}
+	void deleteOverlayBitmap() {
+		if (ovbmp) delete ovbmp;
+		ovbmp = NULL;
 	}
 
 protected:
@@ -340,7 +344,7 @@ protected:
 				if (!ovbmp) return TJS_E_FAIL;
 			}
 			if (!ovbmp->setBitmap(self, p[0]->AsObjectNoAddRef())) {
-				ovbmp->hide();
+				deleteOverlayBitmap();
 				return TJS_E_FAIL;
 			}
 		}
@@ -391,6 +395,7 @@ private:
 		}
 		bool setBitmap(iTJSDispatch2 *win, iTJSDispatch2 *lay) {
 			typedef unsigned char PIX;
+			if (!lay || !lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay)) return false;
 
 			if (!initOverlay()) return false;
 			HWND base = GetHWND(win);
