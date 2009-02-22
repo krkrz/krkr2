@@ -8,14 +8,9 @@
 #include <sqstdaux.h>
 #include <sqstdblob.h>
 
-#include <tchar.h>
 #include <string>
+typedef std::basic_string<SQChar> tstring;
 
-#if _UNICODE
-typedef std::wstring tstring;
-#else
-typedef std::string tstring;
-#endif
 
 /**
  * 文字列置換関数
@@ -32,11 +27,11 @@ replace(HSQUIRRELVM v)
 	if (SQ_SUCCEEDED(sq_getstring(v, 2, &str))) {
 		if (SQ_SUCCEEDED(sq_getstring(v, 3, &from)) &&
 			SQ_SUCCEEDED(sq_getstring(v, 4, &to))) {
-			int nFromLen = _tcslen(from);
+			int nFromLen = scstrlen(from);
 			const SQChar *start = str;
 			const SQChar *p;
 			tstring result;
-			while ((p = _tcsstr(start, from)) != NULL) {
+			while ((p = scstrstr(start, from)) != NULL) {
 				// 開始位置までコピー
 				while (start < p) {
 					result += *start++;
@@ -84,7 +79,6 @@ sqbasic_init(HSQUIRRELVM v)
 	sq_pushroottable(v);
 
 	// 各種基本ライブラリの登録
-	sq_pushroottable(v);
 	sqstd_register_iolib(v);
 	sqstd_register_bloblib(v);
 	sqstd_register_mathlib(v);
