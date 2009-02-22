@@ -1018,7 +1018,7 @@ protected:
 	struct doInvokeBase {
 		typedef tjs_error ResultT;
 		enum { Hook = true };
-		enum { ivsMethod, ivsProxy, ivsConstructor };
+		enum { ivsMethod, ivsProxy, ivsConstructor, ivsFactory };
 
 		typedef tTJSVariant  * RetT;
 		typedef tjs_int        NumT;
@@ -1061,6 +1061,26 @@ protected:
 			}
 			return TJS_S_OK;
 		}
+		// コンストラクタ代替ファクトリ
+		template <typename MethodT, class ClassT, class FunctorT>
+		ResultT CallInvoke(MethodT const &m, ClassT *inst, DefsT::Tag<FunctorT>, DefsT::NumTag<ivsFactory>) const {
+			typedef ncbInstanceAdaptor<ClassT> AdaptorT;
+			try {
+				if (!(inst = CallerT::Factory(FunctorT(_result, _numparams, _param, _objthis), m))) {
+					TVPThrowExceptionMessage(TJS_W("NativeClassInstance creation faild."));
+					return TJS_E_FAIL;
+				}
+				if (!ncbInstanceAdaptor<ClassT>::SetNativeInstance(_objthis, inst)) {
+					delete inst;
+					return TJS_E_NATIVECLASSCRASH;
+				}
+			} catch (...) {
+				if (inst) delete inst;
+				throw;
+			}
+			return TJS_S_OK;
+		}
+
 		// インスタンス取得
 		template <class ClassT, typename GetterT>
 		ResultT GetInstance(ClassT **obj, GetterT &g) const {
@@ -1108,6 +1128,7 @@ public:
 	struct InvokeType {
 		// InvokeCommandに使用する場合わけ用タグ
 		struct ivtCtor {};
+		struct ivtFactory {};
 		struct ivtNormal {};
 		template <class BASE>
 		struct ivtProxy { typedef BASE BaseT; };
@@ -1191,6 +1212,31 @@ public:
 				ArgsCount = TraitsT::ArgsCount
 			};
 		};
+		// Factory
+		template <class CLASS, typename METHOD>
+		struct InvokeCommand<CLASS, METHOD, ivtFactory> {
+			typedef CLASS RefClassT;
+			typedef CLASS ClassT;
+			typedef METHOD   MethodT;
+			typedef noInstanceGetter GetInstanceT;
+			typedef traits<METHOD> TraitsT;
+			typedef paramsFunctorWithInstance<iTJSDispatch2, paramsFunctor<METHOD> > FunctorT;
+			enum {
+				InvokeSelect = doInvokeBase::ivsFactory,
+				ArgsCount = TraitsT::ArgsCount - 1
+			};
+			// ファクトリ関数の返り値チェック
+			struct NoInstanceReturn {};
+			typedef typename DefsT::TypeAssert<
+				!DefsT::TypeEqual<typename TraitsT::ResultT, ClassT*>::Result,
+			/**/NoInstanceReturn>::Result CheckResultType;
+
+			// staticメソッドチェック
+			struct NoStaticMethod {};
+			typedef typename DefsT::TypeAssert<
+				!DefsT::TypeEqual<typename TraitsT::ClassT, void>::Result,
+			/**/NoStaticMethod >::Result CheckClassType;
+		};
 		
 		// プロパティは Getter と Setter の InvokeCommand を束ねる
 		template <class REFCLASS, typename GETTER, typename SETTER, class SEL>
@@ -1250,7 +1296,10 @@ struct ncbNativeClassConstructor : public ncbNativeClassMethodBase {
 	typedef typename CommandT::MethodT MethodT;
 
 	/// constructor
-	ncbNativeClassConstructor() : ncbNativeClassMethodBase(nitMethod) {}
+	ncbNativeClassConstructor(MethodT m) : ncbNativeClassMethodBase(nitMethod), _method(m) {
+		if (!_method && CommandT::InvokeSelect == doInvokeBase::ivsFactory)
+			TVPThrowExceptionMessage(TJS_W("No factory pointer."));
+	}
 
 	/// FuncCall実装
 	tjs_error  TJS_INTF_METHOD FuncCall(
@@ -1266,11 +1315,55 @@ struct ncbNativeClassConstructor : public ncbNativeClassMethodBase {
 			return TJS_S_OK;
 		}
 		// ネイティブインスタンス生成
-		return (doInvoke<CommandT>(0, result, numparams, param, objthis)).Invoke();
+		return (doInvoke<CommandT>(_method, result, numparams, param, objthis)).Invoke();
 	}
 
 	/// iMethod factory
-	static iMethodT Create(bool create = true) { return !create ? 0 : (new ThisClassT())->GetIMethod(); }
+	static iMethodT Create(MethodT m, bool create = true) { return !create ? 0 : (new ThisClassT(m))->GetIMethod(); }
+
+protected:
+	MethodT const _method;
+};
+
+template <class ClassT>
+struct ncbNativeClassFactory : public ncbNativeClassMethodBase {
+	typedef ncbNativeClassFactory ThisClassT;
+	typedef tjs_error (TJS_INTF_METHOD *MethodT)(ClassT **result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+
+	/// constructor
+	ncbNativeClassFactory(MethodT m) : ncbNativeClassMethodBase(nitMethod), _method(m) {
+		if (!_method) TVPThrowExceptionMessage(TJS_W("No factory pointer."));
+	}
+
+	/// FuncCall実装
+	tjs_error  TJS_INTF_METHOD FuncCall(
+		tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint, 
+		tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+	{
+		// 自分自身が呼ばれたのではない場合は丸投げ
+		if (membername) return BaseT::FuncCall(flag, membername, hint, result, numparams, param, objthis);
+
+		// 引き数がひとつでかつvoidの場合はインスタンスを設定しない
+		if ((numparams == 1) && (ncbTypedefs::GetVariantType(*param[0]) == tvtVoid)) {
+//			NCB_LOG_W("Constructor(void)");
+			return TJS_S_OK;
+		}
+		// ネイティブインスタンス生成
+		ClassT *inst = 0;
+		tjs_error r = _method(&inst, numparams, param, objthis);
+		if (r != TJS_S_OK) return r;
+		if (!ncbInstanceAdaptor<ClassT>::SetNativeInstance(objthis, inst)) {
+			delete inst;
+			return TJS_E_NATIVECLASSCRASH;
+		}
+		return TJS_S_OK;
+	}
+
+	/// iMethod factory
+	static iMethodT Create(MethodT m, bool create = true) { return !create ? 0 : (new ThisClassT(m))->GetIMethod(); }
+
+protected:
+	MethodT const _method;
 };
 
 
@@ -1580,7 +1673,7 @@ public:
 	/// コンストラクタを登録する
 	template <typename MethodT>
 	void Constructor(TypeWrap<MethodT>) {
-		DoItem(GetName(), ncbNativeClassConstructor< InvokeCommand<ClassT, MethodT, ivtCtor> >::Create(_isRegist));
+		DoItem(GetName(), ncbNativeClassConstructor< InvokeCommand<ClassT, MethodT, ivtCtor> >::Create(0, _isRegist));
 	}
 	// デフォルトコンストラクタの登録
 	void Constructor(int dummy = 0) { Constructor(TypeWrap<void (_ClassT::*)()>()); }
@@ -1601,6 +1694,17 @@ public:
 #include FOREACH_INCLUDE
 #undef  CTOR_PRM_EXT
 #undef  CTOR_ARG_EXT
+
+	// ファクトリを登録
+	template <typename MethodT>
+	void Factory(MethodT m) {
+		DoItem(GetName(), ncbNativeClassConstructor< InvokeCommand<ClassT, MethodT, ivtFactory> >::Create(m, _isRegist));
+	}
+	// RawCallback Factory
+	void RawCallback(typename ncbNativeClassFactory<ClassT>::MethodT m) { Factory(m); }
+	void Factory(    typename ncbNativeClassFactory<ClassT>::MethodT m) {
+		DoItem(GetName(),     ncbNativeClassFactory<ClassT>::Create(m, _isRegist));
+	}
 
 	/// RawCallback Method
 	template <typename NAME, typename MethodT>
