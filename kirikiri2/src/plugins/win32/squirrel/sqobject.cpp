@@ -9,14 +9,21 @@
 #include <new>
 
 // ログ出力用
-extern void printFunc(HSQUIRRELVM v, const SQChar* format, ...);
+#define PRINT(v,msg) {\
+	SQPRINTFUNCTION print = sq_getprintfunc(v);\
+	if (print) {\
+		print(v,msg);\
+	}\
+}
 
-//#define USEUD
-
-// ループ実行開始
+/**
+ * ループ実行開始
+ * スレッドが投入されたのでメインループを開始する処理を呼び出す
+ * ユーザ側で定義する必要があります
+ */
 extern void sqobject_start();
-// ループ実行終了
-extern void sqobject_stop();
+
+namespace sqobject {
 
 /**
  * パラメータ数の取得
@@ -34,7 +41,7 @@ static int getParamCount(HSQUIRRELVM v)
  * @param idx インデックス
  * @return 文字列
  */
-const SQChar *getString(HSQUIRRELVM v, int idx) {
+static const SQChar *getString(HSQUIRRELVM v, int idx) {
 	const SQChar *x = NULL;
 	sq_getstring(v, idx, &x);
 	return x;
@@ -70,12 +77,12 @@ static const SQUserPointer OBJTYPETAG = (SQUserPointer)"OBJTYPETAG";
 static const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
 
 // ---------------------------------------------------------
-// SQObjectInfo
+// ObjectInfo
 // ---------------------------------------------------------
 
 // 内容消去
 void
-SQObjectInfo::clear() {
+ObjectInfo::clear() {
 	sq_release(v,&obj);
 	v = NULL;
 	sq_resetobject(&obj);
@@ -83,7 +90,7 @@ SQObjectInfo::clear() {
 
 // スタックから取得
 void
-SQObjectInfo::getStack(HSQUIRRELVM v, int idx) {
+ObjectInfo::getStack(HSQUIRRELVM v, int idx) {
 	clear();
 	this->v = v;
 	sq_getstackobj(v, idx, &obj);
@@ -91,26 +98,26 @@ SQObjectInfo::getStack(HSQUIRRELVM v, int idx) {
 }
 	
 // コンストラクタ
-SQObjectInfo::SQObjectInfo() : v(NULL) {
+ObjectInfo::ObjectInfo() : v(NULL) {
 	sq_resetobject(&obj);
 }
 
 // コンストラクタ
-SQObjectInfo::SQObjectInfo(HSQUIRRELVM v, int idx) : v(v) {
+ObjectInfo::ObjectInfo(HSQUIRRELVM v, int idx) : v(v) {
 	sq_resetobject(&obj);
 	sq_getstackobj(v, idx, &obj);
 	sq_addref(v, &obj);
 }
 
 // コピーコンストラクタ
-SQObjectInfo::SQObjectInfo(const SQObjectInfo &orig) {
+ObjectInfo::ObjectInfo(const ObjectInfo &orig) {
 	v   = orig.v;
 	obj = orig.obj;
 	sq_addref(v, &obj);
 }
 
 // 代入
-SQObjectInfo & SQObjectInfo::operator=(const SQObjectInfo &orig) {
+ObjectInfo & ObjectInfo::operator=(const ObjectInfo &orig) {
 	clear();
 	v = orig.v;
 	obj = orig.obj;
@@ -119,31 +126,31 @@ SQObjectInfo & SQObjectInfo::operator=(const SQObjectInfo &orig) {
 }
 
 // デストラクタ
-SQObjectInfo:: ~SQObjectInfo() {
+ObjectInfo:: ~ObjectInfo() {
 	clear();
 }
 
 // スレッドか？
 bool
-SQObjectInfo::isThread() const {
+ObjectInfo::isThread() const {
 	return sq_isthread(obj);
 }
 
 // 同じスレッドか？
 bool
-SQObjectInfo::isSameThread(const HSQUIRRELVM v) const {
+ObjectInfo::isSameThread(const HSQUIRRELVM v) const {
 	return sq_isthread(obj) && obj._unVal.pThread == v;
 }
 
 // スレッドを取得
-SQObjectInfo::operator HSQUIRRELVM() const {
+ObjectInfo::operator HSQUIRRELVM() const {
 	HSQUIRRELVM vm = sq_isthread(obj) ? obj._unVal.pThread : NULL;
 	return vm;
 }
 	
 // インスタンスユーザポインタを取得
 SQUserPointer
-SQObjectInfo::getInstanceUserPointer(const SQUserPointer tag) {
+ObjectInfo::getInstanceUserPointer(const SQUserPointer tag) {
 	SQUserPointer up = NULL;
 	if (sq_isinstance(obj)) {
 		sq_pushobject(v, obj);
@@ -157,7 +164,7 @@ SQObjectInfo::getInstanceUserPointer(const SQUserPointer tag) {
 
 // オブジェクトをPUSH
 void
-SQObjectInfo::push(HSQUIRRELVM v) const {
+ObjectInfo::push(HSQUIRRELVM v) const {
 	sq_pushobject(v, obj);
 }
 
@@ -167,13 +174,13 @@ SQObjectInfo::push(HSQUIRRELVM v) const {
 
 // delegate として機能するかどうか
 bool
-SQObjectInfo::isDelegate() {
+ObjectInfo::isDelegate() {
 	return v && (sq_isinstance(obj) || sq_istable(obj));
 }
 
 // bindenv させるかどうか
 bool
-SQObjectInfo::isBindDelegate() {
+ObjectInfo::isBindDelegate() {
 	return v && (sq_isinstance(obj));
 }
 
@@ -182,14 +189,14 @@ SQObjectInfo::isBindDelegate() {
 // ---------------------------------------------------
 
 // インスタンスユーザポインタを取得
-MyThread *
-SQObjectInfo::getMyThread() {
+Thread *
+ObjectInfo::getThread() {
 	if (sq_isinstance(obj)) {
 		sq_pushobject(v, obj);
 		SQUserPointer up = NULL;
 		if (SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
 			sq_pop(v,1);
-			return (MyThread*)up;
+			return (Thread*)up;
 		}
 		sq_pop(v, 1);
 	}
@@ -197,11 +204,11 @@ SQObjectInfo::getMyThread() {
 }
 
 // インスタンスユーザポインタを取得
-MyObject *
-SQObjectInfo::getMyObject() {
+Object *
+ObjectInfo::getObject() {
 	if (sq_isinstance(obj)) {
 		sq_pushobject(v, obj);
-		MyObject *ret = MyObject::getObject(v, -1);
+		Object *ret = Object::getObject(v, -1);
 		sq_pop(v, 1);
 		return ret;
 	}
@@ -213,29 +220,29 @@ SQObjectInfo::getMyObject() {
 // ---------------------------------------------------
 
 bool
-SQObjectInfo::isString() const {
+ObjectInfo::isString() const {
 	return sq_isstring(obj);
 }
 
 bool
-SQObjectInfo::isSameString(const SQChar *str) const {
+ObjectInfo::isSameString(const SQChar *str) const {
 	if (str && sq_isstring(obj)) {
 		const SQChar *mystr;
 		sq_pushobject(v, obj);
 		sq_getstring(v, -1, &mystr);
 		sq_pop(v, 1);
-		return mystr && _tcscmp(str, mystr) == 0;
+		return mystr && scstrcmp(str, mystr) == 0;
 	}
 	return false;
 }
 
 bool
-SQObjectInfo::isNumeric() const {
+ObjectInfo::isNumeric() const {
 	return sq_isnumeric(obj) != 0;
 }
 
 // ---------------------------------------------------------
-// MyObject
+// Object
 // ---------------------------------------------------------
 
 /**
@@ -243,7 +250,7 @@ SQObjectInfo::isNumeric() const {
  * @param thread スレッド
  */
 void
-MyObject::addWait(MyThread *thread) {
+Object::addWait(Thread *thread) {
 	_waitThreadList.push_back(thread);
 }
 
@@ -252,8 +259,8 @@ MyObject::addWait(MyThread *thread) {
  * @param thread スレッド
  */
 void
-MyObject::removeWait(MyThread *thread) {
-	std::vector<MyThread*>::iterator i = _waitThreadList.begin();
+Object::removeWait(Thread *thread) {
+	std::vector<Thread*>::iterator i = _waitThreadList.begin();
 	while (i != _waitThreadList.end()) {
 		if (*i == thread) {
 			i = _waitThreadList.erase(i);
@@ -266,13 +273,13 @@ MyObject::removeWait(MyThread *thread) {
 /**
  * コンストラクタ
  */
-MyObject::MyObject() {
+Object::Object() {
 }
 
 /**
  * デストラクタ
  */
-MyObject::~MyObject() {
+Object::~Object() {
 	_notifyAll();
 }
 
@@ -281,29 +288,16 @@ MyObject::~MyObject() {
 /**
  * @return オブジェクト情報オブジェクト
  */
-MyObject *
-MyObject::getObject(HSQUIRRELVM v, int idx) {
+Object *
+Object::getObject(HSQUIRRELVM v, int idx) {
 	SQUserPointer up;
-#ifdef USEUD
-	SQUserPointer typetag;
-	if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag))) {
-		std::vector<SQUserPointer>::const_itrator i = tags.begin();
-		while (i != tags.end()) {
-			if (typetag == *i) {
-				return (MyObject*)up;
-			}
-			i++;
-		}
-	}
-#else
 	std::vector<SQUserPointer>::const_iterator i = tags.begin();
 	while (i != tags.end()) {
 		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, *i))) {
-			return (MyObject*)up;
+			return (Object*)up;
 		}
 		i++;
 	}
-#endif
 	return NULL;
 }
 
@@ -311,13 +305,9 @@ MyObject::getObject(HSQUIRRELVM v, int idx) {
  * オブジェクトのリリーサ
  */
 SQRESULT
-MyObject::release(SQUserPointer up, SQInteger size) {
-	MyObject *self = (MyObject*)up;
-#ifdef USEUD
-	self->~MyObject();
-#else
+Object::release(SQUserPointer up, SQInteger size) {
+	Object *self = (Object*)up;
 	delete self;
-#endif
 	return SQ_OK;
 }
 
@@ -325,24 +315,14 @@ MyObject::release(SQUserPointer up, SQInteger size) {
  * オブジェクトのコンストラクタ
  */
 SQRESULT
-MyObject::constructor(HSQUIRRELVM v) {
+Object::constructor(HSQUIRRELVM v) {
 	SQRESULT result = SQ_OK;
-#ifdef USEUD
-	MyObject *self = getObject(v, 1);
-	if (self) {
-		new (self) MyObject();
-		result = sq_setreleasehook(v, 1, release);
-	} else {
-		result = ERROR_CREATE(v);
-	}
-#else
-	MyObject *self = new MyObject();
+	Object *self = new Object();
 	if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {;
 		sq_setreleasehook(v, 1, release);
 	} else {
 		delete self;
 	}
-#endif
 	if (SQ_SUCCEEDED(result)) {
 		if (getParamCount(v) > 0) {
 			self->delegate.getStack(v, 2);
@@ -352,7 +332,7 @@ MyObject::constructor(HSQUIRRELVM v) {
 }
 
 bool
-MyObject::isClosure(SQObjectType type) {
+Object::isClosure(SQObjectType type) {
 	return type == OT_CLOSURE || type == OT_NATIVECLOSURE;
 }
 	
@@ -362,13 +342,13 @@ MyObject::isClosure(SQObjectType type) {
  * @return プロパティ値
  */
 SQRESULT
-MyObject::_get(HSQUIRRELVM v) {
+Object::_get(HSQUIRRELVM v) {
 	SQRESULT result = SQ_OK;
 	const SQChar *name = getString(v, 2);
 	if (name && *name) {
 		
 			// delegateの参照
-		MyObject *self = getObject(v, 1);
+		Object *self = getObject(v, 1);
 		if (self && self->delegate.isDelegate()) {
 			self->delegate.push(v);
 			sq_pushstring(v, name, -1);
@@ -417,13 +397,13 @@ MyObject::_get(HSQUIRRELVM v) {
  * @param value プロパティ値
  */
 SQRESULT
-MyObject::_set(HSQUIRRELVM v) {
+Object::_set(HSQUIRRELVM v) {
 	SQRESULT result = SQ_OK;
 	const SQChar *name = getString(v, 2);
 	if (name && *name) {
 		
 		// delegateの参照
-		MyObject *self = getObject(v, 1);
+		Object *self = getObject(v, 1);
 		if (self && self->delegate.isDelegate()) {
 			self->delegate.push(v);
 			sq_push(v, 2); // name
@@ -465,7 +445,7 @@ MyObject::_set(HSQUIRRELVM v) {
  * @return setプロパティが存在したら true
  */
 SQRESULT
-MyObject::hasSetProp(HSQUIRRELVM v) {
+Object::hasSetProp(HSQUIRRELVM v) {
 	SQRESULT result = SQ_OK;
 	SQBool ret = SQFalse;
 	if (getParamCount(v) >= 2) {
@@ -500,8 +480,8 @@ MyObject::hasSetProp(HSQUIRRELVM v) {
  * 委譲の設定
  */
 SQRESULT
-MyObject::setDelegate(HSQUIRRELVM v) {
-	MyObject *self = getObject(v, 1);
+Object::setDelegate(HSQUIRRELVM v) {
+	Object *self = getObject(v, 1);
 	if (self) {
 		if (getParamCount(v) > 0) {
 			self->delegate.getStack(v, 2);
@@ -518,8 +498,8 @@ MyObject::setDelegate(HSQUIRRELVM v) {
  * 委譲の設定
  */
 SQRESULT
-MyObject::getDelegate(HSQUIRRELVM v) {
-	MyObject *self = getObject(v, 1);
+Object::getDelegate(HSQUIRRELVM v) {
+	Object *self = getObject(v, 1);
 	if (self) {
 		self->delegate.push(v);
 		return 1;
@@ -532,8 +512,8 @@ MyObject::getDelegate(HSQUIRRELVM v) {
  * 単一スレッドへのオブジェクト待ちの終了通知用
  */
 SQRESULT
-MyObject::notify(HSQUIRRELVM v) {
-	MyObject *self = getObject(v, 1);
+Object::notify(HSQUIRRELVM v) {
+	Object *self = getObject(v, 1);
 	if (self) {
 		self->_notify();
 		return SQ_OK;
@@ -546,8 +526,8 @@ MyObject::notify(HSQUIRRELVM v) {
  * 全スレッドへのオブジェクト待ちの終了通知
  */
 SQRESULT
-MyObject::notifyAll(HSQUIRRELVM v) {
-	MyObject *self = getObject(v, 1);
+Object::notifyAll(HSQUIRRELVM v) {
+	Object *self = getObject(v, 1);
 	if (self) {
 		self->_notifyAll();
 		return SQ_OK;
@@ -561,18 +541,15 @@ MyObject::notifyAll(HSQUIRRELVM v) {
  * @param v squirrel VM
  */
 void
-MyObject::registClass(HSQUIRRELVM v) {
+Object::registClass(HSQUIRRELVM v) {
 
-	MyObject::pushTag(OBJTYPETAG);
+	Object::pushTag(OBJTYPETAG);
 
 	sq_pushroottable(v); // root
-	sq_pushstring(v, OBJECTNAME, -1);
+	sq_pushstring(v, SQOBJECTNAME, -1);
 	sq_newclass(v, false);
 	sq_settypetag(v, -1, OBJTYPETAG);
 	
-#ifdef USEUD
-	sq_setclassudsize(v, -1, sizeof MyObject);
-#endif
 	REGISTMETHOD(constructor);
 	REGISTMETHOD(_set);
 	REGISTMETHOD(_get);
@@ -585,23 +562,23 @@ MyObject::registClass(HSQUIRRELVM v) {
 	sq_pop(v,1); // root
 };
 
-std::vector<SQUserPointer> MyObject::tags;
+std::vector<SQUserPointer> Object::tags;
 
-class MyThread : public MyObject {
+class Thread : public Object {
 
 protected:
 	long _currentTick; //< このスレッドの実行時間
 
 	// スレッドデータ
-	SQObjectInfo _thread;
+	ObjectInfo _thread;
 
 	// 待ち対象
-	std::vector<SQObjectInfo> _waitList;
+	std::vector<ObjectInfo> _waitList;
 	// 待ち時間
 	SQInteger _waitTimeout;
 
 	// 待ちがタイムアウトしたか
-	SQObjectInfo _waitResult;
+	ObjectInfo _waitResult;
 
 	/**
 	 * スレッド状態
@@ -634,11 +611,11 @@ public:
 	 * @param target 待ち対象
 	 * @return 該当オブジェクトを待ってた場合は true
 	 */
-	bool notifyObject(MyObject *target) {
+	bool notifyObject(Object *target) {
 		bool find = false;
-		std::vector<SQObjectInfo>::iterator i = _waitList.begin();
+		std::vector<ObjectInfo>::iterator i = _waitList.begin();
 		while (i != _waitList.end()) {
-			MyObject *obj = i->getMyObject();
+			Object *obj = i->getObject();
 			if (obj && obj == target) {
 				find = true;
 				_waitResult = *i;
@@ -660,7 +637,7 @@ public:
 	 */
 	bool notifyTrigger(const SQChar *name) {
 		bool find = false;
-		std::vector<SQObjectInfo>::iterator i = _waitList.begin();
+		std::vector<ObjectInfo>::iterator i = _waitList.begin();
 		while (i != _waitList.end()) {
 			if (i->isSameString(name)) {
 				find = true;
@@ -678,11 +655,11 @@ public:
 
 protected:
 	// コンストラクタ
-	MyThread() : _currentTick(0), _waitTimeout(-1), _status(THREAD_STOP) {
+	Thread() : _currentTick(0), _waitTimeout(-1), _status(THREAD_STOP) {
 	}
 	
 	// デストラクタ
-	~MyThread() {
+	~Thread() {
 		_clear();
 	}
 
@@ -691,9 +668,9 @@ protected:
 	 * @param status キャンセルの場合は true
 	 */
 	void _clearWait() {
-		std::vector<SQObjectInfo>::iterator i = _waitList.begin();
+		std::vector<ObjectInfo>::iterator i = _waitList.begin();
 		while (i != _waitList.end()) {
-			MyObject *obj = i->getMyObject();
+			Object *obj = i->getObject();
 			if (obj) {
 				obj->removeWait(this);
 			}
@@ -727,13 +704,13 @@ protected:
 				break;
 			case OT_STRING:
 				// 待ちリストに登録
-				_waitList.push_back(SQObjectInfo(v,i));
+				_waitList.push_back(ObjectInfo(v,i));
 				break;
 			case OT_INSTANCE:
 				// オブジェクトに待ち登録してから待ちリストに登録
 				{
-					SQObjectInfo o(v,i);
-					MyObject *obj = o.getMyObject();
+					ObjectInfo o(v,i);
+					Object *obj = o.getObject();
 					if (obj) {
 						obj->addWait(this);
 					}
@@ -831,7 +808,6 @@ protected:
 	 */
 	bool _main(long diff) {
 
-		//printFunc(NULL, L"スレッド実行:%p %d" ,this, getStatus());
 		_currentTick += diff;
 
 		// タイムアウト処理
@@ -857,9 +833,9 @@ protected:
 				sq_getlasterror(_thread);
 				const SQChar *str;
 				if (SQ_SUCCEEDED(sq_getstring(_thread, -1, &str))) {
-					printFunc(_thread, str);
+					PRINT(_thread, str);
 				} else {
-					printFunc(_thread, _SC("failed to run by unknown reason"));
+					PRINT(_thread, _SC("failed to run by unknown reason"));
 				}
 				sq_pop(_thread, 1);
 				_exit();
@@ -875,20 +851,11 @@ protected:
 	/**
 	 * @return スレッド情報オブジェクト
 	 */
-	static MyThread *getThread(HSQUIRRELVM v, int idx) {
+	static Thread *getThread(HSQUIRRELVM v, int idx) {
 		SQUserPointer up;
-#ifdef USEUD
-		SQUserPointer typetag;
-		if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag)) &&
-			if (typetag == THREADTYPETAG) {
-				return (MyThread*)up;
-			}
-		}
-#else
 		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, THREADTYPETAG))) {
-			return (MyThread*)up;
+			return (Thread*)up;
 		}
-#endif
 		return NULL;
 	}
 
@@ -896,12 +863,8 @@ protected:
 	 * オブジェクトのリリーサ
 	 */
 	static SQRESULT release(SQUserPointer up, SQInteger size) {
-		MyThread *self = (MyThread*)up;
-#ifdef USEUD
-		self->~MyThread();
-#else
+		Thread *self = (Thread*)up;
 		delete self;
-#endif
 		return SQ_OK;
 	}
 	
@@ -910,22 +873,12 @@ protected:
 	 */
 	static SQRESULT constructor(HSQUIRRELVM v) {
 		SQRESULT result = SQ_OK;
-#ifdef USEUD
-		MyThread *self = getThread(v, 1);
-		if (self) {
-			new (self) MyThread();
-			result = sq_setreleasehook(v, 1, release);
-		} else {
-			result = ERROR_CREATE(v);
-		}
-#else
-		MyThread *self = new MyThread();
+		Thread *self = new Thread();
 		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {
 			sq_setreleasehook(v, 1, release);
 		} else {
 			delete self;
 		}
-#endif
 		if (SQ_SUCCEEDED(result)) {
 			if (getParamCount(v) > 1) {
 				self->delegate.getStack(v, 3);
@@ -942,7 +895,7 @@ protected:
 	// ------------------------------------------------------
 	
 	static SQRESULT getCurrentTick(HSQUIRRELVM v) {
-		MyThread *self = getThread(v, 1);
+		Thread *self = getThread(v, 1);
 		if (self) {
 			sq_pushinteger(v, self->_currentTick);
 			return 1;
@@ -952,7 +905,7 @@ protected:
 	}
 
 	static SQRESULT getStatus(HSQUIRRELVM v) {
-		MyThread *self = getThread(v, 1);
+		Thread *self = getThread(v, 1);
 		if (self) {
 			sq_pushinteger(v, self->getStatus());
 			return 1;
@@ -970,7 +923,7 @@ protected:
 	 * @param func スレッドで実行するファンクション
 	 */
 	static SQRESULT exec(HSQUIRRELVM v) {
-		MyThread *self = getThread(v, 1);
+		Thread *self = getThread(v, 1);
 		if (self) {
 			return self->_exec(v);
 		} else {
@@ -982,7 +935,7 @@ protected:
 	 * 処理を中断する
 	 */
 	static SQRESULT exit(HSQUIRRELVM v) {
-		MyThread *self = getThread(v, 1);
+		Thread *self = getThread(v, 1);
 		if (self) {
 			self->_exit();
 			return 0;
@@ -995,7 +948,7 @@ protected:
 	 * 処理を一時停止する
 	 */
 	static SQRESULT stop(HSQUIRRELVM v) {
-		MyThread *self = getThread(v, 1);
+		Thread *self = getThread(v, 1);
 		if (self) {
 			self->_stop();
 			return 0;
@@ -1008,7 +961,7 @@ protected:
 	 * 処理を再開する
 	 */
 	static SQRESULT run(HSQUIRRELVM v) {
-		MyThread *self = getThread(v, 1);
+		Thread *self = getThread(v, 1);
 		if (self) {
 			self->_run();
 			return 0;
@@ -1021,7 +974,7 @@ protected:
 	 * 処理待ち
 	 */
 	static SQRESULT wait(HSQUIRRELVM v) {
-		MyThread *self = getThread(v, 1);
+		Thread *self = getThread(v, 1);
 		if (self) {
 			self->_wait(v);
 			return SQ_OK;
@@ -1034,7 +987,7 @@ protected:
 	 * 処理待ち
 	 */
 	static SQRESULT cancelWait(HSQUIRRELVM v) {
-		MyThread *self = getThread(v, 1);
+		Thread *self = getThread(v, 1);
 		if (self) {
 			self->_cancelWait();
 			return SQ_OK;
@@ -1050,17 +1003,15 @@ public:
 	 */
 	static void registClass(HSQUIRRELVM v) {
 
-		MyObject::pushTag(THREADTYPETAG);
+		Object::pushTag(THREADTYPETAG);
 
 		sq_pushroottable(v); // root
-		sq_pushstring(v, THREADNAME, -1);
-		sq_pushstring(v, OBJECTNAME, -1);
+		sq_pushstring(v, SQTHREADNAME, -1);
+		sq_pushstring(v, SQOBJECTNAME, -1);
 		sq_get(v,-3);
 		sq_newclass(v, true); // 継承する
 		sq_settypetag(v, -1, THREADTYPETAG);
-#ifdef USEUD
-		sq_setclassudsize(v, -1, sizeof MyThread);
-#endif
+
 		REGISTENUM(THREAD_STOP);
 		REGISTENUM(THREAD_RUN);
 		REGISTENUM(THREAD_WAIT);
@@ -1085,7 +1036,7 @@ public:
 	// -------------------------------------------------------------
 	
 protected:
-	static std::vector<SQObjectInfo> threadList; //< スレッド一覧
+	static std::vector<ObjectInfo> threadList; //< スレッド一覧
 	static bool first;        //< 初回呼び出し扱い
 	static long prevTick;     //< 前回の呼び出し時間
 	static long currentTick;  //< 今回の呼び出し時間
@@ -1098,7 +1049,7 @@ protected:
 		if (threadList.size() == 0) {
 			sqobject_start();
 		}
-		threadList.push_back(SQObjectInfo(v,1));
+		threadList.push_back(ObjectInfo(v,1));
 		first = true;
 	}
 
@@ -1122,9 +1073,9 @@ protected:
 	 * @return 現在のスレッドを返す
 	 */
 	static SQRESULT global_getCurrentThread(HSQUIRRELVM v) {
-		std::vector<SQObjectInfo>::iterator i = threadList.begin();
+		std::vector<ObjectInfo>::iterator i = threadList.begin();
 		while (i != threadList.end()) {
-			MyThread *th = i->getMyThread();
+			Thread *th = i->getThread();
 			if (th && th->isSameThread(v)) {
 				i->push(v);
 				return 1;
@@ -1139,7 +1090,7 @@ protected:
 	 */
 	static SQRESULT global_getThreadList(HSQUIRRELVM v) {
 		sq_newarray(v, 0);
-		std::vector<SQObjectInfo>::const_iterator i = threadList.begin();
+		std::vector<ObjectInfo>::const_iterator i = threadList.begin();
 		while (i != threadList.end()) {
 			i->push(v);
 			sq_arrayappend(v, -2);
@@ -1158,7 +1109,7 @@ protected:
 		//dm("スレッドを生成!");
 		SQRESULT result;
 		sq_pushroottable(v); // root
-		sq_pushstring(v, THREADNAME, -1);
+		sq_pushstring(v, SQTHREADNAME, -1);
 		if (SQ_SUCCEEDED(result = sq_get(v,-2))) { // class
 			sq_pushroottable(v); // 引数:self
 			sq_push(v, 2);       // 引数:func
@@ -1174,12 +1125,12 @@ protected:
 	}
 
 	/**
-	 * @return 現在実行中のスレッド情報オブジェクト(MyThread*)
+	 * @return 現在実行中のスレッド情報オブジェクト(Thread*)
 	 */
-	static MyThread *getCurrentThread(HSQUIRRELVM v) {
-		std::vector<SQObjectInfo>::iterator i = threadList.begin();
+	static Thread *getCurrentThread(HSQUIRRELVM v) {
+		std::vector<ObjectInfo>::iterator i = threadList.begin();
 		while (i != threadList.end()) {
-			MyThread *th = i->getMyThread();
+			Thread *th = i->getThread();
 			if (th && th->isSameThread(v)) {
 				return th;
 			}
@@ -1193,7 +1144,7 @@ protected:
 	 * @param func スレッドで実行するファンクション
 	 */
 	static SQRESULT global_exec(HSQUIRRELVM v) {
-		MyThread *th = getCurrentThread(v);
+		Thread *th = getCurrentThread(v);
 		if (th) {
 			SQRESULT result;
 			if (SQ_FAILED(result = th->_exec(v))) {
@@ -1210,7 +1161,7 @@ protected:
 	 * 実行中スレッドの終了
 	 */
 	static SQRESULT global_exit(HSQUIRRELVM v) {
-		MyThread *th = getCurrentThread(v);
+		Thread *th = getCurrentThread(v);
 		if (th) {
 			th->_exit();
 			return sq_suspendvm(v);
@@ -1226,7 +1177,7 @@ protected:
 	 * @return 待ちがキャンセルされたら true
 	 */
 	static SQRESULT global_wait(HSQUIRRELVM v) {
-		MyThread *th = getCurrentThread(v);
+		Thread *th = getCurrentThread(v);
 		if (th) {
 			th->_wait(v);
 			return sq_suspendvm(v);
@@ -1241,9 +1192,9 @@ protected:
 	 */
 	static SQRESULT global_trigger(HSQUIRRELVM v) {
 		const SQChar *name = getString(v, 2);
-		std::vector<SQObjectInfo>::iterator i = threadList.begin();
+		std::vector<ObjectInfo>::iterator i = threadList.begin();
 		while (i != threadList.end()) {
-			MyThread *th = i->getMyThread();
+			Thread *th = i->getThread();
 			if (th) {
 				th->notifyTrigger(name);
 			}
@@ -1280,6 +1231,7 @@ public:
 	 * から1度だけ呼び出すことで機能する。それぞれのスレッドは、
 	 * 自分から明示的に suspend() または wait系のメソッドを呼び出して処理を
 	 * 次のスレッドに委譲する必要がある。
+	 * @return 
 	 */
 	static void main(long tick) {
 		//dm("tick:" + tick + "\n");
@@ -1289,19 +1241,17 @@ public:
 		}
 		currentTick = tick;
 		long diff = tick - prevTick;
-		std::vector<SQObjectInfo>::iterator i = threadList.begin();
+		std::vector<ObjectInfo>::iterator i = threadList.begin();
 		while (i != threadList.end()) {
-			MyThread *th = i->getMyThread();
+			Thread *th = i->getThread();
 			if (!th || th->_main(diff)) {
 				i = threadList.erase(i);
 			} else {
 				i++;
 			}
 		}
-		if (threadList.size() == 0) {
-			sqobject_stop();
-		}
 		prevTick = tick;
+		return threadList.size();
 	};
 
 
@@ -1310,17 +1260,17 @@ public:
 	}
 };
 
-std::vector<SQObjectInfo> MyThread::threadList; //< スレッド一覧
-bool MyThread::first;        //< 初回呼び出し扱い
-long MyThread::prevTick;     //< 前回の呼び出し時間
-long MyThread::currentTick;  //< 今回の呼び出し時間
+std::vector<ObjectInfo> Thread::threadList; //< スレッド一覧
+bool Thread::first;        //< 初回呼び出し扱い
+long Thread::prevTick;     //< 前回の呼び出し時間
+long Thread::currentTick;  //< 今回の呼び出し時間
 
 /**
  * このオブジェクトを待っている１スレッドの待ちを解除
  */
 void
-MyObject::_notify() {
-	std::vector <MyThread *>::iterator i = _waitThreadList.begin();
+Object::_notify() {
+	std::vector <Thread *>::iterator i = _waitThreadList.begin();
 	while (i != _waitThreadList.end()) {
 		if ((*i)->notifyObject(this)) {
 			i = _waitThreadList.erase(i);
@@ -1335,38 +1285,44 @@ MyObject::_notify() {
  * このオブジェクトを待っている全スレッドの待ちを解除
  */
 void
-MyObject::_notifyAll()
+Object::_notifyAll()
 {
-	std::vector <MyThread *>::iterator i = _waitThreadList.begin();
+	std::vector <Thread *>::iterator i = _waitThreadList.begin();
 	while (i != _waitThreadList.end()) {
 		(*i)->notifyObject(this);
 		i = _waitThreadList.erase(i);
 	}
 }
 
+};
+
 /**
  * オブジェクト/スレッド処理の初期化
+ * @param v squirrel VM
  */
 void
 sqobject_init(HSQUIRRELVM v)
 {
-	MyObject::registClass(v);
-	MyThread::registClass(v);
-	MyThread::registGlobal(v);
+	sqobject::Object::registClass(v);
+	sqobject::Thread::registClass(v);
+	sqobject::Thread::registGlobal(v);
 }
 
 /**
  * オブジェクト/スレッド処理メイン部分
  * @param tick tick値
  */
-void
+int
 sqobject_main(int tick)
 {
-	MyThread::main(tick);
+	return sqobject::Thread::main(tick);
 }
 
+/**
+ * オブジェクト/スレッド処理終了処理
+ */
 void
 sqobject_done()
 {
-	MyThread::done();
+	sqobject::Thread::done();
 }
