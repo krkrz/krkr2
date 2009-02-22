@@ -75,6 +75,22 @@ NCB_REGISTER_CLASS では Class が，NCB_REGISTER_CLASS_DIFFERでは Name が
 
 
 ----------------------------------------------------------------
+　　▽Factory(Class* (*)(iTJSDispatch2*[, arg1, arg2, ...]));
+　　▽Factory(tjs_error (TJS_INTF_METHOD *)(Class**, tjs_int, 
+                                            tTJSVariant**, iTJSDispatch2*));
+
+インスタンスを生成する関数を指定してコンストラクタを登録します。
+１番目の引数にobjthisが渡るProxyのような関数を使用する方法と，引数の個数と
+tTJSVariantの配列を渡すRawCallbackのような関数を使用する方法があります。
+
+前者は返り値として生成したインスタンスのポインタを返します。
+（NULLを返すとエラーとして扱われます）
+
+後者は一番目の引数にインスタンスのポインタを書き込んでTJS_S_OKを返します。
+（NULLを書き込んだり，TJS_S_OK以外を返すとエラーとして扱われます）
+
+
+----------------------------------------------------------------
 　　▽Method(Name, &Class::Method);
 
 クラスメソッド Method を登録します。Class は NCB_REGISTER_CLASS にて
