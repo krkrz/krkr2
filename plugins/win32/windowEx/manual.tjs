@@ -298,4 +298,13 @@ class System
 	function setCursorPos(x, y);
 	function getCursorPos();
 
+	/**
+	 * システムメトリクス情報を取得
+	 * @param index SM_* の「*」部分の文字列（ただし大文字小文字は無関係）
+	 * @return メトリクス値（indexにより内容が異なる）
+	 *
+	 * 詳細は GetSystemMetrics() API のマニュアルを参照
+	 * SW_ARRANGE は ARW_* の定義がないので直接数値指定で比較すること
+	 */
+	function getSystemMetrics(index);
 }
