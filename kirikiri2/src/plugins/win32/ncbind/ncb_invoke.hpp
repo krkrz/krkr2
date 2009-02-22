@@ -107,13 +107,20 @@ public:
 	template <class FncT, typename MethodT>
 	static typename tMethodTraits<MethodT>::ClassType * Factory(FncT io, tTypeTag<MethodT>) {
 		return (tInstanceFactoryImpl<
-				typename tMethodTraits<MethodT>::ClassType, 
+				typename tMethodTraits<MethodT>::ClassType *, 
 				typename tMethodTraits<MethodT>::ArgsType,
 				FncT>::Factory(io));
 	}
+	template <class FncT, typename MethodT>
+	static typename tMethodTraits<MethodT>::ResultType Factory(FncT io, MethodT const &m) {
+		return (tInstanceFactoryImpl<
+				typename tMethodTraits<MethodT>::ResultType, 
+				typename tMethodTraits<MethodT>::ArgsType,
+				FncT>::Factory(io, m));
+	}
 	template <class FncT, typename ClassT, typename ArgsT>
 	static ClassT* Factory(FncT io, tTypeTag<ClassT>, tTypeTag<ArgsT>) {
-		return (tInstanceFactoryImpl<ClassT, ArgsT, FncT>::Factory(io));
+		return (tInstanceFactoryImpl<ClassT*, ArgsT, FncT>::Factory(io));
 	}
 };
 
@@ -135,8 +142,10 @@ template <>           struct MC::tMethodHasResult<void> { enum { HasResult = fal
 		}
 #define INSTANCEFACTORY_IMPL \
 	template <class FncT                                 , class ClassT/**/ FOREACH_COMMA /**/ FOREACH_COMMA_EXT(MCIMPL_TMPL_ARGS_EXT) >                 \
-		struct MC::tInstanceFactoryImpl<                         ClassT,     MC::tMethodArgs < FOREACH_COMMA_EXT(MCIMPL_METH_ARGS_EXT) >, FncT > {       \
+		struct MC::tInstanceFactoryImpl<                         ClassT*,    MC::tMethodArgs < FOREACH_COMMA_EXT(MCIMPL_METH_ARGS_EXT) >, FncT > {       \
+			typedef       ClassT*                                               (*MethodType)( FOREACH_COMMA_EXT(MCIMPL_METH_ARGS_EXT));                 \
 			static inline ClassT* Factory(FncT io) { (void)io; return new ClassT           (   FOREACH_COMMA_EXT(MCIMPL_READ_ARGS_EXT)); }               \
+			static inline ClassT* Factory(FncT io, MethodType const &mptr) { return (*mptr)(   FOREACH_COMMA_EXT(MCIMPL_READ_ARGS_EXT)); }               \
 		}
 #define METHODRESOLVER_SPECIALIZATION(cls, cnst) \
 	template <         typename ResultT /**/               cls ## _DEF /**/ FOREACH_COMMA /**/ FOREACH_COMMA_EXT(MCIMPL_TMPL_ARGS_EXT) >                     \
