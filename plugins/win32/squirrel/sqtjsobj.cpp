@@ -3,11 +3,28 @@
 #include "sqobject.h"
 
 // ログ出力用
-extern void printFunc(HSQUIRRELVM v, const SQChar* format, ...);
+#define PRINT(v,msg) {\
+	SQPRINTFUNCTION print = sq_getprintfunc(v);\
+	if (print) {\
+		print(v,msg);\
+	}\
+}
 
 extern void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
 extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
 extern SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error);
+
+/**
+ * 文字列取得用
+ * @param v VM
+ * @param idx インデックス
+ * @return 文字列
+ */
+const SQChar *getString(HSQUIRRELVM v, int idx) {
+	const SQChar *x = NULL;
+	sq_getstring(v, idx, &x);
+	return x;
+};
 
 // 型情報
 static const SQUserPointer TJSOBJTYPETAG = (SQUserPointer)"TJSOBJTYPETAG";
@@ -35,15 +52,15 @@ protected:
 
 	// プロパティのコードを生成
 	void registProperty(const tjs_char *propertyName) {
-		tstring name;
-		getSetterName(name, propertyName);
+		sqobject::tstring name;
+		sqobject::getSetterName(name, propertyName);
 		script += "function ";
 		script += name.c_str();
 		script += "(arg){tjsSetter(\"";
 		script += propertyName;
 		script += "\", arg);}";
 
-		getGetterName(name, propertyName);
+		sqobject::getGetterName(name, propertyName);
 		script += "function ";
 		script += name.c_str();
 		script += "(){return tjsGetter(\"";
@@ -116,7 +133,7 @@ public:
 /**
  * 吉里吉里オブジェクトを保持するクラス
  */
-class TJSObject : public MyObject {
+class TJSObject : public sqobject::Object {
 
 protected:
 	// 処理対象オブジェクト
@@ -145,17 +162,9 @@ public:
 	 */
 	static TJSObject *getTJSObject(HSQUIRRELVM v, int idx) {
 		SQUserPointer up;
-#ifdef USEUD
-		SQUserPointer typetag;
-		if (SQ_SUCCEEDED(sq_getuserdata(v, idx, &up, &typetag)) &&
-			(typetag == TJSOBJTYPETAG)) {
-			return (TJSObject*)up;
-		}
-#else
 		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, TJSOBJTYPETAG))) {
 			return (TJSObject*)up;
 		}
-#endif
 		return NULL;
 	}
 
@@ -165,11 +174,7 @@ protected:
 	 */
 	static SQRESULT release(SQUserPointer up, SQInteger size) {
 		TJSObject *self = (TJSObject*)up;
-#ifdef USEUD
-		self->~TJSObject();
-#else
 		delete self;
-#endif
 		return SQ_OK;
 	}
 
@@ -181,22 +186,12 @@ protected:
 	 */
 	static SQRESULT tjsConstructor(HSQUIRRELVM v) {
 		SQRESULT result = SQ_OK;
-#ifdef USEUD
-		TJSObject *self = getTJSObject(v, 1);
-		if (self) {
-			new (self) TJSObject();
-			result = sq_setreleasehook(v, 1, release);
-		} else {
-			result = ERROR_CREATE(v);
-		}
-#else
 		TJSObject *self = new TJSObject();
 		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {
 			sq_setreleasehook(v, 1, release);
 		} else {
 			delete self;
 		}
-#endif
 		if (SQ_SUCCEEDED(result)) {
 			// クラスを生成する
 			tTJSVariant classObj;
@@ -226,7 +221,7 @@ protected:
 				}
 				delete[] args;
 			} else {
-				result = ERROR_CREATE(v);
+				result = sqobject::ERROR_CREATE(v);
 			}
 		}
 		return result;
@@ -278,7 +273,7 @@ protected:
 			delete[] args;
 			return result;
 		}
-		return ERROR_BADINSTANCE(v);
+		return sqobject::ERROR_BADINSTANCE(v);
 	}
 
 	/**
@@ -299,7 +294,7 @@ protected:
 				return ERROR_KRKR(v, error);
 			}
 		}
-		return ERROR_BADINSTANCE(v);
+		return sqobject::ERROR_BADINSTANCE(v);
 	}
 
 	/**
@@ -321,12 +316,12 @@ protected:
 				return ERROR_KRKR(v, error);
 			}
 		}
-		return ERROR_BADINSTANCE(v);
+		return sqobject::ERROR_BADINSTANCE(v);
 	}
 	
 public:
 	static void registClassInit() {
-		MyObject::pushTag(TJSOBJTYPETAG);
+		sqobject::Object::pushTag(TJSOBJTYPETAG);
 	}
 
 	/**
@@ -386,13 +381,11 @@ public:
 		
 		sq_pushroottable(v); // root
 		sq_pushstring(v, className, -1);
-		sq_pushstring(v, OBJECTNAME, -1);
+		sq_pushstring(v, SQOBJECTNAME, -1);
 		sq_get(v,-3);
 		sq_newclass(v, true); // 継承する
 		sq_settypetag(v, -1, TJSOBJTYPETAG);
-#ifdef USEUD
-		sq_setclassudsize(v, -1, sizeof TJSObject);
-#endif
+
 		// TJS用処理メソッドを登録
 		REGISTMETHOD(tjsConstructor);
 		REGISTMETHOD(tjsInvoker);
@@ -406,7 +399,7 @@ public:
 				sq_getlasterror(v);
 				const SQChar *str;
 				sq_getstring(v, -1, &str);
-				printFunc(v, str);
+				PRINT(v, str);
 				sq_pop(v, 1);
 			}
 			sq_pop(v, 1);
@@ -414,7 +407,7 @@ public:
 			sq_getlasterror(v);
 			const SQChar *str;
 			sq_getstring(v, -1, &str);
-			printFunc(v, str);
+			PRINT(v, str);
 			sq_pop(v, 1);
 		}
 		

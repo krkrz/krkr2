@@ -1,34 +1,55 @@
 #ifndef __SQOBJECT_H__
 #define __SQOBJECT_H__
 
+// 型名
+#ifndef SQOBJECTNAME
+#define SQOBJECTNAME _SC("Object")
+#endif
+
+#ifndef SQTHREADNAME
+#define SQTHREADNAME _SC("Thread")
+#endif
+
 #include <squirrel.h>
 #include <vector>
+#include <string>
 
-// パラメータ参照用
-extern const SQChar *getString(HSQUIRRELVM v, int idx);
+/**
+ * オブジェクト/スレッド処理の初期化
+ * @param v squirrel VM
+ */
+extern void sqobject_init(HSQUIRRELVM v);
+
+/**
+ * オブジェクト/スレッド処理メイン部分
+ * @param tick tick値
+ */
+extern int sqobject_main(int tick);
+
+/**
+ * オブジェクト/スレッド処理終了処理
+ */
+extern void sqobject_done();
+
+namespace sqobject {
+
+typedef std::basic_string<SQChar> tstring;
 
 // エラー処理用
 extern SQRESULT ERROR_CREATE(HSQUIRRELVM v);
-extern SQRESULT ERROR_NOMEMBER(HSQUIRRELVM v);
 extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
 
-#include <tchar.h>
-#if _UNICODE
-typedef std::wstring tstring;
-#else
-typedef std::string tstring;
-#endif
-
+// setter/getter 名前決定
 extern void getSetterName(tstring &store, const SQChar *name);
 extern void getGetterName(tstring &store, const SQChar *name);
 
-class MyObject;
-class MyThread;
+class Object; // オブジェクトクラス
+class Thread; // スレッドクラス
 
 /**
  * squirrel オブジェクト保持用クラス
  */
-class SQObjectInfo {
+class ObjectInfo {
 
 protected:
 	HSQUIRRELVM v; // オブジェクトの属していたVM
@@ -42,19 +63,19 @@ public:
 	void getStack(HSQUIRRELVM v, int idx);
 
 	// コンストラクタ
-	SQObjectInfo();
+	ObjectInfo();
 
 	// コンストラクタ
-	SQObjectInfo(HSQUIRRELVM v, int idx);
+	ObjectInfo(HSQUIRRELVM v, int idx);
 
 	// コピーコンストラクタ
-	SQObjectInfo(const SQObjectInfo &orig);
+	ObjectInfo(const ObjectInfo &orig);
 
 	// 代入
-	SQObjectInfo & operator=(const SQObjectInfo &orig);
+	ObjectInfo & operator=(const ObjectInfo &orig);
 	
 	// デストラクタ
-	virtual ~SQObjectInfo();
+	virtual ~ObjectInfo();
 
 	// スレッドか？
 	bool isThread() const;
@@ -86,10 +107,10 @@ public:
 	// ---------------------------------------------------
 
 	// インスタンスユーザポインタを取得
-	MyThread *getMyThread();
+	Thread *getThread();
 
 	// インスタンスユーザポインタを取得
-	MyObject *getMyObject();
+	Object *getObject();
 	
 	// ---------------------------------------------------
 	// wait処理用メソッド
@@ -105,7 +126,7 @@ public:
 /**
  * オブジェクト用
  */
-class MyObject {
+class Object {
 
 	// ------------------------------
 	// 継承情報
@@ -119,34 +140,34 @@ public:
 
 protected:
 	// このオブジェクトを待ってるスレッドの一覧
-	std::vector<MyThread*> _waitThreadList;
+	std::vector<Thread*> _waitThreadList;
 	// delegate
-	SQObjectInfo delegate;
+	ObjectInfo delegate;
 
 public:
 	/**
 	 * オブジェクト待ちの登録
 	 * @param thread スレッド
 	 */
-	void addWait(MyThread *thread);
+	void addWait(Thread *thread);
 
 	/**
 	 * オブジェクト待ちの解除
 	 * @param thread スレッド
 	 */
-	void removeWait(MyThread *thread);
+	void removeWait(Thread *thread);
 
 protected:
 
 	/**
 	 * コンストラクタ
 	 */
-	MyObject();
+	Object();
 
 	/**
 	 * デストラクタ
 	 */
-	virtual ~MyObject();
+	virtual ~Object();
 
 	/**
 	 * このオブジェクトを待っている１スレッドの待ちを解除
@@ -164,7 +185,7 @@ public:
 	/**
 	 * @return オブジェクト情報オブジェクト
 	 */
-	static MyObject *getObject(HSQUIRRELVM v, int idx);
+	static Object *getObject(HSQUIRRELVM v, int idx);
 
 protected:
 	/**
@@ -228,9 +249,7 @@ public:
 	static void registClass(HSQUIRRELVM v);
 };
 
-// 型名
-#define OBJECTNAME _SC("Object")
-#define THREADNAME _SC("Thread")
+};// namespace
 
 // メソッド登録
 #define REGISTMETHOD(name) \

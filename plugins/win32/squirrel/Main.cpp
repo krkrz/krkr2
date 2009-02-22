@@ -22,7 +22,7 @@ static HSQUIRRELVM vm = NULL;
 /**
  * ログ出力用 for squirrel
  */
-void printFunc(HSQUIRRELVM v, const SQChar* format, ...)
+static void printFunc(HSQUIRRELVM v, const SQChar* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -328,7 +328,6 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 
 extern void sqobject_init(HSQUIRRELVM v);
 extern void sqobject_main(int tick);
-extern void sqobject_fork(const char *filename);
 extern void sqobject_done();
 
 // Continuous Handelr 用
@@ -336,8 +335,23 @@ class SQThreadContinuous : public tTVPContinuousEventCallbackIntf {
 public:
 	SQThreadContinuous() {
 	}
+
+	~SQThreadContinuous() {
+		TVPRemoveContinuousEventHook(this);
+	}
+	
+	void start() {
+		TVPAddContinuousEventHook(this);
+	}
+
+	void stop() {
+		TVPRemoveContinuousEventHook(this);
+	}
+	
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
-		sqobject_main((int)tick);
+		if (sqobject_main((int)tick) == 0) {
+			stop();
+		}
 	}
 };
 
@@ -345,12 +359,7 @@ SQThreadContinuous sqthreadcont;
 
 void sqobject_start()
 {
-	TVPAddContinuousEventHook(&sqthreadcont);
-}
-
-void sqobject_stop()
-{
-	TVPRemoveContinuousEventHook(&sqthreadcont);
+	sqthreadcont.start();
 }
 
 //---------------------------------------------------------------------------
@@ -836,9 +845,9 @@ static void PostRegistCallback()
  */
 static void PreUnregistCallback()
 {
-	sqobject_stop();
+	sqthreadcont.stop();
 	sqobject_done();
-
+	
 	if (ArrayCountProp) {
 		ArrayCountProp->Release();
 		ArrayCountProp = NULL;
