@@ -91,201 +91,132 @@ protected:
 
 public:
 	// 内容消去
-	void clear();
+	void clear() {
+		sq_release(v,&obj);
+		v = NULL;
+		sq_resetobject(&obj);
+	}
 
 	// スタックから取得
-	void getStack(HSQUIRRELVM v, int idx);
+	void getStack(HSQUIRRELVM v, int idx) {
+		clear();
+		this->v = v;
+		sq_getstackobj(v, idx, &obj);
+		sq_addref(v, &obj);
+	}
 
 	// コンストラクタ
-	ObjectInfo();
+	ObjectInfo() : v(NULL) {
+		sq_resetobject(&obj);
+	}
 
 	// コンストラクタ
-	ObjectInfo(HSQUIRRELVM v, int idx);
+	ObjectInfo(HSQUIRRELVM v, int idx) : v(v) {
+		sq_resetobject(&obj);
+		sq_getstackobj(v, idx, &obj);
+		sq_addref(v, &obj);
+	}
 
 	// コピーコンストラクタ
-	ObjectInfo(const ObjectInfo &orig);
+	ObjectInfo(const ObjectInfo &orig) {
+		v   = orig.v;
+		obj = orig.obj;
+		sq_addref(v, &obj);
+	}
 
 	// 代入
-	ObjectInfo & operator=(const ObjectInfo &orig);
-	
+	ObjectInfo & operator=(const ObjectInfo &orig) {
+		clear();
+		v = orig.v;
+		obj = orig.obj;
+		sq_addref(v, &obj);
+		return *this;
+	}
+
 	// デストラクタ
-	virtual ~ObjectInfo();
+	virtual ~ObjectInfo() {
+		clear();
+	}
 
 	// スレッドか？
-	bool isThread() const;
+	bool isThread() const {
+		return sq_isthread(obj);
+	}
 
 	// 同じスレッドか？
-	bool isSameThread(const HSQUIRRELVM v) const;
+	bool isSameThread(const HSQUIRRELVM v) const {
+		return sq_isthread(obj) && obj._unVal.pThread == v;
+	}
 
 	// スレッドを取得
-	operator HSQUIRRELVM() const;
+	operator HSQUIRRELVM() const {
+		HSQUIRRELVM vm = sq_isthread(obj) ? obj._unVal.pThread : NULL;
+		return vm;
+	}
 	
 	// オブジェクトをPUSH
-	void push(HSQUIRRELVM v) const;
+	void push(HSQUIRRELVM v) const {
+		sq_pushobject(v, obj);
+	}
 
 	// ---------------------------------------------------
 	// delegate 処理用
 	// ---------------------------------------------------
 
 	// delegate として機能するかどうか
-	bool isDelegate();
+	bool isDelegate() {
+		return v && (sq_isinstance(obj) || sq_istable(obj));
+	}
 
 	// bindenv させるかどうか
-	bool isBindDelegate();
+	bool isBindDelegate() {
+		return v && (sq_isinstance(obj));
+	}
 
 	// ---------------------------------------------------
 	// オブジェクト取得
 	// ---------------------------------------------------
 
 	// インスタンスユーザポインタを取得
-	Thread *getThread();
+	Thread *getThread() {
+		if (sq_isinstance(obj)) {
+			sq_pushobject(v, obj);
+			SQUserPointer up = NULL;
+			if (SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
+				sq_pop(v,1);
+				return (Thread*)up;
+			}
+			sq_pop(v, 1);
+		}
+		return NULL;
+	}
 
 	// インスタンスユーザポインタを取得
-	Object *getObject();
+	Object *getObject() {
+		if (sq_isinstance(obj)) {
+			sq_pushobject(v, obj);
+			Object *ret = Object::getObject(v, -1);
+			sq_pop(v, 1);
+			return ret;
+		}
+		return NULL;
+	}
 	
 	// ---------------------------------------------------
 	// wait処理用メソッド
 	// ---------------------------------------------------
 
-	bool isSameString(const SQChar *str) const;
-};
-
-// 内容消去
-void
-ObjectInfo::clear() {
-	sq_release(v,&obj);
-	v = NULL;
-	sq_resetobject(&obj);
-}
-
-// スタックから取得
-void
-ObjectInfo::getStack(HSQUIRRELVM v, int idx) {
-	clear();
-	this->v = v;
-	sq_getstackobj(v, idx, &obj);
-	sq_addref(v, &obj);
-}
-	
-// コンストラクタ
-ObjectInfo::ObjectInfo() : v(NULL) {
-	sq_resetobject(&obj);
-}
-
-// コンストラクタ
-ObjectInfo::ObjectInfo(HSQUIRRELVM v, int idx) : v(v) {
-	sq_resetobject(&obj);
-	sq_getstackobj(v, idx, &obj);
-	sq_addref(v, &obj);
-}
-
-// コピーコンストラクタ
-ObjectInfo::ObjectInfo(const ObjectInfo &orig) {
-	v   = orig.v;
-	obj = orig.obj;
-	sq_addref(v, &obj);
-}
-
-// 代入
-ObjectInfo & ObjectInfo::operator=(const ObjectInfo &orig) {
-	clear();
-	v = orig.v;
-	obj = orig.obj;
-	sq_addref(v, &obj);
-	return *this;
-}
-
-// デストラクタ
-ObjectInfo:: ~ObjectInfo() {
-	clear();
-}
-
-// スレッドか？
-bool
-ObjectInfo::isThread() const {
-	return sq_isthread(obj);
-}
-
-// 同じスレッドか？
-bool
-ObjectInfo::isSameThread(const HSQUIRRELVM v) const {
-	return sq_isthread(obj) && obj._unVal.pThread == v;
-}
-
-// スレッドを取得
-ObjectInfo::operator HSQUIRRELVM() const {
-	HSQUIRRELVM vm = sq_isthread(obj) ? obj._unVal.pThread : NULL;
-	return vm;
-}
-	
-// オブジェクトをPUSH
-void
-ObjectInfo::push(HSQUIRRELVM v) const {
-	sq_pushobject(v, obj);
-}
-
-// ---------------------------------------------------
-// delegate 処理用
-// ---------------------------------------------------
-
-// delegate として機能するかどうか
-bool
-ObjectInfo::isDelegate() {
-	return v && (sq_isinstance(obj) || sq_istable(obj));
-}
-
-// bindenv させるかどうか
-bool
-ObjectInfo::isBindDelegate() {
-	return v && (sq_isinstance(obj));
-}
-
-// ---------------------------------------------------
-// オブジェクト取得
-// ---------------------------------------------------
-
-// インスタンスユーザポインタを取得
-Thread *
-ObjectInfo::getThread() {
-	if (sq_isinstance(obj)) {
-		sq_pushobject(v, obj);
-		SQUserPointer up = NULL;
-		if (SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, THREADTYPETAG))) {
-			sq_pop(v,1);
-			return (Thread*)up;
+	bool isSameString(const SQChar *str) const {
+		if (str && sq_isstring(obj)) {
+			const SQChar *mystr;
+			sq_pushobject(v, obj);
+			sq_getstring(v, -1, &mystr);
+			sq_pop(v, 1);
+			return mystr && scstrcmp(str, mystr) == 0;
 		}
-		sq_pop(v, 1);
+		return false;
 	}
-	return NULL;
-}
-
-// インスタンスユーザポインタを取得
-Object *
-ObjectInfo::getObject() {
-	if (sq_isinstance(obj)) {
-		sq_pushobject(v, obj);
-		Object *ret = Object::getObject(v, -1);
-		sq_pop(v, 1);
-		return ret;
-	}
-	return NULL;
-}
-
-// ---------------------------------------------------
-// wait処理用メソッド
-// ---------------------------------------------------
-
-bool
-ObjectInfo::isSameString(const SQChar *str) const {
-	if (str && sq_isstring(obj)) {
-		const SQChar *mystr;
-		sq_pushobject(v, obj);
-		sq_getstring(v, -1, &mystr);
-		sq_pop(v, 1);
-		return mystr && scstrcmp(str, mystr) == 0;
-	}
-	return false;
-}
+};
 
 // ---------------------------------------------------------
 // Object
