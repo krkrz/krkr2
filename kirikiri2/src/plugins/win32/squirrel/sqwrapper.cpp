@@ -6,10 +6,10 @@
 #include <windows.h>
 #include "tp_stub.h"
 #include <squirrel.h>
+#include "sqobject.h"
 
 // äOïîéQè∆
 extern const SQChar *getString(HSQUIRRELVM v, int idx);
-extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
 
 SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error) {
 	switch (error) {
@@ -281,7 +281,7 @@ get(HSQUIRRELVM v)
 			return ERROR_KRKR(v, error);
 		}
 	}
-	return ERROR_BADINSTANCE(v);
+	return sqobject::ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -302,7 +302,7 @@ set(HSQUIRRELVM v)
 			return ERROR_KRKR(v, error);
 		}
 	}
-	return ERROR_BADINSTANCE(v);
+	return sqobject::ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -351,7 +351,7 @@ callConstructor(HSQUIRRELVM v)
 
 		return ret;
 	}
-	return ERROR_BADINSTANCE(v);
+	return sqobject::ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -403,7 +403,7 @@ callMethod(HSQUIRRELVM v)
 
 		return ret;
 	}
-	return ERROR_BADINSTANCE(v);
+	return sqobject::ERROR_BADINSTANCE(v);
 }
 
 /**

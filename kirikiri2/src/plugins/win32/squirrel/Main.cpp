@@ -327,7 +327,7 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 //---------------------------------------------------------------------------
 
 extern void sqobject_init(HSQUIRRELVM v);
-extern void sqobject_main(int tick);
+extern int sqobject_main(int tick);
 extern void sqobject_done();
 
 // Continuous Handelr —p
