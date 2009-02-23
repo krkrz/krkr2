@@ -80,6 +80,76 @@ static const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
 // ObjectInfo
 // ---------------------------------------------------------
 
+/**
+ * squirrel オブジェクト保持用クラス
+ */
+class ObjectInfo {
+
+protected:
+	HSQUIRRELVM v; // オブジェクトの属していたVM
+	HSQOBJECT obj; // オブジェクト参照情報
+
+public:
+	// 内容消去
+	void clear();
+
+	// スタックから取得
+	void getStack(HSQUIRRELVM v, int idx);
+
+	// コンストラクタ
+	ObjectInfo();
+
+	// コンストラクタ
+	ObjectInfo(HSQUIRRELVM v, int idx);
+
+	// コピーコンストラクタ
+	ObjectInfo(const ObjectInfo &orig);
+
+	// 代入
+	ObjectInfo & operator=(const ObjectInfo &orig);
+	
+	// デストラクタ
+	virtual ~ObjectInfo();
+
+	// スレッドか？
+	bool isThread() const;
+
+	// 同じスレッドか？
+	bool isSameThread(const HSQUIRRELVM v) const;
+
+	// スレッドを取得
+	operator HSQUIRRELVM() const;
+	
+	// オブジェクトをPUSH
+	void push(HSQUIRRELVM v) const;
+
+	// ---------------------------------------------------
+	// delegate 処理用
+	// ---------------------------------------------------
+
+	// delegate として機能するかどうか
+	bool isDelegate();
+
+	// bindenv させるかどうか
+	bool isBindDelegate();
+
+	// ---------------------------------------------------
+	// オブジェクト取得
+	// ---------------------------------------------------
+
+	// インスタンスユーザポインタを取得
+	Thread *getThread();
+
+	// インスタンスユーザポインタを取得
+	Object *getObject();
+	
+	// ---------------------------------------------------
+	// wait処理用メソッド
+	// ---------------------------------------------------
+
+	bool isSameString(const SQChar *str) const;
+};
+
 // 内容消去
 void
 ObjectInfo::clear() {
@@ -148,20 +218,6 @@ ObjectInfo::operator HSQUIRRELVM() const {
 	return vm;
 }
 	
-// インスタンスユーザポインタを取得
-SQUserPointer
-ObjectInfo::getInstanceUserPointer(const SQUserPointer tag) {
-	SQUserPointer up = NULL;
-	if (sq_isinstance(obj)) {
-		sq_pushobject(v, obj);
-		if (!SQ_SUCCEEDED(sq_getinstanceup(v, -1, &up, tag))) {
-			up = NULL;
-		}
-		sq_pop(v, 1);
-	}
-	return up;
-}
-
 // オブジェクトをPUSH
 void
 ObjectInfo::push(HSQUIRRELVM v) const {
@@ -220,11 +276,6 @@ ObjectInfo::getObject() {
 // ---------------------------------------------------
 
 bool
-ObjectInfo::isString() const {
-	return sq_isstring(obj);
-}
-
-bool
 ObjectInfo::isSameString(const SQChar *str) const {
 	if (str && sq_isstring(obj)) {
 		const SQChar *mystr;
@@ -234,11 +285,6 @@ ObjectInfo::isSameString(const SQChar *str) const {
 		return mystr && scstrcmp(str, mystr) == 0;
 	}
 	return false;
-}
-
-bool
-ObjectInfo::isNumeric() const {
-	return sq_isnumeric(obj) != 0;
 }
 
 // ---------------------------------------------------------
@@ -273,7 +319,7 @@ Object::removeWait(Thread *thread) {
 /**
  * コンストラクタ
  */
-Object::Object() {
+Object::Object() : delegate(NULL) {
 }
 
 /**
@@ -281,6 +327,9 @@ Object::Object() {
  */
 Object::~Object() {
 	_notifyAll();
+	if (delegate) {
+		delete delegate;
+	}
 }
 
 // ------------------------------------------------------------------
@@ -325,7 +374,7 @@ Object::constructor(HSQUIRRELVM v) {
 	}
 	if (SQ_SUCCEEDED(result)) {
 		if (getParamCount(v) > 0) {
-			self->delegate.getStack(v, 2);
+			self->delegate = new ObjectInfo(v, 2);
 		}
 	}
 	return result;
@@ -349,13 +398,13 @@ Object::_get(HSQUIRRELVM v) {
 		
 			// delegateの参照
 		Object *self = getObject(v, 1);
-		if (self && self->delegate.isDelegate()) {
-			self->delegate.push(v);
+		if (self && self->delegate &&  self->delegate->isDelegate()) {
+			self->delegate->push(v);
 			sq_pushstring(v, name, -1);
 			if (SQ_SUCCEEDED(result = sq_get(v,-2))) {
 				// メソッドの場合は束縛処理
-				if (isClosure(sq_gettype(v,-1)) && self->delegate.isBindDelegate()) {
-					self->delegate.push(v);
+				if (isClosure(sq_gettype(v,-1)) && self->delegate->isBindDelegate()) {
+					self->delegate->push(v);
 					if (SQ_SUCCEEDED(sq_bindenv(v, -2))) {
 						sq_remove(v, -2); // 元のクロージャ
 					}
@@ -404,8 +453,8 @@ Object::_set(HSQUIRRELVM v) {
 		
 		// delegateの参照
 		Object *self = getObject(v, 1);
-		if (self && self->delegate.isDelegate()) {
-			self->delegate.push(v);
+		if (self && self->delegate && self->delegate->isDelegate()) {
+			self->delegate->push(v);
 			sq_push(v, 2); // name
 			sq_push(v, 3); // value
 			if (SQ_SUCCEEDED(result = sq_set(v,-3))) {
@@ -483,10 +532,12 @@ SQRESULT
 Object::setDelegate(HSQUIRRELVM v) {
 	Object *self = getObject(v, 1);
 	if (self) {
+		if (self->delegate) {
+			delete self->delegate;
+			self->delegate = NULL;
+		}
 		if (getParamCount(v) > 0) {
-			self->delegate.getStack(v, 2);
-		} else {
-			self->delegate.clear();
+			self->delegate = new ObjectInfo(v,2);
 		}
 		return SQ_OK;
 	} else {
@@ -501,7 +552,11 @@ SQRESULT
 Object::getDelegate(HSQUIRRELVM v) {
 	Object *self = getObject(v, 1);
 	if (self) {
-		self->delegate.push(v);
+		if (self->delegate) {
+			self->delegate->push(v);
+		} else {
+			sq_pushnull(v);
+		}
 		return 1;
 	} else {
 		return ERROR_BADINSTANCE(v);
@@ -881,7 +936,7 @@ protected:
 		}
 		if (SQ_SUCCEEDED(result)) {
 			if (getParamCount(v) > 1) {
-				self->delegate.getStack(v, 3);
+				self->delegate = new ObjectInfo(v, 3);
 			}
 			if (getParamCount(v) > 0) {
 				result = self->_exec(v);
@@ -1233,7 +1288,7 @@ public:
 	 * 次のスレッドに委譲する必要がある。
 	 * @return 
 	 */
-	static void main(long tick) {
+	static int main(long tick) {
 		//dm("tick:" + tick + "\n");
 		if (first) {
 			prevTick = tick;

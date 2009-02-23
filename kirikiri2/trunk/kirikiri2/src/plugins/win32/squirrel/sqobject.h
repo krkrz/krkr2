@@ -45,83 +45,7 @@ extern void getGetterName(tstring &store, const SQChar *name);
 
 class Object; // オブジェクトクラス
 class Thread; // スレッドクラス
-
-/**
- * squirrel オブジェクト保持用クラス
- */
-class ObjectInfo {
-
-protected:
-	HSQUIRRELVM v; // オブジェクトの属していたVM
-	HSQOBJECT obj; // オブジェクト参照情報
-
-public:
-	// 内容消去
-	void clear();
-
-	// スタックから取得
-	void getStack(HSQUIRRELVM v, int idx);
-
-	// コンストラクタ
-	ObjectInfo();
-
-	// コンストラクタ
-	ObjectInfo(HSQUIRRELVM v, int idx);
-
-	// コピーコンストラクタ
-	ObjectInfo(const ObjectInfo &orig);
-
-	// 代入
-	ObjectInfo & operator=(const ObjectInfo &orig);
-	
-	// デストラクタ
-	virtual ~ObjectInfo();
-
-	// スレッドか？
-	bool isThread() const;
-
-	// 同じスレッドか？
-	bool isSameThread(const HSQUIRRELVM v) const;
-
-	// スレッドを取得
-	operator HSQUIRRELVM() const;
-	
-	// インスタンスユーザポインタを取得
-	SQUserPointer getInstanceUserPointer(const SQUserPointer tag);
-
-	// オブジェクトをPUSH
-	void push(HSQUIRRELVM v) const;
-
-	// ---------------------------------------------------
-	// delegate 処理用
-	// ---------------------------------------------------
-
-	// delegate として機能するかどうか
-	bool isDelegate();
-
-	// bindenv させるかどうか
-	bool isBindDelegate();
-
-	// ---------------------------------------------------
-	// オブジェクト取得
-	// ---------------------------------------------------
-
-	// インスタンスユーザポインタを取得
-	Thread *getThread();
-
-	// インスタンスユーザポインタを取得
-	Object *getObject();
-	
-	// ---------------------------------------------------
-	// wait処理用メソッド
-	// ---------------------------------------------------
-
-	bool isString() const;
-
-	bool isSameString(const SQChar *str) const;
-
-	bool isNumeric() const;
-};
+class ObjectInfo; // オブジェクト情報保持用クラス
 
 /**
  * オブジェクト用
@@ -142,7 +66,7 @@ protected:
 	// このオブジェクトを待ってるスレッドの一覧
 	std::vector<Thread*> _waitThreadList;
 	// delegate
-	ObjectInfo delegate;
+	ObjectInfo *delegate;
 
 public:
 	/**
