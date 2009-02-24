@@ -188,9 +188,9 @@ public:
 	sq_createslot(v, -3);
 
 // ƒƒ\ƒbƒh“o˜^
-#define REGISTENUM(name) \
+#define REGISTENUM(name, value) \
 	sq_pushstring(v, _SC(#name), -1);\
-	sq_pushinteger(v, name);\
+	sq_pushinteger(v, value);\
 	sq_createslot(v, -3);
 
 #endif
