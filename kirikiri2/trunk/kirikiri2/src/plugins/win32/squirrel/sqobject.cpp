@@ -998,10 +998,10 @@ public:
 		sq_newclass(v, true); // åpè≥Ç∑ÇÈ
 		sq_settypetag(v, -1, THREADTYPETAG);
 
-		REGISTENUM(THREAD_STOP);
-		REGISTENUM(THREAD_RUN);
-		REGISTENUM(THREAD_WAIT);
-		REGISTENUM(THREAD_END);
+		REGISTENUM(STOP, THREAD_STOP);
+		REGISTENUM(RUN, THREAD_RUN);
+		REGISTENUM(WAIT, THREAD_WAIT);
+		REGISTENUM(END, THREAD_END);
 		REGISTMETHOD(constructor);
 		REGISTMETHOD(getCurrentTick);
 		REGISTMETHOD(getStatus);
@@ -1034,9 +1034,9 @@ protected:
 	static void entryThread(HSQUIRRELVM v) {
 		if (threadList.size() == 0) {
 			sqobject_start();
+			first = true;
 		}
 		threadList.push_back(ObjectInfo(v,1));
-		first = true;
 	}
 
 	// -------------------------------------------------------------

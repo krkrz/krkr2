@@ -83,10 +83,10 @@ class Object {
 class Thread extends Object {
 
 	// スレッドのステート
-	THREAD_STOP = 0; // 停止
-	THREAD_RUN = 1;  // 実行中
-	THREAD_WAIT = 2; // 処理待ち
-	THREAD_END = 3;  // 終了
+	STOP = 0; // 停止
+	RUN = 1;  // 実行中
+	WAIT = 2; // 処理待ち
+	END = 3;  // 終了
 	
 	/**
 	 * コンストラクタ
