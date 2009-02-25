@@ -157,6 +157,34 @@ public:
 	void SetMixingMovieBGColor( tjs_uint col );
 	tjs_uint GetMixingMovieBGColor();
 
+
+	tjs_real GetContrastRangeMin();
+	tjs_real GetContrastRangeMax();
+	tjs_real GetContrastDefaultValue();
+	tjs_real GetContrastStepSize();
+	tjs_real GetContrast();
+	void SetContrast( tjs_real v );
+
+	tjs_real GetBrightnessRangeMin();
+	tjs_real GetBrightnessRangeMax();
+	tjs_real GetBrightnessDefaultValue();
+	tjs_real GetBrightnessStepSize();
+	tjs_real GetBrightness();
+	void SetBrightness( tjs_real v );
+
+	tjs_real GetHueRangeMin();
+	tjs_real GetHueRangeMax();
+	tjs_real GetHueDefaultValue();
+	tjs_real GetHueStepSize();
+	tjs_real GetHue();
+	void SetHue( tjs_real v );
+
+	tjs_real GetSaturationRangeMin();
+	tjs_real GetSaturationRangeMax();
+	tjs_real GetSaturationDefaultValue();
+	tjs_real GetSaturationStepSize();
+	tjs_real GetSaturation();
+	void SetSaturation( tjs_real v );
 // End:		Add:	T.Imoto
 
 	tjs_int GetOriginalWidth();
