@@ -1114,6 +1114,310 @@ TJS_BEGIN_NATIVE_PROP_DECL(mixingMovieBGColor)
 }
 TJS_END_NATIVE_PROP_DECL(mixingMovieBGColor)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(contrastRangeMin)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetContrastRangeMin();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(contrastRangeMin)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(contrastRangeMax)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetContrastRangeMax();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(contrastRangeMax)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(contrastDefaultValue)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetContrastDefaultValue();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(contrastDefaultValue)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(contrastStepSize)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetContrastStepSize();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(contrastStepSize)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(contrast)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetContrast();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetContrast( (tjs_real)*param );
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(contrast)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(brightnessRangeMin)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetBrightnessRangeMin();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(brightnessRangeMin)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(brightnessRangeMax)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetBrightnessRangeMax();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(brightnessRangeMax)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(brightnessDefaultValue)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetBrightnessDefaultValue();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(brightnessDefaultValue)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(brightnessStepSize)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetBrightnessStepSize();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(brightnessStepSize)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(brightness)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetBrightness();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetBrightness( (tjs_real)*param );
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(brightness)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(hueRangeMin)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetHueRangeMin();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(hueRangeMin)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(hueRangeMax)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetHueRangeMax();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(hueRangeMax)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(hueDefaultValue)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetHueDefaultValue();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(hueDefaultValue)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(hueStepSize)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetHueStepSize();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(hueStepSize)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(hue)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetHue();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetHue( (tjs_real)*param );
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(hue)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(saturationRangeMin)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetSaturationRangeMin();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(saturationRangeMin)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(saturationRangeMax)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetSaturationRangeMax();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(saturationRangeMax)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(saturationDefaultValue)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetSaturationDefaultValue();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(saturationDefaultValue)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(saturationStepSize)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetSaturationStepSize();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(saturationStepSize)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(saturation)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		*result = (tjs_real)_this->GetSaturation();
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_VideoOverlay);
+		_this->SetSaturation( (tjs_real)*param );
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(saturation)
+//----------------------------------------------------------------------
 // End: Add:	T.Imoto
 //----------------------------------------------------------------------
 

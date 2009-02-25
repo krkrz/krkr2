@@ -488,3 +488,301 @@ void __stdcall tTVPDSMixerVideoOverlay::SetMessageDrainWindow(HWND window)
 {
 	m_hMessageDrainWnd = window;
 }
+//----------------------------------------------------------------------------
+//! @brief	  	最小値を得る
+//----------------------------------------------------------------------------
+void tTVPDSMixerVideoOverlay::GetAmpControlRangeMin( float *v, int flag )
+{
+	if(Shutdown) return;
+
+	VMR9ProcAmpControlRange proc = { sizeof(VMR9ProcAmpControlRange) };
+	proc.dwProperty = static_cast<VMR9ProcAmpControlFlags>(flag);
+
+	HRESULT			hr;
+	if(FAILED(hr = MixerControl()->GetProcAmpControlRange( 0, &proc )) )
+		ThrowDShowException(L"Failed to set IVMRMixerControl9::GetProcAmpControlRange.", hr);
+
+	*v = proc.MinValue;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	最大値を得る
+//----------------------------------------------------------------------------
+void tTVPDSMixerVideoOverlay::GetAmpControlRangeMax( float *v, int flag )
+{
+	if(Shutdown) return;
+
+	VMR9ProcAmpControlRange proc = { sizeof(VMR9ProcAmpControlRange) };
+	proc.dwProperty = static_cast<VMR9ProcAmpControlFlags>(flag);
+
+	HRESULT			hr;
+	if(FAILED(hr = MixerControl()->GetProcAmpControlRange( 0, &proc )) )
+		ThrowDShowException(L"Failed to set IVMRMixerControl9::GetProcAmpControlRange.", hr);
+
+	*v = proc.MaxValue;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	デフォルト値を得る
+//----------------------------------------------------------------------------
+void tTVPDSMixerVideoOverlay::GetAmpControlDefaultValue( float *v, int flag )
+{
+	if(Shutdown) return;
+
+	VMR9ProcAmpControlRange proc = { sizeof(VMR9ProcAmpControlRange) };
+	proc.dwProperty = static_cast<VMR9ProcAmpControlFlags>(flag);
+
+	HRESULT			hr;
+	if(FAILED(hr = MixerControl()->GetProcAmpControlRange( 0, &proc )) )
+		ThrowDShowException(L"Failed to set IVMRMixerControl9::GetProcAmpControlRange.", hr);
+
+	*v = proc.DefaultValue;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	ステップサイズを得る
+//----------------------------------------------------------------------------
+void tTVPDSMixerVideoOverlay::GetAmpControlStepSize( float *v, int flag )
+{
+	if(Shutdown) return;
+
+	VMR9ProcAmpControlRange proc = { sizeof(VMR9ProcAmpControlRange) };
+	proc.dwProperty = static_cast<VMR9ProcAmpControlFlags>(flag);
+
+	HRESULT			hr;
+	if(FAILED(hr = MixerControl()->GetProcAmpControlRange( 0, &proc )) )
+		ThrowDShowException(L"Failed to set IVMRMixerControl9::GetProcAmpControlRange.", hr);
+
+	*v = proc.StepSize;
+}
+//----------------------------------------------------------------------------
+//! @brief	  	値を得る
+//----------------------------------------------------------------------------
+void tTVPDSMixerVideoOverlay::GetAmpControl( float *v, int flag )
+{
+	if(Shutdown) return;
+
+	VMR9ProcAmpControl proc = { sizeof(VMR9ProcAmpControl) };
+	proc.dwFlags = flag;
+
+	HRESULT			hr;
+	if(FAILED(hr = MixerControl()->GetProcAmpControl( 0, &proc )) )
+		ThrowDShowException(L"Failed to set IVMRMixerControl9::GetProcAmpControl.", hr);
+
+	switch( flag ) {
+		case ProcAmpControl9_Contrast:
+			*v = proc.Contrast;
+			break;
+		case ProcAmpControl9_Brightness:
+			*v = proc.Brightness;
+			break;
+		case ProcAmpControl9_Hue:
+			*v = proc.Hue;
+			break;
+		case ProcAmpControl9_Saturation:
+			*v = proc.Saturation;
+			break;
+	}
+}
+//----------------------------------------------------------------------------
+//! @brief	  	値を設定する
+//----------------------------------------------------------------------------
+void tTVPDSMixerVideoOverlay::SetAmpControl( float v, int flag )
+{
+	if(Shutdown) return;
+
+	VMR9ProcAmpControl proc = { sizeof(VMR9ProcAmpControl) };
+	HRESULT			hr;
+	if(FAILED(hr = MixerControl()->GetProcAmpControl( 0, &proc )) )
+		ThrowDShowException(L"Failed to set IVMRMixerControl9::GetProcAmpControl.", hr);
+
+	if( proc.dwFlags & flag ) {
+		proc.dwFlags = flag;
+		switch( flag ) {
+			case ProcAmpControl9_Contrast:
+				proc.Contrast = v;
+				break;
+			case ProcAmpControl9_Brightness:
+				proc.Brightness = v;
+				break;
+			case ProcAmpControl9_Hue:
+				proc.Hue = v;
+				break;
+			case ProcAmpControl9_Saturation:
+				proc.Saturation = v;
+				break;
+		}
+
+		if(FAILED(hr = MixerControl()->SetProcAmpControl( 0, &proc )) )
+			ThrowDShowException(L"Failed to set IVMRMixerControl9::SetProcAmpControl.", hr);
+	} else {
+		ThrowDShowException(L"Not supported parameter. IVMRMixerControl9::SetProcAmpControl.", hr);
+	}
+}
+
+//----------------------------------------------------------------------------
+//! @brief	  	コントラストの幅の最小値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetContrastRangeMin( float *v )
+{
+	GetAmpControlRangeMin( v, ProcAmpControl9_Contrast );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	コントラストの幅の最大値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetContrastRangeMax( float *v )
+{
+	GetAmpControlRangeMax( v, ProcAmpControl9_Contrast );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	コントラストのデフォルト値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetContrastDefaultValue( float *v )
+{
+	GetAmpControlDefaultValue( v, ProcAmpControl9_Contrast );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	コントラストのステップサイズを得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetContrastStepSize( float *v )
+{
+	GetAmpControlStepSize( v, ProcAmpControl9_Contrast );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	コントラストを得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetContrast( float *v )
+{
+	GetAmpControl( v, ProcAmpControl9_Contrast );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	コントラストを設定する
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::SetContrast( float v )
+{
+	SetAmpControl( v, ProcAmpControl9_Contrast );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	輝度の幅の最小値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetBrightnessRangeMin( float *v )
+{
+	GetAmpControlRangeMin( v, ProcAmpControl9_Brightness );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	輝度の幅の最大値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetBrightnessRangeMax( float *v )
+{
+	GetAmpControlRangeMax( v, ProcAmpControl9_Brightness );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	輝度のデフォルト値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetBrightnessDefaultValue( float *v )
+{
+	GetAmpControlDefaultValue( v, ProcAmpControl9_Brightness );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	輝度のステップサイズを得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetBrightnessStepSize( float *v )
+{
+	GetAmpControlStepSize( v, ProcAmpControl9_Brightness );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	輝度を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetBrightness( float *v )
+{
+	GetAmpControl( v, ProcAmpControl9_Brightness );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	輝度を設定する
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::SetBrightness( float v )
+{
+	SetAmpControl( v, ProcAmpControl9_Brightness );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	色相の幅の最小値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetHueRangeMin( float *v )
+{
+	GetAmpControlRangeMin( v, ProcAmpControl9_Hue );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	色相の幅の最大値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetHueRangeMax( float *v )
+{
+	GetAmpControlRangeMax( v, ProcAmpControl9_Hue );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	色相のデフォルト値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetHueDefaultValue( float *v )
+{
+	GetAmpControlDefaultValue( v, ProcAmpControl9_Hue );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	色相のステップサイズを得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetHueStepSize( float *v )
+{
+	GetAmpControlStepSize( v, ProcAmpControl9_Hue );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	色相を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetHue( float *v )
+{
+	GetAmpControl( v, ProcAmpControl9_Hue );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	色相を設定する
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::SetHue( float v )
+{
+	SetAmpControl( v, ProcAmpControl9_Hue );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	彩度の幅の最小値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetSaturationRangeMin( float *v )
+{
+	GetAmpControlRangeMin( v, ProcAmpControl9_Saturation );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	彩度の幅の最大値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetSaturationRangeMax( float *v )
+{
+	GetAmpControlRangeMax( v, ProcAmpControl9_Saturation );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	彩度のデフォルト値を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetSaturationDefaultValue( float *v )
+{
+	GetAmpControlDefaultValue( v, ProcAmpControl9_Saturation );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	彩度のステップサイズを得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetSaturationStepSize( float *v )
+{
+	GetAmpControlStepSize( v, ProcAmpControl9_Saturation );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	彩度を得る
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::GetSaturation( float *v )
+{
+	GetAmpControl( v, ProcAmpControl9_Saturation );
+}
+//----------------------------------------------------------------------------
+//! @brief	  	彩度を設定する
+//----------------------------------------------------------------------------
+void __stdcall tTVPDSMixerVideoOverlay::SetSaturation( float v )
+{
+	SetAmpControl( v, ProcAmpControl9_Saturation );
+}
+

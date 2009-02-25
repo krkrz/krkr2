@@ -350,6 +350,128 @@ void __stdcall tTVPFlashOverlay::PresentVideoImage()
 	if(Shutdown) return;
 	TVPThrowExceptionMessage(L"PresentVideoImage: Currently not supported");
 }
+
+
+void __stdcall tTVPFlashOverlay::GetContrastRangeMin( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetContrastRangeMin: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetContrastRangeMax( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetContrastRangeMax: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetContrastDefaultValue( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetContrastDefaultValue: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetContrastStepSize( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetContrastStepSize: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetContrast( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetContrast: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetContrast( float v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetContrast: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetBrightnessRangeMin( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetBrightnessRangeMin: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetBrightnessRangeMax( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetBrightnessRangeMax: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetBrightnessDefaultValue( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetBrightnessDefaultValue: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetBrightnessStepSize( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetBrightnessStepSize: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetBrightness( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetBrightness: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetBrightness( float v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetBrightness: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetHueRangeMin( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetHueRangeMin: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetHueRangeMax( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetHueRangeMax: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetHueDefaultValue( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetHueDefaultValue: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetHueStepSize( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetHueStepSize: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetHue( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetHue: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetHue( float v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetHue: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetSaturationRangeMin( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetSaturationRangeMin: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetSaturationRangeMax( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetSaturationRangeMax: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetSaturationDefaultValue( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetSaturationDefaultValue: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetSaturationStepSize( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetSaturationStepSize: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::GetSaturation( float *v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"GetSaturation: Currently not supported");
+}
+void __stdcall tTVPFlashOverlay::SetSaturation( float v )
+{
+	if(Shutdown) return;
+	TVPThrowExceptionMessage(L"SetSaturation: Currently not supported");
+}
 // End:	Add:	T.Imoto
 
 
