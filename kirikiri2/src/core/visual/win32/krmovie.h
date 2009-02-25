@@ -13,7 +13,7 @@
 #ifndef __KRMOVIE_H__
 #define __KRMOVIE_H__
 
-#define TVP_KRMOVIE_VER   0x0001000A
+#define TVP_KRMOVIE_VER   0x0001000B
 
 
 //---------------------------------------------------------------------------
@@ -86,6 +86,35 @@ public:
 	virtual void __stdcall GetMixingMovieBGColor( unsigned long *col ) = 0;
 
 	virtual void __stdcall PresentVideoImage() = 0;
+
+	virtual void __stdcall GetContrastRangeMin( float *v ) = 0;
+	virtual void __stdcall GetContrastRangeMax( float *v ) = 0;
+	virtual void __stdcall GetContrastDefaultValue( float *v ) = 0;
+	virtual void __stdcall GetContrastStepSize( float *v ) = 0;
+	virtual void __stdcall GetContrast( float *v ) = 0;
+	virtual void __stdcall SetContrast( float v ) = 0;
+
+	virtual void __stdcall GetBrightnessRangeMin( float *v ) = 0;
+	virtual void __stdcall GetBrightnessRangeMax( float *v ) = 0;
+	virtual void __stdcall GetBrightnessDefaultValue( float *v ) = 0;
+	virtual void __stdcall GetBrightnessStepSize( float *v ) = 0;
+	virtual void __stdcall GetBrightness( float *v ) = 0;
+	virtual void __stdcall SetBrightness( float v ) = 0;
+
+	virtual void __stdcall GetHueRangeMin( float *v ) = 0;
+	virtual void __stdcall GetHueRangeMax( float *v ) = 0;
+	virtual void __stdcall GetHueDefaultValue( float *v ) = 0;
+	virtual void __stdcall GetHueStepSize( float *v ) = 0;
+	virtual void __stdcall GetHue( float *v ) = 0;
+	virtual void __stdcall SetHue( float v ) = 0;
+
+	virtual void __stdcall GetSaturationRangeMin( float *v ) = 0;
+	virtual void __stdcall GetSaturationRangeMax( float *v ) = 0;
+	virtual void __stdcall GetSaturationDefaultValue( float *v ) = 0;
+	virtual void __stdcall GetSaturationStepSize( float *v ) = 0;
+	virtual void __stdcall GetSaturation( float *v ) = 0;
+	virtual void __stdcall SetSaturation( float v ) = 0;
+
 // End:	Add:	T.Imoto
 };
 //---------------------------------------------------------------------------

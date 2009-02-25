@@ -86,6 +86,34 @@ public:
 	void __stdcall SetMixingMovieBGColor( unsigned long col );
 	void __stdcall GetMixingMovieBGColor( unsigned long *col );
 	void __stdcall PresentVideoImage();
+
+	void __stdcall GetContrastRangeMin( float *v );
+	void __stdcall GetContrastRangeMax( float *v );
+	void __stdcall GetContrastDefaultValue( float *v );
+	void __stdcall GetContrastStepSize( float *v );
+	void __stdcall GetContrast( float *v );
+	void __stdcall SetContrast( float v );
+
+	void __stdcall GetBrightnessRangeMin( float *v );
+	void __stdcall GetBrightnessRangeMax( float *v );
+	void __stdcall GetBrightnessDefaultValue( float *v );
+	void __stdcall GetBrightnessStepSize( float *v );
+	void __stdcall GetBrightness( float *v );
+	void __stdcall SetBrightness( float v );
+
+	void __stdcall GetHueRangeMin( float *v );
+	void __stdcall GetHueRangeMax( float *v );
+	void __stdcall GetHueDefaultValue( float *v );
+	void __stdcall GetHueStepSize( float *v );
+	void __stdcall GetHue( float *v );
+	void __stdcall SetHue( float v );
+
+	void __stdcall GetSaturationRangeMin( float *v );
+	void __stdcall GetSaturationRangeMax( float *v );
+	void __stdcall GetSaturationDefaultValue( float *v );
+	void __stdcall GetSaturationStepSize( float *v );
+	void __stdcall GetSaturation( float *v );
+	void __stdcall SetSaturation( float v );
 // End:	Add:	T.Imoto
 
 

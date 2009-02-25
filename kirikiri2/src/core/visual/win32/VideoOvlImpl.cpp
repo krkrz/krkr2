@@ -1088,6 +1088,219 @@ tjs_uint tTJSNI_VideoOverlay::GetMixingMovieBGColor()
 	}
 	return static_cast<tjs_uint>(ret);
 }
+
+
+
+tjs_real tTJSNI_VideoOverlay::GetContrastRangeMin()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetContrastRangeMin( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetContrastRangeMax()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetContrastRangeMax( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetContrastDefaultValue()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetContrastDefaultValue( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetContrastStepSize()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetContrastStepSize( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetContrast()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetContrast( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+void tTJSNI_VideoOverlay::SetContrast( tjs_real v )
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetContrast( v );
+	}
+}
+tjs_real tTJSNI_VideoOverlay::GetBrightnessRangeMin()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetBrightnessRangeMin( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetBrightnessRangeMax()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetBrightnessRangeMax( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetBrightnessDefaultValue()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetBrightnessDefaultValue( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetBrightnessStepSize()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetBrightnessStepSize( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetBrightness()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetBrightness( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+void tTJSNI_VideoOverlay::SetBrightness( tjs_real v )
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetBrightness( v );
+	}
+}
+
+tjs_real tTJSNI_VideoOverlay::GetHueRangeMin()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetHueRangeMin( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetHueRangeMax()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetHueRangeMax( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetHueDefaultValue()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetHueDefaultValue( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetHueStepSize()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetHueStepSize( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetHue()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetHue( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+void tTJSNI_VideoOverlay::SetHue( tjs_real v )
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetHue( v );
+	}
+}
+
+tjs_real tTJSNI_VideoOverlay::GetSaturationRangeMin()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetSaturationRangeMin( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetSaturationRangeMax()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetSaturationRangeMax( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetSaturationDefaultValue()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetSaturationDefaultValue( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetSaturationStepSize()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetSaturationStepSize( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+tjs_real tTJSNI_VideoOverlay::GetSaturation()
+{
+	float ret = -1.0f;
+	if(VideoOverlay)
+	{
+		VideoOverlay->GetSaturation( &ret );
+	}
+	return static_cast<tjs_real>(ret);
+}
+void tTJSNI_VideoOverlay::SetSaturation( tjs_real v )
+{
+	if(VideoOverlay)
+	{
+		VideoOverlay->SetSaturation( v );
+	}
+}
 // End:		Add:	T.Imoto
 
 //---------------------------------------------------------------------------

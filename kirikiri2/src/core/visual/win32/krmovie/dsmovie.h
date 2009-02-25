@@ -266,6 +266,35 @@ public:
 	virtual void __stdcall GetMixingMovieBGColor( unsigned long *col );
 	virtual void __stdcall PresentVideoImage();
 
+
+	virtual void __stdcall GetContrastRangeMin( float *v );
+	virtual void __stdcall GetContrastRangeMax( float *v );
+	virtual void __stdcall GetContrastDefaultValue( float *v );
+	virtual void __stdcall GetContrastStepSize( float *v );
+	virtual void __stdcall GetContrast( float *v );
+	virtual void __stdcall SetContrast( float v );
+
+	virtual void __stdcall GetBrightnessRangeMin( float *v );
+	virtual void __stdcall GetBrightnessRangeMax( float *v );
+	virtual void __stdcall GetBrightnessDefaultValue( float *v );
+	virtual void __stdcall GetBrightnessStepSize( float *v );
+	virtual void __stdcall GetBrightness( float *v );
+	virtual void __stdcall SetBrightness( float v );
+
+	virtual void __stdcall GetHueRangeMin( float *v );
+	virtual void __stdcall GetHueRangeMax( float *v );
+	virtual void __stdcall GetHueDefaultValue( float *v );
+	virtual void __stdcall GetHueStepSize( float *v );
+	virtual void __stdcall GetHue( float *v );
+	virtual void __stdcall SetHue( float v );
+
+	virtual void __stdcall GetSaturationRangeMin( float *v );
+	virtual void __stdcall GetSaturationRangeMax( float *v );
+	virtual void __stdcall GetSaturationDefaultValue( float *v );
+	virtual void __stdcall GetSaturationStepSize( float *v );
+	virtual void __stdcall GetSaturation( float *v );
+	virtual void __stdcall SetSaturation( float v );
+
 private:
 	void __stdcall SelectStream( unsigned long num, std::vector<StreamInfo> &si );
 	void __stdcall GetEnableStreamNum( long *num, std::vector<StreamInfo> &si );
