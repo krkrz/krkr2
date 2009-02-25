@@ -73,6 +73,13 @@ private:
 		return m_hMessageDrainWnd;
 	}
 
+	void GetAmpControlRangeMin( float *v, int flag );
+	void GetAmpControlRangeMax( float *v, int flag );
+	void GetAmpControlDefaultValue( float *v, int flag );
+	void GetAmpControlStepSize( float *v, int flag );
+	void GetAmpControl( float *v, int flag );
+	void SetAmpControl( float v, int flag );
+
 public:
 	tTVPDSMixerVideoOverlay();
 	virtual ~tTVPDSMixerVideoOverlay();
@@ -97,6 +104,34 @@ public:
 	virtual void __stdcall GetMixingMovieBGColor( unsigned long *col );
 	virtual void __stdcall PresentVideoImage();
 	virtual void __stdcall SetMessageDrainWindow(HWND window);
+
+	virtual void __stdcall GetContrastRangeMin( float *v );
+	virtual void __stdcall GetContrastRangeMax( float *v );
+	virtual void __stdcall GetContrastDefaultValue( float *v );
+	virtual void __stdcall GetContrastStepSize( float *v );
+	virtual void __stdcall GetContrast( float *v );
+	virtual void __stdcall SetContrast( float v );
+
+	virtual void __stdcall GetBrightnessRangeMin( float *v );
+	virtual void __stdcall GetBrightnessRangeMax( float *v );
+	virtual void __stdcall GetBrightnessDefaultValue( float *v );
+	virtual void __stdcall GetBrightnessStepSize( float *v );
+	virtual void __stdcall GetBrightness( float *v );
+	virtual void __stdcall SetBrightness( float v );
+
+	virtual void __stdcall GetHueRangeMin( float *v );
+	virtual void __stdcall GetHueRangeMax( float *v );
+	virtual void __stdcall GetHueDefaultValue( float *v );
+	virtual void __stdcall GetHueStepSize( float *v );
+	virtual void __stdcall GetHue( float *v );
+	virtual void __stdcall SetHue( float v );
+
+	virtual void __stdcall GetSaturationRangeMin( float *v );
+	virtual void __stdcall GetSaturationRangeMax( float *v );
+	virtual void __stdcall GetSaturationDefaultValue( float *v );
+	virtual void __stdcall GetSaturationStepSize( float *v );
+	virtual void __stdcall GetSaturation( float *v );
+	virtual void __stdcall SetSaturation( float v );
 
 	void AddVMR9Filer( CComPtr<IBaseFilter> &pVMR9 );
 
