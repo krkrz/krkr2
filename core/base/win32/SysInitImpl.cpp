@@ -60,8 +60,8 @@ bool TVPSystemIsBasedOnNT = false; // is system NT based ?
 // signature checker will refer. This enables the signature checker
 // (or other security modules like XP3 encryption module) to check
 // the changes which is not intended by the contents author.
-const static char TVPSystemSecurityOptions[] = 
-"-- TVPSystemSecurityOptions disablemsgmap(0):forcedataxp3(0) --";
+const static char TVPSystemSecurityOptions[] =
+"-- TVPSystemSecurityOptions disablemsgmap(0):forcedataxp3(0):acceptfilenameargument(0) --";
 //---------------------------------------------------------------------------
 int GetSystemSecurityOption(const char *name)
 {
@@ -883,8 +883,9 @@ void TVPBeforeSystemInit()
 	bool forcesel = false;
 
 	bool forcedataxp3 = GetSystemSecurityOption("forcedataxp3") != 0;
+	bool acceptfilenameargument = GetSystemSecurityOption("acceptfilenameargument") != 0;
 
-	if(!forcedataxp3)
+	if(!forcedataxp3 && !acceptfilenameargument)
 	{
 		if(TVPGetCommandLine(TJS_W("-nosel")) || TVPGetCommandLine(TJS_W("-about")))
 		{
@@ -1480,7 +1481,10 @@ void TVPEnsureDataPathDirectory()
 static void PushAllCommandlineArguments()
 {
 	// store arguments given by commandline to "TVPProgramArguments"
+	bool acceptfilenameargument = GetSystemSecurityOption("acceptfilenameargument") != 0;
+
 	bool argument_stopped = false;
+	if(acceptfilenameargument) argument_stopped = true;
 	int file_argument_count = 0;
 	for(tjs_int i = 1; i<_argc; i++)
 	{
