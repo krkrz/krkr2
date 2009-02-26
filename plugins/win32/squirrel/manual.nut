@@ -101,7 +101,7 @@ class Thread extends Object {
 	function getCurrentTick();
 
 	/**
-	 * @return このスレッドの実行ステータス THREAD_STOP/THREAD_RUN/THREAD_WAIT/THREAD_END
+	 * @return このスレッドの実行ステータス STOP/RUN/WAIT/END
 	 */
 	function getStatus();
 
@@ -179,6 +179,6 @@ function wait(param, ...);
  * トリガ送信
  * 全スレッドに対してトリガを送信します。
  * 該当するトリガを待っていたスレッドの待ちが解除されます。
- * @param name トリガ名
+ * @param trigger トリガ名
  */
-function trigger(name);
+function notify(trigger);
