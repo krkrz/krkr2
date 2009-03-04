@@ -3,6 +3,7 @@
 using namespace std;
 #include <tchar.h>
 #include <shlobj.h>
+#include <ole2.h>
 
 // Date クラスメンバ
 static iTJSDispatch2 *dateClass   = NULL;  // Date のクラスオブジェクト
@@ -562,7 +563,7 @@ public:
 
 		//	name
 		bi.pszDisplayName	= NULL;
-		bi.ulFlags	= BIF_RETURNONLYFSDIRS;/* BIF_NEWDIALOGSTYLE */
+		bi.ulFlags	= BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
 		if(elm->IsValid(0, L"name", NULL, elm) == TJS_S_TRUE &&
 			TJS_SUCCEEDED(elm->PropGet(0, L"name", NULL, &val, elm)) &&
 			!val.NormalCompare(ttstr(L"")))
@@ -596,6 +597,7 @@ public:
 			{
 				if(result) *result = TJS_S_TRUE;
 				val	= folder;
+                                val = TVPNormalizeStorageName(val);
 				elm->PropSet(0, L"name", NULL, &val, elm);
 			}
 			FreeITEMIDLIST(pidl);
