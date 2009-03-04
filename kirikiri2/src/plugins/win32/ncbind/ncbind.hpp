@@ -2119,6 +2119,33 @@ private:
 	NameT const _tjs2ClassName;
 };
 
+////////////////////////////////////////
+template <class T>
+struct  ncbRequireClassAutoRegister : public ncbAutoRegister {
+	/**/ncbRequireClassAutoRegister(NameT name, NameT sub = 0) : ncbAutoRegister(ClassRegist), _className(name), _expName(sub) {}
+
+	typedef ncbClassInfo<T> ClassInfoT;
+protected:
+	void Regist()   const {
+		NCB_LOG_2(TJS_W("RequireClass: "), _className);
+
+		// クラスオブジェクト取得
+		tTJSVariant val;
+		TVPExecuteExpression(ttstr(_expName ? _expName : _className), &val);
+		if (val.Type() != tvtObject)
+			TVPThrowExceptionMessage(TJS_W("Require class not found."));
+
+		// IDとクラスオブジェクトを登録
+		if (!ClassInfoT::Set(_className, TJSFindNativeClassID(_className), val.AsObectNoAddRef()))
+			TVPThrowExceptionMessage(TJS_W("Already registerd class."));
+	}
+	void Unregist() const {}
+private:
+	NameT const _className;
+	NameT const _expName;
+};
+
+////////////////////////////////////////
 #define NCB_GET_INSTANCE_HOOK(cls) \
 	template <> struct ncbNativeClassMethodBase::nativeInstanceGetter<cls> : public ncbNativeClassMethodBase::nativeInstanceGetterBase<cls>
 
@@ -2140,6 +2167,10 @@ private:
 #define NCB_ATTACH_CLASS(cls, attach) \
 	NCB_ATTACHED_INSTANCE_DELAY_CREATE(cls); \
 	NCB_ATTACH_CLASS_WITH_HOOK(cls, attach)
+
+#define NCB_REQUIRE_CLASS(cls)          template struct ncbClassInfo<cls>; static ncbRequireClassAutoRegister<cls> ncbRequireClass_ ## cls(TJS_W(# cls), 0)
+#define NCB_REQUIRE_SUBCLASS(cls, name) template struct ncbClassInfo<cls>; static ncbRequireClassAutoRegister<cls> ncbRequireClass_ ## cls(TJS_W(# cls), TJS_W(# name))
+
 
 ////////////////////////////////////////
 #define NCB_METHOD_RAW_CALLBACK(name, cb, flag)         RawCallback(TJS_W(# name), cb,          flag)
