@@ -44,6 +44,40 @@ IrrlichtSimpleDevice::setReceiver(tTVPWindowMessageReceiver receiver, bool enabl
 	}
 }
 
+// デバイス割り当て
+void
+IrrlichtSimpleDevice::attach(HWND hwnd, int width, int height)
+{
+	if (useRender) {
+		IrrlichtBase::attach(hwnd, width, height);
+		if (device) {
+			IVideoDriver *driver = device->getVideoDriver();
+			// 描画開始
+			if (driver) {
+				target = driver->createRenderTargetTexture(driver->getScreenSize());
+				if (target) {
+					driver->setRenderTarget(target);
+				} else {
+					error_log("failed to create rendertarget");
+				}
+			}
+		}
+	} else {
+		IrrlichtBase::attach(hwnd, width, height);
+	}
+}
+
+// デバイスの破棄
+void
+IrrlichtSimpleDevice::detach()
+{
+	if (target) {
+		target->drop();
+		target = NULL;
+	}
+	IrrlichtBase::detach();
+}
+
 /**
  * ウインドウを生成
  * @param parent 親ウインドウ
@@ -65,13 +99,14 @@ IrrlichtSimpleDevice::destroyWindow()
 
 /**
  * コンストラクタ
+ * @param widow ウインドウ
+ * @param width 横幅
+ * @param height 縦幅
+ * @param useRender レンダーターゲットを使う(αが確実に有効)
  */
-IrrlichtSimpleDevice::IrrlichtSimpleDevice(iTJSDispatch2 *window, int width, int height)
-	: IrrlichtBase(), window(window), width(width), height(height)
+IrrlichtSimpleDevice::IrrlichtSimpleDevice(iTJSDispatch2 *window, int width, int height, bool useRender)
+	: IrrlichtBase(), window(window), width(width), height(height), useRender(useRender), dwidth(-1), dheight(-1), hbmp(0), oldbmp(0), destDC(0), bmpbuffer(NULL)
 {
-	if (window == NULL || window->IsInstanceOf(0, NULL, NULL, L"Window", window) != TJS_S_TRUE) {
-		TVPThrowExceptionMessage(L"must set window object");
-	}
 	window->AddRef();
 	setReceiver(messageHandler, true);
 	
@@ -89,12 +124,48 @@ IrrlichtSimpleDevice::IrrlichtSimpleDevice(iTJSDispatch2 *window, int width, int
  */
 IrrlichtSimpleDevice::~IrrlichtSimpleDevice()
 {
+	clearDC();
 	destroyWindow();
 	if (window) {
 		setReceiver(messageHandler, false);
 		window->Release();
 		window = NULL;
 	}
+}
+
+
+//! returns the size of a texture which would be the optimize size for rendering it
+static s32 getTextureSizeFromImageSize(s32 size)
+{
+	s32 ts = 0x01;
+	while(ts < size)
+		ts <<= 1;
+	return ts;
+}
+
+tjs_error
+IrrlichtSimpleDevice::Factory(IrrlichtSimpleDevice **obj, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	if (numparams < 4) {
+		return TJS_E_BADPARAMCOUNT;
+	}
+	iTJSDispatch2 *window = param[0]->AsObjectNoAddRef();
+	if (window == NULL || window->IsInstanceOf(0, NULL, NULL, L"Window", window) != TJS_S_TRUE) {
+		TVPThrowExceptionMessage(L"must set Window object");
+	}
+	int width  = (tjs_int)*param[1];
+	int height = (tjs_int)*param[2];
+	bool useRender = numparams >= 4 ? (tjs_int)*param[3]!=0 : false;
+
+	if (useRender) {
+		if (getTextureSizeFromImageSize(width) != width ||
+			getTextureSizeFromImageSize(height) != height) {
+			TVPThrowExceptionMessage(L"width/height must be power of 2 when render mode");
+		}
+	}
+
+	*obj = new IrrlichtSimpleDevice(window, width, height, useRender);
+	return TJS_S_OK;
 }
 
 // -----------------------------------------------------------------------
@@ -104,6 +175,9 @@ IrrlichtSimpleDevice::~IrrlichtSimpleDevice()
 void
 IrrlichtSimpleDevice::_setSize()
 {
+	if (useRender) {
+		TVPThrowExceptionMessage(L"can't change width/height when render mode");
+	}
 	if (device) {
 		IVideoDriver *driver = device->getVideoDriver();
 		if (driver) {
@@ -113,29 +187,70 @@ IrrlichtSimpleDevice::_setSize()
 }
 
 /**
+ * DCを破棄
  */
 void
-IrrlichtSimpleDevice::updateToLayer(iTJSDispatch2 *layer)
+IrrlichtSimpleDevice::clearDC()
 {
-	if (device && layer) {
+	if (destDC) {
+		SelectObject(destDC, oldbmp);
+		DeleteDC(destDC);
+		DeleteObject(hbmp);
+		oldbmp = 0;
+		hbmp = 0;
+		destDC = 0;
+	}
+}
+
+/**
+ * DCを更新
+ */
+void
+IrrlichtSimpleDevice::updateDC(tjs_int dwidth, tjs_int dheight)
+{
+	if (this->dwidth != dwidth || this->dheight != dheight) {
+		// 一度破棄
+		clearDC();
+		// 描画先のDIBを作る
+		BITMAPINFO biBMP;
+		ZeroMemory(&biBMP, sizeof biBMP);
+		biBMP.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		biBMP.bmiHeader.biBitCount = 32;
+		biBMP.bmiHeader.biPlanes = 1;
+		biBMP.bmiHeader.biWidth  = dwidth;
+		biBMP.bmiHeader.biHeight = -dheight;
+		hbmp = CreateDIBSection(NULL, &biBMP, DIB_RGB_COLORS, &bmpbuffer, NULL, 0);
+		if (hbmp) {
+			// 描画用にDCを作る
+			destDC = CreateCompatibleDC(NULL);
+			if (destDC) {
+				oldbmp = (HBITMAP)SelectObject(destDC, hbmp);
+			} else {
+				DeleteObject(hbmp);
+				hbmp = 0;
+			}
+		}
+		this->dwidth = dwidth;
+		this->dheight = dheight;
+	}
+}
+
+/**
+ * レイヤに対して更新描画
+ * バックバッファからコピーします。
+ * @param layer レイヤ
+ * @param srcRect ソース領域
+ */
+void
+IrrlichtSimpleDevice::_updateToLayer(iTJSDispatch2 *layer, irr::core::rect<s32> *srcRect)
+{
+	if (device) {
 		// 時間を進める XXX tick を外部から与えられないか？
 		device->getTimer()->tick();
 		
 		IVideoDriver *driver = device->getVideoDriver();
 		// 描画開始
-		if (driver && driver->beginScene(true, true, irr::video::SColor(255,0,0,0))) {
-
-			/// シーンマネージャの描画
-			ISceneManager *smgr = device->getSceneManager();
-			if (smgr) {
-				smgr->drawAll();
-			}
-			
-			// GUIの描画
-			IGUIEnvironment *gui = device->getGUIEnvironment();
-			if (gui) {
-				gui->drawAll();
-			}
+		if (driver) {
 
 			// レイヤ情報取得
 			ncbPropAccessor obj(layer);
@@ -144,39 +259,66 @@ IrrlichtSimpleDevice::updateToLayer(iTJSDispatch2 *layer)
 			tjs_int dPitch  = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
 			unsigned char *dbuffer = (unsigned char *)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
 
-			// 描画先のビットマップを作る
-			// 直接処理できるといいんだけど……
-			BITMAPINFO biBMP;
-			ZeroMemory(&biBMP, sizeof biBMP);
-			biBMP.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			biBMP.bmiHeader.biBitCount = 32;
-			biBMP.bmiHeader.biPlanes = 1;
-			biBMP.bmiHeader.biWidth  = dwidth;
-			biBMP.bmiHeader.biHeight = -dheight;
-			void *buffer;
-			HBITMAP hbmp = CreateDIBSection(NULL, &biBMP, DIB_RGB_COLORS, &buffer, NULL, 0);
-			if (hbmp) {
-				// 描画用にDCを作る
-				HDC destDC = CreateCompatibleDC(NULL);
-				if (destDC) {
-					HBITMAP old = (HBITMAP)SelectObject(destDC, hbmp);
-					// そのDCに対して描画してもらう
-					irr::core::rect<s32> destRect(0,0,dwidth,dheight);
-					driver->endScene(0, NULL, &destRect, destDC);
-					SelectObject(destDC, old);
-					DeleteDC(destDC);
-				}
-				// ビットマップからコピー
-				for (tjs_int y = 0; y < dheight; y++) {
-					unsigned char *src = (unsigned char *)(buffer) + dwidth * y * 4;
-					CopyMemory(dbuffer, src, dwidth*4);
-					dbuffer += dPitch;
-				}
-				// レイヤを更新
-				layer->FuncCall(0, L"update", NULL, NULL, 0, NULL, layer);
+			// 描画先DCの更新
+			updateDC(dwidth, dheight);
 
-				DeleteObject(hbmp);
+			if (destDC) {
+				if (driver->beginScene(true, true, irr::video::SColor(0,0,0,0))) {
+					/// シーンマネージャの描画
+					ISceneManager *smgr = device->getSceneManager();
+					if (smgr) {
+						smgr->drawAll();
+					}
+					// GUIの描画
+					IGUIEnvironment *gui = device->getGUIEnvironment();
+					if (gui) {
+						gui->drawAll();
+					}
+
+					// そのDCに対して描画処理を行う
+					irr::core::rect<s32> destRect(0,0,dwidth,dheight);
+					driver->endScene(0, srcRect, &destRect, destDC);
+					
+					// ビットマップからコピー
+					for (tjs_int y = 0; y < dheight; y++) {
+						unsigned char *src = (unsigned char *)(bmpbuffer) + dwidth * y * 4;
+						CopyMemory(dbuffer, src, dwidth*4);
+						dbuffer += dPitch;
+					}
+					// レイヤを更新
+					layer->FuncCall(0, L"update", NULL, NULL, 0, NULL, layer);
+				} else {
+					error_log("failed to beginScene");
+				}
 			}
 		}
 	}
+}
+
+tjs_error
+IrrlichtSimpleDevice::updateToLayer(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	IrrlichtSimpleDevice *self = ncbInstanceAdaptor<IrrlichtSimpleDevice>::GetNativeInstance(objthis);
+	if (!self) {
+		return TJS_E_NATIVECLASSCRASH;
+	}
+	if (numparams < 1) {
+		return TJS_E_BADPARAMCOUNT;
+	}
+	// レイヤオブジェクトかどうか
+	iTJSDispatch2 *layer = param[0]->AsObjectNoAddRef();
+	if (layer == NULL || layer->IsInstanceOf(0, NULL, NULL, L"Layer", layer) != TJS_S_TRUE) {
+		TVPThrowExceptionMessage(L"must set Layer object");
+	}
+	// ソース領域判定
+	irr::core::rect<s32> *srcRect = NULL, _srcRect;
+	if (numparams >= 5) {
+		_srcRect.setLeft((tjs_int)*param[1]);
+		_srcRect.setTop((tjs_int)*param[2]);
+		_srcRect.setWidth((tjs_int)*param[3]);
+		_srcRect.setHeight((tjs_int)*param[4]);
+		srcRect = &_srcRect;
+	}
+	self->_updateToLayer(layer, srcRect);
+	return TJS_S_OK;
 }

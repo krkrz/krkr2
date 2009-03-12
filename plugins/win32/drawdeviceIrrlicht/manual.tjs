@@ -567,8 +567,9 @@ class Irrlicht {
 		 * そうでない場合は実際に親ウインドウが実体化した時点ではじめて
 		 * デバイスが初期化され、ドライバ、シーンマネージャ、GUIが扱えるようになります。
 		 * @param window 親になるウインドウ
-		 * @param width バックバッファ横幅
-		 * @param height バックバッファ縦幅
+		 * @param width バックバッファ横幅。レンダーターゲットを使う場合は 2の階乗サイズにする必要があります。
+		 * @param height バックバッファ縦幅。レンダーたーガットを使う場合は 2の階乗サイズにする必要があります。
+		 * @param useRender レンダーターゲットを使う場合は true。レンダーターゲットはα透過します。
 		 */
 		function SimpleDevice(window, width, height);
 
@@ -579,6 +580,7 @@ class Irrlicht {
 		 * バックバッファのサイズ設定
 		 * @param width バックバッファ横幅
 		 * @param width バックバッファ縦幅
+		 * レンダーターゲットを使ってる場合は変更できません
 		 */
 		function setSize(width, height);
 
@@ -587,8 +589,12 @@ class Irrlicht {
 		 * バックバッファから、指定されたレイヤの描画領域に対して拡縮コピーされます。
 		 * ※レイヤのクリッピング領域は無視されます。
 		 * @param layer 描画先レイヤ
+		 * @param sleft ソース領域の左上座標X ※以下を省略した場合は全領域
+		 * @param stop ソース領域の左上座標X
+		 * @param swidth ソース領域の横幅
+		 * @param sheight ソース領域の縦幅
 		 */
-		function updateToLayer(layer);
+		function updateToLayer(layer, sleft, stop, swidth, sheight);
 	};
 	
 	/**

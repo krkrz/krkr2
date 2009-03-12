@@ -61,6 +61,8 @@ IrrlichtBase::attach(HWND hwnd, int width, int height)
 	}
 	if ((device = irr::createDeviceEx(params))) {
 		TVPAddLog(L"Irrlichtデバイス初期化");
+    // テクスチャのα合成時にも常にZテストを行うように。
+    // device->getSceneManager()->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
 	} else {
 		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 	}
