@@ -1395,12 +1395,12 @@ NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 };
 
 NCB_REGISTER_SUBCLASS(IrrlichtSimpleDevice) {
-	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int));
+	Factory(&IrrlichtSimpleDevice::Factory);
 	BASE_METHOD;
 	NCB_PROPERTY2(width, getWidth, setWidth);
 	NCB_PROPERTY2(height, getHeight, setHeight);
 	NCB_METHOD(setSize);
-	NCB_METHOD(updateToLayer);
+	RawCallback(L"updateToLayer", &IrrlichtSimpleDevice::updateToLayer, 0);
 };
 
 
