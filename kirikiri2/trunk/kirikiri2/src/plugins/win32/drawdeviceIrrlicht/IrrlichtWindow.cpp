@@ -289,20 +289,20 @@ IrrlichtWindow::setReceiver(tTVPWindowMessageReceiver receiver, bool enable)
 
 /**
  * ウインドウを生成
- * @param parent 親ウインドウ
+ * @param krkr 親ウインドウ
  */
 void
 IrrlichtWindow::createWindow(HWND krkr)
 {
-	if (krkr && (parent = FindWindowEx(krkr, NULL, KRKRDISPWINDOWCLASS, NULL))) {
+	if (krkr && (parent = ::FindWindowEx(krkr, NULL, KRKRDISPWINDOWCLASS, NULL))) {
 		hwnd = CreateWindow(CLASSNAME, "",
 							WS_CHILD|WS_CLIPCHILDREN,
 							left, top, width, height,
 							parent, NULL, GetModuleHandle(NULL), NULL);
 		if (hwnd) {
-			_setPos();
-			attach(hwnd);
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)this);
+			_setPos();
+			start();
 		}
 	}
 }
@@ -313,8 +313,9 @@ IrrlichtWindow::createWindow(HWND krkr)
 void
 IrrlichtWindow::destroyWindow()
 {
+	stop();
+	detach();
 	if (hwnd) {
-		detach();
 		DestroyWindow(hwnd);
 		hwnd = 0;
 	}
@@ -347,20 +348,16 @@ IrrlichtWindow::sendMessage(UINT message, WPARAM wParam, LPARAM lParam, bool con
 /**
  * コンストラクタ
  */
-IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width, int height)
-	: IrrlichtBaseUpdate(), window(NULL), parent(0), hwnd(0), visible(false), transparentEvent(true)
+IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *objthis, iTJSDispatch2 *win, int left, int top, int width, int height)
+	: IrrlichtBaseUpdate(objthis), window(NULL), parent(0), hwnd(0), visible(false), transparentEvent(true)
 {
-	if (win->IsInstanceOf(0, NULL, NULL, L"Window", win) != TJS_S_TRUE) {
-		TVPThrowExceptionMessage(L"must set window object");
-	}
-
 	window = win;
 	window->AddRef();
 	setReceiver(messageHandler, true);
 	
 	tTJSVariant krkrHwnd; // 親のハンドル
 	if (window->PropGet(0, TJS_W("HWND"), NULL, &krkrHwnd, window) == TJS_S_OK) {
-		HWND parent = FindWindowEx((HWND)(tjs_int)krkrHwnd, NULL, KRKRDISPWINDOWCLASS, NULL);
+		HWND parent = ::FindWindowEx((HWND)(tjs_int)krkrHwnd, NULL, KRKRDISPWINDOWCLASS, NULL);
 		if (parent) {
 			RECT rect;
 			GetClientRect(parent, &rect);
@@ -394,6 +391,28 @@ IrrlichtWindow::~IrrlichtWindow()
 	}
 }
 
+/**
+ * 生成ファクトリ
+ */
+tjs_error
+IrrlichtWindow::Factory(IrrlichtWindow **obj, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	if (numparams < 5) {
+		return TJS_E_BADPARAMCOUNT;
+	}
+	iTJSDispatch2 *window = param[0]->AsObjectNoAddRef();
+	if (window == NULL || window->IsInstanceOf(0, NULL, NULL, L"Window", window) != TJS_S_TRUE) {
+		TVPThrowExceptionMessage(L"must set Window object");
+	}
+	int left   = (tjs_int)*param[1];
+	int top    = (tjs_int)*param[2];
+	int width  = (tjs_int)*param[3];
+	int height = (tjs_int)*param[4];
+
+	*obj = new IrrlichtWindow(objthis, window, left, top, width, height);
+	return TJS_S_OK;
+}
+
 // -----------------------------------------------------------------------
 // Continuous
 // -----------------------------------------------------------------------
@@ -407,6 +426,7 @@ void TJS_INTF_METHOD
 IrrlichtWindow::OnContinuousCallback(tjs_uint64 tick)
 {
 	if (hwnd) {
+		attach(hwnd);
 		InvalidateRect(hwnd, NULL, false);
 	}
 }

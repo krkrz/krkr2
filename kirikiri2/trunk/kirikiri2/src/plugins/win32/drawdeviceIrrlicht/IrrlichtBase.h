@@ -12,19 +12,30 @@ class IrrlichtBase : public irr::IEventReceiver
 {
 
 protected:
+	/// TJSオブジェクト
+	iTJSDispatch2 *objthis;
 	/// デバイス
 	irr::IrrlichtDevice *device;
 
 	void showDriverInfo();
 
-	// デバイス割り当て
-	virtual void attach(HWND hwnd, int width=0, int height=0);
+	// イベント呼び出し
+	void sendEvent(const tjs_char *eventName);
+
+	// デバイス割り当て済み
+	bool attached;
+	// デバイスの割り当て
+	void attach(HWND hwnd, int width=0, int height=0);
+	// デバイスの割り当て後処理
+	virtual void onAttach() {}
 	
 	// デバイスの破棄
-	virtual void detach();
+	void detach();
+	// デバイスの破棄前処理
+	virtual void onDetach() {};
 	
 public:
-	IrrlichtBase(); //!< コンストラクタ
+	IrrlichtBase(iTJSDispatch2 *objthis); //!< コンストラクタ
 	virtual ~IrrlichtBase(); //!< デストラクタ
 
 	// ------------------------------------------------------------
@@ -38,11 +49,15 @@ protected:
 	virtual void update(irr::video::IVideoDriver *driver) {};
 
 protected:
+
 	/**
-	 * 再描画処理
-	 * @param destRect 描画先領域
+	 * Irrlicht描画処理
+	 * @param destRect 描画先領域。省略すると表示先全面
+	 * @param srcRect 描画元領域。省略すると全面
+	 * @param destDC 描画先DC。指定すると本来の表示先の代わりにこのDCに描画
+	 * @return 描画されたら true
 	 */
-	void show(irr::core::rect<irr::s32> *destRect=NULL);
+	bool show(irr::core::rect<irr::s32> *destRect=NULL, irr::core::rect<irr::s32> *srcRect=NULL, HDC destDC=0);
 	
 	// ------------------------------------------------------------
 	// Irrlicht イベント処理用
@@ -112,14 +127,8 @@ protected:
 	 */
 	void stop();
 	
-	// デバイス割り当て
-	virtual void attach(HWND hwnd, int width=0, int height=0);
-	
-	// デバイスの破棄
-	virtual void detach();
-	
 public:
-	IrrlichtBaseUpdate(); //!< コンストラクタ
+	IrrlichtBaseUpdate(iTJSDispatch2 *objthis); //!< コンストラクタ
 	virtual ~IrrlichtBaseUpdate(); //!< デストラクタ
 };
 
