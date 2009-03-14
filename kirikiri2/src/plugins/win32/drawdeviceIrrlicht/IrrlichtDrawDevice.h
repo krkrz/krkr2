@@ -27,10 +27,16 @@ protected:
 
 public:
 	// コンストラクタ
-	IrrlichtDrawDevice(int width, int height);
+	IrrlichtDrawDevice(iTJSDispatch2 *objthis, int width, int height);
 	// デストラクタ
 	virtual ~IrrlichtDrawDevice();
 
+	// -----------------------------------------------------------------------
+	// 生成ファクトリ
+	// -----------------------------------------------------------------------
+
+	static tjs_error Factory(IrrlichtDrawDevice **obj, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+	
 	// -----------------------------------------------------------------------
 	// continuous handler
 	// -----------------------------------------------------------------------
@@ -41,10 +47,11 @@ public:
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick);
 	
 protected:
-	void freeInfo();
+	// デバイス割り当て後処理
+	virtual void onAttach();
 
-	// デバイス解放処理
-	virtual void detach();
+	// デバイス解放前処理
+	virtual void onDetach();
 	
 	/**
 	 * Device→Irrlicht方向の座標の変換を行う

@@ -211,9 +211,17 @@ struct DimensionConvertor { // コンバータ
 private:
 	T dst;
 };
+
+template <class T>
+static
+dimension2d<T> *dimension2dFactory(iTJSDispatch2 *objthis, const T width, const T height)
+{
+	return new dimension2d<T>(width, height);
+}
+
 NCB_SET_CONVERTOR_DST(dimension2di, DimensionConvertor);
 NCB_REGISTER_SUBCLASS_DELAY(dimension2di) {
-	NCB_CONSTRUCTOR(()); // XXX
+	Factory(&dimension2dFactory<s32>);
 	NCB_PROPERTY_RO2(area, getArea);
 	NCB_MEMBER_PROPERTY(height, s32, Height);
 	NCB_MEMBER_PROPERTY(width, s32, Width);
@@ -1367,7 +1375,7 @@ NCB_IRR_METHOD2(logHint, void, log, (const wchar_t*,const wchar_t*hint,ELOG_LEVE
 	NCB_PROPERTY_RO2(fileSystem, getFileSystem)
 
 NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
-	NCB_CONSTRUCTOR((int,int));
+	Factory(&Class::Factory);
 	BASE_METHOD;
 	NCB_PROPERTY_RO(interface, getDevice);
 	NCB_PROPERTY2(zoomMode, getZoomMode, setZoomMode);
@@ -1382,7 +1390,7 @@ NCB_REGISTER_SUBCLASS(IrrlichtDrawDevice) {
 };
 
 NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
-	NCB_CONSTRUCTOR((iTJSDispatch2 *, int, int, int, int));
+	Factory(&Class::Factory);
 	BASE_METHOD;
 	NCB_PROPERTY2(left, getLeft, setLeft);
 	NCB_PROPERTY2(top, getTop, setTop);
@@ -1395,7 +1403,7 @@ NCB_REGISTER_SUBCLASS(IrrlichtWindow) {
 };
 
 NCB_REGISTER_SUBCLASS(IrrlichtSimpleDevice) {
-	Factory(&IrrlichtSimpleDevice::Factory);
+	Factory(&Class::Factory);
 	BASE_METHOD;
 	NCB_PROPERTY2(width, getWidth, setWidth);
 	NCB_PROPERTY2(height, getHeight, setHeight);

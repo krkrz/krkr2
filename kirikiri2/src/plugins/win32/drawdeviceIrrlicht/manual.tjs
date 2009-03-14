@@ -47,14 +47,14 @@ class Irrlicht {
 	}
 
 	class dimension2di {
-		function dimension2di();
+		function dimension2di(width,height);
 		property area; // RO
 		property height;
 		property width;
 	}
 
 	class dimension2df {
-		function dimension2df();
+		function dimension2df(width,height);
 		property area; // RO
 		property height;
 		property width;
@@ -545,7 +545,7 @@ class Irrlicht {
 	// -----------------------------------------------------------------------------
 	
 	/**
-	 * 共通機能分（実際にはこのクラスはありません）
+	 * デバイス共通機能分（実際にはこのクラスはありません）
 	 */
 	class Base {
 		property videoDriver; //< ドライバ(IVideoDriverクラス)。読み出し専用
@@ -553,6 +553,23 @@ class Irrlicht {
 		property guiEnvironment; //< GUI環境（IGUIEnvironmentクラス）。読み出し専用
 		property logger; //< ログ環境 (ILoggerクラス）。読み出し専用
 		property fileSystem; //< ファイルシステム(IFileSystemクラス)。読み出し専用
+
+		// イベント
+
+		/**
+		 * オブジェクト生成時やフルスクリーン化などの再構築の後で、
+		 * ドライバが初期化された直後に呼ばれるイベント
+		 * @param self デバイスオブジェクト
+		 */
+		function onAttach(self);
+
+		/**
+		 * オブジェクト破棄時や、フルスクリーン化による再構築の前で、
+		 * ドライバが破棄される直前に呼ばれるイベント
+		 * @param self デバイスオブジェクト
+		 */
+		function onDetach(self);
+
 	};
 
 	/**
@@ -562,14 +579,15 @@ class Irrlicht {
 
 		/**
 		 * コンストラクタ
-		 * ※生成した時点では Irrlichtのデバイスが存在するとは限りません。
-		 * 親ウインドウが既に実体化していた場合は同時に生成されますが、
-		 * そうでない場合は実際に親ウインドウが実体化した時点ではじめて
-		 * デバイスが初期化され、ドライバ、シーンマネージャ、GUIが扱えるようになります。
 		 * @param window 親になるウインドウ
 		 * @param width バックバッファ横幅。レンダーターゲットを使う場合は 2の階乗サイズにする必要があります。
 		 * @param height バックバッファ縦幅。レンダーたーガットを使う場合は 2の階乗サイズにする必要があります。
 		 * @param useRender レンダーターゲットを使う場合は true。レンダーターゲットはα透過します。
+		 *
+		 * 生成した時点では Irrlichtのデバイスは存在しません。
+		 * 生成後の最初のイベント処理前に初期化されて、
+		 * ドライバ、シーンマネージャ、GUIが扱えるようになります。
+		 * 処理は onAttach() イベントを待ってから行う必要があります。
 		 */
 		function SimpleDevice(window, width, height);
 
@@ -625,10 +643,10 @@ class Irrlicht {
 		 *     base2 = new Layer(this, null); base1.setSize(400,200); // 画面の半分の解像度
 		 *     base3 = new Layer(this, null); base1.setSize(800,200); // 縦だけ解像度半分
 		 *
-		 * 生成した時点では Irrlichtのデバイスが存在するとは限りません。
-		 * 親ウインドウが既に実体化していた場合は同時に生成されますが、
-		 * そうでない場合は実際に親ウインドウが実体化した時点ではじめて
-		 * デバイスが初期化され、ドライバ、シーンマネージャ、GUIが扱えるようになります。
+		 * 生成した時点では Irrlichtのデバイスは存在しません。
+		 * DrawDevice としての描画処理開始時 (SetTargetWindow 呼び出し時)に初期化されて、
+		 * ドライバ、シーンマネージャ、GUIが扱えるようになります。
+		 * 処理は onAttach() イベントを待ってから行う必要があります。
 		 */
 		function DrawDevice(width, height);
 
@@ -688,10 +706,10 @@ class Irrlicht {
 		 * @param width 配置サイズ
 		 * @param height 配置サイズ
 		 *
-		 * 生成した時点では Irrlichtのデバイスが存在するとは限りません。
-		 * 親ウインドウが既に実体化していた場合は同時に生成されますが、
-		 * そうでない場合は実際に親ウインドウが実体化した時点ではじめて
-		 * デバイスが初期化され、ドライバ、シーンマネージャ、GUIが扱えるようになります。
+		 * 生成した時点では Irrlichtのデバイスは存在しません。
+		 * 生成後の最初のイベント処理前に初期化されて、
+		 * ドライバ、シーンマネージャ、GUIが扱えるようになります。
+		 * 処理は onAttach() イベントを待ってから行う必要があります。
 		 */
 		function Window(window, left, top, width, height);
 

@@ -53,13 +53,19 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	IrrlichtWindow(iTJSDispatch2 *win, int left, int top, int width, int height);
+	IrrlichtWindow(iTJSDispatch2 *objthis, iTJSDispatch2 *win, int left, int top, int width, int height);
 		
 	/**
 	 * デストラクタ
 	 */
 	virtual ~IrrlichtWindow();
 
+	// -----------------------------------------------------------------------
+	// 生成ファクトリ
+	// -----------------------------------------------------------------------
+
+	static tjs_error Factory(IrrlichtWindow **obj, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+	
 	// -----------------------------------------------------------------------
 	// continuous handler
 	// -----------------------------------------------------------------------

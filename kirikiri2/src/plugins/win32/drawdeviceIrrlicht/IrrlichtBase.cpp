@@ -14,7 +14,7 @@ using namespace gui;
 /**
  * コンストラクタ
  */
-IrrlichtBase::IrrlichtBase() : device(NULL)
+IrrlichtBase::IrrlichtBase(iTJSDispatch2 *objthis) : objthis(objthis), device(NULL), attached(false)
 {
 }
 
@@ -41,6 +41,23 @@ IrrlichtBase::showDriverInfo()
 	}
 }
 
+// イベント起動
+void
+IrrlichtBase::sendEvent(const tjs_char *eventName)
+{
+	tTJSVariant method;
+	if (TJS_SUCCEEDED(objthis->PropGet(0, eventName, NULL, &method, objthis))) { // イベントメソッドを取得
+		if (method.Type() == tvtObject) {
+			iTJSDispatch2 *m = method.AsObjectNoAddRef();
+			if (TJS_SUCCEEDED(m->IsInstanceOf(0, NULL, NULL, L"Function", m))) { // ファンクションかどうか
+				tTJSVariant self(objthis, objthis);
+				tTJSVariant *params[] = {&self};
+				m->FuncCall(0, NULL, NULL, NULL, 1, params, method.AsObjectThisNoAddRef());
+			}
+		}
+	}
+}
+
 /**
  * ウインドウの再設定
  * @param hwnd ハンドル
@@ -48,25 +65,30 @@ IrrlichtBase::showDriverInfo()
 void
 IrrlichtBase::attach(HWND hwnd, int width, int height)
 {
-	// デバイス生成
-	SIrrlichtCreationParameters params;
-	params.WindowId     = reinterpret_cast<void*>(hwnd);
-	params.DriverType    = EDT_DIRECT3D9;
-	params.Stencilbuffer = true;
-	params.Vsync = true;
-	params.EventReceiver = this;
-	params.AntiAlias = true;
-	if (width != 0 && height != 0) {
-		params.WindowSize = core::dimension2d<s32>(width, height);
+	if (!attached && hwnd) {
+		// デバイス生成
+		SIrrlichtCreationParameters params;
+		params.WindowId     = reinterpret_cast<void*>(hwnd);
+		params.DriverType    = EDT_DIRECT3D9;
+		params.Stencilbuffer = true;
+		params.Vsync = true;
+		params.EventReceiver = this;
+		params.AntiAlias = true;
+		if (width != 0 && height != 0) {
+			params.WindowSize = core::dimension2d<s32>(width, height);
+		}
+		if ((device = irr::createDeviceEx(params))) {
+			TVPAddLog(L"Irrlichtデバイス初期化");
+			// テクスチャのα合成時にも常にZテストを行うように。
+			// device->getSceneManager()->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
+			showDriverInfo();
+			onAttach();
+			sendEvent(L"onAttach");
+		} else {
+			TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
+		}
+		attached = true;
 	}
-	if ((device = irr::createDeviceEx(params))) {
-		TVPAddLog(L"Irrlichtデバイス初期化");
-    // テクスチャのα合成時にも常にZテストを行うように。
-    // device->getSceneManager()->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
-	} else {
-		TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
-	}
-	showDriverInfo();
 }
 
 /**
@@ -76,13 +98,23 @@ void
 IrrlichtBase::detach()
 {
 	if (device) {
+		sendEvent(L"onDetach");
+		onDetach();
 		device->drop();
 		device = NULL;
 	}
+	attached = false;
 }
 
-void
-IrrlichtBase::show(irr::core::rect<s32> *destRect)
+/**
+ * Irrlicht描画処理
+ * @param destRect 描画先領域
+ * @param srcRect 描画元領域
+ * @param destDC 描画先DC
+ * @return 描画された
+ */
+bool
+IrrlichtBase::show(irr::core::rect<irr::s32> *destRect, irr::core::rect<irr::s32> *srcRect, HDC destDC)
 {
 	if (device) {
 		// 時間を進める XXX tick を外部から与えられないか？
@@ -90,7 +122,7 @@ IrrlichtBase::show(irr::core::rect<s32> *destRect)
 		
 		IVideoDriver *driver = device->getVideoDriver();
 		// 描画開始
-		if (driver && driver->beginScene(true, true, irr::video::SColor(255,0,0,0))) {
+		if (driver && driver->beginScene(true, true, irr::video::SColor(0,0,0,0))) {
 
 			/// シーンマネージャの描画
 			ISceneManager *smgr = device->getSceneManager();
@@ -108,9 +140,11 @@ IrrlichtBase::show(irr::core::rect<s32> *destRect)
 			}
 			
 			// 描画完了
-			driver->endScene(0, NULL, destRect);
+			driver->endScene(0, srcRect, destRect, destDC);
+			return true;
 		}
 	}
+	return false;
 };
 
 /**
@@ -203,30 +237,9 @@ IrrlichtBaseUpdate::stop()
 }
 
 /**
- * ウインドウの再設定
- * @param hwnd ハンドル
- */
-void
-IrrlichtBaseUpdate::attach(HWND hwnd, int width, int height)
-{
-	IrrlichtBase::attach(hwnd, width, height);
-	start();
-}
-
-/**
- * ウインドウの解除
- */
-void
-IrrlichtBaseUpdate::detach()
-{
-	stop();
-	IrrlichtBase::detach();
-}
-
-/**
  * コンストラクタ
  */
-IrrlichtBaseUpdate::IrrlichtBaseUpdate() : IrrlichtBase()
+IrrlichtBaseUpdate::IrrlichtBaseUpdate(iTJSDispatch2 *objthis) : IrrlichtBase(objthis)
 {
 }
 
