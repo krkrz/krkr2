@@ -183,7 +183,7 @@ void TJS_INTF_METHOD
 IrrlichtSimpleDevice::OnContinuousCallback(tjs_uint64 tick)
 {
 	if (hwnd) {
-		attach(hwnd);
+		attach(hwnd, width, height);
 	}
 	stop();
 }
