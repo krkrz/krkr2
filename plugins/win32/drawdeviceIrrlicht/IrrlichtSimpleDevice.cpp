@@ -44,12 +44,11 @@ IrrlichtSimpleDevice::setReceiver(tTVPWindowMessageReceiver receiver, bool enabl
 	}
 }
 
-// デバイス割り当て
+// デバイス割り当て後処理
 void
-IrrlichtSimpleDevice::attach(HWND hwnd, int width, int height)
+IrrlichtSimpleDevice::onAttach()
 {
 	if (useRender) {
-		IrrlichtBase::attach(hwnd, width, height);
 		if (device) {
 			IVideoDriver *driver = device->getVideoDriver();
 			// 描画開始
@@ -62,30 +61,30 @@ IrrlichtSimpleDevice::attach(HWND hwnd, int width, int height)
 				}
 			}
 		}
-	} else {
-		IrrlichtBase::attach(hwnd, width, height);
 	}
 }
 
-// デバイスの破棄
+	/// デバイス破棄前処理
 void
-IrrlichtSimpleDevice::detach()
+IrrlichtSimpleDevice::onDetach()
 {
 	if (target) {
 		target->drop();
 		target = NULL;
 	}
-	IrrlichtBase::detach();
 }
 
 /**
  * ウインドウを生成
- * @param parent 親ウインドウ
+ * @param krkr 親ウインドウ
  */
 void
 IrrlichtSimpleDevice::createWindow(HWND krkr)
 {
-	attach(krkr, width, height);
+	if (krkr) {
+		hwnd = krkr;
+		start();
+	}
 }
 
 /**
@@ -94,7 +93,9 @@ IrrlichtSimpleDevice::createWindow(HWND krkr)
 void
 IrrlichtSimpleDevice::destroyWindow()
 {
+	stop();
 	detach();
+	hwnd = 0;
 }
 
 /**
@@ -104,18 +105,16 @@ IrrlichtSimpleDevice::destroyWindow()
  * @param height 縦幅
  * @param useRender レンダーターゲットを使う(αが確実に有効)
  */
-IrrlichtSimpleDevice::IrrlichtSimpleDevice(iTJSDispatch2 *window, int width, int height, bool useRender)
-	: IrrlichtBase(), window(window), width(width), height(height), useRender(useRender), dwidth(-1), dheight(-1), hbmp(0), oldbmp(0), destDC(0), bmpbuffer(NULL)
+IrrlichtSimpleDevice::IrrlichtSimpleDevice(iTJSDispatch2 *objthis, iTJSDispatch2 *window, int width, int height, bool useRender)
+	: IrrlichtBaseUpdate(objthis), window(window), hwnd(0), width(width), height(height),
+	  useRender(useRender), dwidth(-1), dheight(-1), hbmp(0), oldbmp(0), destDC(0), bmpbuffer(NULL), target(NULL)
 {
 	window->AddRef();
 	setReceiver(messageHandler, true);
 	
 	tTJSVariant krkrHwnd; // 親のハンドル
 	if (window->PropGet(0, TJS_W("HWND"), NULL, &krkrHwnd, window) == TJS_S_OK) {
-		HWND hwnd = (HWND)(tjs_int)krkrHwnd;
-		if (hwnd) {
-			createWindow(hwnd);
-		}
+		createWindow((HWND)(tjs_int)krkrHwnd);
 	}
 }
 
@@ -143,10 +142,13 @@ static s32 getTextureSizeFromImageSize(s32 size)
 	return ts;
 }
 
+/**
+ * 生成ファクトリ
+ */
 tjs_error
 IrrlichtSimpleDevice::Factory(IrrlichtSimpleDevice **obj, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	if (numparams < 4) {
+	if (numparams < 3) {
 		return TJS_E_BADPARAMCOUNT;
 	}
 	iTJSDispatch2 *window = param[0]->AsObjectNoAddRef();
@@ -164,8 +166,26 @@ IrrlichtSimpleDevice::Factory(IrrlichtSimpleDevice **obj, tjs_int numparams, tTJ
 		}
 	}
 
-	*obj = new IrrlichtSimpleDevice(window, width, height, useRender);
+	*obj = new IrrlichtSimpleDevice(objthis, window, width, height, useRender);
 	return TJS_S_OK;
+}
+
+// -----------------------------------------------------------------------
+// Continuous
+// -----------------------------------------------------------------------
+
+/**
+ * Continuous コールバック
+ * 吉里吉里が暇なときに常に呼ばれる
+ * これが事実上のメインループになる
+ */
+void TJS_INTF_METHOD
+IrrlichtSimpleDevice::OnContinuousCallback(tjs_uint64 tick)
+{
+	if (hwnd) {
+		attach(hwnd);
+	}
+	stop();
 }
 
 // -----------------------------------------------------------------------
@@ -245,51 +265,29 @@ void
 IrrlichtSimpleDevice::_updateToLayer(iTJSDispatch2 *layer, irr::core::rect<s32> *srcRect)
 {
 	if (device) {
-		// 時間を進める XXX tick を外部から与えられないか？
-		device->getTimer()->tick();
+		// レイヤ情報取得
+		ncbPropAccessor obj(layer);
+		tjs_int dwidth  = obj.GetValue(L"imageWidth", ncbTypedefs::Tag<tjs_int>());
+		tjs_int dheight = obj.GetValue(L"imageHeight", ncbTypedefs::Tag<tjs_int>());
+		tjs_int dPitch  = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+		unsigned char *dbuffer = (unsigned char *)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
 		
-		IVideoDriver *driver = device->getVideoDriver();
-		// 描画開始
-		if (driver) {
-
-			// レイヤ情報取得
-			ncbPropAccessor obj(layer);
-			tjs_int dwidth  = obj.GetValue(L"imageWidth", ncbTypedefs::Tag<tjs_int>());
-			tjs_int dheight = obj.GetValue(L"imageHeight", ncbTypedefs::Tag<tjs_int>());
-			tjs_int dPitch  = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
-			unsigned char *dbuffer = (unsigned char *)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
-
-			// 描画先DCの更新
-			updateDC(dwidth, dheight);
-
-			if (destDC) {
-				if (driver->beginScene(true, true, irr::video::SColor(0,0,0,0))) {
-					/// シーンマネージャの描画
-					ISceneManager *smgr = device->getSceneManager();
-					if (smgr) {
-						smgr->drawAll();
-					}
-					// GUIの描画
-					IGUIEnvironment *gui = device->getGUIEnvironment();
-					if (gui) {
-						gui->drawAll();
-					}
-
-					// そのDCに対して描画処理を行う
-					irr::core::rect<s32> destRect(0,0,dwidth,dheight);
-					driver->endScene(0, srcRect, &destRect, destDC);
-					
-					// ビットマップからコピー
-					for (tjs_int y = 0; y < dheight; y++) {
-						unsigned char *src = (unsigned char *)(bmpbuffer) + dwidth * y * 4;
-						CopyMemory(dbuffer, src, dwidth*4);
-						dbuffer += dPitch;
-					}
-					// レイヤを更新
-					layer->FuncCall(0, L"update", NULL, NULL, 0, NULL, layer);
-				} else {
-					error_log("failed to beginScene");
+		// 描画先DCの更新
+		updateDC(dwidth, dheight);
+		
+		if (destDC) {
+			irr::core::rect<s32> destRect(0,0,dwidth,dheight);
+			if (show(&destRect, srcRect, destDC)) {
+				// ビットマップからコピー
+				for (tjs_int y = 0; y < dheight; y++) {
+					unsigned char *src = (unsigned char *)(bmpbuffer) + dwidth * y * 4;
+					CopyMemory(dbuffer, src, dwidth*4);
+					dbuffer += dPitch;
 				}
+				// レイヤを更新
+				layer->FuncCall(0, L"update", NULL, NULL, 0, NULL, layer);
+			} else {
+				error_log("failed to show");
 			}
 		}
 	}

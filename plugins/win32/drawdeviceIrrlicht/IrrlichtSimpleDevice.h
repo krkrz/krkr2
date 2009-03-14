@@ -6,10 +6,11 @@
 /**
  * Irrlicht 描画デバイス
  */
-class IrrlichtSimpleDevice :	public IrrlichtBase
+class IrrlichtSimpleDevice : public IrrlichtBaseUpdate
 {
 
 protected:
+	HWND hwnd; //< 吉里吉里のウインドウハンドル
 	iTJSDispatch2 *window; //< オブジェクト情報の参照(親ウインドウ)
 	tjs_int width;  //< Irrlicht 実画面の画面横幅
 	tjs_int height; //< Irrlicht 実画面の画面縦幅
@@ -32,7 +33,7 @@ protected:
 	
 	// ユーザメッセージレシーバの登録/解除
 	void setReceiver(tTVPWindowMessageReceiver receiver, bool enable);
-	
+
 	/**
 	 * ウインドウを生成
 	 * @param krkr 吉里吉里のウインドウ
@@ -44,11 +45,11 @@ protected:
 	 */
 	void destroyWindow();
 
-	// デバイス割り当て
-	virtual void attach(HWND hwnd, int width=0, int height=0);
-	
-	// デバイスの破棄
-	virtual void detach();
+	/// デバイス割り当て後処理
+	virtual void onAttach();
+
+	/// デバイス破棄前処理
+	virtual void onDetach();
 
 public:
 	/**
@@ -58,7 +59,7 @@ public:
 	 * @param height 縦幅
 	 * @param useRender レンダーターゲットを使う(αが有効)
 	 */
-	IrrlichtSimpleDevice(iTJSDispatch2 *window, int width, int height, bool useRender);
+	IrrlichtSimpleDevice(iTJSDispatch2 *objthis, iTJSDispatch2 *window, int width, int height, bool useRender);
 		
 	/**
 	 * デストラクタ
@@ -71,6 +72,15 @@ public:
 
 	static tjs_error Factory(IrrlichtSimpleDevice **obj, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
 
+	// -----------------------------------------------------------------------
+	// continuous handler
+	// -----------------------------------------------------------------------
+public:
+	/**
+	 * Continuous コールバック
+	 */
+	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick);
+	
 	// -----------------------------------------------------------------------
 	// 共通メソッド呼び出し用
 	// -----------------------------------------------------------------------
