@@ -872,9 +872,16 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 		writer->write((tTVInteger)var);
 		break;
 
-	case tvtReal:
-		writer->write((tTVReal)var);
-		break;
+	case tvtReal: {
+	  ttstr str = var;
+	  // delete top '+' of number.
+	  if (str[0] == L'+') {
+	    ttstr src = str;
+	    str = src.c_str() + 1;
+	  }
+	  writer->write(str.c_str());
+	  break;
+	}
 
 	default:
 		writer->write(L"null");
