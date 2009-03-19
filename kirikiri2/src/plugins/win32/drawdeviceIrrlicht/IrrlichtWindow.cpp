@@ -349,7 +349,7 @@ IrrlichtWindow::sendMessage(UINT message, WPARAM wParam, LPARAM lParam, bool con
  * コンストラクタ
  */
 IrrlichtWindow::IrrlichtWindow(iTJSDispatch2 *objthis, iTJSDispatch2 *win, int left, int top, int width, int height)
-	: IrrlichtBaseUpdate(objthis), window(NULL), parent(0), hwnd(0), visible(false), transparentEvent(true)
+	: IrrlichtBase(objthis), window(NULL), parent(0), hwnd(0), visible(false), transparentEvent(true)
 {
 	window = win;
 	window->AddRef();

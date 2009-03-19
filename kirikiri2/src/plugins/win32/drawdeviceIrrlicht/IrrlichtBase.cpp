@@ -14,7 +14,9 @@ using namespace gui;
 /**
  * コンストラクタ
  */
-IrrlichtBase::IrrlichtBase(iTJSDispatch2 *objthis) : objthis(objthis), device(NULL), attached(false)
+IrrlichtBase::IrrlichtBase(iTJSDispatch2 *objthis)
+	: objthis(objthis), device(NULL), attached(false),
+	  eventMask(EMASK_ATTACH | EMASK_DETACH)
 {
 }
 
@@ -23,6 +25,7 @@ IrrlichtBase::IrrlichtBase(iTJSDispatch2 *objthis) : objthis(objthis), device(NU
  */
 IrrlichtBase::~IrrlichtBase()
 {
+	stop();
 	detach();
 }
 
@@ -41,9 +44,12 @@ IrrlichtBase::showDriverInfo()
 	}
 }
 
-// イベント起動
+/**
+ * TJSイベント呼び出し。自己オブジェクトの該当メソッドを呼び出す。
+ * @param eventName イベント名
+ */
 void
-IrrlichtBase::sendEvent(const tjs_char *eventName)
+IrrlichtBase::sendTJSEvent(const tjs_char *eventName)
 {
 	tTJSVariant method;
 	if (TJS_SUCCEEDED(objthis->PropGet(0, eventName, NULL, &method, objthis))) { // イベントメソッドを取得
@@ -59,8 +65,10 @@ IrrlichtBase::sendEvent(const tjs_char *eventName)
 }
 
 /**
- * ウインドウの再設定
- * @param hwnd ハンドル
+ * デバイスの割り当て
+ * @param hwnd 親ウインドウハンドル
+ * @param width バックバッファサイズ横幅
+ * @param height バックバッファサイズ縦幅
  */
 void
 IrrlichtBase::attach(HWND hwnd, int width, int height)
@@ -83,7 +91,9 @@ IrrlichtBase::attach(HWND hwnd, int width, int height)
 			// device->getSceneManager()->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
 			showDriverInfo();
 			onAttach();
-			sendEvent(L"onAttach");
+			if ((eventMask & EMASK_ATTACH)) {
+				sendTJSEvent(L"onAttach");
+			}
 		} else {
 			TVPThrowExceptionMessage(L"Irrlicht デバイスの初期化に失敗しました");
 		}
@@ -92,13 +102,15 @@ IrrlichtBase::attach(HWND hwnd, int width, int height)
 }
 
 /**
- * ウインドウの解除
+ * デバイスの破棄
  */
 void
 IrrlichtBase::detach()
 {
 	if (device) {
-		sendEvent(L"onDetach");
+		if ((eventMask & EMASK_DETACH)) {
+			sendTJSEvent(L"onDetach");
+		}
 		onDetach();
 		device->drop();
 		device = NULL;
@@ -123,20 +135,36 @@ IrrlichtBase::show(irr::core::rect<irr::s32> *destRect, irr::core::rect<irr::s32
 		IVideoDriver *driver = device->getVideoDriver();
 		// 描画開始
 		if (driver && driver->beginScene(true, true, irr::video::SColor(0,0,0,0))) {
-
+			
+			if ((eventMask & EMASK_BEFORE_SCENE)) {
+				sendTJSEvent(L"onBeforeScene");
+			}
+			
 			/// シーンマネージャの描画
 			ISceneManager *smgr = device->getSceneManager();
 			if (smgr) {
 				smgr->drawAll();
 			}
+
+			if ((eventMask & EMASK_AFTER_SCENE)) {
+				sendTJSEvent(L"onAfterScene");
+			}
 			
 			// 固有処理
 			update(driver);
 
+			if ((eventMask & EMASK_BEFORE_GUI)) {
+				sendTJSEvent(L"onBeforeGUI");
+			}
+			
 			// GUIの描画
 			IGUIEnvironment *gui = device->getGUIEnvironment();
 			if (gui) {
 				gui->drawAll();
+			}
+
+			if ((eventMask & EMASK_AFTER_GUI)) {
+				sendTJSEvent(L"onAfterGUI");
 			}
 			
 			// 描画完了
@@ -167,87 +195,51 @@ IrrlichtBase::postEvent(SEvent &ev)
  * HWND を指定して生成している関係で Irrlicht 自身はウインドウから
  * イベントを取得することはない。ので GUI Environment からのイベント
  * だけがここにくることになる。自分の適当なメソッドを呼び出すように要修正 XXX
- * @param event イベント情報
  * @return 処理したら true
  */
 bool
 IrrlichtBase::OnEvent(const irr::SEvent &event)
 {
-	switch (event.EventType) {
-	case EET_GUI_EVENT:
-		message_log("GUIイベント:%d", event.GUIEvent.EventType);
-		switch(event.GUIEvent.EventType) {
-		case EGET_BUTTON_CLICKED:
-			message_log("ボタンおされた");
-			break;
-		}
-		break;
-	case EET_MOUSE_INPUT_EVENT:
-#if 0
-		message_log("マウスイベント:%d x:%d y:%d wheel:%f",
-			event.MouseInput.Event,
-			event.MouseInput.X,
-			event.MouseInput.Y,
-			event.MouseInput.Wheel);
-#endif
-		break;
-	case EET_KEY_INPUT_EVENT:
-//		message_log("キーイベント:%x", event.KeyInput.Key);
-		{
-			int shift = 0;
-			if (event.KeyInput.Shift) {
-				shift |= 0x01;
-			}
-			if (event.KeyInput.Control) {
-				shift |= 0x04;
+	bool ret = false;
+	if ((eventMask & EMASK_EVENT)) {
+		tTJSVariant method;
+		if (TJS_SUCCEEDED(objthis->PropGet(0, L"onEvent", NULL, &method, objthis))) { // イベントメソッドを取得
+			if (method.Type() == tvtObject) {
+				iTJSDispatch2 *m = method.AsObjectNoAddRef();
+				if (TJS_SUCCEEDED(m->IsInstanceOf(0, NULL, NULL, L"Function", m))) { // ファンクションかどうか
+					tTJSVariant self(objthis, objthis);
+					tTJSVariant ev;
+
+					// SEvent を変換
+					typedef ncbInstanceAdaptor<SEvent> AdaptorT;
+					iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new SEvent(event));
+					if (adpobj) {
+						ev = tTJSVariant(adpobj, adpobj);
+						adpobj->Release();
+					}
+
+					tTJSVariant *params[] = {&self, &ev};
+					tTJSVariant result;
+					m->FuncCall(0, NULL, NULL, &result, 2, params, method.AsObjectThisNoAddRef());
+					ret = (tjs_int)result != 0;
+				}
 			}
 		}
-		break;
-	case EET_LOG_TEXT_EVENT:
-		message_log("ログレベル:%d ログ:%s",
-					event.LogEvent.Level,
-					event.LogEvent.Text);
-		break;
-	case EET_USER_EVENT:
-		message_log("ユーザイベント");
-		break;
 	}
-	return false;
+	return ret;
 }
 
 // --------------------------------------------------------------------------------
 
-/**
- * Irrlicht 呼び出し処理開始
- */
 void
-IrrlichtBaseUpdate::start()
+IrrlichtBase::start()
 {
 	stop();
 	TVPAddContinuousEventHook(this);
 }
 
-/**
- * Irrlicht 呼び出し処理停止
- */
 void
-IrrlichtBaseUpdate::stop()
+IrrlichtBase::stop()
 {
 	TVPRemoveContinuousEventHook(this);
-}
-
-/**
- * コンストラクタ
- */
-IrrlichtBaseUpdate::IrrlichtBaseUpdate(iTJSDispatch2 *objthis) : IrrlichtBase(objthis)
-{
-}
-
-
-/**
- * デストラクタ
- */
-IrrlichtBaseUpdate::~IrrlichtBaseUpdate()
-{
-	stop();
 }

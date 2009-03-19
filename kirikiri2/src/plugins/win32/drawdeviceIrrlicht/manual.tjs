@@ -543,6 +543,15 @@ class Irrlicht {
 	// -----------------------------------------------------------------------------
 	//　Irrlicht 基本機能クラス
 	// -----------------------------------------------------------------------------
+
+	// イベント指定。Base.eventMask に OR して指定する
+	EMASK_ATTACH       = 1<<0; //< アタッチ時
+	EMASK_DETACH       = 1<<1; //< デタッチ時
+	EMASK_EVENT        = 1<<2; //< Irrlichtイベント
+	EMASK_BEFORE_SCENE = 1<<3; //< シーンマネージャ描画前
+	EMASK_AFTER_SCENE  = 1<<4; //< シーンマネージャ描画後
+	EMASK_BEFORE_GUI   = 1<<5; //< GUI描画前
+	EMASK_AFTER_GUI    = 1<<6; //< GUI描画後
 	
 	/**
 	 * デバイス共通機能分（実際にはこのクラスはありません）
@@ -554,8 +563,14 @@ class Irrlicht {
 		property logger; //< ログ環境 (ILoggerクラス）。読み出し専用
 		property fileSystem; //< ファイルシステム(IFileSystemクラス)。読み出し専用
 
-		// イベント
+		/**
+		 * イベントマスク。TJS側への呼び返しイベントを指定する。
+		 * デフォルトは EMASK_ATTACH|EMASK_DETACH
+		 */
+		property eventMask;
 
+		// -------------------------------------
+		
 		/**
 		 * オブジェクト生成時やフルスクリーン化などの再構築の後で、
 		 * ドライバが初期化された直後に呼ばれるイベント
@@ -570,6 +585,40 @@ class Irrlicht {
 		 */
 		function onDetach(self);
 
+		// -------------------------------------
+
+		/**
+		 * Irrlicht からのイベント通知
+		 * @param self デバイスオブジェクト
+		 * @param event SEvent
+		 */
+		function onEvent(self, event);
+
+		// -------------------------------------
+
+		/**
+		 * シーン描画前に呼び出されるイベント
+		 * @param self デバイスオブジェクト
+		 */
+		function onBeforeScene(self);
+
+		/**
+		 * シーン描画後に呼び出されるイベント
+		 * @param self デバイスオブジェクト
+		 */
+		function onAfterScene(self);
+
+		/**
+		 * GUI描画前に呼び出されるイベント
+		 * @param self デバイスオブジェクト
+		 */
+		function onBeforeGUI(self);
+
+		/**
+		 * GUI描画後に呼び出されるイベント
+		 * @param self デバイスオブジェクト
+		 */
+		function onAfterGUI(self);
 	};
 
 	/**

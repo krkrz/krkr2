@@ -106,7 +106,7 @@ IrrlichtSimpleDevice::destroyWindow()
  * @param useRender レンダーターゲットを使う(αが確実に有効)
  */
 IrrlichtSimpleDevice::IrrlichtSimpleDevice(iTJSDispatch2 *objthis, iTJSDispatch2 *window, int width, int height, bool useRender)
-	: IrrlichtBaseUpdate(objthis), window(window), hwnd(0), width(width), height(height),
+	: IrrlichtBase(objthis), window(window), hwnd(0), width(width), height(height),
 	  useRender(useRender), dwidth(-1), dheight(-1), hbmp(0), oldbmp(0), destDC(0), bmpbuffer(NULL), target(NULL)
 {
 	window->AddRef();

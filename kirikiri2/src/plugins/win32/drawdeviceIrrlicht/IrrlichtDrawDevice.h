@@ -7,9 +7,7 @@
 /**
  * Irrlicht ÉxÅ[ÉXÇÃ DrawDevice
  */
-class IrrlichtDrawDevice :
-	public IrrlichtBaseUpdate,
-	public tTVPDrawDevice
+class IrrlichtDrawDevice : public IrrlichtBase, public tTVPDrawDevice
 {
 	typedef tTVPDrawDevice inherited;
 
@@ -146,6 +144,14 @@ public:
 	// -----------------------------------------------------------------------
 
 public:
+	void setEventMask(int mask) {
+		IrrlichtBase::setEventMask(mask);
+	}
+
+	int getEventMask() {
+		return IrrlichtBase::getEventMask();
+	}
+
 	irr::video::IVideoDriver *getVideoDriver() {
 		return IrrlichtBase::getVideoDriver();
 	}
