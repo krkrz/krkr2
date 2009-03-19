@@ -6,7 +6,7 @@
 /**
  * Irrlicht 描画デバイス
  */
-class IrrlichtSimpleDevice : public IrrlichtBaseUpdate
+class IrrlichtSimpleDevice : public IrrlichtBase
 {
 
 protected:
@@ -86,6 +86,14 @@ public:
 	// -----------------------------------------------------------------------
 
 public:
+	void setEventMask(int mask) {
+		IrrlichtBase::setEventMask(mask);
+	}
+
+	int getEventMask() {
+		return IrrlichtBase::getEventMask();
+	}
+
 	irr::video::IVideoDriver *getVideoDriver() {
 		return IrrlichtBase::getVideoDriver();
 	}

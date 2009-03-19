@@ -1368,6 +1368,7 @@ NCB_IRR_METHOD2(logHint, void, log, (const wchar_t*,const wchar_t*hint,ELOG_LEVE
 // --------------------------------------------------------------------
 
 #define BASE_METHOD \
+	NCB_PROPERTY(eventMask, getEventMask, setEventMask);\
 	NCB_PROPERTY_RO2(videoDriver, getVideoDriver);\
 	NCB_PROPERTY_RO2(sceneManager, getSceneManager);\
 	NCB_PROPERTY_RO2(guiEnvironment, getGUIEnvironment);\
@@ -1503,6 +1504,18 @@ NCB_REGISTER_CLASS(Irrlicht) {
 	NCB_SUBCLASS(SimpleDevice, IrrlichtSimpleDevice);
 	NCB_SUBCLASS(DrawDevice, IrrlichtDrawDevice);
 	NCB_SUBCLASS(Window, IrrlichtWindow);
+
+	// イベントマスク用
+
+#define EMASK(n)	Variant(#n, (int)IrrlichtBase::n)
+
+	EMASK(EMASK_ATTACH);
+	EMASK(EMASK_DETACH);
+	EMASK(EMASK_EVENT);
+	EMASK(EMASK_BEFORE_SCENE);
+	EMASK(EMASK_AFTER_SCENE);
+	EMASK(EMASK_BEFORE_GUI);
+	EMASK(EMASK_AFTER_GUI);
 }
 
 /**
