@@ -6,6 +6,10 @@ class WIN32DialogEX extends WIN32Dialog {
 		this.owner = owner if (typeof owner == "Object");
 		super.WIN32Dialog(null); // 必ず自分自身にイベントを投げる
 	}
+	function finalize() {
+		removeAllBitmap();
+		super.finalize(...);
+	}
 	// オーナーへのイベント投げは自分
 	var owner;
 
@@ -107,6 +111,21 @@ class WIN32DialogEX extends WIN32Dialog {
 	function setItemFocus(id)          { return super.setItemFocus(   getNumberdId(id)); }
 	function setItemPos(id, x, y)      { return super.setItemPos(     getNumberdId(id), x, y); }
 	function setItemSize(id, w, h)     { return super.setItemSize(    getNumberdId(id), w, h); }
+	function setItemBitmap(id, layer)  {
+		var bmp;
+		if (typeof   layer == "Object" && layer) {
+			if (     layer instanceof "Layer" ) bmp = new global.WIN32Dialog.Bitmap(layer);
+			else if (layer instanceof "Bitmap") bmp = layer;
+		}
+		if (bmp === void) return;
+		allBitmaps.add(bmp);
+		return super.setItemBitmap(getNumberdId(id), bmp);
+	}
+	var allBitmaps = [];
+	function removeAllBitmap() {
+		for (var i = allBitmaps.count-1; i >= 0; i--) invalidate allBitmaps[i];
+		allBitmaps.clear();
+	}
 	function sendItemMessage(id, msg, *) {
 		id = getNumberdId(id);
 		var sim = super.sendItemMessage;
@@ -157,7 +176,9 @@ class WIN32DialogEX extends WIN32Dialog {
 	// クローズ処理上書き
 	function close() {
 		if (!modeless) makeResults();
-		return super.close(...);
+		var r = super.close(...);
+		removeAllBitmap();
+		return r;
 	}
 	// 結果を保持する
 	function makeResults() {
@@ -191,16 +212,27 @@ class WIN32DialogEX extends WIN32Dialog {
 
 	// 指定ウィンドウの中央に配置（ただし画面外にならないこと）
 	function setCenterPosition(win = parent) {
-		var scrw = System.screenWidth, scrh = System.screenHeight;
-		var x = (scrw - width)\2, y = (scrh - height)\2;
-		if (typeof win == "Object" && win != null && win instanceof "Window" && isvalid win) with (win) {
-			x = ((.width  - width )\2) + .left;
-			y = ((.height - height)\2) + .top;
-			x = 0 if (x < 0);
-			y = 0 if (y < 0);
-			x = scrw - width  if (x + width  > scrw);
-			y = scrh - height if (y + height > scrh);
+		// モニタ情報の取得
+		var x1, y1, x2, y2, monitor;
+		if (typeof System.getMonitorInfo != "undefined") {
+			var info = System.getMonitorInfo(true, win);
+			monitor = info.work if (typeof info == "Object");
 		}
+		monitor = %[ x:0, y:0, w:System.screenWidth, h:System.screenHeight ] if (monitor === void);
+		with (monitor) x1=.x, y1=.y, x2=.w+x1, y2=.h+y1;
+
+		// 位置決定
+		var w = width, h = height;
+		var x = (x1+x2 - w)\2, y = (y1+y2 - h)\2;
+		if (win && typeof win == "Object" && win instanceof "Window" && isvalid win) with (win) {
+			x = ((.width  - w)\2) + .left;
+			y = ((.height - h)\2) + .top;
+		}
+		// モニタからはみ出ていたら内側へ移動
+		x = x2 - width  if (x + w > x2);
+		y = y2 - height if (y + h > y2);
+		x = x1          if (x < x1);
+		y = y1          if (y < y1);
 		setPos(x, y);
 	}
 
