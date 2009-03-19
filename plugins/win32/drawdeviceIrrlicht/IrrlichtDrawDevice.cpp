@@ -15,7 +15,7 @@ using namespace gui;
  * コンストラクタ
  */
 IrrlichtDrawDevice::IrrlichtDrawDevice(iTJSDispatch2 *objthis, int width, int height)
-	: IrrlichtBaseUpdate(objthis), width(width), height(height), destWidth(0), destHeight(0), zoomMode(true), defaultVisible(true)
+	: IrrlichtBase(objthis), width(width), height(height), destWidth(0), destHeight(0), zoomMode(true), defaultVisible(true)
 {
 	// Irrlicht的画面サイズ
 	screenWidth = width;

@@ -9,7 +9,7 @@ extern void unregisterWindowClass();
 /**
  * Irrlicht 描画が可能なウインドウ
  */
-class IrrlichtWindow :	public IrrlichtBaseUpdate
+class IrrlichtWindow :	public IrrlichtBase
 {
 public:
 	// ウインドウプロシージャ
@@ -80,6 +80,14 @@ public:
 	// -----------------------------------------------------------------------
 
 public:
+	void setEventMask(int mask) {
+		IrrlichtBase::setEventMask(mask);
+	}
+
+	int getEventMask() {
+		return IrrlichtBase::getEventMask();
+	}
+
 	irr::video::IVideoDriver *getVideoDriver() {
 		return IrrlichtBase::getVideoDriver();
 	}
