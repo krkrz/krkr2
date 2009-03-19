@@ -1,3 +1,6 @@
+System.setArgument("-usedb",   "no");
+System.setArgument("-dbstyle", "gdi");
+
 Scripts.execStorage("win32dialog.tjs");
 
 class MyDialog extends WIN32DialogEX {
@@ -7,6 +10,7 @@ class MyDialog extends WIN32DialogEX {
 	var ID_LST = 1002;
 	var ID_CMB = 1003;
 	var ID_COMCTL = 1004;
+	var ID_BITMAP = 1005;
 
 	var template = %[
 	helpID:0,
@@ -31,6 +35,7 @@ class MyDialog extends WIN32DialogEX {
 			EditText(              ID_EDT, 10, 30, 80, 10),
 			ListBox(               ID_LST, 10, 40, 80, 40),
 			ComboBox(              ID_CMB, 10, 80, 80, 80, CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP),
+			Control("", ID_BITMAP, STATIC, SS_BITMAP|SS_CENTERIMAGE, 0, 0, 20, 20, 0),
 		]
 	];
 
@@ -76,6 +81,7 @@ class MyDialog extends WIN32DialogEX {
 		super.onInit(...);
 		setCenterPosition();
 		setItemFocus(ID_BTN);
+		setItemBitmap(ID_BITMAP, global.bitmapLayer);
 	}
 
 	// デバグ用
@@ -131,11 +137,11 @@ WIN32Dialog.initCommonControls();
 var dm = Debug.message;
 var win = new Window();
 with (win) {
+
 	._onCloseQuery = .onCloseQuery;
 	.onCloseQuery = function() { _onCloseQuery(true); } incontextof win;
 	.innerSunken = false;
 	.caption = "WIN32Dialog test script";
-	.setSize(640, 480);
 	.menu.add((.testMenus = new MenuItem(win, "Tests")));
 	var add = .testMenus.add;
 	add(createMenuItem(win, "MyDialogTest",       function{ testMyDialog(win, 0); }));
@@ -145,6 +151,18 @@ with (win) {
 	add(createMenuItem(win, "MessageBoxTest",     function{
 		with (WIN32Dialog) dm(.messageBox(global.win, "テキスト", "キャプション", .MB_OKCANCEL|.MB_ICONEXCLAMATION|.MB_OWNER_CENTER) == .IDOK);
 	}));
+
+	.add(new global.Layer(win, null));
+	var w = 640, h = 480;
+	.primaryLayer.setSize(w, h);
+	.setInnerSize(w, h);
 	.visible = true;
+
+	global.bitmapLayer = new Layer(win, .primaryLayer);
+	with (bitmapLayer) {
+		.loadImages("testimage");
+		.setSizeToImageSize();
+		.visible=true;
+	}
 }
 

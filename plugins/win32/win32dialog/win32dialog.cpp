@@ -10,6 +10,50 @@
 struct Header;
 struct Items;
 
+// BITMAPラッパ
+struct Bitmap {
+	typedef unsigned char PIX;
+	iTJSDispatch2 *lay;
+	HBITMAP bitmap;
+	Bitmap(iTJSDispatch2 *layer) : lay(layer), bitmap(0) { lay->AddRef(); }
+	~Bitmap() {                          removeBitmap();   lay->Release(); }
+	void removeBitmap() {
+		if (bitmap) ::DeleteObject(bitmap);
+		bitmap = NULL;
+	}
+	HBITMAP createBitmap(HWND hwnd) {
+		ncbPropAccessor obj(lay);
+		tjs_int bmpw = obj.getIntValue(TJS_W("imageWidth"));
+		tjs_int bmph = obj.getIntValue(TJS_W("imageHeight"));
+		tjs_int ln = obj.getIntValue(TJS_W("mainImageBufferPitch"));
+		PIX *pw, *pr = reinterpret_cast<PIX*>(obj.getIntValue(TJS_W("mainImageBuffer")));
+
+		BITMAPINFO info;
+		ZeroMemory(&info, sizeof(info));
+		info.bmiHeader.biSize = sizeof(BITMAPINFO);
+		info.bmiHeader.biWidth = bmpw;
+		info.bmiHeader.biHeight = bmph;
+		info.bmiHeader.biPlanes = 1;
+		info.bmiHeader.biBitCount = 24;
+
+		removeBitmap();
+		HDC dc = GetDC(hwnd);
+		if ((bitmap = CreateDIBSection(dc, (LPBITMAPINFO)&info, DIB_RGB_COLORS, (LPVOID*)&pw, NULL, 0)) != NULL) {
+			for (int y = bmph-1; y >= 0; y--) {
+				PIX *src = pr + (y * ln);
+				PIX *dst = pw + ((bmph-1 - y) * ((bmpw*3+3) & ~3L));
+				for (int n = bmpw-1; n >= 0; n--, src+=4, dst+=3) {
+					dst[0] = src[0];
+					dst[1] = src[1];
+					dst[2] = src[2];
+				}
+			}
+		}
+		ReleaseDC(hwnd, dc);
+		return bitmap;
+	}
+};
+
 // NMHDR アクセス用クラス
 struct NotifyAccessor {
 	NotifyAccessor() : ptr(0), ref(0) {}
@@ -41,6 +85,7 @@ private:
 	typedef ncbInstanceAdaptor<WIN32Dialog> SelfAdaptorT;
 	typedef ncbInstanceAdaptor<Header>      HeadAdaptorT;
 	typedef ncbInstanceAdaptor<Items>       ItemAdaptorT;
+	typedef ncbInstanceAdaptor<Bitmap>      BitmapAdaptorT;
 
 	HWND dialogHWnd;
 	HICON icon;
@@ -195,6 +240,15 @@ public:
 	}
 	void SetItemSize(int id, int w, int h) {
 		SetWindowPos(GetItemHWND(id), 0, 0, 0, w, h, SWP_NOMOVE|SWP_NOZORDER);
+	}
+
+	static tjs_error TJS_INTF_METHOD SetItemBitmap(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self) {
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		int id = (int)param[0]->AsInteger();
+		Bitmap *bmp = BitmapAdaptorT::GetNativeInstance(param[1]->AsObjectNoAddRef(), true);
+		if (bmp != NULL)
+			*result = self->_sendItemMessage(id, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)bmp->createBitmap(self->dialogHWnd));
+		return  TJS_S_OK;
 	}
 
 	void SetPos(int x,  int y) { if (dialogHWnd) SetWindowPos(dialogHWnd, 0, x, y, 0, 0, SWP_NOSIZE|SWP_NOZORDER); }
@@ -606,6 +660,9 @@ NCB_REGISTER_SUBCLASS(Items) {
 	Constructor();
 	Method(TJS_W("store"), &Class::store);
 }
+NCB_REGISTER_SUBCLASS(Bitmap) {
+	Constructor<iTJSDispatch2*>(0);
+}
 
 NCB_REGISTER_SUBCLASS(NotifyAccessor) {
 	Constructor();
@@ -622,6 +679,7 @@ NCB_REGISTER_SUBCLASS(NotifyAccessor) {
 NCB_REGISTER_CLASS(WIN32Dialog) {
 	NCB_SUBCLASS(Header, Header);
 	NCB_SUBCLASS(Items,  Items);
+	NCB_SUBCLASS(Bitmap, Bitmap);
 	NCB_SUBCLASS(Notify, NotifyAccessor);
 
 	Constructor<iTJSDispatch2*>(0);
@@ -641,6 +699,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("setItemFocus"),    &Class::SetItemFocus);
 	Method(TJS_W("setItemPos"),      &Class::SetItemPos);
 	Method(TJS_W("setItemSize"),     &Class::SetItemSize);
+	RawCallback(TJS_W("setItemBitmap"),   &Class::SetItemBitmap, 0);
 
 	RawCallback(TJS_W("sendItemMessage"), &Class::sendItemMessage, 0);
 
