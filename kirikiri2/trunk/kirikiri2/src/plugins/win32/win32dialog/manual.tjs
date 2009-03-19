@@ -119,6 +119,14 @@ class WIN32Dialog {
 	function setItemSize(id, w, h);
 
 	/**
+	 * アイテムにBitmapを設定する
+	 * @param id    ダイアログアイテムのID
+	 * @param bmp   ビットマップに設定するWIN32Dialog.Bitmapのインスタンス
+	 *              WIN32DialogEXではLayerインスタンスが指定可能
+	 */
+	function setItemBitmap(id, bmp);
+
+	/**
 	 * SendDlgItemMessage のラッパー
 	 * @param id     ダイアログアイテムのID
 	 * @param msg    送るメッセージ
