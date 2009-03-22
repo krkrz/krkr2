@@ -18,6 +18,7 @@ function dm(msg) {
  * 初期化処理サンプル
  */
 function initData(device) {
+	dm("データを初期化");
 	var driver = device.videoDriver;
 	var smgr = device.sceneManager;
 	var gui = device.guiEnvironment;
@@ -103,7 +104,6 @@ class BaseLayer extends Layer
  */
 class DrawDeviceWindow extends Window
 {
-	var initTrigger;
 	var base;
 	var base2;
 	var base3;
@@ -118,6 +118,7 @@ class DrawDeviceWindow extends Window
 
 		// Irrlicht
 		drawDevice = new Irrlicht.DrawDevice(WIDTH, HEIGHT);
+		drawDevice.onAttach = initData;
 		//drawDevice.zoomMode = false;
 		
 		// 1枚目のプライマリレイヤ
@@ -133,25 +134,12 @@ class DrawDeviceWindow extends Window
 		base3 = new BaseLayer(this, WIDTH*2, HEIGHT*2);
 		add(base3);
 
-		// 画面更新用トリガ
-		// コンストラクタの段階ではまだウインドウ実体が
-		// 存在してない場合ためトリガをつかって処理する必要がある
-		initTrigger = new AsyncTrigger(init, "");
-		initTrigger.cached = true;
-		initTrigger.mode = atmExclusive;
-		initTrigger.trigger();
-
 		// 更新処理
 		System.addContinuousHandler(update);
 	}
 
 	function finalize() {
 		System.removeContinuousHandler(update);
-		invalidate initTrigger;
-	}
-
-	function init() {
-		initData(drawDevice);
 	}
 
 	// レイヤに対して描画更新する
@@ -166,13 +154,9 @@ class DrawDeviceWindow extends Window
 			close();
 		} else if(key == VK_TAB) {
 			fullScreen = !fullScreen;
-			// フルスクリーン切り替え後の復帰時も同様 XXX
-			// これは将来的には自動処理にしたい
-			initTrigger.trigger();
 		}
 	}
 };
-
 
 /**
  * レイヤ描画のテスト。
@@ -180,7 +164,6 @@ class DrawDeviceWindow extends Window
  */
 class SimpleDeviceWindow extends Window
 {
-	var initTrigger;
 	var device;
 	var base;
 
@@ -194,6 +177,7 @@ class SimpleDeviceWindow extends Window
 
 		// Irrlicht
 		device = new Irrlicht.SimpleDevice(this, WIDTH, HEIGHT);
+		device.onAttach = initData;
 		add(device);
 
 		// プライマリレイヤ
@@ -201,23 +185,12 @@ class SimpleDeviceWindow extends Window
 		base.setSize(WIDTH, HEIGHT);
 		add(base);
 		
-		// 画面更新用トリガ
-		initTrigger = new AsyncTrigger(init, "");
-		initTrigger.cached = true;
-		initTrigger.mode = atmExclusive;
-		initTrigger.trigger();
-
 		// 更新処理
 		System.addContinuousHandler(update);
 	}
 
 	function finalize() {
 		System.removeContinuousHandler(update);
-		invalidate initTrigger;
-	}
-
-	function init() {
-		initData(device);
 	}
 	
 	// レイヤに対して描画更新する
@@ -233,7 +206,6 @@ class SimpleDeviceWindow extends Window
 			close();
 		} else if(key == VK_TAB) {
 			fullScreen = !fullScreen;
-			initTrigger.trigger();
 		}
 	}
 };
@@ -244,7 +216,6 @@ class SimpleDeviceWindow extends Window
  */
 class WindowWindow extends Window
 {
-	var initTrigger;
 	var device;
 
 	/**
@@ -257,28 +228,18 @@ class WindowWindow extends Window
 
 		// Irrlicht
 		device = new Irrlicht.Window(this, 0, 0, WIDTH, HEIGHT);
+		device.onAttach = initData;
 		add(device);
 		device.visible = true;
 		
-		// 画面更新用トリガ
-		initTrigger = new AsyncTrigger(init, "");
-		initTrigger.cached = true;
-		initTrigger.mode = atmExclusive;
-		initTrigger.trigger();
-
 		// 更新処理
 		System.addContinuousHandler(update);
 	}
 
 	function finalize() {
 		System.removeContinuousHandler(update);
-		invalidate initTrigger;
 	}
 
-	function init() {
-		initData(device);
-	}
-	
 	// レイヤに対して描画更新する
 	function update(tick) {
 		if (device.videoDriver) {
@@ -291,7 +252,6 @@ class WindowWindow extends Window
 			close();
 		} else if(key == VK_TAB) {
 			fullScreen = !fullScreen;
-			initTrigger.trigger();
 		}
 	}
 };
@@ -323,8 +283,8 @@ class CaptureWindow extends Window
 var win = new DrawDeviceWindow();
 win.visible = true;
 
-var win2 = new SimpleDeviceWindow();
-win2.visible = true;
+//var win2 = new SimpleDeviceWindow();
+//win2.visible = true;
 
 //var win3 = new WindowWindow();
 //win3.visible = true;
