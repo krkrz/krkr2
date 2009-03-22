@@ -54,7 +54,7 @@ GetLayerBufferAndSize(iTJSDispatch2 *lay, long &w, long &h, WrtRefT &ptr, long &
 
 /**
  * Layer.copyRightBlueToLeftAlpha
- * レイヤ右半分の Blue CHANNEL を左半分の Alpha 領域に複製する
+ * レイヤ右半分の Blue CHANNEL を左半分の Alpha CHANNEL に複製する
  */
 static tjs_error TJS_INTF_METHOD
 copyRightBlueToLeftAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
@@ -87,3 +87,39 @@ copyRightBlueToLeftAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **p
 }
 
 NCB_ATTACH_FUNCTION(copyRightBlueToLeftAlpha, Layer, copyRightBlueToLeftAlpha);
+
+/**
+ * Layer.copyBottomBlueToTopAlpha
+ * レイヤ右半分の Blue CHANNEL を左半分の Alpha CHANNELに複製する
+ */
+static tjs_error TJS_INTF_METHOD
+copyBottomBlueToTopAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	// 書き込み先
+	WrtRefT dbuf = 0;
+	long dw, dh, dpitch;
+	if (!GetLayerBufferAndSize(lay, dw, dh, dbuf, dpitch)) {
+		TVPThrowExceptionMessage(TJS_W("dest must be Layer."));
+	}
+
+	// 半分
+	dh /= 2;
+
+	// コピー
+	WrtRefT sbuf = dbuf + dh * dpitch;
+	dbuf += 3;
+	for (int i=0;i<dh;i++) {
+		WrtRefT p = sbuf;   // B領域
+		WrtRefT q = dbuf;   // A領域
+		for (int j=0;j<dw;j++) {
+			*q = *p;
+			p += 4;
+			q += 4;
+		}
+		sbuf += dpitch;
+		dbuf += dpitch;
+	}
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(copyBottomBlueToTopAlpha, Layer, copyBottomBlueToTopAlpha);

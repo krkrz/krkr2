@@ -10,9 +10,14 @@ Author: わたなべごう
 Layerに以下のメソッドが拡張されます。これを呼ぶだけです。
 
 /**
- * レイヤ右半分の Blue CHANNEL を左半分の Alpha 領域に複製する
+ * レイヤ右半分の Blue CHANNEL を左半分の Alpha CHANNELに複製する
  */
 function copyRightBlueToLeftAlpha();
+
+/**
+ * レイヤ下半分の Blue CHANNEL を上半分の Alpha CHANNELに複製する
+ */
+function copyBottomBlueToTopAlpha();
 
 VideoOverlay クラスを使ってレイヤに動画(右半分にα画像)
 を描画したあと、onFrameUpdate() で呼び出してください。
