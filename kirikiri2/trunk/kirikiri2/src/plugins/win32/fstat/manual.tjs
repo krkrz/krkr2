@@ -146,4 +146,13 @@ class Storages {
 	 * @return 実際にコピーできたら true
 	 */
 	function copyFile(from, to, failIfExist);	//	by Kiyobee
+
+        /**
+         * パスの正規化を行なわず、autoPathからの検索も行なわずに
+         * ファイルの存在確認を行う
+         * @param filename ファイル名
+         * @return ファイルが存在したらtrue
+         */
+  function isExistentStorageNoSearchNoNormalize(filename);  // by Yun
+
 };
