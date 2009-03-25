@@ -1,0 +1,28 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+
+/**
+ * ウインドウ拡張
+ */
+class Window {
+
+	/**
+	 * プログレス処理を開始する。
+	 * 吉里吉里が実行ブロック中でも正常に表示継続します。
+	 * @param init 初期化データ(辞書)
+	 */
+	function startProgress(init);
+
+	/**
+	 * プログレス処理の経過状態を通知する。
+	 * @param percent 経過状態をパーセント指定
+	 * @return キャンセル要求があれば true
+	 */
+	function doProgress(percent);
+	
+	/**
+	 * プログレス処理を終了する。
+	 */
+	function endProgress();
+}
