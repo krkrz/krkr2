@@ -1,0 +1,21 @@
+Plugins.link("windowExProgress.dll");
+
+class MyWindow extends Window {
+
+	function MyWindow() {
+		super.Window(...);
+	}
+
+	function onKeyDown(key, shift) {
+		if (key == VK_SPACE) {
+			startProgress(null);
+			for (var i=0;i<50000;i++) {
+				doProgress(i/500);
+			}
+			endProgress();
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;
