@@ -1610,6 +1610,7 @@ void __fastcall TTVPWindowForm::SetBorderStyle(tTVPBorderStyle st)
 {
 	CallWindowDetach(false);
 	FreeDirectInputDevice(); // due to re-create window
+	if(TJSNativeInstance) TJSNativeInstance->DetachVideoOverlay();
 
 	if(st == ::bsSingle)
 		BorderIcons = BorderIcons>>biMaximize; // remove maximize button
@@ -1625,6 +1626,7 @@ void __fastcall TTVPWindowForm::SetBorderStyle(tTVPBorderStyle st)
 	case ::bsSizeToolWin:	BorderStyle = Forms::bsSizeToolWin;	break;
 	}
 
+	if(TJSNativeInstance) TJSNativeInstance->ReadjustVideoRect();
 	CallWindowAttach();
 }
 //---------------------------------------------------------------------------
