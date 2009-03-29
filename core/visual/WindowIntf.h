@@ -125,6 +125,11 @@ public:
 	//!				呼び出されると、再び RequestUpdate() を呼ばない限りは
 	//!				iTVPWindow::Update() は呼ばれない。
 	virtual void TJS_INTF_METHOD RequestUpdate() = 0;
+
+
+	//! @brief		WindowのiTJSDispatch2インターフェースを取得する
+	virtual iTJSDispatch2 * GetWindowDispatch() = 0;
+
 };
 //---------------------------------------------------------------------------
 /*]*/
@@ -170,6 +175,8 @@ public:
 	const tTJSVariant & GetDrawDeviceObject() const { return DrawDeviceObject; }
 	iTVPDrawDevice * GetDrawDevice() const { return DrawDevice ; }
 	virtual void ResetDrawDevice() = 0;
+	virtual iTJSDispatch2 * GetWindowDispatch() { if(Owner) Owner->AddRef(); return Owner; }
+
 
 	//----- event dispatching
 public:
