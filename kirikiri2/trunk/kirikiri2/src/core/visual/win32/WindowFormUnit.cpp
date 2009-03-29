@@ -1166,6 +1166,14 @@ void __fastcall TTVPWindowForm::SetAttentionPoint(tjs_int left, tjs_int top,
 		top += 2;
 	}
 
+	// add scrollbox offset
+	if(ScrollBox)
+	{
+		left += ScrollBox->Left;
+		top += ScrollBox->Top;
+	}
+
+	// set attention point information
 	AttentionPoint.x = left;
 	AttentionPoint.y = top;
 	AttentionPointEnabled = true;
