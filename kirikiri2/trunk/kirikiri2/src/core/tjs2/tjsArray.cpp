@@ -61,11 +61,12 @@ static bool IsNumber(const tjs_char *str, tjs_int &result)
 	while(*str && TJS_iswspace(*str)) str++;
 	if(!*str) return false;
 	if(*str == TJS_W('-')) str++; // sign
+	else if(*str == TJS_W('+')) str++, orgstr = str; // sign, but skip
 	if(!*str) return false;
 	while(*str && TJS_iswspace(*str)) str++;
 	if(!*str) return false;
 	if(!TJS_iswdigit(*str)) return false;
-	while(*str && TJS_iswdigit(*str)) str++;
+	while(*str && (TJS_iswdigit(*str) || *str == '.')) str++;
 	while(*str && TJS_iswspace(*str)) str++;
 	if(*str == 0)
 	{
