@@ -19,6 +19,11 @@ function copyRightBlueToLeftAlpha();
  */
 function copyBottomBlueToTopAlpha();
 
+/**
+ * レイヤの Alpha CHANNEL を0xffで埋める
+ */
+function fillAlpha();
+
 VideoOverlay クラスを使ってレイヤに動画(右半分にα画像)
 を描画したあと、onFrameUpdate() で呼び出してください。
 処理は内部画像データ(imageWidthのサイズ)に対して行われます。
