@@ -86,8 +86,6 @@ copyRightBlueToLeftAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **p
 	return TJS_S_OK;
 }
 
-NCB_ATTACH_FUNCTION(copyRightBlueToLeftAlpha, Layer, copyRightBlueToLeftAlpha);
-
 /**
  * Layer.copyBottomBlueToTopAlpha
  * ƒŒƒCƒ„‰E”¼•ª‚Ì Blue CHANNEL ‚ğ¶”¼•ª‚Ì Alpha CHANNEL‚É•¡»‚·‚é
@@ -122,4 +120,28 @@ copyBottomBlueToTopAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **p
 	return TJS_S_OK;
 }
 
+static tjs_error TJS_INTF_METHOD
+fillAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	// ‘‚«‚İæ
+	WrtRefT dbuf = 0;
+	long dw, dh, dpitch;
+	if (!GetLayerBufferAndSize(lay, dw, dh, dbuf, dpitch)) {
+		TVPThrowExceptionMessage(TJS_W("dest must be Layer."));
+	}
+	// ‘S•” 0xff‚Å‚¤‚ß‚é
+	dbuf += 3;
+	for (int i=0;i<dh;i++) {
+		WrtRefT q = dbuf;   // A—Ìˆæ
+		for (int j=0;j<dw;j++) {
+			*q = 0xff;
+			q += 4;
+		}
+		dbuf += dpitch;
+	}
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(copyRightBlueToLeftAlpha, Layer, copyRightBlueToLeftAlpha);
 NCB_ATTACH_FUNCTION(copyBottomBlueToTopAlpha, Layer, copyBottomBlueToTopAlpha);
+NCB_ATTACH_FUNCTION(fillAlpha, Layer, fillAlpha);
