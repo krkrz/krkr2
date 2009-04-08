@@ -341,6 +341,12 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     // 表情描画処理を行う
     var redrawFace;
 
+	function setRedrawFace() {
+		if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
+			redrawFace = true;
+		}
+	}
+	
     /**
      * 直接画像指定
      */
@@ -381,9 +387,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 					setAutoTrans([info.trans, init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
 					
 					// 表情表示取得
-					if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-						redrawFace = true;
-					}
+					setRedrawFace();
 				}
 				// 服装初期化処理
 				if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
@@ -412,9 +416,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			redraw = true;
 			setAutoTrans([init.dressTrans, init.charTrans, env.envinfo.dressTrans, env.envinfo.charTrans]);
 			// 表情表示取得
-			if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-				redrawFace = true;
-			}
+			setRedrawFace();
 		}
 		image = void;
     }
@@ -428,9 +430,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			redraw = true;
 			setAutoTrans([init.faceTrans, init.charTrans, env.envinfo.faceTrans, env.envinfo.charTrans]);
 			// 表情表示取得
-			if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
-				redrawFace = true;
-			}
+			setRedrawFace();
 		}
 		image = void;
     }
@@ -926,9 +926,9 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      */
     function drawFace(layer, faceLevelName) {
         //dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
-        if (faceLevelName !== void && poses !== void) {
-            _drawLayer(layer, faceLevelName);
-            layer.visible = true;
+		if (poses !== void) {
+			_drawLayer(layer, faceLevelName);
+			layer.visible = true;
         } else {
             layer.visible = false;
         }
@@ -1048,7 +1048,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	 * 更新処理
 	 */
 	function _update() {
-		var ret = global.KAGEnvLevelLayer._update(...);
+		var ret = global.KAGEnvImage._update(...);
 		// ループボイス対応用
 		if (doLoopVoice) {
 			if (loopVoiceName === void || loopVoiceName == "" || !openLoopVoice(loopVoiceName)) {

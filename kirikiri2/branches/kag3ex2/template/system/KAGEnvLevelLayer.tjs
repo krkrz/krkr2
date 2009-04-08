@@ -59,11 +59,17 @@ class KAGEnvLevelLayer {
 	function finalize() {
 	}
 
-	function _update(base) {
-		if (isShowBU() && level === void) {
-			level = env.defaultLevel;
+	// ‰Šú•\¦‚ÉƒŒƒxƒ‹‰Šú‰»
+	property disp {
+		getter() {
+			return *(&global.KAGEnvImage.disp incontextof this);
 		}
-		(global.KAGEnvImage._update incontextof this)(base);
+		setter(v) {
+			if (v == SHOW && level === void) {
+				level = env.defaultLevel;
+			}
+			*(&global.KAGEnvImage.disp incontextof this) = v;
+		}
 	}
 	
     /**
@@ -75,7 +81,7 @@ class KAGEnvLevelLayer {
 		var maxindex = index;
 		for(var i = 0; i<forelayers.count; i++) {
 			var target = forelayers[i];
-			if (target !== this && target.level == level) {
+			if (target !== this && target.isShowBU() && target.level === level) {
 				if (target.absolute > maxindex) {
 					maxindex = target.absolute;
 				}
@@ -96,7 +102,7 @@ class KAGEnvLevelLayer {
 		var minindex = index;
 		for(var i = 0; i<forelayers.count; i++) {
 			var target = forelayers[i];
-			if (target !== this && target.level == level) {
+			if (target !== this && target.isShowBU() && target.level === level) {
 				if (target.absolute < minindex) {
 					minindex = target.absolute;
 				}
