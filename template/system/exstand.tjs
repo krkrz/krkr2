@@ -1242,7 +1242,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			setAutoTrans([init.dressTrans, init.charTrans, env.envinfo.dressTrans, env.envinfo.charTrans]);
 
 			// 表情表示取得
-			setRedrawFace();
+			setRedrawFace(elm);
 
 			if (chstandinfo !== void && chstandinfo.allDressNameMap[dressName] === void) {
 				System.inform("指定された服装が存在しません dress:" + dressName);
@@ -1268,7 +1268,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			setAutoTrans([init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
 
 			// 表情表示取得
-			setRedrawFace();
+			setRedrawFace(elm);
 
 			// 該当ドレスが無い場合は例外
 			if (currentPoseNameMap[poseName] === void) {
@@ -1299,7 +1299,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			setAutoTrans([init.diffTrans, init.charTrans, env.envinfo.diffTrans, env.envinfo.charTrans]);
 
 			// 表情表示取得
-			setRedrawFace();
+			setRedrawFace(elm);
 			
 			// 該当ドレスが無い場合はエラー
 			if (currentDiffNameMap[diffName] === void) {
@@ -1356,7 +1356,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			setAutoTrans([init.faceTrans, init.charTrans, env.envinfo.faceTrans, env.envinfo.charTrans]);
 
 			// 表情表示取得
-			setRedrawFace();
+			setRedrawFace(elm);
 
 			if (currentFaceNameMap[faceName] === void) {
 				System.inform("服装に該当する表情が存在しません faceName:" + faceName);
@@ -1386,7 +1386,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			redraw = true;
 			addimage = param;
 			// 表情表示取得
-			setRedrawFace();
+			setRedrawFace(elm);
 		}
 	}
 
@@ -1397,7 +1397,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			redraw = true;
 			addface = param;
 			// 表情表示取得
-			setRedrawFace();
+			setRedrawFace(elm);
 		}
 	}
 
