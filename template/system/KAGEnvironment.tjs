@@ -1332,7 +1332,7 @@ class KAGEnvironment extends KAGEnvImage {
      * 表情表示処理下請け
      */
     function loadFacePage(base, name) {
-        var faceLayer = getFaceLayer(base);
+		var faceLayer = getFaceLayer(base);
         if (faceLayer !== void) {
             try {
                 faceLayer.loadImages(name);
@@ -1369,18 +1369,21 @@ class KAGEnvironment extends KAGEnvImage {
 
     // 指定されたキャラクタの表情が表示可能なら表示する
     function drawFacePage(base, ch) {
-        if (faceLevelName !== void) {
-            if (ch !== void) {
-                var layer = getFaceLayer(base);
+		//dm("表情を描画:" + ch);
+		if (faceLevelName !== void) {
+			if (ch !== void) {
+				var layer = getFaceLayer(base);
 				if (layer !== void) {
-	                if (ch.isShowFace()) {
+					if (ch.isShowFace()) {
     	                ch.drawFace(layer, faceLevelName);
         	        } else {
             	        layer.visible = false;
                 	}
+				} else {
+					//dm("表情窓が無い");
 				}
-            } else {
-                clearFacePage(base);
+			} else {
+				clearFacePage(base);
             }
         }
     }

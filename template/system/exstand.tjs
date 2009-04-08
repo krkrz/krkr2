@@ -494,6 +494,31 @@ function getFixedFaceName(info, currentFaceName, faceName)
 }
 
 /**
+ * 立ち絵に対する想定レベルを返す
+ */
+function checkStandLayerLevel(level, levelMax, standInfo)
+{
+	var currentImageLevel = void;
+	for (var l=level;l<levelMax;l++) {
+		var file = standInfo.filename + "_" + l + ".txt";
+		if (Storages.isExistentStorage(file)) {
+			currentImageLevel = l;
+			break;
+		}
+	}
+	if (currentImageLevel === void) {
+		for (var l=level;l>=0;l--) {
+			var file = standInfo.filename + "_" + l + ".txt";
+			if (Storages.isExistentStorage(file)) {
+				currentImageLevel = l;
+				break;
+			}
+		}
+	}
+	return currentImageLevel;
+}
+
+/**
  * 立ち絵用データレイヤ
  * 差分の表示状態 ON/OFF をサポートします
  */
@@ -543,32 +568,16 @@ class StandLayer extends PSDLayer {
 	var currentFilename;   // 現在読み込まれてるファイル名
 
 	/**
-	 *
+	 * レベル指定
+	 * @param level レベル
+	 * @param imageLevel 実画像のレベル指定
 	 */
-	function setLevel(level, levelMax) {
+	function setLevel(level, imageLevel) {
 		//dm("レベル指定:" + level);
 		if (level !== currentLevel) {
 			currentLevel = level;
-			var filename = info.filename + ".txt";
-			currentImageLevel = void;
-			for (var l=level;l<levelMax;l++) {
-				var file = info.filename + "_" + l + ".txt";
-				if (Storages.isExistentStorage(file)) {
-					currentImageLevel = l;
-					filename = file;
-					break;
-				}
-			}
-			if (currentImageLevel === void) {
-				for (var l=level;l>=0;l--) {
-					var file = info.filename + "_" + l + ".txt";
-					if (Storages.isExistentStorage(file)) {
-						currentImageLevel = l;
-						filename = file;
-						break;
-					}
-				}
-			}
+			currentImageLevel = imageLevel;
+			var filename = imageLevel === void ? info.filename + ".txt" : info.filename + "_" + imageLevel + ".txt";
 			//dm("発見ファイル:" + filename);
 			if (currentFilename != filename) {
 				//dm("レイヤの読み込み:" + filename);
@@ -1022,20 +1031,40 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	/**
 	 * 指定した名前に該当する基礎立ち絵レイヤを取得
 	 * @param name ポーズ名
+	 * @param level レベル
 	 * @return 立ち絵レイヤ
 	 */
-	function getStandLayer(poseName) {
-		var standlayer = standlayerMap[poseName];
-		if (standlayer === void) {
-			standlayer = new StandLayer(kag.temporaryLayer, getStandInfo(poseName));
-			standlayer.name = name + "_" + poseName;
-			standlayerList.add(standlayer);
-			standlayerMap[poseName] = standlayer;
+	function getStandLayer(poseName, level) {
+		// 立ち絵情報
+		var standInfo = getStandInfo(poseName);
+		// 実画像のレベルを取得
+		var imageLevel = checkStandLayerLevel(level, env.levels.count, standInfo);
+		// 該当ポーズの立ち絵リスト
+		var standlayers = standlayerMap[poseName];
+		if (standlayers === void) {
+			standlayers = [];
+			standlayerMap[poseName] = standlayers;
+			standlayerList.add(standlayers);
 		}
-		if (level === void) {
-			level = env.defaultLevel;
+		for (var i=0;i<standlayers.count;i++) {
+			var standlayer = standlayers[i];
+			if (standlayer.currentImageLevel === imageLevel) { // 既にロード済み
+				if (i != 0) {
+					standlayers.erase(i);
+					standlayers.insert(0, standlayer);
+				}
+				standlayer.setLevel(level, imageLevel);
+				return standlayer;
+			}
 		}
-		standlayer.setLevel(level, env.levels.count);
+		// 見つからない場合は新規に作成
+		var standlayer = new StandLayer(kag.temporaryLayer, standInfo);
+		standlayer.name = name + "_" + poseName;
+		standlayer.setLevel(level, imageLevel);
+		if (standlayers.count > 3) { // キャッシュは3つまで
+			standlayers.erase(standlayers.count - 1);
+		}
+		standlayers.insert(0,standlayer);
 		return standlayer;
 	}
 	
@@ -1126,7 +1155,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 
 	function setEyeLipState() {
 		//dm("立ち絵生成呼び出し:" + Scripts.getTraceString());
-		var standlayer = getStandLayer(pose);
+		var standlayer = getStandLayer(pose, level);
 		if (standlayer !== void) {
 			var faceInfo = standlayer.getFaceInfo(face);
 			if (faceInfo !== void) {
@@ -1212,6 +1241,9 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			redraw = true;
 			setAutoTrans([init.dressTrans, init.charTrans, env.envinfo.dressTrans, env.envinfo.charTrans]);
 
+			// 表情表示取得
+			setRedrawFace();
+
 			if (chstandinfo !== void && chstandinfo.allDressNameMap[dressName] === void) {
 				System.inform("指定された服装が存在しません dress:" + dressName);
 				return;
@@ -1234,7 +1266,10 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			disp = SHOW;
 			redraw = true;
 			setAutoTrans([init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
-			
+
+			// 表情表示取得
+			setRedrawFace();
+
 			// 該当ドレスが無い場合は例外
 			if (currentPoseNameMap[poseName] === void) {
 				System.inform("服装に該当するポーズが存在しません pose:" + poseName + " dress:" + dress);
@@ -1263,6 +1298,9 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			redraw = true;
 			setAutoTrans([init.diffTrans, init.charTrans, env.envinfo.diffTrans, env.envinfo.charTrans]);
 
+			// 表情表示取得
+			setRedrawFace();
+			
 			// 該当ドレスが無い場合はエラー
 			if (currentDiffNameMap[diffName] === void) {
 				System.inform("服装に該当する差分が存在しません diffName:" + diffName);
@@ -1317,6 +1355,9 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			redraw = true;
 			setAutoTrans([init.faceTrans, init.charTrans, env.envinfo.faceTrans, env.envinfo.charTrans]);
 
+			// 表情表示取得
+			setRedrawFace();
+
 			if (currentFaceNameMap[faceName] === void) {
 				System.inform("服装に該当する表情が存在しません faceName:" + faceName);
 				return;
@@ -1344,6 +1385,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			disp = SHOW;
 			redraw = true;
 			addimage = param;
+			// 表情表示取得
+			setRedrawFace();
 		}
 	}
 
@@ -1353,6 +1396,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			disp = SHOW;
 			redraw = true;
 			addface = param;
+			// 表情表示取得
+			setRedrawFace();
 		}
 	}
 
@@ -1635,7 +1680,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		if (pose !== void && dress !== void && diff !== void && face !== void) {
 
 			// 描画状態更新
-			var standlayer = getStandLayer(pose);
+			var standlayer = getStandLayer(pose, level);
 			standlayer.setDress(dress);
 			standlayer.setDiff(diff);
 			standlayer.setAdd(addimage, true);
@@ -1681,7 +1726,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				z = imgzoom * 100.0 / imgzoom2;
 			}
 			if (false && z < 50) {
-				// 縮小率 50% miomanではプラグインで縮小する
+				// 縮小率 50% 未満ではプラグインで縮小する
 				var w = standlayer.width  * z / 100.0;
 				var h = standlayer.height * z / 100.0;
 				//dm("レイヤのサイズ:" + level + " w:" + w + " h:" + h);
@@ -1714,6 +1759,57 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 		return ret;
 	}
+
+	// -----------------------------------------------------------------
+	// 立ち絵情報参照用
+	// -----------------------------------------------------------------
+	
+    /**
+     * 表情を描画する
+     */
+    function drawFace(layer, faceLevelName) {
+		dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
+		if (pose !== void && dress !== void && diff !== void && face !== void) {
+			var standlayer = getStandLayer(pose, faceLevelName);
+			var info = standlayer.getPropInfo("顔領域");
+			if (info !== void) {
+				standlayer.setDress(dress);
+				standlayer.setDiff(diff);
+				standlayer.setAdd(addimage, true);
+				standlayer.setAddFace(addface, true);
+				standlayer.setLipLevel(lipLevel);
+				standlayer.setEyeLevel(eyeLevel);
+				standlayer.setFace(face);
+				standlayer.onPaint();
+				layer.fillRect(0,0,layer.width,layer.height,0);
+				if (layer.width > info.width && layer.height < info.height) { // おさまる
+					// センタリグ
+					layer.copyRect((layer.width-info.width)/2,
+								   (layer.height-info.height)/2,
+								   standlayer,info.left,info.top,info.width,info.height);
+				} else {
+					// はみ出るので縮小
+					var rw = layer.width / info.width;
+					var rh = layer.height / info.height;
+					if (rw < rh) {
+						rh = info.height * rw;
+						rw = info.width  * rw;
+					} else {
+						rw = info.width  * rh;
+						rh = info.height * rh;
+					}
+					layer.stretchCopy((layer.width - rw)/2, (layer.height - rh)/2, rw, rh,
+									  standlayer,info.left,info.top,info.width,info.height,stCubic);
+				}
+				layer.visible = true;
+			} else {
+				dm("表情描画:顔領域情報取得失敗");
+				layer.visible = false;
+			}
+        } else {
+            layer.visible = false;
+        }
+    }
 	
 	// -----------------------------------------------------------------
 	// 立ち絵情報参照用
