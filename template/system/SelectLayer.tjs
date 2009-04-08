@@ -15,8 +15,7 @@ class SelectButtonLayer extends ButtonLayer
     var target;  // 処理終了後のジャンプ先
 	var tag;     // ボタン固有名称（フラグ用）
 	var selected;// 過去に選択したことがある
-
-	var __gdiplusfontapp; // for GDI+ hack
+	var message; // メッセージテキスト（再描画用）
 
     /**
      * メッセージの描画
@@ -44,16 +43,21 @@ class SelectButtonLayer extends ButtonLayer
 
         this.owner = owner;
 		this.selected = selected;
-		this.__gdiplusfontapp = owner.fontAppearance;
+		this.message  = message;
+		this.__gdiplusfontapp = owner.fontAppearance.gdiplus
+			if (                owner.fontAppearance.gdiplus !== void);
         
         // レイヤ初期化
         super.ButtonLayer(owner.window, owner.window.primaryLayer);
 
-        // 文字初期化
-        font.face   = owner.fontFace !== void ? owner.fontFace : owner.window.chDefaultFace;
-        font.bold   = owner.fontBold;
-        font.italic = owner.fontItalic;
-        font.height = owner.fontSize;
+		redraw();
+	}
+	function redraw() {
+		// 文字初期化
+		font.face   = owner.fontFace !== void ? owner.fontFace : owner.window.chDefaultFace;
+		font.bold   = owner.fontBold;
+		font.italic = owner.fontItalic;
+		font.height = owner.fontSize;
 
 		var hasimg = true;
 		with (owner) {
@@ -213,7 +217,7 @@ class SelectLayer {
 	var otherFontShadowColors = %[];
 
 	// for GDI+
-	var fontAppearance = %[];
+	var fontAppearance = %[ gdiplus:void, contexts:[] ];
 
     // 効果音
     var enterse;
@@ -334,7 +338,8 @@ class SelectLayer {
 	 * フォントの色を再設定
 	 */
 	function createFontColorList() {
-		var list = fontAppearance.contexts = [];
+		var list = fontAppearance.contexts;
+		list.clear();
 		for (var ted = 0; ted < 2; ted++) {
 			var col = (!ted || fontSelectedColor === void) ? fontColor : fontSelectedColor;
 			for (var sel = 0; sel < 4; sel++) list.add(%[
@@ -377,7 +382,6 @@ class SelectLayer {
 
 		// MessageLayer.drawTextToLayerに投げるためのhack
 		context.antialiased = true; //window.chDefaultAntialiased;
-		context.drawTextToLayerGdiPlus = (MessageLayer.drawTextToLayerGdiPlus incontextof context);
 		(MessageLayer.drawTextToLayer incontextof context)(lay, x, y, text, context.color);
 		invalidate context;
 	}
@@ -394,11 +398,13 @@ class SelectLayer {
         top    = 0;
         width  = window.primaryLayer.width;
         height = window.primaryLayer.height;
+		fontAppearance.gdiplus = new global.MessageLayer.GdiPlusFontApp() if (typeof global.Layer.drawPathString != "undefined");
     }
 
     function finalize() {
 		stopAction();
         clearButtons();
+		invalidate fontAppearance.gdiplus if (fontAppearance.gdiplus !== void);
     }
 
     /**
@@ -496,6 +502,14 @@ class SelectLayer {
         }
         selects.clear();
     }
+
+	/**
+	 * ボタン再描画
+	 */
+	function redrawButtons() {
+		for (var i = selects.count-1; i >= 0; i--)
+			selects[i].redraw();
+	}
 
     /**
      * 選択肢を追加

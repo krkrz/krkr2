@@ -406,6 +406,9 @@ function uiloadEntry(layer, names, dic, elm, table, evals, order)
 	table._reorder(layer, links);
 
 	uiloadEvals(layer, evals.base, dic, base);
+
+	if (typeof layer.clearRedrawTextState == "Object")
+		/**/   layer.clearRedrawTextState();
 }
 
 function uiloadGetRect(tag, result) {
@@ -489,6 +492,8 @@ function uiSetLayerOption(target) {
 	with (target) {
 		.setImageSize(.width, .height); // ボタン分を使わないのでサイズを縮める
 		.enabled = .focusable = false;
+		if (typeof .eventTransparent != "undefined") .eventTransparent = true;
+		else .hitType = htProvince;
 		if (typeof .linkNum != "undefined" && typeof .parent.links != "undefined")
 			.parent.links[.linkNum].type = .parent.ltLayer;
 	}
@@ -598,6 +603,8 @@ class uiEntrySystem extends uiEntryNormal {
 	function _order(num,max) { return max-num-1; }
 	function _preorder(layer) {}
 	function _reorder(layer, links) {}
+
+	function uiSetLayerOption(target) { return target; }
 }
 
 // uiload/uiloadSystem参照用インスタンスを生成

@@ -18,30 +18,28 @@ class EnvGraphicLayer extends GraphicLayerEx
 	var owner;
 	var ownerenv;
 
-	var originMode; // 原点モード
-	var viewOriginMode; // 表示原点モード
 	var xoffset; // 表示補正X
 	var yoffset; // 表示補正Y
 	var levelz;  // 表示用Z位置
 	var levelxoffset; // Z補正後の表示補正X
 	var levelyoffset; // Z補正後の表示補正Y
 
-	var xmax; // X方向最大値
-	var ymax; // Y方向最大値
-
 	var noshiftMode;  // シフト補正なし
 	var nocameraMode; // カメラ補正なし
-	
+
+	var originx;
+	var originy;
+
 	function EnvGraphicLayer(win, par, owner) {
 		this.owner = owner;
 		this.ownerenv  = owner.env;
 		super.GraphicLayerEx(win, par, owner.name, 0);
+		defaultAfx = "center";
+		defaultAfy = "center";
 		freeImage();
 		type = ltAlpha;
 		hitType = htMask;
 		hitThreshold = 256;
-		originMode     = owner.originMode;
-		viewOriginMode = owner.viewOriginMode;
 		noshiftMode   = owner.noshiftMode;
 		nocameraMode  = owner.nocameraMode | owner.noshiftMode;
 		levelz  = owner.levelz !== void ? owner.levelz : 100;
@@ -69,8 +67,8 @@ class EnvGraphicLayer extends GraphicLayerEx
 			levelyoffset = src.levelyoffset;
 			noshiftMode  = src.noshiftMode;
 			nocameraMode = src.nocameraMode;
-			originMode = src.originMode;
-			viewOriginMode = src.viewOriginMode;
+			originx = src.originx;
+			originy = src.originy;
 		}
 		super.assign(src);
 		assignVisibleState(src);
@@ -189,7 +187,7 @@ class EnvGraphicLayer extends GraphicLayerEx
 			recalcPosition();
 		}
 	}
-	
+
 	function setPos(left, top, width, height) {
 		this.width  = width if width !== void;
 		this.height = height if height !== void;
@@ -220,89 +218,22 @@ class EnvGraphicLayer extends GraphicLayerEx
 		}
 	}
 
-	property shiftx {
-		getter() {
-			switch (originMode) {
-			case 1:
-			case 7:
-			case 8:
-				return 0;
-			case 3:
-			case 4:
-			case 5:
-				return width;
-			default:
-				return (int)(width / 2);
-			}
-		}
-	}
-
-	property shifty {
-		getter() {
-			switch (originMode) {
-			case 1:
-			case 2:
-			case 3:
-				return 0;
-			case 5:
-			case 6:
-			case 7:
-				return height;
-			default:
-				return (int)(height / 2);
-			}
-		}
-	}
-
-	property originx {
-		getter() {
-			switch (viewOriginMode) {
-			case 1:
-			case 7:
-			case 8:
-				return 0;
-			case 3:
-			case 4:
-			case 5:
-				return ownerenv.xmax*2;
-				break;
-			default:
-				return ownerenv.xmax;
-			}
-		}
-	}
-
-	property originy {
-		getter() {
-			switch (viewOriginMode) {
-			case 1:
-			case 2:
-			case 3:
-				return 0;
-			case 5:
-			case 6:
-			case 7:
-				return ownerenv.ymax*2;
-				break;
-			default:
-				return ownerenv.ymax;
-			}
-		}
-	}
-	
 	/**
 	 * 配置位置調整
 	 */
 	function recalcPosition() {
-		//dm(name + ":位置再計算");
-		var cz = nocameraMode ? 1 : (real)ownerenv.cameraZoom / 100.0;
-		var cx = nocameraMode ? 0 : ownerenv.cameraX;
-		var cy = nocameraMode ? 0 : ownerenv.cameraY;
+		var cz = nocameraMode ? 1 : (real)ownerenv.camerazoom / 100.0;
+		var cx = nocameraMode ? 0 : ownerenv.camerax;
+		var cy = nocameraMode ? 0 : ownerenv.cameray;
 		var z  = nocameraMode ? 1 : +levelz / 100.0;
-		var sx = noshiftMode  ? 0 : ownerenv.shiftX;
-		var sy = noshiftMode  ? 0 : ownerenv.shiftY;
-		super.left = originx + (((xpos - cx) * z +(int)(xoffset * z)) + +levelxoffset) * cz - shiftx - sx;
-		super.top  = originy + (((ypos - cy) * z +(int)(yoffset * z)) + +levelyoffset) * cz - shifty - sy;
+		var sx = noshiftMode  ? 0 : ownerenv.shiftx;
+		var sy = noshiftMode  ? 0 : ownerenv.shifty;
+		//dm(name + ":位置情報:%d,%d pos:%d,%d cx:%d,%d%,%f z:%f sx:%d,%d af:%d,%d off:%d,%d loff:%d,%d".sprintf(originx, originy, xpos, ypos, cx, cy, cz, z, sx, sy, afx, afy, xoffset, yoffset, levelxoffset, levelyoffset));
+		var l = originx + (((xpos - cx) * z +(int)(xoffset * z)) + +levelxoffset) * cz - sx;
+		var t = originy + (((ypos - cy) * z +(int)(yoffset * z)) + +levelyoffset) * cz - sy;
+		//dm(name + ":位置再計算:" + l + "," + t);
+		super.left = l;
+		super.top  = t;
 		super.zoomx = __zoomx * cz;
 		super.zoomy = __zoomy * cz;
 	}
@@ -482,12 +413,74 @@ class KAGWorldPlugin extends KAGPlugin
     function KAGWorldPlugin(kag) {
         super.KAGPlugin();
         env = new KAGEnvironment(kag);
-    }
+
+        // KAG に自分をコマンドとして登録
+		kag.tagHandlers["env"]        = env.tagfunc;
+        kag.tagHandlers["allchar"]    = env.allchar;
+        kag.tagHandlers["alllayer"]   = env.alllayer;
+		kag.tagHandlers["allse"]      = env.allse;
+
+        kag.tagHandlers["begintrans"] = env.beginTrans;
+        kag.tagHandlers["endtrans"]   = env.endTrans;
+        kag.tagHandlers["newlay"]     = env.newLayer;
+        kag.tagHandlers["newlayer"]   = env.newLayer;
+        kag.tagHandlers["dellay"]     = env.delLayer;
+        kag.tagHandlers["dellayer"]   = env.delLayer;
+        kag.tagHandlers["newchar"]    = env.newCharacter;
+        kag.tagHandlers["delchar"]    = env.delCharacter;
+
+        kag.tagHandlers["msgoff"]     = env.msgoff;
+        kag.tagHandlers["msgon"]      = env.msgon;
+        kag.tagHandlers["clear"]      = env.clear;
+        
+        kag.tagHandlers["dispname"]        = env.dispname;
+        kag.tagHandlers["dispnameVoice"]   = env.dispnameVoice;
+        kag.tagHandlers["quake"]           = env.quake;
+        kag.tagHandlers["afterpage"]       = env.afterpage;
+        kag.tagHandlers["afterline"]       = env.afterline;
+
+		kag.tagHandlers["showvoiceinfo"]   = env.showVoiceInfo;
+		kag.tagHandlers["twait"]   = env.doTalkWait;
+		kag.tagHandlers["showtwait"]   = env.showTalkWait;
+
+		kag.tagHandlers["laytrans"]  = env.laytrans;
+		
+        // レイヤトランジション処理中は transMode を有効にしておく
+        kag.tagHandlers["ltbegin"] = function(elm) {
+            transMode = 2;
+            return kag.layerTransBegin(elm);
+        } incontextof env;
+        kag.tagHandlers["ltend"] = function(elm) {
+            transMode = 0;
+            return kag.layerTransEnd(elm);
+        } incontextof env;
+        
+        // 特殊ハンドラ登録
+		kag.unknownHandler     = env.unknown;
+		kag.seStopHandler      = env.onSeStop;
+		kag.stopActionHandler  = env.onStopAction;
+		kag.stopTransitionHandler = env.onStopTransition;
+		kag.syncHandler        = env.syncAll;
+		kag.clearLayersHandler = env.clearLayers;
+		kag.updateVoice        = env.updateVoice;
+	}
 
     function finalize() {
         if (env) {
+			if (kag.unknownHandler === env.unknown) {
+				kag.tagHandlers = void;
+			}
+			if (kag.seStopHandler== env.onSeStop) {
+				kag.seStopHandler          = void;
+			}
+			if (kag.stopActionHandler === env.onStopAction) {
+				kag.stopActionHandler = void;
+			}
+			if (kag.stopTransitionHandler === env.onStopTransition) {
+				kag.stopTransitionHandler = void;
+			}
             invalidate env;
-        }
+		}
     }
 
     function onStore(f, elm)

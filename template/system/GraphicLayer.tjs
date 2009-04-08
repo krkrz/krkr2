@@ -418,7 +418,7 @@ class BaseLayer extends GraphicLayer
 	{
 		// GraphicLayer.clearImage オーバーライド
 		super.clearImage(false);
-		setImageSize(window.scWidth, window.scHeight);
+		setImageSize(window.exWidth, window.exHeight);
 		setSizeToImageSize();
 		face = dfAlpha;
 		fillRect(0, 0, imageWidth, imageHeight, 0xff000000);
@@ -484,69 +484,109 @@ class BaseLayer extends GraphicLayer
 
 }
 
-class MovieControlLayer extends Layer {
+// レイヤ動画再生制御用
+class MovieControlLayer extends VideoOverlay {
 
+	var targetLayer; //< 動画表示用 
+	var alpha;       //< α動画か？
+	var status;      //< 再生ステータス
+	
 	var layers = [];
 	
 	function MovieControlLayer(window) {
-		super.Layer(window, window.primaryLayer);
+		super.VideoOverlay(window);
+		targetLayer = new Layer(window, window.primaryLayer);
+		mode = vomLayer;
+		layer1 = targetLayer;
+		status = "unload";
 	}
 
-	// レイヤ登録
-	function entry(layer) {
-		//dm("レイヤ登録:" + layer);
-		layers.remove(layer);
-		layers.add(layer);
-		layer.setImageSize(imageWidth, imageHeight);
-		layer.setSizeToImageSize();
-		layer.type = type;
-	}
-
-	// レイヤ解除
-	function leave(layer) {
-		//dm("レイヤ解除:" + layer);
-		layers.remove(layer);
-	}
-
-	// ムービー再生開始
-	function start(filename, alpha, loop, ovtype) {
-		openMovie(filename, alpha);
-		type = ovtype if (ovtype !== void);
-		startMovie(loop);
-		for (var i=0;i<layers.count;i++) with (layers[i]) {
-			.setImageSize(imageWidth, imageHeight);
-			.setSizeToImageSize();
-			var face = .face;
-			.face = dfBoth;
-			.fillRect(0, 0, imageWidth, imageHeight, 0);
-			.face = face;
-			.type = type;
-		}
-	}
-
-	// ムービー更新処理
-	function onUpdateMovie() {
-		//dm("ムービー制御:更新通知");
-		for (var i=0;i<layers.count;i++) {
-			layers[i].assignImagesForMovie(this);
-			//dm("更新:" + layers[i]);
-		}
-	}
-
-	// ムービー停止通知
-	function onStopMovie() {
-		//dm("ムービー制御:終了通知");
+	function clear() {
 		var layers2 = [];
 		layers2.assign(this.layers);
 		for (var i=0;i<layers2.count;i++) {
 			layers2[i].notifyStopMovie();
 		}
 	}
+
+	function finalize() {
+		clear();
+		layer1 = null;
+		invalidate targetLayer;
+	}
+
+	property isPlayingMovie {
+		getter() {
+			return status == "play" && layers.count > 0;
+		}
+	}
+
+	// レイヤ登録
+	function entry(layer) {
+		layers.remove(layer);
+		layers.add(layer);
+	}
+
+	// レイヤ解除
+	function leave(layer) {
+		layers.remove(layer);
+	}
+
+	/**
+	 * ムービー再生開始
+	 * @param filename ファイル名
+	 * @param alpha α動画扱い
+	 * @param loop ループ指定
+	 * @param ovtype 合成モード
+	 */
+	function start(filename, loop=false, alpha=0) {
+		this.alpha = alpha;
+		targetLayer.name = "動画:" + filename;
+		this.loop=loop;
+		open(filename);
+		play();
+	}
+
+	// 外部から停止
+	function stop() {
+		super.stop();
+		clear();
+	}
+	
+	// ムービー更新処理
+	function onFrameUpdate() {
+		//dm("更新:" + targetLayer.name);
+		switch (alpha) {
+		case 0:
+			targetLayer.fillAlpha();
+			break;
+		case 1:
+			targetLayer.height = targetLayer.imageHeight / 2;
+			targetLayer.copyBottomBlueToTopAlpha();
+			break;
+		case 2:
+			targetLayer.width = targetLayer.imageWidth / 2;
+			targetLayer.copyRightBlueToLeftAlpha();
+			break;
+		}
+		for (var i=0;i<layers.count;i++) {
+			layers[i].assignImagesForMovie(targetLayer);
+			layers[i].setSize(targetLayer.width, targetLayer.height);
+		}
+	}
+
+	// ステータス変更
+	function onStatusChanged(status) {
+		//dm("ステート:" + targetLayer.name + ":" + status);
+		if (this.status == "play" && status == "stop") {
+			clear();
+		}
+		this.status = status;
+	}
 };
 
 /**
- * AffineLayer 対応拡張処理
- * あとムービー再生機能対応
+ * AffineLayer 対応拡張処理＋ムービー再生機能対応
  */
 class GraphicLayerEx extends GraphicLayer {
 
@@ -556,15 +596,14 @@ class GraphicLayerEx extends GraphicLayer {
 
 	function finalize()
 	{
-		stopMovie();
 		window.stopAction(this);
+		stopRaster();
 		clearTile();
+		stopMovie();
 		super.finalize(...);
 	}
 
-	
-    function setOptions(elm) {
-		super.setOptions(elm);
+	function _setOptions(elm) {
         if(elm.type !== void)
         {
         	if(/^[0-9]+$/.test(elm.type))
@@ -572,46 +611,88 @@ class GraphicLayerEx extends GraphicLayer {
         	else
         		type	= global[elm.type];
         }
-        rotate = +elm.rotate if elm.rotate !== void;
-        zoomx  = +elm.zoomx  if elm.zoomx  !== void;
-		zoomy  = +elm.zoomy  if elm.zoomy  !== void;
-		zoom   = +elm.zoom   if elm.zoom   !== void;
-        afx    = elm.afx    if elm.afx    !== void;
-        afy    = elm.afy    if elm.afy    !== void;
-        if (elm.reset !== void && elm.reset) {
-            reset();
-        }
-		visvalue = +elm.visvalue if elm.visvalue !== void;
-		if (elm.tile !== void) {
-			setTileImage(elm.tile);
+		if (elm.reset !== void && elm.reset) {
+			reset();
+		} else {
+			afx = defaultAfx = elm.dafx    if elm.dafx    !== void;
+			afy = defaultAfy = elm.dafy    if elm.dafy    !== void;
+			afx    = elm.afx    if elm.afx    !== void;
+			afy    = elm.afy    if elm.afy    !== void;
+			if (elm.time !== void && elm.time > 0) {
+				if (elm.left !== void || elm.top !== void) {
+					setMove(elm.left !== void ? +elm.left : left,
+							elm.top !== void ? +elm.top : top,
+							+elm.time, +elm.accel, +elm.nowait);
+					// パラメータ反映させないため
+					delete elm.left if elm.left !== void;
+					delete elm.top  if elm.top  !== void;
+				}
+				if (elm.rotate !== void) {
+					setRotateTime(+elm.rotate, +elm.time, +elm.accel, +elm.nowait);
+				}
+				if (elm.zoom !== void) {
+					setZoomTime(+elm.zoom, +elm.time, +elm.accel, +elm.nowait);
+				} else {
+					if (elm.zoomx !== void) {
+						setZoomXTime(+elm.zoomx, +elm.time, +elm.accel, +elm.nowait);
+					}
+					if (elm.zoomy !== void) {
+						setZoomYTime(+elm.zoomy, +elm.time, +elm.accel, +elm.nowait);
+					}
+				}
+				if (elm.raster !== void) {
+					setRasterTime(+elm.raster, elm.rasterlines, elm.rastercycles, +elm.time, +elm.accel, +elm.nowait);
+				}
+				if (elm.tilex !== void || elm.tiley !== void) {
+					setTilePos(elm.tilex !== void ? +elm.tilex : tilex,
+							   elm.tiley !== void ? +elm.tiley : tiley,
+							   +elm.time, +elm.accel, +elm.nowait);
+				}
+			} else {
+				rotate = +elm.rotate if elm.rotate !== void;
+				if (elm.zoom !== void) {
+					zoom   = +elm.zoom   if elm.zoom   !== void;
+				} else {
+					zoomx  = +elm.zoomx  if elm.zoomx  !== void;
+					zoomy  = +elm.zoomy  if elm.zoomy  !== void;
+				}
+				raster = +elm.raster if elm.raster !== void;
+				rasterLines = +elm.rasterlines if elm.rasterlines !== void;
+				rasterCycle = +elm.rastercycle if elm.rastercycle !== void;
+				tilex = +elm.tilex if elm.tilex !== void;
+				tiley = +elm.tiley if elm.tiley !== void;
+			}
 		}
-		tilex = +elm.tilex if elm.tilex !== void;
-		tiley = +elm.tiley if elm.tiley !== void;
+		visvalue = +elm.visvalue if elm.visvalue !== void;
+	}
+	
+	
+    function setOptions(elm) {
+		var e = %[];
+		(Dictionary.assign incontextof e)(elm);
+		_setOptions(e);
+		super.setOptions(e);
 	}
 
 	function loadImages(elm)
 	{
+		stopRaster();
+		clearTile();
+		stopMovie();
 		super.loadImages(elm);
 		if (elm !== void) {
-	        if(elm.type !== void)
-	        {
-	        	if(/^[0-9]+$/.test(elm.type))
-	        		type	= +elm.type;
-	        	else
-	        		type	= global[elm.type];
-	        }
-			rotate = +elm.rotate if elm.rotate !== void;
-			zoomx  = +elm.zoomx  if elm.zoomx  !== void;
-			zoomy  = +elm.zoomy  if elm.zoomy  !== void;
-			zoom   = +elm.zoom   if elm.zoom   !== void;
-			afx    = elm.afx    if elm.afx    !== void;
-			afy    = elm.afy    if elm.afy    !== void;
-			visvalue = +elm.visvalue if elm.visvalue !== void;
-			if (elm.tile !== void) {
-				setTileImage(elm.tile);
+			if (elm.color === void && elm.storage === void) {
+				if (elm.tile !== void) {
+					if (elm.width !== void || elm.height !== void) {
+						layer.setSize(elm.width !== void ? +elm.width : width,
+									  elm.height !== void ? +elm.height : height);
+					}
+					setTileImage(elm.tile);
+				} else if (elm.movie !== void) {
+					startMovie(elm.movie, +elm.loop, +elm.alpha);
+				}
 			}
-			tilex = +elm.tilex if elm.tilex !== void;
-			tiley = +elm.tiley if elm.tiley !== void;
+			_setOptions(elm);
 		}
 	}
 	
@@ -619,8 +700,10 @@ class GraphicLayerEx extends GraphicLayer {
      * 継承して拡張。reset() させる
      */
 	function freeImage() {
-		super.freeImage(...);
+		stopRaster();
 		clearTile();
+		stopMovie();
+		super.freeImage(...);
 		reset();
     }
     
@@ -634,12 +717,21 @@ class GraphicLayerEx extends GraphicLayer {
 		dic.afy    = afy;
 		dic.hide   = hide;
 		dic.visvalue = visvalue;
-		dic.tileImage = tileImage;
-		dic.tilex = tilex;
-		dic.tiley = tiley;
+		if (tileImage !== void) {
+			dic.tileImage = tileImage;
+			dic.tilex = tilex;
+			dic.tiley = tiley;
+			dic.width = width;
+			dic.height = height;
+		}
+		if (movieFile !== void) {
+			dic.movieFile = movieFile;
+			dic.movieLoop = movieLoop;
+			dic.movieAlpha = movieAlpha;
+		}
 		if (_rasterStart !== void) {
-			dic.rasterMaxh = _rasterMaxh;
-			dic.rasterOmega = _rasterOmega;
+			dic.raster      = _raster;
+			dic.rasterLines = _rasterLines;
 			dic.rasterCycle = _rasterCycle;
 		}
 		return dic;
@@ -648,6 +740,8 @@ class GraphicLayerEx extends GraphicLayer {
 	function restore(dic)
 	{
 		stopRaster();
+		clearTile();
+		stopMovie();
 		super.restore(dic);
 		rotate = dic.rotate if dic.rotate !== void; 
 		zoomx  = dic.zoomx  if dic.zoomx  !== void;
@@ -656,17 +750,25 @@ class GraphicLayerEx extends GraphicLayer {
 		afy    = dic.afy    if dic.afy    !== void;
 		hide   = dic.hide   if dic.hide   !== void;
 		visvalue = dic.visvalue if dic.visvalue !== void;
-		clearTile();
 		if (dic.tileImage !== void) {
+			setSize(dic.width, dic.height);
 			try {
 				setTileImage(dic.tileImage);
 			} catch (e) {
 				dm("ロード時にタイル画像の読み込みに失敗しました:" + tileImage);
 			}
 			setTilePos(dic.tilex, dic.tiley);
+		} else if (dic.movieFile !== void) {
+			try {
+				startMovie(dic.movieFile, dic.loop, dic.alpha);
+			} catch (e) {
+				dm("ロード時に動画の読み込みに失敗しました:" + movieFile);
+			}
 		}
-		if (dic.rasterMaxh !== void && dic.rasterOmega !== void && dic.rasterCycle !== void) {
-			startRaster(dic.rasterMaxh, dic.rasterOmega, dic.rasterCycle);
+		if (dic.raster !== void) {
+			raster = dic.raster;
+			rasterLines = dic.rasterLines;
+			rasterCycle = dic.rasterCycle;
 		}
 	}
 
@@ -676,16 +778,21 @@ class GraphicLayerEx extends GraphicLayer {
 
 	// ムービー用情報
 	var movie;
+	var movieFile;
+	var movieLoop;
+	var movieAlpha;
 
 	/**
 	 * ムービー再生開始
 	 */
-	function startMovie(filename, alpha, loop, type) {
-		stopMovie();
-		//dm("ムービー開始");
+	function startMovie(filename, loop=false, alpha=false) {
+		//dm("ムービー開始 %s %d %d".sprintf(filename, loop, alpha));
+		movieFile = filename;
+		movieLoop = loop;
+		movieAlpha = alpha;
 		movie = window.getLayerMovie();
 		movie.entry(this);
-		movie.start(filename, alpha, loop, type);
+		movie.start(filename, loop, alpha);
 	}
 
 	/**
@@ -701,11 +808,19 @@ class GraphicLayerEx extends GraphicLayer {
 	 */
 	function stopMovie() {
 		if (movie !== void) {
-			//dm("ムービー停止");
+			//dm("ムービー停止:" + Scripts.getTraceString());
+			movieFile = void;
 			movie.leave(this);
 			movie = void;
 		}
 	}
+
+	function assignImagesForMovie(src) {
+		super.assignImages(src);
+		applyColorCorrection(this, Anim_loadParams);
+	}
+	
+	// -------------------------------------------------
 	
 	function assign(src)
 	{
@@ -713,16 +828,20 @@ class GraphicLayerEx extends GraphicLayer {
 		super.assign(src);
 		hide = src.hide;
 		visvalue = src.visvalue;
+		clearTile();
+		stopMovie();
 		// ムービー情報をコピー
 		if (src.movie !== void) {
+			movieFile = src.movieFile;
+			movieLoop = src.movieLoop;
+			movieAlpha = src.movieAlpha;
 			movie = src.movie;
 			movie.entry(this);
 		}
 		// タイル情報をコピー
-		clearTile();
 		if (src.tileImage !== void) {
 			setTileImage(src.tileImage);
-			updateTile();
+			setTilePos(src.tilex, src.tiley);
 		}
 		// アクションもコピー
 		window.copyAction(src, this, onActionCompleted);
@@ -788,7 +907,7 @@ class GraphicLayerEx extends GraphicLayer {
 			return _opacity;
 		}
 		setter(v) {
-			_opacity = v;
+			_opacity = v === void ? defaultOpacity : v;
 			var o = _opacity * _visvalue / 100;
 			super.opacity = o;
 			super.visible = o > 0;
@@ -836,13 +955,39 @@ class GraphicLayerEx extends GraphicLayer {
 	}
 
     /**
+	 * Xズーム量を指定する
+     * @param zoom 回転量
+     * @time 変更にかかる時間
+     */
+	function setZoomXTime(z, time, accel=0, nowait=false) {
+		if (time) {
+			beginAction(%[zoomx:%[handler:MoveAction, value:z, time:time, accel:accel, nowait:nowait]]);
+		} else {
+			zoomx = z;
+		}
+	}
+
+    /**
+	 * Xズーム量を指定する
+     * @param zoom 回転量
+     * @time 変更にかかる時間
+     */
+	function setZoomYTime(z, time, accel=0, nowait=false) {
+		if (time) {
+			beginAction(%[zoomy:%[handler:MoveAction, value:z, time:time, accel:accel, nowait:nowait]]);
+		} else {
+			zoom = z;
+		}
+	}
+	
+    /**
      * ラスタ量を指定する
 	 * @param raster 回転量
      * @time 変更にかかる時間
      */
 	function setRasterTime(r, lines, cycle, time, accel=0, nowait=false) {
-		rasterLines = lines if lines !== void;
-		rasterCycle = cycle if cycle !== void;
+		rasterLines = +lines if lines !== void;
+		rasterCycle = +cycle if cycle !== void;
 		if (time) {
 			beginAction(%[raster:%[handler:MoveAction, value:r, time:time, accel:accel, nowait:nowait]]);
 		} else {
@@ -881,6 +1026,8 @@ class GraphicLayerEx extends GraphicLayer {
 			tileLayer = void;
 			_doTile = false;
 		}
+		_tilex = 0;
+		_tiley = 0;
 	}
 	
 	// タイル画像
@@ -894,6 +1041,7 @@ class GraphicLayerEx extends GraphicLayer {
 				}
 				tileLayer.loadImages(tileImage);
 				tileLayer.setSizeToImageSize();
+				updateTile();
 			}
 		}
 	}
@@ -912,6 +1060,7 @@ class GraphicLayerEx extends GraphicLayer {
 	function onPaint() {
 		if (_doTile && tileLayer !== void) {
 			tileRect(0, 0, width, height, tileLayer, _tilex, _tiley);
+			applyColorCorrection(this, Anim_loadParams);
 			_doTile = false;
 		}
 		super.onPaint(...);
@@ -942,10 +1091,15 @@ class GraphicLayerEx extends GraphicLayer {
 	}
 
 	// タイル位置指定
-	function setTilePos(x, y) {
-		_tilex = x;
-		_tiley = y;
-		updateTile();
+	function setTilePos(x, y, time=0, accel=0, nowait=false) {
+		if (time > 0) {
+			beginAction(%[tilex:%[handler:MoveAction, value:x, time:time, accel:accel, nowait:nowait],
+					  tiley:%[handler:MoveAction, value:y, time:time, accel:accel, nowait:nowait]]);
+		} else {
+			_tilex = x;
+			_tiley = y;
+			updateTile();
+		}
 	}
 }
 

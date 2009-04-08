@@ -24,45 +24,43 @@ class Movie extends VideoOverlay
 		this.layerPage[1] = void;
 	}
 
-	function store()
-	{
-		var dic = %[];
+	function internalStore(dic) {
 		dic.mode = mode;
+
+		dic.visible = visible;
+		dic.loop = loop;
+		dic.frame = frame;
+
+		if( numberOfAudioStream > 0 ) {
+			dic.audioBalance = audioBalance;
+			dic.audioVolume = audioVolume;
+			dic.enabledAudioStream = enabledAudioStream;
+		}
+
+		// dic.playRate // 保持しない方が良い？
+		dic.segmentLoopStartFrame = segmentLoopStartFrame;
+		dic.segmentLoopEndFrame = segmentLoopEndFrame;
+		dic.periodEventFrame = periodEventFrame;
+
 		if( mode == vomLayer )
 		{
-			dic.visible = visible;
-			dic.loop = loop;
-			dic.frame = frame;
-
-			if( numberOfAudioStream > 0 ) {
-				dic.audioBalance = audioBalance;
-				dic.audioVolume = audioVolume;
-				dic.enabledAudioStream = enabledAudioStream;
-			}
-
-			// dic.playRate // 保持しない方が良い？
-			dic.segmentLoopStartFrame = segmentLoopStartFrame;
-			dic.segmentLoopEndFrame = segmentLoopEndFrame;
-			dic.periodEventFrame = periodEventFrame;
-
 			dic.layerNumber = [];
 			dic.layerNumber[0] = layerNumber[0];
 			dic.layerNumber[1] = layerNumber[1];
 			dic.layerPage = [];
 			dic.layerPage[0] = layerPage[0];
 			dic.layerPage[1] = layerPage[1];
-
-			dic.lastStatus = lastStatus;
-			dic.storageName = storageName;
 		}
-		return dic;
+
+		dic.lastStatus = lastStatus;
+		dic.storageName = storageName;
 	}
-	function restore(dic)
-	{
-		if( dic.mode == vomLayer )
+	function internalRestore(dic) {
+		mode = dic.mode;
+		loop = dic.loop;
+
+		if (mode == vomLayer)
 		{
-			mode = vomLayer;
-			loop = dic.loop;
 			layerNumber[0] = dic.layerNumber[0];
 			layerNumber[1] = dic.layerNumber[1];
 			layerPage[0] = dic.layerPage[0];
@@ -81,28 +79,40 @@ class Movie extends VideoOverlay
 				elm.page = dic.layerPage[1];
 				layer2 = owner.getLayerFromElm(elm);
 			}
-			if( dic.lastStatus != "unload" )
-			{
-				this.open( dic.storageName );
-				periodEventFrame = dic.periodEventFrame;	// この設定は必ずフレームより前に行うこと
-				if( dic.frame >= 0 )
-					frame = dic.frame;
+		}
+		if( dic.lastStatus != "unload" )
+		{
+			this.open( dic.storageName );
+			periodEventFrame = dic.periodEventFrame;	// この設定は必ずフレームより前に行うこと
+			if( dic.frame >= 0 )
+				frame = dic.frame;
 
-				if( numberOfAudioStream > 0 ) {
-					audioBalance = dic.audioBalance;
-					audioVolume = dic.audioVolume;
-					if( dic.enabledAudioStream >= 0 )
-					{
-						super.selectAudioStream( dic.enabledAudioStream );
-					}
-				}
-				super.setSegmentLoop( dic.segmentLoopStartFrame, dic.segmentLoopEndFrame );
-				if( dic.lastStatus == "pause" || dic.lastStatus == "play" )
+			if( numberOfAudioStream > 0 ) {
+				audioBalance = dic.audioBalance;
+				audioVolume = dic.audioVolume;
+				if( dic.enabledAudioStream >= 0 )
 				{
-					play();
+					super.selectAudioStream( dic.enabledAudioStream );
 				}
 			}
+			super.setSegmentLoop( dic.segmentLoopStartFrame, dic.segmentLoopEndFrame );
+			if( dic.lastStatus == "pause" || dic.lastStatus == "play" )
+			{
+				play();
+			}
 		}
+	}
+
+	function store()
+	{
+		var dic = %[];
+		dic.mode = mode;
+		internalStore(dic) if( mode == vomLayer );
+		return dic;
+	}
+	function restore(dic)
+	{
+		internalRestore(dic) if( dic.mode == vomLayer );
 	}
 
 	function finalize()
@@ -246,12 +256,23 @@ class Movie extends VideoOverlay
 		super.close();
 	}
 
+	var _left, _top, _offsetx, _offsety;
+	property offsetx { getter { return (mode == vomMixer || mode == vomOverlay) ? _offsetx : 0; } }
+	property offsety { getter { return (mode == vomMixer || mode == vomOverlay) ? _offsety : 0; } }
+	property left { getter { return _left; } setter(v) { super.left = (_left = v) + offsetx; } }
+	property top  { getter { return _top;  } setter(v) { super.top  = (_top  = v) + offsety; } }
+	function setBounds(x, y, w, h) {
+		return super.setBounds((_left=x) + offsetx, (_top=y) + offsety, w, h);
+	}
+
 	function setOptions(elm)
 	{
 		// elm からオプションを設定
 		visible = +elm.visible if elm.visible !== void;
 		var l = left, t = top, w = width, h = height;
 		var set = false;
+		(set = true, _offsetx = +elm.primox) if (elm.primox !== void);
+		(set = true, _offsety = +elm.primoy) if (elm.primoy !== void);
 		(set = true, l = +elm.left) if elm.left !== void;
 		(set = true, t = +elm.top) if elm.top !== void;
 		(set = true, w = +elm.width) if elm.width !== void;

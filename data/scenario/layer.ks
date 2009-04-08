@@ -10,7 +10,7 @@ KAGEX のレイヤ拡張機能のサンプルです。レイヤに対して回転・拡大縮小の制御ができま
 [l][r]
 
 [image layer=stage page=fore storage="bg01_01"  visible=true left=0 top=0]
-[image layer=0     page=fore storage="ch_0_0_1" visible=true left=300 top=50]
+[image layer=0     page=fore storage="ch_0_0_1" visible=true left=400 top=450 dafx=center dafy=center]
 [cm]
 
 スタート

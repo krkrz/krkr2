@@ -372,6 +372,7 @@ class PopupMenuWindow extends Window
 			copyMenu(item, src.children) if (hasCh);
 		}
 		// ‡”Ô‚ğİ’è
+		items.sort(function(a,b) { return a.src.index < b.src.index; }, true);
 		for (var i = 0; i < items.count; i++)
 			with (items[i]) .item.index = .src.index;
 

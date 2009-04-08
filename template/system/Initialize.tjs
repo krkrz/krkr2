@@ -326,8 +326,14 @@ KAGLoadScript("DefaultMover.tjs");
 KAGLoadScript("Action.tjs");
 KAGLoadScript("MainWindow.tjs");
 
-if(Storages.isExistentStorage("Override.tjs"))
+// ワールド拡張機能読み込み
+if (typeof global.worldEnabled == "undefined" || global.worldEnabled) {
+	KAGLoadScript("world.tjs");
+}
+
+if(Storages.isExistentStorage("Override.tjs")) {
 	KAGLoadScript("Override.tjs");
+}
 //if(Storages.isExistentStorage(System.exePath + "Override2.tjs"))
 //	KAGLoadScript(System.exePath + "Override2.tjs");
 
@@ -357,9 +363,18 @@ parseStartTick = System.getTickCount();
 */
 
 global.kag = new KAGWindow() if typeof global.kag == "undefined";
-
-
-
+	
+if (typeof global.KAGWorldPlugin != 'undefined') {
+	// ワールド拡張プラグイン
+	kag.addPlugin(global.world_object = new KAGWorldPlugin(kag));
+	if (kag.debugLevel >= tkdlSimple) {
+		dm("ワールド環境設定完了");
+	}
+	// 立ち絵表示確認用ウインドウ機能
+	if (debugWindowEnabled) {
+		KAGLoadScript('standview.tjs');
+	}
+}
 
 /*
 	グローバルから簡単にアクセスできるように、いくつかの

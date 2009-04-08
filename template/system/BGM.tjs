@@ -107,7 +107,7 @@ class KAGWaveSoundBuffer extends WaveSoundBuffer, KAGSoundBuffer
 	}
 
     function onLabel(label) {
-        owner.owner.onBGMLabel(label);
+        owner.onBGMLabel(label);
     }
 }
 

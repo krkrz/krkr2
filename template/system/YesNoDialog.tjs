@@ -43,11 +43,11 @@ class YesNoDialogWindow extends Window
 
 		// 拡大率の設定
 		if (kag.fullScreen) {
-			if (kag.innerWidth / kag.scWidth
-				< kag.innerHeight / kag.scHeight)
-				setZoom(kag.innerWidth, kag.scWidth);
+			if (kag.innerWidth / kag.pxWidth
+				< kag.innerHeight / kag.pxHeight)
+				setZoom(kag.innerWidth, kag.pxWidth);
 			else
-				setZoom(kag.innerHeight, kag.scHeight);
+				setZoom(kag.innerHeight, kag.pxHeight);
 		} else {
 		  setZoom(kag.zoomNumer, kag.zoomDenom);
 		}
@@ -61,34 +61,8 @@ class YesNoDialogWindow extends Window
 		primaryLayer.colorRect(0, 0, w, h, clBtnFace, 255);
 
 		// ウィンドウ位置の調整
-		if(global.Window.mainWindow !== null && global.Window.mainWindow isvalid)
-		{
-			var win = global.Window.mainWindow;
-			var x1, y1, x2, y2, monitor;
-
-			// モニタ情報の取得
-			if (typeof System.getMonitorInfo != "undefined") {
-				var info = System.getMonitorInfo(true, win);
-				monitor = info.work if (typeof info == "Object");
-			}
-			monitor = %[ x:0, y:0, w:System.screenWidth, h:System.screenHeight ] if (monitor === void);
-			with (monitor) x1=.x, y1=.y, x2=.w+x1, y2=.h+y1;
-
-			// ウィンドウの中央へ
-			var l = (win.width  - width )\2 + win.left;
-			var t = (win.height - height)\2 + win.top;
-
-			// モニタからはみ出ていたら内側へ移動
-			l = x2 - width  if (l + width  > x2);
-			t = y2 - height if (t + height > y2);
-			l = x1          if (l < x1);
-			t = y1          if (t < y1);
-			setPos(l, t);
-		}
-		else
-		{
-			setPos((System.screenWidth - width)>>1, (System.screenHeight - height)>>1);
-		}
+		var center = getParentWindowCenterPos(global.Window.mainWindow, width, height);
+		if (center !== void) setPos(center.x, center.y);
 
 		// メッセージの描画
 		primaryLayer.drawText((w - tw)>>1, 14, message, clBtnText);

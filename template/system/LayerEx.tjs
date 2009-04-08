@@ -181,13 +181,13 @@ Layer.fillOperateRect = function (left, top, width, height, color, mode)
     var lastface = face, lastha = holdAlpha;
     if(orgmodes[mode])
     {
-        fillLayer.fillRect(0, 0, tw, th, color | 0xFF000000);
-        opacity = (color >> 24) & 0xFF;
-        face	= dfOpaque;
-        holdAlpha	= true if !isPrimary;
+		fillLayer.fillRect(0, 0, tw, th, color | 0xFF000000);
+		opacity = (color >> 24) & 0xFF;
+		face	= dfOpaque;
     }
     else
         fillLayer.fillRect(0, 0, tw, th, color);
+	holdAlpha	= true if !isPrimary;
     var x = 0;
     var y = 0;
     while (y < height) {
@@ -200,4 +200,30 @@ Layer.fillOperateRect = function (left, top, width, height, color, mode)
         y += th;
     }
     face = lastface, holdAlpha = lastha;
+
+    // Œã•Ð•t‚¯
+    invalidate fillLayer;
 };
+/**
+ * piledCopy‚Ìoperate”Å
+ * @param dleft
+ * @param dtop
+ * @param src
+ * @param sleft
+ * @param stop
+ * @param swidth
+ * @param sheight
+ * @param mode
+ * @param opa
+ */
+Layer.piledOperateRect = function (dleft, dtop, src, sleft, stop, swidth, sheight, mode=omAuto, opa=255)
+{
+	var tempLayer = new global.Layer(window, this);
+	with (tempLayer) {
+		.setImageSize(swidth, sheight);
+		.piledCopy(0, 0, src, sleft, stop, swidth, sheight);
+		global.Layer.operateRect(dleft, dtop, tempLayer, 0, 0, swidth, sheight, mode, opa);
+	}
+	invalidate tempLayer;
+};
+

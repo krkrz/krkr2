@@ -221,3 +221,146 @@ function getExistImageName(storage)
 	}
 	return storage;
 }
+
+/**
+ * 禁則処理つき矩形範囲文字描画
+ * @param layer 描画するレイヤ
+ * @param text  描画するテキスト
+ * @param elm   その他情報
+ *        %[ x, y, w, h, // 描画範囲
+ *           linestep, // 行間
+ *           maxline, // 最大行数
+ *           halign, valign, // -1or省略時:左/上寄せ，0:センタリング，1:右/下寄せ
+ *           fontface, fontheight, fontbold, fontitalic, fontangle, // フォント属性
+ *           color, param // 色, drawText残り引数の配列
+ *           wwfollowing, wwleading, // 禁則文字
+ *           conttext, // 続き表記文字(省略時:"…")
+ *           nodraw, //trueなら描画しない（配列のみ返す）
+ *           drawtext, // 描画メソッド上書き
+ *           ];
+ * @return 分割したテキストのArray([ line1, line2, ... ])
+ */
+function drawTextKinsokuRect(layer, text, elm) {
+	if (text == "" || layer === void) return [];
+	var wwFollowing = "%),:;]}｡｣ﾞﾟ。，、．：；゛゜ヽヾゝゞ々’”）〕］｝〉》」』】°′″℃￠％‰　" +
+		/**/          "!.?､･ｧｨｩｪｫｬｭｮｯｰ・？！ーぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ";
+	var wwLeading   = "\\$([{｢‘“（〔［｛〈《「『【￥＄￡";
+
+	var font = layer.font;
+	var step, gtw = font.getTextWidth;
+	var w, h, cont = "…", maxline = 0;
+	with (elm) {
+		// 禁則文字
+		wwFollowing = .wwfollowing if (.wwfollowing !== void);
+		wwLeading   = .wwleading   if (.wwleading   !== void);
+		cont        = .conttext    if (.conttext    !== void);
+
+		// フォント更新
+		font.face   = .fontface   if (.fontface   !== void);
+		font.height = .fontheight if (.fontheight !== void);
+		font.bold   = .fontbold   if (.fontbold   !== void);
+		font.italic = .fontitalic if (.fontitalic !== void);
+		font.angle  = .fontangle  if (.fontangle  !== void);
+
+		step = (.linestep !== void) ? +.linestep : font.height;
+		w = .w;
+		h = .h;
+		maxline = +.maxline if (.maxline !== void);
+	}
+
+	var cur = "", lines = [], len = text.length;
+	for (var ch, i = 0, y = 0; i <= len; i++) {
+		if (i == len || gtw(cur + (ch = text.charAt(i))) >= w) {
+			var next = ch, cl;
+			// 行末禁則チェック
+			while ((cl = cur.length) > 0 &&
+				   wwLeading.indexOf((ch = cur.charAt(cl-1))) >= 0) {
+				next = ch + next;
+				cur  = cur.substr(0, cl-1);
+			}
+			// 最後の行の処理
+			if (y+step >= h || (maxline > 0 && maxline == lines.count+1)) {
+				if (i < len) {
+					while ((cl = cur.length) > 0 && gtw(cur + cont) >= w)
+						cur = cur.substr(0, cl-1);
+					lines.add(cur + cont);
+				} else
+					lines.add(cur);
+				break;
+			}
+			// 行頭禁則チェック
+			if (i < len) {
+				while ((cl = cur.length) > 0 &&
+					   wwFollowing.indexOf(next.charAt(0)) >= 0) {
+					next = cur.charAt(cl-1) + next;
+					cur  = cur.substr(0, cl-1);
+				}
+			}
+			lines.add(cur);
+			cur = next;
+			y += step;
+		} else cur += ch;
+	}
+	var lc = lines.count;
+	if (!elm.nodraw && lc > 0) {
+		var x, y, dt, color, param, valign, halign;
+		with (elm) {
+			color = .color;
+			param = (typeof .param == "Object") ? .param : [];
+			dt    = (typeof .drawtext == "Object") ? .drawtext
+				: function(self, *) { return drawText(*); } incontextof layer;
+			x = .x;
+			y = .y;
+			halign = (.halign !== void) ? +.halign : -1;
+			valign = (.valign !== void) ? +.valign : -1;
+			var th = (lc-1) * step + font.height;
+			switch  (valign) {
+			case  0: y += (h - th)\2; break;
+			case  1: y += (h - th);   break;
+			}
+		}
+		for (var i = 0; i < lc; i++, y+=step) {
+			var text = lines[i];
+			switch (halign) {
+			case -1: dt(layer, x,                     y, text, color, param*); break;
+			case  0: dt(layer, x + (w - gtw(text))\2, y, text, color, param*); break;
+			case  1: dt(layer, x + (w - gtw(text)),   y, text, color, param*); break;
+			}
+		}
+	}
+	return lines;
+}
+
+
+/**
+ * ウィンドウの中央位置を取得（ダイアログ用）
+ * @param  win 中央指定する親ウィンドウ(Windowオブジェクト以外なら画面中央)
+ * @param  w   表示するウィンドウの幅
+ * @param  h   表示するウィンドウの高さ
+ * @return %[ x, y ]
+ */
+function getParentWindowCenterPos(win, w, h)
+{
+	var x, y, x1, y1, x2, y2, monitor;
+	var iswin = (win && typeof win == "Object" && isvalid win && win instanceof "Window");
+
+	if (typeof System.getMonitorInfo != "undefined" && iswin) try {
+		var info = System.getMonitorInfo(true, win);
+		monitor = info.work if (typeof info == "Object");
+	} catch {}
+	monitor = %[ x:0, y:0, w:System.screenWidth, h:System.screenHeight ] if (monitor === void);
+	with (monitor) x1=.x, y1=.y, x2=.w+x1, y2=.h+y1;
+
+	if (iswin) with (win) {
+		x = ((.width  - w)\2) + .left;
+		y = ((.height - h)\2) + .top;
+	} else {
+		x =  (x1+x2   - w)\2;
+		y =  (y1+y2   - h)\2;
+	}
+	x = x2 - w if (x > x2 - w);
+	y = y2 - h if (y > y2 - h);
+	x = x1     if (x < x1);
+	y = y1     if (y < y1);
+	return %[ x:x, y:y ];
+}
