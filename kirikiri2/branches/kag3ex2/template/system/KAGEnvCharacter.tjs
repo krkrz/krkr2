@@ -341,7 +341,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     // 表情描画処理を行う
     var redrawFace;
 
-	function setRedrawFace() {
+	function setRedrawFace(elm) {
 		if (isShowFace() && (elm.faceon || env.showFaceMode) && !elm.faceoff) {
 			redrawFace = true;
 		}
@@ -387,7 +387,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 					setAutoTrans([info.trans, init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans]);
 					
 					// 表情表示取得
-					setRedrawFace();
+					setRedrawFace(elm);
 				}
 				// 服装初期化処理
 				if (dress !== void && (info.dresses == void || info.dresses[dress] == void)) {
@@ -416,7 +416,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			redraw = true;
 			setAutoTrans([init.dressTrans, init.charTrans, env.envinfo.dressTrans, env.envinfo.charTrans]);
 			// 表情表示取得
-			setRedrawFace();
+			setRedrawFace(elm);
 		}
 		image = void;
     }
@@ -430,7 +430,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			redraw = true;
 			setAutoTrans([init.faceTrans, init.charTrans, env.envinfo.faceTrans, env.envinfo.charTrans]);
 			// 表情表示取得
-			setRedrawFace();
+			setRedrawFace(elm);
 		}
 		image = void;
     }
