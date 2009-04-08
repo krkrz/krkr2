@@ -504,12 +504,13 @@ class AnimationLayer extends AffineLayer
 			fillRect(0, 0, +elm.width, +elm.height, (opac << 24) | +elm.color);
 		} else {
 			// 画像を読み込む
-			var taginfo = super.loadImages(elm.storage, elm.key);
-
-			// 画像のタグ情報をデフォルト値として採用
-			if(taginfo)	{
-				(Dictionary.assign incontextof taginfo)(elm, false);
-				elm = taginfo;
+			if (elm.storage !== void) {
+				var taginfo = super.loadImages(elm.storage, elm.key);
+				// 画像のタグ情報をデフォルト値として採用
+				if(taginfo)	{
+					(Dictionary.assign incontextof taginfo)(elm, false);
+					elm = taginfo;
+				}
 			}
 		}
 

@@ -87,19 +87,26 @@ class LinkButtonLayer extends ButtonLayer
         eventTransparent = src.eventTransparent;
 	}
 
+	function internalUpdateProperty() {
+		var en = super.enabled = getEnabled(_enabled);
+		if (en) {
+			hitType = _eventTransparent ? htProvince : htMask; 
+			// ボタン画像は領域画像は持っていないので
+			// hitType を htProvince にすると必ず
+			// マウスイベントを透過するようになる
+			super.focusable = _focusable;
+		} else {
+			hitType = htProvince;
+			super.focusable = false;
+		}
+	}
+
     property enabled {
         // 有効かどうか
         // 無効な場合はイベントを透過させる
         setter(x) {
 			_enabled = x;
-			var en = super.enabled = getEnabled(x);
-            if (en) {
-                hitType = _eventTransparent ? htProvince : htMask; 
-                super.focusable = _focusable;
-            } else {
-                hitType = htProvince;
-                super.focusable = false;
-            }
+			internalUpdateProperty();
         }
         getter() {
             return _enabled;
@@ -114,10 +121,7 @@ class LinkButtonLayer extends ButtonLayer
 			if(_eventTransparent != x)
 			{
 				_eventTransparent = x;
-				hitType = x ? htProvince : htMask; 
-					// ボタン画像は領域画像は持っていないので
-					// hitType を htProvince にすると必ず
-					// マウスイベントを透過するようになる
+				internalUpdateProperty();
 			}
 		}
 		getter()
@@ -131,8 +135,8 @@ class LinkButtonLayer extends ButtonLayer
 		// イベントを透過するかどうか
 		setter(x)
 		{
-            _focusable = x;
-            super.focusable = x && getEnabled(enabled);
+			_focusable = x;
+			internalUpdateProperty();
         }
         getter()
 		{
@@ -852,6 +856,7 @@ class MessageLayer extends AnimKAGLayer
         setter(v) {
             _visible = v;
             fadeDone();
+			storeRedrawTextState("setVisibleTime", v, 0);
         }
         getter() {
             return _visible;
@@ -892,6 +897,7 @@ class MessageLayer extends AnimKAGLayer
                 fadeDone();
             }
         } 
+		storeRedrawTextState("setVisibleTime", v, 0);
     }
 
     // 表示位置
@@ -1015,6 +1021,7 @@ class MessageLayer extends AnimKAGLayer
 
 	var lineLayer; // 行描画用のレイヤ
 	var textLayer; // テキストを保持するレイヤ(optional) ⇒ hasTextLayerプロパティを参照
+	/*C*/var redrawTextStates; // テキスト再描画用情報(optional) ⇒ redrawTextEnabled参照
 	/*C*/var lineLayerBase; // ベースライン(横書き:下線位置/縦書き:中央位置)
 	/*C*/var lineLayerPos; // lineLayer 中の文字表示位置
 	/*C*/var lineLayerLength; // lineLayer 中の文字幅
@@ -1517,6 +1524,8 @@ class MessageLayer extends AnimKAGLayer
         clearTimeout();
         clearClick();
         clearWheel();
+
+		clearRedrawTextState();
     }
 
 	function clear2(all=false)
@@ -1541,6 +1550,8 @@ class MessageLayer extends AnimKAGLayer
 		}
 		kinsokuCount = marginRCh;
 		initLineLayer();
+
+		clearRedrawTextState();
 	}
 
     function resetNameLayerFont() {
@@ -1553,6 +1564,7 @@ class MessageLayer extends AnimKAGLayer
     
 	function resetFont()
 	{
+		storeRedrawTextState("resetFont");
 		// フォントのリセット
 		sizeChanged = true;
 
@@ -1592,6 +1604,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setFont(elm)
 	{
+		storeRedrawTextState("setFont", elm);
 		// フォントの設定
 		sizeChanged = true;
 
@@ -1700,6 +1713,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setDefaultFont(elm)
 	{
+		storeRedrawTextState("setDefaultFont", elm);
 		// デフォルトフォントの設定
 		defaultFace = elm.face if elm.face !== void;
 		defaultAntialiased = +elm.antialiased if elm.antialiased !== void;
@@ -1716,6 +1730,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function resetStyle()
 	{
+		storeRedrawTextState("resetStyle");
 		// スタイルのリセット
 		reserveLineSize = defaultLineSize;
 		lineSpacing = defaultLineSpacing;
@@ -1728,6 +1743,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setStyle(elm)
 	{
+		storeRedrawTextState("setStyle", elm);
 		// スタイルの設定
 		if(elm.linespacing == 'default')
 			lineSpacing = defaultLineSpacing;
@@ -1776,6 +1792,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setDefaultStyle(elm)
 	{
+		storeRedrawTextState("setDefaultStyle", elm);
 		// デフォルトのスタイルの設定
 		defaultLineSpacing = +elm.linespacing if elm.linespacing !== void;
 		defaultPitch = +elm.pitch if elm.pitch !== void;
@@ -1866,6 +1883,7 @@ class MessageLayer extends AnimKAGLayer
 			}
 		}
 	}
+	// テキストレイヤをクリア
 	function clearTextLayer() {
 		if (hasTextLayer) with (textLayer) {
 			.face = dfAuto;
@@ -1882,6 +1900,40 @@ class MessageLayer extends AnimKAGLayer
 			.setImageSize(width, height);
 			.setSizeToImageSize();
 		}
+	}
+
+	// テキスト再描画機構オン・オフ
+	var     _redrawTextEnabled = false;
+	property redrawTextEnabled {
+		getter { return _redrawTextEnabled &&     redrawTextStates !==    void;      }
+		setter(v) {     _redrawTextEnabled = !!v; redrawTextStates = !v ? void : []; }
+	}
+	// テキストを再描画する
+	function redrawText() {
+		if (!redrawTextEnabled) return;
+		_redrawTextEnabled = false;
+		for (var i = 0, cnt = redrawTextStates.count; i < cnt; i++) {
+			var arr = [], orig = redrawTextStates[i];
+			arr.assign(orig);
+			arr.erase(0);
+			this[orig[0]](arr*);
+		}
+		_redrawTextEnabled = true;
+		window.setMenuAccessibleAll();
+	}
+	// テキスト再描画用情報を保存
+	function storeRedrawTextState(arr*) {
+		if (!redrawTextEnabled) return;
+		var store = [];
+		store.assignStruct(arr);
+		redrawTextStates.add(store);
+	}
+	// テキスト再描画用情報を初期化
+	function clearRedrawTextState() {
+		if (!redrawTextEnabled) return;
+		redrawTextStates.clear();
+		storeRedrawTextState("clear");
+		storeRedrawTextState("restore", store());
 	}
 
 	function fixLineLayer()
@@ -2152,6 +2204,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function processCh(ch)
 	{
+		storeRedrawTextState("processCh", ch);
 		// 文字 ch を描画する
 		// 改行が行われ、かつそれがページ末端を越える場合は true を返す
 		// それ以外は false
@@ -2262,66 +2315,90 @@ class MessageLayer extends AnimKAGLayer
 	}
 	function drawTextToLayer(lay, x, y, text, color) {
 		var dt = lay.drawText;
-		if (!vertical && edge && antialiased && typeof lay.drawString != "undefined") drawTextToLayerGdiPlus(...); // layerExDraw拡張
+		if (!vertical && edge && antialiased && typeof lay.drawPathString != "undefined") {
+			// layerExDraw拡張
+			var tag = "__gdiplusfontapp";
+			lay[tag] = new global.MessageLayer.GdiPlusFontApp() if (typeof lay[tag] == "undefined");
+			lay[tag].drawText(this, lay, x, y, text, color);
+		}
 		else if(edge)   dt(x, y, text, color, 255, antialiased, edgeEmphasis, edgeColor, edgeExtent, 0, 0);
 		else if(shadow) dt(x, y, text, color, 255, antialiased, 255, shadowColor, shadowWidth, shadowOffsetX, shadowOffsetY);
 		else            dt(x, y, text, color, 255, antialiased);
 	}
-	function drawTextToLayerGdiPlus(lay, x, y, text, color) {
-		if (typeof lay.__gdiplusfontapp == "undefined") {
-			/**/   lay.__gdiplusfontapp = %[
-			appCache: %[], fontCache: %[],
-			appTags: [ "edge",   "edgeColor",   "edgeExtent",
-					   "shadow", "shadowColor", "shadowWidth",
-					   "shadowOffsetX", "shadowOffsetY" ],
-			fontTags:[ "height", "bold", "italic", "strikeout", "underline" ],
-			getcolor: function (col, al=(col>>24)&0xFF) { return (al > 0) ? col : (0xFF000000 | col & 0x00FFFFFF);  },
-			check: function(base, list, dic) {
-				for (var tag, i = list.count-1; i >= 0; i--)
-					if ((tag = list[i]) != "" && dic[tag] !== base[tag]) return true;
-			},
-			update: function(base, list, dic) {
-				for (var tag, i = list.count-1; i >= 0; i--)
-					if ((tag = list[i]) != "") dic[tag] = base[tag];
-			} ];
+	class GdiPlusFontApp {
+		var gp = global.GdiPlus;
+		var padding = 0;
+		var appCache = %[], fontCache = %[];
+		var appTags = [ "edge",   "edgeColor",   "edgeExtent",
+						"shadow", "shadowColor", "shadowWidth",
+						"shadowOffsetX", "shadowOffsetY" ];
+		var fontTags = [ "height", "bold", "italic", "strikeout", "underline" ];
+		var penCaps = %[ /**/dashCap: gp.DashCapFlat,
+						 /**/startCap:gp.LineCapRound,
+						 /**/endCap:  gp.LineCapRound,
+						 /**/lineJoin:gp.LineJoinRound ];
+		var app, font, face, color;
+		function GdiPlusFontApp() { app  = new gp.Appearance(); }
+		function finalize()       { invalidate app; }
+		function getcolor(col, al=(col>>24)&0xFF) { return (al > 0) ? col : (0xFF000000 | col & 0x00FFFFFF);  }
+		function getpen(ext) { var ret = %[ width:ext ]; (Dictionary.assign incontextof ret)(penCaps, false); return ret; }
+		function check(base, tag) {
+			var list = this[tag + "Tags"], dic = this[tag + "Cache"];
+			for (var i = list.count-1; i >= 0; i--) if ((tag = list[i]) != "" && dic[tag] !== base[tag]) return true;
 		}
-		var info = lay.__gdiplusfontapp, lf = lay.font, gp = global.GdiPlus;
-		with (info) {
-			.app  = new gp.Appearance() if (typeof .app  == "undefined");
-			var app = .app;
-			if (.color !== color || .check(this, .appTags, .appCache)) {
-				.color  =  color,  .update(this, .appTags, .appCache);
+		function update(base, tag) {
+			var list = this[tag + "Tags"], dic = this[tag + "Cache"];
+			for (var i = list.count-1; i >= 0; i--) if ((tag = list[i]) != "") dic[tag] = base[tag];
+		}
+		function updateApp(base, col) { with (base) {
+			if (color !== col || check(base, "app")) {
+				color  =  col,  update(base, "app");
 				app.clear();
-				if (shadow) {
-					app.addPen(  .getcolor(shadowColor), shadowWidth, shadowOffsetX, shadowOffsetY) if (shadowWidth > 0);
-					app.addBrush(.getcolor(shadowColor),              shadowOffsetX, shadowOffsetY);
+				padding = .edge ? .edgeExtent : 0;
+				if (.shadow) {
+					app.addPen(  getcolor(.shadowColor), getpen(.shadowWidth), .shadowOffsetX, .shadowOffsetY) if (.shadowWidth > 0);
+					app.addBrush(getcolor(.shadowColor),                       .shadowOffsetX, .shadowOffsetY);
+					var ofs = Math.max(Math.abs(.shadowOffsetX), Math.abs(.shadowOffsetY));
+					padding = Math.max(padding, ofs + .shadowWidth);
 				}
-				app.addPen(      .getcolor(edgeColor  ), edgeExtent,  0, 0) if (edge);
-				app.addBrush(    .getcolor(color      ),              0, 0);
+				app.addPen(      getcolor(.edgeColor  ), getpen(.edgeExtent),  0, 0) if (.edge);
+				app.addBrush(    getcolor( col        ),                       0, 0);
+				padding++;
 			}
-			var noFont   = (typeof .font == "undefined");
-			var faceChgd = (.face !== lf.face);
-			if (noFont  || faceChgd || .check(lf, .fontTags, .fontCache)) {
-				.face = lf.face,      .update(lf, .fontTags, .fontCache);
-				var style = lf.bold ? gp.FontStyleBold : gp.FontStyleRegular;
-				style |= gp.FontStyleItalic    if (lf.italic);
-				style |= gp.FontStyleUnderline if (lf.underline);
-				style |= gp.FontStyleStrikeout if (lf.strikeout);
+		} }
+		function updateFont(lf) { with (lf) {
+			var noFont   = (font === void);
+			var faceChgd = (face !== .face);
+			if (noFont  || faceChgd || check(lf, "font")) {
+				face =    .face,      update(lf, "font");
+				var style = .bold ? gp.FontStyleBold : gp.FontStyleRegular;
+				style |= gp.FontStyleItalic    if (.italic);
+				style |= gp.FontStyleUnderline if (.underline);
+				style |= gp.FontStyleStrikeout if (.strikeout);
 				if (noFont) {
-					.font = new gp.Font(.face, lf.height, style);
+					font = new gp.Font(face, .height, style);
 				} else {
-					.font.familyName = .face if (faceChgd);
-					.font.emSize = lf.height;
-					.font.style  = style;
+					font.familyName = face if (faceChgd);
+					font.emSize = .height;
+					font.style  =  style;
 				}
 			}
+		} }
+		function drawText(base, lay, x, y, text, color) {
 			if (text == "") return;
-			var gtw=lf.getTextWidth, ds=lay.drawString;
-			var font=.font, fw=0, fh=.size, len=text.length;
+			var len = text.length;
+			var lf  = lay.font;
+			var gtw = lf.getTextWidth;
+			var ds  = lay.drawPathString;
+			updateApp(base, color);
+			updateFont(lf);
+			var fw = 0, fh = lf.height, sx = x;
 			for (var i = 0; i < len; i++, x+=fw) {
 				var ch = text.charAt(i);
 				ds(font, app, x-(fh*100/600)-((fw=gtw(ch))*10/600), y, ch);
 			}
+			// layerExDrawのupdate領域が狭い場合があるので手動で更新
+			lay.update(sx-padding, y-padding, (x-sx)+padding*2, fh+padding*2);
 		}
 	}
 
@@ -2449,6 +2526,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function putHorizonCh(text, expand = false)
 	{
+		storeRedrawTextState("putHorizonCh", text, expand);
 		// 縦中横を描画する
 		if(!vertical) throw new Exception("縦書きモードでないと使用できません");
 
@@ -2535,6 +2613,8 @@ class MessageLayer extends AnimKAGLayer
      * 名前の描画
      */
     function processName(text="") {
+		storeRedrawTextState("processName", text);
+		//
         if (nameLayer !== void) {
             nameLayer.processName(text);
         }
@@ -2627,6 +2707,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function beginHyperLink(elm)
 	{
+		storeRedrawTextState("beginHyperLink", elm);
 		// 普通のリンクを開始する
 		links[numLinks] = %[ // 辞書配列を作成
 			type :		ltNormal,
@@ -2651,6 +2732,8 @@ class MessageLayer extends AnimKAGLayer
 
 	function endHyperLink()
 	{
+		storeRedrawTextState("endHyperLink");
+		//
 		inLink = -1;
 		endLinkLine();
 		links[numLinks].lineCount--;
@@ -3086,14 +3169,13 @@ class MessageLayer extends AnimKAGLayer
         object.onclick = createSoundExpression(elm.exp, elm.clickse, elm.clicksebuf);
 		object.onenter = createSoundExpression(elm.onenter, elm.enterse, elm.entersebuf);
         object.onleave = createSoundExpression(elm.onleave, elm.leavese, elm.leavesebuf);
-        object.hitThreshold = (elm.recthit === void || +elm.recthit) ? 0 : 64;
-		object.hitType      = (!+elm.nohit) ? htMask : htProvince;
+		var islay = elm.class == "layer", en = true;
+        object.hitThreshold = (islay || elm.recthit === void || +elm.recthit) ? 0 : 64;
+		object.hitType      = (islay || !!+elm.nohit) ? htProvince : htMask;
 		object.absolute     = +elm.absolute if (elm.absolute !== void);
-        if (elm.enabled !== void) {
-            object.enabled = !!elm.enabled;
-        } else if (elm.disabled !== void && elm.disabled) {
-            object.enabled = false;
-        }
+		en = !!elm.enabled if (elm.enabled  !== void);
+		en = false         if (islay || (elm.disabled !== void && elm.disabled));
+		object.enabled = en;
         object.noStable = elm.nostable;
         buttons[object.name] = object;
 
@@ -3756,8 +3838,8 @@ class MessageLayer extends AnimKAGLayer
 					else
 						keyLink--;
 				}
-                dm("keyLink:" + keyLink);
-                dm("numLinks:" + numLinks);
+				//dm("keyLink:" + keyLink);
+				//dm("numLinks:" + numLinks);
                 keyLink = checkFocus(keyLink, direction ? 1 : -1);
 				var obj = setFocusToLink(keyLink);
 				if(obj !== void)
@@ -3773,6 +3855,8 @@ class MessageLayer extends AnimKAGLayer
 
 	function locate(newx, newy)
 	{
+		storeRedrawTextState("locate", newx, newy);
+		//
 		var dx = +newx + marginL - x;
 		var dy = +newy + marginT - y;
 
@@ -3809,6 +3893,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function processReturn()
 	{
+		storeRedrawTextState("processReturn");
 		// 改行を処理する
 		if(reline())
 		{
@@ -3819,6 +3904,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function processGraph(elm)
 	{
+		storeRedrawTextState("processGraph", elm);
 		// インライン画像を elm に従って表示する
 		var key = adjustColorKey(elm.key);
 		var char = true;
@@ -3829,6 +3915,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function setRuby(text)
 	{
+		storeRedrawTextState("setRuby", text);
 		// 次の文字に対するルビを設定する
 		currentRuby = text;
 	}
@@ -3897,12 +3984,14 @@ class MessageLayer extends AnimKAGLayer
 
 	function setIndent()
 	{
+		storeRedrawTextState("setIndent");
 		// インデントを現在位置に設定
 		if(vertical) indentxpos = y - marginT; else indentxpos = x - marginL;
 	}
 
 	function resetIndent()
 	{
+		storeRedrawTextState("resetIndent");
 		// インデントを解除
 		indentxpos = 0;
 	}
@@ -4182,6 +4271,13 @@ class MessageLayer extends AnimKAGLayer
 				to.visible = false;
 			}
 			buttons[name] = to;
+		}
+
+		// redrawTextStates用
+		if (src.redrawTextStates === void) redrawTextStates = void;
+		else {
+			redrawTextStates = [];
+			redrawTextStates.assign(src.redrawTextStates);
 		}
     }
 

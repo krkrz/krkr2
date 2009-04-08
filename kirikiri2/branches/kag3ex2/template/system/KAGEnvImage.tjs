@@ -1,3 +1,56 @@
+global.layerTypeMap = %[
+ltOpaque:ltOpaque,
+ltCoverRect:ltCoverRect,
+ltAlpha:ltAlpha,
+ltTransparent:ltTransparent,
+ltAddAlpha:ltAddAlpha,
+ltAdditive:ltAdditive,
+ltSubtractive:ltSubtractive,
+ltMultiplicative:ltMultiplicative,
+ltDodge:ltDodge,
+ltDarken:ltDarken,
+ltLighten:ltLighten,
+ltScreen:ltScreen,
+ltPsNormal:ltPsNormal,
+ltPsAdditive:ltPsAdditive,
+ltPsSubtractive:ltPsSubtractive,
+ltPsMultiplicative:ltPsMultiplicative,
+ltPsScreen:ltPsScreen,
+ltPsOverlay:ltPsOverlay,
+ltPsHardLight:ltPsHardLight,
+ltPsSoftLight:ltPsSoftLight,
+ltPsColorDodge:ltPsColorDodge,
+ltPsColorDodge5:ltPsColorDodge5,
+ltPsColorBurn:ltPsColorBurn,
+ltPsLighten:ltPsLighten,
+ltPsDarken:ltPsDarken,
+ltPsDifference:ltPsDifference,
+ltPsDifference5:ltPsDifference5,
+ltPsExclusion:ltPsExclusion,
+];
+
+/**
+ * type名の変換
+ */
+function convLayerType(t)
+{
+	switch (typeof t) {
+	case "String":
+		{
+			var info;
+			if ((info = imageTagLayerType[t]) !== void) {
+				return info.type;
+			} else if ((info = layerTypeMap[t]) !== void) {
+				return info;
+			}
+			return ltAlpha;
+		}
+		break;
+	default:
+		return t;
+	}
+}
+
 /**
  * 環境画像の基底クラス
  */
@@ -34,8 +87,10 @@ class KAGEnvImage {
 	}
 
 	// 表示処理用原点計算
-	var originMode = 9;
-	var viewOriginMode = 9;
+	var defaultAfx = "center";
+	var defaultAfy = "center";
+	var defaultOrx = "center";
+	var defaultOry = "center";
 
 	// カメラ制御用
 	var noshiftMode;
@@ -168,9 +223,6 @@ class KAGEnvImage {
 		}
 	}
 	
-    // 初期化処理
-    var resetFlag;
-
     /**
      * 時間用最初期化処理
      */
@@ -203,9 +255,9 @@ class KAGEnvImage {
         getter() {
             return _type;
         }
-        setter(v) {
-            _type = v;
-            doType = (v !== void);
+		setter(v) {
+			_type = convLayerType(v);
+			doType = true;
 			updateFlag = true;
         }
     }
@@ -219,15 +271,23 @@ class KAGEnvImage {
     var doOpacity;
     property opacity {
         getter() {
-            return _opacity;
+			return _opacity;
         }
         setter(v) {
             _opacity = v;
-            doOpacity = (v !== void);
+			doOpacity = true;
 			updateFlag = true;
         }
     }
 
+	function setOpacity(param, elm) {
+		opacityFrom = calcRelative(opacity, getFrom(param), 255);
+		opacity     = calcRelative(opacity, getTo(param), 255);
+		opacityTime = isSkip() ? 0 : +elm.time;
+        opacityAccel = +elm.accel;
+    };
+
+	
     // 回転
     var rotateFrom;
     var rotateTime;
@@ -240,12 +300,19 @@ class KAGEnvImage {
             return _rotate;
         }
         setter(v) {
-            _rotate = v;
-            doRotate = (v !== void);
+			_rotate = v;
+			doRotate = (v !== void);
 			updateFlag = true;
         }
     }
 
+	function setRotate(param, elm) {
+		rotateFrom = calcRelative(rotate, getFrom(param), 360);
+		rotate     = calcRelative(rotate, getTo(param), 360);
+		rotateTime = isSkip() ? 0 : +elm.time;
+		rotateAccel = +elm.accel;
+    }
+	
     // ズーム処理
     var zoomFrom;
     var zoomTime;
@@ -264,30 +331,122 @@ class KAGEnvImage {
         }
     }
 
+	function setZoom(param, elm) {
+        zoomFrom = calcRelative(zoom, getFrom(param), 100);
+        zoom     = calcRelative(zoom, getTo(param), 100);
+        zoomTime = isSkip() ? 0 : +elm.time;
+        zoomAccel = +elm.accel;
+    }
+
+	
     // 回転原点指定
-    var _afx;
-    var _afy;
-    var doAffine;
-    property afx {
-        getter() {
+	var _afx;
+	property afx {
+		getter() {
             return _afx;
         }
         setter(v) {
-            _afx = v;
-            doAffine = (v !== void);
-			updateFlag = true;
+			_afx = (v === void) ? defaultAfx : v;
+			reposition = true;
         }
     }
+	var _afy;
     property afy {
         getter() {
             return _afy;
         }
         setter(v) {
-            _afy = v;
-            doAffine = (v !== void);
-			updateFlag = true;
+			_afy = (v === void) ? defaultAfy : v;
+			reposition = true;
         }
     }
+
+	property originMode {
+		setter(param) {
+			switch (param) {
+			case 1: afx = "left"; afy = "top"; break;
+			case 2: afx = "center"; afy = "top"; break;
+			case 3: afx = "right"; afy = "top"; break;
+			case 4: afx = "right"; afy = "center"; break;
+			case 5: afx = "right"; afy = "bottom"; break;
+			case 6: afx = "center"; afy = "bottom"; break;
+			case 7: afx = "left"; afy = "bottom"; break;
+			case 8: afx = "left"; afy = "center"; break;
+			case 9: afx = "center"; afy = "center"; break;
+			default: afx = defaultAfx; afy = defaultAfy; break;
+			}
+		}
+	}
+
+	var _orx;
+	property orx {
+		getter() {
+			return _orx;
+		}
+		setter(v) {
+			if (typeof v == "String") {
+				if (v == "default" || v == "void") {
+					_orx = env.xmax;
+				} else if (v == "center") {
+					_orx = env.xmax;
+				} else if (v == "left" || v == "top") {
+					_orx = 0;
+				} else if (v == "right" || v == "bottom") {
+					_orx = env.xmax * 2;
+				} else {
+					_orx = +v;
+				}
+			} else if (typeof v == "void") {
+				_orx = env.xmax;
+			} else {
+				_orx = +v;
+			}
+			reposition = true;
+		}
+	}
+
+	var _ory;
+	property ory {
+		getter() {
+			return _ory;
+		} 
+		setter(v) {
+			if (typeof v == "String") {
+				if (v == "default" || v == "void") {
+					_ory = env.ymax;
+				} else if (v == "center") {
+					_ory = env.ymax;
+				} else if (v == "left" || v == "top") {
+					_ory = 0;
+				} else if (v == "right" || v == "bottom") {
+					_ory = env.ymax * 2;
+				} else {
+					_ory = +v;
+				}
+			} else if (typeof v == "void") {
+				_ory = env.ymax;
+			} else {
+				_ory = +v;
+			}
+			reposition = true;
+		}
+	}
+	
+	property viewOriginMode {
+		setter(param) {
+			switch (param) {
+			case 1: orx = "left"; ory = "top"; break;
+			case 2: orx = "center"; ory = "top"; break;
+			case 3: orx = "right"; ory = "top"; break;
+			case 4: orx = "right"; ory = "center"; break;
+			case 5: orx = "right"; ory = "bottom"; break;
+			case 6: orx = "center"; ory = "bottom"; break;
+			case 7: orx = "left"; ory = "bottom"; break;
+			case 8: orx = "left"; ory = "center"; break;
+			default: orx = "center"; ory = "center"; break;
+			}
+		}
+	}
 
 	// ラスター処理
 	var rasterFrom;
@@ -308,7 +467,16 @@ class KAGEnvImage {
 			updateFlag = true;
         }
     }
-	
+
+	function setRaster(param, elm) {
+		rasterFrom = calcRelative(raster, getFrom(param), 100);
+		raster     = calcRelative(raster, getTo(param), 100);
+		rasterTime = isSkip() ? 0 : +elm.time;
+		rasterAccel = +elm.accel;
+		rasterLines = elm.rasterlines;
+		rasterCycle = elm.rastercycle;
+	}
+
     // 表示位置座標
     var xpos;
     var ypos;
@@ -429,18 +597,51 @@ class KAGEnvImage {
             }
         }
     }
+
+	// フィルタ加工処理
+	var _filter;
+	property filter {
+		getter() {
+			return _filter;
+		}
+		setter(v) {
+			_filter = v !== void && (typeof v == "String" && v.length > 0) ? v : void;
+			redraw = true;
+		}
+	}
+	
+	// 配置状態の初期化
+	// xpos, ypos, afx, afy, rotate, zoom, raster を初期化
+	function resetPos(param, elm) {
+		if (moveTime === void) {
+			moveTime  = elm.time;
+			moveAccel = elm.accel;
+			moveNowait = elm.nowait;
+		}
+		xpos = 0;
+		ypos = 0;
+		afx = defaultAfx;
+		afy = defaultAfy;
+		setRotate(0, elm);
+		setZoom(100, elm);
+		setRaster(0, elm);
+	}
 	
 	// 色状態の初期化
-    function resetColor(param, elm) {
+	// type, opacity, gamma, grayscale, blurx, blury を初期化
+	function resetColor(param, elm) {
+		type = ltAlpha;
+		setOpacity(255, elm);
 		_grayscale = void;
 		_rgamma = void;
-        _ggamma = void;
+		_ggamma = void;
 		_bgamma = void;
 		_blurx  = void;
 		_blury  = void;
-        if (!env.colorall) {
-            redraw = true;
-        }
+		_filter = void;
+		if (!env.colorall) {
+			redraw = true;
+		}
     }
     
     // フェード指定のデフォルト値
@@ -460,16 +661,24 @@ class KAGEnvImage {
 		actionList = new Array();
 		currentActionList = new Array();
 		_disp = CLEAR;
-    }
+		afx = defaultAfx;
+		afy = defaultAfy;
+		orx = defaultOrx;
+		ory = defaultOry;
+	}
 
 	function initImage() {
-        type = void;
-        opacityFrom = void;
+		type = ltAlpha;
+		opacityFrom = void;
         opacityTime = void;
         opacityAccel = void;
 		opacityNowait = void;
-        opacity = void;
-        rotateFrom = void;
+		opacity = void;
+		afx = defaultAfx;
+		afy = defaultAfy;
+		orx = defaultOrx;
+		ory = defaultOry;
+		rotateFrom = void;
         rotateTime = void;
         rotateAccel = void;
 		rotateNowait = void;
@@ -479,9 +688,7 @@ class KAGEnvImage {
         zoomAccel = void;
 		zoomNowait = void;
         zoom = void;
-        afx = void;
-        afy = void;
-        rasterFrom = void;
+		rasterFrom = void;
         rasterTime = void;
         rasterAccel = void;
 		rasterNowait = void;
@@ -503,11 +710,15 @@ class KAGEnvImage {
 		_grayscale = void;
 		_blurx = void;
 		_blury = void;
+		_filter = void;
         
-        resetFlag = false;
-        actionList.clear();
+		actionList.clear();
 		currentActionList.clear();
-        _disp = CLEAR;
+		_disp = CLEAR;
+		if (targetLayer) {
+			invalidate targetLayer;
+			targetLayer = void;
+		}
     }
 
 	/**
@@ -515,13 +726,13 @@ class KAGEnvImage {
 	 * @param elm パラメータ指定
 	 */
 	function initFile(elm) {
-		if (elm.type === void) type = void;
-		if (elm.opacity === void) opacity = void;
-		if (elm.rotate === void) rotate = void;
-		if (elm.zoom === void) zoom = void;
-		if (elm.raster === void) raster = void;
-		if (elm.afx === void) afx = void;
-		if (elm.afy === void) afy = void;
+		if (elm.type === void) type = ltAlpha;
+		if (elm.opacity === void) opacity = 255;
+		if (elm.rotate === void) rotate = 0;
+		if (elm.zoom === void) zoom = 100;
+		if (elm.raster === void) raster = 0;
+		if (elm.afx === void) afx = defaultAfx;
+		if (elm.afy === void) afy = defaultAfy;
 		clearAction(true);
 	}
 	
@@ -672,7 +883,8 @@ class KAGEnvImage {
 				// パラメータのコピー
 				if (over !== void) {
 					foreach(over, function(name, value, over, action) {
-						if (actionParam[name] !== void) {
+						if (actionParam[name] !== void && value !== void) {
+							//dm("パラメータ上書き:" + name + ":" + value);
 							action[name] = value;
 						}
 					}, action);
@@ -705,6 +917,62 @@ class KAGEnvImage {
 		}
 		return action;
 	}
+
+	/**
+	 * アクション情報生成
+	 * @param name アクション名
+	 * @param elm 追加パラメータ
+	 */
+	function createAction(name, elm) {
+		var info;
+		if ((info = env.actions[name]) !== void) {
+			if (info instanceof "Dictionary") {
+				return copyActionInfo(info, info.time, elm);
+			} else if (info instanceof "Array") {
+				//dm("配列アクション:" + name);
+				var arrayAction = [];
+				for (var i=0;i<info.count;i++) {
+					var i = info[i];
+					if (typeof i == "String") {
+						// 文字列の場合再帰的に参照
+						i = env.actions[i];
+					}
+					if (i !== void && i instanceof "Dictionary") {
+						var action = copyActionInfo(i, i.time, elm);
+						arrayAction.add(action);
+					}
+				}
+				return arrayAction;
+			} else {
+				name = info;
+			}
+		}
+		// 個別記述
+		if (elm !== void && name.substring(0,5) == "Layer") {
+			var moduleType;
+			if (typeof global[name] != "undefined") {
+				moduleType = global[name];
+				if (typeof moduleType == "Object") {
+					// アクションモジュール名の場合
+					var action = %[];
+					foreach(elm, function(name, value, elm, action) {
+						if (actionParam[name] !== void) {
+							action[name] = value;
+						}
+					}, action);
+					action.module = name;
+					action.time   = +elm.time   if elm.time !== void;
+					action.delay  = +elm.delay  if elm.time !== void;
+					action.nowait = +elm.nowait if elm.nowait !== void;
+					return action;
+				} else {
+					kag.errorCmd("不明なレイヤアクション指定:" + name);
+				}
+			} else {
+				kag.errorCmd("不明なレイヤアクション指定:" + name);
+			}
+		}
+	}
 	
     /**
      * アクションを設定
@@ -713,63 +981,16 @@ class KAGEnvImage {
      */
 	function setAction(name, elm) {
 		if (env.actions !== void) {
-			var info;
-			if ((info = env.actions[name]) !== void) {
-				if (info instanceof "Dictionary") {
-					var action = copyActionInfo(info, info.time, elm);
-					if (action.module !== void && action.module == "") {
-						//dm("アクション停止処理:" + name);
-						stopAction(true);
-					} else {
-						addAction(action);
-					}
-					return true;
-				} else if (info instanceof "Array") {
-					//dm("配列アクション:" + name);
-					var arrayAction = [];
-					for (var i=0;i<info.count;i++) {
-						var i = info[i];
-						if (typeof i == "String") {
-							// 文字列の場合再帰的に参照
-							i = env.actions[i];
-						}
-						if (i !== void && i instanceof "Dictionary") {
-							var action = copyActionInfo(i, i.time, elm);
-							arrayAction.add(action);
-						}
-					}
-					addAction(arrayAction);
-					return true;
-                }
-                return false;
-            }
-			// 個別記述
-			if (elm !== void && name.substring(0,5) == "Layer") {
-				var moduleType;
-				if (typeof global[name] != "undefined") {
-					moduleType = global[name];
-					if (typeof moduleType == "Object") {
-						// アクションモジュール名の場合
-						var action = %[];
-						foreach(elm, function(name, value, elm, action) {
-							if (actionParam[name] !== void) {
-								action[name] = value;
-							}
-						}, action);
-						action.module = name;
-						action.time   = +elm.time   if elm.time !== void;
-						action.delay  = +elm.delay  if elm.time !== void;
-						action.nowait = +elm.nowait if elm.nowait !== void;
-						addAction(action);
-						return true;
-					} else {
-						kag.errorCmd("不明なレイヤアクション指定:" + name);
-					}
+			var action = createAction(name, elm);
+			if (action !== void) {
+				if (action instanceof "Dictionary" && action.module == "") {
+					stopAction(true);
 				} else {
-					kag.errorCmd("不明なレイヤアクション指定:" + name);
+					addAction(action);
 				}
+				return true;
 			}
-        }
+		}
         return false;
     }
 
@@ -853,7 +1074,7 @@ class KAGEnvImage {
 			if (param !== void) {
 				if (typeof param == "String") {
 					var tr = getTrans(param);
-					if (tr !== void && tr.method != void) {
+					if (tr !== void) {
 						autoTrans = tr;
 						//dm("自動トランジション指定:" + tr.method + ":" + tr.time);
 						return;
@@ -879,38 +1100,12 @@ class KAGEnvImage {
 	 * 状態更新処理
      */
 	function updateLayer(layer) {
-		
-		if (resetFlag) {
-			layer.visible = isShowBU();
-			layer.reset();
-            _type    = void;
-			_opacity = void;
-			_rotate = void;
-			_zoom = void;
-			_raster = void;
-			_afx = void;
-            _afy = void;
-			clearAction(true);
-			_rgamma = void;
-			_ggamma = void;
-			_bgamma = void;
-            _grayscale = void;
-			_blurx = void;
-			_blury = void;
-			resetFlag = false;
-		}
-
 		if (doShow) {
 			layer.visible = isShowBU();
 			doShow = false;
 		}
-		if (doAffine) {
-			layer.afx = afx;
-			layer.afy = afy;
-			doAffine = false;
-		}
 		if (doOpacity) {
-			//dm("透明度変更:" + opacity + ":" + opacityTime); 
+			//dm("透明度変更:" + layer.opacity + "to :" + opacity + ":" + opacityTime); 
 			if (opacityFrom !== void) {
 				layer.opacity = opacityFrom;
 				opacityFrom = void;
@@ -919,7 +1114,7 @@ class KAGEnvImage {
 			doOpacity = false;
 		}
 		if (doRotate) {
-			//dm("回転変更:" + rotate + ":" + rotateTime);
+			//dm("回転変更:" + layer.rotate + " to:" + rotate + ":" + rotateTime);
 			if (rotateFrom !== void) {
 				layer.rotate = rotateFrom;
 				rotateFrom = void;
@@ -928,7 +1123,7 @@ class KAGEnvImage {
 			doRotate = false;
 		}
 		if (doZoom) {
-			//dm("ズーム変更:" + zoom + ":" + zoomTime);
+			//dm("ズーム変更:" + layer.zoom + " to:" + zoom + ":" + zoomTime);
 			if (zoomFrom !== void) {
 				layer.zoom = zoomFrom;
 				zoomFrom = void;
@@ -937,7 +1132,7 @@ class KAGEnvImage {
 			doZoom = false;
 		}
 		if (doRaster) {
-			//dm("ズーム変更:" + zoom + ":" + zoomTime);
+			//dm("ラスター変更:" + layer.raster + " to:" + raster + ":" + rasterTime);
 			if (rasterFrom !== void) {
 				layer.raster = rasterFrom;
 				rasterFrom = void;
@@ -947,7 +1142,7 @@ class KAGEnvImage {
 		}
 
 		if (doType) {
-			//dm("合成種別変更");
+			//dm("合成種別変更:" + type);
 			layer.type = type;
 			doType = false;
 		}
@@ -961,7 +1156,6 @@ class KAGEnvImage {
 			//dm("アクション適用開始:" + actionList.count);
 			for (var i=0;i<actionList.count;i++) {
 				var action = actionList[i];
-				dm("アクション開始:" + typeof action + ":" + action);
 				layer.beginAction(action);
 				// 実行中アクションの記録（保存用）
 				if (action instanceof "Dictionary") {
@@ -1054,48 +1248,40 @@ class KAGEnvImage {
     var commands = %[
     tagname : null, 
     time : null,
-    type : function(param, elm) {
-        type =  global[param];
-    } incontextof this,
-    opacity : function(param, elm) {
-		opacityFrom = calcRelative(opacity, getFrom(param), 100);
-        opacity     = calcRelative(opacity, getTo(param), 100);
-        opacityTime = isSkip() ? 0 : +elm.time;
-        opacityAccel = +elm.accel;
-    } incontextof this,
-    rotate : function(param, elm) {
-        rotateFrom = calcRelative(rotate, getFrom(param), 360);
-        rotate     = calcRelative(rotate, getTo(param), 360);
-        rotateTime = isSkip() ? 0 : +elm.time;
-        rotateAccel = +elm.accel;
-    } incontextof this,
-	zoom : function(param, elm) {
-        zoomFrom = calcRelative(zoom, getFrom(param), 100);
-        zoom     = calcRelative(zoom, getTo(param), 100);
-        zoomTime = isSkip() ? 0 : +elm.time;
-        zoomAccel = +elm.accel;
-    } incontextof this,
+	type : function(param, elm) {
+		type =  param;
+	} incontextof this,
+    opacity : setOpacity incontextof this,
+    rotate : setRotate incontextof this,
+	zoom : setZoom incontextof this,
     afx : function(param, elm) {
-        afx = param;
+		afx = param;
     } incontextof this,
     afy : function(param, elm) {
         afy = param;
     } incontextof this,
-	raster : function(param, elm) {
-		rasterFrom = calcRelative(raster, getFrom(param), 100);
-        raster     = calcRelative(raster, getTo(param), 100);
-        rasterTime = isSkip() ? 0 : +elm.time;
-		rasterAccel = +elm.accel;
-		rasterLines = elm.rasterlines;
-		rasterCycle = elm.rastercycle;
+	origin : function(cmd,elm) {
+		originMode = +cmd;
+	} incontextof this,
+    orx : function(param, elm) {
+		afx = param;
     } incontextof this,
+    ory : function(param, elm) {
+        afy = param;
+    } incontextof this,
+	vorigin : function(cmd,elm) {
+		viewOriginMode = +cmd;
+	} incontextof this,
+	raster : setRaster incontextof this,
 	rasterlines : null,
 	rastercycle : null,
     reset : function(param, elm) {
-		resetFlag = true;
-		updateFlag = true;
+		resetColor(param, elm);
+		resetPos(param, elm);
     } incontextof this,
-    grayscale : function(param, elm) {
+	resetpos : this.resetPos incontextof this,
+	resetcolor : this.resetColor incontextof this,
+	grayscale : function(param, elm) {
         grayscale = param;
     } incontextof this,
     rgamma : function(param, elm) {
@@ -1116,18 +1302,18 @@ class KAGEnvImage {
 	blur : function(param, elm) {
 		blurx = blury = param;
     } incontextof this,
-    resetcolor : this.resetColor incontextof this,
+	filter : function(param, elm) {
+		filter = param;
+    } incontextof this,
     action : setAction incontextof this,
     stopaction : stopAction incontextof this,
-	stoptrans : function(param) { stopTransition(true); } incontextof this,
 	xpos : this.setXPos incontextof this,
 	ypos : this.setYPos incontextof this,
-	origin : function(cmd,elm) { originMode = +cmd; reposition = true; } incontextof this,
-    vorigin : function(cmd,elm) { viewOriginMode = +cmd; reposition = true; } incontextof this,
 	noshift : function(cmd,elm) { noshiftMode = +cmd; } incontextof this,
 	nocamera : function(cmd,elm) { nocameraMode = +cmd; } incontextof this,
 	trans : this.setTrans incontextof this,
 	notrans : function(param) { trans = %[]; } incontextof this,
+	stoptrans : function(param) { stopTransition(true); } incontextof this,
 	show : function(param) { disp = SHOW; },
 	hide : function(param) { disp = CLEAR; },
 	accel : null, // 無視
@@ -1177,7 +1363,9 @@ class KAGEnvImage {
         f.zoom    = zoom;
 		f.afx     = afx;
 		f.afy     = afy;
-        f.raster  = raster;
+		f.orx     = orx;
+		f.ory     = ory;
+		f.raster  = raster;
         f.xpos    = xpos;
         f.ypos    = ypos;
         f.disp    = disp;
@@ -1193,10 +1381,9 @@ class KAGEnvImage {
         f.bgamma    = _bgamma;
 		f.blurx     = _blurx;
 		f.blury     = _blury;
+		f.filter    = _filter;
 
 		f.absolute = absolute;
-		f.originMode = originMode;
-        f.viewOriginMode = viewOriginMode;
 	}
 
     /**
@@ -1226,6 +1413,8 @@ class KAGEnvImage {
 		rasterCycle   = void;
 		afx         = f.afx;
 		afy         = f.afy;
+		orx         = f.orx;
+		ory         = f.ory;
 		if (f.actionList !== void) {
 			for (var i=0;i<f.actionList.count;i++) {
 				addAction(f.actionList[i]);
@@ -1251,19 +1440,87 @@ class KAGEnvImage {
         _bgamma    = f.bgamma;
 		_blurx     = f.blurx;
 		_blury     = f.blury;
-		if (_grayscale != void ||
-            _rgamma    != void ||
-			_ggamma    != void ||
-			_bgamma    != void ||
-			_blurx     != void ||
-			_blury     != void) {
+		_filter    = f.filter;
+		if (_grayscale !== void ||
+			_rgamma    !== void ||
+			_ggamma    !== void ||
+			_bgamma    !== void ||
+			_blurx     !== void ||
+			_blury     !== void ||
+			_filter    !== void) {
             redraw = true;
         }
 
 		absolute = f.absolute;
-		originMode = f.originMode;
-        viewOriginMode = f.viewOriginMode;
 	}
+
+	/**
+	 * 複製処理
+	 * 描画内容だけ複製する
+	 * absolute は変更しない
+	 */	
+	function copy(orig) {
+
+		type        = orig.type;
+		opacity     = orig.opacity;
+        opacityFrom = void;
+        opacityTime = void;
+        opacityAccel = void;
+        rotate      = orig.rotate;
+        rotateFrom  = void;
+        rotateTime  = void;
+        rotateAccel = void;
+        zoom        = orig.zoom;
+        zoomFrom    = void;
+        zoomTime    = void;
+        zoomAccel   = void;
+		raster      = orig.raster;
+        rasterFrom    = void;
+        rasterTime    = void;
+		rasterAccel   = void;
+		rasterLines   = void;
+		rasterCycle   = void;
+		afx         = orig.afx;
+		afy         = orig.afy;
+		orx         = orig.orx;
+		ory         = orig.ory;
+		if (orig.actionList !== void) {
+			for (var i=0;i<orig.actionList.count;i++) {
+				addAction(orig.actionList[i]);
+				//dm("アクション復帰:" + orig.actionList[i].handler);
+            }
+        }
+		disp      = orig.disp;
+		xpos      = orig.xpos;
+		xposFrom  = void;
+        ypos      = orig.ypos;
+        yposFrom  = void;
+		moveTime  = void;
+        moveAccel = void;
+		moveNowait = void;
+
+        if (isShowBU()) {
+            reposition = true;
+        }
+
+		_grayscale = orig.grayscale;
+        _rgamma    = orig.rgamma;
+        _ggamma    = orig.ggamma;
+        _bgamma    = orig.bgamma;
+		_blurx     = orig.blurx;
+		_blury     = orig.blury;
+		_filter    = orig.filter;
+		if (_grayscale !== void ||
+			_rgamma    !== void ||
+			_ggamma    !== void ||
+			_bgamma    !== void ||
+			_blurx     !== void ||
+			_blury     !== void ||
+			_filter    !== void) {
+            redraw = true;
+        }
+	}
+	
 
 	// レイヤのサイズ調整用
 	function setSize(layer) {
@@ -1278,6 +1535,9 @@ class KAGEnvImage {
      */
 	function calcPosition(layer) {
 		//dm(name + ":位置指定:" + xpos + "," + ypos + " time:" + moveTime);
+		layer.setAffineOffset(afx, afy);
+		layer.originx = orx;
+		layer.originy = ory;
 		var l = (int)xpos;
 		var t = (int)ypos;
 		if (moveTime !== void && moveTime > 0) {
@@ -1357,6 +1617,7 @@ class KAGEnvImage {
 		transLayer          = createLayer(kag.fore);
 		transLayer.visible  = true;
 		transLayer.absolute = targetLayer.absolute;
+		transLayer.opacity  = targetLayer.opacity;
 		transLayer.name = "old_" + transLayer.name;
 
 		// トランジション実行
@@ -1533,15 +1794,24 @@ class KAGEnvImage {
 			targetLayer.absolute = +absolute if (absolute !== void);
 
 			if (redraw) {
-				targetLayer.reset();
 				drawLayer(targetLayer);
+				if (filter !== void) {
+					var f = filter.split(":");
+					var color   = f.count > 0 ? +f[0]:0xffffffff;
+					var type    = f.count > 1 ? convLayerType(f[1]):ltAlpha;
+					if (type !== void) {
+						with (targetLayer) {
+							.fillOperateRect(0,0, .imageWidth, .imageHeight, color, type);
+						}
+					}
+				}
 				if (grayscale) {
 					targetLayer.doGrayScale();
 				}
 				if (rgamma != void || ggamma != void || bgamma != void) {
 					targetLayer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
-									  ggamma == void ? 1.0 : ggamma, 0, 255,
-									  bgamma == void ? 1.0 : bgamma, 0, 255);
+											ggamma == void ? 1.0 : ggamma, 0, 255,
+											bgamma == void ? 1.0 : bgamma, 0, 255);
 				}
 				if (blurx || blury) {
 					targetLayer.doBoxBlur(blurx, blury);
@@ -1614,7 +1884,7 @@ class KAGEnvImage {
 
 		// 0:非表示 1:表示 2:消去 3:更新
 		var isAbsoluteChange = prevAbsolute != absolute;
-		var mode = (prevShow ? 2 : 0) + (isShowBU() ? 1 : 0);
+		var mode = transall ? 3 :(prevShow ? 2 : 0) + (isShowBU() ? 1 : 0);
 		//dm("表示モード:" + mode);
 
 		if (trans === void) {
@@ -1698,7 +1968,7 @@ class KAGEnvImage {
 			if (!env.envinfo.nosynctrans) {
 				syncMode = !elm.nosync && !(trans !== void && trans.nosync);
 			} else {
-				syncMode = elm.sync || (trans !== void && trans.sync);
+				syncMode = !elm.nosync && (elm.sync || (trans !== void && trans.sync));
 			}
 			
 			// シンクロ指定

@@ -292,4 +292,8 @@ class SESoundBuffer extends WaveSoundBuffer
             }
 		}
 	}
+
+    function onLabel(label) {
+		owner.onSELabel(label);
+    }
 }

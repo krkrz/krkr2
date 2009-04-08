@@ -35,6 +35,7 @@ class KAGEnvironment extends KAGEnvImage {
     var defaultXpos;  //< キャラクタ配置の初期X位置
     var defaultYpos;  //< キャラクタ配置の初期Y位置
     var defaultLevel; //< キャラクタレベルのデフォルト値
+	var eventLevel;   //< イベント絵のレベル位置指定
     var levels;       //< キャラクタレベル別補正情報
     var faceLevelName;//< フェイスウインドウ用の表示名
     var emotions;
@@ -214,58 +215,8 @@ class KAGEnvironment extends KAGEnvImage {
 			ses[i] = new KAGEnvSE(env, i);
         }
         
-        // KAG に自分をコマンドとして登録
-		kag.tagHandlers["env"]        = this.tagfunc;
-        kag.tagHandlers["allchar"]    = this.allchar;
-        kag.tagHandlers["alllayer"]   = this.alllayer;
-		kag.tagHandlers["allse"]      = this.allse;
-
-        kag.tagHandlers["begintrans"] = this.beginTrans;
-        kag.tagHandlers["endtrans"]   = this.endTrans;
-        kag.tagHandlers["newlay"]     = this.newLayer;
-        kag.tagHandlers["newlayer"]   = this.newLayer;
-        kag.tagHandlers["dellay"]     = this.delLayer;
-        kag.tagHandlers["dellayer"]   = this.delLayer;
-        kag.tagHandlers["newchar"]    = this.newCharacter;
-        kag.tagHandlers["delchar"]    = this.delCharacter;
-
-        kag.tagHandlers["msgoff"]     = this.msgoff;
-        kag.tagHandlers["msgon"]      = this.msgon;
-        kag.tagHandlers["clear"]      = this.clear;
-        
-        kag.tagHandlers["dispname"]        = this.dispname;
-        kag.tagHandlers["dispnameVoice"]   = this.dispnameVoice;
-        kag.tagHandlers["quake"]           = this.quake;
-        kag.tagHandlers["afterpage"]       = this.afterpage;
-        kag.tagHandlers["afterline"]       = this.afterline;
-
-		kag.tagHandlers["showvoiceinfo"]   = this.showVoiceInfo;
-		kag.tagHandlers["twait"]   = this.doTalkWait;
-		kag.tagHandlers["showtwait"]   = this.showTalkWait;
-
-		kag.tagHandlers["laytrans"]  = this.laytrans;
-		
-        // レイヤトランジション処理中は transMode を有効にしておく
-        kag.tagHandlers["ltbegin"] = function(elm) {
-            transMode = 2;
-            return kag.layerTransBegin(elm);
-        } incontextof this;
-        kag.tagHandlers["ltend"] = function(elm) {
-            transMode = 0;
-            return kag.layerTransEnd(elm);
-        } incontextof this;
-        
-        // 特殊ハンドラ登録
-		kag.unknownHandler     = this.unknown;
-		kag.seStopHandler      = this.onSeStop;
-		kag.stopActionHandler  = this.onStopAction;
-		kag.stopTransitionHandler = this.onStopTransition;
-		kag.syncHandler        = this.syncAll;
-		kag.clearLayersHandler = this.clearLayers;
-		kag.updateVoice        = this.updateVoice;
-
 		resetEnv();
-        dm("環境初期化完了");
+		//dm("環境初期化完了");
     }
 
     /**
@@ -273,23 +224,11 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function finalize() {
 		initEnv();
-		if (kag.unknownHandler === this.unknown) {
-			kag.tagHandlers = void;
-        }
-        if (kag.seStopHandler== this.onSeStop) {
-            kag.seStopHandler          = void;
-        }
-        if (kag.stopActionHandler === this.onStopAction) {
-            kag.stopActionHandler = void;
-        }
-		if (kag.stopTransitionHandler === this.onStopTransition) {
-			kag.stopTransitionHandler = void;
-		}
 		invalidate characters;
-        invalidate layers;
-        invalidate event;
-        super.finalize();
-		dm("環境終了");
+		invalidate layers;
+		invalidate event;
+		super.finalize();
+		//dm("環境終了");
     }
 
     /**
@@ -432,6 +371,7 @@ class KAGEnvironment extends KAGEnvImage {
             defaultXpos = (int)envinfo.defaultXpos;
             defaultYpos = (int)envinfo.defaultYpos;
             defaultLevel = (int)envinfo.defaultLevel;
+			eventLevel =   envinfo.eventLevel !== void ? (int)envinfo.eventLevel : 5;
             levels       = envinfo.levels;
             faceLevelName = envinfo.faceLevelName;
             showFaceMode  = envinfo.showFaceMode;
@@ -469,6 +409,7 @@ class KAGEnvironment extends KAGEnvImage {
 			faceLevelName = void;
 			showFaceMode = void;
 			bothFave = false;
+			eventLevel = 5;
 		}
 
 		initEnv();
@@ -479,7 +420,7 @@ class KAGEnvironment extends KAGEnvImage {
     /// 時間
     var time;
     /// 舞台
-	var stage;
+	var stage, stageFile;
 	/// 舞台レイヤ
 	var stagelayers;
 	/// 舞台レイヤなし指定
@@ -492,7 +433,7 @@ class KAGEnvironment extends KAGEnvImage {
      */
 	function initEnv(cmd, elm) {
 
-		dm("初期化処理");
+		//dm("初期化処理");
 		time = void;
 		stage = void;
 		transMode = void;
@@ -501,6 +442,7 @@ class KAGEnvironment extends KAGEnvImage {
 		
 		initImage();
 		event.initImage();
+		event.absolute = (eventLevel + 1) * 100000 - 100;
 
 		// キャラクタ情報の破棄
 		foreach(characters, function(name,value,dict) {
@@ -552,11 +494,11 @@ class KAGEnvironment extends KAGEnvImage {
 
 		levelz = envinfo.bglevelz !== void ? +envinfo.bglevelz : 100;
 		
-		_cameraX = 0;
-		_cameraY = 0;
-		_cameraZoom = 100;
-		_shiftX = 0;
-		_shiftY = 0;
+		_camerax = 0;
+		_cameray = 0;
+		_camerazoom = 100;
+		_shiftx = 0;
+		_shifty = 0;
 
 		if (elm && elm.sync) {
 			syncAll();
@@ -569,6 +511,7 @@ class KAGEnvironment extends KAGEnvImage {
     function hideEvent(param, elm) {
 		if (event.isShow()) {
 			event.disp = CLEAR;
+			transall = true;
 			redraw = true;
         }
     }
@@ -579,6 +522,7 @@ class KAGEnvironment extends KAGEnvImage {
     function hideBase(param, elm) {
 		if (event.isShow()) {
 			event.disp = CLEAR;
+			transall = true;
 			redraw = true;
 		} else if (isShow()) {
 			disp = CLEAR;
@@ -594,8 +538,9 @@ class KAGEnvironment extends KAGEnvImage {
 			if (value.isShow()) {
 				value.disp = CLEAR;
 				redraw = true;
+				transall = true;
             }
-        } incontextof this, param);
+		} incontextof this, param);
     }
 
     /**
@@ -607,6 +552,7 @@ class KAGEnvironment extends KAGEnvImage {
 			if (value.isShow()) {
 				value.disp = CLEAR;
 				redraw = true;
+				transall = true;
             }
         } incontextof this, param);
     }
@@ -623,8 +569,8 @@ class KAGEnvironment extends KAGEnvImage {
      * 全要素消去
      */
     function hideAll(param, elm) {
-        hideBase(param, elm);
-        hideCharacters(param, elm);
+		hideBase(param, elm);
+		hideCharacters(param, elm);
         hideLayers(param, elm);
     }
 
@@ -749,6 +695,7 @@ class KAGEnvironment extends KAGEnvImage {
 		// イベント絵は消去
 		if (event.isShow()) {
 			event.disp = CLEAR;
+			transall = true;
 		}
 	}
 
@@ -780,10 +727,12 @@ class KAGEnvironment extends KAGEnvImage {
             }
 
             // 時間変更はキャラの立ち絵も再描画の必要がある
-            foreach(characters, function(name, value, dict) {
-				value.setRedraw();
-            });
-			transall = true;
+			foreach(characters, function(name, value, dict, base) {
+				if (value.isShowBU()) {
+					value.setRedraw();
+					base.transall = true;
+				}
+			}, this);
 
 			// 舞台レイヤ更新
 			nostagelayer = elm.nolayer;
@@ -795,6 +744,7 @@ class KAGEnvironment extends KAGEnvImage {
         // イベント絵は消去
 		if (event.isShow()) {
 			event.disp = CLEAR;
+			transall = true;
         }
     }
 
@@ -987,11 +937,13 @@ class KAGEnvironment extends KAGEnvImage {
     colorall : this.setColorAll incontextof this,
 	nostopbgm : null,
 	// ----------------------------------------------
-	camerax : this.setCameraX incontextof this,
-	cameray : this.setCameraY incontextof this,
-	camerazoom : this.setCameraZoom incontextof this,
-	shiftx  : this.setShiftX incontextof this,
-	shifty  : this.setShiftY incontextof this,
+	shiftx  : this.setshiftx incontextof this,
+	shifty  : this.setshifty incontextof this,
+	camerax : this.setcamerax incontextof this,
+	cameray : this.setcameray incontextof this,
+	camerazoom : this.setcamerazoom incontextof this,
+	actioncamera : this.actionCamera incontextof this,
+	resetcamera : this.resetCamera incontextof this,
 	stopcamera : this.stopCamera incontextof this,
 		];
     
@@ -1060,6 +1012,7 @@ class KAGEnvironment extends KAGEnvImage {
 				// 画像のロードと座標補正処理
                 try {
                     layer.loadImages(%[ "storage" => image ]);
+					stageFile = image;
                    
                     if (reposition) {
                         if (xpos === void) {
@@ -1077,6 +1030,7 @@ class KAGEnvironment extends KAGEnvImage {
 
                     try {
                         layer.loadImages(%[ "storage" => image ]);
+						stageFile = image;
                         
                         // 色補正処理
                         var timeInfo;
@@ -1106,6 +1060,7 @@ class KAGEnvironment extends KAGEnvImage {
                         }
                         
                     } catch (e) {
+						stageFile = void;
 						var text = image + ":背景画像がロードできません stage:" + stage + " time:" + time;
 						kag.errorImage(text);
 						layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
@@ -1193,6 +1148,7 @@ class KAGEnvironment extends KAGEnvImage {
 					ret = ch.tagfunc(elm);
 				}
 			}
+			transall = true;
 		}
 		return ret;
     }
@@ -1207,7 +1163,8 @@ class KAGEnvironment extends KAGEnvImage {
         names.assign(layers);
         for (var i=0; i<names.count; i+= 2) {
             ret = names[i+1].tagfunc(elm);
-        }
+			transall = true;
+		}
         return ret;
     }
 
@@ -1337,7 +1294,8 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function resetAllVoiceVolume() {
         foreach(characters, function(name, value, dict) {
-            value.resetVoiceVolume();
+			value.resetVoiceVolume();
+			value.resetLoopVoiceVolume();
         });
     }
     
@@ -2030,60 +1988,60 @@ class KAGEnvironment extends KAGEnvImage {
 		});
 	}
 
-	var _shiftX;
-	property shiftX {
+	var _shiftx;
+	property shiftx {
 		setter(v) {
-			_shiftX = v;
+			_shiftx = v;
 			updateCamera();
 		}
 		getter() {
-			return _shiftX;
+			return _shiftx;
 		}
 	}
-	var _shiftY;
-	property shiftY {
+	var _shifty;
+	property shifty {
 		setter(v) {
-			_shiftY = v;
+			_shifty = v;
 			updateCamera();
 		}
 		getter() {
-			return _shiftY;
+			return _shifty;
 		}
 	}
-	var _cameraX;
-	property cameraX {
+	var _camerax;
+	property camerax {
 		setter(v) {
-			if (_cameraX != v) {
-				_cameraX = v;
+			if (_camerax != v) {
+				_camerax = v;
 				updateCamera();
 			}
 		}
 		getter() {
-			return _cameraX;
+			return _camerax;
 		}
 	}
-	var _cameraY;
-	property cameraY {
+	var _cameray;
+	property cameray {
 		setter(v) {
-			if (cameraY != v) {
-				_cameraY = v;
+			if (cameray != v) {
+				_cameray = v;
 				updateCamera();
 			}
 		}
 		getter() {
-			return _cameraY;
+			return _cameray;
 		}
 	}
-	var _cameraZoom = 100;
-	property cameraZoom {
+	var _camerazoom = 100;
+	property camerazoom {
 		setter(v) {
-			if (cameraZoom != v) {
-				_cameraZoom = v;
+			if (camerazoom != v) {
+				_camerazoom = v;
 				updateCamera();
 			}
 		}
 		getter() {
-			return _cameraZoom;
+			return _camerazoom;
 		}
 	}
 
@@ -2098,56 +2056,86 @@ class KAGEnvironment extends KAGEnvImage {
 		kag.beginAction(this, action);
 	}
 	
-	function setCameraX(param, elm) {
+	function setcamerax(param, elm) {
 		var time = isSkip() ? 0 : +elm.time;
 		if (time > 0) {
-			doCameraAct("cameraX", param, time, elm);
+			doCameraAct("camerax", param, time, elm);
 		} else {
-			_cameraX = +param;
+			_camerax = +param;
 			updateCameraFlag = true;
 		}
 		return 0;
 	}
 
-	function setCameraY(param, elm) {
+	function setcameray(param, elm) {
 		var time = isSkip() ? 0 : +elm.time;
 		if (time > 0) {
-			doCameraAct("cameraY", param, time, elm);
+			doCameraAct("cameray", param, time, elm);
 		} else {
-			_cameraY = +param;
+			_cameray = +param;
 			updateCameraFlag = true;
 		}
 		return 0;
 	}
 
-	function setCameraZoom(param, elm) {
+	function setcamerazoom(param, elm) {
 		var time = isSkip() ? 0 : +elm.time;
 		if (time > 0) {
-			doCameraAct("cameraZoom", param, time, elm);
+			doCameraAct("camerazoom", param, time, elm);
 		} else {
-			_cameraZoom = +param;
+			_camerazoom = +param;
 			updateCameraFlag = true;
 		}
 		return 0;
 	}
 
-	function setShiftX(param, elm) {
+    /**
+     * カメラアクションを設定
+     * @param name アクション名
+     * @param elm パラメータ
+     */
+	function actionCamera(name, elm) {
+		if (env.actions !== void) {
+			var action = createAction(name, elm);
+			if (action !== void) {
+				kag.beginAction(this, action);
+			}
+		}
+		return 0;
+	}
+	
+	function resetCamera(param, elm) {
 		var time = isSkip() ? 0 : +elm.time;
 		if (time > 0) {
-			doCameraAct("shiftX", param, time, elm);
+			doCameraAct("camerax", 0, time, elm);
+			doCameraAct("cameray", 0, time, elm);
+			doCameraAct("camerazoom", 100, time, elm);
 		} else {
-			_shiftX = +param;
+			_camerax = 0;
+			_cameray = 0;
+			_camerazoom = 100;
+			updateCameraFlag = true;
+		}
+		return 0;
+	}
+	
+	function setshiftx(param, elm) {
+		var time = isSkip() ? 0 : +elm.time;
+		if (time > 0) {
+			doCameraAct("shiftx", param, time, elm);
+		} else {
+			_shiftx = +param;
 			updateCameraFlag = true;
 		}
 		return 0;
 	}
 
-	function setShiftY(param, elm) {
+	function setshifty(param, elm) {
 		var time = isSkip() ? 0 : +elm.time;
 		if (time > 0) {
-			doCameraAct("shiftY", param, time, elm);
+			doCameraAct("shifty", param, time, elm);
 		} else {
-			_shiftY = +param;
+			_shifty = +param;
 			updateCameraFlag = true;
 		}
 		return 0;

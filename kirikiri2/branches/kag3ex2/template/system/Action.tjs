@@ -55,6 +55,8 @@ class PropActionInfo {
 			if (typeof handler.AbsoluteActionHandler != "undefined") {
 				// 絶対アクションは１つだけ設定可能
 				absolute = new handler(target, propName, elm);
+				first = true;
+				startTime = void;
 			} else if (typeof handler.RelativeActionHandler != "undefined") {
 				// デフォルトアクション登録
 				if (absolute === void) {
@@ -1102,7 +1104,7 @@ function LayerFalldownRotateModule(info, elm) {
 }
 
 function LayerBlinkModeModule(info, elm) {
-    info.addAction("visible", SquareAction, %[vibration:1, ontime:elm.showtime, offtime:elm.hidetime, time:elm.time, delay:elm.delay]);
+    info.addAction("visible", SquareAction, %[vibration:0.5, ontime:elm.showtime, offtime:elm.hidetime, time:elm.time, delay:elm.delay, offset:0.5]);
 }
 
 function LayerFadeModeModule(info, elm) {

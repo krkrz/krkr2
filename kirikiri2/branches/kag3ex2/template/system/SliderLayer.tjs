@@ -215,17 +215,17 @@ class SliderLayer extends KAGLayer
 		position = Slider_position + getMoveTick();
 	}
 
-    function toPosition(x, y) {
+    function toPosition(x, y, drag = false) {
         if (vertical) {
             // タブをドラッグ
-            position = int(
-                (y - Slider_dragOriginY - (Slider_tabHeight >> 1)) * (Slider_max - Slider_min) /
-                (imageHeight - Slider_tabHeight - 2) + Slider_min);
+            position = (int)Math.round(
+                (y - (drag ? Slider_dragOriginY : 0)- (Slider_tabHeight >> 1)) * (Slider_max - Slider_min) /
+                (imageHeight - Slider_tabHeight - 2)) + Slider_min;
         } else {
             // タブをドラッグ
-            position = int(
-                (x - Slider_dragOriginX - (Slider_tabWidth >> 1)) * (Slider_max - Slider_min) /
-                (imageWidth - Slider_tabWidth - 2) + Slider_min);
+            position = (int)Math.round(
+                (x - (drag ? Slider_dragOriginX : 0) - (Slider_tabWidth >> 1)) * (Slider_max - Slider_min) /
+                (imageWidth - Slider_tabWidth - 2)) + Slider_min;
         }
     }
     
@@ -287,7 +287,7 @@ class SliderLayer extends KAGLayer
                 } else if(pos_y + htabh < y) {
                     // タブより上
                     if (jumpMode) {
-                        position = Slider_position + int((Slider_max - Slider_min)/ (tabh-2));
+                        toPosition(x, y);
                     } else {
                         toRight();
                     }
@@ -344,7 +344,7 @@ class SliderLayer extends KAGLayer
 
 		if(Slider_dragging)
 		{
-            toPosition(x, y);
+            toPosition(x, y, true);
         }
 	}
 

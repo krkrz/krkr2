@@ -13,12 +13,13 @@ class KAGEnvLayer extends KAGEnvImage {
 
     /// 描画中画像
     var imageFile;
+	/// 色指定塗りつぶし
+	var imageColor;
 
 	// 描画中ムービー
 	var movieFile;
 	var movieLoop;
 	var movieAlpha;
-	var moviePlaying;
 	var movieLayer;
 
 	// タイル描画処理
@@ -76,6 +77,7 @@ class KAGEnvLayer extends KAGEnvImage {
     function onStore(f) {
         super.onStore(f);
 		f.imageFile = imageFile;
+		f.imageColor = imageColor;
 		f.movieFile = movieFile;
 		f.movieLoop = movieLoop;
 		f.movieAlpha = movieAlpha;
@@ -88,10 +90,10 @@ class KAGEnvLayer extends KAGEnvImage {
     
     function onRestore(f) {
 		imageFile = f.imageFile;
+		imageColor = f.imageColor;
 		movieFile = f.movieFile;
 		movieLoop = f.movieLoop;
 		movieAlpha = f.movieAlpha;
-		moviePlaying = false;
 		tileFile = f.tileFile;
 		tilex = f.tilex;
 		tiley = f.tiley;
@@ -100,6 +102,20 @@ class KAGEnvLayer extends KAGEnvImage {
 		super.onRestore(f);
     }
 
+	function copy(orig) {
+		imageFile = orig.imageFile;
+		imageColor = orig.imageColor;
+		movieFile = orig.movieFile;
+		movieLoop = orig.movieLoop;
+		movieAlpha = orig.movieAlpha;
+		tileFile = orig.tileFile;
+		tilex = orig.tilex;
+		tiley = orig.tiley;
+		width = orig.width;
+		height = orig.height;
+		super.copy(orig);
+	}
+	
 	// 画像ファイルを指定
 	function setImageFile(file, elm) {
 
@@ -108,6 +124,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		movieFile = void;
 		tileFile  = void;
 		imageFile = file;
+		imageColor = void;
 
         // 背景指定時に座標指定がなければ場所情報を初期化する
         if (elm.xpos === void) {
@@ -130,12 +147,38 @@ class KAGEnvLayer extends KAGEnvImage {
         return true;
     }
 
+	// 塗りつぶし指定
+	function setImageColor(color, elm) {
+
+		initFile(elm);
+
+		imageFile = void;
+		imageColor = +color;
+		tileFile  = void;
+		movieFile = void;
+		
+		// 背景指定時に座標指定がなければ場所情報を初期化する
+		if (elm.xpos === void) {
+			xpos = void;
+        }
+		if (elm.ypos === void) {
+			ypos = void;
+        }
+
+		if (elm.hide === void) {
+			disp = SHOW;
+			redraw = true;
+		}
+		return true;
+    }
+	
 	// ムービーファイルを指定
 	function setMovieFile(file, elm) {
 
 		initFile(elm);
 
 		imageFile = void;
+		imageColor = void;
 		tileFile  = void;
 		movieFile = file;
 		movieAlpha = elm.alpha !== void ? elm.alpha : false;
@@ -169,6 +212,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		
 		movieFile = void;
 		imageFile = void;
+		imageColor = void;
 		tileFile = file;
 
 		if (elm.tilex !== void) { tilex = +elm.tilex; }
@@ -196,8 +240,16 @@ class KAGEnvLayer extends KAGEnvImage {
     }
 	
 	var _layerCommands = %[
+	copy: function (para, elm) {
+		if (para != name && env.layers[para] !== void) {
+			copy(env.layers[para]);
+		}
+	} incontextof this,
 	file : function(param, elm) {
 		setImageFile(param, elm);
+	} incontextof this,
+	color : function(param, elm) {
+		setImageColor(param, elm);
 	} incontextof this,
 	movie : function(param, elm) {
 		setMovieFile(param, elm);
@@ -263,15 +315,18 @@ class KAGEnvLayer extends KAGEnvImage {
 		return find;
     }
 
+	function errorLayer(layer, text) {
+		kag.errorImage(text);
+		layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
+		layer.drawText(0,0,text,0xffffff);
+	}
+
 	function drawLayer(layer) {
+		layer.stopMovie();
+		layer.clearTile();
 		if (isShowBU()) {
 			if (tileFile !== void) {
 				// タイル画像ロード
-				if (moviePlaying) {
-					layer.stopMovie();
-					moviePlaying = false;
-				}
-				// タイル描画
 				try {
 					layer.setTileImage(tileFile);
 					// 座標補正
@@ -284,48 +339,30 @@ class KAGEnvLayer extends KAGEnvImage {
 						}
 					}
 				} catch (e) {
-					var text = imageFile + ":タイル画像がロードできません";
-					kag.errorImage(text);
-					layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
-					layer.drawText(0,0,text,0xffffff);
+					errorLayer(layer, imageFile + ":タイル画像がロードできません");
 				}
 			} else if (imageFile !== void) {
 				// 画像のロード
-				if (moviePlaying) {
-					layer.stopMovie();
-					moviePlaying = false;
-				}
-				layer.clearTile();
 				try {
 					layer.loadImages(%[ "storage" => imageFile]);
 					_width  = layer.width;
 					_height = layer.height;
 				} catch (e) {
-					var text = imageFile + ":画像がロードできません";
-					kag.errorImage(text);
-					layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
-					layer.drawText(0,0,text,0xffffff);
+					errorLayer(layer, imageFile + ":画像がロードできません");
 				}
 			} else if (movieFile !== void) {
 				// ムービーのロード
-				//dm("ムービーのロード:" + movieFile);
-				layer.clearTile();
-				//try {
-					layer.startMovie(movieFile, movieAlpha, movieLoop, type);
+				try {
+					layer.startMovie(movieFile, movieLoop, movieAlpha);
 					_width  = layer.width;
 					_height = layer.height;
-					moviePlaying = true;
-			//} catch(e) {
-			//		var text = movieFile + ":ムービーがロードできません";
-			//		kag.errorImage(text);
-			//		layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
-			//		layer.drawText(0,0,text,0xffffff);
-			//	}
-			}
-		} else {
-			if (moviePlaying) {
-				layer.stopMovie();
-				moviePlaying = false;
+				} catch(e) {
+					errorLayer(layer, movieFile + ":ムービーがロードできません");
+				}
+			} else if (imageColor !== void) {
+				// 塗りつぶし
+				layer.setSize(_width, _height);
+				layer.fillRect(0, 0, layer.width, layer.height, imageColor);
 			}
 		}
 	}
@@ -336,7 +373,19 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 		if (tileFile !== void) {
 			layer.setTilePos(tilex, tiley);
+		} else if (imageColor !== void) {
+			layer.fillRect(0,0,layer.width, layer.height, imageColor);
 		}
 	}
-	
+
+	function applyMoveAction(action) {
+		if (action.module !== void) {
+			// 旧スタイルアクションは無視の方向
+			return;
+		}
+		super.applyMoveAction(action);
+		applyPropMoveAction(action, "tilex");
+		applyPropMoveAction(action, "tiley");
+	}
+
 }

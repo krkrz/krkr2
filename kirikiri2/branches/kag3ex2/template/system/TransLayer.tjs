@@ -21,8 +21,8 @@ class TransLayer
      */
     function TransLayer(owner) {
         this.owner = owner;
-        width = owner.scWidth;
-        height = owner.scHeight;
+        width = owner.exWidth;
+        height = owner.exHeight;
         
         layer = new Layer(owner, owner.primaryLayer);
         layer.setSize(width, height);

@@ -292,8 +292,6 @@ class StandViewWindow extends Window
 	var scWidth;
 	var scHeight;
 
-	var mx = 0;
-	var my = 0;
 	var lastmousex;
 	var lastmousey;
 	var dragging;
@@ -304,7 +302,7 @@ class StandViewWindow extends Window
 		super.Window();
 
 		this.kag = kag;
-		env = global.world_object.env;
+		env = new KAGEnvironment(kag);
 		currentLevel = env.defaultLevel;
 		scWidth  = kag.scWidth;
 		scHeight = kag.scHeight;
@@ -578,7 +576,6 @@ class StandViewWindow extends Window
 				with (ch) {
 					if (!.isShowBU()) continue;
 					layer = getLayer(.name);
-					layer.reset();
 					.drawLayer(layer);
 					.setSize(layer);
 					.calcPosition(layer);
@@ -770,6 +767,7 @@ class StandViewWindow extends Window
 	function finalize() {
 		invalidate modelessDialog if (modelessDialog !== void);
 		clearCharacters();
+		invalidate env;
 	}
 
 	function setZoom(numer, denom) {
@@ -829,13 +827,30 @@ class StandViewWindow extends Window
 		with (ch) {
 			if (.isShowBU()) {
 				var layer = getLayer(.name);
-				layer.reset();
 				.drawLayer(layer);
 				layer.updateOffsetInfo();
 				.setSize(layer);
 				.calcPosition(layer);
-				layer.left += mx;
-				layer.top  -= my;
+			}
+		}
+	}
+
+	function updateLayersPos() {
+		var names = [];
+		names.assign(layers);
+		for (var i=0;i<names.count;i+=2) {
+			var ch = characters[names[i]];
+			updateChLayerPos(ch) if (ch !== void);
+		}
+	}
+	
+	// 該当キャラのレイヤを生成・更新
+	function updateChLayerPos(ch) {
+		// 表示更新
+		with (ch) {
+			if (.isShowBU()) {
+				var layer = getLayer(.name);
+				.calcPosition(layer);
 			}
 		}
 	}
@@ -878,7 +893,7 @@ class StandViewWindow extends Window
 				System.inform("キャラクタ定義:" + initName + "がありません");
 				return;
 			}
-			ch.xpos = dispx++ * 200;
+			ch.xpos = dispx++ * 300;
 		}
 		return ch;
 	}
@@ -917,7 +932,7 @@ class StandViewWindow extends Window
 
 	// 現在のキャラ表示
 	function loadCurrentCharacters() {
-		createChMenu(env.getCurrentPoseCharacterNames(), true, true);
+		createChMenu(global.world_object.env.getCurrentPoseCharacterNames(), true, true);
 		updateAllMenu();
 	}
 
@@ -970,7 +985,7 @@ class StandViewWindow extends Window
 					levelYoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
 					levelXoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
 				}
-				mx = scWidth / 2 - (env.xmax + (((int).xpos) * zoom / 100) + levelXoffset);
+				env._shiftx = scWidth / 2 - env.xmax + ((((int).xpos) * zoom / 100) + levelXoffset);
 				caption = @"キャラ:${.name} 服装:${.dress} ポーズ:${.pose}${(typeof .diff != 'undefined' ? ' 差分:'+.diff: '')} 表情:${.face}";
 			}
 			copymenuitem.enabled = true;
@@ -1105,11 +1120,11 @@ class StandViewWindow extends Window
 		if (dragging) {
 			var diffx = x - lastmousex;
 			var diffy = y - lastmousey;
-			mx += diffx * zoomDenom / zoomNumer;
-			my += diffy * zoomDenom / zoomNumer;
+			env._shiftx -= diffx * zoomDenom / zoomNumer;
+			env._shifty -= diffy * zoomDenom / zoomNumer;
 			lastmousex = x;
 			lastmousey = y;
-			updateLayers();
+			updateLayersPos();
 		}
 	}
 

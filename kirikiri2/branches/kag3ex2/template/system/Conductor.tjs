@@ -39,6 +39,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 	var oneshot;
 	var _interrupted = false; // 中断中か
 	var timerEnabled = false; // タイマが起動中か
+	var delaytags; // 遅延実行タグ
 	var pendings; // 後回しにされたタグ
 	var inProcessing = false; // timerCallback を処理中かどうか
 	var reentered = false; // timerCallback 中に 再入したか
@@ -89,6 +90,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 			// これも同様
 
 		pendings = [];
+		delaytags = [];
 	}
 
 	function finalize()
@@ -99,28 +101,75 @@ class BaseConductor extends global.BaseConductorExtendClass
 		super.finalize(...);
 	}
 
+	// autoLabelMode && autoLabelType == 1 のチェック
+	property isLineTypeAutoLabel { getter { return false; } }
+
+	// 親メソッド呼び出し
+	function callOwnerMethod(method, *) {}
+
 	function clear()
 	{
 		// clear オーバーライド
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			runLine = 0;
 			runCount = 0;
 			runLabel = "";
 			runLabelLine = 0;
 		}
 		pendings.clear();
+		delaytags.clear();
 		super.clear();
 	}
 
+	var reNumber = new RegExp("^[0-9][0-9]*$");
+	
     function checkTagExtract(cd, elm, voiceMode, isload) {
         // 特殊タグ展開処理用フック
         return false;
     }
 
+	/**
+	 * 遅延タグの展開
+	 * @param value 数値ならtick 文字列ならラベル
+	 */
+	function extractDelay(value) {
+		//if (delaytags.count > 0) {
+		//    dm("遅延タグ解放:" + value);
+		//}
+		var n = 0;
+		for (var i=delaytags.count-1;i>=0;i--) {
+			var obj = delaytags[i];
+			var isTick   = typeof value == "Integer";
+			var isNumber = typeof obj.delayrun == "Integer";
+			if (value === void ||
+				obj.delayrun === void ||
+				(isTick && isNumber && obj.delayrun - value <= 0) ||
+				(!isTick && !isNumber && (obj.delayrun == value || value == "*"))) {
+				delete obj.delayrun;
+				//dm("タグ遅延実行:" + obj.tagname);
+				if (!interrupted) {
+					if (timerEnabled) {
+						// タイマ駆動中ならそのままコマンドを投入
+						pendings.insert(n++, obj);
+					} else {
+						// タイマが駆動してない(待ち)ならコマンドを直接実行
+						var step = onTag(obj);
+						if (step != 0) {
+							dm("タグ遅延実行 ステート:%d:誤動作の可能性があります".sprintf(step));
+						}
+					}
+					delaytags.erase(i);
+				}
+			}
+		}
+		return delaytags.count > 0;
+	}
+
     function timerCallback()
 	{
+		var tick = System.getTickCount();
 		// 次の要素を得る
-		nextTimerTick = timer.interval + System.getTickCount();
+		nextTimerTick = timer.interval + tick;
 		var obj;
 		try
 		{
@@ -132,6 +181,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 				return;
 			}
             inProcessing = true;
+
 			for(;;)
 			{
 				if(pendings.count > 0)
@@ -164,7 +214,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 							i++;
 						}
 						pendings = newp;
-						kag.setUserSpeed();
+						callOwnerMethod("setUserSpeed");
 
 						continue;
 						
@@ -177,7 +227,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 								runLine    = obj.line;
 								runCount   = 0;
 								runLineStr = obj.lineStr;
-								kag.updateDebugInfo();
+								callOwnerMethod("updateDebugInfo");
 								if (parseMode && debugLevel >= tkdlVerbose) {
 									dm("%06d:%s %s".sprintf(runLine, curStorage, runLineStr));
 								}
@@ -202,12 +252,12 @@ class BaseConductor extends global.BaseConductorExtendClass
 
 					if (obj !== void) {
 
-						if (kag.autoLabelMode && kag.autoLabelType == 1) {
+						if (isLineTypeAutoLabel) {
 							if (runLine != curLine) {
 								runLine    = curLine;
 								runCount   = 0;
 								runLineStr = curLineStr;
-								kag.updateDebugInfo();
+								callOwnerMethod("updateDebugInfo");
 							}
 							// タグをカウント
 							runCount++;
@@ -222,7 +272,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 							//dm("normal 行復帰処理中:" + runLine + "/" + runCount + ":" + obj.tagname);
 							if (runLine > targetLine || (runLine >= targetLine && runCount >= targetCount)) {
 								//dm("復帰完了");
-								kag.setUserSpeed();
+								callOwnerMethod("setUserSpeed");
 								pendings.insert(0, obj);
 								//pendings.insert(0, %[tagname:"autolabel"]);
 								targetLine = void;
@@ -250,6 +300,26 @@ class BaseConductor extends global.BaseConductorExtendClass
 				} else {
 
 					//if (this === kag.mainConductor) {dm(runLine + "/" + runCount +  " タグ実行:" +  obj.tagname);}
+
+					// 遅延実行のキャンセル
+					if (obj.tagname == "delaydone") {
+						extractDelay();
+						continue;
+					}
+					
+					// 遅延実行タグ
+					if (obj.delayrun !== void) {
+						if (reNumber.test(obj.delayrun)) {
+							// 数値の場合は　tick に変換
+							obj.delayrun = tick + (+obj.delayrun);
+						}
+						dm("遅延タグ登録:" + obj.tagname + ":" + obj.delayrun);
+						var o = %[];
+						(Dictionary.assign incontextof o)(obj, false);
+						delaytags.add(o);
+						kag.flipStart();
+						continue;
+					}
 					
 					// 実行時判定される cond
 					if (obj.condex !== void) {
@@ -317,7 +387,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 						if(timer.interval != step)
 						{
 							timer.interval = step;
-							nextTimerTick = step + System.getTickCount();
+							nextTimerTick = step + tick;
 						}
 						inProcessing = false;
 						reentered = false;
@@ -336,13 +406,9 @@ class BaseConductor extends global.BaseConductorExtendClass
 			onStop();
 			inProcessing = false;
 			
-			if (kag.autoLabelMode && kag.autoLabelType == 1) {
-				if (e.message.substring(0,17) == "シナリオファイルに変更があったため") {
-					askYesNo("セーブデータの不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
-							 "確認", function(param) {kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
-					return;
-				}
-			}
+			if (isLineTypeAutoLabel &&
+				e.message.substring(0,17) == "シナリオファイルに変更があったため" &&
+				!onScenarioModifiedError()) return;
 
 			var msg = "致命的なエラーが発生しました。\n"
 				"ファイル : " + curStorage + "   行 : " + (curLine+1) + "\n"
@@ -355,6 +421,10 @@ class BaseConductor extends global.BaseConductorExtendClass
 //              System.inform(msg, "エラー");
 		}
 	}
+
+	// シナリオファイルに変更があった／trueを返すとそのまま例外投げ
+	function onScenarioModifiedError() { return true; }
+	function onRestoreLabelError()     { return false; }
 
 	function onTag()
 	{
@@ -469,7 +539,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 	function store()
 	{
 		// store オーバーライド
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			//dm("コンダクタ保存処理:" + runLine + "/" + runCount + ":" + runLabel + ":" + runLabelLine);
 			// store オーバーライド
 			var ret = super.store(...);
@@ -485,7 +555,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 
 	function restore(dic)
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			// 現在のラベル位置まで復帰
 			dm("コンダクタ復帰処理:" + dic.runLine + "/" + runCount + ":" + dic.runLabel + ":" + dic.runLabelLine);
 			loadScenario(dic.storageName);
@@ -495,7 +565,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 			if (dic.runLabel != "") {
 				goToLabel(dic.runLabel);
 				dm("指定のラベル位置に復帰:" + dic.runLabel);
-				kag.setRecordLabel(curStorage, dic.runLabel);
+				callOwnerMethod("setRecordLabel");
 			}
 			dm("現在行:" + runLine + " 復帰予定位置:" + dic.runLabelLine);
 			if (dic.lineSaveMode) {
@@ -505,8 +575,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 				targetLabel = dic.runLabel;
 				//dm("行復帰実行:" + targetLine + "/" + targetCount);
 				if (runLine != dic.runLabelLine) {
-					askYesNo("シナリオのラベル位置変更が検出されました。不整合の可能性がありますがそのまま再開しますか？",
-							 "確認", function(self) {}, function(self) { self.targetLine = void; kag.goToStart(); }, this);
+					if (onRestoreLabelError()) throw new Exception("シナリオのラベル位置変更が検出されました。");
 				}
 			}
 			return;
@@ -525,7 +594,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 	 */
 	function parseAll() {
 		//dm("全パース処理:" + curStorage);
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			parseMode = true;
 			var obj;
 			while ((obj = getNextTag()) !== void) { // 次のタグを得る
@@ -554,7 +623,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 	
 	function loadScenario(storage)
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			runLine = 0;
 			runCount = 0;
 			runLabel = "";
@@ -568,7 +637,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 
 	function goToLabel(label)
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			runLine = 0;
 			runCount = 0;
 			runLabel = "";
@@ -801,7 +870,7 @@ class Conductor extends BaseConductor
 
 	function onLabel(label, page)
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			if (parseMode) {
 				// コマンドの登録
 				//dm("ラベル登録:" + label + ":" + curLine);
@@ -814,8 +883,7 @@ class Conductor extends BaseConductor
 				runLabelLine = runLine;
 				if (targetLine !== void) {
 					if (label !== targetLabel) {
-						askYesNo("シナリオのラベル不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
-								 "確認", function(param) { kag.process(param);}, function(param) { kag.goToStart(); }, curStorage);
+						onLabelModifiedError();
 					}
 					return true;
 				}
@@ -826,7 +894,7 @@ class Conductor extends BaseConductor
 
 	function onJump()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			if (parseMode) {
 				// パース中ではエラー扱いすべし XXX
 				return false;
@@ -839,7 +907,7 @@ class Conductor extends BaseConductor
 
 	function onCall()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			if (parseMode) {
 				// パース中ではエラー扱いすべし XXX
 				return false;
@@ -852,7 +920,7 @@ class Conductor extends BaseConductor
 
 	function onReturn()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			return targetLine === void ? owner.onConductorReturn(...) : true;
 		}
 		return owner.onConductorReturn(...);
@@ -860,7 +928,7 @@ class Conductor extends BaseConductor
 
 	function onAfterReturn()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			return targetLine === void ? owner.onConductorAfterReturn(...) : true;
 		}
 		return owner.onConductorAfterReturn(...);
@@ -868,7 +936,7 @@ class Conductor extends BaseConductor
 
 	function onScript()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			if (parseMode) {
 				// パース中ではエラー扱いすべし XXX
 				return false;
@@ -881,9 +949,33 @@ class Conductor extends BaseConductor
 
 	function onUnknownTag()
 	{
-		if (kag.autoLabelMode && kag.autoLabelType == 1) {
+		if (isLineTypeAutoLabel) {
 			return targetLine === void ? owner.onConductorUnknownTag(...) : true;
 		}
 		return owner.onConductorUnknownTag(...);
+	}
+
+	// 親メソッド呼び出し（オーバーライド
+	function callOwnerMethod(method, *) {
+		return (typeof owner[method] == "Object") ? owner[method](*) : void;
+	}
+
+	// autoLabelMode && autoLabelType == 1 のチェック（オーバーライド）
+	property isLineTypeAutoLabel { getter {
+		with (owner) return (typeof .autoLabelMode != "undefined" && .autoLabelMode && .autoLabelType == 1);
+	} }
+
+	// 各種エラー対応
+	function onRestoreLabelError() {
+		askYesNo("シナリオのラベル位置変更が検出されました。不整合の可能性がありますがそのまま再開しますか？",
+				 "確認", function {}, function { targetLine = void; owner.goToStart(); } incontextof this);
+	}
+	function onLabelModifiedError() {
+		askYesNo("シナリオのラベル不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
+				 "確認", function(param) { process(param);} incontextof owner, owner.goToStart, curStorage);
+	}
+	function onScenarioModifiedError() {
+		askYesNo("セーブデータの不整合が検出されました。正常動作は保障されませんが、該当シナリオの冒頭から再開しますか？",
+				 "確認", function(param) { process(param);} incontextof owner, owner.goToStart, curStorage);
 	}
 }
