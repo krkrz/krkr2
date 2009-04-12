@@ -4,7 +4,8 @@
 class Scripts {
 
 	/**
-	 * Squirrel スクリプトの実行
+	 * Squirrel スクリプトの実行。
+	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param text スクリプトが格納された文字列
 	 * @return スクリプトの実行結果。プリミティブな値はそのまま変換されて、
 	 * また、クラスは TJS2 の iTJSDispatch にラッピングされた状態で返ります。
@@ -12,14 +13,30 @@ class Scripts {
 	function execSQ(text);
 
 	/**
-	 * Squirrel スクリプトの実行
+	 * Squirrel スクリプトのファイルからの実行。
+	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param filename スクリプトが格納されたファイル
 	 * @return スクリプトの実行結果
 	 */
 	function execStorageSQ(filename);
 
 	/**
-	 * Squirrel グローバルメソッドの呼び出し
+	 * Squirrel スクリプトのスレッド実行。
+	 * @param text スクリプトが格納された文字列
+	 * @return Threadオブジェクト
+	 */
+	function forkSQ(text);
+
+	/**
+	 * Squirrel スクリプトのファイルからのスレッド実行。
+	 * @param filename スクリプトが格納されたファイル
+	 * @return Threadオブジェクト
+	 */
+	function forkStorageSQ(filename);
+	
+	/**
+	 * Squirrel グローバルメソッドの呼び出し。
+	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param name メソッド名
 	 * @param ... 引数
 	 * @return スクリプトの実行結果。プリミティブな値はそのまま変換されて、
@@ -30,15 +47,15 @@ class Scripts {
 	/**
 	 * Squirrel スクリプトのコンパイル処理
 	 * @param text スクリプトが格納された文字列
-	 * @store store バイナリクロージャ格納先ファイル
+	 * @param store バイナリクロージャ格納先ファイル
 	 * @return エラー文字列または void
 	 */
 	function compileSQ(text, store)
 
 	/**
-	 * Squirrel コードのコンパイル処理
-	 * @param コンパイル元ファイル
-	 * @store バイナリクロージャ格納先ファイル
+	 * Squirrel スクリプトのファイルからのコンパイル処理
+	 * @param filename コンパイル元ファイル
+	 * @param store バイナリクロージャ格納先ファイル
 	 * @return エラー文字列または void
 	 */
 	function compileStorageSQ(filename, store)
@@ -95,6 +112,7 @@ class SQFunction {
 
     /**
 	 * 関数を呼び出す
+	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param 引数はそのまま変換してわたされます
 	 * @return 関数の返り値
 	 */
@@ -108,6 +126,7 @@ class SQContinuous {
 
 	/**
 	 * コンストラクタ
+	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param func squirrel のグローバルな関数 func(tick){} の名前
 	 * ※tick は SQInteger にキャストされてから呼び出されます
 	 */

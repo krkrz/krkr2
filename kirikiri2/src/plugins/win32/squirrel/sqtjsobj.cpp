@@ -1,36 +1,26 @@
 #include <windows.h>
 #include "tp_stub.h"
-#include "sqobject.h"
+#include "sqtjsobj.h"
 
-// ログ出力用
-#define PRINT(v,msg) {\
-	SQPRINTFUNCTION print = sq_getprintfunc(v);\
-	if (print) {\
-		print(v,msg);\
-	}\
-}
-
+// sqwrapper.cpp より
 extern void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
 extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
 extern SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error);
 
-/**
- * 文字列取得用
- * @param v VM
- * @param idx インデックス
- * @return 文字列
- */
-const SQChar *getString(HSQUIRRELVM v, int idx) {
-	const SQChar *x = NULL;
-	sq_getstring(v, idx, &x);
-	return x;
-};
+// sqfunc.cpp より
+extern SQRESULT ERROR_CREATE(HSQUIRRELVM v);
+extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
+void registerInherit(const SQChar *typeName, const SQChar *parentName);
+void registerTypeTag(const SQChar *typeName, SQUserPointer tag);
+SQUserPointer getInstance(HSQUIRRELVM v, int idx, const SQChar *typeName);
 
-// 型情報
-static const SQUserPointer TJSOBJTYPETAG = (SQUserPointer)"TJSOBJTYPETAG";
-
+// Main.cpp より
 tjs_int getArrayCount(iTJSDispatch2 *array);
 void getArrayString(iTJSDispatch2 *array, int idx, ttstr &store);
+
+// 型情報
+static const SQChar *typeName = _SC("TJSObject"); ///< 型名
+static const SQUserPointer TJSOBJTYPETAG = (SQUserPointer)_SC("TJSOBJTYPETAG"); ///< squirrel型タグ
 
 /**
  * 辞書データからクラス登録用のスクリプトを生成するためのオブジェクト
@@ -87,8 +77,6 @@ public:
 		script += "\", args);}";
 	};
 
-	
-
 	// データの取得
 	const tjs_char *getData() {
 		return script.c_str();
@@ -130,114 +118,168 @@ public:
 	}
 };
 
+// -----------------------------------------------------------------------
+
+// 初期化用
+void
+TJSObject::init()
+{
+	registerInherit(typeName, SQOBJECTNAME);
+	registerTypeTag(typeName, TJSOBJTYPETAG);
+}
+
 /**
- * 吉里吉里オブジェクトを保持するクラス
+ * クラスの登録
+ * @param HSQUIRRELVM v
+ * @param className 登録クラス名
+ * @param tjsClassInfo クラス定義情報(TJSのクラス名のリスト)
  */
-class TJSObject : public sqobject::Object {
-
-protected:
-	// 処理対象オブジェクト
-	iTJSDispatch2 *dispatch;
-
-public:
-	iTJSDispatch2 *getDispatch() {
-		return dispatch;
+void
+TJSObject::registerClass(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *tjsClassInfo)
+{
+	ttstr tjsClassName;
+	iTJSDispatch2 *classArray;
+	
+	if (tjsClassInfo == NULL) {
+		classArray = NULL;
+		tjsClassName = className;
+	} else if (tjsClassInfo->Type() == tvtString) {
+		classArray = NULL;
+		tjsClassName = tjsClassInfo->GetString();
+	} else {
+		classArray = tjsClassInfo->AsObjectNoAddRef();
+		getArrayString(classArray, 0, tjsClassName);
 	}
-
-protected:
-	// コンストラクタ
-	TJSObject() : dispatch(NULL) {
-	}
-
-	// デストラクタ
-	~TJSObject() {
-		if (dispatch) {
-			dispatch->Release();
+	
+	// クラス生成用スクリプトを生成する
+	ScriptCreater script(tjsClassName.c_str());
+	tTJSVariantClosure closure(&script);
+	
+	// 親クラスのメソッドを登録
+	if (classArray) {
+		int count = getArrayCount(classArray);
+		for (int i=count-1;i>0;i--) {
+			ttstr className;
+			getArrayString(classArray, i, className);
+			{			
+				tTJSVariant classObj;
+				TVPExecuteExpression(className, &classObj);
+				iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
+				if (!dispatch || TJS_FAILED(dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch))) {
+					TVPThrowExceptionMessage(L"not tjs class");
+				}
+				dispatch->EnumMembers(TJS_IGNOREPROP, &closure, dispatch);
+			}
 		}
 	}
 	
-public:
-	/**
-	 * @return スレッド情報オブジェクト
-	 */
-	static TJSObject *getTJSObject(HSQUIRRELVM v, int idx) {
-		SQUserPointer up;
-		if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, TJSOBJTYPETAG))) {
-			return (TJSObject*)up;
+	// 指定クラスのメソッドを登録
+	{
+		tTJSVariant classObj;
+		TVPExecuteExpression(tjsClassName, &classObj);
+		iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
+		if (!dispatch || TJS_FAILED(dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch))) {
+			TVPThrowExceptionMessage(L"not tjs class");
 		}
-		return NULL;
+		dispatch->EnumMembers(TJS_IGNOREPROP, &closure, dispatch);
 	}
+	
+	sq_pushroottable(v); // root
+	sq_pushstring(v, className, -1);
+	sq_pushstring(v, SQOBJECTNAME, -1);
+	sq_get(v,-3);
+	sq_newclass(v, true); // 継承する
+	sq_settypetag(v, -1, TJSOBJTYPETAG);
+	
+#define REGISTER_METHOD(func) \
+	sq_pushstring(v, _SC(#func), -1);\
+	sq_newclosure(v, func, 0);\
+	sq_createslot(v, -3);
+	
+	// TJS用処理メソッドを登録
+	REGISTER_METHOD(tjsConstructor);
+	REGISTER_METHOD(tjsInvoker);
+	REGISTER_METHOD(tjsSetter);
+	REGISTER_METHOD(tjsGetter);
+	
+	// クラスのコンテキストで生成スクリプトを実行
+	if (SQ_SUCCEEDED(sq_compilebuffer(v, script.getData(), script.getLength(), className, SQTrue))) {
+		sq_push(v, -2); // class
+		if (SQ_FAILED(sq_call(v, 1, SQFalse, SQTrue))) {
+			sq_getlasterror(v);
+			const SQChar *str;
+			sq_getstring(v, -1, &str);
+			SQPRINT(v, str);
+			sq_pop(v, 1);
+		}
+		sq_pop(v, 1);
+	} else {
+		sq_getlasterror(v);
+		const SQChar *str;
+		sq_getstring(v, -1, &str);
+		SQPRINT(v, str);
+		sq_pop(v, 1);
+	}
+	
+	sq_createslot(v, -3);
+	sq_pop(v, 1); // root
+}
 
-protected:
-	/**
-	 * オブジェクトのリリーサ
-	 */
-	static SQRESULT release(SQUserPointer up, SQInteger size) {
-		TJSObject *self = (TJSObject*)up;
+iTJSDispatch2 *
+TJSObject::getDispatch(HSQUIRRELVM v, int idx)
+{
+	TJSObject *obj = (TJSObject*)::getInstance(v, idx, typeName);
+	return obj ? obj->dispatch : NULL;
+}
+
+// -----------------------------------------------------------------------
+
+// コンストラクタ
+TJSObject::TJSObject() : dispatch(NULL)
+{
+}
+
+// デストラクタ
+TJSObject::~TJSObject()
+{
+	if (dispatch) {
+		dispatch->Release();
+	}
+}
+
+/**
+ * オブジェクトのリリーサ
+ */
+SQRESULT
+TJSObject::release(SQUserPointer up, SQInteger size)
+{
+	TJSObject *self = (TJSObject*)up;
+	delete self;
+	return SQ_OK;
+}
+
+/**
+ * TJSオブジェクトのコンストラクタ
+ * 引数1 オブジェクト
+ * 引数2 クラス名
+ * 引数3 引数
+ */
+SQRESULT
+TJSObject::tjsConstructor(HSQUIRRELVM v)
+{
+	SQRESULT result = SQ_OK;
+	TJSObject *self = new TJSObject();
+	if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {
+		sq_setreleasehook(v, 1, release);
+	} else {
 		delete self;
-		return SQ_OK;
 	}
-
-	/**
-	 * TJSオブジェクトのコンストラクタ
-	 * 引数1 オブジェクト
-	 * 引数2 クラス名
-	 * 引数3 引数
-	 */
-	static SQRESULT tjsConstructor(HSQUIRRELVM v) {
-		SQRESULT result = SQ_OK;
-		TJSObject *self = new TJSObject();
-		if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {
-			sq_setreleasehook(v, 1, release);
-		} else {
-			delete self;
-		}
-		if (SQ_SUCCEEDED(result)) {
-			// クラスを生成する
-			tTJSVariant classObj;
-			TVPExecuteExpression(getString(v,2), &classObj);
-			iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
-			if (dispatch) {
-				// 引数変換
-				int argc = sq_getsize(v,3);
-				tTJSVariant **args = new tTJSVariant*[argc];
-				for (int i=0;i<argc;i++) {
-					args[i] = new tTJSVariant();
-					sq_pushinteger(v, i);
-					if (SQ_SUCCEEDED(sq_get(v, 3))) {
-						sq_getvariant(v, -1, args[i]);
-						sq_pop(v, 1);
-					}
-				}
-				tjs_error error;
-				if (TJS_SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &self->dispatch, argc, args, dispatch))) {
-					result = SQ_OK;
-				} else {
-					result = ERROR_KRKR(v, error);
-				}
-				// 引数破棄
-				for (int i=0;i<argc;i++) {
-					delete args[i];
-				}
-				delete[] args;
-			} else {
-				result = sqobject::ERROR_CREATE(v);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * TJSオブジェクト用のメソッド
-	 * 引数1 オブジェクト
-	 * 引数2 メンバ名
-	 * 引数3 引数の配列
-	 */
-	static SQRESULT tjsInvoker(HSQUIRRELVM v) {
-		TJSObject *self = getTJSObject(v, 1);
-		if (self && self->dispatch) {
-			iTJSDispatch2 *dispatch = self->dispatch;
-			
+	if (SQ_SUCCEEDED(result)) {
+		// クラスを生成する
+		tTJSVariant classObj;
+		TVPExecuteExpression(sqobject::getString(v,2), &classObj);
+		iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
+		if (dispatch) {
 			// 引数変換
 			int argc = sq_getsize(v,3);
 			tTJSVariant **args = new tTJSVariant*[argc];
@@ -249,187 +291,115 @@ protected:
 					sq_pop(v, 1);
 				}
 			}
-			
-			// メソッド呼び出し
-			int ret = 0;
-			tTJSVariant result;
 			tjs_error error;
-			const tjs_char *methodName = getString(v,2);
-			if (TJS_SUCCEEDED(error = dispatch->FuncCall(0, getString(v,2), NULL, &result, argc, args, dispatch))) {
-				if (result.Type() != tvtVoid) {
-					sq_pushvariant(v, result);
-					result = 1;
-				} else {
-					result = 0;
-				}
+			if (TJS_SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &self->dispatch, argc, args, dispatch))) {
+				result = SQ_OK;
 			} else {
 				result = ERROR_KRKR(v, error);
 			}
-			
 			// 引数破棄
 			for (int i=0;i<argc;i++) {
 				delete args[i];
 			}
 			delete[] args;
-			return result;
-		}
-		return sqobject::ERROR_BADINSTANCE(v);
-	}
-
-	/**
-	 * TJSオブジェクト用のプロパティゲッター
-	 * 引数1 オブジェクト
-	 * 引数2 プロパティ名
-	 */
-	static SQRESULT tjsGetter(HSQUIRRELVM v) {
-		TJSObject *self = getTJSObject(v, 1);
-		if (self && self->dispatch) {
-			iTJSDispatch2 *dispatch = self->dispatch;
-			tTJSVariant result;
-			tjs_error error;
-			if (TJS_SUCCEEDED(error = dispatch->PropGet(0, getString(v,2), NULL, &result, dispatch))) {
-				sq_pushvariant(v, result);
-				return 1;
-			} else {
-				return ERROR_KRKR(v, error);
-			}
-		}
-		return sqobject::ERROR_BADINSTANCE(v);
-	}
-
-	/**
-	 * TJSオブジェクト用のプロパティセッター
-	 * 引数1 オブジェクト
-	 * 引数2 プロパティ名
-	 * 引数3 設定値
-	 */
-	static SQRESULT tjsSetter(HSQUIRRELVM v) {
-		TJSObject *self = getTJSObject(v, 1);
-		if (self && self->dispatch) {
-			iTJSDispatch2 *dispatch = self->dispatch;
-			tTJSVariant result;
-			sq_getvariant(v, 3, &result);
-			tjs_error error;
-			if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
-				return SQ_OK;
-			} else {
-				return ERROR_KRKR(v, error);
-			}
-		}
-		return sqobject::ERROR_BADINSTANCE(v);
-	}
-	
-public:
-	static void registClassInit() {
-		sqobject::Object::pushTag(TJSOBJTYPETAG);
-	}
-
-	/**
-	 * クラスの登録
-	 * @param HSQUIRRELVM v
-	 * @param className 登録クラス名
-	 * @param tjsClassInfo クラス定義情報(TJSのクラス名のリスト)
-	 */
-	static void registClass(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *tjsClassInfo) {
-		
-		ttstr tjsClassName;
-		iTJSDispatch2 *classArray;
-		
-		if (tjsClassInfo == NULL) {
-			classArray = NULL;
-			tjsClassName = className;
-		} else if (tjsClassInfo->Type() == tvtString) {
-			classArray = NULL;
-			tjsClassName = tjsClassInfo->GetString();
 		} else {
-			classArray = tjsClassInfo->AsObjectNoAddRef();
-			getArrayString(classArray, 0, tjsClassName);
+			result = ERROR_CREATE(v);
 		}
+	}
+	return result;
+}
 
-		// クラス生成用スクリプトを生成する
-		ScriptCreater script(tjsClassName.c_str());
-		tTJSVariantClosure closure(&script);
-
-		// 親クラスのメソッドを登録
-		if (classArray) {
-			int count = getArrayCount(classArray);
-			for (int i=count-1;i>0;i--) {
-				ttstr className;
-				getArrayString(classArray, i, className);
-				{			
-					tTJSVariant classObj;
-					TVPExecuteExpression(className, &classObj);
-					iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
-					if (!dispatch || TJS_FAILED(dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch))) {
-						TVPThrowExceptionMessage(L"not tjs class");
-					}
-					dispatch->EnumMembers(TJS_IGNOREPROP, &closure, dispatch);
-				}
-			}
-		}
-
-		// 指定クラスのメソッドを登録
-		{
-			tTJSVariant classObj;
-			TVPExecuteExpression(tjsClassName, &classObj);
-			iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
-			if (!dispatch || TJS_FAILED(dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch))) {
-				TVPThrowExceptionMessage(L"not tjs class");
-			}
-			dispatch->EnumMembers(TJS_IGNOREPROP, &closure, dispatch);
-		}
-		
-		sq_pushroottable(v); // root
-		sq_pushstring(v, className, -1);
-		sq_pushstring(v, SQOBJECTNAME, -1);
-		sq_get(v,-3);
-		sq_newclass(v, true); // 継承する
-		sq_settypetag(v, -1, TJSOBJTYPETAG);
-
-		// TJS用処理メソッドを登録
-		REGISTMETHOD(tjsConstructor);
-		REGISTMETHOD(tjsInvoker);
-		REGISTMETHOD(tjsSetter);
-		REGISTMETHOD(tjsGetter);
-		
-		// クラスのコンテキストで生成スクリプトを実行
-		if (SQ_SUCCEEDED(sq_compilebuffer(v, script.getData(), script.getLength(), className, SQTrue))) {
-			sq_push(v, -2); // class
-			if (SQ_FAILED(sq_call(v, 1, SQFalse, SQTrue))) {
-				sq_getlasterror(v);
-				const SQChar *str;
-				sq_getstring(v, -1, &str);
-				PRINT(v, str);
+/**
+ * TJSオブジェクト用のメソッド
+ * 引数1 オブジェクト
+ * 引数2 メンバ名
+ * 引数3 引数の配列
+ */
+SQRESULT
+TJSObject::tjsInvoker(HSQUIRRELVM v)
+{
+	iTJSDispatch2 *dispatch = getDispatch(v, 1);
+	if (dispatch) {
+		// 引数変換
+		int argc = sq_getsize(v,3);
+		tTJSVariant **args = new tTJSVariant*[argc];
+		for (int i=0;i<argc;i++) {
+			args[i] = new tTJSVariant();
+			sq_pushinteger(v, i);
+			if (SQ_SUCCEEDED(sq_get(v, 3))) {
+				sq_getvariant(v, -1, args[i]);
 				sq_pop(v, 1);
 			}
-			sq_pop(v, 1);
-		} else {
-			sq_getlasterror(v);
-			const SQChar *str;
-			sq_getstring(v, -1, &str);
-			PRINT(v, str);
-			sq_pop(v, 1);
 		}
 		
-		sq_createslot(v, -3);
-		sq_pop(v, 1); // root
+		// メソッド呼び出し
+		int ret = 0;
+		tTJSVariant result;
+		tjs_error error;
+		const tjs_char *methodName = sqobject::getString(v,2);
+		if (TJS_SUCCEEDED(error = dispatch->FuncCall(0, sqobject::getString(v,2), NULL, &result, argc, args, dispatch))) {
+			if (result.Type() != tvtVoid) {
+				sq_pushvariant(v, result);
+				result = 1;
+			} else {
+				result = 0;
+			}
+		} else {
+			result = ERROR_KRKR(v, error);
+		}
+		
+		// 引数破棄
+		for (int i=0;i<argc;i++) {
+			delete args[i];
+		}
+		delete[] args;
+		return result;
 	}
-};
-
-// 初期化用
-void sqtjsobj_init()
-{
-	TJSObject::registClassInit();
+	return ERROR_BADINSTANCE(v);
 }
 
-// クラス登録
-void sqtjsobj_regist(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *tjsClassInfo)
+/**
+ * TJSオブジェクト用のプロパティゲッター
+ * 引数1 オブジェクト
+ * 引数2 プロパティ名
+ */
+SQRESULT
+TJSObject::tjsGetter(HSQUIRRELVM v)
 {
-	TJSObject::registClass(v, className, tjsClassInfo);
-};
-
-// iTJSDispatch2* をスタックから取得
-iTJSDispatch2 *sqtjsobj_getDispatch(HSQUIRRELVM v, int idx) {
-	TJSObject *obj = TJSObject::getTJSObject(v, idx);
-	return obj ? obj->getDispatch() : NULL;
+	iTJSDispatch2 *dispatch = getDispatch(v, 1);
+	if (dispatch) {
+		tTJSVariant result;
+		tjs_error error;
+		if (TJS_SUCCEEDED(error = dispatch->PropGet(0, sqobject::getString(v,2), NULL, &result, dispatch))) {
+			sq_pushvariant(v, result);
+			return 1;
+		} else {
+			return ERROR_KRKR(v, error);
+		}
+	}
+	return ERROR_BADINSTANCE(v);
 }
+
+/**
+ * TJSオブジェクト用のプロパティセッター
+ * 引数1 オブジェクト
+ * 引数2 プロパティ名
+ * 引数3 設定値
+ */
+SQRESULT
+TJSObject::tjsSetter(HSQUIRRELVM v)
+{
+	iTJSDispatch2 *dispatch = getDispatch(v, 1);
+	if (dispatch) {
+		tTJSVariant result;
+		sq_getvariant(v, 3, &result);
+		tjs_error error;
+		if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, sqobject::getString(v, 2), NULL, &result, dispatch))) {
+			return SQ_OK;
+		} else {
+			return ERROR_KRKR(v, error);
+		}
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
