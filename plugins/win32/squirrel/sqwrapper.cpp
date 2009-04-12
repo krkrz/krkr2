@@ -6,10 +6,12 @@
 #include <windows.h>
 #include "tp_stub.h"
 #include <squirrel.h>
-#include "sqobject.h"
+#include "sqtjsobj.h"
+
+// sqfunc.cpp
+extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
 
 // 外部参照
-extern const SQChar *getString(HSQUIRRELVM v, int idx);
 
 SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error) {
 	switch (error) {
@@ -67,7 +69,9 @@ public:
 	 * コンストラクタ
 	 * @param obj IDispatch
 	 */
-	iTJSDispatch2Wrapper(HSQUIRRELVM v, HSQOBJECT obj) : v(v), obj(obj) {
+	iTJSDispatch2Wrapper(HSQUIRRELVM v, int idx) : v(v) {
+		sq_resetobject(&obj);
+		sq_getstackobj(v,idx,&obj);
 		sq_addref(v, &obj);
 	}
 	
@@ -106,12 +110,12 @@ public:
 			if (result) {
 				tTJSVariant var;
 				sq_getvariant(v, -1, &var);
-				sq_pop(v, 1);
-				*result = var.AsObject();
+				sq_pop(v, 1); // newobj
+				*result = var;
 			}
-			sq_pop(v, 1);
+			sq_pop(v, 1); // obj
 		} else {
-			sq_pop(v, 1);
+			sq_pop(v, 1); // obj
 			SQEXCEPTION(v);
 		}
 		return TJS_S_OK;
@@ -274,14 +278,14 @@ get(HSQUIRRELVM v)
 	if (dispatch) {
 		tTJSVariant result;
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = dispatch->PropGet(0, getString(v, 2), NULL, &result, dispatch))) {
+		if (TJS_SUCCEEDED(error = dispatch->PropGet(0, sqobject::getString(v, 2), NULL, &result, dispatch))) {
 			sq_pushvariant(v, result);
 			return 1;
 		} else {
 			return ERROR_KRKR(v, error);
 		}
 	}
-	return sqobject::ERROR_BADINSTANCE(v);
+	return ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -296,13 +300,13 @@ set(HSQUIRRELVM v)
 		tTJSVariant result;
 		sq_getvariant(v, 3, &result);
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, getString(v, 2), NULL, &result, dispatch))) {
+		if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, sqobject::getString(v, 2), NULL, &result, dispatch))) {
 			return SQ_OK;
 		} else {
 			return ERROR_KRKR(v, error);
 		}
 	}
-	return sqobject::ERROR_BADINSTANCE(v);
+	return ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -351,7 +355,7 @@ callConstructor(HSQUIRRELVM v)
 
 		return ret;
 	}
-	return sqobject::ERROR_BADINSTANCE(v);
+	return ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -403,7 +407,7 @@ callMethod(HSQUIRRELVM v)
 
 		return ret;
 	}
-	return sqobject::ERROR_BADINSTANCE(v);
+	return ERROR_BADINSTANCE(v);
 }
 
 /**
@@ -472,7 +476,15 @@ sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 	}
 }
 
-extern iTJSDispatch2 *sqtjsobj_getDispatch(HSQUIRRELVM v, int idx);
+static void wrap(HSQUIRRELVM v, int idx, tTJSVariant *result)
+{
+	// ラッピング
+	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(v, idx);
+	if (tjsobj) {
+		*result = tTJSVariant(tjsobj, tjsobj);
+		tjsobj->Release();
+	}
+}
 
 /**
  * tTJSVariant を squirrel の空間から取得する
@@ -497,18 +509,21 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 					// 元々吉里吉里側から渡されたデータ
 					*result = tTJSVariant(dispatch, dispatch);
 				} else {
-					result->Clear();
+					wrap(v, idx, result);
 				}
 			}
 			break;
 		case OT_INSTANCE:
 			{
 				// TJSベースインスタンスだった場合
-				iTJSDispatch2 *dispatch = sqtjsobj_getDispatch(v, idx);
+				iTJSDispatch2 *dispatch = TJSObject::getDispatch(v, idx);
 				if (dispatch) {
+					// TJSベースのインスタンス
 					*result = tTJSVariant(dispatch, dispatch);
-					break;
+				} else {
+					wrap(v, idx, result);
 				}
+				break;
 			}
 			// through down
 		case OT_TABLE:
@@ -520,17 +535,7 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 		case OT_THREAD:
 		case OT_CLASS:
 		case OT_WEAKREF:
-			// ラッピング
-			{
-				HSQOBJECT x;
-				sq_resetobject(&x);
-				sq_getstackobj(v,idx,&x);
-				iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(v, x);
-				if (tjsobj) {
-					*result = tTJSVariant(tjsobj, tjsobj);
-					tjsobj->Release();
-				}
-			}
+			wrap(v, idx, result);
 			break;
 		default:
 			result->Clear();

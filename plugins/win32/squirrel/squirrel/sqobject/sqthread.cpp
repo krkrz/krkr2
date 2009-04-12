@@ -1,0 +1,791 @@
+/*
+ * copyright (c)2009 http://wamsoft.jp
+ * zlib license
+ */
+#include "sqthread.h"
+#include <string.h>
+#include <sqstdio.h>
+
+extern SQRESULT sqstd_loadmemory(HSQUIRRELVM v, const char *dataBuffer, int dataSize, const SQChar *filename, SQBool printerror);
+
+namespace sqobject {
+
+// パラメータが不正
+static SQRESULT ERROR_INVALIDPARAM(HSQUIRRELVM v) {
+	return sq_throwerror(v, _SC("invalid param"));
+}
+
+// スレッドが存在しない
+static SQRESULT ERROR_NOTHREAD(HSQUIRRELVM v) {
+	return sq_throwerror(v, _SC("no thread"));
+}
+
+// fork に失敗した
+static SQRESULT ERROR_FORK(HSQUIRRELVM v) {
+	return sq_throwerror(v,_SC("failed to fork"));
+}
+
+bool
+Thread::isWait()
+{
+	return !_waitSystem.isNull() || _waitList.size() > 0 || _waitTimeout >= 0;
+}
+
+/**
+ * @return 該当スレッドと現在管理中のスレッドが一致してれば true
+ */
+bool
+Thread::isSameThread(HSQUIRRELVM v)
+{
+	return _thread.isSameThread(v);
+}
+
+/**
+ * オブジェクトに対する待ち情報を完了させる
+ * @param target 待ち対象
+ * @return 該当オブジェクトを待ってた場合は true
+ */
+bool
+Thread::notifyObject(Object *target)
+{
+	bool find = false;
+	if (!_waitSystem.isNull() && _waitSystem.getObject() == target) { // systemコマンド専用の待ち
+		find = true;
+		Thread *th = _waitSystem.getThread();
+		if (th) {
+			_waitResult = th->_exitCode;
+		}
+		_waitSystem.clear();
+	} else {
+		std::vector<ObjectInfo>::iterator i = _waitList.begin();
+		while (i != _waitList.end()) {
+			Object *obj = i->getObject();
+			if (obj && obj == target) {
+				find = true;
+				_waitResult = *i;
+				i = _waitList.erase(i);
+			} else {
+				i++;
+			}
+		}
+	}
+	if (find) {
+		_clearWait();
+	}
+	return find;
+}
+
+/**
+ * トリガに対する待ち情報を完了させる
+ * @param name トリガ名
+ * @return 該当オブジェクトを待ってた場合は true
+	 */
+bool
+Thread::notifyTrigger(const SQChar *name)
+{
+	bool find = false;
+	std::vector<ObjectInfo>::iterator i = _waitList.begin();
+	while (i != _waitList.end()) {
+		if (i->isSameString(name)) {
+			find = true;
+			_waitResult = *i;
+			i = _waitList.erase(i);
+		} else {
+			i++;
+		}
+	}
+	if (find) {
+		_clearWait();
+	}
+	return find;
+}
+
+// コンストラクタ
+Thread::Thread() : _currentTick(0), _fileHandler(NULL), _waitTimeout(-1), _status(THREAD_NONE)
+{
+}
+
+// コンストラクタ
+Thread::Thread(HSQUIRRELVM v) : Object(v,3), _currentTick(0), _fileHandler(NULL), _waitTimeout(-1), _status(THREAD_NONE)
+{
+	// 実行
+	if (sq_gettop(v) > 1) {
+		exec(v);
+	}
+}
+
+// デストラクタ
+Thread::~Thread()
+{
+	notifyAll();
+	_clear();
+	_thread.clear();
+}
+
+/**
+ * 情報破棄
+ */
+void
+Thread::init()
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_newthread(gv, 1024);
+	_thread.getStack(gv, -1);
+	sq_pop(gv, 1);
+}
+
+/**
+ * 情報破棄
+ */
+void
+Thread::_clear()
+{
+	if (_fileHandler) {
+		sqobjCloseFile(_fileHandler);
+		_fileHandler = NULL;
+		_scriptName.clear();
+	}
+	_clearWait();
+	_status = THREAD_NONE;
+}
+
+/**
+ * オブジェクトに対する待ち情報をクリアする
+ * @param status キャンセルの場合は true
+ */
+void
+Thread::_clearWait() {
+
+	// system用の waitの解除
+	Thread *th = _waitSystem.getThread();
+	if (th) {
+		th->removeWait(this);
+	}
+	_waitSystem.clear();
+
+	// その他の wait の解除
+	std::vector<ObjectInfo>::iterator i = _waitList.begin();
+	while (i != _waitList.end()) {
+		Object *obj = i->getObject();
+		if (obj) {
+			obj->removeWait(this);
+		}
+		i = _waitList.erase(i);
+	}
+	// タイムアウト指定の解除
+	_waitTimeout = -1;
+}
+
+/**
+ * 内部用:fork 処理。スレッドを１つ生成して VMにPUSHする
+ * @param v squirrelVM
+ * @return 成功したら true
+ */
+bool
+Thread::_fork(HSQUIRRELVM v)
+{
+	// スレッドオブジェクトはグローバル上に生成する
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushroottable(gv); // root
+	sq_pushstring(gv, SQTHREADNAME, -1);
+	if (SQ_SUCCEEDED(sq_get(gv,-2))) { // class
+		sq_pushroottable(gv); // 引数:self(root)
+		if (gv == v) {
+			sq_push(gv,2);
+		} else {
+			sq_move(gv, v, 2);    // 引数:func 元のVMから移してくる
+		}
+		if (SQ_SUCCEEDED(sq_call(gv, 2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+			if (gv == v) {
+				sq_remove(gv, -2); // class
+				sq_remove(gv, -2); // root
+			} else {
+				sq_move(v, gv, sq_gettop(gv)); // 元VMのほうに移す
+				sq_pop(gv, 3); // thread,class,root
+			}
+			return true;
+		}
+		sq_pop(gv, 1); // class
+	}
+	sq_pop(gv,1); // root
+	return false;
+}
+
+/**
+ * 内部用: wait処理
+ * @param v squirrelVM
+ * @param idx 該当 idx 以降にあるものを待つ
+ */
+void
+Thread::_wait(HSQUIRRELVM v, int idx)
+{
+	_clearWait();
+	_waitResult.clear();
+	int max = sq_gettop(v);
+	for (int i=idx;i<=max;i++) {
+		switch (sq_gettype(v, 2)) {
+		case OT_INTEGER:
+		case OT_FLOAT:
+			// 数値の場合はタイムアウト待ち
+			{
+				int timeout;
+				sq_getinteger(v, i, &timeout);
+				if (timeout >= 0) {
+					if (_waitTimeout < 0  || _waitTimeout > timeout) {
+						_waitResult.getStack(v, i);
+						_waitTimeout = timeout;
+					}
+				}
+			}
+			break;
+		case OT_STRING:
+			// 待ちリストに登録
+			_waitList.push_back(ObjectInfo(v,i));
+			break;
+		case OT_INSTANCE:
+			// オブジェクトに待ち登録してから待ちリストに登録
+			{
+				ObjectInfo o(v,i);
+				Object *obj = o.getObject();
+				if (obj) {
+					obj->addWait(this);
+				}
+				_waitList.push_back(o);
+			}
+			break;
+		}
+	}
+}
+
+/**
+ * 内部用: system処理の待ち登録。スタック先頭にあるスレッドを待つ
+ * @param v squirrelVM
+ */
+void
+Thread::_system(HSQUIRRELVM v)
+{
+	_clearWait();
+	_waitResult.clear();
+	_waitSystem.getStack(v, -1);
+	Object *obj = _waitSystem.getObject();
+	if (obj) {
+		obj->addWait(this);
+	}
+}
+
+// ---------------------------------------------------------------
+
+SQRESULT
+Thread::wait(HSQUIRRELVM v)
+{
+	_wait(v);
+	return 0;
+}
+
+/**
+ * waitのキャンセル
+ */
+void
+Thread::cancelWait()
+{
+	_clearWait();
+	_waitResult.clear();
+}
+
+/**
+ * 内部用: exec処理
+ * @param v squirrelVM
+ * @param 引数の先頭にあるものを実行開始する。文字列ならスクリプト、ファンクションなら直接
+ */
+void
+Thread::_exec(HSQUIRRELVM v)
+{
+	_clear();
+	// スレッド先頭にスクリプトをロード
+	if (sq_gettype(v, 2) == OT_STRING) {
+		// スクリプト指定で遅延ロード
+		const SQChar *filename;
+		sq_getstring(v, 2, &filename);
+		_scriptName = filename;
+		_fileHandler = sqobjOpenFile(getString(v, 2));
+		_status = THREAD_LOADING_FILE;
+	} else {
+		// ファンクション指定
+		_func.getStack(v, 2);
+		_status = THREAD_LOADING_FUNC;
+	}
+}
+
+/**
+ * 実行開始
+ * @param func 実行対象ファンクション。文字列の場合該当スクリプトを読み込む
+ */
+SQRESULT
+Thread::exec(HSQUIRRELVM v)
+{
+	if (sq_gettop(v) <= 1) {
+		return ERROR_INVALIDPARAM(v);
+	}
+		
+	_exec(v);
+	// スレッド情報として登録
+	ObjectInfo thinfo(v,1);
+	Thread *newth = thinfo.getThread();
+	if (newth) {
+		std::vector<ObjectInfo>::iterator i = threadList.begin();
+		while (i != threadList.end()) {
+			Thread *th = i->getThread();
+			if (th && th == newth) {
+				return SQ_OK;
+			}
+			i++;
+		}
+	}
+	newThreadList.push_back(thinfo);
+	return SQ_OK;
+}
+
+/**
+ * 実行終了
+ */
+SQRESULT
+Thread::exit(HSQUIRRELVM v)
+{
+	_exitCode.getStack(v,2);
+	notifyAll();
+	_clear();
+	return SQ_OK;
+}
+
+/**
+ * @return 実行ステータス
+ */
+SQRESULT
+Thread::getExitCode(HSQUIRRELVM v)
+{
+	_exitCode.push(v);
+	return 1;
+}
+
+/**
+ * 実行停止
+ */
+void
+Thread::stop()
+{
+	if (_status == THREAD_RUN) {
+		_status = THREAD_STOP;
+	}
+}
+
+/**
+ * 実行再開
+ */
+void
+Thread::run()
+{
+	if (_status == THREAD_STOP) {
+		_status = THREAD_RUN;
+	}
+}
+
+/**
+ * @return 実行ステータス
+ */
+int
+Thread::getStatus()
+{
+	return isWait() ? THREAD_WAIT : _status;
+}
+
+/**
+ * スレッドのメイン処理
+ * @param diff 経過時間
+ * @return スレッド実行終了なら true
+ */
+bool
+Thread::_main(long diff)
+{
+	// スレッドとして動作できてない場合は即終了
+	if (_status == THREAD_NONE) {
+		return true;
+	}
+
+	if (_status == THREAD_LOADING_FILE) {
+		// ファイル読み込み処理
+		const char *dataAddr;
+		int dataSize;
+		if (sqobjCheckFile(_fileHandler, &dataAddr, &dataSize)) {
+			init();
+			SQRESULT ret = sqstd_loadmemory(_thread, dataAddr, dataSize, _scriptName.c_str(), SQTrue);
+			sqobjCloseFile(_fileHandler);
+			_fileHandler = NULL;
+			_scriptName.clear();
+			if (SQ_SUCCEEDED(ret)) {
+				_status = THREAD_RUN;
+			} else {
+				// exit相当
+				printError();
+				notifyAll();
+				_clear();
+				return true;
+			}
+		} else {
+			// 読み込み完了待ち
+			return false;
+		}
+	} else if (_status == THREAD_LOADING_FUNC) {
+		// スクリプト読み込み処理
+		init();
+		_func.push(_thread);
+		_func.clear();
+		_status = THREAD_RUN;
+	}
+
+	_currentTick += diff;
+	
+	// タイムアウト処理
+	if (_waitTimeout >= 0) {
+		_waitTimeout -= diff;
+		if (_waitTimeout < 0) {
+			_clearWait();
+		}
+	}
+		
+	// スレッド実行
+	if (!isWait() && _status == THREAD_RUN) {
+		SQRESULT result;
+		if (sq_getvmstate(_thread) == SQ_VMSTATE_SUSPENDED) {
+			_waitResult.push(_thread);
+			_waitResult.clear();
+			result = sq_wakeupvm(_thread, SQTrue, SQFalse, SQTrue);
+		} else {
+			sq_pushroottable(_thread);
+			result = sq_call(_thread, 1, SQFalse, SQTrue);
+		}
+		if (SQ_FAILED(result)) {
+			// スレッドがエラー終了
+			printError();
+			notifyAll();
+			_clear();
+		} else  if (sq_getvmstate(_thread) == SQ_VMSTATE_IDLE) {
+			// スレッドが正常に終了
+			if (result > 0) {
+				_exitCode.getStack(_thread, -1);
+			}
+			notifyAll();
+			_clear();
+		}
+	}
+	
+	return _status == THREAD_NONE;
+}
+
+// -------------------------------------------------------------------------
+
+/**
+ * スレッドのエラー情報の表示
+ */
+void
+Thread::printError()
+{
+	sq_getlasterror(_thread);
+	const SQChar *str;
+	if (SQ_SUCCEEDED(sq_getstring(_thread, -1, &str))) {
+		SQPRINT(_thread, str);
+	} else {
+		SQPRINT(_thread, _SC("failed to run by unknown reason"));
+	}
+	sq_pop(_thread, 1);
+}
+
+/*
+ * 実行処理メインループ
+ * @param diff 経過時間
+ * 現在存在するスレッドを総なめで１度だけ実行する。
+ * システム本体のメインループ(イベント処理＋画像処理)
+ * から1度だけ呼び出すことで機能する。それぞれのスレッドは、
+ * 自分から明示的に suspend() または wait系のメソッドを呼び出して処理を
+ * 次のスレッドに委譲する必要がある。
+ * @return 動作中のスレッドの数
+ */
+int
+Thread::main(long diff)
+{
+	currentTick += diff;
+	std::vector<ObjectInfo>::iterator i = threadList.begin();
+	while (i != threadList.end()) {
+		Thread *th = i->getThread();
+		if (!th || th->_main(diff)) {
+			i = threadList.erase(i);
+		} else {
+			i++;
+		}
+	}
+	for (i=newThreadList.begin();i != newThreadList.end();i++) {
+		threadList.push_back(*i);
+	}
+	newThreadList.clear();
+	return threadList.size();
+};
+
+/**
+ * スクリプト実行開始用
+ * @param scriptName スクリプト名
+ * @return 成功なら true
+ */
+bool
+Thread::fork(const SQChar *scriptName)
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushroottable(gv); // root
+	sq_pushstring(gv, SQTHREADNAME, -1);
+	if (SQ_SUCCEEDED(sq_get(gv,-2))) { // class
+		sq_pushroottable(gv); // 引数:self(root)
+		sq_pushstring(gv, scriptName, -1);
+		if (SQ_SUCCEEDED(sq_call(gv, 2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+			sq_pop(gv, 3); // thread,class,root
+			return true;
+		}
+		sq_pop(gv, 1); // class
+	}
+	sq_pop(gv,1); // root
+	return false;
+}
+
+/**
+ * 動作スレッドの破棄
+ */
+void
+Thread::done()
+{
+	threadList.clear();
+	newThreadList.clear();
+}
+
+// -------------------------------------------------------------
+//
+// グローバルスレッド制御用諸機能
+//
+// -------------------------------------------------------------
+
+std::vector<ObjectInfo> Thread::threadList; //< スレッド一覧
+std::vector<ObjectInfo> Thread::newThreadList; //< 新規スレッド一覧
+long Thread::currentTick = 0;  //< 今回の呼び出し時間
+
+// -------------------------------------------------------------
+// グローバルメソッド用
+// -------------------------------------------------------------
+
+/**
+ * 現在時刻の取得
+ */
+SQRESULT
+Thread::global_getCurrentTick(HSQUIRRELVM v)
+{
+	sq_pushinteger(v, currentTick);
+	return 1;
+}
+
+/*
+ * @return 現在のスレッドを返す
+ */
+SQRESULT
+Thread::global_getCurrentThread(HSQUIRRELVM v)
+{
+	std::vector<ObjectInfo>::iterator i = threadList.begin();
+	while (i != threadList.end()) {
+		Thread *th = i->getThread();
+		if (th && th->isSameThread(v)) {
+			i->push(v);
+			return 1;
+		}
+		i++;
+	}
+	return ERROR_NOTHREAD(v);
+}
+
+/*
+ * @return 現在のスレッド一覧を返す
+ */
+SQRESULT
+Thread::global_getThreadList(HSQUIRRELVM v)
+{
+	sq_newarray(v, 0);
+	std::vector<ObjectInfo>::const_iterator i = threadList.begin();
+	while (i != threadList.end()) {
+		i->push(v);
+		sq_arrayappend(v, -2);
+		i++;
+	}
+	return 1;
+}
+
+/*
+ * スクリプトを新しいスレッドとして実行する
+ * ※ return Thread(func); 相当
+ * @param func スレッドで実行するファンクション
+ * @return 新スレッド
+ */
+SQRESULT
+Thread::global_fork(HSQUIRRELVM v)
+{
+	if (!_fork(v)) {
+		return ERROR_FORK(v);
+	}
+	return 1;
+}
+
+/**
+ * @return 現在実行中のスレッド情報オブジェクト(Thread*)
+ */
+Thread *
+Thread::getCurrentThread(HSQUIRRELVM v)
+{
+	std::vector<ObjectInfo>::iterator i = threadList.begin();
+	while (i != threadList.end()) {
+		Thread *th = i->getThread();
+		if (th && th->isSameThread(v)) {
+			return th;
+		}
+		i++;
+	}
+	return NULL;
+}
+
+/**
+ * スクリプトを切り替える
+ * @param func スレッドで実行するファンクション
+ */
+SQRESULT
+Thread::global_exec(HSQUIRRELVM v)
+{
+	Thread *th = getCurrentThread(v);
+	if (!th) {
+		return ERROR_NOTHREAD(v);
+	}
+	if (sq_gettop(v) <= 1) {
+		return ERROR_INVALIDPARAM(v);
+	}
+	th->_exec(v);
+	return sq_suspendvm(v);
+}
+
+/**
+ * 実行中スレッドの終了
+ */
+SQRESULT
+Thread::global_exit(HSQUIRRELVM v)
+{
+	Thread *th = getCurrentThread(v);
+	if (!th) {
+		return ERROR_NOTHREAD(v);
+	}
+	th->exit(v);
+	return sq_suspendvm(v);
+}
+
+/**
+ * コマンド実行
+ * @param func スレッドで実行するファンクション
+ * @return 終了コード
+ */
+SQRESULT
+Thread::global_system(HSQUIRRELVM v)
+{
+	Thread *th = getCurrentThread(v);
+	if (!th) {
+		return ERROR_NOTHREAD(v);
+	}
+	if (!_fork(v)) {
+		return ERROR_FORK(v);
+	}
+	th->_system(v);
+	sq_pop(v,1);
+	return sq_suspendvm(v);
+}
+
+/**
+ * 実行中スレッドの処理待ち
+ * @param target int:時間待ち(ms), string:トリガ待ち, obj:オブジェクト待ち
+ * @param timeout タイムアウト(省略時は無限に待つ)
+ * @return 待ちがキャンセルされたら true
+ */
+SQRESULT
+Thread::global_wait(HSQUIRRELVM v)
+{
+	Thread *th = getCurrentThread(v);
+	if (!th) {
+		return ERROR_NOTHREAD(v);
+	}
+	th->wait(v);
+	return sq_suspendvm(v);
+}
+
+/**
+ * 全スレッドへのトリガ通知
+ * @param name 処理待ちトリガ名
+ */
+SQRESULT
+Thread::global_trigger(HSQUIRRELVM v)
+{
+	const SQChar *name = getString(v, 2);
+	std::vector<ObjectInfo>::iterator i = threadList.begin();
+	while (i != threadList.end()) {
+		Thread *th = i->getThread();
+		if (th) {
+			th->notifyTrigger(name);
+		}
+		i++;
+	}
+	return SQ_OK;
+}
+
+/**
+ * グローバルメソッド登録
+ */
+void
+Thread::registerGlobal()
+{
+	// メソッド登録（名前つき）
+#define REGISTERMETHODNAME(name, method) \
+	sq_pushstring(v, _SC(#name), -1);\
+	sq_newclosure(v, method, 0);\
+	sq_createslot(v, -3);
+
+	// enum 登録（名前つき）
+#define REGISTERENUM(name, value) \
+	sq_pushstring(v, _SC(#name), -1); /* 名前を push */ \
+	sq_pushinteger(v, value);          /* 値を push */ \
+	sq_createslot(v, -3)              /* テーブルに登録 */
+	
+	HSQUIRRELVM v = getGlobalVM();
+
+	// グローバルメソッドの登録
+	sq_pushroottable(v); // root
+	REGISTERMETHODNAME(getCurrentTick, global_getCurrentTick);
+	REGISTERMETHODNAME(getCurrentThread, global_getCurrentThread);
+	REGISTERMETHODNAME(getThreadList, global_getThreadList);
+	REGISTERMETHODNAME(fork, global_fork);
+	REGISTERMETHODNAME(exec, global_exec);
+	REGISTERMETHODNAME(exit, global_exit);
+	REGISTERMETHODNAME(system, global_system);
+	REGISTERMETHODNAME(wait, global_wait);
+	REGISTERMETHODNAME(notify, global_trigger);
+	sq_pop(v, 1); // root
+	
+	// 定数の登録
+	sq_pushconsttable(v); // consttable
+	sq_pushstring(v, _SC("THREADSTATUS"), -1); // テーブル名を push
+	sq_newtable(v);                  // 新しい enum テーブル
+	REGISTERENUM(NONE,THREAD_NONE);
+	REGISTERENUM(LOADING_FILE,THREAD_LOADING_FILE);
+	REGISTERENUM(LOADING_FUNC,THREAD_LOADING_FUNC);
+	REGISTERENUM(STOP,THREAD_STOP);
+	REGISTERENUM(RUN,THREAD_RUN);
+	REGISTERENUM(WAIT,THREAD_WAIT);
+	sq_createslot(v, -3);              /* テーブルに登録 */
+	sq_pop(v, 1); // consttable
+}
+
+};

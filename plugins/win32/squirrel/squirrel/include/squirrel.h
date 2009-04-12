@@ -109,6 +109,7 @@ typedef wchar_t SQChar;
 #define scatoi		_wtoi
 #define scstrtoul	wcstoul
 #define scvsprintf	vswprintf
+#define scvsnprintf	vsnwprintf
 #define scstrstr	wcsstr
 #define scisspace	iswspace
 #define scisdigit	iswdigit
@@ -129,6 +130,7 @@ typedef char SQChar;
 #define scatoi		atoi
 #define scstrtoul	strtoul
 #define scvsprintf	vsprintf
+#define scvsnprintf	vsnprintf
 #define scstrstr	strstr
 #define scisspace	isspace
 #define scisdigit	isdigit

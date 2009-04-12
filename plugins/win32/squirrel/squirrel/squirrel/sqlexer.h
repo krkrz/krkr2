@@ -40,6 +40,9 @@ public:
 	sqvector<SQChar> _longstr;
 	CompilerErrorFunc _errfunc;
 	void *_errtarget;
+#if !defined(_UNICODE) && defined(USESJIS)
+	bool iskanji;
+#endif
 };
 
 #endif
