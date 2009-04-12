@@ -64,16 +64,34 @@ class Object {
 	function notifyAll();
 };
 
+enum {
+	// スレッドのステート
+	NONE = 0;     // 無し
+	LOADING_FILE = 1;  // ファイル読み込み中
+	LOADING_FUNC = 2;  // 関数読み込み中
+	STOP = 3;     // 停止中
+	RUN  = 4;      // 実行中
+	WAIT = 5;     // 処理待ち
+} TEREADSTATUS;
+
 /**
  * スレッド制御用オブジェクト
  * 疑似スレッドを制御するためのオブジェクトです。
- * スレッドを実行中の場合、ユーザの参照がなくなってもシステムが参照を維持します。
+ *
+ * ●スレッド実行機能
+ * exec でスクリプトをスレッド実行させることができます。
+ * スレッドを実行中の場合、仮にユーザの参照がなくなってもシステムが参照を維持します。
+ * 指定されたのが定義済みの関数の場合は、スレッドのステートは直ちに「RUN」になり、
+ * 次の実行処理単位から実行が開始されます。
+ * ファイルから実行する場合は、ファイルロードが完了するまで実行開始が遅延する場合があります。
+ * ロード中はスレッドのステートが「LOADING」になります。
  * 
  * ●wait機能
- * スレッドは実行処理を一時停止して「待つ」ことができます。
- * 時間待ち: 指定された時間(ms単位)以上の間実行を停止します。
- * トリガ待ち: 指定されてトリガ(文字列指定)が送られてくるまで実行を停止します。
- * オブジェクト待ち: 指定されたObject型のオブジェクトから notify() をうけるまで実行を停止します。
+ * スレッドは実行処理を一時停止して「待つ」ことができます。この状態のステートは「WAIT」です。
+ *
+ * - 時間待ち: 指定された時間(規定の実行単位)以上の間実行を停止します。
+ * - トリガ待ち: 指定されてトリガ(文字列指定)が送られてくるまで実行を停止します。
+ * - オブジェクト待ち: 指定されたObject型のオブジェクトから notify() をうけるまで実行を停止します。
  * 
  * オブジェクトの notify() のタイミングはオブジェクトの実装次第です。
  * ただし、オブジェクト破棄時は自動的に notifyAll() されます。
@@ -82,12 +100,6 @@ class Object {
  */
 class Thread extends Object {
 
-	// スレッドのステート
-	STOP = 0; // 停止
-	RUN = 1;  // 実行中
-	WAIT = 2; // 処理待ち
-	END = 3;  // 終了
-	
 	/**
 	 * コンストラクタ
 	 * @param func スレッドを生成後実行するファンクションまたはファイル名
@@ -101,9 +113,14 @@ class Thread extends Object {
 	function getCurrentTick();
 
 	/**
-	 * @return このスレッドの実行ステータス STOP/RUN/WAIT/END
+	 * @return このスレッドの実行ステータス NONE/LOADING/STOP/RUN/WAIT
 	 */
 	function getStatus();
+
+	/**
+	 * @return このスレッドの終了コード
+	 */
+	function getExitCode();
 
 	/**
 	 * スレッドの実行開始
@@ -113,8 +130,9 @@ class Thread extends Object {
 
 	/**
 	 * スレッドの終了
+	 * @param exitCode 終了コード
 	 */
-	function exit();
+	function exit(exitCode);
 
 	/**
 	 * スレッドの一時停止
@@ -145,7 +163,7 @@ class Thread extends Object {
 function getThreadList();
 
 /**
- * @return 現在実行中のスレッドを返します。
+ * @return 現在実行中のスレッド(Thread)を返します。
  */
 function getCurrentThread();
 
@@ -164,8 +182,16 @@ function exec(func);
 
 /**
  * 現在実行中のスレッドを終了します
+ * @param exitCode 終了コード
  */
-function exit();
+function exit(exitCode);
+
+/**
+ * 現在実行中のスレッドから、別のスクリプトを実行してその終了を待ちます。
+ * @param func 呼び出すグローバル関数またはスクリプトファイル名
+ * @return 呼び出したスクリプトの終了コード (exit()で指定したもの、または最後の return の値)
+ */
+function system(func);
 
 /**
  * 現在実行中のスレッドの実行待ち。いずれかの条件で解除されます。引数を指定しなかった場合でも、
