@@ -307,12 +307,13 @@ public:
 namespace sqobject {
 
 // typetag 全ソースでユニークなアドレスにする必要がある
-SQUserPointer OBJECTTYPETAG = (SQUserPointer)"OBJECTTYPETAG";
-SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
+const SQUserPointer OBJECTTYPETAG = (SQUserPointer)"OBJECTTYPETAG";
+const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
 
 // クラス情報定義
-DECLARE_CLASS(Object);
-DECLARE_CLASS(Thread);
+
+DECLARE_CLASSNAME(Object, SQOBJECTNAME);
+DECLARE_CLASSNAME(Thread, SQTHREADNAME);
 
 // global vm
 HSQUIRRELVM vm;

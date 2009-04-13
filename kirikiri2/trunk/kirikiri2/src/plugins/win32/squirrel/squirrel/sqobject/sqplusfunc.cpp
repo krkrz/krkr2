@@ -11,8 +11,8 @@
 
 using namespace SqPlus;
 using namespace sqobject;
-DECLARE_INSTANCE_TYPE(Object);
-DECLARE_INSTANCE_TYPE(Thread);
+DECLARE_INSTANCE_TYPE_NAME(Object, SQOBJECTNAME);
+DECLARE_INSTANCE_TYPE_NAME(Thread, SQTHREADNAME);
 
 namespace sqobject {
 
