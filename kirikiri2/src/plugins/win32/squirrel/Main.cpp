@@ -5,6 +5,7 @@
 #include <sqstdio.h>
 #include <sqstdblob.h>
 #include <sqthread.h>
+#include <sqcont.h>
 #include "sqtjsobj.h"
 
 // squirrel 上での TJS2のグローバル空間の参照名
@@ -353,6 +354,7 @@ public:
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
 		tjs_uint64 diff = tick - prevTick;
 		sqobject::Thread::main(diff);
+		sqobject::mainContinuous();
 		prevTick = tick;
 	}
 };
@@ -857,6 +859,8 @@ static void PreRegistCallback()
 	// 基本初期化
 	sqbasic_init(vm);
 
+	sqobject::registerContinuous();
+	
 	// オブジェクト機構初期化
 	sqobject::Object::registerClass();
 	sqobject::Thread::registerClass();
@@ -911,6 +915,7 @@ static void PostRegistCallback()
 static void PreUnregistCallback()
 {
 	sqthreadcont.stop();
+	sqobject::doneContinuous();
 	sqobject::Thread::done();
 	
 	if (ArrayCountProp) {

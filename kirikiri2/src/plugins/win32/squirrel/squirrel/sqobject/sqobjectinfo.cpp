@@ -9,6 +9,18 @@
 
 namespace sqobject {
 
+// 比較
+bool ObjectInfo::operator == (const ObjectInfo &o)
+{
+	bool cmp = false;
+	HSQUIRRELVM v = getGlobalVM();
+	push(v);
+	o.push(v);
+	cmp = sq_cmp(v) == 0;
+	sq_pop(v,2);
+	return cmp;
+}
+	
 // 内容消去
 void
 ObjectInfo::clear()
@@ -209,40 +221,6 @@ void ObjectInfo::append(HSQUIRRELVM v, int idx)
 	sq_pop(gv,1);
 }
 
-/// 配列に値を追加
-template<typename T>
-void ObjectInfo::append(T value)
-{
-	HSQUIRRELVM gv = getGlobalVM();
-	sq_pushobject(gv, obj);
-	pushValue(gv, value);
-	sq_arrayappend(gv, -2);
-	sq_pop(gv,1);
-}
-
-/// 配列に値を挿入
-template<typename T>
-void ObjectInfo::insert(int index, T value)
-{
-	HSQUIRRELVM gv = getGlobalVM();
-	sq_pushobject(gv, obj);
-	pushValue(gv, value);
-	sq_arrayinsert(gv, -2, index);
-	sq_pop(gv,1);
-}
-
-/// 配列に値を格納
-template<typename T>
-void ObjectInfo::set(int index, T value)
-{
-	HSQUIRRELVM gv = getGlobalVM();
-	sq_pushobject(gv, obj);
-	sq_pushinteger(gv, index);
-	pushValue(gv, value);
-	sq_set(gv, -3);
-	sq_pop(gv,1);
-}
-
 /// 配列の長さ
 int
 ObjectInfo::len() const
@@ -276,6 +254,20 @@ ObjectInfo::pushArray(HSQUIRRELVM v) const
 	}
 	sq_pop(gv,1);
 	return len;
+}
+
+// ---------------------------------------------------
+// 関数処理用メソッド
+// ---------------------------------------------------
+
+SQRESULT ObjectInfo::call()
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushobject(gv, obj);
+	sq_pushroottable(gv); // root
+	SQRESULT ret = sq_call(gv, 1, SQFalse, SQTrue);
+	sq_pop(gv, 1);
+	return ret;
 }
 
 };

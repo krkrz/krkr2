@@ -17,7 +17,12 @@ squirrel で疑似スレッド処理を実現するライブラリです。
 ◇非同期ファイルロードの実装
 
 ファイルを非同期に読み込む処理を行うために以下のメソッドを実装してください。
-※ squirrel 標準機構の sqstd_loadfile 他は全く使ってません
+
+※ squirrel 標準機構の sqstd_loadfile 他は全く使ってません。
+　 サンプルの sqfunc や sqplusfunc 中の初期化処理では 
+   sqstdmath と sqstdstring だけ登録しています。
+
+   ルールが混乱するので、dofile() の利用にはご注意ください。
 
 -----------------------------------------------------------------------------
 /**
@@ -139,6 +144,33 @@ wait() 命令に渡す数値パラメータの意味になります。
  sqfunc.cpp     シンプルな継承/メンバ関数処理の実装例
  sqplusfunc.cpp	SQPlusを使う場合の実装例
 
+●continuous handler 機能
+
+スレッド機構とは別に、単純にエンジン側から特定の squirrel 
+スクリプトを定期的に呼び出す機能です。
+
+スレッド処理      : ユーザによる制御処理
+continuous handler: 制御が終わったあとの自律計算処理
+
+といった使い分けを想定しています。continuous handlerの
+呼び出しは、すべてのスレッド処理が一旦 suspend した後になります。
+
+※この呼び出しは、常に通常の sq_call によるものなので、
+  スクリプトを suspend() して復帰することはできません。
+
+・sqobject::registerContinuous() を呼び出すことで機能登録されます
+
+・sqobject::Thread::main(diff) を呼び出した後で、
+  sqobject::mainContinuous() を呼び出してください
+
+・全処理終了時には　sqoject::doneContinuous() を呼び出します
+
+
+◇スクリプト側からの登録
+
+addContinuous(func), removeContinuous(func) で関数を登録/解除できます。
+
+
 ●スクリプトの呼び出し
 
 C++側からスクリプトを起動する場合は、Thread::fork() を使うか、
@@ -154,8 +186,8 @@ SqPlus::SquirrelFunction<int>("fork")(NULL, _SC("file.nut"));
 個別のスクリプトは、待ち状態になるまで実行を中断しないため、
 容易に busy loop になります。定期的に wait() または suspend() 
 をいれてシステムに処理を戻すようにする必要があります。
-原則としては、画面更新が必要なタイミングで wait() を
-行えば良いことになります。
+原則としては、画面更新が必要なタイミングで suspend() 
+を行えば良いことになります。
 
 ●ライセンス
 

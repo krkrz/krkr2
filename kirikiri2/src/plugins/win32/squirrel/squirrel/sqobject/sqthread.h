@@ -38,11 +38,11 @@ namespace sqobject {
 class Thread : public Object {
 
 protected:
-	long _currentTick; //< このスレッドの実行時間
-
-	tstring _scriptName; //< スクリプト名
+	long _currentTick; ///< このスレッドの実行時間
 	
-	void *_fileHandler; //< このスレッドが開こうとしているファイル
+	tstring _scriptName; ///< スクリプト名
+	
+	void *_fileHandler; ///< このスレッドが開こうとしているファイル
 	
 	// スレッドデータ
 	ObjectInfo _thread;
@@ -280,11 +280,14 @@ public:
 	// グローバルスレッド制御用諸機能
 	//
 	// -------------------------------------------------------------
+
+public:
+	static long currentTick;  ///< 今回の呼び出し時間
+	static long diffTick;     ///< 差分呼び出し時間
 	
 protected:
-	static std::vector<ObjectInfo> threadList; //< スレッド一覧
-	static std::vector<ObjectInfo> newThreadList; //< スレッド一覧
-	static long currentTick;  //< 今回の呼び出し時間
+	static std::vector<ObjectInfo> threadList; ///< スレッド一覧
+	static std::vector<ObjectInfo> newThreadList; ///< スレッド一覧
 
 	// -------------------------------------------------------------
 	// グローバルメソッド用
@@ -295,6 +298,11 @@ protected:
 	 */
 	static SQRESULT global_getCurrentTick(HSQUIRRELVM v);
 
+	/**
+	 * 差分時刻の取得
+	 */
+	static SQRESULT global_getDiffTick(HSQUIRRELVM v);
+	
 	/*
 	 * @return 現在のスレッドを返す
 	 */
