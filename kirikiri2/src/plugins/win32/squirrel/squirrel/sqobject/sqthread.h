@@ -50,6 +50,9 @@ protected:
 	// 実行スクリプト
 	ObjectInfo _func;
 
+	// 引数リスト
+	ObjectInfo _args;
+
 	// system用待ち
 	ObjectInfo _waitSystem;
 	// 待ち対象
@@ -166,9 +169,14 @@ protected:
 	/**
 	 * 内部用: exec処理
 	 * @param v squirrelVM
-	 * @param 引数の先頭にあるものを実行開始する。文字列ならスクリプト、ファンクションなら直接
+	 * @param idx このインデックスから先にあるものを実行開始する。文字列ならスクリプト、ファンクションなら直接
 	 */
-	void _exec(HSQUIRRELVM v);
+	void _exec(HSQUIRRELVM v, int idx=2);
+
+	/**
+	 * 現在のオブジェクトを実行スレッドとして登録
+	 */
+	void _entryThread(HSQUIRRELVM v);
 	
 public:
 	/**
@@ -256,9 +264,11 @@ public:
 	/**
 	 * スクリプト実行開始用
 	 * @param scriptName スクリプト名
+	 * @param argc 引数の数
+	 * @param argv 引数
 	 * @return 成功なら true
 	 */
-	static bool fork(const SQChar *scriptName);
+	static bool fork(const SQChar *scriptName, int argc=0, const SQChar **argv=NULL);
 
 	/**
 	 * 動作スレッドの破棄

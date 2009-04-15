@@ -1,0 +1,63 @@
+Author: 渡邊剛 (合資会社ワムソフト)
+Date: 2009/4/15
+
+●SQUIRREL仕様変更
+
+・SJISスルー対応
+　
+　USESJIS が定義されてる場合は、SJIS の文字列を通すようになります
+
+　適切に文字分離できてるわけではありません。コンパイル時の
+  漢字の2byte目でのエスケープ処理の誤動作が防がれるだけです。
+
+・スレッド実行中の sq_call でエラーを出力するように修正
+
+　sqbaselib.c:776 の　sq_call の raiseerror を SQFalse → SQTrue
+
+・コンパイルされたスクリプトは可変長引数を持つように修正 
+
+  function main(...) という扱いになっていて、
+  vargc, vargv で sq_call 時に渡された引数を参照できます
+
+ compiler.cpp:163 に funcstate._varparams = true; を追加
+
+●SQPLUS仕様変更
+
+オリジナルの SQPLUS では、エラー処理に例外を使っていたため、
+ゲーム用途では不便なので以下のような仕様変更を行いました。
+
+・SuiqrrelVM のコンパイル処理系の関数
+
+　squirrelのエラーコードを返すように仕様変更
+
+　帰り値　：エラーコード
+  第一引数：帰り値(SquirrelObject)の参照
+
+・SquirrelFunction の呼び出し
+
+　squirrelのエラーコードを返すように仕様変更
+
+　帰り値：エラーコード
+　第一引数：関数呼び出しの帰り値（テンプレートで指定した型）を格納するポインタ
+
+  SquirrelFunction<void>() はエラーになります。帰り値を無視したい
+　場合は、型には int などを指定した上で、第一引数に NULL を渡してください。
+
+・各種呼び出し時の Push/Get系の例外(オブジェクト関連で発生)を廃止
+
+  全部ログ出力のみでスルーするように仕様変更
+　失敗時は値には NULLが入ります。
+
+　ログ出力はマクロ SQPLUS_LOG(msg) で定義されてます。
+　コンパイラ側で再定義することで置き換え可能です。
+
+  標準定義は以下の通り
+  -----------------------------------------------
+  #define SQPLUS_LOG(msg) scprintf(msg);
+  -----------------------------------------------
+
+・ポインタを返した場合にリリーサを付加する定義を追加
+
+DECLARE_INSTANCE_TYPE_NAME_RELEASE(TYPE,NAME)
+DECLARE_INSTANCE_TYPE_RELEASE(TYPE)
+

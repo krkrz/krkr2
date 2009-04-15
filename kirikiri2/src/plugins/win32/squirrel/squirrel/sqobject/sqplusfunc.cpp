@@ -9,10 +9,14 @@
 #include "sqthread.h"
 #include <sqplus.h>
 
+#include <sqstdstring.h>
+#include <sqstdmath.h>
+#include <sqstdaux.h>
+
 using namespace SqPlus;
 using namespace sqobject;
-DECLARE_INSTANCE_TYPE_NAME(Object, SQOBJECTNAME);
-DECLARE_INSTANCE_TYPE_NAME(Thread, SQTHREADNAME);
+DECLARE_INSTANCE_TYPE_RELEASE(Object);
+DECLARE_INSTANCE_TYPE_RELEASE(Thread);
 
 namespace sqobject {
 
@@ -23,6 +27,11 @@ HSQUIRRELVM vm;
 HSQUIRRELVM init() {
 	vm = sq_open(1024);
 	SquirrelVM::InitNoRef(vm);
+	sq_pushroottable(vm);
+	sqstd_register_mathlib(vm);
+	sqstd_register_stringlib(vm);
+	sqstd_seterrorhandlers(vm);
+	sq_pop(vm,1);
 	return vm;
 }
 
@@ -110,6 +119,10 @@ Object::registerClass()
 	SQVFUNC(Object,getDelegate);
 	SQVFUNC(Object,_get);
 	SQVFUNC(Object,_set);
+	// _get / _set Ç≈ìoò^ÇµÇΩÇ‡ÇÃÇÕå„Ç©ÇÁéQè∆Ç≈Ç´Ç»Ç¢ÇÃÇ≈ÅA
+	// åpè≥êÊÇ≈égÇ§ÇΩÇﬂÇ…ï ñºÇ≈ìoò^ÇµÇƒÇ®Ç≠
+	cls.funcVarArgs(&Object::_get,_SC("get"));
+	cls.funcVarArgs(&Object::_set,_SC("set"));
 };
 
 /**
@@ -118,7 +131,7 @@ Object::registerClass()
 void
 Thread::registerClass()
 {
-	SqPlus::SQClassDef<Thread,Object> cls(SQTHREADNAME);
+	SqPlus::SQClassDef<Thread,Object> cls(SQTHREADNAME, SQOBJECTNAME);
 	SQCONSTRUCT(Thread);
 	SQVFUNC(Thread,exec);
 	SQVFUNC(Thread,exit);

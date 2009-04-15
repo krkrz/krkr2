@@ -4,7 +4,6 @@
  */
 #include "sqthread.h"
 #include <string.h>
-#include <sqstdio.h>
 
 extern SQRESULT sqstd_loadmemory(HSQUIRRELVM v, const char *dataBuffer, int dataSize, const SQChar *filename, SQBool printerror);
 
@@ -106,11 +105,12 @@ Thread::Thread() : _currentTick(0), _fileHandler(NULL), _waitTimeout(-1), _statu
 }
 
 // コンストラクタ
-Thread::Thread(HSQUIRRELVM v) : Object(v,3), _currentTick(0), _fileHandler(NULL), _waitTimeout(-1), _status(THREAD_NONE)
+Thread::Thread(HSQUIRRELVM v) : Object(v), _currentTick(0), _fileHandler(NULL), _waitTimeout(-1), _status(THREAD_NONE)
 {
 	// 実行
-	if (sq_gettop(v) > 1) {
-		exec(v);
+	if (sq_gettop(v) >= 3) {
+		_exec(v,3);
+		_entryThread(v);
 	}
 }
 
@@ -120,6 +120,7 @@ Thread::~Thread()
 	notifyAll();
 	_clear();
 	_thread.clear();
+	_args.clear();
 }
 
 /**
@@ -185,17 +186,27 @@ bool
 Thread::_fork(HSQUIRRELVM v)
 {
 	// スレッドオブジェクトはグローバル上に生成する
+	int max = sq_gettop(v);
 	HSQUIRRELVM gv = getGlobalVM();
 	sq_pushroottable(gv); // root
 	sq_pushstring(gv, SQTHREADNAME, -1);
 	if (SQ_SUCCEEDED(sq_get(gv,-2))) { // class
 		sq_pushroottable(gv); // 引数:self(root)
+		sq_pushnull(gv);      // 引数:delegate
+		// 引数をコピー
+		int argc = 2;
 		if (gv == v) {
-			sq_push(gv,2);
+			for (int i=2;i<=max;i++) {
+				sq_push(gv,i);
+				argc++;
+			}
 		} else {
-			sq_move(gv, v, 2);    // 引数:func 元のVMから移してくる
+			for (int i=2;i<=max;i++) {
+				sq_move(gv, v, i);
+				argc++;
+			}
 		}
-		if (SQ_SUCCEEDED(sq_call(gv, 2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+		if (SQ_SUCCEEDED(sq_call(gv, argc, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 			if (gv == v) {
 				sq_remove(gv, -2); // class
 				sq_remove(gv, -2); // root
@@ -295,26 +306,57 @@ Thread::cancelWait()
 /**
  * 内部用: exec処理
  * @param v squirrelVM
- * @param 引数の先頭にあるものを実行開始する。文字列ならスクリプト、ファンクションなら直接
+ * @param idx このインデックスから先にあるものを実行開始する。文字列ならスクリプト、ファンクションなら直接
  */
 void
-Thread::_exec(HSQUIRRELVM v)
+Thread::_exec(HSQUIRRELVM v, int idx)
 {
 	_clear();
 	// スレッド先頭にスクリプトをロード
-	if (sq_gettype(v, 2) == OT_STRING) {
+	if (sq_gettype(v, idx) == OT_STRING) {
 		// スクリプト指定で遅延ロード
 		const SQChar *filename;
-		sq_getstring(v, 2, &filename);
+		sq_getstring(v, idx, &filename);
 		_scriptName = filename;
-		_fileHandler = sqobjOpenFile(getString(v, 2));
+		_fileHandler = sqobjOpenFile(getString(v, idx));
 		_status = THREAD_LOADING_FILE;
 	} else {
 		// ファンクション指定
-		_func.getStack(v, 2);
+		_func.getStack(v, idx);
 		_status = THREAD_LOADING_FUNC;
 	}
+	// 引数を記録
+	int max = sq_gettop(v);
+	if (max > idx) {
+		_args.initArray();
+		for (int i=idx+1;i<=max;i++) {
+			_args.append(v, i);
+		}
+	}
 }
+
+/**
+ * スレッドとして登録する
+ */
+void
+Thread::_entryThread(HSQUIRRELVM v)
+{
+	// スレッド情報として登録
+	ObjectInfo thinfo(v,1);
+	Thread *newth = thinfo.getThread();
+	if (newth) {
+		std::vector<ObjectInfo>::iterator i = threadList.begin();
+		while (i != threadList.end()) {
+			Thread *th = i->getThread();
+			if (th && th == newth) {
+				return;
+			}
+			i++;
+		}
+	}
+	newThreadList.push_back(thinfo);
+}
+
 
 /**
  * 実行開始
@@ -328,20 +370,8 @@ Thread::exec(HSQUIRRELVM v)
 	}
 		
 	_exec(v);
-	// スレッド情報として登録
-	ObjectInfo thinfo(v,1);
-	Thread *newth = thinfo.getThread();
-	if (newth) {
-		std::vector<ObjectInfo>::iterator i = threadList.begin();
-		while (i != threadList.end()) {
-			Thread *th = i->getThread();
-			if (th && th == newth) {
-				return SQ_OK;
-			}
-			i++;
-		}
-	}
-	newThreadList.push_back(thinfo);
+	_entryThread(v);
+
 	return SQ_OK;
 }
 
@@ -420,7 +450,6 @@ Thread::_main(long diff)
 			SQRESULT ret = sqstd_loadmemory(_thread, dataAddr, dataSize, _scriptName.c_str(), SQTrue);
 			sqobjCloseFile(_fileHandler);
 			_fileHandler = NULL;
-			_scriptName.clear();
 			if (SQ_SUCCEEDED(ret)) {
 				_status = THREAD_RUN;
 			} else {
@@ -461,7 +490,9 @@ Thread::_main(long diff)
 			result = sq_wakeupvm(_thread, SQTrue, SQFalse, SQTrue);
 		} else {
 			sq_pushroottable(_thread);
-			result = sq_call(_thread, 1, SQFalse, SQTrue);
+			int n = _args.pushArray(_thread) + 1;
+			_args.clear();
+			result = sq_call(_thread, n, SQFalse, SQTrue);
 		}
 		if (SQ_FAILED(result)) {
 			// スレッドがエラー終了
@@ -489,14 +520,16 @@ Thread::_main(long diff)
 void
 Thread::printError()
 {
-	sq_getlasterror(_thread);
-	const SQChar *str;
-	if (SQ_SUCCEEDED(sq_getstring(_thread, -1, &str))) {
-		SQPRINT(_thread, str);
-	} else {
-		SQPRINT(_thread, _SC("failed to run by unknown reason"));
+	SQPRINTFUNCTION print = sq_getprintfunc(_thread);
+	if (print) {
+		sq_getlasterror(_thread);
+		const SQChar *err;
+		if (SQ_FAILED(sq_getstring(_thread, -1, &err))) {
+			err = _SC("unknown");
+		}
+		print(_thread,_SC("error:%s:%s\n"), _scriptName.c_str(), err);
+		sq_pop(_thread, 1);
 	}
-	sq_pop(_thread, 1);
 }
 
 /*
@@ -532,18 +565,26 @@ Thread::main(long diff)
 /**
  * スクリプト実行開始用
  * @param scriptName スクリプト名
+ * @param argc 引数の数
+ * @param argv 引数
  * @return 成功なら true
  */
 bool
-Thread::fork(const SQChar *scriptName)
+Thread::fork(const SQChar *scriptName, int argc, const SQChar **argv)
 {
 	HSQUIRRELVM gv = getGlobalVM();
 	sq_pushroottable(gv); // root
 	sq_pushstring(gv, SQTHREADNAME, -1);
 	if (SQ_SUCCEEDED(sq_get(gv,-2))) { // class
 		sq_pushroottable(gv); // 引数:self(root)
-		sq_pushstring(gv, scriptName, -1);
-		if (SQ_SUCCEEDED(sq_call(gv, 2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+		sq_pushnull(gv);      // 引数:delegate
+		sq_pushstring(gv, scriptName, -1); // 引数:func
+		int n = 3;
+		for (int i=0;i<argc;i++) {
+			sq_pushstring(gv, argv[i], -1);
+			n++;
+		}
+		if (SQ_SUCCEEDED(sq_call(gv, n, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 			sq_pop(gv, 3); // thread,class,root
 			return true;
 		}

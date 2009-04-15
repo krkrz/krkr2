@@ -75,10 +75,10 @@ public:
 	// ---------------------------------------------------
 
 	// delegate として機能するかどうか
-	bool isDelegate();
+	bool isDelegate() const;
 
 	// bindenv させるかどうか
-	bool isBindDelegate();
+	bool isBindDelegate() const;
 
 	// ---------------------------------------------------
 	// データ取得
@@ -101,6 +101,46 @@ public:
 	// ---------------------------------------------------
 
 	bool isSameString(const SQChar *str) const;
+
+	// ---------------------------------------------------
+	// 配列処理用
+	// ---------------------------------------------------
+
+protected:
+	static void pushValue(HSQUIRRELVM v, int value) { sq_pushinteger(v,value); }
+	static void pushValue(HSQUIRRELVM v, const SQChar *value) { sq_pushstring(v,value,-1); }
+
+public:
+	/// 配列として初期化
+	void initArray(int size=0);
+
+	/// @return 配列なら true
+	bool isArray() const { return sq_isarray(obj); }
+
+	/// 配列に値を追加
+	void append(HSQUIRRELVM v, int idx);
+	
+	/// 配列に値を追加
+	template<typename T>
+	void append(T value);
+
+	/// 配列に値を挿入
+	template<typename T>
+	void insert(int index, T value);
+
+	/// 配列に値を格納
+	template<typename T>
+	void set(int index, T value);
+
+	/// @return 配列の長さ
+	int len() const;
+
+	/**
+	 * 配列の内容を全部PUSH
+	 * @param v squirrelVM
+	 * @return push した数
+	 */
+	int pushArray(HSQUIRRELVM v) const;
 };
 
 };
