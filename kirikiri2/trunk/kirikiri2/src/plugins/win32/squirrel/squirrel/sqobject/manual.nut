@@ -105,7 +105,7 @@ enum {
  * ●wait機能
  * スレッドは実行処理を一時停止して「待つ」ことができます。この状態のステートは「WAIT」です。
  *
- * - 時間待ち: 指定された時間(規定の実行単位)以上の間実行を停止します。
+ * - 時間待ち: 指定された時間(tick値)以上の間実行を停止します。
  * - トリガ待ち: 指定されてトリガ(文字列指定)が送られてくるまで実行を停止します。
  * - オブジェクト待ち: 指定されたObject型のオブジェクトから notify() をうけるまで実行を停止します。
  * 
@@ -125,12 +125,12 @@ class Thread extends Object {
 	constructor(delegate=null, func=null, ...);
 
 	/**
-	 * @return このスレッドの実行時間
+	 * @return このスレッドの実行時間(tick値)wo
 	 */
 	function getCurrentTick();
 
 	/**
-	 * @return このスレッドの実行ステータス NONE/LOADING/STOP/RUN/WAIT
+	 * @return このスレッドの実行ステータス NONE/LOADING_FILE/LOADING_FUNC/STOP/RUN/WAIT
 	 */
 	function getStatus();
 
@@ -164,7 +164,7 @@ class Thread extends Object {
 	/**
 	 * スレッドの実行待ち。いずれかの条件で解除されます。引数を指定しなかった場合でも、
 	 * いったん処理が中断して、システム側のイベント/更新処理完了後に復帰します。
-	 * @param param 待ち条件指定 文字列:トリガ待ち オブジェクト:オブジェクト待ち 数値:時間待ち(ms)※最小の指定が有効
+	 * @param param 待ち条件指定 文字列:トリガ待ち オブジェクト:オブジェクト待ち 数値:時間待ち(tick値)※最小の指定が有効
 	 */
 	function wait(param, ...);
 
@@ -173,6 +173,10 @@ class Thread extends Object {
 	 */
 	function cancelWait();
 };
+
+// ------------------------------------------------
+// スレッド系グローバルメソッド
+// ------------------------------------------------
 
 /**
  * @return 稼働中スレッドの一覧(配列)を返します。
@@ -185,9 +189,14 @@ function getThreadList();
 function getCurrentThread();
 
 /**
- * @return 現在実行中のスレッドの実行時間を返します
+ * @return 現在実行中のスレッドの実行時間(tick値)
  */
 function getCurrentTick();
+
+/**
+ * @return 現在実行中のスレッドの前回実行時からの経過時間(tick値)
+ */
+function getDiffTick();
 
 /**
  * 新しいスレッドを生成して実行します。Thread(null,func, ...) と等価です。
@@ -221,7 +230,7 @@ function system(func, ...);
 /**
  * 現在実行中のスレッドの実行待ち。いずれかの条件で解除されます。引数を指定しなかった場合でも、
  * いったん処理が中断して、システム側のイベント/更新処理完了後に復帰します。
- * @param param 待ち条件指定 文字列:トリガ待ち オブジェクト:オブジェクト待ち 数値:時間待ち(ms)※最小の指定が有効
+ * @param param 待ち条件指定 文字列:トリガ待ち オブジェクト:オブジェクト待ち 数値:時間待ち(tick値)※最小の指定が有効
  * @return wait解除の原因。待ちが無いかキャンセルされた場合は null
  */
 function wait(param, ...);
@@ -233,3 +242,28 @@ function wait(param, ...);
  * @param trigger トリガ名
  */
 function notify(trigger);
+
+// ------------------------------------------------
+// Continuous Handler
+// ------------------------------------------------
+
+/**
+ * 描画処理前に呼び出されるファンクションを登録する。
+ * ファンクションは function(currentTick, diffTick) の形で呼び出されます。
+ * この呼び出しはスレッドによるものではないため、処理中に suspend() / wait() を
+ * 呼ぶとエラーになるので注意してください。必ず1度で呼びきれるものを渡す必要があります。
+ * currentTick, diffTick は、その回のスレッド呼び出し処理冒頭での値になります。
+ * @param func 登録するファンクション
+ */
+function addContinuousHandler(func);
+
+/**
+ * 描画処理前に呼び出されるファンクションを登録解除する
+ * @param func 登録解除するファンクション
+ */
+function removeContinuousHandler(func);
+
+/**
+ * 全 continuous handler を解除する
+ */
+function clearContinuousHandler();

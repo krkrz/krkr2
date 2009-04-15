@@ -545,6 +545,7 @@ Thread::printError()
 int
 Thread::main(long diff)
 {
+	diffTick = diff;
 	currentTick += diff;
 	std::vector<ObjectInfo>::iterator i = threadList.begin();
 	while (i != threadList.end()) {
@@ -612,7 +613,8 @@ Thread::done()
 
 std::vector<ObjectInfo> Thread::threadList; //< スレッド一覧
 std::vector<ObjectInfo> Thread::newThreadList; //< 新規スレッド一覧
-long Thread::currentTick = 0;  //< 今回の呼び出し時間
+long Thread::currentTick = 0;  //< 現在のシステムtick
+long Thread::diffTick = 0;  //< 今回の呼び出し差分
 
 // -------------------------------------------------------------
 // グローバルメソッド用
@@ -625,6 +627,16 @@ SQRESULT
 Thread::global_getCurrentTick(HSQUIRRELVM v)
 {
 	sq_pushinteger(v, currentTick);
+	return 1;
+}
+
+/**
+ * 差分時刻の取得
+ */
+SQRESULT
+Thread::global_getDiffTick(HSQUIRRELVM v)
+{
+	sq_pushinteger(v, diffTick);
 	return 1;
 }
 
@@ -805,6 +817,7 @@ Thread::registerGlobal()
 	// グローバルメソッドの登録
 	sq_pushroottable(v); // root
 	REGISTERMETHODNAME(getCurrentTick, global_getCurrentTick);
+	REGISTERMETHODNAME(getDiffTick, global_getDiffTick);
 	REGISTERMETHODNAME(getCurrentThread, global_getCurrentThread);
 	REGISTERMETHODNAME(getThreadList, global_getThreadList);
 	REGISTERMETHODNAME(fork, global_fork);
