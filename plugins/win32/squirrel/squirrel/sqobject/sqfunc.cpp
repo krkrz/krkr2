@@ -9,6 +9,10 @@
 #include "sqthread.h"
 #include <map>
 
+#include <sqstdstring.h>
+#include <sqstdmath.h>
+#include <sqstdaux.h>
+
 SQRESULT ERROR_CREATE(HSQUIRRELVM v) {
 	return sq_throwerror(v, _SC("can't create native instance"));
 }
@@ -27,8 +31,8 @@ inline const SQChar *GetTypeName(const BaseClass *t) { return NULL; }
 
 // クラス名登録用
 #define DECLARE_CLASSNAME(TYPE,NAME) \
-inline const SQChar * GetTypeName(const TYPE *t) { return _SC(#NAME); }
-#define DECLARE_CLASS(TYPE) DECLARE_CLASSNAME(TYPE,TYPE)
+inline const SQChar * GetTypeName(const TYPE *t) { return NAME; }
+#define DECLARE_CLASS(TYPE) DECLARE_CLASSNAME(TYPE,_SC(#TYPE))
 
 // 該当オブジェクトのタグのリスト
 typedef std::vector<SQUserPointer> SQTypeTagList;
@@ -399,7 +403,7 @@ Object::registerClass()
 	SQVFUNC(Object,_get);
 	SQVFUNC(Object,_set);
 	cls.RegisterV(&Object::_get, _SC("get"));
-	cls.RegisterV(&Object::_set, _SC("set"))
+	cls.RegisterV(&Object::_set, _SC("set"));
 
 	sq_createslot(v, -3); // 生成したクラスを登録
 	sq_pop(v,1); // root

@@ -3,6 +3,7 @@
 
 #include <squirrel.h>
 #include <sqstdio.h>
+#include <sqstdblob.h>
 #include <sqthread.h>
 #include "sqtjsobj.h"
 
@@ -371,6 +372,7 @@ public:
 	/**
 	 * squirrel スクリプトの実行
 	 * @param script スクリプト
+	 * @param ... 引数
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD exec(tTJSVariant *result,
@@ -380,7 +382,10 @@ public:
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
 		if (SQ_SUCCEEDED(sq_compilebuffer(vm, param[0]->GetString(), param[0]->AsString()->GetLength(), L"TEXT", SQTrue))) {
 			sq_pushroottable(vm); // this
-			if (SQ_SUCCEEDED(sq_call(vm, 1, result ? SQTrue:SQFalse, SQTrue))) {
+			for (int i=1;i<numparams;i++) {	// 引数
+				sq_pushvariant(vm, *param[i]);
+			}
+			if (SQ_SUCCEEDED(sq_call(vm, numparams, result ? SQTrue:SQFalse, SQTrue))) {
 				if (result) {
 					sq_getvariant(vm, -1, result);
 					sq_pop(vm, 1);
@@ -399,6 +404,7 @@ public:
 	/**
 	 * squirrel スクリプトのファイルからの実行
 	 * @param filename ファイル名
+	 * @param ... 引数
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD execStorage(tTJSVariant *result,
@@ -408,7 +414,10 @@ public:
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
 		if (SQ_SUCCEEDED(sqstd_loadfile(vm, param[0]->GetString(), SQTrue))) {
 			sq_pushroottable(vm); // this
-			if (SQ_SUCCEEDED(sq_call(vm, 1, result ? SQTrue:SQFalse, SQTrue))) {
+			for (int i=1;i<numparams;i++) {	// 引数
+				sq_pushvariant(vm, *param[i]);
+			}
+			if (SQ_SUCCEEDED(sq_call(vm, numparams, result ? SQTrue:SQFalse, SQTrue))) {
 				if (result) {
 					sq_getvariant(vm, -1, result);
 					sq_pop(vm, 1);
@@ -431,10 +440,10 @@ public:
 	 * @param methods メソッド/プロパティ情報の辞書 name=value
 	 * value=0:メソッド value=1:GETのみプロパティ value=2:SETのみプロパティ value=3:プロパティ
 	 */
-	static tjs_error TJS_INTF_METHOD registClass(tTJSVariant *result,
-												 tjs_int numparams,
-												 tTJSVariant **param,
-												 iTJSDispatch2 *objthis) {
+	static tjs_error TJS_INTF_METHOD registerClass(tTJSVariant *result,
+												   tjs_int numparams,
+												   tTJSVariant **param,
+												   iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		TJSObject::registerClass(vm,
 								 param[0]->GetString(), // name
@@ -445,6 +454,7 @@ public:
 	/**
 	 * Squirrel スクリプトのスレッド実行。
 	 * @param text スクリプトが格納された文字列
+	 * @param ... 引数
 	 * @return Threadオブジェクト
 	 */
 	static tjs_error TJS_INTF_METHOD fork(tTJSVariant *result,
@@ -452,18 +462,21 @@ public:
 										  tTJSVariant **param,
 										  iTJSDispatch2 *objthis) {
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
-
 		sq_pushroottable(vm); // root
 		sq_pushstring(vm, SQTHREADNAME, -1);
 		if (SQ_SUCCEEDED(sq_get(vm,-2))) { // class
 			sq_pushroottable(vm); // 引数:self(root)
+			sq_pushnull(vm); // delegate
 			if (SQ_SUCCEEDED(sq_compilebuffer(vm, param[0]->GetString(), param[0]->AsString()->GetLength(), L"TEXT", SQTrue))) {
-				if (SQ_SUCCEEDED(sq_call(vm, 2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+				for (int i=1;i<numparams;i++) {	// 引数
+					sq_pushvariant(vm, *param[i]);
+				}
+				if (SQ_SUCCEEDED(sq_call(vm, numparams+1, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 					sq_getvariant(vm, -1, result);
 					sq_pop(vm, 1); // thread
 				}
 			} else {
-				sq_pop(vm, 1); // self
+				sq_pop(vm, 2); // delegate, self
 			}
 			sq_pop(vm, 1); // class
 		}
@@ -474,6 +487,7 @@ public:
 	/**
 	 * Squirrel スクリプトのファイルからのスレッド実行。
 	 * @param filename スクリプトが格納されたファイル
+	 * @param ... 引数
 	 * @return Threadオブジェクト
 	 */
 	static tjs_error TJS_INTF_METHOD forkStorage(tTJSVariant *result,
@@ -484,9 +498,13 @@ public:
 		sq_pushroottable(vm); // root
 		sq_pushstring(vm, SQTHREADNAME, -1);
 		if (SQ_SUCCEEDED(sq_get(vm,-2))) { // class
-			sq_pushroottable(vm); // 引数:self(root)
-			sq_pushstring(vm, param[0]->GetString(), -1);
-			if (SQ_SUCCEEDED(sq_call(vm, 2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+			sq_pushroottable(vm); // 引数 self(root)
+			sq_pushnull(vm);      // 引数 delegate
+			sq_pushstring(vm, param[0]->GetString(), -1); // 引数 func
+			for (int i=1;i<numparams;i++) {	// 引数
+				sq_pushvariant(vm, *param[i]);
+			}
+			if (SQ_SUCCEEDED(sq_call(vm, numparams+1, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 				sq_getvariant(vm, -1, result);
 				sq_pop(vm, 1); // thread
 			}
@@ -511,22 +529,21 @@ public:
 		sq_pushstring(vm, param[0]->GetString(), -1);
 		if (SQ_SUCCEEDED(sq_get(vm, -2))) { // ルートテーブルから関数を取得
 			sq_pushroottable(vm); // this
-			int cnt=1;
-			for (int i=1;i<numparams;i++) {	// パラメータ群
+			for (int i=1;i<numparams;i++) {	// 引数
 				sq_pushvariant(vm, *param[i]);
 			}
 			if (SQ_SUCCEEDED(sq_call(vm, numparams, result ? SQTrue:SQFalse, SQTrue))) {
 				if (result) {
 					sq_getvariant(vm, -1, result);
-					sq_pop(vm, 1);
+					sq_pop(vm, 1); // result
 				}
-				sq_pop(vm, 1);
+				sq_pop(vm, 2); // func, root
 			} else {
-				sq_pop(vm, 1);
+				sq_pop(vm, 2); // func, root
 				SQEXCEPTION(vm);
 			}
 		} else {
-			sq_pop(vm, 1);
+			sq_pop(vm, 1); // root
 			SQEXCEPTION(vm);
 		}
 		return S_OK;
@@ -627,10 +644,10 @@ public:
 	 * @param name オブジェクト名
 	 * @param obj オブジェクト
 	 */
-	static tjs_error TJS_INTF_METHOD regist(tTJSVariant *result,
-											tjs_int numparams,
-											tTJSVariant **param,
-											iTJSDispatch2 *objthis) {
+	static tjs_error TJS_INTF_METHOD registerSQ(tTJSVariant *result,
+											  tjs_int numparams,
+											  tTJSVariant **param,
+											  iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		if (numparams > 1) {
 			registerglobal(vm, param[0]->GetString(), *param[1]);
@@ -647,10 +664,10 @@ public:
 	 * @param name オブジェクト名
 	 * @param obj オブジェクト
 	 */
-	static tjs_error TJS_INTF_METHOD unregist(tTJSVariant *result,
-											  tjs_int numparams,
-											  tTJSVariant **param,
-											  iTJSDispatch2 *objthis) {
+	static tjs_error TJS_INTF_METHOD unregisterSQ(tTJSVariant *result,
+												tjs_int numparams,
+												tTJSVariant **param,
+												iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		unregisterglobal(vm, param[0]->GetString());
 		return TJS_S_OK;
@@ -666,11 +683,11 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("callSQ",        &ScriptsSquirrel::call,        TJS_STATICMEMBER);
 	RawCallback("saveSQ",        &ScriptsSquirrel::save,        TJS_STATICMEMBER);
 	RawCallback("toSQString",    &ScriptsSquirrel::toString,    TJS_STATICMEMBER);
-	RawCallback("registSQ",      &ScriptsSquirrel::regist,      TJS_STATICMEMBER);
-	RawCallback("unregistSQ",    &ScriptsSquirrel::unregist,    TJS_STATICMEMBER);
+	RawCallback("registerSQ",       &ScriptsSquirrel::registerSQ,      TJS_STATICMEMBER);
+	RawCallback("unregisterSQ",     &ScriptsSquirrel::unregisterSQ,    TJS_STATICMEMBER);
 	RawCallback("compileSQ",        &ScriptsSquirrel::compile,        TJS_STATICMEMBER);
 	RawCallback("compileStorageSQ", &ScriptsSquirrel::compileStorage, TJS_STATICMEMBER);
-	RawCallback("registClassSQ", &ScriptsSquirrel::registClass, TJS_STATICMEMBER);
+	RawCallback("registerClassSQ",  &ScriptsSquirrel::registerClass, TJS_STATICMEMBER);
 };
 
 /**
@@ -793,7 +810,7 @@ public:
 										  tjs_int numparams,
 										  tTJSVariant **param,
 										  SQFunction *objthis) {
-		sq_pushobject(vm, objthis->obj);
+		sq_pushobject(vm, objthis->obj); // func
 		sq_pushroottable(vm); // this
 		for (int i=0;i<numparams;i++) { // 引数
 			sq_pushvariant(vm, *param[i]);
@@ -801,11 +818,11 @@ public:
 		if (SQ_SUCCEEDED(sq_call(vm, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
 			if (result) {
 				sq_getvariant(vm, -1, result);
-				sq_pop(vm, 1);
+				sq_pop(vm, 1); // result
 			}
-			sq_pop(vm, 1);
+			sq_pop(vm, 1); // func
 		} else {
-			sq_pop(vm, 1);
+			sq_pop(vm, 1); // func
 			SQEXCEPTION(vm);
 		}
 		return TJS_S_OK;
@@ -833,14 +850,9 @@ static void PreRegistCallback()
 	initReserved();
 	// squirrel 登録
 	vm = sqobject::init();
-
-	// デバッグ情報の有効化
-	sq_enabledebuginfo(vm, SQTrue);
 	
 	// 出力用
 	sq_setprintfunc(vm, printFunc);
-	// 例外通知を有効に
-	sq_notifyallexceptions(vm, SQTrue);
 
 	// 基本初期化
 	sqbasic_init(vm);

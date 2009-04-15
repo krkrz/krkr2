@@ -7,40 +7,42 @@ class Scripts {
 	 * Squirrel スクリプトの実行。
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param text スクリプトが格納された文字列
-	 * @return スクリプトの実行結果。プリミティブな値はそのまま変換されて、
-	 * また、クラスは TJS2 の iTJSDispatch にラッピングされた状態で返ります。
+	 * @param ... 引数
+	 * @return スクリプトの実行結果
 	 */
-	function execSQ(text);
+	function execSQ(text, ...);
 
 	/**
 	 * Squirrel スクリプトのファイルからの実行。
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param filename スクリプトが格納されたファイル
+	 * @param ... 引数
 	 * @return スクリプトの実行結果
 	 */
-	function execStorageSQ(filename);
+	function execStorageSQ(filename, ...);
 
 	/**
 	 * Squirrel スクリプトのスレッド実行。
 	 * @param text スクリプトが格納された文字列
+	 * @param ... 引数
 	 * @return Threadオブジェクト
 	 */
-	function forkSQ(text);
+	function forkSQ(text, ...);
 
 	/**
 	 * Squirrel スクリプトのファイルからのスレッド実行。
 	 * @param filename スクリプトが格納されたファイル
+	 * @param ... 引数
 	 * @return Threadオブジェクト
 	 */
-	function forkStorageSQ(filename);
+	function forkStorageSQ(filename, ...);
 	
 	/**
 	 * Squirrel グローバルメソッドの呼び出し。
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param name メソッド名
 	 * @param ... 引数
-	 * @return スクリプトの実行結果。プリミティブな値はそのまま変換されて、
-	 * また、クラスは TJS2 の iTJSDispatch にラッピングされた状態で返ります。
+	 * @return スクリプトの実行結果
 	 */
 	function callSQ(name, ...);
 	
@@ -83,20 +85,20 @@ class Scripts {
 	 * @param name 登録名称
 	 * @param obj オブジェクト（省略した場合は名称で参照されるオブジェクト）
 	 */
-	function registSQ(name, obj);
+	function registerSQ(name, obj);
 
     /**
 	 * Squirrel のグローバル空間に登録されたオブジェクトを解放する
 	 * @param name 登録名称
 	 */
-	function unregistSQ(name);
+	function unregisterSQ(name);
 
 	/**
 	 * Squirrel のグローバル空間に TJS2のクラスをクラスとして登録
 	 * @param className squirrel側のクラス名
 	 * @param tjsClassName TJS側のクラス名を継承関係と逆順に列挙した配列、またはクラス名。省略時は className と同じ
 	 */
-	function registClassSQ(className, tjsClassName=null);
+	function registerClassSQ(className, tjsClassName=null);
 }
 
 /**

@@ -3,10 +3,8 @@
  */
 #include <squirrel.h>
 #include <sqstdio.h>
-#include <sqstdmath.h>
-#include <sqstdstring.h>
-#include <sqstdaux.h>
 #include <sqstdblob.h>
+#include <sqstdaux.h>
 
 #include <string>
 typedef std::basic_string<SQChar> tstring;
@@ -78,12 +76,9 @@ sqbasic_init(HSQUIRRELVM v)
 {
 	sq_pushroottable(v);
 
-	// ŠeíŠî–{ƒ‰ƒCƒuƒ‰ƒŠ‚Ì“o˜^
+	// ‚»‚Ì‘¼‚ÌŠî–{ƒ‰ƒCƒuƒ‰ƒŠ‚Ì“o˜^
 	sqstd_register_iolib(v);
 	sqstd_register_bloblib(v);
-	sqstd_register_mathlib(v);
-	sqstd_register_stringlib(v);
-	sqstd_seterrorhandlers(v);
 	
 	// replace ‚Ì“o˜^
 	sq_pushstring(v, _SC("replace"), -1);
