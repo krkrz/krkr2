@@ -6,6 +6,7 @@ class PropertyTest extends Object {
 	_name = "PropertyTest";
 	
 	constructor() {
+		::Object.constructor();
 	}
 
 	function getName() {

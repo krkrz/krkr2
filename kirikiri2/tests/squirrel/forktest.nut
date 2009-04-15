@@ -27,3 +27,10 @@ local thlist = ::getThreadList();
 for (local i=0;i<thlist.len();i++) {
 	print(i + ":" + thlist[i]);
 }
+
+wait(th2);
+
+system("test2.nut");
+print("system done");
+fork("test2.nut");
+print("fork done");
