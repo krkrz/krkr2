@@ -12,16 +12,6 @@
 namespace sqobject {
 
 /**
- * パラメータ数の取得
- * @param v VM
- * @return パラメータ数
- */
-int getParamCount(HSQUIRRELVM v)
-{
-	return sq_gettop(v) - 1;
-}
-
-/**
  * クロージャかどうか
  */
 static bool
@@ -196,12 +186,22 @@ Object::_get(HSQUIRRELVM v)
 			}
 		} else {
 			sq_pop(v, 1); // self
+#if 1
+			// グローバル変数を参照
+			sq_pushroottable(v);
+			sq_pushstring(v, name, -1);
+			if (SQ_SUCCEEDED(sq_rawget(v,-2))) {
+				sq_remove(v, -2); // root
+				return 1;
+			} else {
+				sq_pop(v,1);
+			}
+#endif
 		}
 	}
-	//return result;
 	return ERROR_NOMEMBER(v);
 }
-	
+
 /**
  * プロパティに値を設定
  * @param name プロパティ名
@@ -259,7 +259,7 @@ Object::hasSetProp(HSQUIRRELVM v)
 {
 	SQRESULT result = SQ_OK;
 	SQBool ret = SQFalse;
-	if (getParamCount(v) >= 2) {
+	if (sq_gettop(v) > 1) {
 		const SQChar *name = getString(v, 2);
 		if (name && *name) {
 			tstring name2;
@@ -293,7 +293,7 @@ Object::hasSetProp(HSQUIRRELVM v)
 SQRESULT
 Object::setDelegate(HSQUIRRELVM v)
 {
-	if (getParamCount(v) > 0) {
+	if (sq_gettop(v) > 1) {
 		delegate.getStack(v,2);
 	} else {
 		delegate.clear();
@@ -312,3 +312,4 @@ Object::getDelegate(HSQUIRRELVM v)
 }
 
 };
+
