@@ -160,6 +160,7 @@ public:
 
 		SQFuncState funcstate(_ss(_vm), NULL,ThrowError,this);
 		funcstate._name = SQString::Create(_ss(_vm), _SC("main"));
+		funcstate._varparams = true;
 		_fs = &funcstate;
 		_fs->AddParameter(_fs->CreateString(_SC("this")));
 		_fs->_sourcename = _sourcename;

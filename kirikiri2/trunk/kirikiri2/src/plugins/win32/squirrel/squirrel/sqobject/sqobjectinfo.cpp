@@ -134,14 +134,14 @@ ObjectInfo::push(HSQUIRRELVM v) const
 
 // delegate として機能するかどうか
 bool
-ObjectInfo::isDelegate()
+ObjectInfo::isDelegate() const
 {
 	return (sq_isinstance(obj) || sq_istable(obj));
 }
 
 // bindenv させるかどうか
 bool
-ObjectInfo::isBindDelegate()
+ObjectInfo::isBindDelegate() const
 {
 	return (sq_isinstance(obj));
 }
@@ -180,6 +180,102 @@ ObjectInfo::isSameString(const SQChar *str) const
 		return mystr && scstrcmp(str, mystr) == 0;
 	}
 	return false;
+}
+
+// ---------------------------------------------------
+// 配列処理用メソッド
+// ---------------------------------------------------
+
+
+/// 配列として初期化
+void
+ObjectInfo::initArray(int size)
+{
+	clear();
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_newarray(gv, size);
+	sq_getstackobj(gv, -1, &obj);
+	sq_addref(gv, &obj);
+	sq_pop(gv, 1);
+}
+
+/// 配列に値を追加
+void ObjectInfo::append(HSQUIRRELVM v, int idx)
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushobject(gv, obj);
+	sq_move(gv, v, idx);
+	sq_arrayappend(gv, -2);
+	sq_pop(gv,1);
+}
+
+/// 配列に値を追加
+template<typename T>
+void ObjectInfo::append(T value)
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushobject(gv, obj);
+	pushValue(gv, value);
+	sq_arrayappend(gv, -2);
+	sq_pop(gv,1);
+}
+
+/// 配列に値を挿入
+template<typename T>
+void ObjectInfo::insert(int index, T value)
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushobject(gv, obj);
+	pushValue(gv, value);
+	sq_arrayinsert(gv, -2, index);
+	sq_pop(gv,1);
+}
+
+/// 配列に値を格納
+template<typename T>
+void ObjectInfo::set(int index, T value)
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushobject(gv, obj);
+	sq_pushinteger(gv, index);
+	pushValue(gv, value);
+	sq_set(gv, -3);
+	sq_pop(gv,1);
+}
+
+/// 配列の長さ
+int
+ObjectInfo::len() const
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushobject(gv, obj);
+	int ret = sq_getsize(gv,-1);
+	sq_pop(gv,1);
+	return ret;
+}
+
+/**
+ * 配列の内容を全部PUSH
+ * @param v squirrelVM
+ * @return push した数
+ */
+int
+ObjectInfo::pushArray(HSQUIRRELVM v) const
+{
+	if (!isArray()) {
+		return 0;
+	}
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushobject(gv, obj);
+	int len = sq_getsize(gv,-1);
+	for (int i=0;i<len;i++) {
+		sq_pushinteger(gv, i);
+		sq_get(gv, -2);
+		sq_move(v, gv, -1);
+		sq_pop(gv, 1);
+	}
+	sq_pop(gv,1);
+	return len;
 }
 
 };

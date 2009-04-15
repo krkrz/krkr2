@@ -62,6 +62,22 @@ class Object {
 	 * ※このメソッドはオブジェクト廃棄時にも実行されます。
 	 */
 	function notifyAll();
+
+	/**
+	 * プロパティの値を取得する。プロパティ名に対応する getter メソッドを呼び出して
+	 * その値を返します。_get として登録されているものの別名です。
+	 * @param propName プロパティ名
+	 * @return プロパティの値
+	 */
+	function get(propName);
+
+	/**
+	 * プロパティの値を設定する。プロパティ名に対応する setter メソッドを呼び出して
+	 * 値を設定します。_set として登録されているものの別名です。
+	 * @param propName プロパティ名
+	 * @param calue プロパティの値
+	 */
+	function set(propName, value);
 };
 
 enum {
@@ -102,10 +118,11 @@ class Thread extends Object {
 
 	/**
 	 * コンストラクタ
+	 * @param delegate 処理を委譲するオブジェクトを指定します。
 	 * @param func スレッドを生成後実行するファンクションまたはファイル名
-	 * @param delegate 機能の委譲先の指定
+	 * @param ... 引数
 	 */
-	constructor(func=null, delegate=null);
+	constructor(delegate=null, func=null, ...);
 
 	/**
 	 * @return このスレッドの実行時間
@@ -126,7 +143,7 @@ class Thread extends Object {
 	 * スレッドの実行開始
 	 * @param func 呼び出すグローバル関数またはスクリプトファイル名
 	 */
-	function exec(func);
+	function exec(func, ...);
 
 	/**
 	 * スレッドの終了
@@ -168,17 +185,24 @@ function getThreadList();
 function getCurrentThread();
 
 /**
- * 新しいスレッドを生成して実行します。Thread(func) と等価です。
+ * @return 現在実行中のスレッドの実行時間を返します
+ */
+function getCurrentTick();
+
+/**
+ * 新しいスレッドを生成して実行します。Thread(null,func, ...) と等価です。
  * @param func 呼び出すメソッド、またはファイル名
  * @return 新規スレッド制御オブジェクト(Thread)
+ * @param ... 引数
  */
-function fork(func);
+function fork(func, ...);
 
 /**
  * 現在実行中のスレッドを別の実行に切り替えます
  * @param func 呼び出すグローバル関数またはスクリプトファイル名
+ * @param ... 引数
  */
-function exec(func);
+function exec(func, ...);
 
 /**
  * 現在実行中のスレッドを終了します
@@ -189,9 +213,10 @@ function exit(exitCode);
 /**
  * 現在実行中のスレッドから、別のスクリプトを実行してその終了を待ちます。
  * @param func 呼び出すグローバル関数またはスクリプトファイル名
+ * @param ... 引数
  * @return 呼び出したスクリプトの終了コード (exit()で指定したもの、または最後の return の値)
  */
-function system(func);
+function system(func, ...);
 
 /**
  * 現在実行中のスレッドの実行待ち。いずれかの条件で解除されます。引数を指定しなかった場合でも、

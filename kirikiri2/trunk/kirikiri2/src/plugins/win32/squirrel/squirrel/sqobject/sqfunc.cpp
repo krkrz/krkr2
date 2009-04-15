@@ -321,6 +321,11 @@ HSQUIRRELVM vm;
 /// vm ‰Šú‰»
 HSQUIRRELVM init() {
 	vm = sq_open(1024);
+	sq_pushroottable(vm);
+	sqstd_register_mathlib(vm);
+	sqstd_register_stringlib(vm);
+	sqstd_seterrorhandlers(vm);
+	sq_pop(vm,1);
 	return vm;
 }
 
@@ -393,6 +398,8 @@ Object::registerClass()
 	SQVFUNC(Object,getDelegate);
 	SQVFUNC(Object,_get);
 	SQVFUNC(Object,_set);
+	cls.RegisterV(&Object::_get, _SC("get"));
+	cls.RegisterV(&Object::_set, _SC("set"))
 
 	sq_createslot(v, -3); // ¶¬‚µ‚½ƒNƒ‰ƒX‚ğ“o˜^
 	sq_pop(v,1); // root
