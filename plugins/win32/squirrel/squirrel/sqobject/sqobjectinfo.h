@@ -187,7 +187,7 @@ public:
 		return ret;
 	}
 	
-	template<typename R> SQRESULT call(R*) {
+	template<typename R> SQRESULT call(R* r) {
 		SQRESULT ret;
 		HSQUIRRELVM gv = getGlobalVM();
 		sq_pushobject(gv, obj);
