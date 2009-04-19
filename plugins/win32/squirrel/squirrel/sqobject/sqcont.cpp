@@ -3,21 +3,21 @@
 
 namespace sqobject {
 
-static std::vector<ObjectInfo> continuousList; ///< スレッド一覧
+ObjectInfo continuousList;
 
 /// ハンドラ登録
 static SQRESULT addContinuousHandler(HSQUIRRELVM v)
 {
 	ObjectInfo info(v,-1);
 	if (info.isClosure()) {
-		std::vector<ObjectInfo>::iterator i = continuousList.begin();
-		while (i != continuousList.end()) {
-			if (*i == info) {
+		int max = continuousList.len();
+		for (int i=0;i<max;i++) {
+			ObjectInfo f = continuousList.get(i);
+			if (f == info) {
 				return SQ_OK;
 			}
-			i++;
 		}
-		continuousList.push_back(info);
+		continuousList.append(info);
 	}
 	return SQ_OK;
 }
@@ -27,10 +27,12 @@ static SQRESULT removeContinuousHandler(HSQUIRRELVM v)
 {
 	ObjectInfo info(v,-1);
 	if (info.isClosure()) {
-		std::vector<ObjectInfo>::iterator i = continuousList.begin();
-		while (i != continuousList.end()) {
-			if (*i == info) {
-				i = continuousList.erase(i);
+		int max = continuousList.len();
+		int i=0;
+		while (i<max) {
+			if (continuousList.get(i) == info) {
+				continuousList.remove(i);
+				max--;
 			} else {
 				i++;
 			}
@@ -41,7 +43,7 @@ static SQRESULT removeContinuousHandler(HSQUIRRELVM v)
 
 static SQRESULT clearContinuousHandler(HSQUIRRELVM v)
 {
-	continuousList.clear();
+	continuousList.clearData();
 	return SQ_OK;
 }
 
@@ -60,21 +62,23 @@ void registerContinuous()
 	REGISTERMETHOD(removeContinuousHandler);
 	REGISTERMETHOD(clearContinuousHandler);
 	sq_pop(v,1);
+
+	continuousList.initArray();
 }
 
 /// ハンドラ処理呼び出し。Thread::main の後で呼び出す必要がある
 void mainContinuous()
 {
-	std::vector<ObjectInfo>::iterator i = continuousList.begin();
-	while (i != continuousList.end()) {
-		i->call(Thread::currentTick, Thread::diffTick);
-		i++;
+	int max = continuousList.len();
+	for (int i=0;i<max;i++) {
+		continuousList.get(i).call(Thread::currentTick, Thread::diffTick);
 	}
 }
 
 /// 機能終了
 void doneContinuous()
 {
+	continuousList.clearData();
 	continuousList.clear();
 }
 

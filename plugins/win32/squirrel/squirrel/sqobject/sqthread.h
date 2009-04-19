@@ -9,6 +9,7 @@
 #define SQTHREADNAME _SC("Thread")
 #endif
 
+#include <stdio.h>
 #include "sqobject.h"
 
 /**
@@ -39,11 +40,11 @@ class Thread : public Object {
 
 protected:
 	long _currentTick; ///< このスレッドの実行時間
-	
-	tstring _scriptName; ///< スクリプト名
+
+	ObjectInfo _scriptName; ///< スクリプト名
 	
 	void *_fileHandler; ///< このスレッドが開こうとしているファイル
-	
+
 	// スレッドデータ
 	ObjectInfo _thread;
 
@@ -56,7 +57,7 @@ protected:
 	// system用待ち
 	ObjectInfo _waitSystem;
 	// 待ち対象
-	std::vector<ObjectInfo> _waitList;
+	ObjectInfo _waitList;
 	// 待ち時間
 	SQInteger _waitTimeout;
 
@@ -88,14 +89,6 @@ protected:
 	 */
 	bool isSameThread(HSQUIRRELVM v);
 
-	/**
-	 * トリガに対する待ち情報を完了させる
-	 * @param name トリガ名
-	 * @return 該当オブジェクトを待ってた場合は true
-	 */
-	bool notifyTrigger(const SQChar *name);
-
-
 public:
 	// コンストラクタ
 	Thread();
@@ -110,7 +103,7 @@ protected:
 	/**
 	 * スレッド情報初期化
 	 */
-	void init();
+	void _init();
 
 	/**
 	 * オブジェクトに対する待ち情報をクリアする
@@ -122,6 +115,11 @@ protected:
 	 * 情報破棄
 	 */
 	void _clear();
+
+	/**
+	 * exit内部処理
+	 */
+	void _exit();
 	
 	// ------------------------------------------------------------------
 	//
@@ -130,13 +128,21 @@ protected:
 	// ------------------------------------------------------------------
 	
 public:
+
+	/**
+	 * トリガに対する待ち情報を完了させる
+	 * @param name トリガ名
+	 * @return 該当オブジェクトを待ってた場合は true
+	 */
+	bool _notifyTrigger(const SQChar *name);
+
 	/**
 	 * オブジェクトに対する待ち情報を完了させる
 	 * @param target 待ち対象
 	 * @return 該当オブジェクトを待ってた場合は true
 	 */
-	bool notifyObject(Object *target);
-
+	bool _notifyObject(ObjectInfo &target);
+	
 	// ------------------------------------------------------------------
 	//
 	// メソッド
@@ -249,6 +255,12 @@ protected:
 	bool _main(long diff);
 
 public:
+
+	/**
+	 * 動作スレッド初期化
+	 */
+	static void init();
+	
 	/*
 	 * 実行処理メインループ
 	 * @param diff 経過時間
@@ -276,9 +288,7 @@ public:
 	static void done();
 
 	// -------------------------------------------------------------
-	//
-	// グローバルスレッド制御用諸機能
-	//
+	// スレッド処理用
 	// -------------------------------------------------------------
 
 public:
@@ -286,8 +296,8 @@ public:
 	static long diffTick;     ///< 差分呼び出し時間
 	
 protected:
-	static std::vector<ObjectInfo> threadList; ///< スレッド一覧
-	static std::vector<ObjectInfo> newThreadList; ///< スレッド一覧
+	static ObjectInfo threadList; ///< スレッド一覧
+	static ObjectInfo newThreadList; ///< スレッド一覧
 
 	// -------------------------------------------------------------
 	// グローバルメソッド用

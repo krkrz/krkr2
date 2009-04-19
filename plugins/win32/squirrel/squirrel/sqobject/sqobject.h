@@ -11,17 +11,10 @@
 #endif
 
 #include "sqobjectinfo.h"
-#include <vector>
-#include <string>
 
 namespace sqobject {
 
-// 文字列処理用
-typedef std::basic_string<SQChar> tstring;
-
 const SQChar *getString(HSQUIRRELVM v, int idx);
-void getSetterName(tstring &store, const SQChar *name);
-void getGetterName(tstring &store, const SQChar *name);
 
 /**
  * オブジェクト用
@@ -29,8 +22,10 @@ void getGetterName(tstring &store, const SQChar *name);
 class Object {
 
 protected:
+	// 自己参照
+	ObjectInfo self;
 	// このオブジェクトを待ってるスレッドの一覧
-	std::vector<Thread*> _waitThreadList;
+	ObjectInfo _waitThreadList;
 	// delegate
 	ObjectInfo delegate;
 
@@ -39,14 +34,14 @@ public:
 	 * オブジェクト待ちの登録
 	 * @param thread スレッド
 	 */
-	void addWait(Thread *thread);
+	void _addWait(ObjectInfo &thread);
 	
 	/**
 	 * オブジェクト待ちの解除
 	 * @param thread スレッド
 	 */
-	void removeWait(Thread *thread);
-
+	void _removeWait(ObjectInfo &thread);
+	
 	/**
 	 * コンストラクタ
 	 */
