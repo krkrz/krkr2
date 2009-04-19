@@ -42,20 +42,18 @@ protected:
 
 	// プロパティのコードを生成
 	void registProperty(const tjs_char *propertyName) {
-		sqobject::tstring name;
-		sqobject::getSetterName(name, propertyName);
-		script += "function ";
-		script += name.c_str();
-		script += "(arg){tjsSetter(\"";
+		script += L"function set";
+		script += toupper(*propertyName);
+		script += (propertyName + 1);
+		script += L"(arg){tjsSetter(\"";
 		script += propertyName;
-		script += "\", arg);}";
-
-		sqobject::getGetterName(name, propertyName);
-		script += "function ";
-		script += name.c_str();
-		script += "(){return tjsGetter(\"";
+		script += L"\", arg);}";
+		script += L"function get";
+		script += toupper(*propertyName);
+		script += (propertyName + 1);
+		script += L"(){return tjsGetter(\"";
 		script += propertyName;
-		script += "\");}";
+		script += L"\");}";
 	}
 
 	// ファンクションかどうか

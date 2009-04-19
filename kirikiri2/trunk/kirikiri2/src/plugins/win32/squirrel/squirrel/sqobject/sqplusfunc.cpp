@@ -57,28 +57,22 @@ void done()
 Thread *
 ObjectInfo::getThread()
 {
-	if (sq_isinstance(obj)) {
-		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
-		Thread *ret = SqPlus::GetInstance<Thread,false>(gv, -1);
-		sq_pop(gv,1);
-		return ret;
-	}
-	return NULL;
+	HSQUIRRELVM gv = getGlobalVM();
+	push(gv);
+	Thread *ret = SqPlus::GetInstance<Thread,false>(gv, -1);
+	sq_pop(gv,1);
+	return ret;
 }
 
 // Object のインスタンスユーザポインタを取得
 Object *
 ObjectInfo::getObject()
 {
-	if (sq_isinstance(obj)) {
-		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
-		Object *ret = SqPlus::GetInstance<Object,false>(gv, -1);
-		sq_pop(gv, 1);
-		return ret;
-	}
-	return NULL;
+	HSQUIRRELVM gv = getGlobalVM();
+	push(gv);
+	Object *ret = SqPlus::GetInstance<Object,false>(gv, -1);
+	sq_pop(gv, 1);
+	return ret;
 }
 
 /**

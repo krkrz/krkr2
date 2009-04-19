@@ -6,8 +6,6 @@
 
 #include <string.h>
 #include <ctype.h>
-#include <string>
-#include <new>
 
 namespace sqobject {
 
@@ -38,19 +36,35 @@ static SQRESULT ERROR_NOMEMBER(HSQUIRRELVM v) {
 }
 
 // setter名前決定
-void getSetterName(tstring &store, const SQChar *name)
+static void pushSetterName(HSQUIRRELVM v, const SQChar *name)
 {
-	store = _SC("set");
-	store += toupper(*name);
-	store += (name + 1);
+	int len = sizeof(SQChar) * (scstrlen(name) + 4);
+	SQChar *buf = (SQChar*)sq_malloc(len);
+	SQChar *p = buf;
+	*p++ = 's';
+	*p++ = 'e';
+	*p++ = 't';
+	*p++ = toupper(*name++);
+	while (*name) { *p++ = *name++; }
+	*p++ = '\0';
+	sq_pushstring(v, buf, -1);
+	sq_free(buf, len);
 }
 
 // getter名前決定
-void getGetterName(tstring &store, const SQChar *name)
+static void pushGetterName(HSQUIRRELVM v, const SQChar *name)
 {
-	store = _SC("get");
-	store += toupper(*name);
-	store += (name + 1);
+	int len = sizeof(SQChar) * (scstrlen(name) + 4);
+	SQChar *buf = (SQChar*)sq_malloc(len);
+	SQChar *p = buf;
+	*p++ = 'g';
+	*p++ = 'e';
+	*p++ = 't';
+	*p++ = toupper(*name++);
+	while (*name) { *p++ = *name++; };
+	*p++ = '\0';
+	sq_pushstring(v, buf, -1);
+	sq_free(buf, len);
 }
 
 // ---------------------------------------------------------
@@ -62,9 +76,9 @@ void getGetterName(tstring &store, const SQChar *name)
  * @param thread スレッド
  */
 void
-Object::addWait(Thread *thread)
+Object::_addWait(ObjectInfo &thread)
 {
-	_waitThreadList.push_back(thread);
+	_waitThreadList.append(thread);
 }
 
 /**
@@ -72,15 +86,14 @@ Object::addWait(Thread *thread)
  * @param thread スレッド
  */
 void
-Object::removeWait(Thread *thread)
+Object::_removeWait(ObjectInfo &thread)
 {
-	std::vector<Thread*>::iterator i = _waitThreadList.begin();
-	while (i != _waitThreadList.end()) {
-		if (*i == thread) {
-			i = _waitThreadList.erase(i);
-		} else {
-			i++;	
+	int i = _waitThreadList.len() - 1;
+	while (i >= 0) {
+		if (_waitThreadList.get(i) == thread) {
+			_waitThreadList.remove(i);
 		}
+		i--;
 	}
 }
 
@@ -89,6 +102,7 @@ Object::removeWait(Thread *thread)
  */
 Object::Object()
 {
+	_waitThreadList.initArray();
 }
 
 /**
@@ -96,6 +110,8 @@ Object::Object()
  */
 Object::Object(HSQUIRRELVM v, int delegateIdx)
 {
+	self.getStackWeak(v,1);
+	_waitThreadList.initArray();
 	if (sq_gettop(v) >= delegateIdx) {
 		delegate.getStack(v, delegateIdx);
 	}
@@ -107,6 +123,9 @@ Object::Object(HSQUIRRELVM v, int delegateIdx)
 Object::~Object()
 {
 	notifyAll();
+	delegate.clear();
+	_waitThreadList.clear();
+	self.clear();
 }
 
 /**
@@ -115,13 +134,12 @@ Object::~Object()
 void
 Object::notify()
 {
-	std::vector <Thread *>::iterator i = _waitThreadList.begin();
-	while (i != _waitThreadList.end()) {
-		if ((*i)->notifyObject(this)) {
-			i = _waitThreadList.erase(i);
+	int max = _waitThreadList.len();
+	for (int i=0;i<max;i++) {
+		ObjectInfo th = _waitThreadList.get(i);
+		if (th.notifyObject(self)) {
+			_waitThreadList.remove(i);
 			return;
-		} else {
-			i++;
 		}
 	}
 }
@@ -132,11 +150,12 @@ Object::notify()
 void
 Object::notifyAll()
 {
-	std::vector <Thread *>::iterator i = _waitThreadList.begin();
-	while (i != _waitThreadList.end()) {
-		(*i)->notifyObject(this);
-		i = _waitThreadList.erase(i);
+	int max = _waitThreadList.len();
+	for (int i=0;i<max;i++) {
+		ObjectInfo th = _waitThreadList.get(i);
+		th.notifyObject(self);
 	}
+	_waitThreadList.clearData();
 }
 
 /**
@@ -170,10 +189,8 @@ Object::_get(HSQUIRRELVM v)
 		}
 		
 		// getter を探してアクセス
-		tstring name2;
-		getGetterName(name2, name);
 		sq_push(v, 1); // self
-		sq_pushstring(v, name2.c_str(), -1);
+		pushGetterName(v,name); // getter名
 		if (SQ_SUCCEEDED(result = sq_rawget(v,-2))) {
 			sq_push(v, 1); //  self;
 			if (SQ_SUCCEEDED(result = sq_call(v,1,SQTrue,SQTrue))) {
@@ -227,11 +244,8 @@ Object::_set(HSQUIRRELVM v)
 		}
 		
 		// setter を探してアクセス
-		tstring name2;
-		getSetterName(name2, name);
-		
 		sq_push(v, 1); // self
-		sq_pushstring(v, name2.c_str(), -1);
+		pushSetterName(v, name);
 		if (SQ_SUCCEEDED(result = sq_rawget(v,-2))) {
 			sq_push(v, 1); // self
 			sq_push(v, 3); // value
@@ -262,10 +276,8 @@ Object::hasSetProp(HSQUIRRELVM v)
 	if (sq_gettop(v) > 1) {
 		const SQChar *name = getString(v, 2);
 		if (name && *name) {
-			tstring name2;
-			getSetterName(name2, name);
 			sq_push(v, 1); // object
-			sq_pushstring(v, name2.c_str(), -1);
+			pushSetterName(v, name); // setter名
 			if (SQ_SUCCEEDED(result = sq_rawget(v,-2))) {
 				sq_pop(v,1);
 				ret = SQTrue;

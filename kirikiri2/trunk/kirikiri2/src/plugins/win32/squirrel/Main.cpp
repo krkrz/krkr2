@@ -353,7 +353,7 @@ public:
 	
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
 		tjs_uint64 diff = tick - prevTick;
-		sqobject::Thread::main(diff);
+		sqobject::Thread::main((int)diff);
 		sqobject::mainContinuous();
 		prevTick = tick;
 	}
@@ -473,7 +473,7 @@ public:
 				for (int i=1;i<numparams;i++) {	// 引数
 					sq_pushvariant(vm, *param[i]);
 				}
-				if (SQ_SUCCEEDED(sq_call(vm, numparams+1, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+				if (SQ_SUCCEEDED(sq_call(vm, numparams+2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 					sq_getvariant(vm, -1, result);
 					sq_pop(vm, 1); // thread
 				}
@@ -506,7 +506,7 @@ public:
 			for (int i=1;i<numparams;i++) {	// 引数
 				sq_pushvariant(vm, *param[i]);
 			}
-			if (SQ_SUCCEEDED(sq_call(vm, numparams+1, SQTrue, SQTrue))) { // コンストラクタ呼び出し
+			if (SQ_SUCCEEDED(sq_call(vm, numparams+2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 				sq_getvariant(vm, -1, result);
 				sq_pop(vm, 1); // thread
 			}
@@ -906,6 +906,8 @@ static void PostRegistCallback()
 		ArrayCountProp = val.AsObject();
 	}
 
+	// スレッド機構初期化
+	sqobject::Thread::init();
 	sqthreadcont.start();
 }
 
@@ -917,7 +919,7 @@ static void PreUnregistCallback()
 	sqthreadcont.stop();
 	sqobject::doneContinuous();
 	sqobject::Thread::done();
-	
+
 	if (ArrayCountProp) {
 		ArrayCountProp->Release();
 		ArrayCountProp = NULL;

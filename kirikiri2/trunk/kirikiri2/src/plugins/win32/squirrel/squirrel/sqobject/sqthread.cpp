@@ -27,7 +27,7 @@ static SQRESULT ERROR_FORK(HSQUIRRELVM v) {
 bool
 Thread::isWait()
 {
-	return !_waitSystem.isNull() || _waitList.size() > 0 || _waitTimeout >= 0;
+	return !_waitSystem.isNull() || _waitList.len() > 0 || _waitTimeout >= 0;
 }
 
 /**
@@ -45,10 +45,10 @@ Thread::isSameThread(HSQUIRRELVM v)
  * @return 該当オブジェクトを待ってた場合は true
  */
 bool
-Thread::notifyObject(Object *target)
+Thread::_notifyObject(ObjectInfo &target)
 {
 	bool find = false;
-	if (!_waitSystem.isNull() && _waitSystem.getObject() == target) { // systemコマンド専用の待ち
+	if (!_waitSystem.isNull() && _waitSystem == target) { // systemコマンド専用の待ち
 		find = true;
 		Thread *th = _waitSystem.getThread();
 		if (th) {
@@ -56,13 +56,15 @@ Thread::notifyObject(Object *target)
 		}
 		_waitSystem.clear();
 	} else {
-		std::vector<ObjectInfo>::iterator i = _waitList.begin();
-		while (i != _waitList.end()) {
-			Object *obj = i->getObject();
-			if (obj && obj == target) {
+		int i = 0;
+		int max = _waitList.len();
+		while (i < max) {
+			ObjectInfo obj = _waitList.get(i);
+			if (obj == target) {
 				find = true;
-				_waitResult = *i;
-				i = _waitList.erase(i);
+				_waitResult = obj;
+				_waitList.remove(i);
+				max--;
 			} else {
 				i++;
 			}
@@ -80,15 +82,18 @@ Thread::notifyObject(Object *target)
  * @return 該当オブジェクトを待ってた場合は true
 	 */
 bool
-Thread::notifyTrigger(const SQChar *name)
+Thread::_notifyTrigger(const SQChar *name)
 {
 	bool find = false;
-	std::vector<ObjectInfo>::iterator i = _waitList.begin();
-	while (i != _waitList.end()) {
-		if (i->isSameString(name)) {
+	int i = 0;
+	int max = _waitList.len();
+	while (i < max) {
+		ObjectInfo obj = _waitList.get(i);
+		if (obj.isSameString(name)) {
 			find = true;
-			_waitResult = *i;
-			i = _waitList.erase(i);
+			_waitResult = obj;
+			_waitList.remove(i);
+			max--;
 		} else {
 			i++;
 		}
@@ -102,11 +107,13 @@ Thread::notifyTrigger(const SQChar *name)
 // コンストラクタ
 Thread::Thread() : _currentTick(0), _fileHandler(NULL), _waitTimeout(-1), _status(THREAD_NONE)
 {
+	_waitList.initArray();
 }
 
 // コンストラクタ
 Thread::Thread(HSQUIRRELVM v) : Object(v), _currentTick(0), _fileHandler(NULL), _waitTimeout(-1), _status(THREAD_NONE)
 {
+	_waitList.initArray();
 	// 実行
 	if (sq_gettop(v) >= 3) {
 		_exec(v,3);
@@ -117,17 +124,15 @@ Thread::Thread(HSQUIRRELVM v) : Object(v), _currentTick(0), _fileHandler(NULL), 
 // デストラクタ
 Thread::~Thread()
 {
-	notifyAll();
-	_clear();
-	_thread.clear();
-	_args.clear();
+	_exit();
+	_waitList.clear();
 }
 
 /**
  * 情報破棄
  */
 void
-Thread::init()
+Thread::_init()
 {
 	HSQUIRRELVM gv = getGlobalVM();
 	sq_newthread(gv, 1024);
@@ -141,13 +146,22 @@ Thread::init()
 void
 Thread::_clear()
 {
+	_clearWait();
 	if (_fileHandler) {
 		sqobjCloseFile(_fileHandler);
 		_fileHandler = NULL;
 		_scriptName.clear();
 	}
-	_clearWait();
+	_args.clear();
+	_thread.clear();
 	_status = THREAD_NONE;
+}
+
+void
+Thread::_exit()
+{
+	notifyAll();
+	_clear();
 }
 
 /**
@@ -155,24 +169,18 @@ Thread::_clear()
  * @param status キャンセルの場合は true
  */
 void
-Thread::_clearWait() {
-
+Thread::_clearWait()
+{
 	// system用の waitの解除
-	Thread *th = _waitSystem.getThread();
-	if (th) {
-		th->removeWait(this);
-	}
+	_waitSystem.removeWait(self);
 	_waitSystem.clear();
 
 	// その他の wait の解除
-	std::vector<ObjectInfo>::iterator i = _waitList.begin();
-	while (i != _waitList.end()) {
-		Object *obj = i->getObject();
-		if (obj) {
-			obj->removeWait(this);
-		}
-		i = _waitList.erase(i);
+	int max = _waitList.len();
+	for (int i=0;i<max;i++) {
+		_waitList.get(i).removeWait(self);
 	}
+	_waitList.clearData();
 	// タイムアウト指定の解除
 	_waitTimeout = -1;
 }
@@ -251,18 +259,18 @@ Thread::_wait(HSQUIRRELVM v, int idx)
 			break;
 		case OT_STRING:
 			// 待ちリストに登録
-			_waitList.push_back(ObjectInfo(v,i));
+			_waitList.append(ObjectInfo(v,i));
 			break;
 		case OT_INSTANCE:
 			// オブジェクトに待ち登録してから待ちリストに登録
 			{
-				ObjectInfo o(v,i);
-				Object *obj = o.getObject();
-				if (obj) {
-					obj->addWait(this);
-				}
-				_waitList.push_back(o);
+				ObjectInfo o;
+				o.getStackWeak(v,i);
+				o.addWait(self);
+				_waitList.append(o);
 			}
+			break;
+		default:
 			break;
 		}
 	}
@@ -277,11 +285,8 @@ Thread::_system(HSQUIRRELVM v)
 {
 	_clearWait();
 	_waitResult.clear();
-	_waitSystem.getStack(v, -1);
-	Object *obj = _waitSystem.getObject();
-	if (obj) {
-		obj->addWait(this);
-	}
+	_waitSystem.getStackWeak(v, -1);
+	_waitSystem.addWait(self);
 }
 
 // ---------------------------------------------------------------
@@ -315,9 +320,7 @@ Thread::_exec(HSQUIRRELVM v, int idx)
 	// スレッド先頭にスクリプトをロード
 	if (sq_gettype(v, idx) == OT_STRING) {
 		// スクリプト指定で遅延ロード
-		const SQChar *filename;
-		sq_getstring(v, idx, &filename);
-		_scriptName = filename;
+		_scriptName.getStack(v, idx);
 		_fileHandler = sqobjOpenFile(getString(v, idx));
 		_status = THREAD_LOADING_FILE;
 	} else {
@@ -325,6 +328,7 @@ Thread::_exec(HSQUIRRELVM v, int idx)
 		_func.getStack(v, idx);
 		_status = THREAD_LOADING_FUNC;
 	}
+
 	// 引数を記録
 	int max = sq_gettop(v);
 	if (max > idx) {
@@ -343,18 +347,13 @@ Thread::_entryThread(HSQUIRRELVM v)
 {
 	// スレッド情報として登録
 	ObjectInfo thinfo(v,1);
-	Thread *newth = thinfo.getThread();
-	if (newth) {
-		std::vector<ObjectInfo>::iterator i = threadList.begin();
-		while (i != threadList.end()) {
-			Thread *th = i->getThread();
-			if (th && th == newth) {
-				return;
-			}
-			i++;
+	int max = threadList.len();
+	for (int i=0;i<max;i++) {
+		if (threadList.get(i) == thinfo) {
+			return;
 		}
 	}
-	newThreadList.push_back(thinfo);
+	newThreadList.append(thinfo);
 }
 
 
@@ -382,8 +381,7 @@ SQRESULT
 Thread::exit(HSQUIRRELVM v)
 {
 	_exitCode.getStack(v,2);
-	notifyAll();
-	_clear();
+	_exit();
 	return SQ_OK;
 }
 
@@ -446,8 +444,8 @@ Thread::_main(long diff)
 		const char *dataAddr;
 		int dataSize;
 		if (sqobjCheckFile(_fileHandler, &dataAddr, &dataSize)) {
-			init();
-			SQRESULT ret = sqstd_loadmemory(_thread, dataAddr, dataSize, _scriptName.c_str(), SQTrue);
+			_init();
+			SQRESULT ret = sqstd_loadmemory(_thread, dataAddr, dataSize, _scriptName.getString(), SQTrue);
 			sqobjCloseFile(_fileHandler);
 			_fileHandler = NULL;
 			if (SQ_SUCCEEDED(ret)) {
@@ -455,8 +453,7 @@ Thread::_main(long diff)
 			} else {
 				// exit相当
 				printError();
-				notifyAll();
-				_clear();
+				_exit();
 				return true;
 			}
 		} else {
@@ -465,7 +462,7 @@ Thread::_main(long diff)
 		}
 	} else if (_status == THREAD_LOADING_FUNC) {
 		// スクリプト読み込み処理
-		init();
+		_init();
 		_func.push(_thread);
 		_func.clear();
 		_status = THREAD_RUN;
@@ -497,15 +494,13 @@ Thread::_main(long diff)
 		if (SQ_FAILED(result)) {
 			// スレッドがエラー終了
 			printError();
-			notifyAll();
-			_clear();
+			_exit();
 		} else  if (sq_getvmstate(_thread) == SQ_VMSTATE_IDLE) {
 			// スレッドが正常に終了
 			if (result > 0) {
 				_exitCode.getStack(_thread, -1);
 			}
-			notifyAll();
-			_clear();
+			_exit();
 		}
 	}
 	
@@ -527,10 +522,21 @@ Thread::printError()
 		if (SQ_FAILED(sq_getstring(_thread, -1, &err))) {
 			err = _SC("unknown");
 		}
-		print(_thread,_SC("error:%s:%s\n"), _scriptName.c_str(), err);
+		print(_thread,_SC("error:%s:%s\n"), _scriptName.getString(), err);
 		sq_pop(_thread, 1);
 	}
 }
+
+/**
+ * 動作スレッドの破棄
+ */
+void
+Thread::init()
+{
+	threadList.initArray();
+	newThreadList.initArray();
+}
+
 
 /*
  * 実行処理メインループ
@@ -547,20 +553,21 @@ Thread::main(long diff)
 {
 	diffTick = diff;
 	currentTick += diff;
-	std::vector<ObjectInfo>::iterator i = threadList.begin();
-	while (i != threadList.end()) {
-		Thread *th = i->getThread();
+
+	int i=0;
+	int max = threadList.len();
+	while (i < max) {
+		Thread *th = threadList.get(i).getThread();
 		if (!th || th->_main(diff)) {
-			i = threadList.erase(i);
+			threadList.remove(i);
+			max--;
 		} else {
 			i++;
 		}
 	}
-	for (i=newThreadList.begin();i != newThreadList.end();i++) {
-		threadList.push_back(*i);
-	}
-	newThreadList.clear();
-	return threadList.size();
+	threadList.appendArray(newThreadList);
+	newThreadList.clearData();
+	return threadList.len();
 };
 
 /**
@@ -601,18 +608,26 @@ Thread::fork(const SQChar *scriptName, int argc, const SQChar **argv)
 void
 Thread::done()
 {
+	// 全スレッドを強制中断
+	threadList.appendArray(newThreadList);
+	newThreadList.clearData();
+	int max = threadList.len();
+	for (int i=0;i<max;i++) {
+		Thread *th = threadList.get(i).getThread();
+		if (th) { th->_exit();}
+	}
+	threadList.clearData();
+	// リスト自体を破棄
 	threadList.clear();
 	newThreadList.clear();
 }
 
 // -------------------------------------------------------------
-//
-// グローバルスレッド制御用諸機能
-//
+// グローバルスレッド用
 // -------------------------------------------------------------
 
-std::vector<ObjectInfo> Thread::threadList; //< スレッド一覧
-std::vector<ObjectInfo> Thread::newThreadList; //< 新規スレッド一覧
+ObjectInfo Thread::threadList; //< スレッド一覧
+ObjectInfo Thread::newThreadList; //< 新規スレッド一覧
 long Thread::currentTick = 0;  //< 現在のシステムtick
 long Thread::diffTick = 0;  //< 今回の呼び出し差分
 
@@ -646,14 +661,14 @@ Thread::global_getDiffTick(HSQUIRRELVM v)
 SQRESULT
 Thread::global_getCurrentThread(HSQUIRRELVM v)
 {
-	std::vector<ObjectInfo>::iterator i = threadList.begin();
-	while (i != threadList.end()) {
-		Thread *th = i->getThread();
+	int max = threadList.len();
+	for (int i=0;i<max;i++) {
+		ObjectInfo obj = threadList.get(i);
+		Thread *th = obj.getThread();
 		if (th && th->isSameThread(v)) {
-			i->push(v);
+			obj.push(v);
 			return 1;
 		}
-		i++;
 	}
 	return ERROR_NOTHREAD(v);
 }
@@ -664,13 +679,7 @@ Thread::global_getCurrentThread(HSQUIRRELVM v)
 SQRESULT
 Thread::global_getThreadList(HSQUIRRELVM v)
 {
-	sq_newarray(v, 0);
-	std::vector<ObjectInfo>::const_iterator i = threadList.begin();
-	while (i != threadList.end()) {
-		i->push(v);
-		sq_arrayappend(v, -2);
-		i++;
-	}
+	threadList.pushClone(v);
 	return 1;
 }
 
@@ -695,13 +704,13 @@ Thread::global_fork(HSQUIRRELVM v)
 Thread *
 Thread::getCurrentThread(HSQUIRRELVM v)
 {
-	std::vector<ObjectInfo>::iterator i = threadList.begin();
-	while (i != threadList.end()) {
-		Thread *th = i->getThread();
+	int max = threadList.len();
+	for (int i=0;i<max;i++) {
+		ObjectInfo obj = threadList.get(i);
+		Thread *th = obj.getThread();
 		if (th && th->isSameThread(v)) {
 			return th;
 		}
-		i++;
 	}
 	return NULL;
 }
@@ -771,7 +780,7 @@ Thread::global_wait(HSQUIRRELVM v)
 	if (!th) {
 		return ERROR_NOTHREAD(v);
 	}
-	th->wait(v);
+	th->_wait(v);
 	return sq_suspendvm(v);
 }
 
@@ -783,13 +792,10 @@ SQRESULT
 Thread::global_trigger(HSQUIRRELVM v)
 {
 	const SQChar *name = getString(v, 2);
-	std::vector<ObjectInfo>::iterator i = threadList.begin();
-	while (i != threadList.end()) {
-		Thread *th = i->getThread();
-		if (th) {
-			th->notifyTrigger(name);
-		}
-		i++;
+	int max = threadList.len();
+	for (int i=0;i<max;i++) {
+		ObjectInfo obj = threadList.get(i);
+		obj.notifyTrigger(name);
 	}
 	return SQ_OK;
 }
