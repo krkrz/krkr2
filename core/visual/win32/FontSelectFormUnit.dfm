@@ -5,14 +5,14 @@ object TVPFontSelectForm: TTVPFontSelectForm
   ClientHeight = 343
   ClientWidth = 323
   Color = clBtnFace
-  DefaultMonitor = dmDesktop
+  DefaultMonitor = dmPrimary
   Font.Charset = SHIFTJIS_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = '‚l‚r ‚oƒSƒVƒbƒN'
   Font.Style = []
   OldCreateOrder = False
-  Position = poDesktopCenter
+  Position = poScreenCenter
   OnDestroy = FormDestroy
   OnShow = FormShow
   PixelsPerInch = 96
