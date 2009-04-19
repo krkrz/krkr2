@@ -70,6 +70,9 @@ public:
 	// オブジェクトをPUSH
 	void push(HSQUIRRELVM v) const;
 
+	/// 複製を登録(失敗したらNULL)
+	void pushClone(HSQUIRRELVM v) const;
+	
 	// ---------------------------------------------------
 	// delegate 処理用
 	// ---------------------------------------------------
@@ -103,23 +106,32 @@ public:
 	bool isSameString(const SQChar *str) const;
 
 	// ---------------------------------------------------
-	// 配列処理用
+	// 配列・辞書処理用
 	// ---------------------------------------------------
 
 	/// 配列として初期化
 	void initArray(int size=0);
-
+	
 	/// @return 配列なら true
 	bool isArray() const { return sq_isarray(obj); }
 
+	/// 配列として初期化
+	void initTable();
+
+	/// @return 配列なら true
+	bool isTable() const { return sq_istable(obj); }
+	
 	/// 配列に値を追加
 	void append(HSQUIRRELVM v, int idx);
+
+	/// 配列に配列を追加
+	void appendArray(ObjectInfo &array);
 	
 	/// 配列に値を追加
 	template<typename T>
 	void append(T value) {
 		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
+		push(gv);
 		pushValue(gv, value);
 		sq_arrayappend(gv, -2);
 		sq_pop(gv,1);
@@ -129,20 +141,78 @@ public:
 	template<typename T>
 	void insert(int index, T value) {
 		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
+		push(gv);
 		pushValue(gv, value);
 		sq_arrayinsert(gv, -2, index);
 		sq_pop(gv,1);
 	}
 
-	/// 配列に値を格納
-	template<typename T>
-	void set(int index, T value) {
+	/// 配列の値を削除
+	void remove(int index) {
 		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
-		sq_pushinteger(gv, index);
+		push(gv);
+		sq_arrayremove(gv, -1, index);
+		sq_pop(gv,1);
+	}
+	
+	/// 配列/辞書に値を格納
+	template<typename K, typename T>
+	void set(K key, T value) {
+		HSQUIRRELVM gv = getGlobalVM();
+		push(gv);
+		pushValue(gv, key);
 		pushValue(gv, value);
 		sq_set(gv, -3);
+		sq_pop(gv,1);
+	}
+
+	/// 辞書に値を新規格納
+	template<typename K, typename T>
+	void create(K key, T value) {
+		HSQUIRRELVM gv = getGlobalVM();
+		push(gv);
+		pushValue(gv, key);
+		pushValue(gv, value);
+		sq_createslot(gv, -3);
+		sq_pop(gv,1);
+	}
+	
+	/// 配列/辞書の値を取得
+	template<typename K>
+	ObjectInfo get(K key) {
+		HSQUIRRELVM gv = getGlobalVM();
+		pushData(gv, key);
+		ObjectInfo ret(gv, -1);
+		sq_pop(gv,1);
+		return ret;
+	}
+
+	/// 配列/辞書の値を取得。みつからなければnull
+	template<typename K, typename T>
+	SQRESULT get(K key, T **value) {
+		HSQUIRRELVM gv = getGlobalVM();
+		pushData(gv, key);
+		SQRESULT ret = getValue(gv, value);
+		sq_pop(gv,1);
+		return ret;
+	}
+	
+	/// 配列の値をpush。見つからなければnull
+	template<typename T>
+	void pushData(HSQUIRRELVM v, T key) const {
+		push(v);
+		pushValue(v, key);
+		if (SQ_FAILED(sq_get(v, -2))) {
+			sq_pushnull(v);
+		}
+		sq_remove(v,-2);
+	}
+	
+	/// 配列・辞書の中身をクリア
+	void clearData() {
+		HSQUIRRELVM gv = getGlobalVM();
+		push(gv);
+		sq_clear(gv,-1);
 		sq_pop(gv,1);
 	}
 
@@ -168,7 +238,7 @@ public:
 
 	template<typename T1> SQRESULT call(T1 p1) {
 		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
+		push(gv);
 		sq_pushroottable(gv); // root
 		pushValue(gv, p1);
 		SQRESULT ret = sq_call(gv, 2, SQFalse, SQTrue);
@@ -178,7 +248,7 @@ public:
 
 	template<typename T1, typename T2> SQRESULT call(T1 p1, T2 p2) {
 		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
+		push(gv);
 		sq_pushroottable(gv); // root
 		pushValue(gv, p1);
 		pushValue(gv, p2);
@@ -190,10 +260,10 @@ public:
 	template<typename R> SQRESULT call(R* r) {
 		SQRESULT ret;
 		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
+		push(gv);
 		sq_pushroottable(gv); // root
 		if (SQ_SUCCEEDED(ret = sq_call(gv, 1, SQTrue, SQTrue))) {
-			getValue(gv, r);
+			ret = getValue(gv, r);
 			sq_pop(gv, 1);
 		}
 		sq_pop(gv, 1);
@@ -202,11 +272,11 @@ public:
 	template<typename R, typename T1> SQRESULT call(R* r, T1 p1) {
 		SQRESULT ret;
 		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
+		push(gv);
 		sq_pushroottable(gv); // root
 		pushValue(gv, p1);
 		if (SQ_SUCCEEDED(ret = sq_call(gv, 2, SQTrue, SQTrue))) {
-			getValue(gv, r);
+			ret = getValue(gv, r);
 			sq_pop(gv, 1);
 		}
 		sq_pop(gv, 1);
@@ -215,12 +285,12 @@ public:
 	template<typename R, typename T1, typename T2> SQRESULT call(R* r, T1 p1, T2 p2) {
 		SQRESULT ret;
 		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
+		push(gv);
 		sq_pushroottable(gv); // root
 		pushValue(gv, p1);
 		pushValue(gv, p2);
 		if (SQ_SUCCEEDED(ret = sq_call(gv, 3, SQTrue, SQTrue))) {
-			getValue(gv, r);
+			ret = getValue(gv, r);
 			sq_pop(gv, 1);
 		}
 		sq_pop(gv, 1);
@@ -236,14 +306,30 @@ protected:
 	static void pushValue(HSQUIRRELVM v) {}
 	static void pushValue(HSQUIRRELVM v, int value) { sq_pushinteger(v,value); }
 	static void pushValue(HSQUIRRELVM v, const SQChar *value) { sq_pushstring(v,value,-1); }
+	static void pushValue(HSQUIRRELVM v, SQUserPointer value) { sq_pushuserpointer(v,value); }
+	static void pushValue(HSQUIRRELVM v, ObjectInfo &obj) { obj.push(v); }
 	
 	// 値の取得
-	static void getValue(HSQUIRRELVM v, void *value) {}
-	static void getValue(HSQUIRRELVM v, int *value) { sq_getinteger(v, -1, value); }
-	static void getValue(HSQUIRRELVM v, const SQChar **value) { sq_getstring(v, -1, value); }
+	static SQRESULT getValue(HSQUIRRELVM v, void *value) { return SQ_OK; }
+	static SQRESULT getValue(HSQUIRRELVM v, int *value) { return sq_getinteger(v, -1, value); }
+	static SQRESULT getValue(HSQUIRRELVM v, const SQChar **value) { return sq_getstring(v, -1, value); }
+	static SQRESULT getValue(HSQUIRRELVM v, SQUserPointer *value) { return sq_getuserpointer(v, -1, value); }
 	
 private:
 	HSQOBJECT obj; // オブジェクト参照情報
+
+	// -------------------------------------------------------------
+	// スレッド系操作用
+	// -------------------------------------------------------------
+
+public:
+	// Object
+	void addWait(ObjectInfo &thread);
+	void removeWait(ObjectInfo &thread);
+
+	// Thread
+	bool notifyTrigger(const SQChar *name);
+	bool notifyObject(ObjectInfo &target);
 };
 
 };

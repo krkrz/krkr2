@@ -4,11 +4,12 @@
  * Object, Thread の登録処理の実装例です。
  * Thread は継承不可で、Object は継承対象をすべてリスト管理して対応しています。
  */
+#include <new>
 #include "sqobjectinfo.h"
 #include "sqobject.h"
 #include "sqthread.h"
-#include <map>
 
+#include <string.h>
 #include <sqstdstring.h>
 #include <sqstdmath.h>
 #include <sqstdaux.h>
@@ -34,15 +35,8 @@ inline const SQChar *GetTypeName(const BaseClass *t) { return NULL; }
 inline const SQChar * GetTypeName(const TYPE *t) { return NAME; }
 #define DECLARE_CLASS(TYPE) DECLARE_CLASSNAME(TYPE,_SC(#TYPE))
 
-// 該当オブジェクトのタグのリスト
-typedef std::vector<SQUserPointer> SQTypeTagList;
-// オブジェクト別のタグのマップ
-typedef std::map<sqobject::tstring, SQTypeTagList> SQTypeTagListMap;
-// オブジェクトの継承関係の記録用
-typedef std::map<sqobject::tstring, sqobject::tstring> SQTypeMap;
-
-SQTypeTagListMap typeTagListMap;
-SQTypeMap typeMap;
+sqobject::ObjectInfo typeTagListMap;
+sqobject::ObjectInfo typeMap;
 
 /**
  * 継承関係を登録する
@@ -52,7 +46,7 @@ SQTypeMap typeMap;
 void
 registerInherit(const SQChar *typeName, const SQChar *parentName)
 {
-	typeMap[typeName] = parentName;
+	typeMap.create(typeName, parentName);
 }
 
 /**
@@ -63,11 +57,9 @@ registerInherit(const SQChar *typeName, const SQChar *parentName)
 const SQChar *
 getParentName(const SQChar *typeName)
 {
-	SQTypeMap::const_iterator p = typeMap.find(typeName);
-	if (p != typeMap.end()) {
-		return p->second.c_str();
-	}
-	return NULL;
+	const SQChar *parent = NULL;
+	typeMap.get(typeName, &parent);
+	return parent;
 }
 
 /**
@@ -79,13 +71,12 @@ void
 registerTypeTag(const SQChar *typeName, SQUserPointer tag)
 {
 	// タグを登録
-	SQTypeTagListMap::iterator l = typeTagListMap.find(typeName);
-	if (l != typeTagListMap.end()) {
-		l->second.push_back(tag);
-	} else {
-		typeTagListMap[typeName] = SQTypeTagList();
-		typeTagListMap[typeName].push_back(tag);
+	sqobject::ObjectInfo list = typeTagListMap.get(typeName);
+	if (!list.isArray()) {
+		list.initArray();
+		typeTagListMap.create(typeName, list);
 	}
+	list.append(tag);
 
 	// 親クラスにも登録
 	const SQChar *pname = getParentName(typeName);
@@ -104,17 +95,16 @@ registerTypeTag(const SQChar *typeName, SQUserPointer tag)
 SQUserPointer
 getInstance(HSQUIRRELVM v, int idx, const SQChar *typeName)
 {
-	SQTypeTagListMap::iterator l = typeTagListMap.find(sqobject::tstring(typeName));
-	if (l != typeTagListMap.end()) {
-		SQTypeTagList &tags = l->second;
-		SQTypeTagList::const_iterator i = tags.begin();
-		while (i != tags.end()) {
-			SQUserPointer tag = *i;
+	sqobject::ObjectInfo list = typeTagListMap.get(typeName);
+	if (list.isArray()) {
+		int max = list.len();
+		for (int i=0;i<max;i++) {
+			SQUserPointer tag;
+			list.get(i, &tag);
 			SQUserPointer up;
 			if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, tag))) {
 				return up;
 			}
-			i++;
 		}
 	}
 	return NULL;
@@ -150,8 +140,11 @@ public:
 			// 親クラスが指定されてる場合は継承処理
 			::registerInherit(typeName, parentName);
 			sq_pushstring(v, parentName, -1);
-			sq_get(v,-3);
-			sq_newclass(v, true);
+			if (SQ_SUCCEEDED(sq_get(v,-3))) {
+				sq_newclass(v, true);
+			} else {
+				sq_newclass(v, false);
+			}
 		} else {
 			// 継承なしでクラス生成
 			sq_newclass(v, false);
@@ -166,10 +159,13 @@ public:
 	
 	/*
 	 * ネイティブオブジェクトのリリーサ。
-	 * deleteするだけ。
 	 */
 	static SQRESULT release(SQUserPointer up, SQInteger size) {
-		if (up) { delete (T*)up; }
+		if (up) {
+			T* self = (T*)up;
+			self->~T();
+			sq_free(up, size);
+		}
 		return SQ_OK;
 	}
 	
@@ -178,13 +174,15 @@ public:
 	 * ネイティブオブジェクトのコンストラクタに引数として HSQUIRRELVM を渡す。
 	 */
 	static SQRESULT constructor(HSQUIRRELVM v) {
-		T *self = new T(v);
+		T *self = (T*)sq_malloc(sizeof *self);
+		new (self) T(v);
 		if (self) {
 			SQRESULT result;
 			if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {;
 				sq_setreleasehook(v, 1, release);
 			} else {
-				delete self;
+				self->~T();
+				sq_free(self, sizeof *self);
 			}
 			return result;
 		} else {
@@ -330,6 +328,8 @@ HSQUIRRELVM init() {
 	sqstd_register_stringlib(vm);
 	sqstd_seterrorhandlers(vm);
 	sq_pop(vm,1);
+	typeMap.initTable();
+	typeTagListMap.initTable();
 	return vm;
 }
 
@@ -342,6 +342,14 @@ HSQUIRRELVM getGlobalVM()
 /// vm 終了
 void done()
 {
+	// ルートテーブルをクリア
+	sq_pushroottable(vm);
+	sq_clear(vm,-1);
+	sq_pop(vm,1);
+	typeTagListMap.clearData();
+	typeTagListMap.clear();
+	typeMap.clearData();
+	typeMap.clear();
 	sq_close(vm);
 }
 
@@ -349,30 +357,24 @@ void done()
 Thread *
 ObjectInfo::getThread()
 {
-	if (sq_isinstance(obj)) {
-		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
-		Thread *ret = NULL;
-		ret = (Thread*)::getInstance(gv, -1, GetTypeName(ret));
-		sq_pop(gv,1);
-		return ret;
-	}
-	return NULL;
+	HSQUIRRELVM gv = getGlobalVM();
+	push(gv);
+	Thread *ret = NULL;
+	ret = (Thread*)::getInstance(gv, -1, GetTypeName(ret));
+	sq_pop(gv,1);
+	return ret;
 }
 
 // Object のインスタンスユーザポインタを取得
 Object *
 ObjectInfo::getObject()
 {
-	if (sq_isinstance(obj)) {
-		HSQUIRRELVM gv = getGlobalVM();
-		sq_pushobject(gv, obj);
-		Object *ret = NULL;
-		ret = (Object*)::getInstance(gv, -1, GetTypeName(ret));
-		sq_pop(gv,1);
-		return ret;
-	}
-	return NULL;
+	HSQUIRRELVM gv = getGlobalVM();
+	push(gv);
+	Object *ret = NULL;
+	ret = (Object*)::getInstance(gv, -1, GetTypeName(ret));
+	sq_pop(gv,1);
+	return ret;
 }
 
 // ------------------------------------------------------------------

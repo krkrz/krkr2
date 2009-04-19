@@ -140,6 +140,17 @@ ObjectInfo::push(HSQUIRRELVM v) const
 	}
 }
 
+/// 複製を登録(失敗したらnullを登録
+void
+ObjectInfo::pushClone(HSQUIRRELVM v) const
+{
+	push(v);
+	if (!SQ_SUCCEEDED(sq_clone(v, -1))) {
+		sq_pushnull(v);
+	}
+	sq_remove(v, -2);
+}
+
 // ---------------------------------------------------
 // delegate 処理用
 // ---------------------------------------------------
@@ -167,8 +178,8 @@ ObjectInfo::getString()
 {
 	if (sq_isstring(obj)) {
 		HSQUIRRELVM gv = getGlobalVM();
+		push(gv);
 		const SQChar *mystr;
-		sq_pushobject(gv, obj);
 		sq_getstring(gv, -1, &mystr);
 		sq_pop(gv, 1);
 		return mystr;
@@ -185,8 +196,8 @@ ObjectInfo::isSameString(const SQChar *str) const
 {
 	if (str && sq_isstring(obj)) {
 		HSQUIRRELVM gv = getGlobalVM();
+		push(gv);
 		const SQChar *mystr;
-		sq_pushobject(gv, obj);
 		sq_getstring(gv, -1, &mystr);
 		sq_pop(gv, 1);
 		return mystr && scstrcmp(str, mystr) == 0;
@@ -211,13 +222,38 @@ ObjectInfo::initArray(int size)
 	sq_pop(gv, 1);
 }
 
+/// 配列として初期化
+void
+ObjectInfo::initTable()
+{
+	clear();
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_newtable(gv);
+	sq_getstackobj(gv, -1, &obj);
+	sq_addref(gv, &obj);
+	sq_pop(gv, 1);
+}
+
 /// 配列に値を追加
 void ObjectInfo::append(HSQUIRRELVM v, int idx)
 {
 	HSQUIRRELVM gv = getGlobalVM();
-	sq_pushobject(gv, obj);
+	push(gv);
 	sq_move(gv, v, idx);
 	sq_arrayappend(gv, -2);
+	sq_pop(gv,1);
+}
+
+/// 配列に配列を追加
+void ObjectInfo::appendArray(ObjectInfo &array)
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	push(gv);
+	int max = array.len();
+	for (int i=0;i<max;i++) {
+		array.pushData(gv, i);
+		sq_arrayappend(gv, -2);
+	}
 	sq_pop(gv,1);
 }
 
@@ -226,7 +262,7 @@ int
 ObjectInfo::len() const
 {
 	HSQUIRRELVM gv = getGlobalVM();
-	sq_pushobject(gv, obj);
+	push(gv);
 	int ret = sq_getsize(gv,-1);
 	sq_pop(gv,1);
 	return ret;
@@ -244,13 +280,14 @@ ObjectInfo::pushArray(HSQUIRRELVM v) const
 		return 0;
 	}
 	HSQUIRRELVM gv = getGlobalVM();
-	sq_pushobject(gv, obj);
+	push(gv);
 	int len = sq_getsize(gv,-1);
 	for (int i=0;i<len;i++) {
 		sq_pushinteger(gv, i);
-		sq_get(gv, -2);
-		sq_move(v, gv, -1);
-		sq_pop(gv, 1);
+		if (SQ_SUCCEEDED(sq_get(gv, -2))) {
+			sq_move(v, gv, -1);
+			sq_pop(gv, 1);
+		}
 	}
 	sq_pop(gv,1);
 	return len;
@@ -263,11 +300,47 @@ ObjectInfo::pushArray(HSQUIRRELVM v) const
 SQRESULT ObjectInfo::call()
 {
 	HSQUIRRELVM gv = getGlobalVM();
-	sq_pushobject(gv, obj);
+	push(gv);
 	sq_pushroottable(gv); // root
 	SQRESULT ret = sq_call(gv, 1, SQFalse, SQTrue);
 	sq_pop(gv, 1);
 	return ret;
+}
+
+// -------------------------------------------------------------
+// スレッド系操作用
+// -------------------------------------------------------------
+
+void
+ObjectInfo::addWait(ObjectInfo &thread)
+{
+	Object *object = getObject();
+	if (object) {
+		object->_addWait(thread);
+	}
+}
+
+void
+ObjectInfo::removeWait(sqobject::ObjectInfo &thread)
+{
+	Object *object = getObject();
+	if (object) {
+		object->_removeWait(thread);
+	}
+}
+
+bool
+ObjectInfo::notifyObject(ObjectInfo &target)
+{
+	Thread *thread = getThread();
+	return thread ? thread->_notifyObject(target) : false;
+}
+
+bool
+ObjectInfo::notifyTrigger(const SQChar *name)
+{
+	Thread *thread = getThread();
+	return thread ? thread->_notifyTrigger(name) : false;
 }
 
 };
