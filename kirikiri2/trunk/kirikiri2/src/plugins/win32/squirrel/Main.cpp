@@ -4,6 +4,7 @@
 #include <squirrel.h>
 #include <sqstdio.h>
 #include <sqstdblob.h>
+#include <sqstdaux.h>
 #include <sqthread.h>
 #include <sqcont.h>
 #include "sqtjsobj.h"
@@ -838,8 +839,15 @@ NCB_REGISTER_CLASS(SQFunction) {
 
 //---------------------------------------------------------------------------
 
-// sqbasic.cpp
-extern void sqbasic_init(HSQUIRRELVM v);
+/**
+ * スタック情報の表示
+ */
+static SQInteger
+printCallStack(HSQUIRRELVM v)
+{
+	sqstd_printcallstack(v);
+	return 0;
+}
 
 /**
  * 登録処理前
@@ -856,9 +864,20 @@ static void PreRegistCallback()
 	// 出力用
 	sq_setprintfunc(vm, printFunc);
 
-	// 基本初期化
-	sqbasic_init(vm);
-
+	sq_pushroottable(vm);
+	// その他の基本ライブラリの登録
+	sqstd_register_iolib(vm);
+	sqstd_register_bloblib(vm);
+	// printCallStack の登録
+	sq_pushstring(vm, _SC("printCallStack"), -1);
+	sq_newclosure(vm, printCallStack, 0);
+	sq_createslot(vm, -3); 
+	// collectGarbage の登録
+	sq_pushstring(vm, _SC("collectGarbage"), -1);
+	sq_newclosure(vm, sq_collectgarbage, 0);
+	sq_createslot(vm, -3); 
+	sq_pop(vm, 1);
+	
 	sqobject::registerContinuous();
 	
 	// オブジェクト機構初期化
