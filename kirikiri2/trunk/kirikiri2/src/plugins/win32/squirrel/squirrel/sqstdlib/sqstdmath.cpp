@@ -42,6 +42,36 @@ static SQInteger math_abs(HSQUIRRELVM v)
 	return 1; 
 }
 
+static SQInteger math_min(HSQUIRRELVM v)
+{
+	int n = sq_gettop(v);
+	int minidx = 2;
+	for (int i=3;i<=n;i++) {
+		sq_push(v, minidx);
+		sq_push(v, i);
+		if (sq_cmp(v) < 0) {
+			minidx = i;
+		}
+	}
+	sq_push(v, minidx);
+	return 1;
+}
+
+static SQInteger math_max(HSQUIRRELVM v)
+{
+	int n = sq_gettop(v);
+	int maxidx = 2;
+	for (int i=3;i<=n;i++) {
+		sq_push(v, maxidx);
+		sq_push(v, i);
+		if (sq_cmp(v) > 0) {
+			maxidx = i;
+		}
+	}
+	sq_push(v, maxidx);
+	return 1;
+}
+
 SINGLE_ARG_FUNC(sqrt)
 SINGLE_ARG_FUNC(fabs)
 SINGLE_ARG_FUNC(sin)
@@ -78,6 +108,8 @@ static SQRegFunction mathlib_funcs[] = {
 	_DECL_FUNC(rand,1,NULL),
 	_DECL_FUNC(fabs,2,_SC(".n")),
 	_DECL_FUNC(abs,2,_SC(".n")),
+	_DECL_FUNC(min,-2,NULL),
+	_DECL_FUNC(max,-2,NULL),
 	{0,0},
 };
 

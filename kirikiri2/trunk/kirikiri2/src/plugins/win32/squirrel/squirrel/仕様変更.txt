@@ -21,6 +21,29 @@ Date: 2009/4/15
 
  compiler.cpp:163 に funcstate._varparams = true; を追加
 
+●squirrel機能追加
+
+数学関数追加
+
+min(...) 引数で最小のものを返す (スクリプト上での < での比較と等価)
+max(...) 引数で最大のものを返す (スクリプト上での > での比較と等価)
+
+文字列 delegate 追加
+
+substr(index[,length])　　部分文字列の取得(サイズ指定)
+charAt(index)		  index位置の文字を取得  ※substr(index,1)と等価
+replace(from, to)	  from を to に置換             ※正規表現不可
+split(delim)		  delimを区切り文字列として分割 ※正規表現不可
+
+mbnext(index)             index位置のマルチバイト文字のバイト数を返す
+                          UNICODE 版は常に1を返します。
+                          それ以外では、コンパイル時に USESJISが定義されて
+                          あればSJIS文字列、それ以外では UTF-8 文字列
+                          として処理されます。
+	                  ※SJIS版では頭から順次処理しないと値は保証されません
+mblen() 		  マルチバイト文字列の長さを返す
+mbsubstr(index[,length])  マルチバイト文字列の部分文字列を取得する
+
 ●SQPLUS仕様変更
 
 オリジナルの SQPLUS では、エラー処理に例外を使っていたため、

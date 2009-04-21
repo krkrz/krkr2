@@ -617,6 +617,218 @@ static SQInteger string_find(HSQUIRRELVM v)
 	return sq_throwerror(v,_SC("invalid param"));
 }
 
+static SQInteger string_substr(HSQUIRRELVM v)
+{
+	SQInteger top  = sq_gettop(v);
+	SQObjectPtr o = stack_get(v,1);
+	SQInteger slen = _string(o)->_len;
+	SQInteger sidx = top > 1 ? tointeger(stack_get(v,2)) : 0;
+	if(sidx < 0)sidx = slen + sidx;
+	SQInteger eidx = top > 2 ? sidx + tointeger(stack_get(v,3)) : slen;
+	if(eidx < sidx)	return sq_throwerror(v,_SC("wrong indexes"));
+	if(eidx > slen)	return sq_throwerror(v,_SC("slice out of range"));
+	v->Push(SQString::Create(_ss(v),&_stringval(o)[sidx],eidx-sidx));
+	return 1;
+}
+
+static SQInteger string_charAt(HSQUIRRELVM v)
+{
+	SQInteger sidx=0;
+	SQObjectPtr o=stack_get(v,1);
+	SQObjectPtr &start=stack_get(v,2);
+	if(type(start)!=OT_NULL && sq_isnumeric(start)){
+		sidx=tointeger(start);
+	}
+	SQInteger slen = _string(o)->_len;
+	if(sidx < 0) sidx = slen + sidx;
+	if(sidx+1 > slen)	return sq_throwerror(v,_SC("slice out of range"));
+	v->Push(SQString::Create(_ss(v),&_stringval(o)[sidx],1));
+	return 1;
+}
+
+static SQInteger string_replace(HSQUIRRELVM v)
+{
+	SQObject str  = stack_get(v,1);
+	SQObject from = stack_get(v,2);
+	SQObject to   = stack_get(v,3);
+
+	const SQChar *strP  = _stringval(str);
+	const SQChar *fromP = _stringval(from);
+	const SQChar *toP   = _stringval(to);
+	int strLen  = _string(str)->_len;
+	int fromLen = _string(from)->_len;
+	int toLen   = _string(to)->_len;
+	int diffLen = toLen - fromLen;
+
+	const SQChar *p;
+	const SQChar *start = strP;
+	while ((p = scstrstr(start, fromP)) != NULL) {
+		start = p + fromLen;
+		strLen += diffLen;
+	}
+	SQChar *sNew=(_ss(v)->GetScratchPad(rsl(strLen)));
+
+	start     = strP;
+	SQChar *q = sNew;
+	while ((p = scstrstr(start, fromP)) != NULL) {
+		while (start < p) {
+			*q++ = *start++;
+		}
+		start += fromLen;
+		for (int i=0;i<toLen;i++) {
+			*q++ = toP[i];
+		}
+	}
+	do {
+		*q++ = *start++;
+	} while (*start);
+
+	v->Push(SQString::Create(_ss(v),sNew,strLen));
+	return 1;
+}
+
+static SQInteger string_split(HSQUIRRELVM v)
+{
+	SQObject str   = stack_get(v,1);
+	SQObject delim = stack_get(v,2);
+	const SQChar *strP   = _stringval(str);
+	const SQChar *delimP = _stringval(delim);
+	int delimLen = _string(delim)->_len;
+	
+	SQArray *ret = SQArray::Create(_ss(v),0);
+	SQChar *p;
+	while ((p = scstrstr(strP, delimP)) != NULL) {
+		int sl = (p - strP) / sizeof(SQChar);
+		ret->Append(SQObjectPtr(SQString::Create(_ss(v),strP,sl)));
+		strP = p + delimLen;
+	}
+	int sl = scstrlen(strP);
+	ret->Append(SQObjectPtr(SQString::Create(_ss(v),strP,sl)));
+	v->Push(ret);
+	return 1;
+}
+
+static int _mbnext(const SQChar *strP, SQInteger idx)
+{
+#if defined(_UNICODE)
+	return strP[idx] ? 1 : 0;
+#else
+#if defined(USESJIS)
+#define iskanji1(c) (((((c) ^ 0x20) - 0xa1) & 0xff) < 0x3c)
+#if 0
+	if (strP[idx]) {
+		int i = 0;
+		while (i<idx) {
+			i += iskanji(strP[i]) ? 2 : 1;
+		}
+		return (i == idx) ? iskanji(strP[idx]) : 1;
+	} else {
+		return 0;
+	}
+#else
+	return strP[idx] ? (iskanji(strP[idx]) ? 2 : 1) : 0;
+#endif
+#else /** UTF-8 */
+	if (strP[idx]) {
+		int ch = strP[idx];
+		if ((ch & 0x80) == 0) {
+			return 1;
+		} else if ((ch & 0xc0) == 0x80) {
+			int n = 0;
+			do {
+				idx++;
+				n++;
+				ch = strP[idx];
+			} while (ch && (ch & 0xc0) == 0x80);
+			return n;
+		} else if ((ch & 0xe0) == 0xc0) {
+			return 2;
+		} else if ((ch & 0xf0) == 0xe0) {
+			return 3;
+		} else if ((ch & 0xf8) == 0xf0) {
+			return 4;
+		} else if ((ch & 0xfe) == 0xf8) {
+			return 5;
+		} else if ((ch & 0xff) == 0xfe) {
+			return 6;
+		} else {
+			return 1;
+		}
+	} else {
+		return 0;
+	}
+#endif
+#endif
+}
+
+static int _mblen(const SQChar *strP, SQInteger len)
+{
+	int cnt=0;
+	int idx=0;
+	int n=0;
+	while (idx < len && (n = _mbnext(strP,idx)) > 0) {
+		cnt++;
+		idx += n;
+	}
+	return cnt;
+}
+
+static SQInteger string_mbnext(HSQUIRRELVM v)
+{
+	SQObjectPtr &str = stack_get(v,1);
+	const SQChar *strP = _stringval(str);
+	SQInteger strlen   = _string(str)->_len;
+	SQInteger idx    = tointeger(stack_get(v,2));
+	if (idx < strlen) {
+		v->Push(SQObjectPtr(_mbnext(strP, idx)));
+	} else {
+		v->Push(SQObjectPtr(0));
+	}
+	return 1;
+}
+
+static SQInteger string_mblen(HSQUIRRELVM v)
+{
+	SQObjectPtr &str = stack_get(v,1);
+	const SQChar *strP = _stringval(str);
+	SQInteger strlen   = _string(str)->_len;
+	v->Push(SQObjectPtr(_mblen(strP, strlen)));
+	return 1;
+}
+
+static SQInteger string_mbsubstr(HSQUIRRELVM v)
+{
+	SQInteger top  = sq_gettop(v);
+
+	SQObjectPtr &str = stack_get(v,1);
+	const SQChar *strP = _stringval(str);
+	SQInteger strlen   = _string(str)->_len;
+
+	int mblen = _mblen(strP, strlen);
+	SQInteger mbsidx = top > 1 ? tointeger(stack_get(v,2)) : 0;
+	if (mbsidx < 0) mbsidx = mblen + mbsidx;
+	SQInteger mbeidx = top > 2 ? mbsidx + tointeger(stack_get(v,3)) : mblen;
+
+	if(mbeidx < mbsidx)	return sq_throwerror(v,_SC("wrong indexes"));
+	if(mbeidx > mblen)	return sq_throwerror(v,_SC("slice out of range"));
+
+	SQInteger sidx = 0;
+	SQInteger eidx = 0;
+	int idx=0;
+	int n=0;
+	while (idx < mbsidx && (n = _mbnext(strP,sidx)) > 0) {
+		idx++;
+		sidx += n;
+	}
+	eidx = sidx;
+	while (idx < eidx && (n = _mbnext(strP,eidx)) > 0) {
+		idx++;
+		eidx += n;
+	}
+	v->Push(SQString::Create(_ss(v),&_stringval(str)[sidx],eidx-sidx));
+	return 1;
+}
+
 #define STRING_TOFUNCZ(func) static SQInteger string_##func(HSQUIRRELVM v) \
 { \
 	SQObject str=stack_get(v,1); \
@@ -637,11 +849,18 @@ SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
 	{_SC("tointeger"),default_delegate_tointeger,1, _SC("s")},
 	{_SC("tofloat"),default_delegate_tofloat,1, _SC("s")},
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
-	{_SC("slice"),string_slice,-1, _SC(" s n  n")},
-	{_SC("find"),string_find,-2, _SC("s s n ")},
+	{_SC("slice"),string_slice,-1, _SC("snn")},
+	{_SC("find"),string_find,-2, _SC("ssn")},
 	{_SC("tolower"),string_tolower,1, _SC("s")},
 	{_SC("toupper"),string_toupper,1, _SC("s")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
+	{_SC("substr"),string_substr,-1, _SC("snn")},
+	{_SC("charAt"),string_charAt,-1, _SC("sn")},
+	{_SC("replace"),string_replace,3, _SC("sss")},
+	{_SC("split"),string_split,2, _SC("ss")},
+	{_SC("mbnext"),string_mbnext,2, _SC("sn")},
+	{_SC("mblen"),string_mblen,1, _SC("s")},
+	{_SC("mbsubstr"),string_mbsubstr,-1, _SC("snn")},
 	{0,0}
 };
 
