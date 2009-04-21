@@ -246,10 +246,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\sqbasic.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\sqfile.cpp"
 				>
 			</File>
