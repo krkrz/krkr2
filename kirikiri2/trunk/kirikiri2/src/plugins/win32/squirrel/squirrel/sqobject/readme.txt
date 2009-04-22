@@ -1,5 +1,5 @@
-Author: 渡邊剛(合資会社ワムソフト) 
-Date: 2009/4/13
+Author: 渡邊剛(go@wamsoft.jp)
+Date: 2009/4/22
 
 ●概要
 
