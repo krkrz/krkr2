@@ -385,6 +385,18 @@ static SQInteger table_rawget(HSQUIRRELVM v)
 	return SQ_SUCCEEDED(sq_rawget(v,-2))?1:SQ_ERROR;
 }
 
+static SQInteger table_keys(HSQUIRRELVM v)
+{
+	SQObjectPtr &o=stack_get(v,1);
+	SQArray *ret = SQArray::Create(_ss(v),0);
+	SQObjectPtr refpos, key, val;
+	int faketojump;
+	while (v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		ret->Append(key);
+	}
+	v->Push(ret);
+	return 1;
+}
 
 SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 	{_SC("len"),default_delegate_len,1, _SC("t")},
@@ -395,6 +407,7 @@ SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
 	{_SC("clear"),obj_clear,1, _SC(".")},
+	{_SC("keys"),table_keys,1, _SC("t")},
 	{0,0}
 };
 
@@ -454,6 +467,33 @@ static SQInteger array_remove(HSQUIRRELVM v)
 	}
 	return sq_throwerror(v, _SC("idx out of range"));
 }
+
+static SQInteger array_removeValue(HSQUIRRELVM v)
+{
+	SQObject &o = stack_get(v, 1);
+	SQObjectPtr &value = stack_get(v, 2);
+	SQBool all = sq_gettop(v) > 2 ? (tointeger(stack_get(v,3)) ? SQTrue : SQFalse) : SQTrue;
+
+	SQInteger i = 0;
+	SQInteger alen = _array(o)->Size();
+	while (i<alen){
+		SQObjectPtr avalue;
+		_array(o)->Get(i,avalue);
+		SQInteger res;
+		v->ObjCmp(value,avalue,res);
+		if (res == 0) {
+			_array(o)->Remove(i);
+			alen--;
+			if (!all) {
+				return SQ_OK;
+			}
+		} else {
+			i++;
+		}
+	}
+	return SQ_OK;
+}
+
 
 static SQInteger array_resize(HSQUIRRELVM v)
 {
@@ -562,7 +602,6 @@ static SQInteger array_slice(HSQUIRRELVM v)
 	}
 	v->Push(arr);
 	return 1;
-	
 }
 
 SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
@@ -574,6 +613,8 @@ SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
 	{_SC("top"),array_top,1, _SC("a")},
 	{_SC("insert"),array_insert,3, _SC("an")},
 	{_SC("remove"),array_remove,2, _SC("an")},
+	{_SC("erase"),array_remove,2, _SC("an")},
+	{_SC("removeValue"),array_removeValue,2, _SC("a.b")},
 	{_SC("resize"),array_resize,-2, _SC("an")},
 	{_SC("reverse"),array_reverse,1, _SC("a")},
 	{_SC("sort"),array_sort,-1, _SC("ac")},
@@ -778,7 +819,7 @@ static SQInteger string_mbnext(HSQUIRRELVM v)
 	SQObjectPtr &str = stack_get(v,1);
 	const SQChar *strP = _stringval(str);
 	SQInteger strlen   = _string(str)->_len;
-	SQInteger idx    = tointeger(stack_get(v,2));
+	SQInteger idx = sq_gettop(v) > 1 ? tointeger(stack_get(v,2)) : 0;
 	if (idx < strlen) {
 		v->Push(SQObjectPtr(_mbnext(strP, idx)));
 	} else {
@@ -858,7 +899,7 @@ SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
 	{_SC("charAt"),string_charAt,-1, _SC("sn")},
 	{_SC("replace"),string_replace,3, _SC("sss")},
 	{_SC("split"),string_split,2, _SC("ss")},
-	{_SC("mbnext"),string_mbnext,2, _SC("sn")},
+	{_SC("mbnext"),string_mbnext,-1, _SC("sn")},
 	{_SC("mblen"),string_mblen,1, _SC("s")},
 	{_SC("mbsubstr"),string_mbsubstr,-1, _SC("snn")},
 	{0,0}
