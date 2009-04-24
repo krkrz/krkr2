@@ -669,6 +669,13 @@ struct ConsoleEx
 		if (r) *r = hasWin;
 		return TJS_S_OK;
 	}
+	static tjs_error TJS_INTF_METHOD maximize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND();
+		bool hasWin = (hwnd != NULL);
+		if ( hasWin && !::IsZoomed(hwnd)) PostMessage(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+		if (r) *r = hasWin;
+		return TJS_S_OK;
+	}
 	// getPlacement
 	static tjs_error TJS_INTF_METHOD getPlacement(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		HWND hwnd = GetHWND();
@@ -722,7 +729,7 @@ struct ConsoleEx
 		HWND hwnd = GetHWND();
 		if (hwnd != NULL) {
 			UINT flag = SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER;
-			int x, y, w, h;
+			int x, y, w = 0, h = 0;
 			x = (int)p[0]->AsInteger();
 			y = (int)p[1]->AsInteger();
 			if (p[0]->Type() == tvtVoid &&
@@ -739,6 +746,7 @@ struct ConsoleEx
 	}
 };
 NCB_ATTACH_FUNCTION_WITHTAG(restoreMaximize, Debug_console, Debug.console, ConsoleEx::restoreMaximize);
+NCB_ATTACH_FUNCTION_WITHTAG(maximize,        Debug_console, Debug.console, ConsoleEx::maximize);
 NCB_ATTACH_FUNCTION_WITHTAG(setPos,          Debug_console, Debug.console, ConsoleEx::setPos);
 NCB_ATTACH_FUNCTION_WITHTAG(getPlacement,    Debug_console, Debug.console, ConsoleEx::getPlacement);
 NCB_ATTACH_FUNCTION_WITHTAG(setPlacement,    Debug_console, Debug.console, ConsoleEx::setPlacement);
