@@ -532,11 +532,30 @@ struct MenuItemEx
 		return val.AsObjectNoAddRef();
 	}
 	
-	// インデックスを取得
-	static UINT GetIndex(iTJSDispatch2 *obj) {
-		tTJSVariant val;
+	// （泥臭い手段で）インデックスを取得
+	static UINT GetIndex(iTJSDispatch2 *obj, iTJSDispatch2 *parent) {
+		tTJSVariant val, child;
+		parent->PropGet(0, TJS_W("children"), 0, &child, parent);
+		ncbPropAccessor charr(child);
+		if (!charr.IsValid()) return (UINT)-1;
+
 		obj->PropGet(0, TJS_W("index"), 0, &val, obj);
-		return (UINT)val.AsInteger();
+		int max = (int)val.AsInteger();
+		UINT ret = (UINT)max;
+		for (int i = 0; i <= max; i++) {
+			tTJSVariant vitem;
+			if (charr.checkVariant(i, vitem)) {
+				ncbPropAccessor item(vitem);
+				if (item.IsValid()) {
+					// 非表示の場合はカウントされない
+					if (!item.getIntValue(TJS_W("visible"))) {
+						if (i == max) return (UINT)-1;
+						ret--;
+					}
+				}
+			}
+		}
+		return ret;
 	}
 	// ウィンドウを取得
 	static HWND GetHWND(iTJSDispatch2 *obj) {
@@ -552,12 +571,13 @@ struct MenuItemEx
 	}
 
 	static bool getMenuItemInfo(iTJSDispatch2 *obj, HMENU &hmenu, UINT &index, MENUITEMINFO &mi, UINT mask) {
-		hmenu = GetHMENU(GetParentMenu(obj));
+		iTJSDispatch2 *parent = GetParentMenu(obj);
+		hmenu = GetHMENU(parent);
 		if (hmenu == NULL) TVPThrowExceptionMessage(TJS_W("Cannot get parent menu."));
 		ZeroMemory(&mi, sizeof(mi));
 		mi.cbSize = sizeof(mi);
 		mi.fMask = mask;
-		index = GetIndex(obj);
+		index = GetIndex(obj, parent);
 		return !!::GetMenuItemInfo(hmenu, index, TRUE, &mi);
 	}
 
