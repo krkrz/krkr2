@@ -1,5 +1,5 @@
 Author: 渡邊剛(go@wamsoft.jp)
-Date: 2009/4/22
+Date: 2009/4/29
 
 ●squirrel機能追加
 
@@ -7,6 +7,17 @@ Date: 2009/4/22
 
 min(...) 引数で最小のものを返す (スクリプト上での < での比較と等価)
 max(...) 引数で最大のものを返す (スクリプト上での > での比較と等価)
+iabs(v)  整数専用のabs
+
+◇数学関数仕様変更
+
+abs(v)  整数なら iabs, 実数なら fabs 扱い
+
+◇文字列関数仕様変更
+
+format(fmt, ...)  %s の場合は、パラメータに対して規定の文字列
+　　　　　　　　　変換処理を行ってから処理するように仕様変更。
+　　　　　　　　　文字列以外を渡してもエラーにならず確実に実行できます。
 
 ◇文字列 delegate 追加
 
@@ -28,8 +39,16 @@ mbsubstr(index[,length])  マルチバイト文字列の部分文字列を取得する
 
 erase(index)		  remove(index) の別名
 removeValue(v[,all=true]) 配列中でvと値が一致するものを削除
+find(value)               要素 value を持つインデックスを返す
+findall(value)            要素 value を持つインデックスの配列を返す
+includes(value)           要素 value を含むなら true を返す
+includeCount(value)       要素 value を含む数を返す
 
 ◇テーブル delegate 追加
 
 keys()			  キー一覧を配列で返す
+find(value)               要素 value を持つキーを返す
+findall(value)            要素 value を持つキーの配列を返す
+includes(value)           要素 value を含むなら true を返す
+includeCount(value)       要素 value を含む数を返す
 

@@ -34,11 +34,25 @@ static SQInteger math_rand(HSQUIRRELVM v)
 	return 1;
 }
 
-static SQInteger math_abs(HSQUIRRELVM v)
+static SQInteger math_iabs(HSQUIRRELVM v)
 {
 	SQInteger n;
 	sq_getinteger(v,2,&n);
 	sq_pushinteger(v,(SQInteger)abs((int)n)); 
+	return 1; 
+}
+
+static SQInteger math_abs(HSQUIRRELVM v)
+{
+	if(sq_gettype(v,2) == OT_INTEGER) {
+		SQInteger n;
+		sq_getinteger(v,2,&n);
+		sq_pushinteger(v,(SQInteger)abs((int)n));
+	} else {
+		SQFloat f;
+		sq_getfloat(v,2,&f);
+		sq_pushfloat(v,(SQFloat)fabs(f));
+	}
 	return 1; 
 }
 
@@ -107,6 +121,7 @@ static SQRegFunction mathlib_funcs[] = {
 	_DECL_FUNC(srand,2,_SC(".n")),
 	_DECL_FUNC(rand,1,NULL),
 	_DECL_FUNC(fabs,2,_SC(".n")),
+	_DECL_FUNC(iabs,2,_SC(".n")),
 	_DECL_FUNC(abs,2,_SC(".n")),
 	_DECL_FUNC(min,-2,NULL),
 	_DECL_FUNC(max,-2,NULL),

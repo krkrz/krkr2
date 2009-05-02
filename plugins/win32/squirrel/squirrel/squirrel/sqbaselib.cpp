@@ -343,6 +343,76 @@ static SQInteger obj_clear(HSQUIRRELVM v)
 	return sq_clear(v,-1);
 }
 
+static SQInteger obj_find(HSQUIRRELVM v)
+{
+	SQObjectPtr &o = stack_get(v,1);
+	SQObjectPtr &value = stack_get(v, 2);
+	SQObjectPtr refpos, key, val;
+	int faketojump;
+	while (v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		SQInteger res;
+		v->ObjCmp(val,value,res);
+		if (res == 0) {
+			v->Push(key);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+static SQInteger obj_findall(HSQUIRRELVM v)
+{
+	SQObjectPtr &o = stack_get(v,1);
+	SQArray *ret = SQArray::Create(_ss(v),0);
+	SQObjectPtr &value = stack_get(v, 2);
+	SQObjectPtr refpos, key, val;
+	int faketojump;
+	while (v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		SQInteger res;
+		v->ObjCmp(val,value,res);
+		if (res == 0) {
+			ret->Append(key);
+		}
+	}
+	v->Push(ret);
+	return 1;
+}
+
+static SQInteger obj_includes(HSQUIRRELVM v)
+{
+	SQObjectPtr &o = stack_get(v,1);
+	SQObjectPtr &value = stack_get(v, 2);
+	SQObjectPtr refpos, key, val;
+	int faketojump;
+	while (v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		SQInteger res;
+		v->ObjCmp(val,value,res);
+		if (res == 0) {
+			v->Push(true);
+			return 1;
+		}
+	}
+	v->Push(false);
+	return 1;
+}
+
+static SQInteger obj_includeCount(HSQUIRRELVM v)
+{
+	int cnt = 0;
+	SQObjectPtr &o = stack_get(v,1);
+	SQObjectPtr &value = stack_get(v, 2);
+	SQObjectPtr refpos, key, val;
+	int faketojump;
+	while (v->FOREACH_OP(o,key,val,refpos,0,666,faketojump) && faketojump != 666) {
+		SQInteger res;
+		v->ObjCmp(val,value,res);
+		if (res == 0) {
+			cnt++;
+		}
+	}
+	v->Push(cnt);
+	return 1;
+}
 
 static SQInteger number_delegate_tochar(HSQUIRRELVM v)
 {
@@ -407,6 +477,10 @@ SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
 	{_SC("clear"),obj_clear,1, _SC(".")},
+	{_SC("find"),obj_find,2, _SC("..")},
+	{_SC("findall"),obj_findall,2, _SC("..")},
+	{_SC("includes"),obj_includes,2, _SC("..")},
+	{_SC("includeCount"),obj_includeCount,2, _SC("..")},
 	{_SC("keys"),table_keys,1, _SC("t")},
 	{0,0}
 };
@@ -622,6 +696,10 @@ SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
 	{_SC("clear"),obj_clear,1, _SC(".")},
+	{_SC("find"),obj_find,2, _SC("..")},
+	{_SC("findall"),obj_findall,2, _SC("..")},
+	{_SC("includes"),obj_includes,2, _SC("..")},
+	{_SC("includeCount"),obj_includeCount,2, _SC("..")},
 	{0,0}
 };
 
@@ -760,14 +838,14 @@ static int _mbnext(const SQChar *strP, SQInteger idx)
 	if (strP[idx]) {
 		int i = 0;
 		while (i<idx) {
-			i += iskanji(strP[i]) ? 2 : 1;
+			i += iskanji1(strP[i]) ? 2 : 1;
 		}
-		return (i == idx) ? iskanji(strP[idx]) : 1;
+		return (i == idx) ? iskanji1(strP[idx]) : 1;
 	} else {
 		return 0;
 	}
 #else
-	return strP[idx] ? (iskanji(strP[idx]) ? 2 : 1) : 0;
+	return strP[idx] ? (iskanji1(strP[idx]) ? 2 : 1) : 0;
 #endif
 #else /** UTF-8 */
 	if (strP[idx]) {

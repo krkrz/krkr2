@@ -7,7 +7,7 @@
 #include "sqobjectinfo.h"
 #include "sqobject.h"
 #include "sqthread.h"
-#include <sqplus.h>
+#include "sqplusfunc.h"
 
 #include <sqstdstring.h>
 #include <sqstdmath.h>
@@ -76,36 +76,13 @@ ObjectInfo::getObject()
 }
 
 /**
- * 汎用コンストラクタ
- * @param v squirrel VM
- */
-template <typename T>
-struct GeneralConstructor {
-	static SQRESULT release(SQUserPointer up, SQInteger size) {
-		if (up) { delete (T*)up; }
-		return SQ_OK;
-	}
-	static SQRESULT constructor(HSQUIRRELVM v) {
-		return SqPlus::PostConstruct<T>(v, new T(v), release);
-	}
-};
-
-// ------------------------------------------------------------------
-// クラス登録用マクロ
-// ------------------------------------------------------------------
-
-#define SQCONSTRUCT(Class) cls.staticFuncVarArgs(GeneralConstructor<Class>::constructor, _SC("constructor"))
-#define SQFUNC(Class, Name) cls.func(&Class::Name,_SC(#Name))
-#define SQVFUNC(Class, Name) cls.funcVarArgs(&Class::Name,_SC(#Name))
-
-/**
  * Object クラスの登録
  */
 void
 Object::registerClass()
 {
-	SqPlus::SQClassDef<Object> cls(SQOBJECTNAME);
-	SQCONSTRUCT(Object);
+	SqPlus::SQClassDefNoConstructor<Object> cls(SQOBJECTNAME);
+	SQVCONSTRUCTOR(Object);
 	SQFUNC(Object,notify);
 	SQFUNC(Object,notifyAll);
 	SQVFUNC(Object,hasSetProp);
@@ -125,8 +102,8 @@ Object::registerClass()
 void
 Thread::registerClass()
 {
-	SqPlus::SQClassDef<Thread,Object> cls(SQTHREADNAME, SQOBJECTNAME);
-	SQCONSTRUCT(Thread);
+	SqPlus::SQClassDefNoConstructor<Thread,Object> cls(SQTHREADNAME, SQOBJECTNAME);
+	SQVCONSTRUCTOR(Thread);
 	SQVFUNC(Thread,exec);
 	SQVFUNC(Thread,exit);
 	SQFUNC(Thread,stop);

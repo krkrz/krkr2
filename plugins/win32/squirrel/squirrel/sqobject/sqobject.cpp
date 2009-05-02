@@ -129,6 +129,20 @@ Object::~Object()
 }
 
 /**
+ * 自己参照初期化用
+ * オブジェクト生成後必ずこの処理をよぶこと
+ * @param v SQUIRREL vm
+ * @param idx 自分のオブジェクトがあるインデックス
+ */
+void
+Object::initSelf(HSQUIRRELVM v, int idx)
+{
+	if (sq_gettop(v) >= idx) {
+		self.getStackWeak(v,idx);
+	}
+}
+
+/**
  * このオブジェクトを待っている１スレッドの待ちを解除
  */
 void

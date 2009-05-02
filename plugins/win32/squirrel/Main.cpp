@@ -872,10 +872,6 @@ static void PreRegistCallback()
 	sq_pushstring(vm, _SC("printCallStack"), -1);
 	sq_newclosure(vm, printCallStack, 0);
 	sq_createslot(vm, -3); 
-	// collectGarbage ‚Ì“o˜^
-	sq_pushstring(vm, _SC("collectGarbage"), -1);
-	sq_newclosure(vm, sq_collectgarbage, 0);
-	sq_createslot(vm, -3); 
 	sq_pop(vm, 1);
 	
 	sqobject::registerContinuous();

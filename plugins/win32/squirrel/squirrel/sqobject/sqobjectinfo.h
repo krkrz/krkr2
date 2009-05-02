@@ -6,6 +6,7 @@
 #ifndef __SQOBJECTINFO_H__
 #define __SQOBJECTINFO_H__
 
+#include <stdio.h>
 #include <squirrel.h>
 
 namespace sqobject {
@@ -234,22 +235,30 @@ public:
 	bool isClosure() const { return sq_isclosure(obj) || sq_isnativeclosure(obj); }
 
 	// 呼び出し処理
-	SQRESULT call();
+	SQRESULT call(ObjectInfo *self=NULL);
 
-	template<typename T1> SQRESULT call(T1 p1) {
+	template<typename T1> SQRESULT call(T1 p1, ObjectInfo *self=NULL) {
 		HSQUIRRELVM gv = getGlobalVM();
 		push(gv);
-		sq_pushroottable(gv); // root
+		if (self) {
+			self->push(gv);
+		} else {
+			sq_pushroottable(gv); // root
+		}
 		pushValue(gv, p1);
 		SQRESULT ret = sq_call(gv, 2, SQFalse, SQTrue);
 		sq_pop(gv, 1);
 		return ret;
 	}
 
-	template<typename T1, typename T2> SQRESULT call(T1 p1, T2 p2) {
+	template<typename T1, typename T2> SQRESULT call(T1 p1, T2 p2, ObjectInfo *self=NULL) {
 		HSQUIRRELVM gv = getGlobalVM();
 		push(gv);
-		sq_pushroottable(gv); // root
+		if (self) {
+			self->push(gv);
+		} else {
+			sq_pushroottable(gv); // root
+		}
 		pushValue(gv, p1);
 		pushValue(gv, p2);
 		SQRESULT ret = sq_call(gv, 3, SQFalse, SQTrue);
@@ -257,11 +266,15 @@ public:
 		return ret;
 	}
 	
-	template<typename R> SQRESULT call(R* r) {
+	template<typename R> SQRESULT callResult(R* r, ObjectInfo *self=NULL) {
 		SQRESULT ret;
 		HSQUIRRELVM gv = getGlobalVM();
 		push(gv);
-		sq_pushroottable(gv); // root
+		if (self) {
+			self->push(gv);
+		} else {
+			sq_pushroottable(gv); // root
+		}
 		if (SQ_SUCCEEDED(ret = sq_call(gv, 1, SQTrue, SQTrue))) {
 			ret = getValue(gv, r);
 			sq_pop(gv, 1);
@@ -269,11 +282,15 @@ public:
 		sq_pop(gv, 1);
 		return ret;
 	}
-	template<typename R, typename T1> SQRESULT call(R* r, T1 p1) {
+	template<typename R, typename T1> SQRESULT callResult(R* r, T1 p1, ObjectInfo *self=NULL) {
 		SQRESULT ret;
 		HSQUIRRELVM gv = getGlobalVM();
 		push(gv);
-		sq_pushroottable(gv); // root
+		if (self) {
+			self->push(gv);
+		} else {
+			sq_pushroottable(gv); // root
+		}
 		pushValue(gv, p1);
 		if (SQ_SUCCEEDED(ret = sq_call(gv, 2, SQTrue, SQTrue))) {
 			ret = getValue(gv, r);
@@ -282,11 +299,15 @@ public:
 		sq_pop(gv, 1);
 		return ret;
 	}
-	template<typename R, typename T1, typename T2> SQRESULT call(R* r, T1 p1, T2 p2) {
+	template<typename R, typename T1, typename T2> SQRESULT callResult(R* r, T1 p1, T2 p2, ObjectInfo *self=NULL) {
 		SQRESULT ret;
 		HSQUIRRELVM gv = getGlobalVM();
 		push(gv);
-		sq_pushroottable(gv); // root
+		if (self) {
+			self->push(gv);
+		} else {
+			sq_pushroottable(gv); // root
+		}
 		pushValue(gv, p1);
 		pushValue(gv, p2);
 		if (SQ_SUCCEEDED(ret = sq_call(gv, 3, SQTrue, SQTrue))) {
@@ -296,6 +317,100 @@ public:
 		sq_pop(gv, 1);
 		return ret;
 	}
+
+	/**
+	 * 自己オブジェクトメソッド呼び出し（引数無し)
+	 * @param methodName メソッド名
+	 */
+	SQRESULT callMethod(const SQChar *methodName) {
+		if (!isNull()) {
+			ObjectInfo method = get(methodName);
+			if (method.isClosure()) {
+				return method.call(this);
+			}
+		}
+		return SQ_ERROR;
+	}
+
+	/**
+	 * 自己オブジェクトメソッド呼び出し（引数1つ)
+	 * @param methodName メソッド名
+	 * @param p1 引数
+	 */
+	template<typename T1> SQRESULT callMethod(const SQChar *methodName, T1 p1) {
+		if (!isNull()) {
+			ObjectInfo method = get(methodName);
+			if (method.isClosure()) {
+				return method.call(p1, this);
+			}
+		}
+		return SQ_ERROR;
+	}
+	
+	/**
+	 * 自己オブジェクトメソッド呼び出し（引数2つ)
+	 * @param methodName メソッド名
+	 * @param p1 引数
+	 * @param p2 引数2
+	 */
+	template<typename T1, typename T2> SQRESULT callMethod(const SQChar *methodName, T1 p1, T2 p2) {
+		if (!isNull()) {
+			ObjectInfo method = get(methodName);
+			if (method.isClosure()) {
+				return method.call(p1, p2, this);
+			}
+		}
+		return SQ_ERROR;
+	}
+	
+	/**
+	 * 返値有り自己オブジェクトメソッド呼び出し（引数無し)
+	 * @param r 帰り値ポインタ
+	 * @param methodName メソッド名
+	 */
+	template<typename R> SQRESULT callMethodResult(R* r, const SQChar *methodName) {
+		if (!isNull()) {
+			ObjectInfo method = get(methodName);
+			if (method.isClosure()) {
+				return method.call(r, this);
+			}
+		}
+		return SQ_ERROR;
+	}
+
+	/**
+	 * 返値あり自己オブジェクトメソッド呼び出し（引数1つ)
+	 * @param r 帰り値ポインタ
+	 * @param methodName メソッド名
+	 * @param p1 引数
+	 */
+	template<typename R, typename T1> SQRESULT callMethodResult(R* r, const SQChar *methodName, T1 p1) {
+		if (!isNull()) {
+			ObjectInfo method = get(methodName);
+			if (method.isClosure()) {
+				return method.call(r, p1, this);
+			}
+		}
+		return SQ_ERROR;
+	}
+	
+	/**
+	 * 返値有り自己オブジェクトメソッド呼び出し（引数2つ)
+	 * @param r 帰り値ポインタ
+	 * @param methodName メソッド名
+	 * @param p1 引数
+	 * @param p2 引数2
+	 */
+	template<typename R, typename T1, typename T2> SQRESULT callMethodResult(R* r, const SQChar *methodName, T1 p1, T2 p2) {
+		if (!isNull()) {
+			ObjectInfo method = get(methodName);
+			if (method.isClosure()) {
+				return method.call(r, p1, p2, this);
+			}
+		}
+		return SQ_ERROR;
+	}
+
 	
 protected:
 	// ---------------------------------------------------

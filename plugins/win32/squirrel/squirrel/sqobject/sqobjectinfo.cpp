@@ -297,11 +297,15 @@ ObjectInfo::pushArray(HSQUIRRELVM v) const
 // 関数処理用メソッド
 // ---------------------------------------------------
 
-SQRESULT ObjectInfo::call()
+SQRESULT ObjectInfo::call(ObjectInfo *self)
 {
 	HSQUIRRELVM gv = getGlobalVM();
 	push(gv);
-	sq_pushroottable(gv); // root
+	if (self) {
+		self->push(gv);
+	} else {
+		sq_pushroottable(gv); // root
+	}
 	SQRESULT ret = sq_call(gv, 1, SQFalse, SQTrue);
 	sq_pop(gv, 1);
 	return ret;
