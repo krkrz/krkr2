@@ -32,7 +32,7 @@ public:
 	
 protected:
 	// コンストラクタ
-	TJSObject();
+	TJSObject(HSQUIRRELVM v);
 
 	// デストラクタ
 	~TJSObject();

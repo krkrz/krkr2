@@ -23,6 +23,8 @@ Date: 2009/4/22
 
  compiler.cpp:163 に funcstate._varparams = true; を追加
 
+・SQ_SUCCEEDED, SQ_FAILED のマクロが危険だったので修正
+
 ●SQPLUS仕様変更
 
 オリジナルの SQPLUS では、エラー処理に例外を使っていたため、

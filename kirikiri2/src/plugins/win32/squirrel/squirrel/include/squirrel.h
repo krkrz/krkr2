@@ -422,8 +422,8 @@ SQUIRREL_API void sq_setdebughook(HSQUIRRELVM v);
 #define SQ_OK (0)
 #define SQ_ERROR (-1)
 
-#define SQ_FAILED(res) (res<0)
-#define SQ_SUCCEEDED(res) (res>=0)
+#define SQ_FAILED(res) ((res)<0)
+#define SQ_SUCCEEDED(res) ((res)>=0)
 
 #ifdef __cplusplus
 } /*extern "C"*/

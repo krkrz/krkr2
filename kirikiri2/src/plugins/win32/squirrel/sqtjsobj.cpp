@@ -233,8 +233,9 @@ TJSObject::getDispatch(HSQUIRRELVM v, int idx)
 // -----------------------------------------------------------------------
 
 // コンストラクタ
-TJSObject::TJSObject() : dispatch(NULL)
+TJSObject::TJSObject(HSQUIRRELVM v) : dispatch(NULL)
 {
+	initSelf(v);
 }
 
 // デストラクタ
@@ -266,7 +267,7 @@ SQRESULT
 TJSObject::tjsConstructor(HSQUIRRELVM v)
 {
 	SQRESULT result = SQ_OK;
-	TJSObject *self = new TJSObject();
+	TJSObject *self = new TJSObject(v);
 	if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {
 		sq_setreleasehook(v, 1, release);
 	} else {
