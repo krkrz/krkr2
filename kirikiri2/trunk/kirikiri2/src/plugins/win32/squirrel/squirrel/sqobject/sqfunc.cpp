@@ -31,9 +31,10 @@ struct BaseClass {};
 inline const SQChar *GetTypeName(const BaseClass *t) { return NULL; }
 
 // クラス名登録用
-#define DECLARE_CLASSNAME(TYPE,NAME) \
-inline const SQChar * GetTypeName(const TYPE *t) { return NAME; }
-#define DECLARE_CLASS(TYPE) DECLARE_CLASSNAME(TYPE,_SC(#TYPE))
+#define DECLARE_CLASSNAME0(TYPE,NAME) \
+inline const SQChar * GetTypeName(const TYPE *t) { return _SC(#NAME); }
+#define DECLARE_CLASSNAME(TYPE,NAME) DECLARE_CLASSNAME0(TYPE,NAME)
+#define DECLARE_CLASS(TYPE) DECLARE_CLASSNAME(TYPE,TYPE)
 
 sqobject::ObjectInfo typeTagListMap;
 sqobject::ObjectInfo typeMap;
@@ -134,7 +135,7 @@ public:
 		P* parentDummy = NULL;
 		const SQChar *typeName = GetTypeName(typeDummy);
 		const SQChar *parentName = GetTypeName(parentDummy);
-		
+
 		sq_pushstring(v, typeName, -1);
 		if (parentName) {
 			// 親クラスが指定されてる場合は継承処理
@@ -314,8 +315,8 @@ const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
 
 // クラス情報定義
 
-DECLARE_CLASSNAME(Object, SQOBJECTNAME);
-DECLARE_CLASSNAME(Thread, SQTHREADNAME);
+DECLARE_CLASSNAME(Object, SQOBJECT);
+DECLARE_CLASSNAME(Thread, SQTHREAD);
 
 // global vm
 HSQUIRRELVM vm;
