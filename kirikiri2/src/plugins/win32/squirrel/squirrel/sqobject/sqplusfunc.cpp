@@ -15,8 +15,8 @@
 
 using namespace SqPlus;
 using namespace sqobject;
-DECLARE_INSTANCE_TYPE_RELEASE(Object);
-DECLARE_INSTANCE_TYPE_RELEASE(Thread);
+DECLARE_INSTANCE_TYPE_NAME_RELEASE(Object, SQOBJECT);
+DECLARE_INSTANCE_TYPE_NAME_RELEASE(Thread, SQTHREAD);
 
 namespace sqobject {
 
@@ -81,7 +81,7 @@ ObjectInfo::getObject()
 void
 Object::registerClass()
 {
-	SqPlus::SQClassDefNoConstructor<Object> cls(SQOBJECTNAME);
+	SQCLASS(Object);
 	SQVCONSTRUCTOR(Object);
 	SQFUNC(Object,notify);
 	SQFUNC(Object,notifyAll);
@@ -102,7 +102,7 @@ Object::registerClass()
 void
 Thread::registerClass()
 {
-	SqPlus::SQClassDefNoConstructor<Thread,Object> cls(SQTHREADNAME, SQOBJECTNAME);
+	SQCLASSEX(Thread, Object);
 	SQVCONSTRUCTOR(Thread);
 	SQVFUNC(Thread,exec);
 	SQVFUNC(Thread,exit);

@@ -5,7 +5,8 @@
 #ifndef __SQTHREAD_H__
 #define __SQTHREAD_H__
 
-#ifndef SQTHREADNAME
+#ifndef SQTHREAD
+#define SQTHREAD Thread
 #define SQTHREADNAME _SC("Thread")
 #endif
 
