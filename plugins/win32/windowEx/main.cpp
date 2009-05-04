@@ -19,6 +19,8 @@
 #define EXEV_ENTERMENU TJS_W("onEnterMenuLoop")
 #define EXEV_EXITMENU  TJS_W("onExitMenuLoop")
 #define EXEV_ACTIVATE  TJS_W("onActivateChanged")
+#define EXEV_SCREENSV  TJS_W("onScreenSave")
+#define EXEV_MONITORPW TJS_W("onMonitorPower")
 
 ////////////////////////////////////////////////////////////////
 
@@ -225,7 +227,11 @@ struct WindowEx
 	bool onMessage(tTVPWindowMessage *mes) {
 		switch (mes->Msg) {
 		case WM_SYSCOMMAND:
-			if ((mes->WParam & 0xFFF0) == SC_MAXIMIZE) return callback(EXEV_QUERYMAX);
+			switch (mes->WParam & 0xFFF0) {
+			case SC_MAXIMIZE:     return callback(EXEV_QUERYMAX);
+			case SC_SCREENSAVE:   return callback(EXEV_SCREENSV);
+			case SC_MONITORPOWER: return callback(EXEV_MONITORPW, (int)mes->LParam, 0);
+			}
 			break;
 		case WM_SIZE:
 			switch (mes->WParam) {
