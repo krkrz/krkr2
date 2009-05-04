@@ -6,7 +6,8 @@
 #define __SQOBJECT_H__
 
 // Œ^–¼
-#ifndef SQOBJECTNAME
+#ifndef SQOBJECT
+#define SQOBJECT Object
 #define SQOBJECTNAME _SC("Object")
 #endif
 
