@@ -137,7 +137,7 @@ class Window {
 	 */
 	function onResizing(rect);
 
-@if 0
+@if (0)
 	/* （※これはプラグインで拡張される関数ではありません！）
 	 * onResizingでサイズを固定させるサンプル
 	 * @param rect onResizingに渡された引数
@@ -173,6 +173,14 @@ class Window {
 	 */
 	function onEnterMenuLoop(); //< メニュー処理開始
 	function onExitMenuLoop();  //< メニュー処理終了
+
+	/**
+	 * 拡張イベント：スクリーンセーバー開始通知，モニタパワー変更通知
+	 * @param mode -1/1/2
+	 * @return true を返すと制御抑制
+	 */
+	function onScreenSave();
+	function onMonitorPower(mode);
 
 	/**
 	 * リサイズの抑制
