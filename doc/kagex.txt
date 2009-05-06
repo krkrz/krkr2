@@ -856,13 +856,13 @@ sevolume        SE のボリューム  0～100
   WORLD 拡張のボイス機能が値として参照しています
 
 voiceenable                 ボイスが有効
-voicevolume                 ボイスのボリューム 0～100
+voicevolume                 ボイスのマスターボリューム 0～100
 getVoiceOn(name)            指定された名前のキャラのボイスが有効かどうか
 getVoiceVolume(name)        指定された名前のキャラのボイスのボリュームの取得
 setVoiceVolume(name,vol)    指定された名前のキャラのボイスのボリュームの指定
 
 bgvenable                   バックグラウンドボイスが有効
-bgvvolume                   バックグラウンドボイスのボリューム 0～100
+bgvvolume                   バックグラウンドボイスのマスターボリューム 0～100
 getBGVVolume(name)          指定された名前のキャラのBGVのボリュームの取得
 
 ●自動ラベル処理について

@@ -225,17 +225,28 @@ class EnvGraphicLayer extends GraphicLayerEx
 		var cz = nocameraMode ? 1 : (real)ownerenv.camerazoom / 100.0;
 		var cx = nocameraMode ? 0 : ownerenv.camerax;
 		var cy = nocameraMode ? 0 : ownerenv.cameray;
+		var cox = nocameraMode ? 0 : ownerenv.cameraox;
+		var coy = nocameraMode ? 0 : ownerenv.cameraoy;
 		var z  = nocameraMode ? 1 : +levelz / 100.0;
 		var sx = noshiftMode  ? 0 : ownerenv.shiftx;
 		var sy = noshiftMode  ? 0 : ownerenv.shifty;
 		//dm(name + ":à íuèÓïÒ:%d,%d pos:%d,%d cx:%d,%d%,%f z:%f sx:%d,%d af:%d,%d off:%d,%d loff:%d,%d".sprintf(originx, originy, xpos, ypos, cx, cy, cz, z, sx, sy, afx, afy, xoffset, yoffset, levelxoffset, levelyoffset));
-		var l = originx + (((xpos - cx) * z +(int)(xoffset * z)) + +levelxoffset) * cz - sx;
-		var t = originy + (((ypos - cy) * z +(int)(yoffset * z)) + +levelyoffset) * cz - sy;
+		var l = originx + ((int)(cox * (1-z)) + ((xpos - cx) * z +(int)(xoffset * z)) + +levelxoffset) * cz - sx;
+		var t = originy + ((int)(coy * (1-z)) + ((ypos - cy) * z +(int)(yoffset * z)) + +levelyoffset) * cz - sy;
 		//dm(name + ":à íuçƒåvéZ:" + l + "," + t);
 		super.left = l;
 		super.top  = t;
 		super.zoomx = __zoomx * cz;
 		super.zoomy = __zoomy * cz;
+	}
+
+	function getCenterCamera(xpos,ypos) {
+		var cox = ownerenv.cameraox;
+		var coy = ownerenv.cameraoy;
+		var z   = +levelz / 100.0;
+		return %[x:+levelxoffset/z + (int)(cox/z - cox) + (int)xoffset + xpos,
+			     y:+levelyoffset/z + (int)(coy/z - coy) + (int)yoffset + ypos,
+				 zoom:10000.0/+levelz];
 	}
 };
 
@@ -420,9 +431,10 @@ class KAGWorldPlugin extends KAGPlugin
         kag.tagHandlers["alllayer"]   = env.alllayer;
 		kag.tagHandlers["allse"]      = env.allse;
 
-        kag.tagHandlers["begintrans"] = env.beginTrans;
-        kag.tagHandlers["endtrans"]   = env.endTrans;
-        kag.tagHandlers["newlay"]     = env.newLayer;
+		kag.tagHandlers["begintrans"] = env.beginTrans;
+		kag.tagHandlers["endtrans"]   = env.endTrans;
+		kag.tagHandlers["beginenvtrans"] = env.beginEnvTrans;
+		kag.tagHandlers["newlay"]     = env.newLayer;
         kag.tagHandlers["newlayer"]   = env.newLayer;
         kag.tagHandlers["dellay"]     = env.delLayer;
         kag.tagHandlers["dellayer"]   = env.delLayer;
@@ -463,23 +475,27 @@ class KAGWorldPlugin extends KAGPlugin
 		kag.syncHandler        = env.syncAll;
 		kag.clearLayersHandler = env.clearLayers;
 		kag.updateVoice        = env.updateVoice;
+		kag.voiceUpdateHandler = env.resetAllVoiceVolume;
 	}
 
     function finalize() {
         if (env) {
 			if (kag.unknownHandler === env.unknown) {
-				kag.tagHandlers = void;
+				kag.unknownHandler = void;
 			}
 			if (kag.seStopHandler== env.onSeStop) {
-				kag.seStopHandler          = void;
+				delete kag.seStopHandler;
 			}
 			if (kag.stopActionHandler === env.onStopAction) {
-				kag.stopActionHandler = void;
+				delete kag.stopActionHandler;
 			}
 			if (kag.stopTransitionHandler === env.onStopTransition) {
-				kag.stopTransitionHandler = void;
+				delete kag.stopTransitionHandler;
 			}
-            invalidate env;
+			if (kag.voiceUpdateHandler === env.resetAllVoiceVolume) {
+				delete kag.voiceUpdateHandler;
+			}
+			invalidate env;
 		}
     }
 

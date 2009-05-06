@@ -56,12 +56,12 @@ function han2zen(str)
 	var i;
 	for(i=0;i<str.length;i++)
 	{
-		var num=#str[i];
-		if(num>=0x0020 && num<=0x7e)
-			res+=$(0xff00+num-0x20); // UNICODE
-		else if (num>=0xff61 && num<=0xff9f)
-			res+=zenkana[num-0xff61]; // ”¼ŠpƒJƒiË‘SŠp
-		else res+=str[i];
+		var ch = str.charAt(i);
+		var num=#ch;
+		if      (num==0x0020)                res+="@"; // 0x3000
+		else if (num> 0x0020 && num<=0x007e) res+=$(0xff00+num-0x20); // UNICODE
+		else if (num>=0xff61 && num<=0xff9f) res+=zenkana[num-0xff61]; // ”¼ŠpƒJƒiË‘SŠp
+		else                                 res+=ch;
 	}
 	return res;
 }

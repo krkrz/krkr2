@@ -41,6 +41,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 	var timerEnabled = false; // タイマが起動中か
 	var delaytags; // 遅延実行タグ
 	var pendings; // 後回しにされたタグ
+	var fasttags; // 最優先実行タグ
 	var inProcessing = false; // timerCallback を処理中かどうか
 	var reentered = false; // timerCallback 中に 再入したか
 	var nextTimerTick = 0; // 次にタイマーが発動されるはずの tick
@@ -91,6 +92,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 
 		pendings = [];
 		delaytags = [];
+		fasttags = [];
 	}
 
 	function finalize()
@@ -118,6 +120,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 		}
 		pendings.clear();
 		delaytags.clear();
+		fasttags.clear();
 		super.clear();
 	}
 
@@ -155,7 +158,16 @@ class BaseConductor extends global.BaseConductorExtendClass
 						// タイマが駆動してない(待ち)ならコマンドを直接実行
 						var step = onTag(obj);
 						if (step != 0) {
-							dm("タグ遅延実行 ステート:%d:誤動作の可能性があります".sprintf(step));
+							dm("タグ遅延実行:%s ステート:%d:誤動作の可能性があります".sprintf(obj.tagname,step));
+						}
+						// fasttags は全部実行
+						while (fasttags.count > 0) {
+							var obj = fasttags[0];
+							var step = onTag(obj);
+							if (step != 0) {
+								dm("タグ遅延実行:%s ステート:%d:誤動作の可能性があります".sprintf(obj.tagname,step));
+							}
+							fasttags.erase(0);
 						}
 					}
 					delaytags.erase(i);
@@ -184,7 +196,10 @@ class BaseConductor extends global.BaseConductorExtendClass
 
 			for(;;)
 			{
-				if(pendings.count > 0)
+				if (fasttags.count > 0) {
+					obj = fasttags[0];
+					fasttags.erase(0);
+				} else if(pendings.count > 0)
 				{
 					// 後回しにされたタグがある場合
 
@@ -313,11 +328,14 @@ class BaseConductor extends global.BaseConductorExtendClass
 							// 数値の場合は　tick に変換
 							obj.delayrun = tick + (+obj.delayrun);
 						}
-						dm("遅延タグ登録:" + obj.tagname + ":" + obj.delayrun);
+						//dm("遅延タグ登録:" + obj.tagname + ":" + obj.delayrun);
 						var o = %[];
 						(Dictionary.assign incontextof o)(obj, false);
+						// 遅延タグはシンクロ禁止
+						delete o.sync;
+						o.nosync = true;
 						delaytags.add(o);
-						kag.flipStart();
+						callOwnerMethod("flipStart");
 						continue;
 					}
 					
@@ -529,7 +547,10 @@ class BaseConductor extends global.BaseConductorExtendClass
 			pendings.assignStruct(src.pendings);
 		else
 			pendings.clear();
-
+		if(src.fasttags.count > 0)
+			fasttags.assignStruct(src.fasttags);
+		else
+			fasttags.clear();
 		// oneshotの状態もコピー
 		oneshot.assign(src.oneshot);
 
@@ -565,7 +586,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 			if (dic.runLabel != "") {
 				goToLabel(dic.runLabel);
 				dm("指定のラベル位置に復帰:" + dic.runLabel);
-				callOwnerMethod("setRecordLabel");
+				callOwnerMethod("setRecordLabel", curStorage, dic.runLabel);
 			}
 			dm("現在行:" + runLine + " 復帰予定位置:" + dic.runLabelLine);
 			if (dic.lineSaveMode) {
@@ -584,6 +605,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 		// restore オーバーライド
 		super.restore(...);
 		pendings.clear();
+		fasttags.clear();
 	}
 
     // パース処理実行中
@@ -694,10 +716,12 @@ class BaseConductor extends global.BaseConductorExtendClass
 		super.goToLabel(...);
 	}
 
-	function enqueueTag(tag)
-	{
-		pendings.add(tag);
-	}
+	function enqueueTag()     { pendings.push(...); } // Array.pushは末尾に追加する
+	function enqueueFastTag() { fasttags.push(...); }
+
+	function pushTag()        { pendings.unshift(...); } // Array.unshiftは先頭に追加する
+	function pushFastTag()    { fasttags.unshift(...); }
+
 }
 
 

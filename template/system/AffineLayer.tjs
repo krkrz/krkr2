@@ -140,7 +140,7 @@ class AffineSourceLayer {
 		}
 		getter() {
 			switch (_afn_offx) {
-			case AffineLayer.AFFINEOFFSET_CENTER: return (int)width/2;
+			case AffineLayer.AFFINEOFFSET_CENTER: return (int)(width/2);
 			case AffineLayer.AFFINEOFFSET_DEFAULT:
 			case AffineLayer.AFFINEOFFSET_LEFT:   return 0;
 			case AffineLayer.AFFINEOFFSET_RIGHT:  return width;
@@ -171,7 +171,7 @@ class AffineSourceLayer {
 		}
         getter() {
 			switch (_afn_offy) {
-			case AffineLayer.AFFINEOFFSET_CENTER: return (int)height/2;
+			case AffineLayer.AFFINEOFFSET_CENTER: return (int)(height/2);
 			case AffineLayer.AFFINEOFFSET_DEFAULT:
 			case AffineLayer.AFFINEOFFSET_TOP:    return 0;
 			case AffineLayer.AFFINEOFFSET_BOTTOM: return height;
@@ -528,7 +528,7 @@ class BitmapAffineSourceLayer extends AffineSourceLayer {
 		if (_resolutionx == 100 && _resolutiony == 100) {
 			_image.fillRect(...);
 		} else {
-			_image.fillRect(left * _resolutoinx / 100,
+			_image.fillRect(left * _resolutionx / 100,
 							top  * _resolutiony / 100,
 							width * _resolutionx / 100,
 							height * _resolutiony / 100,
@@ -676,15 +676,6 @@ class BitmapAffineSourceLayer extends AffineSourceLayer {
         }
         getter() {
             return _image.holdAlpha;
-        }
-    }
-
-    property neutralColor {
-        setter(v) {
-			_image.neutralColor = v;
-        }
-        getter() {
-            return _image.neutralColor;
         }
     }
 
@@ -1107,7 +1098,7 @@ class AffineLayer extends KAGLayer {
 	 */
 	function calcAffine() {
 		_doAffine = true;
-		update();
+		update(0,0,1,1);
     }
 
 	// ----------------------------------------------
@@ -1185,9 +1176,13 @@ class AffineLayer extends KAGLayer {
 		}
 		setter(v) {
 			if (v === void) {
-				super.type = _image._initType !== void ? _image._initType : ltAlpha;
-			} else {
+				v = _image._initType !== void ? _image._initType : ltAlpha;
+			}
+			if (v != super.type) {
+				// type が変わると透明色が変わるので一度全部塗りつぶす
 				super.type = v;
+				_clearRegion.update(0,0,super.width,super.height);
+				calcAffine();
 			}
 		}
 	}
@@ -1214,6 +1209,7 @@ class AffineLayer extends KAGLayer {
 	 */
 	function drawAffine(target) {
 		// 旧描画領域の消去
+		//dm(name + ":消去領域:%f,%f,%f,%f".sprintf(_clearRegion.left, _clearRegion.top, _clearRegion.width, _clearRegion.height));
 		(global.Layer.fillRect incontextof target)(_clearRegion.left, _clearRegion.top,
 												   _clearRegion.width, _clearRegion.height, neutralColor);
 		_clearRegion.clear();
@@ -1226,7 +1222,6 @@ class AffineLayer extends KAGLayer {
      * ペイント前処理
      */
 	function onPaint() {
-		super.onPaint(...);
 		if (_rasterStart !== void) {
 			// ラスター処理が必要な場合
 			if (_rasterLayer === void) {
@@ -1245,6 +1240,7 @@ class AffineLayer extends KAGLayer {
 				_doAffine = false;
 			}
 		}
+		super.onPaint(...);
 	}
     
     /// 回転量（度）
@@ -1317,7 +1313,7 @@ class AffineLayer extends KAGLayer {
 	
 	property afx {
 		setter(v) {
-			_image.afx = v;
+			_image.afx = v === void ? defaultAfx : v;
 			calcAffine();
 		}
 		getter() {
@@ -1327,7 +1323,7 @@ class AffineLayer extends KAGLayer {
 
 	property afy {
 		setter(v) {
-			_image.afy = v;
+			_image.afy = v === void ? defaultAfy :  v;
 			calcAffine();
         }
         getter() {
@@ -1514,6 +1510,8 @@ class AffineLayer extends KAGLayer {
 		if (src instanceof "AffineLayer") {
 			stopRaster();
 			_image  = src._image.clone(this);
+			defaultAfx = src.defaultAfx;
+			defaultAfy = src.defaultAfy;
 			_rotate = src._rotate;
 			_zoomx  = src._zoomx;
 			_zoomy  = src._zoomy;
@@ -1704,16 +1702,6 @@ class AffineLayer extends KAGLayer {
         getter() {
 			_initBitmap();
             return _image.holdAlpha;
-        }
-    }
-
-    property neutralColor {
-        setter(v) {
-			_initBitmap();
-            _image.neutralColor = v;
-        }
-        getter() {
-			return _image.neutralColor;
         }
     }
 

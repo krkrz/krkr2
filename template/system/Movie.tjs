@@ -31,9 +31,9 @@ class Movie extends VideoOverlay
 		dic.loop = loop;
 		dic.frame = frame;
 
+		dic.audioBalance = audioBalance;
+		dic.audioVolume  = audioVolume;
 		if( numberOfAudioStream > 0 ) {
-			dic.audioBalance = audioBalance;
-			dic.audioVolume = audioVolume;
 			dic.enabledAudioStream = enabledAudioStream;
 		}
 
@@ -87,13 +87,11 @@ class Movie extends VideoOverlay
 			if( dic.frame >= 0 )
 				frame = dic.frame;
 
-			if( numberOfAudioStream > 0 ) {
-				audioBalance = dic.audioBalance;
-				audioVolume = dic.audioVolume;
-				if( dic.enabledAudioStream >= 0 )
-				{
-					super.selectAudioStream( dic.enabledAudioStream );
-				}
+			audioBalance = dic.audioBalance;
+			audioVolume = dic.audioVolume;
+			if( numberOfAudioStream > 0 && dic.enabledAudioStream >= 0 )
+			{
+				super.selectAudioStream( dic.enabledAudioStream );
 			}
 			super.setSegmentLoop( dic.segmentLoopStartFrame, dic.segmentLoopEndFrame );
 			if( dic.lastStatus == "pause" || dic.lastStatus == "play" )
@@ -303,13 +301,17 @@ class Movie extends VideoOverlay
 			dm("video mode:" + ((mode == vomOverlay) ? "overlay" : (mode == vomMixer) ? "mixer" : (mode == vomLayer) ? "layer" : "unknown"));
 		}
 		playRate = +elm.playrate if elm.playrate !== void;
-		if (elm.volume !== void) try { audioVolume  = +elm.volume * 1000; } catch {}
-		if (elm.pan    !== void) try { audioBalance = +elm.pan    * 1000; } catch {}
+		if (elm.volume !== void) audioVolume  = +elm.volume * 1000;
+		if (elm.pan    !== void) audioBalance = +elm.pan    * 1000;
 		if( elm.audiostreamnum !== void )
 		{
 			selectAudioStream( +elm.audiostreamnum );
 		}
 	}
+
+	var _audioVolume, _audioBalance;
+	property audioVolume  { setter(v) { _audioVolume  = v; try { super.audioVolume  = v; } catch {} } getter { return _audioVolume;  } }
+	property audioBalance { setter(v) { _audioBalance = v; try { super.audioBalance = v; } catch {} } getter { return _audioBalance; } }
 
 	function setVideoLayer(layer,elm)
 	{

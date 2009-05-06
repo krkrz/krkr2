@@ -213,6 +213,7 @@ class KAGMenuItem extends MenuItem
 	var _accessible = true;
 	var _enabled = true;
 	var autoEnable = false;
+	var groupTag;
 
 	function KAGMenuItem(window, caption, group, command, autoenable)
 	{
@@ -236,6 +237,28 @@ class KAGMenuItem extends MenuItem
 		delete owner;
 		delete command;
 		super.finalize(...);
+	}
+
+	// groupTagでグループ番号を再設定
+	function resetChildItemGrouping() {
+		var list = this.children, sorted = [];
+		var grpMap = %[], grpList = [], grp = 0;
+		for (var i = 0; i < list.count; i++) {
+			var item = list[i];
+			sorted[item.index] = item if (item !== void);
+		}
+		for (var i = 0; i < sorted.count; i++) {
+			if (sorted[i] !== void) with (sorted[i]) {
+				if (.radio && typeof .groupTag != "undefined" && .groupTag != "") {
+					if (grpMap[.groupTag] === void) {
+						grpMap[.groupTag] = .group = ++grp;
+						grpList[grp] = .groupTag;
+					} else
+						.group = grpMap[.groupTag];
+				}
+			}
+		}
+		return grpList;
 	}
 
 	property enabled  // オーバーライド
@@ -410,10 +433,10 @@ function SetWindowControlMenu(win, min, max, res, cls) {
 			/**/            win.windowControlMenusNames : %[];
 		// メニューアイテム生成
 		with (names) btns = %[
-		minimize: new MenuItem(this, .minimize !== void ? .minimize : ''),
-		maximize: new MenuItem(this, .maximize !== void ? .maximize : ''),
-		restore:  new MenuItem(this, .restore  !== void ? .restore  : ''),
-		close:    new MenuItem(this, .close    !== void ? .close    : '')
+		minimize: new MenuItem(win, .minimize !== void ? .minimize : ''),
+		maximize: new MenuItem(win, .maximize !== void ? .maximize : ''),
+		restore:  new MenuItem(win, .restore  !== void ? .restore  : ''),
+		close:    new MenuItem(win, .close    !== void ? .close    : '')
 			];
 		with (btns) {
 			with (.minimize) .icon = .caption != "" ? MenuItem.biPopupMinimize : MenuItem.biMinimize;
@@ -440,20 +463,27 @@ function SetWindowControlMenu(win, min, max, res, cls) {
 	}
 	btns =  win[tag];
 	with (btns) {
-		try {
-			// 削除
-			var rem = win.menu.remove;
-			rem(.minimize) if (.minimize.parent != null);
-			rem(.maximize) if (.maximize.parent != null);
-			rem(.restore)  if (.restore .parent != null);
-			rem(.close)    if (.close   .parent != null);
-		} catch {}
-
 		// 追加
 		var first, add = function(item, f) {
 			this.add(item);
 			return (f === void) ? item : f;
 		} incontextof win.menu;
+		var reset = function(item) {
+			var parent = item.parent;
+			if (parent) {
+				try {
+					if (*(&global.MenuItem.HMENU incontextof parent))
+						item.rightJustify = false;
+				} catch(e) {
+					Debug.message(e.message);
+				}
+				parent.remove(item);
+			}
+		} incontextof global;
+		reset(.minimize);
+		reset(.maximize);
+		reset(.restore );
+		reset(.close   );
 		first = add(.minimize, first) if (min);
 		first = add(.maximize, first) if (max);
 		first = add(.restore,  first) if (res);

@@ -229,6 +229,7 @@ class KAGEnvImage {
 	function setRedraw() {
 		if (isShowBU()) {
 			redraw = true;
+			doType = true;
 		}
     }
 
@@ -731,8 +732,10 @@ class KAGEnvImage {
 		if (elm.rotate === void) rotate = 0;
 		if (elm.zoom === void) zoom = 100;
 		if (elm.raster === void) raster = 0;
-		if (elm.afx === void) afx = defaultAfx;
-		if (elm.afy === void) afy = defaultAfy;
+		if (elm.afx === void && elm.origin === void) afx = defaultAfx;
+		if (elm.afy === void && elm.origin === void) afy = defaultAfy;
+		if (elm.orx === void && elm.vorigin === void) orx = defaultOrx;
+		if (elm.ory === void && elm.vorigin === void) ory = defaultOry;
 		clearAction(true);
 	}
 	
@@ -1243,6 +1246,15 @@ class KAGEnvImage {
 			}
 			actionList.clear();
 		}
+		// 内部移動処理時間クリア
+		opacityTime = void;
+		rotateTime = void;
+		zoomTime = void;
+		rasterTime = void;
+		moveTime = void;
+	}
+
+	function updateNoDisp() {
 	}
 	
     var commands = %[
@@ -1263,11 +1275,11 @@ class KAGEnvImage {
 	origin : function(cmd,elm) {
 		originMode = +cmd;
 	} incontextof this,
-    orx : function(param, elm) {
-		afx = param;
+	orx : function(param, elm) {
+		orx = param;
     } incontextof this,
     ory : function(param, elm) {
-        afy = param;
+		ory = param;
     } incontextof this,
 	vorigin : function(cmd,elm) {
 		viewOriginMode = +cmd;
@@ -1366,6 +1378,8 @@ class KAGEnvImage {
 		f.orx     = orx;
 		f.ory     = ory;
 		f.raster  = raster;
+		f.rasterLines = rasterLines;
+		f.rasterCycle = rasterCycle;
         f.xpos    = xpos;
         f.ypos    = ypos;
         f.disp    = disp;
@@ -1406,11 +1420,11 @@ class KAGEnvImage {
         zoomTime    = void;
         zoomAccel   = void;
 		raster      = f.raster;
-        rasterFrom    = void;
-        rasterTime    = void;
+		rasterLines   = f.rasterLines;
+		rasterCycle   = f.rasterCycle;
+		rasterFrom    = void;
+		rasterTime    = void;
 		rasterAccel   = void;
-		rasterLines   = void;
-		rasterCycle   = void;
 		afx         = f.afx;
 		afy         = f.afy;
 		orx         = f.orx;
@@ -1475,11 +1489,11 @@ class KAGEnvImage {
         zoomTime    = void;
         zoomAccel   = void;
 		raster      = orig.raster;
+		rasterLines   = orig.rasterLines;
+		rasterCycle   = orig.rasterCycle;
         rasterFrom    = void;
         rasterTime    = void;
 		rasterAccel   = void;
-		rasterLines   = void;
-		rasterCycle   = void;
 		afx         = orig.afx;
 		afy         = orig.afy;
 		orx         = orig.orx;
@@ -1580,23 +1594,23 @@ class KAGEnvImage {
 	 */
 	function beginTransition(trans) {
 		if (trans === void || trans.method === void || trans.time == 0 || isSkip()) {
-			kag.addTag("forelay");
+			kag.addFastTag("forelay");
 		} else {
 			// 実際のトランジション実行
 			trans.children = true;
 			if (trans.method === void) {
 				trans.method = "crossfade";
 			}
-			kag.addTag("trans", trans);
+			kag.addFastTag("trans", trans);
 			if (trans.transwait !== void) {
 				// 時間待ち
-				kag.addTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
+				kag.addFastTag("wait", %[ time : (int)trans.time + (int)trans.transwait, trans:true ]);
 			} else {
 				// トランジション待ち
-				kag.addTag("wt");
+				kag.addFastTag("wt");
 			}
 			// メッセージ窓状態同期
-			kag.addTag("syncmsg");
+			kag.addFastTag("syncmsg");
 		}
     }
 
@@ -1625,7 +1639,7 @@ class KAGEnvImage {
 		trans.children = true;
 		trans.target = transLayer;
 		trans.src    = targetLayer;
-		kag.addTag("laytrans", trans);
+		kag.addFastTag("laytrans", trans);
 	}
 	
 	/*
@@ -1656,7 +1670,7 @@ class KAGEnvImage {
 		trans.children = true;
 		trans.target = transLayer;
 		trans.src    = layer;
-		kag.addTag("laytrans", trans);
+		kag.addFastTag("laytrans", trans);
 	}
 
 	/*
@@ -1678,7 +1692,9 @@ class KAGEnvImage {
 			transLayer  = targetLayer;
 			targetLayer = void;
 		}
-		transLayer.name = "old_" + transLayer.name;
+		if (transLayer !== void) {
+			transLayer.name = "old_" + transLayer.name;
+		}
 
 		// 新レイヤの準備（裏につくる）
 		_update(kag.back);
@@ -1691,7 +1707,7 @@ class KAGEnvImage {
 		trans.deldest = true;
 		trans.target = transLayer;
 		trans.src    = targetLayer;
-		kag.addTag("laytrans", trans);
+		kag.addFastTag("laytrans", trans);
 	}
 
 	function beginTransActionShow(trans) {
@@ -1701,7 +1717,7 @@ class KAGEnvImage {
 		var action = copyActionInfo(trans.showaction, trans.time);
 		action["visvalue"] = %[ handler:MoveAction, value:100, time:trans.time ];
 		action.target = targetLayer;
-		kag.addTag("action", action);
+		kag.addFastTag("action", action);
 		actionLayer = targetLayer;
 	}
 	
@@ -1715,7 +1731,7 @@ class KAGEnvImage {
 		action["visvalue"] = %[ handler:MoveAction, value:0, time:trans.time ];
 		action.target = targetLayer;
 		action.del = true; // 終了時にレイヤを破棄
-		kag.addTag("action", action);
+		kag.addFastTag("action", action);
 		actionLayer = targetLayer;
 		targetLayer = void;
 	}
@@ -1742,7 +1758,7 @@ class KAGEnvImage {
 			action["visvalue"] = %[ handler:MoveAction, value:0, time:time, delay:delay];
 			action.target = oldlayer;
 			action.del = true;
-			kag.addTag("action", action);
+			kag.addFastTag("action", action);
 			hidetime = delay + time;
 		}
 
@@ -1755,7 +1771,7 @@ class KAGEnvImage {
 			var action = copyActionInfo(trans.showaction, time, %[delay:delay]);
 			action["visvalue"] = %[ handler:MoveAction, value:100, time:time, delay:delay];
 			action.target = targetLayer;
-			kag.addTag("action", action);
+			kag.addFastTag("action", action);
 			showtime = delay + time;
 		}
 
@@ -1772,7 +1788,7 @@ class KAGEnvImage {
 	function hideMessage(trans) {
 		if (trans !== void && trans.msgoff) {
 			if (isSkip()) kag.addTag("msgoff");
-			else       kag.insertTag("msgoff");
+			else       kag.insertFastTag("msgoff");
 		}
     }
 
@@ -1885,7 +1901,7 @@ class KAGEnvImage {
 		// 0:非表示 1:表示 2:消去 3:更新
 		var isAbsoluteChange = prevAbsolute != absolute;
 		var mode = transall ? 3 :(prevShow ? 2 : 0) + (isShowBU() ? 1 : 0);
-		//dm("表示モード:" + mode);
+		//dm("%s:表示状態:%d→%d 表示モード:%d".sprintf(name,prevShow, isShowBU(), mode));
 
 		if (trans === void) {
 			if (elm.fade) {
@@ -1933,16 +1949,14 @@ class KAGEnvImage {
 					} else if (mode == 2) {
 						beginTransHide(trans);
 						transNowait = elm.nowait;
-					} else {
+					} else if (mode == 3) {
 						if (transall || trans.transall || isAbsoluteChange) {
 							//dm("色合い変更またはabsolute変更あり");
 							// absolute が変化する場合は強制で全体トランジション
 							if (elm.nosync || trans.nosync) {
 								kag.errorCmd("absolute変化・色変化・transall指定の場合は nosync できません:" + name);
 							}
-							kag.stopAllTransitions();
-							kag.backupLayer(EMPTY, true);
-							env.update(kag.back);
+							kag.addFastTag("beginenvtrans", %[]);
 							beginTransition(trans);
 							waitMode = 0;
 						} else {
@@ -1950,6 +1964,11 @@ class KAGEnvImage {
 							beginTransUpdate(trans);
 							transNowait = elm.nowait;
 						}
+					} else {
+						// 非表示のまま変更無しなので
+						// ターゲットレイヤを破棄しておく
+						targetLayer = void;
+						_update(kag.fore);
 					}
 				} else {
 					waitMode = 1;
@@ -1957,8 +1976,13 @@ class KAGEnvImage {
 						beginTransActionShow(trans);
 					} else if (mode == 2) {
 						beginTransActionHide(trans);
-					} else {
+					} else if (mode == 3) {
 						beginTransActionUpdate(trans);
+					} else {
+						// 非表示のまま変更無しなので
+						// ターゲットレイヤを破棄しておく
+						targetLayer = void;
+						_update(kag.fore);
 					}
 				}
 			}
@@ -1977,10 +2001,10 @@ class KAGEnvImage {
 				if (syncMode) {
 					if (trans.transwait !== void) {
 						// 時間待ち
-						kag.addTag("wait", %[ time:actionTime + (int)trans.transwait, action:true ]);
+						kag.addFastTag("wait", %[ time:actionTime + (int)trans.transwait, action:true ]);
 					} else {
 						// アクション待ち
-						kag.addTag("wact", %[ target:actionLayer ]);
+						kag.addFastTag("wact", %[ target:actionLayer ]);
 					}
 				}
 			} else if (waitMode == 2) {
@@ -1988,11 +2012,11 @@ class KAGEnvImage {
 				if (syncMode) {
 					if (trans.transwait !== void) {
 						// 時間待ち
-						kag.addTag("wait", %[ time:(int)trans.time + (int)trans.transwait, trans:true ]);
+						kag.addFastTag("wait", %[ time:(int)trans.time + (int)trans.transwait, trans:true ]);
 					} else {
 						// トランジション待ち
-						kag.addTag("wt", %[]);
-						//kag.addTag("wt", %[ target:transLayer ]);
+						kag.addFastTag("wt", %[]);
+						//kag.addFastTag("wt", %[ target:transLayer ]);
 					}
 				}
 			} else {
@@ -2011,6 +2035,8 @@ class KAGEnvImage {
 
 		} else {
 			updateSkip();
+			updateNoDisp();
+			redraw = false;
 		}
 		//dm("タグ処理完了 targetLayer:" + targetLayer);
 

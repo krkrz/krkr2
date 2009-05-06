@@ -863,10 +863,12 @@ class GraphicLayerEx extends GraphicLayer {
 	
 	function beginAction(elm) {
 		var nowait;
-		if (elm && !(elm instanceof "Array")) {
-			this.hide = elm.hide if elm.hide !== void;
-			nowait = elm.nowait;
+		if (elm) {
+			var target = (elm instanceof "Array")  ? elm[elm.count-1] : elm;
+			hide   = target.hide   if target.hide !== void;
+			nowait = target.nowait if target.nowait !== void;
 		}
+		//dm("アクション開始 hide:%d nowait:%d".sprintf(hide, nowait));
 		return window.beginAction(this, elm, onActionCompleted, nowait);
     }
 
