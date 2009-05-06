@@ -16,7 +16,21 @@
 bool str2num(const SQChar *s,SQObjectPtr &res)
 {
 	SQChar *end;
-	if(scstrstr(s,_SC("."))){
+	if(!scstrncmp(s,_SC("0x"),2) || !scstrncmp(s, _SC("0X"), 2)) {
+		s += 2;
+		SQInteger r = SQInteger(scstrtol(s,&end,16));
+		if(s == end) return false;
+		res = r;
+		return true;
+	}
+	else if(!scstrncmp(s,_SC("0b"),2) || !scstrncmp(s, _SC("0B"), 2)) {
+		s += 2;
+		SQInteger r = SQInteger(scstrtol(s,&end,2));
+		if(s == end) return false;
+		res = r;
+		return true;
+	}
+	else if(scstrstr(s,_SC("."))){
 		SQFloat r = SQFloat(scstrtod(s,&end));
 		if(s == end) return false;
 		res = r;
@@ -326,6 +340,32 @@ static SQInteger default_delegate_tointeger(HSQUIRRELVM v)
 	return 1;
 }
 
+static SQInteger default_delegate_tonumber(HSQUIRRELVM v)
+{
+	SQObjectPtr &o=stack_get(v,1);
+	switch(type(o)){
+	case OT_STRING:{
+		SQObjectPtr res;
+		if(str2num(_stringval(o),res)){
+			v->Push(res);
+			break;
+		}}
+		v->Push(SQObjectPtr(0));
+		break;
+	case OT_INTEGER:
+	case OT_FLOAT:
+		v->Push(o);
+		break;
+	case OT_BOOL:
+		v->Push(SQObjectPtr(_integer(o)?(SQInteger)1:(SQInteger)0));
+		break;
+	default:
+		v->Push(SQObjectPtr(0));
+		break;
+	}
+	return 1;
+}
+
 static SQInteger default_delegate_tostring(HSQUIRRELVM v)
 {
 	sq_tostring(v,1);
@@ -476,6 +516,7 @@ SQRegFunction SQSharedState::_table_default_delegate_funcz[]={
 	{_SC("rawin"),container_rawexists,2, _SC("t")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{_SC("clear"),obj_clear,1, _SC(".")},
 	{_SC("find"),obj_find,2, _SC("..")},
 	{_SC("findall"),obj_findall,2, _SC("..")},
@@ -695,6 +736,7 @@ SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
 	{_SC("slice"),array_slice,-1, _SC("ann")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{_SC("clear"),obj_clear,1, _SC(".")},
 	{_SC("find"),obj_find,2, _SC("..")},
 	{_SC("findall"),obj_findall,2, _SC("..")},
@@ -968,6 +1010,7 @@ SQRegFunction SQSharedState::_string_default_delegate_funcz[]={
 	{_SC("tointeger"),default_delegate_tointeger,1, _SC("s")},
 	{_SC("tofloat"),default_delegate_tofloat,1, _SC("s")},
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{_SC("slice"),string_slice,-1, _SC("snn")},
 	{_SC("find"),string_find,-2, _SC("ssn")},
 	{_SC("tolower"),string_tolower,1, _SC("s")},
@@ -988,6 +1031,7 @@ SQRegFunction SQSharedState::_number_default_delegate_funcz[]={
 	{_SC("tointeger"),default_delegate_tointeger,1, _SC("n|b")},
 	{_SC("tofloat"),default_delegate_tofloat,1, _SC("n|b")},
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{_SC("tochar"),number_delegate_tochar,1, _SC("n|b")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{0,0}
@@ -1076,6 +1120,7 @@ SQRegFunction SQSharedState::_closure_default_delegate_funcz[]={
 	{_SC("pacall"),closure_pacall,2, _SC("ca")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{_SC("bindenv"),closure_bindenv,2, _SC("c x|y|t")},
 	{_SC("getinfos"),closure_getinfos,1, _SC("c")},
 	{0,0}
@@ -1097,6 +1142,7 @@ SQRegFunction SQSharedState::_generator_default_delegate_funcz[]={
 	{_SC("getstatus"),generator_getstatus,1, _SC("g")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{0,0}
 };
 
@@ -1183,6 +1229,7 @@ SQRegFunction SQSharedState::_thread_default_delegate_funcz[] = {
 	{_SC("getstatus"), thread_getstatus, 1, _SC("v")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{0,0},
 };
 
@@ -1213,6 +1260,7 @@ SQRegFunction SQSharedState::_class_default_delegate_funcz[] = {
 	{_SC("rawin"),container_rawexists,2, _SC("y")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{_SC("instance"),class_instance,1, _SC("y")},
 	{0,0}
 };
@@ -1229,6 +1277,7 @@ SQRegFunction SQSharedState::_instance_default_delegate_funcz[] = {
 	{_SC("rawin"),container_rawexists,2, _SC("x")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{0,0}
 };
 
@@ -1243,6 +1292,7 @@ SQRegFunction SQSharedState::_weakref_default_delegate_funcz[] = {
 	{_SC("ref"),weakref_ref,1, _SC("r")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
+	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},
 	{0,0}
 };
 
