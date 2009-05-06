@@ -4,6 +4,13 @@
 class Scripts {
 
 	/**
+	 * Squirrel スクリプトの読み込み
+	 * @param text スクリプトが格納された文字列
+	 * @return 読み込まれたスクリプト
+	 */
+	function loadSQ(text);
+	
+	/**
 	 * Squirrel スクリプトの実行。
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param text スクリプトが格納された文字列
@@ -12,6 +19,13 @@ class Scripts {
 	 */
 	function execSQ(text, ...);
 
+	/**
+	 * Squirrel スクリプトの読み込み
+	 * @param filename スクリプトが格納されたファイル
+	 * @return 読み込まれたスクリプト
+	 */
+	function loadStorageSQ(filename);
+	
 	/**
 	 * Squirrel スクリプトのファイルからの実行。
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
