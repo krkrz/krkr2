@@ -12,10 +12,28 @@ public:
 	SQFileInfo(const SQChar *filename) : is(NULL), buffer(NULL), size(0), readed(0) {
 		is = TVPCreateIStream(filename, TJS_BS_READ);
 		if (is) {
-			STATSTG stat;
-			is->Stat(&stat, STATFLAG_NONAME);
-			size = (ULONG)stat.cbSize.QuadPart;
-			buffer = new char[size];
+			DWORD len;
+			unsigned short us = 0;
+			is->Read(&us, 2, &len);
+			if (us == SQ_BYTECODE_STREAM_TAG) { //BYTECODE
+				LARGE_INTEGER move = {0};
+				is->Seek(move,STREAM_SEEK_SET,NULL);
+				STATSTG stat;
+				is->Stat(&stat, STATFLAG_NONAME);
+				size = (ULONG)stat.cbSize.QuadPart;
+				buffer = new char[size];
+			} else {
+				is->Release();
+				is = NULL;
+				ttstr data;
+				iTJSTextReadStream *rs = TVPCreateTextStreamForRead(filename, L"");
+				rs->Read(data, 0);
+				rs->Destruct();
+				readed = size = data.length() * sizeof tjs_char + 2;
+				buffer = new char [size];
+				memcpy(buffer, "\xFF\xFE", 2); // Little Endian BOM
+				memcpy(buffer+2, (void*)data.c_str(), data.length()*sizeof tjs_char); // converted string
+			}
 		}
 	}
 

@@ -373,6 +373,26 @@ public:
 	ScriptsSquirrel(){};
 
 	/**
+	 * squirrel スクリプトの読み込み
+	 * @param script スクリプト
+	 * @return 読み込まれたスクリプト
+	 */
+	static tjs_error TJS_INTF_METHOD load(tTJSVariant *result,
+										  tjs_int numparams,
+										  tTJSVariant **param,
+										  iTJSDispatch2 *objthis) {
+		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
+		if (SQ_SUCCEEDED(sq_compilebuffer(vm, param[0]->GetString(), param[0]->AsString()->GetLength(), L"TEXT", SQTrue))) {
+			sq_getvariant(vm, -1, result);
+			sq_pop(vm, 1);
+		} else {
+			SQEXCEPTION(vm);
+		}
+		return TJS_S_OK;
+	}
+
+
+	/**
 	 * squirrel スクリプトの実行
 	 * @param script スクリプト
 	 * @param ... 引数
@@ -405,6 +425,25 @@ public:
 	}
 
 	/**
+	 * squirrel スクリプトのファイルからの読み込み
+	 * @param filename ファイル名
+	 * @return 読み込まれたスクリプト
+	 */
+	static tjs_error TJS_INTF_METHOD loadStorage(tTJSVariant *result,
+												 tjs_int numparams,
+												 tTJSVariant **param,
+												 iTJSDispatch2 *objthis) {
+		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
+		if (SQ_SUCCEEDED(sqstd_loadfile(vm, param[0]->GetString(), SQTrue))) {
+			sq_getvariant(vm, -1, result);
+			sq_pop(vm, 1);
+		} else {
+			SQEXCEPTION(vm);
+		} 
+		return TJS_S_OK;
+	}
+	
+	/**
 	 * squirrel スクリプトのファイルからの実行
 	 * @param filename ファイル名
 	 * @param ... 引数
@@ -432,7 +471,7 @@ public:
 			}
 		} else {
 			SQEXCEPTION(vm);
-		} 
+		}
 		return TJS_S_OK;
 	}
 
@@ -679,6 +718,9 @@ public:
 };
 
 NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
+
+	RawCallback("loadSQ",        &ScriptsSquirrel::load,        TJS_STATICMEMBER);
+	RawCallback("loadStorageSQ", &ScriptsSquirrel::loadStorage, TJS_STATICMEMBER);
 	RawCallback("execSQ",        &ScriptsSquirrel::exec,        TJS_STATICMEMBER);
 	RawCallback("execStorageSQ", &ScriptsSquirrel::execStorage, TJS_STATICMEMBER);
 	RawCallback("forkSQ",        &ScriptsSquirrel::fork,        TJS_STATICMEMBER);
