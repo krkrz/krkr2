@@ -363,6 +363,11 @@ class PSDLayer extends RepaintLayer {
 	var groupNames; // グループ辞書(名前ベース)
 	var layerFullnames; // レイヤ名（完全名)辞書
 
+	var pageWidth;   // 仮想サイズ情報
+	var pageHeight;
+	var offsetX;
+	var offsetY;
+
 	/**
 	 * コンストラクタ
 	 * @param window ウインドウ
@@ -698,13 +703,35 @@ class PSDLayer extends RepaintLayer {
 	 * レイヤ情報の再構築
 	 * @param width 画像横幅
 	 * @param height 画像縦幅
+	 * @param trim トリミング処理をするかどうか
 	 */
-	function initLayers(width, height) {
-
-		setSize(width, height);
-		setImageSize(width, height);
-		fillRect(0,0,width,height,0);
-
+	function initLayers(width, height,trim=false) {
+		pageWidth  = width;
+		pageHeight = height;
+		if (trim) {
+			var region = new UpdateRegion();
+			for (var i=0;i<layers.count;i++) {
+				var info = layers[i];
+				if (!isIgnoreLayer(info.name) && info.width > 0 && info.height > 0) {
+					region.update(info.left, info.top, info.width, info.height);
+				}
+			}
+			offsetX = region.left;
+			offsetY = region.top;
+			for (var i=0;i<layers.count;i++) {
+				var info = layers[i];
+				info.left -= offsetX;
+				info.top  -= offsetY;
+			}
+			setSize(region.width, region.height);
+		} else {
+			offsetX = 0;
+			offsetY = 0;
+			setSize(width, height);
+		}
+		setImageSize(this.width, this.height);
+		fillRect(0,0,this.width,this.height,0);
+		
 		// グループ参照を登録
 		for (var i=0;i<groups.count;i++) {
 			var info = groups[i];
@@ -748,8 +775,9 @@ class PSDLayer extends RepaintLayer {
 	/**
 	 * PSD 画像のロード処理
 	 * @param storage ロードするPSDファイル
+	 * @param trim トリミング処理をするかどうか
 	 */
-	function loadPSD(storage) {
+	function loadPSD(storage,trim=false) {
 
 		// プラグイン読み込み
 		if (typeof global.PSD == "undefined") {
@@ -783,7 +811,7 @@ class PSDLayer extends RepaintLayer {
 				break;
 			}
 		}
-		initLayers(psd.width, psd.height);
+		initLayers(psd.width, psd.height,trim);
 
 		invalidate psd;
 	}
@@ -799,8 +827,9 @@ class PSDLayer extends RepaintLayer {
 	 * レイヤ構造データのロード
 	 * @param basename ベース名
 	 * @param savedata レイヤ情報データの配列
+	 * @param trim トリミング処理をするかどうか
 	 */
-	function loadDATA(basename, savedata) {
+	function loadDATA(basename, savedata, trim=false) {
 		var count = savedata.count;
 		var width;
 		var height;
@@ -823,7 +852,7 @@ class PSDLayer extends RepaintLayer {
 				}
 			}
 		}
-		initLayers(width, height);
+		initLayers(width, height, trim);
 	}
 
 	// ---------------------------------------------------
@@ -867,8 +896,9 @@ class PSDLayer extends RepaintLayer {
 	/**
 	 * レイヤ構造エータのロード
 	 * @param storage レイヤ構造情報ファイル(タブ区切りテキスト)
+	 * @param trim トリミング処理をするかどうか
 	 */
-	function loadTXT(storage) {
+	function loadTXT(storage, trim=false) {
 		clear();
 		var savedata = [];
 		var data = [];
@@ -880,24 +910,26 @@ class PSDLayer extends RepaintLayer {
 				savedata.add(parseTxtSaveData(line));
 			}
 		}
-		loadDATA(Storages.chopStorageExt(storage), savedata);
+		loadDATA(Storages.chopStorageExt(storage), savedata, trim);
 	}
 	
 	/**
 	 * レイヤ構造データのロード
 	 * @param storage 画像構造情報ファイル(TJS)
+	 * @param trim トリミング処理をするかどうか
 	 */
-	function loadTJS(storage) {
+	function loadTJS(storage, trim=false) {
 		clear();
-		loadDATA(Storages.chopStorageExt(storage), Scripts.evalStorage(storage));
+		loadDATA(Storages.chopStorageExt(storage), Scripts.evalStorage(storage), trim);
 	}
 
 	// ---------------------------------------------------
 	
 	/**
 	 * 画像ファイルのロード
+	 * @param trim トリミング処理をするかどうか	
 	 */
-	function loadImages(storage) {
+	function loadImages(storage, trim) {
 		var ext = Storages.extractStorageExt(storage).toUpperCase();
 		// 拡張子指定が無い場合は探索する
 		if (ext == "") {
@@ -913,11 +945,11 @@ class PSDLayer extends RepaintLayer {
 			}
 		}
 		if (ext == ".PSD") {
-			loadPSD(storage);
+			loadPSD(storage, trim);
 		} else if (ext == ".TXT") {
-			loadTXT(storage);
+			loadTXT(storage, trim);
 		} else if (ext == ".TJS") {
-			loadTJS(storage);
+			loadTJS(storage, trim);
 		} else {
 			throw new Exception("複合画像の読み込みに失敗しました:"+ storage);
 		}
@@ -956,22 +988,24 @@ class PSDLayer extends RepaintLayer {
 	/**
 	 * 画像データの保存処理
 	 */
-	function saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType) {
+	function saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType, noimage) {
 		var savelayer;
 		if (zoom == 100) {
 			// サイズ調整がない場合はそのまま保存
 			for (var i=0;i<layers.count;i++) {
 				var info = layers[i];
-				if (info.layer !== void && !isIgnoreLayer(info.name)) {
-					var filename = getLayerImageName(basename, info.layer_id) + ".tlg";
-					if (typeof window.addSaveLayer != "undefined") {
-						window.addSaveLayer(info.layer, filename);
-					} else {
-						if (savelayer === void) {
-							savelayer = new global.Layer(window, this);
+				if (info.layer !== void) {
+					if (!noimage && !isIgnoreLayer(info.name)) {
+						var filename = getLayerImageName(basename, info.layer_id) + ".tlg";
+						if (typeof window.addSaveLayer != "undefined") {
+							window.addSaveLayer(info.layer, filename);
+						} else {
+							if (savelayer === void) {
+								savelayer = new global.Layer(window, this);
+							}
+							savelayer.assignImages(info.layer);
+							savelayer.saveLayerImageTlg5(filaname);
 						}
-						savelayer.assignImages(info.layer);
-						savelayer.saveLayerImageTlg5(filaname);
 					}
 				}
 				savedata.add(getSaveData(info));
@@ -984,7 +1018,7 @@ class PSDLayer extends RepaintLayer {
 			for (var i=0;i<layers.count;i++) {
 				var info = %[];
 				(Dictionary.assign incontextof info)(layers[i]);
-				if (info.layer !== void && !isIgnoreLayer(info.name)) {
+				if (info.layer !== void) {
 					// 複製
 					var layer = new NotifyParentLayer(window, this);
 					layer.assignImages(info.layer);
@@ -993,15 +1027,17 @@ class PSDLayer extends RepaintLayer {
 					cropLayer(info, 0, 0, width, height, ooze);
 					scaleLayer(info, w, h, zoomType);
 					trimLayer(info);
-					var filename = getLayerImageName(basename, info.layer_id) + ".tlg";
-					if (typeof window.addSaveLayer != "undefined") {
-						window.addSaveLayer(info.layer, filename);
-					} else {
-						if (savelayer === void) {
-							savelayer = new global.Layer(window, this);
+					if (!noimage && !isIgnoreLayer(info.name)) {
+						var filename = getLayerImageName(basename, info.layer_id) + ".tlg";
+						if (typeof window.addSaveLayer != "undefined") {
+							window.addSaveLayer(info.layer, filename);
+						} else {
+							if (savelayer === void) {
+								savelayer = new global.Layer(window, this);
+							}
+							savelayer.assignImages(info.layer);
+							savelayer.saveLayerImageTlg5(filaname);
 						}
-						savelayer.assignImages(info.layer);
-						savelayer.saveLayerImageTlg5(filaname);
 					}
 				}
 				savedata.add(getSaveData(info));
@@ -1041,13 +1077,13 @@ class PSDLayer extends RepaintLayer {
 	 * レイヤ構造データのセーブ
 	 * @param storage 画像構造情報ファイル
 	 */
-	function saveTJS(storage, zoom=100, zoomType=stLinear) {
+	function saveTJS(storage, zoom=100, zoomType=stLinear, noimage=false) {
 		var basename = Storages.chopStorageExt(storage);
 		var savedata = [];
 		var w = (int)(width  * zoom / 100);
 		var h = (int)(height * zoom / 100);
 		savedata.add(%[width:w, height:h]);
-		saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType);
+		saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType, noimage);
 		savedata.saveStruct2(storage);
 	}
 
@@ -1075,14 +1111,14 @@ class PSDLayer extends RepaintLayer {
 	 * レイヤ構造データのセーブ
 	 * @param storage 画像構造情報ファイル
 	 */
-	function saveTXT(storage, zoom=100, zoomType=stLinear) {
+	function saveTXT(storage, zoom=100, zoomType=stLinear, noimage=false) {
 		var basename = Storages.chopStorageExt(storage);
 		var savedata = [];
 		var w = (int)(width  * zoom / 100);
 		var h = (int)(height * zoom / 100);
 		savedata.add("#" + getTxtSaveData());
 		savedata.add(getTxtSaveData(%[width:w, height:h]));
-		saveImageAll(basename, layers, groups, savedata, getTxtSaveData, zoom, zoomType);
+		saveImageAll(basename, layers, groups, savedata, getTxtSaveData, zoom, zoomType, noimage);
 		savedata.save2(storage);
 	}
 
@@ -1093,8 +1129,9 @@ class PSDLayer extends RepaintLayer {
 	 * @param storage 保存ファイル名
 	 * @param zoom 保存時サイズ調整用
 	 * @param zoomType 保存時サイズ調整用（拡大方式)
+	 * @param noimage 画像自体は保存しない
 	 */
-	function saveImages(storage, zoom=100, zoomType=stLinear) {
+	function saveImages(storage, zoom=100, zoomType=stLinear, noimage=false) {
 		
 		// 保存用プラグインロード
 		if (typeof global.Array.save2 == "undefined") {
@@ -1106,9 +1143,9 @@ class PSDLayer extends RepaintLayer {
 
 		var ext = Storages.extractStorageExt(storage).toUpperCase();
 		if (ext == ".TXT") {
-			saveTXT(storage, zoom, zoomType);
+			saveTXT(storage, zoom, zoomType, noimage);
 		} else if (ext == ".TJS") {
-			saveTJS(storage, zoom, zoomType);
+			saveTJS(storage, zoom, zoomType, noimage);
 		} else {
 			throw new Exception("保存する場合は拡張子を指定してください:"+ storage);
 		}

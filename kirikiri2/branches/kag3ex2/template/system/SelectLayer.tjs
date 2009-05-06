@@ -16,6 +16,7 @@ class SelectButtonLayer extends ButtonLayer
 	var tag;     // ボタン固有名称（フラグ用）
 	var selected;// 過去に選択したことがある
 	var message; // メッセージテキスト（再描画用）
+	var ui;
 
     /**
      * メッセージの描画
@@ -50,6 +51,9 @@ class SelectButtonLayer extends ButtonLayer
         // レイヤ初期化
         super.ButtonLayer(owner.window, owner.window.primaryLayer);
 
+		if (owner.uibutton !== void)
+			(Dictionary.assignStruct incontextof (ui = %[]))(owner.getUIInfo(this), true);
+
 		redraw();
 	}
 	function redraw() {
@@ -64,7 +68,7 @@ class SelectButtonLayer extends ButtonLayer
 			// 画像がある場合はロード
 			if (.normalImage   != "") loadButtons(.normalImage, .overImage, .onImage, .focusImage);
 			else if (.graphic  != "") loadImages(.graphic, .graphickey);
-			else if (.uibutton !== void) loadUIInfo(.getUIInfo(this));
+			else if (ui     !== void) loadUIInfo(ui);
 			else hasimg = false;
 			if (hasimg) {
 				modifyOpacity(.frameOpacity);

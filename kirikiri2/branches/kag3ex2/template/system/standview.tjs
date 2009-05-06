@@ -724,7 +724,16 @@ class StandViewWindow extends Window
 			tmp.add(.dress) if (.dress != "");
 			tmp.add(.pose)  if (.pose  != "");
 			tmp.add(.diff)  if (typeof .diff != "undefined" && .diff != "");
-			tmp.add(.face)  if (.face  != "");
+			if (.face != "") {
+				if (.face.indexOf(":")) {
+					var flist = .face.split(":");
+					for (var i=0;i<flist.count;i++) {
+						tmp.add(flist[i]);
+					}
+				} else {
+					tmp.add(.face);
+				}
+			}
 			Clipboard.asText= @"[${tmp.join(' ')}]";
 		}
 	}
@@ -963,7 +972,7 @@ class StandViewWindow extends Window
 				createMenu(dressmenu, .getDressNames(limitMenuNames), StandDressMenuItem, .dress);
 				createMenu(facemenu,  .getFaceNames( limitMenuNames),  StandFaceMenuItem,  .face);
 				if (typeof .diff != "undefined") {
-					createMenu(diffmenu,  .getDiffNames(),  StandDiffMenuItem,  .diff);
+					createMenu(diffmenu,  .getDiffNames(limitMenuNames),  StandDiffMenuItem,  .diff);
 					diffmenu.visible = true;
 				} else {
 					diffmenu.visible = false;

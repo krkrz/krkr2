@@ -334,25 +334,16 @@ class AnimationLayer extends AffineLayer
 
 	var Anim_defaultFontInfo = %[];
 
-
 	function AnimationLayer(win, par)
 	{
 		// AnimationLayer コンストラクタ
 		super.AffineLayer(...); // スーパークラスのコンストラクタを呼ぶ
-
-		Anim_defaultFontInfo.face = font.face; // デフォルトのフォント
-		Anim_defaultFontInfo.height = font.height; // デフォルトのフォントサイズ
-
-		Anim_segments[0] = new AnimationConductor(this); // デフォルトのコンダクタ
-		Anim_segments[0].number = 0;
+		initAnim();
 	}
 
 	function finalize()
 	{
-		clearAnim(); // アニメーション情報のクリア
-		invalidate Anim_segments[0]; // デフォルトのコンダクタを無効化
-		Anim_loadParams = void;
-		Anim_partialImageInfo = void;
+		termAnim();
 		super.finalize(...);
 	}
 
@@ -378,6 +369,27 @@ class AnimationLayer extends AffineLayer
 		// 画像を解放
 		clearAnim();
 		clearImage();
+		Anim_loadParams = void;
+		Anim_partialImageInfo = void;
+	}
+
+	function initAnim() {
+		if (typeof this.Anim_segments == "undefined") with (this) {
+			.Anim_segments = [];
+			.Anim_defaultFontInfo = %[];
+			.Anim_cellLayer = .Anim_storageName = .Anim_loadParams = .Anim_partialImageInfo = void;
+			.Anim_interrupted = false;
+		}
+		Anim_defaultFontInfo.face = font.face; // デフォルトのフォント
+		Anim_defaultFontInfo.height = font.height; // デフォルトのフォントサイズ
+
+		Anim_segments[0] = new AnimationConductor(this); // デフォルトのコンダクタ
+		Anim_segments[0].number = 0;
+	}
+
+	function termAnim() {
+		clearAnim(); // アニメーション情報のクリア
+		invalidate Anim_segments[0]; // デフォルトのコンダクタを無効化
 		Anim_loadParams = void;
 		Anim_partialImageInfo = void;
 	}
@@ -459,6 +471,8 @@ class AnimationLayer extends AffineLayer
 		return true;
 	}
 
+	function superLoadImages() { return super.loadImages(...); }
+
 	function loadImages(elm)
 	{
 		// loadImages オーバーライド
@@ -505,7 +519,7 @@ class AnimationLayer extends AffineLayer
 		} else {
 			// 画像を読み込む
 			if (elm.storage !== void) {
-				var taginfo = super.loadImages(elm.storage, elm.key);
+				var taginfo = superLoadImages(elm.storage, elm.key);
 				// 画像のタグ情報をデフォルト値として採用
 				if(taginfo)	{
 					(Dictionary.assign incontextof taginfo)(elm, false);
@@ -847,21 +861,22 @@ class AnimationLayer extends AffineLayer
 		layer.holdAlpha = orgholdlpha;
 	}
 
+	function setInterrupted(x) {
+		if(Anim_interrupted != x)
+		{
+			for(var i = Anim_segments.count -1; i>=0; i--)
+			{
+				Anim_segments[i].interrupted = x;
+			}
+			Anim_interrupted = x;
+		}
+	}
+
 	property interrupted
 	{
 		// すべてのセグメントに interrupted を設定する
 		getter() { return Anim_interrupted; }
-		setter(x)
-		{
-			if(Anim_interrupted != x)
-			{
-				for(var i = Anim_segments.count -1; i>=0; i--)
-				{
-					Anim_segments[i].interrupted = x;
-				}
-				Anim_interrupted = x;
-			}
-		}
+		setter(x) { setInterrupted(x); }
 	}
 
 	function assign(src)
@@ -1057,7 +1072,7 @@ class AnimationLayer extends AffineLayer
 		var key = (elm.key !== void) ? elm.key : Anim_loadParams.key;
 		var storage = elm.storage;
 		var otype = type;
-		super.loadImages(storage, key);
+		superLoadImages(storage, key);
 		type = otype;
 		applyColorCorrection(this, Anim_loadParams);
 		// 上下反転
@@ -1216,22 +1231,78 @@ AnimationLayer.Anim_reconstructHandlers =
 	];
 
 
-class ClickGlyphLayer extends AnimationLayer
+class ClickGlyphLayer extends KAGLayer
 {
+	var copyMethods = [
+		/* AnimationLayer methods */
+		"clearImage",
+		"freeImage",
+		"initAnim",
+		"termAnim",
+		"clearAnim",
+		"loadAnimInfo",
+		"startAnim",
+		"stopAnim",
+		"canWaitAnimStop",
+		//"loadImages",						//特殊対応
+		//"addPartialImageInfo",			// 封印
+		//"loadPartialImage",				// 〃
+		//"drawReconstructibleText",		// 〃
+		//"applyColorCorrection",			// 〃
+		"setInterrupted",
+		//"assign",							// 使われないので不要（⇒KAGWindow#lineBreak/pageBreak）
+		//"store",							// 〃
+		//"restore",						// 〃
+
+		/* tag handlers */
+		"load",
+		"loadcell",
+		"copy",
+		"s",
+		"loop",
+		"home",
+		"clip",
+		"wait",
+		"eval",
+		];
+
+	// 不要機能メソッドを一応生やしておく
+	function addPartialImageInfo() {}
+	function loadPartialImage() {}
+	function drawReconstructibleText() {}
+	function applyColorCorrection() {}
+	function assign(src) { super.assignImages(src); }
+
+	// superクラスhack（⇒AnimationLayer#superLoadImages）
+	function superLoadImages() { return super.loadImages(...); }
+
 	// クリック待ち記号レイヤ
 	var loadedImage; // 現在読み込まれている画像
 	var loadedKey; // 現在読み込まれているキー
+	var restartOnReload = false; // 再読み込み時にアニメを最初から再生するかどうか
 
 	function ClickGlyphLayer(win, par)
 	{
 		// コンストラクタ
-		super.AnimationLayer(win, par);
+		super.KAGLayer(win, par);
 		hitType = htMask;
 		hitThreshold = 256; // マウスメッセージは完全に透過
+
+		// メソッドを複製
+		var anim = global.AnimationLayer;
+		for (var i = copyMethods.count-1; i >= 0; i--) {
+			var mn = copyMethods[i];
+			this[mn] = (anim[mn] incontextof this) if (mn != "");
+		}
+		this.animLoadImages = (anim.loadImages incontextof this);
+
+		// 初期化
+		initAnim();
 	}
 
 	function finalize()
 	{
+		termAnim();
 		// finalize()
 		super.finalize(...);
 	}
@@ -1241,9 +1312,13 @@ class ClickGlyphLayer extends AnimationLayer
 		// loadImage オーバーライド
 		if(loadedImage !== storage || loadedKey !== key)
 		{
-			super.loadImages(%[storage : storage, key : key]);
+			animLoadImages(%[storage : storage, key : key]);
 			loadedImage = storage;
 			loadedKey = key;
+		}
+		else
+		{
+			startAnim(%[ seg:0, target:"" ]) if (restartOnReload && Anim_storageName != '');
 		}
 	}
 
@@ -1258,10 +1333,7 @@ class ClickGlyphLayer extends AnimationLayer
 		{
 			super.visible = x;
 			// 非表示の時は動作を停止しているように
-			if(x)
-				interrupted = false;
-			else
-				interrupted = true;
+			setInterrupted(!x);
 		}
 	}
 }

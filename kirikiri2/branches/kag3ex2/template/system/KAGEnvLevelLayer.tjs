@@ -65,10 +65,11 @@ class KAGEnvLevelLayer {
 			return *(&global.KAGEnvImage.disp incontextof this);
 		}
 		setter(v) {
-			if (v == SHOW && level === void) {
+			*(&global.KAGEnvImage.disp incontextof this) = v;
+			if (isShowBU() && level === void) {
+				// 立ち絵表示されるのにレベルが未指定ならデフォルトで初期化
 				level = env.defaultLevel;
 			}
-			*(&global.KAGEnvImage.disp incontextof this) = v;
 		}
 	}
 	

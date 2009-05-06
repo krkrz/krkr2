@@ -757,22 +757,14 @@ class MessageLayer extends AnimKAGLayer
         this.diffy = (int)diffy;
         super.left = myleft + this.diffx;
         super.top  = mytop  + this.diffy;
-        if (faceLayer !== void) {
-            faceLayer.left = faceLayer.left;
-            faceLayer.top  = faceLayer.top;
-        }
-        if (nameLayer !== void) {
-            nameLayer.left = nameLayer.left;
-            nameLayer.top  = nameLayer.top;
-        }
+		subLayersRePosition();
     }
 
     property left {
         setter(v) {
             myleft = (int)v;
             super.left = myleft + diffx;
-            faceLayer.left = faceLayer.left if faceLayer !== void;
-            nameLayer.left = nameLayer.left if nameLayer !== void;
+			subLayersRePosition();
         }
         getter() {
             return myleft;
@@ -783,8 +775,7 @@ class MessageLayer extends AnimKAGLayer
         setter(v) {
             mytop = (int)v;
             super.top = mytop + diffy;
-            faceLayer.top = faceLayer.top if faceLayer !== void;
-            nameLayer.top = nameLayer.top if nameLayer !== void;
+			subLayersRePosition();
         }
         getter() {
             return mytop;
@@ -797,6 +788,26 @@ class MessageLayer extends AnimKAGLayer
         width  = (int)w if w !== void;
         height = (int)h if h !== void;
     }
+	function subLayersRePosition() {
+		faceLayer.repos() if faceLayer !== void;
+		nameLayer.repos() if nameLayer !== void;
+		textLayer.repos() if hasTextLayer;
+	}
+	function subLayersReAbsolute() {
+		faceLayer.rerelative() if faceLayer !== void;
+		nameLayer.rerelative() if nameLayer !== void;
+		textLayer.rerelative() if hasTextLayer;
+	}
+	function subLayersReVisible() {
+		faceLayer.visible = faceLayer.visible if faceLayer !== void;
+		nameLayer.visible = nameLayer.visible if nameLayer !== void;
+		textLayer.visible = textLayer.visible if hasTextLayer;
+	}
+	function subLayersReOpacity(v) {
+		faceLayer.opacity = v if faceLayer !== void;
+		nameLayer.opacity = v if nameLayer !== void;
+		textLayer.opacity = v if hasTextLayer;
+	}
 
     /**
      * 不透明度変更処理
@@ -806,8 +817,7 @@ class MessageLayer extends AnimKAGLayer
         if (v !== void) {
             //dm("内部不透明度指定:" + v);
             super.opacity = v;
-            faceLayer.opacity = v if faceLayer !== void;
-            nameLayer.opacity = v if nameLayer !== void;
+			subLayersReOpacity(v);
         }
     }
 
@@ -819,8 +829,7 @@ class MessageLayer extends AnimKAGLayer
         if (v !== void) {
             //dm("内部表示状態指定:" + v);
             super.visible     = v;
-            faceLayer.visible = faceLayer.visible if faceLayer !== void;
-            nameLayer.visible = nameLayer.visible if nameLayer !== void;
+			subLayersReVisible();
         }
     }
 
@@ -904,8 +913,7 @@ class MessageLayer extends AnimKAGLayer
     property absolute {
         setter(v) {
             super.absolute = v;
-            faceLayer.absolute = faceLayer.absolute if faceLayer !== void;
-            nameLayer.absolute = nameLayer.absolute if nameLayer !== void;
+			subLayersReAbsolute();
         }
         getter() {
             return super.absolute;
@@ -1484,6 +1492,7 @@ class MessageLayer extends AnimKAGLayer
         } else {
             invalidateFaceLayer();
         }
+		textLayer.absolute = +elm.textabsolute if (elm.textabsolute !== void && hasTextLayer);
         
         // メッセージボタン消去
         clearSystemButtons();
@@ -1865,19 +1874,25 @@ class MessageLayer extends AnimKAGLayer
 		getter { return textLayer !== void; }
 		setter(v) {
 			if        ( v && textLayer === void) {
-				textLayer = new global.KAGLayer(window, this);
+				textLayer = new global.RelativeLayer(this);
 				with (textLayer) {
 					.hitType = htMask;
 					.hitThreshold = 256; // マウスメッセージは全域透過
 					.type = layerType;
-					.name = "テキスト描画用レイヤ";
-					.order = lineLayer.order if (lineLayer !== void);
+					.name = name + ":テキスト";
 
 					setSizeToImageSize(); // サイズ同期
 					clearTextLayer();
 					.visible = true;
 				}
+				if (lineLayer !== void) {
+					lineLayer.parent = textLayer;
+				}
 			} else if (!v && textLayer !== void) {
+				if (lineLayer !== void) {
+					lineLayer.parent = this;
+					lineLayer.order = 0;
+				}
 				invalidate textLayer;
 				textLayer = void;
 			}
@@ -1900,6 +1915,7 @@ class MessageLayer extends AnimKAGLayer
 			.setImageSize(width, height);
 			.setSizeToImageSize();
 		}
+		subLayersRePosition();
 	}
 
 	// テキスト再描画機構オン・オフ
@@ -1933,7 +1949,9 @@ class MessageLayer extends AnimKAGLayer
 		if (!redrawTextEnabled) return;
 		redrawTextStates.clear();
 		storeRedrawTextState("clear");
-		storeRedrawTextState("restore", store());
+		var dic = store();
+		dic.noFaceRestore = true;
+		storeRedrawTextState("restore", dic);
 	}
 
 	function fixLineLayer()
@@ -2363,7 +2381,7 @@ class MessageLayer extends AnimKAGLayer
 				}
 				app.addPen(      getcolor(.edgeColor  ), getpen(.edgeExtent),  0, 0) if (.edge);
 				app.addBrush(    getcolor( col        ),                       0, 0);
-				padding++;
+				padding+=4; //[XXX] 下寄りのフォント対策（実測できないか？）
 			}
 		} }
 		function updateFont(lf) { with (lf) {
@@ -4393,12 +4411,14 @@ class MessageLayer extends AnimKAGLayer
 		draggable = dic.draggable if dic.draggable !== void;
         eventTransparent = dic.eventTransparent if dic.eventTransparent !== void;
         // [end_restore_vars]
-        if (dic.faceLayer !== void) {
-            initFaceLayer();
-            faceLayer.restore(dic.faceLayer);
-        } else {
-            invalidateFaceLayer();
-        }
+		if (!dic.noFaceRestore) {
+			if (dic.faceLayer !== void) {
+				initFaceLayer();
+				faceLayer.restore(dic.faceLayer);
+			} else {
+				invalidateFaceLayer();
+			}
+		}
         if (dic.nameLayer !== void) {
             initNameLayer();
             nameLayer.restore(dic.nameLayer);

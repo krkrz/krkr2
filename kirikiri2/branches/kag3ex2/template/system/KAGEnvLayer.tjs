@@ -139,7 +139,7 @@ class KAGEnvLayer extends KAGEnvImage {
 			redraw = true;
 		}
 
-		if (elm.noflag === void) {
+		if (elm.noflag === void && file !== void) {
 			// ‹L˜^
 			kag.sflags["cg_" + (file.toUpperCase())] = true;
 		}
