@@ -125,6 +125,7 @@ Thread::Thread(HSQUIRRELVM v) : Object(v), _currentTick(0), _fileHandler(NULL), 
 Thread::~Thread()
 {
 	_exit();
+	_thread.clear();
 	_waitList.clear();
 }
 
@@ -153,7 +154,6 @@ Thread::_clear()
 		_scriptName.clear();
 	}
 	_args.clear();
-	_thread.clear();
 	_status = THREAD_NONE;
 }
 
@@ -317,6 +317,7 @@ void
 Thread::_exec(HSQUIRRELVM v, int idx)
 {
 	_clear();
+	_thread.clear();
 	// スレッド先頭にスクリプトをロード
 	if (sq_gettype(v, idx) == OT_STRING) {
 		// スクリプト指定で遅延ロード
@@ -380,7 +381,11 @@ Thread::exec(HSQUIRRELVM v)
 SQRESULT
 Thread::exit(HSQUIRRELVM v)
 {
-	_exitCode.getStack(v,2);
+	if (sq_gettop(v) >= 2) {
+		_exitCode.getStack(v,2);
+	} else {
+		_exitCode.clear();
+	}
 	_exit();
 	return SQ_OK;
 }
