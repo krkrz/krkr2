@@ -106,13 +106,6 @@ class Scripts {
 	 * @param name 登録名称
 	 */
 	function unregisterSQ(name);
-
-	/**
-	 * Squirrel のグローバル空間に TJS2のクラスをクラスとして登録
-	 * @param className squirrel側のクラス名
-	 * @param tjsClassName TJS側のクラス名を継承関係と逆順に列挙した配列、またはクラス名。省略時は className と同じ
-	 */
-	function registerClassSQ(className, tjsClassName=null);
 }
 
 /**

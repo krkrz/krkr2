@@ -476,24 +476,6 @@ public:
 	}
 
 	/**
-	 * Squirrel のグローバル空間に TJS2のクラスをクラスとして登録
-	 * @param className squirrel側のクラス名
-	 * @param tjsClassName TJS側のクラス名
-	 * @param methods メソッド/プロパティ情報の辞書 name=value
-	 * value=0:メソッド value=1:GETのみプロパティ value=2:SETのみプロパティ value=3:プロパティ
-	 */
-	static tjs_error TJS_INTF_METHOD registerClass(tTJSVariant *result,
-												   tjs_int numparams,
-												   tTJSVariant **param,
-												   iTJSDispatch2 *objthis) {
-		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-		TJSObject::registerClass(vm,
-								 param[0]->GetString(), // name
-								 numparams > 1 ? param[1] : NULL);
-		return TJS_S_OK;
-	}
-
-	/**
 	 * Squirrel スクリプトのスレッド実行。
 	 * @param text スクリプトが格納された文字列
 	 * @param ... 引数
@@ -732,7 +714,6 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("unregisterSQ",     &ScriptsSquirrel::unregisterSQ,    TJS_STATICMEMBER);
 	RawCallback("compileSQ",        &ScriptsSquirrel::compile,        TJS_STATICMEMBER);
 	RawCallback("compileStorageSQ", &ScriptsSquirrel::compileStorage, TJS_STATICMEMBER);
-	RawCallback("registerClassSQ",  &ScriptsSquirrel::registerClass, TJS_STATICMEMBER);
 };
 
 /**
@@ -907,13 +888,15 @@ static void PreRegistCallback()
 	sq_setprintfunc(vm, printFunc);
 
 	sq_pushroottable(vm);
+
 	// その他の基本ライブラリの登録
 	sqstd_register_iolib(vm);
 	sqstd_register_bloblib(vm);
 	// printCallStack の登録
 	sq_pushstring(vm, _SC("printCallStack"), -1);
 	sq_newclosure(vm, printCallStack, 0);
-	sq_createslot(vm, -3); 
+	sq_createslot(vm, -3);
+
 	sq_pop(vm, 1);
 	
 	sqobject::registerContinuous();
@@ -922,7 +905,7 @@ static void PreRegistCallback()
 	sqobject::Object::registerClass();
 	sqobject::Thread::registerClass();
 	sqobject::Thread::registerGlobal();
-	TJSObject::init();
+	TJSObject::init(vm);
 }
 
 /**
@@ -976,6 +959,7 @@ static void PreUnregistCallback()
 	sqthreadcont.stop();
 	sqobject::doneContinuous();
 	sqobject::Thread::done();
+	TJSObject::done();
 
 	if (ArrayCountProp) {
 		ArrayCountProp->Release();
