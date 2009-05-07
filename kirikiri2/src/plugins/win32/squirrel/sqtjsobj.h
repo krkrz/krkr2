@@ -29,6 +29,29 @@ public:
 	 * @return 吉里吉里ディスパッチャ
 	 */
 	static iTJSDispatch2 *getDispatch(HSQUIRRELVM v, int idx);
+
+	/**
+	 * TJSオブジェクト用のメソッド
+	 * 引数1 オブジェクト
+	 * 引数2～配列
+	 * 自由変数1 メンバ名
+	 */
+	static SQRESULT tjsInvoker(HSQUIRRELVM v);
+
+	/**
+	 * TJSオブジェクト用のプロパティゲッター
+	 * 引数1 オブジェクト
+	 * 自由変数1 プロパティ名
+	 */
+	static SQRESULT tjsGetter(HSQUIRRELVM v);
+
+	/**
+	 * TJSオブジェクト用のプロパティセッター
+	 * 引数1 オブジェクト
+	 * 引数2 設定値
+	 * 自由変数1 プロパティ名
+	 */
+	static SQRESULT tjsSetter(HSQUIRRELVM v);
 	
 protected:
 	// コンストラクタ
@@ -50,29 +73,6 @@ protected:
 	 */
 	static SQRESULT tjsConstructor(HSQUIRRELVM v);
 
-	/**
-	 * TJSオブジェクト用のメソッド
-	 * 引数1 オブジェクト
-	 * 引数2 メンバ名
-	 * 引数3 引数の配列
-	 */
-	static SQRESULT tjsInvoker(HSQUIRRELVM v);
-
-	/**
-	 * TJSオブジェクト用のプロパティゲッター
-	 * 引数1 オブジェクト
-	 * 引数2 プロパティ名
-	 */
-	static SQRESULT tjsGetter(HSQUIRRELVM v);
-
-	/**
-	 * TJSオブジェクト用のプロパティセッター
-	 * 引数1 オブジェクト
-	 * 引数2 プロパティ名
-	 * 引数3 設定値
-	 */
-	static SQRESULT tjsSetter(HSQUIRRELVM v);
-	
 private:
 	// 処理対象オブジェクト
 	iTJSDispatch2 *dispatch;
