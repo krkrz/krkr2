@@ -23,67 +23,15 @@ static const SQChar *typeName = _SC("TJSObject"); ///< 型名
 static const SQUserPointer TJSOBJTYPETAG = (SQUserPointer)_SC("TJSOBJTYPETAG"); ///< squirrel型タグ
 
 /**
- * 辞書データからクラス登録用のスクリプトを生成するためのオブジェクト
+ * メンバ登録処理用
  */
-class ScriptCreater : public tTJSDispatch /** EnumMembers 用 */
+class MemberRegister : public tTJSDispatch /** EnumMembers 用 */
 {
-protected:
-	// スクリプト記録用
-	ttstr script;
 
-	// ファンクションのコードを生成
-	void registFunction(const tjs_char *functionName) {
-		script += "function ";
-		script += functionName;
-		script += "(...){local args=[];for(local i=0;i<vargc;i++){args.append(vargv[i]);};return tjsInvoker(\"";
-		script += functionName;
-		script += "\", args);}";
-	}
-
-	// プロパティのコードを生成
-	void registProperty(const tjs_char *propertyName) {
-		script += L"function set";
-		script += toupper(*propertyName);
-		script += (propertyName + 1);
-		script += L"(arg){tjsSetter(\"";
-		script += propertyName;
-		script += L"\", arg);}";
-		script += L"function get";
-		script += toupper(*propertyName);
-		script += (propertyName + 1);
-		script += L"(){return tjsGetter(\"";
-		script += propertyName;
-		script += L"\");}";
-	}
-
-	// ファンクションかどうか
-	static bool isFunction(iTJSDispatch2 *member) {
-		return TJS_SUCCEEDED(member->IsInstanceOf(0, NULL, NULL, L"Function", member));
-	}
-
-	// プロパティかどうか
-	static bool isProperty(iTJSDispatch2 *member) {
-		return TJS_SUCCEEDED(member->IsInstanceOf(0, NULL, NULL, L"Property", member));
-	}
-	
 public:
-
 	// コンストラクタ
-	ScriptCreater(const tjs_char *className) {
-		script += "function constructor(...){local args=[];for(local i=0;i<vargc;i++){args.append(vargv[i]);};return tjsConstructor(\"";
-		script += className;
-		script += "\", args);}";
+	MemberRegister(HSQUIRRELVM v) : v(v) {
 	};
-
-	// データの取得
-	const tjs_char *getData() {
-		return script.c_str();
-	}
-
-	// データの長さの取得
-	int getLength() {
-		return script.GetLen();
-	}
 
 	// EnumMember用繰り返し実行部
 	// param[0] メンバ名
@@ -114,6 +62,47 @@ public:
 		}
 		return TJS_S_OK;
 	}
+
+protected:
+	// ファンクション登録
+	void registFunction(const tjs_char *functionName) {
+		sq_pushstring(v, functionName, -1);\
+		sq_pushstring(v, functionName, -1);
+		sq_newclosure(v, TJSObject::tjsInvoker, 1);\
+		sq_createslot(v, -3);
+	}
+
+	// プロパティ登録
+	void registProperty(const tjs_char *propertyName) {
+		ttstr name = L"set";
+		name += toupper(*propertyName);
+		name += (propertyName + 1);
+		sq_pushstring(v, name.c_str(), -1);\
+		sq_pushstring(v, propertyName, -1);
+		sq_newclosure(v, TJSObject::tjsSetter, 1);\
+		sq_createslot(v, -3);
+		
+		name = L"get";
+		name += toupper(*propertyName);
+		name += (propertyName + 1);
+		sq_pushstring(v, name.c_str(), -1);\
+		sq_pushstring(v, propertyName, -1);
+		sq_newclosure(v, TJSObject::tjsGetter, 1);\
+		sq_createslot(v, -3);
+	}
+
+	// ファンクションかどうか
+	static bool isFunction(iTJSDispatch2 *member) {
+		return TJS_SUCCEEDED(member->IsInstanceOf(0, NULL, NULL, L"Function", member));
+	}
+
+	// プロパティかどうか
+	static bool isProperty(iTJSDispatch2 *member) {
+		return TJS_SUCCEEDED(member->IsInstanceOf(0, NULL, NULL, L"Property", member));
+	}
+private:
+	HSQUIRRELVM v;
+	
 };
 
 // -----------------------------------------------------------------------
@@ -149,9 +138,22 @@ TJSObject::registerClass(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *
 		getArrayString(classArray, 0, tjsClassName);
 	}
 	
+	sq_pushroottable(v); // root
+	sq_pushstring(v, className, -1);
+	sq_pushstring(v, SQOBJECTNAME, -1);
+	sq_get(v,-3);
+	sq_newclass(v, true); // 継承する
+	sq_settypetag(v, -1, TJSOBJTYPETAG);
+	
+	// コンストラクタ登録
+	sq_pushstring(v, _SC("constructor"), -1);\
+	sq_pushstring(v, className, -1);
+	sq_newclosure(v, tjsConstructor, 1);\
+	sq_createslot(v, -3);
+
 	// クラス生成用スクリプトを生成する
-	ScriptCreater script(tjsClassName.c_str());
-	tTJSVariantClosure closure(&script);
+	MemberRegister r(v);
+	tTJSVariantClosure closure(&r);
 	
 	// 親クラスのメソッドを登録
 	if (classArray) {
@@ -182,43 +184,6 @@ TJSObject::registerClass(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *
 		dispatch->EnumMembers(TJS_IGNOREPROP, &closure, dispatch);
 	}
 	
-	sq_pushroottable(v); // root
-	sq_pushstring(v, className, -1);
-	sq_pushstring(v, SQOBJECTNAME, -1);
-	sq_get(v,-3);
-	sq_newclass(v, true); // 継承する
-	sq_settypetag(v, -1, TJSOBJTYPETAG);
-	
-#define REGISTER_METHOD(func) \
-	sq_pushstring(v, _SC(#func), -1);\
-	sq_newclosure(v, func, 0);\
-	sq_createslot(v, -3);
-	
-	// TJS用処理メソッドを登録
-	REGISTER_METHOD(tjsConstructor);
-	REGISTER_METHOD(tjsInvoker);
-	REGISTER_METHOD(tjsSetter);
-	REGISTER_METHOD(tjsGetter);
-	
-	// クラスのコンテキストで生成スクリプトを実行
-	if (SQ_SUCCEEDED(sq_compilebuffer(v, script.getData(), script.getLength(), className, SQTrue))) {
-		sq_push(v, -2); // class
-		if (SQ_FAILED(sq_call(v, 1, SQFalse, SQTrue))) {
-			sq_getlasterror(v);
-			const SQChar *str;
-			sq_getstring(v, -1, &str);
-			SQPRINT(v, str);
-			sq_pop(v, 1);
-		}
-		sq_pop(v, 1);
-	} else {
-		sq_getlasterror(v);
-		const SQChar *str;
-		sq_getstring(v, -1, &str);
-		SQPRINT(v, str);
-		sq_pop(v, 1);
-	}
-	
 	sq_createslot(v, -3);
 	sq_pop(v, 1); // root
 }
@@ -242,6 +207,7 @@ TJSObject::TJSObject(HSQUIRRELVM v) : dispatch(NULL)
 TJSObject::~TJSObject()
 {
 	if (dispatch) {
+		dispatch->Invalidate(0, NULL, NULL, dispatch);
 		dispatch->Release();
 	}
 }
@@ -274,20 +240,22 @@ TJSObject::tjsConstructor(HSQUIRRELVM v)
 		delete self;
 	}
 	if (SQ_SUCCEEDED(result)) {
+		
+		int top = sq_gettop(v);
+		
 		// クラスを生成する
 		tTJSVariant classObj;
-		TVPExecuteExpression(sqobject::getString(v,2), &classObj);
+		TVPExecuteExpression(sqobject::getString(v,top), &classObj);
 		iTJSDispatch2 *dispatch = classObj.AsObjectNoAddRef();
 		if (dispatch) {
 			// 引数変換
-			int argc = sq_getsize(v,3);
-			tTJSVariant **args = new tTJSVariant*[argc];
-			for (int i=0;i<argc;i++) {
-				args[i] = new tTJSVariant();
-				sq_pushinteger(v, i);
-				if (SQ_SUCCEEDED(sq_get(v, 3))) {
-					sq_getvariant(v, -1, args[i]);
-					sq_pop(v, 1);
+			int argc = top - 2;
+			tTJSVariant **args = NULL;
+			if (argc > 0) {
+				args = new tTJSVariant*[argc];
+				for (int i=0;i<argc;i++) {
+					args[i] = new tTJSVariant();
+					sq_getvariant(v, 2+i, args[i]);
 				}
 			}
 			tjs_error error;
@@ -297,10 +265,12 @@ TJSObject::tjsConstructor(HSQUIRRELVM v)
 				result = ERROR_KRKR(v, error);
 			}
 			// 引数破棄
-			for (int i=0;i<argc;i++) {
-				delete args[i];
+			if (args) {
+				for (int i=0;i<argc;i++) {
+					delete args[i];
+				}
+				delete[] args;
 			}
-			delete[] args;
 		} else {
 			result = ERROR_CREATE(v);
 		}
@@ -311,23 +281,25 @@ TJSObject::tjsConstructor(HSQUIRRELVM v)
 /**
  * TJSオブジェクト用のメソッド
  * 引数1 オブジェクト
- * 引数2 メンバ名
- * 引数3 引数の配列
+ * 引数2～ 引数
+ * 自由変数1 メンバ名
  */
 SQRESULT
 TJSObject::tjsInvoker(HSQUIRRELVM v)
 {
 	iTJSDispatch2 *dispatch = getDispatch(v, 1);
 	if (dispatch) {
+
+		int top = sq_gettop(v);
+
 		// 引数変換
-		int argc = sq_getsize(v,3);
-		tTJSVariant **args = new tTJSVariant*[argc];
-		for (int i=0;i<argc;i++) {
-			args[i] = new tTJSVariant();
-			sq_pushinteger(v, i);
-			if (SQ_SUCCEEDED(sq_get(v, 3))) {
-				sq_getvariant(v, -1, args[i]);
-				sq_pop(v, 1);
+		int argc = top - 2;
+		tTJSVariant **args = NULL;
+		if (argc > 0) {
+			args = new tTJSVariant*[argc];
+			for (int i=0;i<argc;i++) {
+				args[i] = new tTJSVariant();
+				sq_getvariant(v, 2+i, args[i]);
 			}
 		}
 		
@@ -335,8 +307,7 @@ TJSObject::tjsInvoker(HSQUIRRELVM v)
 		int ret = 0;
 		tTJSVariant result;
 		tjs_error error;
-		const tjs_char *methodName = sqobject::getString(v,2);
-		if (TJS_SUCCEEDED(error = dispatch->FuncCall(0, sqobject::getString(v,2), NULL, &result, argc, args, dispatch))) {
+		if (TJS_SUCCEEDED(error = dispatch->FuncCall(0, sqobject::getString(v,top), NULL, &result, argc, args, dispatch))) {
 			if (result.Type() != tvtVoid) {
 				sq_pushvariant(v, result);
 				result = 1;
@@ -346,12 +317,13 @@ TJSObject::tjsInvoker(HSQUIRRELVM v)
 		} else {
 			result = ERROR_KRKR(v, error);
 		}
-		
 		// 引数破棄
-		for (int i=0;i<argc;i++) {
-			delete args[i];
+		if (args) {
+			for (int i=0;i<argc;i++) {
+				delete args[i];
+			}
+			delete[] args;
 		}
-		delete[] args;
 		return result;
 	}
 	return ERROR_BADINSTANCE(v);
@@ -360,7 +332,7 @@ TJSObject::tjsInvoker(HSQUIRRELVM v)
 /**
  * TJSオブジェクト用のプロパティゲッター
  * 引数1 オブジェクト
- * 引数2 プロパティ名
+ * 自由変数1 プロパティ名
  */
 SQRESULT
 TJSObject::tjsGetter(HSQUIRRELVM v)
@@ -369,7 +341,7 @@ TJSObject::tjsGetter(HSQUIRRELVM v)
 	if (dispatch) {
 		tTJSVariant result;
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = dispatch->PropGet(0, sqobject::getString(v,2), NULL, &result, dispatch))) {
+		if (TJS_SUCCEEDED(error = dispatch->PropGet(0, sqobject::getString(v, sq_gettop(v)), NULL, &result, dispatch))) {
 			sq_pushvariant(v, result);
 			return 1;
 		} else {
@@ -382,8 +354,8 @@ TJSObject::tjsGetter(HSQUIRRELVM v)
 /**
  * TJSオブジェクト用のプロパティセッター
  * 引数1 オブジェクト
- * 引数2 プロパティ名
- * 引数3 設定値
+ * 引数2 設定値
+ * 自由変数1 プロパティ名
  */
 SQRESULT
 TJSObject::tjsSetter(HSQUIRRELVM v)
@@ -391,9 +363,9 @@ TJSObject::tjsSetter(HSQUIRRELVM v)
 	iTJSDispatch2 *dispatch = getDispatch(v, 1);
 	if (dispatch) {
 		tTJSVariant result;
-		sq_getvariant(v, 3, &result);
+		sq_getvariant(v, 2, &result);
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, sqobject::getString(v, 2), NULL, &result, dispatch))) {
+		if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, sqobject::getString(v, sq_gettop(v)), NULL, &result, dispatch))) {
 			return SQ_OK;
 		} else {
 			return ERROR_KRKR(v, error);
