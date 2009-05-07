@@ -1,3 +1,5 @@
+print("fork‚ÌƒeƒXƒg");
+
 function forktest1() {
 	print("fork1 start");
 	for (local i=0;i<10;i++) {

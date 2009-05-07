@@ -118,16 +118,7 @@ class MyWindow extends Window
 		Scripts.execStorageSQ("delegate.nut");
 
 		// tjsobj テスト
-		Scripts.registerClassSQ("Layer", "Layer",
-								%[
-								setSize:0,
-								setPos:0,
-								fillRect:0,
-								visible:3,
-									]);
-		
 		Scripts.execStorageSQ("tjsobj.nut");
-
 		
 		// fork テスト
 		Scripts.forkStorageSQ("forktest.nut");
