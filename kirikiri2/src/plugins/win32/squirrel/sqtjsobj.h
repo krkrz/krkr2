@@ -12,24 +12,39 @@ public:
 	/**
 	 * 初期化用
 	 */
-	static void init();
+	static void init(HSQUIRRELVM vm);
 
 	/**
-	 * クラスの登録
-	 * @param v squirrelVM
-	 * @param className 登録クラス名
-	 * @param tjsClassInfo クラス定義情報(TJSのクラス名のリスト)
+	 * 廃棄用
 	 */
-	static void registerClass(HSQUIRRELVM v, const tjs_char *className, tTJSVariant *tjsClassInfo);
+	static void done();
 
+	// ---------------------------------------------------------------
+	
 	/**
-	 * 吉里吉里オブジェクトの取得
+	 * スタックからの吉里吉里オブジェクトの取得
 	 * @param v squirrelVM
 	 * @param idx インデックス
 	 * @return 吉里吉里ディスパッチャ
 	 */
 	static iTJSDispatch2 *getDispatch(HSQUIRRELVM v, int idx);
 
+	/**
+	 * スタックへの吉里吉里オブジェクトの登録
+	 * @return 登録成功したら true
+	 */
+	static bool pushDispatch(HSQUIRRELVM v, iTJSDispatch2 *dispatch);
+
+	// ---------------------------------------------------------------
+	
+	/**
+	 * 吉里吉里クラスから squirrel クラスを生成
+	 * @param v squirrelVM
+	 */
+	static SQRESULT createClass(HSQUIRRELVM v);
+
+	// ---------------------------------------------------------------
+	
 	/**
 	 * TJSオブジェクト用のメソッド
 	 * 引数1 オブジェクト
@@ -52,11 +67,41 @@ public:
 	 * 自由変数1 プロパティ名
 	 */
 	static SQRESULT tjsSetter(HSQUIRRELVM v);
+
+	/**
+	 * TJSオブジェクト用のメソッド
+	 * 引数1 オブジェクト
+	 * 引数2～配列
+	 * 自由変数1 クラス名
+	 * 自由変数2 メンバ名
+	 */
+	static SQRESULT tjsStaticInvoker(HSQUIRRELVM v);
+
+	/**
+	 * TJSオブジェクト用のプロパティゲッター
+	 * 引数1 オブジェクト
+	 * 自由変数1 クラス名
+	 * 自由変数2 プロパティ名
+	 */
+	static SQRESULT tjsStaticGetter(HSQUIRRELVM v);
+
+	/**
+	 * TJSオブジェクト用のプロパティセッター
+	 * 引数1 オブジェクト
+	 * 引数2 設定値
+	 * 自由変数1 クラス名
+	 * 自由変数2 プロパティ名
+	 */
+	static SQRESULT tjsStaticSetter(HSQUIRRELVM v);
 	
 protected:
 	// コンストラクタ
 	TJSObject(HSQUIRRELVM v);
 
+	// コンストラクタ
+	// インスタンスを返す場合用
+	TJSObject(HSQUIRRELVM v, iTJSDispatch2 *dispatch);
+	
 	// デストラクタ
 	~TJSObject();
 	
@@ -67,9 +112,10 @@ protected:
 
 	/**
 	 * TJSオブジェクトのコンストラクタ
+	 * TJSオブジェクトのコンストラクタ
 	 * 引数1 オブジェクト
-	 * 引数2 クラス名
-	 * 引数3 引数
+	 * 引数2～ 引数
+	 * 自由変数1 クラス名
 	 */
 	static SQRESULT tjsConstructor(HSQUIRRELVM v);
 
@@ -77,6 +123,8 @@ private:
 	// 処理対象オブジェクト
 	iTJSDispatch2 *dispatch;
 
+	// 登録されたクラスの名前マップ
+	static sqobject::ObjectInfo classMap;
 };
 
 #endif

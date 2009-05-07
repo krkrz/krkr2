@@ -426,36 +426,38 @@ sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 		{
 			iTJSDispatch2 *dispatch = variant.AsObject();
 			if (dispatch) {
-				// UserData 確保
-				SQUserPointer up = sq_newuserdata(v, sizeof *dispatch);
-				*((iTJSDispatch2**)up) = dispatch;
-				
-				// タグ登録
-				sq_settypetag(v, -1, TJSTYPETAG);
-				
-				// 開放ロジックを追加
-				sq_setreleasehook(v, -1, tjsDispatchRelease);
-				
-				// メソッド群を追加
-				sq_newtable(v);
-				
-				sq_pushstring(v, L"_get", -1);
-				sq_newclosure(v, get, 0);
-				sq_createslot(v, -3);
-				
-				sq_pushstring(v, L"_set", -1);
-				sq_newclosure(v, set, 0);
-				sq_createslot(v, -3);
-				
-				sq_pushstring(v, L"_call", -1);
-				if (dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch) == TJS_S_TRUE) {
-					sq_newclosure(v, callConstructor, 0);
-				} else {
-					sq_newclosure(v, callMethod, 0);
+				if (!TJSObject::pushDispatch(v, dispatch)) {
+					// UserData 確保
+					SQUserPointer up = sq_newuserdata(v, sizeof *dispatch);
+					*((iTJSDispatch2**)up) = dispatch;
+					
+					// タグ登録
+					sq_settypetag(v, -1, TJSTYPETAG);
+					
+					// 開放ロジックを追加
+					sq_setreleasehook(v, -1, tjsDispatchRelease);
+					
+					// メソッド群を追加
+					sq_newtable(v);
+					
+					sq_pushstring(v, L"_get", -1);
+					sq_newclosure(v, get, 0);
+					sq_createslot(v, -3);
+					
+					sq_pushstring(v, L"_set", -1);
+					sq_newclosure(v, set, 0);
+					sq_createslot(v, -3);
+					
+					sq_pushstring(v, L"_call", -1);
+					if (dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch) == TJS_S_TRUE) {
+						sq_newclosure(v, callConstructor, 0);
+					} else {
+						sq_newclosure(v, callMethod, 0);
+					}
+					sq_createslot(v, -3);
+					
+					sq_setdelegate(v, -2);
 				}
-				sq_createslot(v, -3);
-				
-				sq_setdelegate(v, -2);
 			} else {
 				sq_pushnull(v);
 			}
