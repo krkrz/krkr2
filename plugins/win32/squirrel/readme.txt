@@ -25,9 +25,13 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
 
   TJS2 オブジェクト(iTJSDispatch2*) は、Squirrel では UserData として
   参照可能で、メタメソッド get/set/call を通じて操作可能です。
-  クラスも参照できますがこれを squirrel で継承することはできません。
-　クラスを call した場合は、TJS2 側でインスタンスが作成され、
+　クラスオブジェクトを call した場合は、TJS2 側でインスタンスが作成され、
 　それを UserData で参照したものが帰ります。
+
+　squirrel側で createClass することで、TJSのクラスを Squirrel 
+　側で継承可能な状態で取り扱うことができるようになります。
+  登録されたクラスの TJSインスタンスは、Squirrel 側に渡すさいに、
+　UserData ではなく、該当クラスのインスタンスとして処理されるようになります。
 
   squirrel オブジェクトは、TJS2 側では iTJSDispatch2 として参照可能で、
 　PropGet/PropSet/FuncCall/CreateNew を通じて操作可能です。
@@ -35,10 +39,6 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
 
   Scripts.registSQ() で TJS2 の値を squirrel 側に登録できます。
 
-  Scripts.registClassSQ() で、TJS2のクラスと対応した squirrel クラスを
-  作ることができます。これで登録したクラスは Object（内部クラス) を
-　継承した状態となりさらにこれを継承して新たなクラスを作ることが可能です。
-  
 ・TJS2 のグローバル空間を Squirrel 側から "::krkr" で参照できます。
 
 ・Squirrel のグローバル空間を TJS2 側から "sqglobal" で参照できます。
@@ -75,7 +75,12 @@ Squirrel のglobalファンクションを直接呼び出す Continuous Handler を
 TJS2 ラッピングによる余分な負荷なしに呼び出し処理を行うことができます。
 詳細は manual.tjs を参照してください。
 
-◇スレッド拡張
+◇吉里吉里クラスの squirrelクラス化
+
+吉里吉里のクラスを squirrel のクラスとして継承可能な状態で
+扱うことができます。詳細は manual.nut を参照してください。
+
+◇スレッド拡張他
 
 squirrelによる複数のスレッドの並列実行処理が実装されています。
 このために利用できる内部クラス Object / Thread が定義されています。
