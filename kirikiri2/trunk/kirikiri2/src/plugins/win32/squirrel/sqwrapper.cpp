@@ -515,6 +515,19 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 				}
 			}
 			break;
+		case OT_CLASS:
+			{
+				// TJSベースインスタンスだった場合
+				iTJSDispatch2 *dispatch = TJSObject::getDispatch(v, idx);
+				if (dispatch) {
+					// TJSベースのインスタンス
+					*result = tTJSVariant(dispatch);
+				} else {
+					wrap(v, idx, result);
+				}
+				break;
+			}
+			break;
 		case OT_INSTANCE:
 			{
 				// TJSベースインスタンスだった場合
@@ -535,7 +548,6 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 		case OT_GENERATOR:
 		case OT_USERPOINTER:
 		case OT_THREAD:
-		case OT_CLASS:
 		case OT_WEAKREF:
 			wrap(v, idx, result);
 			break;
