@@ -7,6 +7,7 @@
 #include "tp_stub.h"
 #include <squirrel.h>
 #include "sqtjsobj.h"
+#include <new>
 
 // sqfunc.cpp
 extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
@@ -240,29 +241,42 @@ public:
 
 
 //----------------------------------------------------------------------------
-// iTJSDispatch2 を UserData として保持するための機構
+// tTJSVariant を UserData として保持するための機構
 //----------------------------------------------------------------------------
 
 /**
- * iTJSDispatch2 用オブジェクト開放処理
+ * tTJSVariant用オブジェクト開放処理
  */
 static SQRESULT
-tjsDispatchRelease(SQUserPointer up, SQInteger size)
+variantRelease(SQUserPointer up, SQInteger size)
 {
-	iTJSDispatch2 *dispatch	= *((iTJSDispatch2**)up);
-	dispatch->Release();
-	return 1;
+	tTJSVariant *self = (tTJSVariant*)up;
+	if (self) {
+		self->~tTJSVariant();
+	}
+	return SQ_OK;
 }
 
 static const SQUserPointer TJSTYPETAG = (SQUserPointer)"TJSTYPETAG";
 
 // iTJSDispatch2* 取得用
-static iTJSDispatch2* GetDispatch(HSQUIRRELVM v, int idx)
+static bool GetVariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 {
 	SQUserPointer otag;
 	SQUserPointer up;
 	if (SQ_SUCCEEDED(sq_getuserdata(v,idx,&up,&otag)) && otag == TJSTYPETAG) {
-		return *((iTJSDispatch2**)up);
+		*result = *(tTJSVariant*)up;
+		return true;
+	}
+	return false;
+}
+
+// iTJSDispatch2* 取得用
+static iTJSDispatch2 *GetDispatch(HSQUIRRELVM v, int idx)
+{
+	tTJSVariant var;
+	if (GetVariant(v, idx, &var)) {
+		return var.AsObjectNoAddRef();
 	}
 	return NULL;
 }
@@ -274,11 +288,11 @@ static iTJSDispatch2* GetDispatch(HSQUIRRELVM v, int idx)
 static SQRESULT
 get(HSQUIRRELVM v)
 {
-	iTJSDispatch2 *dispatch = GetDispatch(v, 1);
-	if (dispatch) {
+	tTJSVariant instance;
+	if (GetVariant(v, 1, &instance)) {
 		tTJSVariant result;
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = dispatch->PropGet(0, sqobject::getString(v, 2), NULL, &result, dispatch))) {
+		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropGet(0, sqobject::getString(v, 2), NULL, &result, NULL))) {
 			sq_pushvariant(v, result);
 			return 1;
 		} else {
@@ -295,12 +309,12 @@ get(HSQUIRRELVM v)
 static SQRESULT
 set(HSQUIRRELVM v)
 {
-	iTJSDispatch2 *dispatch	= GetDispatch(v, 1);
-	if (dispatch) {
+	tTJSVariant instance;
+	if (GetVariant(v, 1, &instance)) {
 		tTJSVariant result;
 		sq_getvariant(v, 3, &result);
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = dispatch->PropSet(TJS_MEMBERENSURE, sqobject::getString(v, 2), NULL, &result, dispatch))) {
+		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, sqobject::getString(v, 2), NULL, &result, NULL))) {
 			return SQ_OK;
 		} else {
 			return ERROR_KRKR(v, error);
@@ -322,10 +336,10 @@ callConstructor(HSQUIRRELVM v)
 
 	iTJSDispatch2 *dispatch	= GetDispatch(v, 1);
 	if (dispatch) {
-		
+
 		// this を取得
 		iTJSDispatch2 *thisobj = GetDispatch(v, 2);
-
+		
 		int argc = sq_gettop(v) - 2;
 		
 		// 引数変換
@@ -423,41 +437,40 @@ sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 		sq_pushnull(v);
 		break;
 	case tvtObject:
-		{
-			iTJSDispatch2 *dispatch = variant.AsObject();
-			if (dispatch) {
-				if (!TJSObject::pushDispatch(v, dispatch)) {
-					// UserData 確保
-					SQUserPointer up = sq_newuserdata(v, sizeof *dispatch);
-					*((iTJSDispatch2**)up) = dispatch;
-					
-					// タグ登録
-					sq_settypetag(v, -1, TJSTYPETAG);
-					
-					// 開放ロジックを追加
-					sq_setreleasehook(v, -1, tjsDispatchRelease);
-					
-					// メソッド群を追加
-					sq_newtable(v);
-					
-					sq_pushstring(v, L"_get", -1);
-					sq_newclosure(v, get, 0);
-					sq_createslot(v, -3);
-					
-					sq_pushstring(v, L"_set", -1);
-					sq_newclosure(v, set, 0);
-					sq_createslot(v, -3);
-					
-					sq_pushstring(v, L"_call", -1);
-					if (dispatch->IsInstanceOf(0, NULL, NULL, L"Class", dispatch) == TJS_S_TRUE) {
-						sq_newclosure(v, callConstructor, 0);
-					} else {
-						sq_newclosure(v, callMethod, 0);
-					}
-					sq_createslot(v, -3);
-					
-					sq_setdelegate(v, -2);
+		if (!TJSObject::pushVariant(v, variant)) {
+
+			// UserData 確保
+			tTJSVariant *self = (tTJSVariant*)sq_newuserdata(v, sizeof tTJSVariant);
+			if (self) {
+				new (self) tTJSVariant();
+				*self = variant;
+				// 開放ロジックを追加
+				sq_setreleasehook(v, -1, variantRelease);
+				
+				// タグ登録
+				sq_settypetag(v, -1, TJSTYPETAG);
+				
+				
+				// メソッド群を追加
+				sq_newtable(v);
+				
+				sq_pushstring(v, L"_get", -1);
+				sq_newclosure(v, get, 0);
+				sq_createslot(v, -3);
+				
+				sq_pushstring(v, L"_set", -1);
+				sq_newclosure(v, set, 0);
+				sq_createslot(v, -3);
+				
+				sq_pushstring(v, L"_call", -1);
+				if (self->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Class", NULL) == TJS_S_TRUE) {
+					sq_newclosure(v, callConstructor, 0);
+				} else {
+					sq_newclosure(v, callMethod, 0);
 				}
+				sq_createslot(v, -3);
+				
+				sq_setdelegate(v, -2);
 			} else {
 				sq_pushnull(v);
 			}
@@ -505,41 +518,16 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 		case OT_BOOL:    { SQBool b; sq_getbool(v, idx, &b);        *result = b != SQFalse; } break;
 		case OT_STRING:  { const SQChar *c; sq_getstring(v, idx, &c); *result = c; } break;
 		case OT_USERDATA:
-			{
-				iTJSDispatch2 *dispatch = GetDispatch(v, idx);
-				if (dispatch) {
-					// 元々吉里吉里側から渡されたデータ
-					*result = tTJSVariant(dispatch, dispatch);
-				} else {
-					wrap(v, idx, result);
-				}
+			if (!GetVariant(v, idx, result)) {
+				wrap(v, idx, result);
 			}
 			break;
 		case OT_CLASS:
-			{
-				// TJSベースインスタンスだった場合
-				iTJSDispatch2 *dispatch = TJSObject::getDispatch(v, idx);
-				if (dispatch) {
-					// TJSベースのインスタンス
-					*result = tTJSVariant(dispatch);
-				} else {
-					wrap(v, idx, result);
-				}
-				break;
+		case OT_INSTANCE:
+			if (!TJSObject::getVariant(v, idx, result)) {
+				wrap(v, idx, result);
 			}
 			break;
-		case OT_INSTANCE:
-			{
-				// TJSベースインスタンスだった場合
-				iTJSDispatch2 *dispatch = TJSObject::getDispatch(v, idx);
-				if (dispatch) {
-					// TJSベースのインスタンス
-					*result = tTJSVariant(dispatch, dispatch);
-				} else {
-					wrap(v, idx, result);
-				}
-				break;
-			}
 			// through down
 		case OT_TABLE:
 		case OT_ARRAY:

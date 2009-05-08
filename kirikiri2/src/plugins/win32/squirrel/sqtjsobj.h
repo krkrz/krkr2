@@ -25,15 +25,17 @@ public:
 	 * スタックからの吉里吉里オブジェクトの取得
 	 * @param v squirrelVM
 	 * @param idx インデックス
-	 * @return 吉里吉里ディスパッチャ
+	 * @param variant 格納先
+	 * @return 格納成功したら true
 	 */
-	static iTJSDispatch2 *getDispatch(HSQUIRRELVM v, int idx);
+	static bool getVariant(HSQUIRRELVM v, int idx, tTJSVariant *variant);
 
 	/**
 	 * スタックへの吉里吉里オブジェクトの登録
+	 * @parma variant オブジェクト
 	 * @return 登録成功したら true
 	 */
-	static bool pushDispatch(HSQUIRRELVM v, iTJSDispatch2 *dispatch);
+	static bool pushVariant(HSQUIRRELVM v, tTJSVariant &variant);
 
 	// ---------------------------------------------------------------
 	
@@ -100,7 +102,7 @@ protected:
 
 	// コンストラクタ
 	// インスタンスを返す場合用
-	TJSObject(HSQUIRRELVM v, iTJSDispatch2 *dispatch);
+	TJSObject(HSQUIRRELVM v, tTJSVariant &instance);
 	
 	// デストラクタ
 	~TJSObject();
@@ -121,7 +123,7 @@ protected:
 
 private:
 	// 処理対象オブジェクト
-	iTJSDispatch2 *dispatch;
+	tTJSVariant instance;
 
 	// 登録されたクラスの名前マップ
 	static sqobject::ObjectInfo classMap;
