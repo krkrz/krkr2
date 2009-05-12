@@ -66,6 +66,11 @@ public:
 	 */
 	void initSelf(HSQUIRRELVM v, int idx=1);
 
+	/**
+	 * ”jŠüˆ——p
+	 */
+	void destructor();
+
 public:
 	
 	// ------------------------------------------------------------------

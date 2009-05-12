@@ -982,7 +982,7 @@ static SQInteger string_mbsubstr(HSQUIRRELVM v)
 		sidx += n;
 	}
 	eidx = sidx;
-	while (idx < eidx && (n = _mbnext(strP,eidx)) > 0) {
+	while (idx < mbeidx && (n = _mbnext(strP,eidx)) > 0) {
 		idx++;
 		eidx += n;
 	}

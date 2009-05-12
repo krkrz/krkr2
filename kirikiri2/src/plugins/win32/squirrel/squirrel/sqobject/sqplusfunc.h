@@ -9,7 +9,11 @@
 template <typename T>
 struct SQTemplate {
   static SQRESULT release(SQUserPointer up, SQInteger size) {
-	if (up) { delete (T*)up; }
+	T* self = (T*)up;
+	if (self){ 
+	  self->destructor();
+	  delete self;
+	}
 	return SQ_OK;
   }
   static SQRESULT _constructor(HSQUIRRELVM v, T *data) {

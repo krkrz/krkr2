@@ -164,8 +164,11 @@ public:
 	static SQRESULT release(SQUserPointer up, SQInteger size) {
 		if (up) {
 			T* self = (T*)up;
-			self->~T();
-			sq_free(up, size);
+			if (self) {
+				self->destructor();
+				self->~T();
+				sq_free(up, size);
+			}
 		}
 		return SQ_OK;
 	}
