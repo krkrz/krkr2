@@ -160,6 +160,10 @@ SQInstance::SQInstance(SQSharedState *ss, SQInstance *i, SQInteger memsize)
 
 void SQInstance::Finalize() 
 {
+	// call release hook before remove class
+	_uiRef++;
+	if (_hook) { _hook(_userpointer,0); _hook=NULL; }
+	_uiRef--;
 	SQUnsignedInteger nvalues = _class->_defaultvalues.size();
 	__ObjRelease(_class);
 	for(SQUnsignedInteger i = 0; i < nvalues; i++) {
