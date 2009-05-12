@@ -34,6 +34,12 @@ class Object {
 	constructor(delegate=null);
 
 	/**
+	 * デストラクタ
+	 * 定義してあるとオブジェクト破棄直前に呼び出されます
+	 */
+    function destructor();
+  
+	/**
 	 * このオブジェクトに対する委譲を設定します(コンストラクタ指定と同機能)
 	 * @param delegate 委譲先オブジェクト
 	 */

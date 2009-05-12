@@ -173,7 +173,8 @@ TJSObject::createClass(HSQUIRRELVM v)
 	for (int i=top;i>1;i--) {
 		if ((tjsClassName = sqobject::getString(v,i))) {
 			TVPExecuteExpression(tjsClassName, &tjsClassObj);
-			if (TJS_SUCCEEDED(tjsClassObj.AsObjectClosureNoAddRef().IsInstanceOf(0,NULL,NULL,L"Class",NULL))) {
+			if (tjsClassObj.Type() == tvtObject &&
+				TJS_SUCCEEDED(tjsClassObj.AsObjectClosureNoAddRef().IsInstanceOf(0,NULL,NULL,L"Class",NULL))) {
 				MemberRegister r(v, tjsClassObj);
 				tTJSVariantClosure closure(&r);
 				tjsClassObj.AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
@@ -317,7 +318,10 @@ SQRESULT
 TJSObject::release(SQUserPointer up, SQInteger size)
 {
 	TJSObject *self = (TJSObject*)up;
-	delete self;
+	if (self) {
+		self->destructor();
+		delete self;
+	}
 	return SQ_OK;
 }
 
@@ -334,13 +338,9 @@ TJSObject::tjsConstructor(HSQUIRRELVM v)
 	TJSObject *self = new TJSObject(v);
 	if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {
 		sq_setreleasehook(v, 1, release);
-	} else {
-		delete self;
-	}
-	if (SQ_SUCCEEDED(result)) {
 		// ÉNÉâÉXÇê∂ê¨Ç∑ÇÈ
 		tTJSVariant tjsClassObj;
-		if (SQ_SUCCEEDED(sq_getvariant(v, -1, &tjsClassObj))) {
+		if (SQ_SUCCEEDED(sq_getvariant(v, -1, &tjsClassObj)) && tjsClassObj.Type() == tvtObject) {
 			// à¯êîïœä∑
 			int argc = sq_gettop(v) - 2;
 			tTJSVariant **args = NULL;
@@ -368,11 +368,12 @@ TJSObject::tjsConstructor(HSQUIRRELVM v)
 				}
 				delete[] args;
 			}
-		} else {
-			result = ERROR_CREATE(v);
+			return result;
 		}
+	} else {
+		delete self;
 	}
-	return result;
+	return ERROR_CREATE(v);
 }
 
 /**
@@ -385,7 +386,7 @@ SQRESULT
 TJSObject::tjsInvoker(HSQUIRRELVM v)
 {
 	tTJSVariant instance;
-	if (getVariant(v,1,&instance)) {
+	if (getVariant(v,1,&instance) && instance.Type() == tvtObject) {
 		
 		// à¯êîïœä∑
 		int argc = sq_gettop(v) - 2;
@@ -433,7 +434,7 @@ SQRESULT
 TJSObject::tjsGetter(HSQUIRRELVM v)
 {
 	tTJSVariant instance;
-	if (getVariant(v,1,&instance)) {
+	if (getVariant(v,1,&instance) && instance.Type() == tvtObject) {
 		tTJSVariant result;
 		tjs_error error;
 		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropGet(0, sqobject::getString(v, -1), NULL, &result, NULL))) {
@@ -456,7 +457,7 @@ SQRESULT
 TJSObject::tjsSetter(HSQUIRRELVM v)
 {
 	tTJSVariant instance;
-	if (getVariant(v,1,&instance)) {
+	if (getVariant(v,1,&instance) && instance.Type() == tvtObject) {
 		tTJSVariant result;
 		sq_getvariant(v, 2, &result);
 		tjs_error error;
@@ -480,7 +481,7 @@ SQRESULT
 TJSObject::tjsStaticInvoker(HSQUIRRELVM v)
 {
 	tTJSVariant tjsClassObj;
-	if (SQ_SUCCEEDED(sq_getvariant(v, -2, &tjsClassObj))) {
+	if (SQ_SUCCEEDED(sq_getvariant(v, -2, &tjsClassObj)) && tjsClassObj.Type() == tvtObject) {
 		// à¯êîïœä∑
 		int argc = sq_gettop(v) - 3;
 		tTJSVariant **args = NULL;
@@ -527,7 +528,7 @@ SQRESULT
 TJSObject::tjsStaticGetter(HSQUIRRELVM v)
 {
 	tTJSVariant tjsClassObj;
-	if (SQ_SUCCEEDED(sq_getvariant(v, -2, &tjsClassObj))) {
+	if (SQ_SUCCEEDED(sq_getvariant(v, -2, &tjsClassObj)) && tjsClassObj.Type() == tvtObject) {
 		tTJSVariant result;
 		tjs_error error;
 		if (TJS_SUCCEEDED(error = tjsClassObj.AsObjectClosureNoAddRef().PropGet(0, sqobject::getString(v, -1), NULL, &result, NULL))) {
@@ -551,7 +552,7 @@ SQRESULT
 TJSObject::tjsStaticSetter(HSQUIRRELVM v)
 {
 	tTJSVariant tjsClassObj;
-	if (SQ_SUCCEEDED(sq_getvariant(v, -2, &tjsClassObj))) {
+	if (SQ_SUCCEEDED(sq_getvariant(v, -2, &tjsClassObj)) && tjsClassObj.Type() == tvtObject) {
 		tTJSVariant result;
 		sq_getvariant(v, 2, &result);
 		tjs_error error;
