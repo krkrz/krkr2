@@ -941,6 +941,7 @@ NCB_ATTACH_FUNCTION(getDiffRect, Layer, GetDiffRect);
  * @param base 差分元となるベース用の画像（インスタンス自身と同じ画像サイズであること）
  * @param samecol 同じ場合に塗りつぶす色(0xAARRGGBB)（void・省略なら塗りつぶさない）
  * @param diffcol 違う場合に塗りつぶす色(0xAARRGGBB)（void・省略なら塗りつぶさない）
+ * @return 違うピクセルのカウント
  */
 
 static tjs_error TJS_INTF_METHOD
@@ -948,6 +949,7 @@ GetDiffPixel(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDi
 {
 	DWORD scol = 0, dcol = 0;
 	bool sfill = false, dfill = false;
+	tTVInteger count = 0;
 
 	// 引数の数チェック
 	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
@@ -980,10 +982,11 @@ GetDiffPixel(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDi
 	for (long y = 0; (fp=fr, tp=tr, y < h); y++, fr+=fnl, tr+=tnl) {
 		for (long x = 0; x < w; x++, fp+=nc, tp+=nc) {
 			bool same = IS_SAME_COLOR(fp[3],fp[2],fp[1],fp[0], tp[3],tp[2],tp[1],tp[0]);
-			if (      same && sfill) *(DWORD*)tp = scol;
-			else if (!same && dfill) *(DWORD*)tp = dcol;
+			if (      same &&     sfill) *(DWORD*)tp = scol;
+			else if (!same) { if (dfill) *(DWORD*)tp = dcol; count++; }
 		}
 	}
+	if (result) *result = count;
 
 	return TJS_S_OK;
 }
