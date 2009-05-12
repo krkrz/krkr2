@@ -143,6 +143,15 @@ Object::initSelf(HSQUIRRELVM v, int idx)
 }
 
 /**
+ * 終了時処理
+ */
+void
+Object::destructor()
+{
+	callEvent(_SC("destructor"));
+}
+
+/**
  * このオブジェクトを待っている１スレッドの待ちを解除
  */
 void
