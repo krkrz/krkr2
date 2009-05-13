@@ -6204,7 +6204,7 @@
 		<attrib name="layer">
 			<shortinfo> 対象レイヤ </shortinfo>
 			<required> no </required>
-			<format> "base" または 0 以上の整数2 また
+			<format> "base" または 0 以上の整数 また
 			は message0 または message1 または message</format>
 			<info>
 				　対象となるレイヤを指定します。<BR>
