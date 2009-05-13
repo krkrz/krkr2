@@ -9,7 +9,7 @@
 KAGEX のレイヤ拡張機能のサンプルです。レイヤに対して回転・拡大縮小の制御ができます。
 [l][r]
 
-[image layer=stage page=fore storage="bg01_01"  visible=true left=0 top=0]
+[image layer=base page=fore storage="bg01_01"  visible=true left=0 top=0]
 [image layer=0     page=fore storage="ch_0_0_1" visible=true left=400 top=450 dafx=center dafy=center]
 [cm]
 
@@ -100,26 +100,19 @@ X拡大
 *label10|くるくるまわる
 
 [layopt layer=0 reset]
-[action layer=stage module=LayerNormalRotateModule angvel=-200]
 [action layer=0 module=LayerNormalRotateModule angvel=100]
 くるくるまわる
 [l][r]
 
 *label11|拡大率
 
-[layopt layer=stage reset]
 [layopt layer=0 reset]
 [action layer=0 module=LayerNormalZoomModule zoom=150 time=1000]
 キャラをズーム（時間指定）
 [l][r]
 
-[action layer=stage module=LayerNormalZoomModule zoom=150 time=1000]
-背景もズーム（時間指定）
-[l][r]
-
 *label12|ズーム回転
 
-[layopt layer=stage reset]
 [layopt layer=0 reset]
 [action layer=0 module=LayerVRotateZoomModule angvel=100]
 ズームを利用した回転っぽいなにか
@@ -137,6 +130,21 @@ X拡大
 [layopt layer=0 reset]
 [action layer=0 module=LayerFadeModeModule intime=1000 outtime=1000]
 フェード点滅
+[l][r]
+
+*label15|動画レイヤテスト
+
+[layopt layer=0 reset]
+[image layer=1 movie=test.mpg alpha=2 loop visible=true dafx=center dafy=center left=400 top=300]
+動画ロード
+[l][r]
+
+[layopt layer=1 zoom=50 time=1000]
+ズーム変更
+[l][r]
+
+[layopt layer=1 rotate=120 time=1000]
+回転
 [l][r]
 
 [jump storage=s0001.ks]
