@@ -135,7 +135,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 	 * 遅延タグの展開
 	 * @param value 数値ならtick 文字列ならラベル
 	 */
-	function extractDelay(value) {
+	function extractDelay(value, all=false) {
 		//if (delaytags.count > 0) {
 		//    dm("遅延タグ解放:" + value);
 		//}
@@ -144,7 +144,8 @@ class BaseConductor extends global.BaseConductorExtendClass
 			var obj = delaytags[i];
 			var isTick   = typeof value == "Integer";
 			var isNumber = typeof obj.delayrun == "Integer";
-			if (value === void ||
+			if (all ||
+				(value === void && !obj.nodelaydone) ||
 				obj.delayrun === void ||
 				(isTick && isNumber && obj.delayrun - value <= 0) ||
 				(!isTick && !isNumber && (obj.delayrun == value || value == "*"))) {
@@ -318,7 +319,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 
 					// 遅延実行のキャンセル
 					if (obj.tagname == "delaydone") {
-						extractDelay();
+						extractDelay(void, obj.all);
 						continue;
 					}
 					

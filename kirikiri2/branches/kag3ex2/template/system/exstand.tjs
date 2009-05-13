@@ -67,10 +67,10 @@ class ExStandInfoParser extends CSVParser
 			var filename = columns[2];
 			var xoffset  = +columns[3];
 			var yoffset  = +columns[4];
-			var facezoom = columns.count > 5 &&  columns[5].trim() > 0 ? +columns[5] : 100;
-			var facexoff = columns.count > 6 &&  columns[6].trim() > 0 ? +columns[6] : 0;
-			var faceyoff = columns.count > 7 &&  columns[7].trim() > 0 ? +columns[7] : 0;
-			var emoRev   = columns.count > 8 &&  columns[8].trim() > 0 ? +columns[8] : 0;
+			var facezoom = columns.count > 5 &&  columns[5].trim().length > 0 ? +columns[5] : 100;
+			var facexoff = columns.count > 6 &&  columns[6].trim().length > 0 ? +columns[6] : 0;
+			var faceyoff = columns.count > 7 &&  columns[7].trim().length > 0 ? +columns[7] : 0;
+			var emoRev   = columns.count > 8 &&  columns[8].trim().length > 0 ? +columns[8] : 0;
 
 			var infofile = filename + "_info.txt"; 
 			if (!Storages.isExistentStorage(infofile)) {
@@ -1775,8 +1775,15 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		if (pose !== void && dress !== void && diff !== void && face !== void) {
 			var standInfo = getStandInfo(pose);
 			var standlayer = getStandLayer(pose, faceLevelName);
-			var info = standlayer.getPropInfo("顔領域");
+			var info = standlayer.getPropInfo(dress + "顔領域");
+			if (info === void) {
+				info = standlayer.getPropInfo("顔領域");
+				//dm("通常顔領域");
+			} else {
+				//dm(dress + "顔領域 発見");
+			}
 			if (info !== void) {
+				//dm("顔領域:%d %d %d %d".sprintf(info.left, info.top, info.width, info.height));
 				standlayer.setDress(dress);
 				standlayer.setDiff(diff);
 				standlayer.setAdd(addimage, true);
@@ -1810,19 +1817,39 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					}
 				} else {
 					// faceLayerがRelativeLayer前提
+					//dm("%s:表情表示 %d %d %d\n".sprintf(name, standInfo.facexoff, standInfo.faceyoff, standInfo.facezoom));
+
 					var left  = info.left + standInfo.facexoff;
 					var top   = info.top;
 					var width = info.width;
 					var height = info.height + standInfo.faceyoff;
-					var dwidth = width * standInfo.facezoom / 100;
-					var dheight = height * standInfo.facezoom / 100;
+
+					if (left < 0) {
+						width += left;
+						left = 0;
+					}
+					if (top < 0) {
+						height += top;
+						top = 0;
+					}
+					if (left+width >= standlayer.width) {
+						width -= (left+width - standlayer.width);
+					}
+					if (top+height >= standlayer.height) {
+						height -= (top+height - standlayer.height);
+					}
+
+					var dwidth = width * standInfo.facezoom / 100.0;
+					var dheight = height * standInfo.facezoom / 100.0;
 					
+					//dm("%s:表情表示 %d %d %d %d  %d %d\n".sprintf(name,left,top,width,height, standlayer.width, standlayer.height));
+
 					with (layer) {
 						.setImageSize(dwidth, dheight);
 						.setSizeToImageSize();
 						.repos() if (typeof .repos == "Object");
 						.fillRect(0,0,.width,.height,0);
-						.stretchCopy(0, 0, dwidth, dheight, standlayer, left, top, width, height);
+						.stretchCopy(0, 0, dwidth, dheight, standlayer, left, top, width, height, stCubic);
 					}
 				}
 				layer.visible = true;

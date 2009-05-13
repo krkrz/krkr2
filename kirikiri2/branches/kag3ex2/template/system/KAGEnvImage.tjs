@@ -1205,6 +1205,31 @@ class KAGEnvImage {
 			return +value;
 		}
 	}
+
+	function updatePropMoveAction(action, prop, thisprop) {
+		if (thisprop === void) {
+			thisprop = prop;
+		}
+		var info = action[prop];
+		if (info !== void && info.handler == "MoveAction") {
+			if (info.value !== void) {
+				info.value = getRelative(info.value, this[thisprop]);
+			}
+		}
+	}
+
+	function updateMoveAction(action) {
+		if (action.module !== void) {
+			// 旧スタイルアクションは無視の方向
+			return;
+		}
+		updatePropMoveAction(action, "opacity");
+		updatePropMoveAction(action, "rotate");
+		updatePropMoveAction(action, "zoom");
+		updatePropMoveAction(action, "raster");
+		updatePropMoveAction(action, "left", "xpos");
+		updatePropMoveAction(action, "top",  "ypos");
+	}
 	
 	function applyPropMoveAction(action, prop, thisprop) {
 		if (thisprop === void) {
@@ -1213,11 +1238,11 @@ class KAGEnvImage {
 		var info = action[prop];
 		if (info !== void && info.handler == "MoveAction") {
 			if (info.value !== void) {
-				this[thisprop] = getRelative(info.value, this[thisprop]);
+				this[thisprop] = info.value;
 			}
 		}
 	}
-	
+
 	function applyMoveAction(action) {
 		if (action.module !== void) {
 			// 旧スタイルアクションは無視の方向
@@ -1229,6 +1254,7 @@ class KAGEnvImage {
 		applyPropMoveAction(action, "raster");
 		applyPropMoveAction(action, "left", "xpos");
 		applyPropMoveAction(action, "top",  "ypos");
+		//dm("%s:アクション強制適応後位置:%d,%d".sprintf(name,xpos, ypos));
 	}
 
 	function updateSkip() {
@@ -1237,8 +1263,12 @@ class KAGEnvImage {
 			for (var i=0;i<actionList.count;i++) {
 				var action = actionList[i];
 				if (action instanceof "Dictionary") {
+					updateMoveAction(action);
 					applyMoveAction(action);
 				} else if (action instanceof "Array") {
+					for (var j=0;j<action.count;j++) {
+						updateMoveAction(action[j]);
+					}
 					for (var j=0;j<action.count;j++) {
 						applyMoveAction(action[j]);
 					}
@@ -1333,6 +1363,7 @@ class KAGEnvImage {
 	sync : null, // 無視
 	nosync : null, // 無視
 	nowait : null, // 無視
+	nodelaydone: null, // 無視
 	waitmovie : null,
 	waitanime : null,
 		];

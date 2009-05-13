@@ -254,13 +254,13 @@ class Movie extends VideoOverlay
 		super.close();
 	}
 
-	var _left, _top, _offsetx, _offsety;
+	var _left, _top, _boundWidth, _boundHeight, _offsetx, _offsety;
 	property offsetx { getter { return (mode == vomMixer || mode == vomOverlay) ? _offsetx : 0; } }
 	property offsety { getter { return (mode == vomMixer || mode == vomOverlay) ? _offsety : 0; } }
 	property left { getter { return _left; } setter(v) { super.left = (_left = v) + offsetx; } }
 	property top  { getter { return _top;  } setter(v) { super.top  = (_top  = v) + offsety; } }
 	function setBounds(x, y, w, h) {
-		return super.setBounds((_left=x) + offsetx, (_top=y) + offsety, w, h);
+		return super.setBounds((_left=x) + offsetx, (_top=y) + offsety, (_boundWidth=w), (_boundHeight =h));
 	}
 
 	function setOptions(elm)
@@ -299,6 +299,8 @@ class Movie extends VideoOverlay
 				mode = vomOverlay;
             }
 			dm("video mode:" + ((mode == vomOverlay) ? "overlay" : (mode == vomMixer) ? "mixer" : (mode == vomLayer) ? "layer" : "unknown"));
+
+			layerResizeMode = (mode == vomLayer && elm.laystretch);
 		}
 		playRate = +elm.playrate if elm.playrate !== void;
 		if (elm.volume !== void) audioVolume  = +elm.volume * 1000;
@@ -312,6 +314,55 @@ class Movie extends VideoOverlay
 	var _audioVolume, _audioBalance;
 	property audioVolume  { setter(v) { _audioVolume  = v; try { super.audioVolume  = v; } catch {} } getter { return _audioVolume;  } }
 	property audioBalance { setter(v) { _audioBalance = v; try { super.audioBalance = v; } catch {} } getter { return _audioBalance; } }
+
+	var _layerResizeMode = false, _renderLayer;
+	property layerResizeMode {
+		getter { return _layerResizeMode; }
+		setter(v) {
+			_layerResizeMode = !!v;
+			if (v) {
+				_renderLayer = new global.Layer(owner, owner.primaryLayer);
+				with (_renderLayer) {
+					.name = "MovieRenderLayer";
+					.absolute = -99999999;
+					.visible = false;
+				}
+				super.layer1 = _renderLayer;
+				super.layer2 = null;
+				this.onFrameUpdate = this.layerResizeModeOnFrameUpdate;
+			} else {
+				super.layer1 = _layer1;
+				super.layer2 = _layer2;
+				invalidate _renderLayer if (_renderLayer !== void);
+				_renderLayer = void;
+				delete this.onFrameUpdate if (typeof this.onFrameUpdate == "Object");
+			}
+			dm("layerResizeMode", _layerResizeMode);
+		}
+	}
+	function layerResizeModeOnFrameUpdate() {
+		var rw, rh, bw = _boundWidth, bh = _boundHeight;
+		with (_renderLayer) {
+			.visible = false;
+			rw = .imageWidth;
+			rh = .imageHeight;
+		}
+		_layer1.stretchCopy(0, 0, bw, bh, _renderLayer, 0, 0, rw, rh, stNearest) if (_layer1 && isvalid _layer1);
+		_layer2.stretchCopy(0, 0, bw, bh, _renderLayer, 0, 0, rw, rh, stNearest) if (_layer2 && isvalid _layer2);
+	}
+	function layerResizeModeSetLayer(isOne, lay) {
+		if (_layerResizeMode) {
+			if (isOne) _layer1 = lay;
+			else       _layer2 = lay;
+			layerResizeMode = false if (!_layer1 && !_layer2);
+		} else {
+			if (isOne) super.layer1 = lay;
+			else       super.layer2 = lay;
+		}
+	}
+	var _layer1 = null, _layer2 = null;
+	property layer1 { getter { return _layerResizeMode ? _layer1 : super.layer1; } setter(v) { layerResizeModeSetLayer(true,  v); } }
+	property layer2 { getter { return _layerResizeMode ? _layer2 : super.layer2; } setter(v) { layerResizeModeSetLayer(false, v); } }
 
 	function setVideoLayer(layer,elm)
 	{
