@@ -227,6 +227,7 @@ class KAGWindow extends Window
 	function getVoicePlayingScript(result) {
 		var ret = "";
 		if (result !== void && result.count > 0) {
+			ret += "kag.mainConductor.extractDelay();";
 			ret += "global.world_object.env.stopAllVoice();";
 			for (var i=0;i<result.count;i++) {
 				var info = result[i];
@@ -1928,14 +1929,14 @@ class KAGWindow extends Window
 		saveSystemVariables();
     }
 
-    function onCancelAutoWhenSkipMenuItemClick(sender)
+    function onCancelAutoWhenClickMenuItemClick(sender)
     {
 		sender.checked = true;
 		cancelAutoWhenClick = sender.cancel;
 		saveSystemVariables();
     }
 
-    function onCancelSkipWhenSkipMenuItemClick(sender)
+    function onCancelSkipWhenClickMenuItemClick(sender)
     {
 		sender.checked = true;
 		cancelSkipWhenClick = sender.cancel;

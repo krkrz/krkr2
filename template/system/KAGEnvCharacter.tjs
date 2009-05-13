@@ -46,6 +46,10 @@ class BackVoiceTrack extends WaveSoundBuffer {
 			stop();
 		}
 	}
+
+	function onLabel(name) {
+		kag.conductor.extractDelay(name);
+	}
 };
 
 /**
@@ -613,10 +617,20 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	faceon : null,
 	faceoff : null,
 	loop : null,
-	bvoice : function(param, elm) { backVoiceName = param; backVoiceLoop=elm.loop !== void ? +elm.loop : true; updateFlag = true; } incontextof this
+	bvoice : this.setBVoice incontextof this
         ];
 
-    /**
+	
+	function setBVoice(param, elm) {
+		var loop = elm.loop !== void ? +elm.loop : true;
+		if (param == "" || loop || !kag.skipNoDisp) {
+			backVoiceName = param;
+			backVoiceLoop=loop;
+			updateFlag = true;
+		}
+	}
+
+	/**
      * ポーズ指定を優先処理する
      */
     function doPoseCommand(cmd, param, elm) {
@@ -1328,7 +1342,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      * ボイス開始時処理
      */
     function onStartVoice() {
-        //dm("ボイス開始ボリューム制御開始");
+		//dm("ボイス開始ボリューム制御開始");
         if (kag.bgmdown && !env.kag.skipMode) {
             kag.bgm.voldown = true;
 		}
@@ -1341,8 +1355,8 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      * ボイス停止時処理
      */
     function onStopVoice() {
-        //dm("ボイス開始ボリューム制御完了");
-        voiceEndTime = void;
+		//dm("ボイス開始ボリューム制御完了");
+		voiceEndTime = void;
 		if (kag.bgm.voldown) {
 			kag.bgm.voldown = false;
         }
@@ -1374,7 +1388,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     function playVoice(voicename=void) {
 		voiceEndTime = void;
 		var ret = void;
-
+		
 		if (!kag.skipNoDisp && voicename !== void && voicename != ""){
 			//dm("再生処理:" + voicename);
 			voicename = getVoicename(voicename);
@@ -1406,12 +1420,13 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
                     }
                 } catch (e) {
                 }
-            }
-        }
+			}
+		}
 		if (ret) {
             voiceEndTime = System.getTickCount() + ret;
 		} else {
 			kag.conductor.extractDelay("*");
+			onStopVoice();
 		}
         return ret;
     }
@@ -1501,9 +1516,13 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	 * ループボイス開始
 	 */
 	function startBackVoice() {
+		//dm("バックボイス再開");
 		if (backVoiceBuffer !== void) {
-			backVoiceBuffer.volume = 0;
-			backVoiceBuffer.play();
+			backVoiceBuffer.stopFade();
+			if (backVoiceBuffer.status != "play") {
+				backVoiceBuffer.volume = 0;
+				backVoiceBuffer.play();
+			}
 			backVoiceBuffer.fade(100000,300);
 		}
 	}

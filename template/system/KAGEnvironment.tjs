@@ -291,10 +291,6 @@ class KAGEnvironment extends KAGEnvImage {
 		time = f.time;
 		stage = f.stage;
 
-		stagelayers.assign(f.stagelayers) if (f.stagelayers !== void);
-		nostagelayer = f.nostagelayer;
-		initStageLayer(false, false);
-
         if (f.characters) {
 			foreach(f.characters, function(name, value, dict) {
 				var ch = getCharacter(value.name, value.initName);
@@ -314,6 +310,10 @@ class KAGEnvironment extends KAGEnvImage {
         if (f.event) {
             event.onRestore(f.event);
         }
+
+		stagelayers.assign(f.stagelayers) if (f.stagelayers !== void);
+		nostagelayer = f.nostagelayer;
+		initStageLayer(false, false);
 
 		// サウンド系情報復帰
 		if (f.ses !== void) {
