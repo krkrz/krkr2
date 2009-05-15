@@ -273,6 +273,13 @@ class DialogSliderLayer extends SliderLayer
             }
         }
     }
+
+	function onKeyDown(key, shift)
+	{
+		// ƒL[‚ª‰Ÿ‚³‚ê‚½
+		if(window.preProcessKeys(key, shift)) return;
+		return super.onKeyDown(...);
+	}
 }
 
 /**
