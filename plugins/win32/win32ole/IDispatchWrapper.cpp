@@ -315,7 +315,7 @@ IDispatchWrapper::Construct(iTJSDispatch2 *obj, VARIANT *pvarResult, int argc, V
 	}
 	
 	// ˆø””jŠü
-	for (i=0;i<argc;i++) {
+	for (int i=0;i<argc;i++) {
 		delete args[i];
 	}
 	delete[] args;
@@ -369,7 +369,7 @@ IDispatchWrapper::InvokeEx(iTJSDispatch2 *obj, const tjs_char *memberName, WORD 
 		}
 		
 		// ˆø””jŠü
-		for (i=0;i<argc;i++) {
+		for (int i=0;i<argc;i++) {
 			delete args[i];
 		}
 		delete[] args;
@@ -688,7 +688,7 @@ iTJSDispatch2Wrapper::Invoke(IDispatch *dispatch,
 	hr = dispatch->Invoke(dispId, IID_NULL, LOCALE_SYSTEM_DEFAULT, wFlags, &dispParams, &invokeResult, &excepInfo, NULL);
 	
 	// Œã•Ğ•t‚¯
-	for (i=0; i<numparams; i++) {
+	for (int i=0; i<numparams; i++) {
 		VariantClear(&dispParams.rgvarg[i]);
 	}
 	free(dispParams.rgvarg);

@@ -1,3 +1,5 @@
+#pragma comment (lib, "Urlmon.lib")
+
 #include <windows.h>
 #include "tp_stub.h"
 
