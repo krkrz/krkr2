@@ -298,7 +298,7 @@ class GdiPlus {
 		 *    isAngleScalable (角度指定がスケーラブルかどうか)
 		 *    mode: モード指定(省略時は LinearGradientModeHorizontal) angle 指定が無い場合に有効
 		 */
-		function addBrush(option, ox, oy);
+		function addBrush(colorOrBrush, ox, oy);
 		
 		/**
 		 * ペンの追加
@@ -321,7 +321,7 @@ class GdiPlus {
 		 *  lineJoin: 結合形状指定。 省略時は LineJoinMiter
 		 *  miterLimit: miter limit 指定（数値)
 		 */
-		function addPen(colorOrBrush, width, option, ox, oy);
+		function addPen(colorOrBrush, widthOrOption, ox, oy);
 	};
 
 	/*
