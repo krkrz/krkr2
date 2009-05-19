@@ -2,7 +2,7 @@
  * àÍî ìIÇ» sqobject é¿ëï
  * 
  * Object, Thread ÇÃìoò^èàóùÇÃé¿ëïó·Ç≈Ç∑ÅB
- * Thread ÇÕåpè≥ïsâ¬Ç≈ÅAObject ÇÕåpè≥ëŒè€ÇÇ∑Ç◊ÇƒÉäÉXÉgä«óùÇµÇƒëŒâûÇµÇƒÇ¢Ç‹Ç∑ÅB
+ * åpè≥èÓïÒÇÕíPèÉÉäÉXÉgä«óùÇµÇƒÇ‹Ç∑
  */
 #include <new>
 #include "sqobjectinfo.h"
@@ -388,6 +388,76 @@ ObjectInfo::getObject()
 #define SQCLASS(Class,Parent,typetag) SQTemplate<Class,Parent> cls(v,typetag)
 #define SQFUNC(Class, Name)   cls.Register(&Class::Name, _SC(#Name))
 #define SQVFUNC(Class, Name)  cls.RegisterV(&Class::Name, _SC(#Name))
+#define SQNFUNC(Class, Name) cls.Register(Class ## _ ## Name, _SC(#Name))
+
+#ifndef USE_SQOBJECT_TEMPLATE
+
+static SQRESULT Object_notify(HSQUIRRELVM v)
+{
+	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	if (instance) {
+		instance->notify();
+		return SQ_OK;
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Object_notifyAll(HSQUIRRELVM v)
+{
+	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	if (instance) {
+		instance->notifyAll();
+		return SQ_OK;
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Object_hasSetProp(HSQUIRRELVM v)
+{
+	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	if (instance) {
+		return instance->hasSetProp(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Object_setDelegate(HSQUIRRELVM v)
+{
+	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	if (instance) {
+		return instance->setDelegate(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Object_getDelegate(HSQUIRRELVM v)
+{
+	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	if (instance) {
+		return instance->getDelegate(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Object_get(HSQUIRRELVM v)
+{
+	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	if (instance) {
+		return instance->_get(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Object_set(HSQUIRRELVM v)
+{
+	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	if (instance) {
+		return instance->_set(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+#endif
 
 /**
  * ÉNÉâÉXÇÃìoò^
@@ -401,6 +471,7 @@ Object::registerClass()
 
 	SQCLASS(Object,BaseClass,OBJECTTYPETAG);
 
+#ifdef USE_SQOBJECT_TEMPLATE
 	SQFUNC(Object,notify);
 	SQFUNC(Object,notifyAll);
 	SQVFUNC(Object,hasSetProp);
@@ -410,10 +481,110 @@ Object::registerClass()
 	SQVFUNC(Object,_set);
 	cls.RegisterV(&Object::_get, _SC("get"));
 	cls.RegisterV(&Object::_set, _SC("set"));
-
+#else
+	SQNFUNC(Object,notify);
+	SQNFUNC(Object,notifyAll);
+	SQNFUNC(Object,hasSetProp);
+	SQNFUNC(Object,setDelegate);
+	SQNFUNC(Object,getDelegate);
+	cls.Register(Object_get, _SC("_get"));
+	cls.Register(Object_set, _SC("_set"));
+	SQNFUNC(Object,get);
+	SQNFUNC(Object,set);
+#endif
 	sq_createslot(v, -3); // ê∂ê¨ÇµÇΩÉNÉâÉXÇìoò^
 	sq_pop(v,1); // root
 };
+
+#ifndef USE_SQOBJECT_TEMPLATE
+
+static SQRESULT Thread_exec(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		return instance->exec(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Thread_exit(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		return instance->exit(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Thread_stop(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		instance->stop();
+		return SQ_OK;
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Thread_run(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		instance->run();
+		return SQ_OK;
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Thread_getCurrentTick(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		sq_pushinteger(v,instance->getCurrentTick());
+		return 1;
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Thread_getStatus(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		sq_pushinteger(v,instance->getStatus());
+		return 1;
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Thread_getExitCode(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		return instance->getExitCode(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Thread_wait(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		return instance->wait(v);
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+static SQRESULT Thread_cancelWait(HSQUIRRELVM v)
+{
+	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	if (instance) {
+		instance->cancelWait();
+		return SQ_OK;
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+#endif
 
 /**
  * ÉNÉâÉXÇÃìoò^
@@ -427,6 +598,7 @@ Thread::registerClass()
 
 	SQCLASS(Thread, Object, THREADTYPETAG);
 
+#ifdef USE_SQOBJECT_TEMPLATE
 	SQVFUNC(Thread,exec);
 	SQVFUNC(Thread,exit);
 	SQFUNC(Thread,stop);
@@ -436,7 +608,18 @@ Thread::registerClass()
 	SQVFUNC(Thread,getExitCode);
 	SQVFUNC(Thread,wait);
 	SQFUNC(Thread,cancelWait);
-
+#else
+	SQNFUNC(Thread,exec);
+	SQNFUNC(Thread,exit);
+	SQNFUNC(Thread,stop);
+	SQNFUNC(Thread,run);
+	SQNFUNC(Thread,getCurrentTick);
+	SQNFUNC(Thread,getStatus);
+	SQNFUNC(Thread,getExitCode);
+	SQNFUNC(Thread,wait);
+	SQNFUNC(Thread,cancelWait);
+#endif
+	
 	sq_createslot(v, -3);
 	sq_pop(v, 1); // root
 };

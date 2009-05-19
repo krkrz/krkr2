@@ -255,7 +255,7 @@ static SQRegFunction base_funcs[]={
 	{_SC("type"),base_type,2, NULL},
 	{_SC("dummy"),base_dummy,0,NULL},
 #ifndef NO_GARBAGE_COLLECTOR
-	{_SC("collectgarbage"),base_collectgarbage,1, _SC("t")},
+	{_SC("collectgarbage"),base_collectgarbage,1, _SC(".")},
 #endif
 	{0,0}
 };

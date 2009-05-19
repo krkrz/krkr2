@@ -28,13 +28,13 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
 　クラスオブジェクトを call した場合は、TJS2 側でインスタンスが作成され、
 　それを UserData で参照したものが帰ります。
 
-　squirrel側で createClass することで、TJSのクラスを Squirrel 
+　squirrel側で createTJSClass することで、TJSのクラスを Squirrel 
 　側で継承可能な状態で取り扱うことができるようになります。
-  登録されたクラスの TJSインスタンスは、Squirrel 側に渡すさいに、
+  登録されたクラスの TJSインスタンスは、Squirrel 側に渡す際に、
 　UserData ではなく、該当クラスのインスタンスとして処理されるようになります。
 
   squirrel オブジェクトは、TJS2 側では iTJSDispatch2 として参照可能で、
-　PropGet/PropSet/FuncCall/CreateNew を通じて操作可能です。
+  PropGet/PropSet/FuncCall/CreateNew を通じて操作可能です。
   incontextof 指定は無視されます。
 
   Scripts.registSQ() で TJS2 の値を squirrel 側に登録できます。
