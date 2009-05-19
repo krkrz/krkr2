@@ -1,3 +1,20 @@
+class Final extends Object {
+	constructor() {
+		::Object.constructor();
+	}
+	function test() {
+		print("call test");
+	}
+	function destructor() {
+		print("call destructor");
+	}
+};
+
+local f = Final();
+f.test();
+f = null;
+
+
 local a=10;
 local b = ::krkr.a;
 local c = ::krkr.b;
