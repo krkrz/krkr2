@@ -43,7 +43,7 @@ public:
 	 * 吉里吉里クラスから squirrel クラスを生成
 	 * @param v squirrelVM
 	 */
-	static SQRESULT createClass(HSQUIRRELVM v);
+	static SQRESULT createTJSClass(HSQUIRRELVM v);
 
 	// ---------------------------------------------------------------
 	

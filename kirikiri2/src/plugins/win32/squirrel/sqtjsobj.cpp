@@ -136,8 +136,8 @@ TJSObject::init(HSQUIRRELVM vm)
 	registerTypeTag(typeName, TJSOBJTYPETAG);
 	
 	sq_pushroottable(vm);
-	sq_pushstring(vm, _SC("createClass"), -1);
-	sq_newclosure(vm, createClass, 0);
+	sq_pushstring(vm, _SC("createTJSClass"), -1);
+	sq_newclosure(vm, createTJSClass, 0);
 	sq_createslot(vm, -3);
 	sq_pop(vm, 1);
 }
@@ -154,7 +154,7 @@ TJSObject::done()
  * @param HSQUIRRELVM v
  */
 SQRESULT
-TJSObject::createClass(HSQUIRRELVM v)
+TJSObject::createTJSClass(HSQUIRRELVM v)
 {
 	int top = sq_gettop(v);
 	if (top < 2) {

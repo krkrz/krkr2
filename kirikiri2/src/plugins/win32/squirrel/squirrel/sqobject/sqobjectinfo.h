@@ -177,6 +177,16 @@ public:
 		sq_createslot(gv, -3);
 		sq_pop(gv,1);
 	}
+
+	/// «‘‚©‚ç’l‚ğíœ
+	template<typename K>
+	void deleteslot(K key) {
+		HSQUIRRELVM gv = getGlobalVM();
+		push(gv);
+		pushValue(gv, key);
+		sq_deleteslot(gv, -2, SQFalse);
+		sq_pop(gv,1);
+	}
 	
 	/// ”z—ñ/«‘‚Ì’l‚ğæ“¾
 	template<typename K>

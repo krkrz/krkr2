@@ -12,4 +12,4 @@
  * またこの機能で作成した吉里吉里クラスのインスタンスが吉里吉里側から
  * 返される場合は、squirrel のクラスでのインスタンスとしてラッピングされます。
  */
-function createClass(className, ...);
+function createTJSClass(className, ...);
