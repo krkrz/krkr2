@@ -918,6 +918,12 @@ common_call:
                 continue;
 			case _OP_FOREACH:{ int tojump;
 				_GUARD(FOREACH_OP(STK(arg0),STK(arg2),STK(arg2+1),STK(arg2+2),arg2,sarg1,tojump));
+				if (sarg1 == tojump) { // XXX stack clear code
+					int n = _stackbase + (arg2+3);
+					while (n < _top) {
+						_stack._vals[n++].Null();
+					}
+				}
 				ci->_ip += tojump; }
 				continue;
 			case _OP_POSTFOREACH:
