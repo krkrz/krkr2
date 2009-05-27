@@ -1,13 +1,11 @@
 #include "HttpConnection.h"
 #pragma comment(lib, "Wininet.lib") 
 
-#include <ctype.h>
-
 #define BUFSIZE (1024*16)
 
 // データ中から METAタグで Content-Type を取得する
 // ※正規表現を想定してるのに注意
-extern bool matchContentType(const BYTE *text, tstring &result);
+extern bool matchContentType(tstring &text, tstring &result);
 
 /**
  * エラーメッセージを格納する
@@ -48,25 +46,37 @@ storeErrorMessage(DWORD error, tstring &errorMessage)
 static void
 parseContentType(const TCHAR *buf, size_t length, tstring &contentType, tstring &encoding)
 {
-	while (isspace(*buf)) {
+	// 頭のスペースを読み飛ばす
+	while (_istspace(*buf)) {
 		buf++;
 		length--;
 	}
 	size_t n = 0;
-	while (n < length) {
-		if (buf[n] == ';') {
-			break;
+	const TCHAR *p;
+	if ((p = _tcschr(buf, ';'))) {
+		size_t l = p - buf;
+		while (n < l && !_istspace(buf[n])) {
+			n++;
 		}
-		n++;
-	}
-	if (n < length) {
-		contentType = tstring(buf, n++);
-		while (isspace(buf[n])) n++;
-		int l = 0;
-		while (n+l < length && !isspace(buf[n+l])) l++;
-		encoding = tstring(buf+n, l);
+		contentType = tstring(buf, n);
+		n = l+1;
+		while (_istspace(buf[n])) n++;
+		if (_tcsnicmp(buf+n, _T("charset"), 7) == 0) {
+			n += 7;
+			while (_istspace(buf[n])) n++;
+			if (buf[n] == '=') {
+				n++;
+				while (_istspace(buf[n])) n++;
+				int l = 0;
+				while (n+l < length && buf[n+l] && !_istspace(buf[n+l])) l++;
+				encoding = tstring(buf+n, l);
+			}
+		}
 	} else {
-		contentType = tstring(buf, length);
+		while (n < length && buf[n] && !_istspace(buf[n])) {
+			n++;
+		}
+		contentType = tstring(buf, n);
 	}
 }
 
@@ -361,15 +371,24 @@ HttpConnection::response(DownloadCallback callback, void *context)
 	if (statusCode == HTTP_STATUS_OK && callback) {
 		DWORD size = 0;
 		DWORD len;
-		BYTE work[BUFSIZE+1];
-		while (InternetReadFile(hReq, (void*)work, BUFSIZE, &len) && len > 0) {
+		BYTE work[BUFSIZE];
+		while (InternetReadFile(hReq, (void*)work, sizeof work, &len) && len > 0) {
 			size += len;
 			int percent = (contentLength > 0) ? size * 100 / contentLength : 0;
 			// 取得したファイル中から METAタグを参照して Content-Type を再取得
 			if (needParseHtml) {
-				work[len] = '\0';
 				tstring ctype;
-				if (matchContentType(work, ctype)) {
+#ifdef _UNICODE
+				TCHAR *buf = new TCHAR[len];
+				for (DWORD i=0;i<len;i++) {
+					buf[i] = work[i];
+				}
+				tstring text(buf,len);
+				delete[] buf;
+#else
+				tstring text(work,len);
+#endif
+				if (matchContentType(text, ctype)) {
 					parseContentType(ctype.c_str(), ctype.size(), contentType, encoding);
 				}
 				needParseHtml = false;
