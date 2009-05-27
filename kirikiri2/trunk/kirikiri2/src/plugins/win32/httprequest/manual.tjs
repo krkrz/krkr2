@@ -1,0 +1,116 @@
+// 疑似コードによるマニュアル
+
+/**
+ * HttpRequestクラス
+ * HTTP/HTTPS による非同期通信機能を提供する
+ */
+class HttpRequest {
+
+	UNINITIALIZED = 0; ///< readyState 初期状態
+	OPEN = 1;          ///< readyState 処理開始
+	SENT = 2;          ///< readyState リクエスト送信
+	RECEIVING = 3;     ///< readyState 受信中
+	LOADED = 4;        ///< readyState 読み込み完了
+	
+	/**
+	 * コンストラクタ
+	 * @param window 親ウインドウ
+	 * @param agentName HTTP通信時のエージェント名
+	 * @param cert HTTP通信時に証明書チェックを行う
+	 * @throw InvalidObject 親ウインドウ指定が不正
+	 */
+	function HttpRequest(window, cert=true, agentName="KIRIKIRI");
+
+	/**
+	 * 指定したメソッドで指定URLにリクエストする
+	 * ※常に非同期での呼び出しになります
+	 * @param method アクセスメソッド
+	 * @param url リクエスト先のURL
+	 * @param userName ユーザ名。指定すると認証ヘッダをつけます
+	 * @param password パスワード
+	 * @throw 通信エラーもろもろ
+	 */
+	function open(method, url, userName=void, password=void);
+
+	/**
+	 * 送信時に送られるヘッダーを追加する
+	 * @param name ヘッダ名
+	 * @param value 値
+	 */
+	function setRequestHeader(name, value);
+
+	/**
+	 * リクエストの送信
+	 * @param data 送信するデータ
+	 * 文字列の場合：そのまま送信
+	 * 辞書の場合: application/x-www-form-urlencoded で送信
+	 * @param storeStrorage レスポンス保存先ファイル。指定された場合はプロパティ responseは 設定されません
+	 */
+	function send(data=void, storeStorage=void);
+	
+	/**
+	 * 現在実行中の送受信のキャンセル
+	 */
+	function abort();
+
+	/**
+	 * すべての HTTPヘッダを取得する
+	 * @return HTTPヘッダが格納された辞書
+	 */
+	function getAllResponseHeaders();
+
+	/**
+	 * 指定したHTTPヘッダを取得する
+	 * @param name ヘッダラベル名
+	 * @return ヘッダの値
+	 */
+	function getResponseHeader(name);
+
+	/**
+	 * 通信状態。読み込み専用
+	 * @return 現在の通信状態
+	 */
+	property readyState;
+
+	/**
+	 * レスポンス。読み込み専用。ContentType のエンコード指定で変換されます
+	 * @return レスポンスデータ
+	 */
+	property response;
+	
+	/**
+	 * レスポンスのバイナリデータ。読み込み専用
+	 * @return レスポンスデータ
+	 */
+	property responseData;
+	
+	/**
+	 * レスポンスの HTTPステータスコード。読み込み専用
+	 * @return ステータスコード -1:キャンセル 0:通信エラー その他:httpステータスコード
+	 */
+	property status;
+	
+	/**
+	 * レスポンスの HTTPステータスの文字列
+	 * @return レスポンス文字列
+	 */
+	property statusText;
+
+	// ------------------------------------
+	// イベント
+	// ------------------------------------
+
+	/**
+	 * readyState が変化した場合のイベント
+	 * @param readyState 新しいステート
+	 * @return 中断する場合は true を返す
+	 */
+	function onReadyStateChange(readyState);
+
+	/**
+	 * データ読み込み中のイベント
+	 * @param percent 進捗状態(0～100%)
+	 * @return 中断する場合は true を返す
+	 */
+	function onProgress(percent);
+};

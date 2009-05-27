@@ -1,0 +1,386 @@
+#include "HttpConnection.h"
+#pragma comment(lib, "Wininet.lib") 
+
+#include <ctype.h>
+
+#define BUFSIZE (1024*16)
+
+// データ中から METAタグで Content-Type を取得する
+// ※正規表現を想定してるのに注意
+extern bool matchContentType(const BYTE *text, tstring &result);
+
+/**
+ * エラーメッセージを格納する
+ */
+static void
+storeErrorMessage(DWORD error, tstring &errorMessage)
+{
+	TCHAR msg[1024];
+	if (FormatMessage(FORMAT_MESSAGE_FROM_HMODULE,
+					  GetModuleHandle(_T("wininet.dll")),
+					  error,
+					  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // 既定の言語
+					  msg,
+					  sizeof msg,
+					  NULL
+					  ) ||
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+					  NULL,
+					  error,
+					  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // 既定の言語
+					  msg,
+					  sizeof msg,
+					  NULL
+					  )) {
+		errorMessage = msg;
+	} else {
+		errorMessage = _T("unknown error");
+	}
+}
+
+/**
+ * Content-Type をパースして ContentType と encoding 指定を取得
+ * @param buf バッファ
+ * @param length バッファサイズ
+ * @param contentType 取得した Content-Type を格納
+ * @param encoding 取得したエンコード指定を格納
+ */
+static void
+parseContentType(const TCHAR *buf, size_t length, tstring &contentType, tstring &encoding)
+{
+	while (isspace(*buf)) {
+		buf++;
+		length--;
+	}
+	size_t n = 0;
+	while (n < length) {
+		if (buf[n] == ';') {
+			break;
+		}
+		n++;
+	}
+	if (n < length) {
+		contentType = tstring(buf, n++);
+		while (isspace(buf[n])) n++;
+		int l = 0;
+		while (n+l < length && !isspace(buf[n+l])) l++;
+		encoding = tstring(buf+n, l);
+	} else {
+		contentType = tstring(buf, length);
+	}
+}
+
+void
+HttpConnection::addHeader(const TCHAR *name, const TCHAR *value)
+{
+	if (_tcsicmp(name, _T("Content-Type")) == 0) {
+		parseContentType(value, _tcslen(value), requestContentType, requestEncoding);
+	}
+	tstring n = name;
+	n += _T(":");
+	n += value;
+	header.push_back(n);
+}
+
+/**
+ * コネクション接続開始
+ */
+bool
+HttpConnection::open(const TCHAR *method,
+					 const TCHAR *url,
+					 const TCHAR *_user,
+					 const TCHAR *_passwd) {
+	clearParam();
+	errorMessage.resize(0);
+
+	URL_COMPONENTS uc;
+	ZeroMemory(&uc, sizeof uc);
+	uc.dwStructSize = sizeof uc;
+	uc.dwSchemeLength   = 1;
+	uc.dwHostNameLength = 1;
+	uc.dwUserNameLength = 1;
+	uc.dwPasswordLength = 1;
+	uc.dwUrlPathLength  = 1;
+
+	if (!InternetCrackUrl(url, 0, 0, &uc)) {
+		storeErrorMessage(GetLastError(), errorMessage);
+		return false;
+	}
+
+	if (uc.nScheme != INTERNET_SCHEME_HTTP && uc.nScheme != INTERNET_SCHEME_HTTPS) {
+		errorMessage = _T("invalid protocol");
+		return false;
+	}
+	
+	secure = uc.nScheme == INTERNET_SCHEME_HTTPS;
+	tstring host;
+	if (uc.lpszHostName) {
+		host = tstring(uc.lpszHostName, uc.dwHostNameLength);
+	}
+	int port = uc.nPort;
+	tstring user;
+	if (_user) {
+		user = _user;
+	}
+	if (uc.lpszUserName) {
+		user = tstring(uc.lpszUserName, uc.dwUserNameLength);
+	} else if (_user) {
+		user = _user;
+	}
+	tstring passwd;
+	if (uc.lpszPassword) {
+		passwd = tstring(uc.lpszPassword, uc.dwPasswordLength);
+	} else if (_passwd) {
+		passwd = _passwd;
+	}
+	tstring path;
+	if (uc.lpszUrlPath) {
+		path = tstring(uc.lpszUrlPath);
+	}
+	
+	bool errorProxyFirst = true;
+retry:
+	// Internetに接続する
+	if ((hInet = InternetOpen(agentName.c_str(),
+			errorProxyFirst ? INTERNET_OPEN_TYPE_PRECONFIG : INTERNET_OPEN_TYPE_PRECONFIG_WITH_NO_AUTOPROXY, 
+			NULL, NULL, 0)) == NULL) {
+		storeErrorMessage(GetLastError(), errorMessage);
+		return false;
+	}
+
+	// HTTPサーバーに接続
+	if ((hConn = InternetConnect(hInet, 
+								 host.c_str(),
+								 port,									// ポート
+								 user.size() ? user.c_str() : NULL,		// username
+								 passwd.size() ? passwd.c_str() : NULL,	// password
+								 INTERNET_SERVICE_HTTP,
+								 0, NULL)) == NULL) {
+		DWORD error = GetLastError();
+		closeHandle();
+
+		if (errorProxyFirst) {
+			errorProxyFirst = false;
+			goto retry;
+		}
+
+		storeErrorMessage(error, errorMessage);
+		return false;
+	}
+
+	// サーバー上で欲しいURLを指定する
+	if ((hReq = HttpOpenRequest(hConn,
+								method,
+								path.c_str(),
+								NULL, // デフォルトのHTTPバージョン
+								NULL, // 履歴を追加しない
+								NULL, // AcceptType
+								secure ? INTERNET_FLAG_SECURE : 0, NULL)) == NULL) {
+
+		storeErrorMessage(GetLastError(), errorMessage);
+		closeHandle();
+		return false;
+	}
+
+	// 認証ヘッダ追加
+	if (user.size() > 0 && passwd.size() > 0) {
+		addBasicAuthHeader(user, passwd);
+	}
+
+	return true;
+}
+
+/**
+ * リクエスト送信
+ */
+bool
+HttpConnection::request(const BYTE *data, int dataSize)
+{
+	if (!isValid()) {
+		return false;
+	}
+	
+	// HTTP ヘッダがある場合はそれを追加する
+	if (header.size()) {
+		vector<tstring>::iterator it = header.begin();
+		while (it != header.end()) {
+			tstring h = *it;
+			HttpAddRequestHeaders(hReq, h.c_str(), (DWORD)h.size(), 
+								  HTTP_ADDREQ_FLAG_REPLACE | HTTP_ADDREQ_FLAG_ADD);
+			it++;
+		}
+	}
+
+	// 証明書系を無視する場合の設定を行う
+	if (secure && !checkCert) {
+		DWORD dwError = 0;
+		DWORD dwFlags;
+		DWORD dwBuffLen = sizeof(dwFlags);
+		BOOL ret;
+
+		if ((ret = InternetQueryOption(hReq, INTERNET_OPTION_SECURITY_FLAGS,
+									   (LPVOID)&dwFlags, &dwBuffLen)) == FALSE) {
+			storeErrorMessage(GetLastError(), errorMessage);
+			closeHandle();
+			return false;
+		}
+
+		dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+		dwFlags |= SECURITY_FLAG_IGNORE_CERT_CN_INVALID;
+		dwFlags |= SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+		// dwFlags |= SECURITY_FLAG_IGNORE_REDIRECT_TO_HTTP;
+		// dwFlags |= SECURITY_FLAG_IGNORE_REDIRECT_TO_HTTPS;
+
+		if ((ret = InternetSetOption(hReq, INTERNET_OPTION_SECURITY_FLAGS,
+								(LPVOID)&dwFlags, sizeof(dwFlags))) == FALSE) {
+			storeErrorMessage(GetLastError(), errorMessage);
+			closeHandle();
+			return false;
+		}
+	}
+
+	// リクエスト送信
+	BOOL canagain = true;
+again:
+	if (!HttpSendRequest(hReq, NULL, 0, (void*)data, dataSize)) {
+		DWORD dwError = GetLastError();
+		// HTTPS の認証系エラー
+		if (secure && (dwError == ERROR_INTERNET_INVALID_CA ||
+					   dwError == ERROR_INTERNET_SEC_CERT_DATE_INVALID ||
+					   dwError == ERROR_INTERNET_SEC_CERT_CN_INVALID)) {
+			if (checkCert) {
+				if (InternetErrorDlg (GetDesktopWindow(),
+									  hReq,
+									  dwError,
+									  FLAGS_ERROR_UI_FILTER_FOR_ERRORS |
+									  FLAGS_ERROR_UI_FLAGS_GENERATE_DATA |
+									  FLAGS_ERROR_UI_FLAGS_CHANGE_OPTIONS,
+									  NULL) == ERROR_SUCCESS) {
+					goto again;
+				}
+			} else if (canagain) {
+				DWORD dwFlags;
+				DWORD dwBuffLen = sizeof(dwFlags);
+				if (InternetQueryOption(hReq, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, &dwBuffLen)) {
+					dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+					dwFlags |= SECURITY_FLAG_IGNORE_CERT_CN_INVALID;
+					dwFlags |= SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+					if (InternetSetOption(hReq, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, sizeof(dwFlags))) {
+						canagain = false;
+						goto again;
+					}
+				}
+			}
+		}
+		
+		storeErrorMessage(dwError, errorMessage);
+		closeHandle();
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * レスポンス処理
+ */
+int 
+HttpConnection::response(DownloadCallback callback, void *context)
+{
+	if (!isValid()) {
+		return ERROR_INET;
+	}
+	
+	statusCode = 0;
+	DWORD length = sizeof statusCode;
+	HttpQueryInfo(hReq, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, (LPVOID)&statusCode, &length, NULL);
+
+	statusText.resize(0);
+	length = 0;
+	if (!HttpQueryInfo(hReq, HTTP_QUERY_STATUS_TEXT, NULL, &length, NULL) &&
+		GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+		TCHAR *buf = (TCHAR*)malloc(sizeof(*buf) * length);
+		if (buf && HttpQueryInfo(hReq, HTTP_QUERY_STATUS_TEXT, buf, &length, NULL)) {
+			statusText = tstring(buf, length);
+		}
+		free(buf);
+	}
+
+	contentLength = 0;
+	length = sizeof contentLength;
+	HttpQueryInfo(hReq, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, 
+				  (LPVOID)&contentLength,  &length, 0);
+	
+	contentType.resize(0);
+	encoding.resize(0);
+	length = 0;
+	if (!HttpQueryInfo(hReq, HTTP_QUERY_CONTENT_TYPE, NULL, &length, NULL) &&
+		GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+		TCHAR *buf = (TCHAR*)malloc(sizeof(*buf) * length);
+		if (buf && HttpQueryInfo(hReq, HTTP_QUERY_CONTENT_TYPE, buf, &length, NULL)) {
+			parseContentType(buf, length, contentType, encoding);
+		}
+		free(buf);
+	}
+	// HTMLをパースして Content-Type からエンコーディングを取得する必要がある
+	bool needParseHtml = _tcsicmp(contentType.c_str(), _T("text/html")) == 0 && encoding.size() == 0;
+	
+	// 全ヘッダを解析して取得
+	responseHeaders.clear();
+	length = 0;
+	if (!HttpQueryInfo(hReq, HTTP_QUERY_RAW_HEADERS, NULL, &length, NULL) &&
+		GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+		TCHAR *buf = (TCHAR*)malloc(sizeof(*buf) * length);
+		if (buf && HttpQueryInfo(hReq, HTTP_QUERY_RAW_HEADERS, buf, &length, NULL) && length > 0) {
+			size_t n = 0;
+			while (n<length) {
+				TCHAR *p = buf + n;
+				int len = 0;
+				while (n+len<length && p[len]) {
+					len++;
+				}
+				if (len > 0) {
+					int n2 = 0;
+					while (n2 < len) {
+						if (p[n2] == ':') {
+							tstring name(p,n2++);
+							tstring value(p+n2,len-n2);
+							responseHeaders[name] = value;
+							break;
+						}
+						n2++;
+					}
+				}
+				n += (len+1);
+			}
+		}
+		free(buf);
+	}
+
+	// HTTP が OK を返した場合のみファイルセーブを enable にする
+	if (statusCode == HTTP_STATUS_OK && callback) {
+		DWORD size = 0;
+		DWORD len;
+		BYTE work[BUFSIZE+1];
+		while (InternetReadFile(hReq, (void*)work, BUFSIZE, &len) && len > 0) {
+			size += len;
+			int percent = (contentLength > 0) ? size * 100 / contentLength : 0;
+			// 取得したファイル中から METAタグを参照して Content-Type を再取得
+			if (needParseHtml) {
+				work[len] = '\0';
+				tstring ctype;
+				if (matchContentType(work, ctype)) {
+					parseContentType(ctype.c_str(), ctype.size(), contentType, encoding);
+				}
+				needParseHtml = false;
+			}
+			if (!callback(context, work, len, percent)) {
+				closeHandle();
+				return ERROR_CANCEL;
+			}
+		}
+		callback(context, NULL, 0, 100);
+	}
+	closeHandle();
+	return ERROR_NONE;
+}
