@@ -11,39 +11,6 @@ using namespace std;
 // エージェント名
 #define AGENT_NAME			_T("KIRIKIRI")
 
-// Content-Type 取得用 RegExp インスタンス
-static tTJSVariant *regctype = NULL;
-
-bool
-matchContentType(const BYTE *text, tstring &ctype)
-{
-	bool ret = false;
-	
-	tTJSVariant t(ttstr((const tjs_nchar*)text));
-	tTJSVariant *params[] = { &t };
-	tTJSVariant matchResult;
-	if (TJS_SUCCEEDED(regctype->AsObjectClosureNoAddRef().FuncCall(0, TJS_W("match"), NULL, &matchResult, 1, params, NULL))) {
-		tTJSVariant matchStr;
-		if (TJS_SUCCEEDED(matchResult.AsObjectClosureNoAddRef().PropGetByNum(0, 2, &matchStr, NULL))) {
-			tTJSVariantString *str = matchStr.AsString();
-			if (str) {
-				int len = str->GetLength();
-				const tjs_char *buf = *str;
-				if (len > 0) {
-					if (buf[0] == '\'' || buf[0] == '"') {
-						ctype = tstring(buf+1, len-2);
-					} else {
-						ctype = tstring(buf, len);
-					}
-					ret = true;
-				}
-				str->Release();
-			}
-		}
-	}
-	return ret;
-}
-
 /**
  * HttpRequest クラス
  */
@@ -439,21 +406,3 @@ NCB_REGISTER_CLASS(HttpRequest) {
 	NCB_PROPERTY_RO(status, getStatus);
 	NCB_PROPERTY_RO(statusText, getStatusText);
 }
-
-static void
-PreRegistCallback()
-{
-	// Content-Type 取得用の正規表現オブジェクトを取得
-	regctype = new tTJSVariant();
-	TVPExecuteExpression(TJS_W("new RegExp(\"<meta[ \\t]+http-equiv=(\\\"content-type\\\"|'content-type'|content-type)[ \\t]+content=(\\\"[^\\\"]*\\\"|'[^']*'|[^ \\t>]+).*>\",\"i\")"), regctype);
-}
-
-static void
-PostUnregistCallback()
-{
-	// Content-Type 取得用の正規表現オブジェクトを解放
-	delete regctype;
-}
-
-NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
-NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
