@@ -24,19 +24,26 @@ public:
 	enum Error {
 		ERROR_NONE,  // エラーなし
 		ERROR_INET,  // ネットワークライブラリのエラー
-		ERROR_FILE,  // ファイルアクセスエラー
 		ERROR_CANCEL // キャンセルされた
 	};
 
 	/**
-	 * コールバック処理
+	 * リクエスト用コールバック処理
 	 * @param context コンテキスト
-	 * @param buffer データバッファ。最後は NULL
-	 * @param size データバッファのサイズ。最後は0
-	 * @param percent データ状況。最後は0
+	 * @param buffer 書き込み先データバッファ
+	 * @param size 書き込み先データバッファのサイズ。実際に書き込んだサイズを格納して返す
 	 * @return 中断する場合は true を返す
 	 */
-	typedef bool (*DownloadCallback)(void *context, void *buffer, DWORD size, int percent);
+	typedef bool (*RequestCallback)(void *context, void *buffer, DWORD &size);
+	
+	/**
+	 * レスポンス用コールバック処理
+	 * @param context コンテキスト
+	 * @param buffer 読み込み元データバッファ。最後は NULL
+	 * @param size データバッファのサイズ。最後は0
+	 * @return 中断する場合は true を返す
+	 */
+	typedef bool (*ResponseCallback)(void *context, const void *buffer, DWORD size);
 	
 	/**
 	 * コンストラクタ
@@ -57,6 +64,7 @@ public:
 	// 送信ヘッダをクリア
 	void clearHeader() {
 		header.clear();
+		requestContentLength = 0;
 		requestContentType.resize(0);
 		requestEncoding.resize(0);
 	}
@@ -94,6 +102,7 @@ public:
 	 * @param url URL
 	 * @param user アクセスユーザ
 	 * @param passwd アクセスパスワード
+	 * @return 成功したら true
 	 */
 	bool open(const TCHAR *method,
 			  const TCHAR *url,
@@ -102,17 +111,25 @@ public:
 
 	/**
 	 * リクエスト送信
-	 * @param data 送信データ
-	 * @param data 送信データサイズ
+	 * @param callback 送信用コールバック
+	 * @param context コールバック用コンテキスト
+	 * @return エラー
 	 */
-	bool request(const BYTE *data=NULL, int dataSize=0);
+	int request(RequestCallback callback=NULL, void *context=NULL);
+
 
 	/**
-	 * 受信処理
+	 * レスポンス取得前情報収集
+	 */
+	void queryInfo();
+	
+	/**
+	 * レスポンス受信
 	 * @param callback 保存用コールバック
 	 * @param context コールバック用コンテキスト
+	 * @return エラー
 	 */
-	int response(DownloadCallback callback=NULL, void *context=NULL);
+	int response(ResponseCallback callback=NULL, void *context=NULL);
 	
 	// ----------------------------------------------------------------------------------------------------
 	
@@ -193,6 +210,7 @@ private:
 	
 	// 送信用データ
 	vector<tstring> header;	///< HTTP ヘッダ
+	DWORD requestContentLength; ///< リクエストの Content-Length:
 	tstring requestContentType; ///< リクエストの Content-Type:
 	tstring requestEncoding;    ///< リクエストのエンコード指定
 
@@ -200,6 +218,7 @@ private:
 	DWORD contentLength;     ///< Content-Length:
 	tstring contentType;     ///< Content-Type: のtype部
 	tstring encoding;        ///< Content-TYpe: のエンコーディング部
+
 	DWORD statusCode;        ///< HTTP status code
 	tstring statusText;      ///< HTTP status text
 	map<tstring,tstring> responseHeaders; ///< レスポンスヘッダ

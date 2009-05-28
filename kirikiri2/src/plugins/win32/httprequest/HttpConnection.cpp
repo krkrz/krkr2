@@ -85,6 +85,8 @@ HttpConnection::addHeader(const TCHAR *name, const TCHAR *value)
 {
 	if (_tcsicmp(name, _T("Content-Type")) == 0) {
 		parseContentType(value, _tcslen(value), requestContentType, requestEncoding);
+	} else if (_tcsicmp(name, _T("Content-Length")) == 0) {
+		requestContentLength = _tcstol(value, NULL, 10);
 	}
 	tstring n = name;
 	n += _T(":");
@@ -185,7 +187,7 @@ retry:
 								NULL, // デフォルトのHTTPバージョン
 								NULL, // 履歴を追加しない
 								NULL, // AcceptType
-								secure ? INTERNET_FLAG_SECURE : 0, NULL)) == NULL) {
+								INTERNET_FLAG_NO_CACHE_WRITE | (secure ? INTERNET_FLAG_SECURE : 0), NULL)) == NULL) {
 
 		storeErrorMessage(GetLastError(), errorMessage);
 		closeHandle();
@@ -203,11 +205,11 @@ retry:
 /**
  * リクエスト送信
  */
-bool
-HttpConnection::request(const BYTE *data, int dataSize)
+int
+HttpConnection::request(RequestCallback callback, void *context)
 {
 	if (!isValid()) {
-		return false;
+		return ERROR_INET;
 	}
 	
 	// HTTP ヘッダがある場合はそれを追加する
@@ -232,7 +234,7 @@ HttpConnection::request(const BYTE *data, int dataSize)
 									   (LPVOID)&dwFlags, &dwBuffLen)) == FALSE) {
 			storeErrorMessage(GetLastError(), errorMessage);
 			closeHandle();
-			return false;
+			return ERROR_INET;
 		}
 
 		dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
@@ -245,14 +247,14 @@ HttpConnection::request(const BYTE *data, int dataSize)
 								(LPVOID)&dwFlags, sizeof(dwFlags))) == FALSE) {
 			storeErrorMessage(GetLastError(), errorMessage);
 			closeHandle();
-			return false;
+			return ERROR_INET;
 		}
 	}
 
 	// リクエスト送信
 	BOOL canagain = true;
 again:
-	if (!HttpSendRequest(hReq, NULL, 0, (void*)data, dataSize)) {
+	if (!HttpSendRequestEx(hReq, NULL, NULL, 0, 0)) {
 		DWORD dwError = GetLastError();
 		// HTTPS の認証系エラー
 		if (secure && (dwError == ERROR_INTERNET_INVALID_CA ||
@@ -285,22 +287,53 @@ again:
 		
 		storeErrorMessage(dwError, errorMessage);
 		closeHandle();
-		return false;
+		return ERROR_INET;
 	}
 
-	return true;
-}
+	// ファイル書き出し
+	if (callback) {
+		DWORD len;
+		do {
+			BYTE work[BUFSIZE];
+			len = sizeof work;
+			if (!callback(context, work, len)) {
+				closeHandle();
+				return ERROR_CANCEL;
+			}
+			if (len > 0) {
+				DWORD n = 0;
+				DWORD size = len;
+				while (size > 0) {
+					DWORD l;
+					if (InternetWriteFile(hReq, work+n, size, &l)) {
+						size -= l;
+						n += l;
+					} else {
+						storeErrorMessage(GetLastError(), errorMessage);
+						closeHandle();
+						return ERROR_INET;
+					}
+				}
+			}
+		} while (len > 0);
+	}
 
-/**
- * レスポンス処理
- */
-int 
-HttpConnection::response(DownloadCallback callback, void *context)
-{
-	if (!isValid()) {
+	// リクエスト完了
+	if (!HttpEndRequest(hReq, NULL, 0, NULL)) {
+		storeErrorMessage(GetLastError(), errorMessage);
+		closeHandle();
 		return ERROR_INET;
 	}
 	
+	return ERROR_NONE;
+}
+
+/**
+ * レスポンス受信
+ */
+void
+HttpConnection::queryInfo()
+{
 	statusCode = 0;
 	DWORD length = sizeof statusCode;
 	HttpQueryInfo(hReq, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, (LPVOID)&statusCode, &length, NULL);
@@ -332,8 +365,6 @@ HttpConnection::response(DownloadCallback callback, void *context)
 		}
 		free(buf);
 	}
-	// HTMLをパースして Content-Type からエンコーディングを取得する必要がある
-	bool needParseHtml = _tcsicmp(contentType.c_str(), _T("text/html")) == 0 && encoding.size() == 0;
 	
 	// 全ヘッダを解析して取得
 	responseHeaders.clear();
@@ -366,17 +397,32 @@ HttpConnection::response(DownloadCallback callback, void *context)
 		}
 		free(buf);
 	}
+}
 
+
+/**
+ * レスポンス受信
+ */
+int 
+HttpConnection::response(ResponseCallback callback, void *context)
+{
+	if (!isValid()) {
+		return ERROR_INET;
+	}
+	
 	// HTTP が OK を返した場合のみファイルセーブを enable にする
 	if (statusCode == HTTP_STATUS_OK && callback) {
+		
+		// HTMLをパースして Content-Type からエンコーディングを取得する必要がある
+		bool needParseHtml = _tcsicmp(contentType.c_str(), _T("text/html")) == 0 && encoding.size() == 0;
+
 		DWORD size = 0;
 		DWORD len;
 		BYTE work[BUFSIZE];
 		while (InternetReadFile(hReq, (void*)work, sizeof work, &len) && len > 0) {
 			size += len;
-			int percent = (contentLength > 0) ? size * 100 / contentLength : 0;
-			// 取得したファイル中から METAタグを参照して Content-Type を再取得
 			if (needParseHtml) {
+				// 取得したファイル中から METAタグを参照して Content-Type を再取得
 				tstring ctype;
 #ifdef _UNICODE
 				TCHAR *buf = new TCHAR[len];
@@ -393,12 +439,11 @@ HttpConnection::response(DownloadCallback callback, void *context)
 				}
 				needParseHtml = false;
 			}
-			if (!callback(context, work, len, percent)) {
+			if (!callback(context, work, len)) {
 				closeHandle();
 				return ERROR_CANCEL;
 			}
 		}
-		callback(context, NULL, 0, 100);
 	}
 	closeHandle();
 	return ERROR_NONE;

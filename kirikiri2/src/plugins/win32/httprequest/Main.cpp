@@ -35,7 +35,8 @@ public:
 	HttpRequest(iTJSDispatch2 *objthis, iTJSDispatch2 *window, bool cert, const tjs_char *agentName)
 		 : objthis(objthis), window(window), http(agentName, cert),
 		   threadHandle(NULL), canceled(false),
-		   output(NULL), readyState(READYSTATE_UNINITIALIZED), statusCode(0)
+		   output(NULL), outputLength(0), input(NULL), inputLength(0),
+		   readyState(READYSTATE_UNINITIALIZED), statusCode(0)
 	{
 		window->AddRef();
 		setReceiver(true);
@@ -91,17 +92,9 @@ public:
 	 * 文字列の場合：そのまま送信
 	 * 辞書の場合: application/x-www-form-urlencoded で送信
 	 */
-	void _send(const void *data, int size) {
-		checkRunning();
-		checkOpen();
-		if (data) {
-		}
-		startThread();
-	}
-
 	static tjs_error send(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, HttpRequest *self) {
-		void *data = NULL;
-		int size = 0;
+		self->checkRunning();
+		self->checkOpen();
 		if (numparams > 0) {
 			switch (params[0]->Type()) {
 			case tvtVoid:
@@ -117,7 +110,8 @@ public:
 				break;
 			}
 		}
-		self->_send(data, size);
+		//IStream *out = TVPCreateIStream(ttstr(saveFileName), TJS_BS_WRITE);
+		self->startThread();
 		return TJS_S_OK;
 	}
 
@@ -223,7 +217,6 @@ protected:
 	/**
 	 * readyState が変化した場合のイベント処理
 	 * @param readyState 新しいステート
-	 * @return 中断する場合は true を返す
 	 */
 	void onReadyStateChange(int readyState) {
 		this->readyState = readyState;
@@ -237,15 +230,16 @@ protected:
 	
 	/**
 	 * データ読み込み中のイベント処理
+	 * @param upload 送信中
 	 * @param percent 進捗
-	 * @return 中断する場合は true を返す
 	 */
-	void onProgress(int percent) {
-		tTJSVariant param(percent);
+	void onProgress(bool upload, int percent) {
+		tTJSVariant params[2];
+		params[0] = upload;
+		params[1] = percent;
 		static ttstr eventName(TJS_W("onProgress"));
-		TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
+		TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 2, params);
 	}
-
 	
 	// ユーザメッセージレシーバの登録/解除
 	void setReceiver(bool enable) {
@@ -272,7 +266,8 @@ protected:
 			break;
 		case WM_HTTP_PROGRESS:
 			if (self == (HttpRequest*)Message->WParam) {
-				self->onProgress((int)Message->LParam);
+				int lparam = (int)Message->LParam;
+				self->onProgress((lparam & 0xff00)!=0, (lparam & 0xff));
 				return true;
 			}
 			break;
@@ -293,16 +288,47 @@ protected:
 		::PostMessage(hwnd, msg, wparam, lparam);
 	}
 
-	bool download(void *buffer, DWORD size, int percent) {
-		if (buffer) {
-			if (output) {
-				output->Write(buffer, size, &size);
-			}
+	/**
+	 * ファイル送信処理
+	 * @param buffer 読み取りバッファ
+	 * @param size 読み出したサイズ
+	 */
+	bool upload(void *buffer, DWORD &size) {
+		if (input) {
+			input->Read(buffer, size, &size);
 		} else {
-			if (output) {
+			size = 0;
+		}
+		inputSize += size;
+		int percent = (inputLength > 0) ? inputSize * 100 / inputLength : 0;
+		postMessage(WM_HTTP_PROGRESS, (WPARAM)this, 0x0100 | percent);
+		return !canceled;
+	}
+
+	/**
+	 * 通信時のコールバック処理
+	 * @return キャンセルなら false
+	 */
+	static bool uploadCallback(void *context, void *buffer, DWORD &size) {
+		HttpRequest *self = (HttpRequest*)context;
+		return self ? self->upload(buffer, size) : false;
+	}
+	
+	/**
+	 * ファイル読み取り処理
+	 * @param buffer 読み取りバッファ
+	 * @param size 読み出したサイズ
+	 */
+	bool download(const void *buffer, DWORD size) {
+		if (output) {
+			if (buffer) {
+				output->Write(buffer, size, &size);
+			} else {
 				output->Release();
 			}
 		}
+		outputSize += size;
+		int percent = (outputLength > 0) ? outputSize * 100 / outputLength : 0;
 		postMessage(WM_HTTP_PROGRESS, (WPARAM)this, percent);
 		return !canceled;
 	}
@@ -311,35 +337,38 @@ protected:
 	 * 通信時のコールバック処理
 	 * @return キャンセルなら false
 	 */
-	static bool downloadCallback(void *context, void *buffer, DWORD size, int percent) {
+	static bool downloadCallback(void *context, const void *buffer, DWORD size) {
 		HttpRequest *self = (HttpRequest*)context;
-		return self ? self->download(buffer, size, percent) : false;
+		return self ? self->download(buffer, size) : false;
 	}
-	
+
+	/**
+	 * バックグラウンドで実行する処理
+	 */
 	void threadMain() {
 		postMessage(WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_SENT);
-		if (!http.request()) {
+		inputSize = 0;
+		int errorCode;
+		if ((errorCode = http.request(uploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+			http.queryInfo();
+			outputSize = 0;
+			outputLength = http.getContentLength();
+			postMessage(WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
+			errorCode = http.response(downloadCallback, (void*)this);
+		}
+		switch (errorCode) {
+		case HttpConnection::ERROR_NONE:
+			statusCode = http.getStatusCode();
+			statusText = http.getStatusText();
+			break;
+		case HttpConnection::ERROR_CANCEL:
+			statusCode = -1;
+			statusText = L"aborted";
+			break;
+		default:
 			statusCode = 0;
 			statusText = http.getErrorMessage();
-		} else {
-			postMessage(WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
-			//IStream *out = TVPCreateIStream(ttstr(saveFileName), TJS_BS_WRITE);
-			
-
-			switch (http.response(downloadCallback, (void*)this)) {
-			case HttpConnection::ERROR_NONE:
-				statusCode = http.getStatusCode();
-				statusText = http.getStatusText();
-				break;
-			case HttpConnection::ERROR_CANCEL:
-				statusCode = -1;
-				statusText = L"aborted";
-				break;
-			default:
-				statusCode = 0;
-				statusText = http.getErrorMessage();
-				break;
-			}
+			break;
 		}
 		postMessage(WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_LOADED);
 	}
@@ -379,8 +408,16 @@ private:
 	HANDLE threadHandle; ///< スレッドのハンドル
 	bool canceled; ///< キャンセルされた
 
-	// 結果
+	// リクエスト
+	IStream *input;
+	int inputLength;
+	int inputSize;
+
+	// レスポンス
 	IStream *output;
+	int outputLength;
+	int outputSize;
+
 	int readyState;
 	int statusCode;
 	ttstr statusText;
