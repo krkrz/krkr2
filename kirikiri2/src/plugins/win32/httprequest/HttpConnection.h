@@ -65,8 +65,8 @@ public:
 	void clearHeader() {
 		header.clear();
 		requestContentLength = 0;
-		requestContentType.resize(0);
-		requestEncoding.resize(0);
+		requestContentType.erase();
+		requestEncoding.erase();
 	}
 
 	// ハンドルをクリア
@@ -166,6 +166,11 @@ public:
 	// コンテンツのエンコーディング情報
 	const TCHAR *getEncoding() const {
 		return encoding.c_str();
+	}
+
+	// コンテンツのエンコーディング情報
+	const TCHAR *getRequestEncoding() const {
+		return requestEncoding.c_str();
 	}
 	
 	/**
