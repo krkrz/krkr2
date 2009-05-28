@@ -446,9 +446,11 @@ protected:
 				memcpy(buffer, &inputData[size], size);
 			}
 		}
-		inputSize += size;
-		int percent = (inputLength > 0) ? inputSize * 100 / inputLength : 0;
-		postMessage(WM_HTTP_PROGRESS, (WPARAM)this, 0x0100 | percent);
+		if (size > 0) {
+			inputSize += size;
+			int percent = (inputLength > 0) ? inputSize * 100 / inputLength : 0;
+			postMessage(WM_HTTP_PROGRESS, (WPARAM)this, 0x0100 | percent);
+		}
 		return !canceled;
 	}
 
@@ -474,7 +476,7 @@ protected:
 				while (s > 0) {
 					DWORD l;
 					if (outputStream->Write((BYTE*)buffer+n, s, &l) == S_OK) {
-						size -= l;
+						s -= l;
 						n += l;
 					} else {
 						break;
@@ -562,31 +564,31 @@ protected:
 	}
 	
 private:
-	iTJSDispatch2 *objthis; ///< オブジェクト情報の参照
-	iTJSDispatch2 *window; ///< オブジェクト情報の参照
+	iTJSDispatch2 *objthis; ///< 自己オブジェクト情報の参照
+	iTJSDispatch2 *window; ///< ウインドウオブジェクト情報の参照(イベント取得に必要)
 
-	// 通信用処理
+	// HTTP通信処理用
 	HttpConnection http;
 
-	// 処理用
+	// スレッド処理用
 	HANDLE threadHandle; ///< スレッドのハンドル
 	bool canceled; ///< キャンセルされた
 
 	// リクエスト
-	IStream *inputStream;
-	vector<BYTE>inputData;
-	int inputLength;
-	int inputSize;
+	IStream *inputStream;   ///< 送信用ストリーム
+	vector<BYTE>inputData;  ///< 送信用データ
+	int inputLength; ///< 送信データサイズ
+	int inputSize;   ///< 送信済みデータサイズ
 
 	// レスポンス
-	IStream *outputStream;
-	vector<BYTE>outputData;
-	int outputLength;
-	int outputSize;
+	IStream *outputStream;  ///< 受信用ストリーム
+	vector<BYTE>outputData; ///< 受信用データ
+	int outputLength; ///< 受信データサイズ
+	int outputSize;   ///< 受信済みデータサイズ
 
 	int readyState;
-	int statusCode;
-	ttstr statusText;
+	int statusCode; ///< HTTPステータスコード
+	ttstr statusText; ///< HTTPステータステキスト
 };
 
 #define ENUM(n) Variant(#n, (int)HttpRequest::READYSTATE_ ## n)

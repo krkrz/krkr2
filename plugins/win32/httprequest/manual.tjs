@@ -1,56 +1,17 @@
 // 疑似コードによるマニュアル
 
 /**
- * application/x-www-form-urlencoded を処理するためのデータ
- * ※まだ未実装
- */
-class WWWForm {
-	/**
-	 * コンストラクタ
-	 * @param 初期化辞書
-	 */
-	function WWWForm(dict=void);
-
-	/**
-	 * 値の追加
-	 * @param name 名前
-	 * @param value 値
-	 */
-	function addParam(name, value);
-
-	/**
-	 * GETメソッド用のパス文字列を取得
-	 * @param encoding エンコード指定。省略時は UTF-8
-	 * @return PATHの形になったデータを返す
-	 */
-	function getPathParameter(encoding=void);
-
-	/**
-	 * POSTメソッド用のデータを取得
-	 * @param encoding エンコード指定。省略時は UTF-8
-	 * @return octetでデータを返す
-	 */
-	function getContent(encoding);
-}
-
-
-/**
  * HttpRequestクラス
- * HTTP/HTTPS による非同期通信機能を提供する
+ * HTTP/HTTPS による非同期通信機能を提供します。
+ * ファイルの送受信処理はバックグラウンド実行されます。
  */
 class HttpRequest {
 
-	UNINITIALIZED = 0; ///< readyState 初期状態
-	OPEN = 1;          ///< readyState 処理開始
-	SENT = 2;          ///< readyState リクエスト送信
-	RECEIVING = 3;     ///< readyState 受信中
-	LOADED = 4;        ///< readyState 読み込み完了
-	
 	/**
 	 * コンストラクタ
-	 * @param window 親ウインドウ
+	 * @param window スレッド同期処理用親ウインドウ
+	 * @param cert HTTP通信時に証明書チェックを行うかどうか。falseにすると強制許可になります。
 	 * @param agentName HTTP通信時のエージェント名
-	 * @param cert HTTP通信時に証明書チェックを行う
 	 * @throw InvalidObject 親ウインドウ指定が不正
 	 */
 	function HttpRequest(window, cert=true, agentName="KIRIKIRI");
@@ -62,7 +23,7 @@ class HttpRequest {
 	 * @param url リクエスト先のURL
 	 * @param userName ユーザ名。指定すると認証ヘッダをつけます
 	 * @param password パスワード
-	 * @throw 通信エラーもろもろ
+	 * @throw 通信エラーもろもろ（エラーメッセージ）
 	 */
 	function open(method, url, userName=void, password=void);
 
@@ -70,23 +31,34 @@ class HttpRequest {
 	 * 送信時に送られるヘッダーを追加する
 	 * @param name ヘッダ名
 	 * @param value 値
+	 * @throw "already running" 既に送信中
+	 * Content-Type を指定した場合は指定したエンコードが send 時の規定のエンコードになります。
 	 */
 	function setRequestHeader(name, value);
 
 	/**
-	 * リクエストの送信
+	 * リクエストの送信。送信処理は非同期実行されます。
+	 * エラー時も例外は発生しませんので、readyState と status で判定してください。
 	 * @param data 送信するデータ
 	 * octetの場合  : そのまま送信
 	 * 文字列の場合 : 規定のエンコードで処理して送信
-	 * その他       : データは送信しない
+	 * その他       : データは送信されません
 	 * @param storeStrorage レスポンス保存先ファイル。指定された場合はプロパティ responseは 設定されません
+	 * @throw "not open" openされていない
+	 * @throw "already running" 既に送信中
+	 * @throw "saveStorage open failed" 保存先ファイルが開けなかった場合
 	 */
 	function send(data=void, storeStorage=void);
 	
 	/**
-	 * リクエストの送信
+	 * リクエストの送信。送受信は非同期実行されます。
+	 * エラー時も例外は発生しませんので、readyState と status で判定してください。
 	 * @param storage 送信するファイルデータ
 	 * @param storeStrorage レスポンス保存先ファイル。指定された場合はプロパティ responseは 設定されません
+	 * @throw "not open" openされていない
+	 * @throw "already running" 既に送信中
+	 * @throw "sendStorage open failed" 送信ファイルが開けなかった場合
+	 * @throw "saveStorage open failed" 保存先ファイルが開けなかった場合
 	 */
 	function sendStorage(storage, storeStorage=void);
 	
@@ -110,10 +82,16 @@ class HttpRequest {
 
 	/**
 	 * レスポンスをテキストの形で取得
-	 * @param encoding エンコード指定。省略時は Content-type で指定されたもの
+	 * @param encoding エンコード指定。省略時は Content-type の指定に従います。
 	 */
 	function getResponseText(encoding=void);
 
+	UNINITIALIZED = 0; ///< readyState 初期状態
+	OPEN = 1;          ///< readyState 処理開始
+	SENT = 2;          ///< readyState リクエスト送信
+	RECEIVING = 3;     ///< readyState 受信中
+	LOADED = 4;        ///< readyState 読み込み完了
+	
 	/**
 	 * 通信状態。読み込み専用
 	 * @return 現在の通信状態
@@ -124,7 +102,6 @@ class HttpRequest {
 	 * レスポンス。読み込み専用。
 	 * @return レスポンスデータ
 	 * ContentType が text の場合：エンコード指定で変換された文字列が帰ります
-	 * ContentType が application/x-www-form-urlencoded の場合 : エンコード指定で戻された辞書が帰ります
 	 * その他 : octet データそのまま
 	 */
 	property response;
@@ -143,7 +120,7 @@ class HttpRequest {
 	
 	/**
 	 * レスポンスの HTTPステータスの文字列
-	 * @return レスポンス文字列
+	 * @return レスポンス文字列。通信エラー時はそのエラーメッセージになります。
 	 */
 	property statusText;
 
@@ -154,11 +131,14 @@ class HttpRequest {
 
 	/**
 	 * レスポンスの Content-Type のエンコード指定
+	 * ヘッダの指定が優先されますが、未指定、かつ受信データが text/html の場合は
+	 * ファイル冒頭にある META 指定も参照します。
 	 */
 	property contentTypeEncoding;
 
 	/**
 	 * レスポンスの Content-Length
+	 * ヘッダに無い場合はファイルダウンロード完了後にサイズ確定します。
 	 */
 	property contentLength;
 	
