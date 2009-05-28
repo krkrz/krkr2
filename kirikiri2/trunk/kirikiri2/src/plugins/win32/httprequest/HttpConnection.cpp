@@ -103,7 +103,7 @@ HttpConnection::open(const TCHAR *method,
 					 const TCHAR *_user,
 					 const TCHAR *_passwd) {
 	clearParam();
-	errorMessage.resize(0);
+	errorMessage.erase();
 
 	URL_COMPONENTS uc;
 	ZeroMemory(&uc, sizeof uc);
@@ -338,7 +338,7 @@ HttpConnection::queryInfo()
 	DWORD length = sizeof statusCode;
 	HttpQueryInfo(hReq, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, (LPVOID)&statusCode, &length, NULL);
 
-	statusText.resize(0);
+	statusText.erase();
 	length = 0;
 	if (!HttpQueryInfo(hReq, HTTP_QUERY_STATUS_TEXT, NULL, &length, NULL) &&
 		GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
@@ -354,8 +354,8 @@ HttpConnection::queryInfo()
 	HttpQueryInfo(hReq, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, 
 				  (LPVOID)&contentLength,  &length, 0);
 	
-	contentType.resize(0);
-	encoding.resize(0);
+	contentType.erase();
+	encoding.erase();
 	length = 0;
 	if (!HttpQueryInfo(hReq, HTTP_QUERY_CONTENT_TYPE, NULL, &length, NULL) &&
 		GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
@@ -414,7 +414,7 @@ HttpConnection::response(ResponseCallback callback, void *context)
 	if (statusCode == HTTP_STATUS_OK && callback) {
 		
 		// HTMLをパースして Content-Type からエンコーディングを取得する必要がある
-		bool needParseHtml = _tcsicmp(contentType.c_str(), _T("text/html")) == 0 && encoding.size() == 0;
+		bool needParseHtml = _tcsicmp(contentType.c_str(), _T("text/html")) == 0 && encoding.empty();
 
 		DWORD size = 0;
 		DWORD len;

@@ -1,6 +1,40 @@
 // 疑似コードによるマニュアル
 
 /**
+ * application/x-www-form-urlencoded を処理するためのデータ
+ * ※まだ未実装
+ */
+class WWWForm {
+	/**
+	 * コンストラクタ
+	 * @param 初期化辞書
+	 */
+	function WWWForm(dict=void);
+
+	/**
+	 * 値の追加
+	 * @param name 名前
+	 * @param value 値
+	 */
+	function addParam(name, value);
+
+	/**
+	 * GETメソッド用のパス文字列を取得
+	 * @param encoding エンコード指定。省略時は UTF-8
+	 * @return PATHの形になったデータを返す
+	 */
+	function getPathParameter(encoding=void);
+
+	/**
+	 * POSTメソッド用のデータを取得
+	 * @param encoding エンコード指定。省略時は UTF-8
+	 * @return octetでデータを返す
+	 */
+	function getContent(encoding);
+}
+
+
+/**
  * HttpRequestクラス
  * HTTP/HTTPS による非同期通信機能を提供する
  */
@@ -42,11 +76,19 @@ class HttpRequest {
 	/**
 	 * リクエストの送信
 	 * @param data 送信するデータ
-	 * 文字列の場合：そのまま送信
-	 * 辞書の場合: application/x-www-form-urlencoded で送信
+	 * octetの場合  : そのまま送信
+	 * 文字列の場合 : 規定のエンコードで処理して送信
+	 * その他       : データは送信しない
 	 * @param storeStrorage レスポンス保存先ファイル。指定された場合はプロパティ responseは 設定されません
 	 */
 	function send(data=void, storeStorage=void);
+	
+	/**
+	 * リクエストの送信
+	 * @param storage 送信するファイルデータ
+	 * @param storeStrorage レスポンス保存先ファイル。指定された場合はプロパティ responseは 設定されません
+	 */
+	function sendStorage(storage, storeStorage=void);
 	
 	/**
 	 * 現在実行中の送受信のキャンセル
@@ -67,20 +109,29 @@ class HttpRequest {
 	function getResponseHeader(name);
 
 	/**
+	 * レスポンスをテキストの形で取得
+	 * @param encoding エンコード指定。省略時は Content-type で指定されたもの
+	 */
+	function getResponseText(encoding=void);
+
+	/**
 	 * 通信状態。読み込み専用
 	 * @return 現在の通信状態
 	 */
 	property readyState;
 
 	/**
-	 * レスポンス。読み込み専用。ContentType のエンコード指定で変換されます
+	 * レスポンス。読み込み専用。
 	 * @return レスポンスデータ
+	 * ContentType が text の場合：エンコード指定で変換された文字列が帰ります
+	 * ContentType が application/x-www-form-urlencoded の場合 : エンコード指定で戻された辞書が帰ります
+	 * その他 : octet データそのまま
 	 */
 	property response;
 	
 	/**
-	 * レスポンスのバイナリデータ。読み込み専用
-	 * @return レスポンスデータ
+	 * レスポンス｡読み込み専用
+	 * @return レスポンスデータ(octet)
 	 */
 	property responseData;
 	
@@ -96,6 +147,21 @@ class HttpRequest {
 	 */
 	property statusText;
 
+	/**
+	 * レスポンスの Content-Type (エンコーディング指定は含まない)
+	 */
+	property contentType;
+
+	/**
+	 * レスポンスの Content-Type のエンコード指定
+	 */
+	property contentTypeEncoding;
+
+	/**
+	 * レスポンスの Content-Length
+	 */
+	property contentLength;
+	
 	// ------------------------------------
 	// イベント
 	// ------------------------------------
