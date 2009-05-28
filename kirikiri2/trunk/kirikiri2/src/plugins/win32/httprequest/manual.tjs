@@ -103,14 +103,13 @@ class HttpRequest {
 	/**
 	 * readyState が変化した場合のイベント
 	 * @param readyState 新しいステート
-	 * @return 中断する場合は true を返す
 	 */
 	function onReadyStateChange(readyState);
 
 	/**
-	 * データ読み込み中のイベント
+	 * データ送受信イベント
+	 * @param upload 送信中は true
 	 * @param percent 進捗状態(0～100%)
-	 * @return 中断する場合は true を返す
 	 */
-	function onProgress(percent);
+	function onProgress(upload, percent);
 };
