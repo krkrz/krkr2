@@ -240,6 +240,7 @@ HttpConnection::request(RequestCallback callback, void *context)
 		dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
 		dwFlags |= SECURITY_FLAG_IGNORE_CERT_CN_INVALID;
 		dwFlags |= SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+		dwFlags |= SECURITY_FLAG_IGNORE_REVOCATION;
 		// dwFlags |= SECURITY_FLAG_IGNORE_REDIRECT_TO_HTTP;
 		// dwFlags |= SECURITY_FLAG_IGNORE_REDIRECT_TO_HTTPS;
 
@@ -251,40 +252,35 @@ HttpConnection::request(RequestCallback callback, void *context)
 		}
 	}
 
-	// リクエスト送信
-	BOOL canagain = true;
+	// リクエスト送信開始
 again:
 	if (!HttpSendRequestEx(hReq, NULL, NULL, 0, 0)) {
 		DWORD dwError = GetLastError();
-		// HTTPS の認証系エラー
-		if (secure && (dwError == ERROR_INTERNET_INVALID_CA ||
-					   dwError == ERROR_INTERNET_SEC_CERT_DATE_INVALID ||
-					   dwError == ERROR_INTERNET_SEC_CERT_CN_INVALID)) {
-			if (checkCert) {
-				if (InternetErrorDlg (GetDesktopWindow(),
-									  hReq,
-									  dwError,
-									  FLAGS_ERROR_UI_FILTER_FOR_ERRORS |
-									  FLAGS_ERROR_UI_FLAGS_GENERATE_DATA |
-									  FLAGS_ERROR_UI_FLAGS_CHANGE_OPTIONS,
-									  NULL) == ERROR_SUCCESS) {
-					goto again;
-				}
-			} else if (canagain) {
-				DWORD dwFlags;
-				DWORD dwBuffLen = sizeof(dwFlags);
-				if (InternetQueryOption(hReq, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, &dwBuffLen)) {
-					dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
-					dwFlags |= SECURITY_FLAG_IGNORE_CERT_CN_INVALID;
-					dwFlags |= SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
-					if (InternetSetOption(hReq, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, sizeof(dwFlags))) {
-						canagain = false;
-						goto again;
+		
+		// 証明書関連エラーの復帰処理
+		if (dwError == ERROR_INTERNET_INVALID_CA ||
+			dwError == ERROR_INTERNET_SEC_CERT_DATE_INVALID ||
+			dwError == ERROR_INTERNET_SEC_CERT_CN_INVALID ||
+			dwError == ERROR_INTERNET_SEC_CERT_REV_FAILED) {
+			if (InternetErrorDlg (GetDesktopWindow(),
+								  hReq,
+								  dwError,
+								  FLAGS_ERROR_UI_FILTER_FOR_ERRORS |
+								  FLAGS_ERROR_UI_FLAGS_GENERATE_DATA |
+								  FLAGS_ERROR_UI_FLAGS_CHANGE_OPTIONS,
+								  NULL) == ERROR_SUCCESS) {
+				if (dwError == ERROR_INTERNET_SEC_CERT_REV_FAILED){
+					// なぜかこのエラーは正しくオプションが変更されないので手動で変更
+					DWORD dwFlags;
+					DWORD dwBuffLen = sizeof(dwFlags);
+					if (InternetQueryOption(hReq, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, &dwBuffLen)) {
+						dwFlags |= SECURITY_FLAG_IGNORE_REVOCATION;
+						InternetSetOption(hReq, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, sizeof(dwFlags));
 					}
 				}
+				goto again;
 			}
 		}
-		
 		storeErrorMessage(dwError, errorMessage);
 		closeHandle();
 		return ERROR_INET;
@@ -351,8 +347,8 @@ HttpConnection::queryInfo()
 
 	contentLength = 0;
 	length = sizeof contentLength;
-	HttpQueryInfo(hReq, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, 
-				  (LPVOID)&contentLength,  &length, 0);
+	validContentLength = HttpQueryInfo(hReq, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, 
+									   (LPVOID)&contentLength,  &length, 0) != FALSE;
 	
 	contentType.erase();
 	encoding.erase();
@@ -443,6 +439,9 @@ HttpConnection::response(ResponseCallback callback, void *context)
 				closeHandle();
 				return ERROR_CANCEL;
 			}
+		}
+		if (!validContentLength) {
+			contentLength = size;
 		}
 	}
 	closeHandle();

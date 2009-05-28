@@ -220,6 +220,7 @@ private:
 	tstring requestEncoding;    ///< リクエストのエンコード指定
 
 	// 受信用データ
+	bool validContentLength;
 	DWORD contentLength;     ///< Content-Length:
 	tstring contentType;     ///< Content-Type: のtype部
 	tstring encoding;        ///< Content-TYpe: のエンコーディング部
