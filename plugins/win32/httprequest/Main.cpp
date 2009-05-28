@@ -9,7 +9,14 @@ using namespace std;
 #define	WM_HTTP_PROGRESS	(WM_APP+7)	// プログレス状態
 
 // エージェント名
-#define AGENT_NAME			_T("KIRIKIRI")
+#define AGENT_NAME _T("KIRIKIRI")
+#define DEFAULT_ENCODING _T("UTF-8")
+#define CTYPE_URLENCODED _T("application/x-www-form-urlencoded")
+
+// エンコーディング名からコードページを取得
+extern void initCodePage();
+extern void doneCodePage();
+extern int getCodePage(const wchar_t *encoding);
 
 /**
  * HttpRequest クラス
@@ -35,7 +42,7 @@ public:
 	HttpRequest(iTJSDispatch2 *objthis, iTJSDispatch2 *window, bool cert, const tjs_char *agentName)
 		 : objthis(objthis), window(window), http(agentName, cert),
 		   threadHandle(NULL), canceled(false),
-		   output(NULL), outputLength(0), input(NULL), inputLength(0),
+		   outputStream(NULL), outputLength(0), inputStream(NULL), inputLength(0),
 		   readyState(READYSTATE_UNINITIALIZED), statusCode(0)
 	{
 		window->AddRef();
@@ -87,39 +94,104 @@ public:
 	}
 
 	/**
-	 * リクエストの送信
-	 * @param data 送信するデータ
-	 * 文字列の場合：そのまま送信
-	 * 辞書の場合: application/x-www-form-urlencoded で送信
+	 * 送信処理
+	 * @param 送信データ
+	 * @param sendStorage 送信ファイル
+	 * @param saveStorage 保存先ファイル
 	 */
-	static tjs_error send(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, HttpRequest *self) {
-		self->checkRunning();
-		self->checkOpen();
-		if (numparams > 0) {
-			switch (params[0]->Type()) {
-			case tvtVoid:
-				break;
-			case tvtObject:
-				break;
-			case tvtString:
-				// UTF-8 に変換
-				break;
-			case tvtOctet:
-				break;
-			default:
-				break;
+	void _send(tTJSVariant *data, const tjs_char *sendStorage, const tjs_char *saveStorage) {
+		checkRunning();
+		checkOpen();
+		if (saveStorage) {
+			outputStream = TVPCreateIStream(ttstr(saveStorage), TJS_BS_WRITE);
+			if (outputStream == NULL) {
+				TVPThrowExceptionMessage(L"saveStorage open failed");
 			}
 		}
-		//IStream *out = TVPCreateIStream(ttstr(saveFileName), TJS_BS_WRITE);
-		self->startThread();
+		if (data) {
+			switch (data->Type()) {
+			case tvtString:
+				{
+					tTJSVariantString *str = data->AsStringNoAddRef();
+					int codePage = getCodePage(http.getRequestEncoding());
+					inputLength = ::WideCharToMultiByte(codePage, 0, *str, str->GetLength(), NULL, 0, NULL, NULL);
+					inputData.resize(inputLength);
+					::WideCharToMultiByte(codePage, 0, *str, str->GetLength(), (char*)&inputData[0], inputLength, NULL, NULL);
+				}
+				break;
+			case tvtOctet:
+				{
+					tTJSVariantOctet *octet = data->AsOctetNoAddRef();
+					if (octet) {
+						inputLength = octet->GetLength();
+						inputData.resize(inputLength);
+						memcpy(&inputData[0], octet->GetData(), inputLength);
+					}
+				}
+				break;
+			}
+			inputLength = inputData.size();
+		} else if (sendStorage) {
+			inputStream = TVPCreateIStream(ttstr(sendStorage), TJS_BS_READ);
+			if (inputStream == NULL) {
+				TVPThrowExceptionMessage(L"sendStorage open failed");
+			}
+			STATSTG stat;
+			inputStream->Stat(&stat, STATFLAG_NONAME);
+			inputLength = (DWORD)stat.cbSize.QuadPart;
+		}
+		if (inputLength > 0) {
+			ttstr len(inputLength);
+			http.addHeader(_T("Content-Length"), len.c_str());
+		}
+		startThread();
+	}
+	
+	/**
+	 * リクエストの送信
+	 */
+	static tjs_error send(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, HttpRequest *self) {
+		self->_send(numparams > 0 ? params[0] : NULL, NULL, numparams > 1 ? params[1]->GetString() : NULL);
 		return TJS_S_OK;
 	}
+
+	/**
+	 * リクエストの送信
+	 */
+	static tjs_error sendStorage(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, HttpRequest *self) {
+		if (numparams < 1) {
+			return TJS_E_BADPARAMCOUNT;
+		}
+		self->_send(NULL, params[0]->GetString(), numparams > 1 ? params[1]->GetString() : NULL);
+		return TJS_S_OK;
+	}
+	
+	void clearInput() {
+		if (inputStream) {
+			inputStream->Release();
+			inputStream = NULL;
+		}
+		inputData.clear();
+		inputSize = inputLength = 0;
+	}
+
+	void clearOutput() {
+		if (outputStream) {
+			outputStream->Release();
+			outputStream = NULL;
+		}
+		outputData.clear();
+		outputSize = outputLength = 0;
+	}
+	
 
 	/**
 	 * 現在実行中の送受信のキャンセル
 	 */
 	void abort() {
 		stopThread();
+		clearInput();
+		clearOutput();
 	}
 	
 	/**
@@ -161,13 +233,62 @@ public:
 	}
 
 	/**
+	 * レスポンスをテキストの形で返す
+	 * @param encoding エンコーディング指定
+	 */
+	tTJSString _getResponseText(const tjs_char *encoding) {
+		tTJSString ret;
+		if (encoding == NULL) {
+			encoding = http.getEncoding();
+		}
+		if (outputData.size() > 0) {
+			DWORD size = outputData.size();
+			const char *data = (const char*)&outputData[0];
+			int dlen = outputData.size();
+			int codepage = getCodePage(encoding);
+			int l = ::MultiByteToWideChar(codepage, 0, data, dlen, NULL, 0);
+			if (l > 0) {
+				tjs_char *str = ret.AllocBuffer(l);
+				::MultiByteToWideChar(codepage, 0, data, dlen, str, l);
+			}
+		}
+		return ret;
+	}
+
+	static tjs_error getResponseText(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, HttpRequest *self) {
+		if (result) {
+			*result = self->_getResponseText(numparams > 0 ? params[0]->GetString() : NULL);
+		}
+		return TJS_S_OK;
+	}
+	
+	/**
 	 * レスポンスデータ。読み込み専用
 	 * @return レスポンスデータ
 	 */
 	tTJSVariant getResponse() {
+		const TCHAR *contentType = http.getContentType();
+		if (_tcsncmp(http.getContentType(), _T("text/"), 5) == 0) {
+			return _getResponseText(http.getEncoding());
+//		} else if (_tcscmp(contentType, CTYPE_URLENCODED) == 0) {
+//			// URLENCODEDなデータを解析して辞書を構築
+		} else if (outputData.size() > 0) {
+			return tTJSVariant((const tjs_uint8 *)&outputData[0], outputData.size());
+		}
 		return tTJSVariant();
 	}
-		
+	
+	/**
+	 * レスポンスデータ。読み込み専用
+	 * @return レスポンスデータ
+	 */
+	tTJSVariant getResponseData() {
+		if (outputData.size() > 0) {
+			return tTJSVariant((const tjs_uint8 *)&outputData[0], outputData.size());
+		}
+		return tTJSVariant();
+	}
+
 	/**
 	 * レスポンスの HTTPステータスコード。読み込み専用
 	 * @return ステータスコード
@@ -184,6 +305,18 @@ public:
 		return statusText.c_str();
 	}
 
+	const tjs_char *getContentType() {
+		return http.getContentType();
+	}
+
+	const tjs_char *getContentTypeEncoding() {
+		return http.getEncoding();
+	}
+
+	int getContentLength() {
+		return http.getContentLength();
+	}
+	
 	/**
 	 * インスタンス生成ファクトリ
 	 */
@@ -294,10 +427,18 @@ protected:
 	 * @param size 読み出したサイズ
 	 */
 	bool upload(void *buffer, DWORD &size) {
-		if (input) {
-			input->Read(buffer, size, &size);
+		if (inputStream) {
+			// ファイルから読み込む
+			inputStream->Read(buffer, size, &size);
 		} else {
-			size = 0;
+			// メモリから読み込む
+			DWORD s = inputData.size() - inputSize;
+			if (s < size) {
+				size = s;
+			}
+			if (size > 0) {
+				memcpy(buffer, &inputData[size], size);
+			}
 		}
 		inputSize += size;
 		int percent = (inputLength > 0) ? inputSize * 100 / inputLength : 0;
@@ -320,12 +461,26 @@ protected:
 	 * @param size 読み出したサイズ
 	 */
 	bool download(const void *buffer, DWORD size) {
-		if (output) {
+		if (outputStream) {
 			if (buffer) {
-				output->Write(buffer, size, &size);
+				DWORD n = 0;
+				DWORD s = size;
+				while (s > 0) {
+					DWORD l;
+					if (outputStream->Write((BYTE*)buffer+n, s, &l) == S_OK) {
+						size -= l;
+						n += l;
+					} else {
+						break;
+					}
+				}
 			} else {
-				output->Release();
+				outputStream->Release();
+				outputStream = NULL;
 			}
+		} else {
+			outputData.resize(outputSize + size);
+			memcpy(&outputData[outputSize], buffer, size);
 		}
 		outputSize += size;
 		int percent = (outputLength > 0) ? outputSize * 100 / outputLength : 0;
@@ -350,11 +505,14 @@ protected:
 		inputSize = 0;
 		int errorCode;
 		if ((errorCode = http.request(uploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+			clearInput();
 			http.queryInfo();
 			outputSize = 0;
 			outputLength = http.getContentLength();
 			postMessage(WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
 			errorCode = http.response(downloadCallback, (void*)this);
+		} else {
+			clearInput();
 		}
 		switch (errorCode) {
 		case HttpConnection::ERROR_NONE:
@@ -409,12 +567,14 @@ private:
 	bool canceled; ///< キャンセルされた
 
 	// リクエスト
-	IStream *input;
+	IStream *inputStream;
+	vector<BYTE>inputData;
 	int inputLength;
 	int inputSize;
 
 	// レスポンス
-	IStream *output;
+	IStream *outputStream;
+	vector<BYTE>outputData;
 	int outputLength;
 	int outputSize;
 
@@ -435,11 +595,20 @@ NCB_REGISTER_CLASS(HttpRequest) {
 	RawCallback(TJS_W("open"), &Class::open, 0);
 	NCB_METHOD(setRequestHeader);
 	RawCallback(TJS_W("send"), &Class::send, 0);
+	RawCallback(TJS_W("sendStorage"), &Class::sendStorage, 0);
 	NCB_METHOD(abort);
 	NCB_METHOD(getAllResponseHeaders);
 	NCB_METHOD(getResponseHeader);
+	RawCallback(TJS_W("getResponseText"), &Class::getResponseText, 0);
 	NCB_PROPERTY_RO(readyState, getReadyState);
 	NCB_PROPERTY_RO(response, getResponse);
+	NCB_PROPERTY_RO(responseData, getResponseData);
 	NCB_PROPERTY_RO(status, getStatus);
 	NCB_PROPERTY_RO(statusText, getStatusText);
+	NCB_PROPERTY_RO(contentType, getContentType);
+	NCB_PROPERTY_RO(contentTypeEncoding, getContentTypeEncoding);
+	NCB_PROPERTY_RO(contentLength, getContentLength);
 }
+
+NCB_PRE_REGIST_CALLBACK(initCodePage);
+NCB_POST_UNREGIST_CALLBACK(doneCodePage);

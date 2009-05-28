@@ -182,6 +182,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\encoding.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\HttpConnection.cpp"
 				>
 			</File>
