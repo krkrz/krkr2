@@ -6,7 +6,7 @@ static bool coInitialized;
 static IMultiLanguage *ml = NULL;
 
 void
-initCodePage()
+initEncoding()
 {
 	coInitialized = SUCCEEDED(CoInitialize(0));
 	if (coInitialized) {
@@ -15,7 +15,7 @@ initCodePage()
 }
 
 void
-doneCodePage()
+doneEncoding()
 {
 	if (coInitialized) {
 		if (ml) {
@@ -27,12 +27,12 @@ doneCodePage()
 }
 
 /**
- * IANA のエンコード名から codepage を取得
- * @param encoding エンコード
- * @return コードページ
+ * IANA のエンコード名からエンコーディングコードを取得
+ * @param encoding エンコード名
+ * @return エンコーディングコード
  */
 int
-getCodePage(const wchar_t *encoding)
+getEncoding(const wchar_t *encoding)
 {
 	if (encoding && *encoding && ml) {
 		MIMECSETINFO csinfo;
@@ -40,5 +40,45 @@ getCodePage(const wchar_t *encoding)
 			return csinfo.uiInternetEncoding;
 		}
 	}
-	return CP_UTF8;
+	return 65001; // UTF-8
+}
+
+UINT
+getWCToMBLen(int enc, const wchar_t *wc, UINT wclen)
+{	
+	UINT mblen = 0;
+	if (ml) {
+		DWORD mode;
+		ml->ConvertStringFromUnicode(&mode, enc, (WCHAR*)wc, &wclen, NULL, &mblen);
+	}
+	return mblen;
+}
+
+void
+convWCToMB(int enc, const wchar_t *wc, UINT *wclen, char *mb, UINT *mblen)
+{
+	if (ml) {
+		DWORD mode = 0;
+		ml->ConvertStringFromUnicode(&mode, enc, (WCHAR*)wc, wclen, mb, mblen);
+	}
+}
+
+UINT
+getMBToWCLen(int enc, const char *mb, UINT mblen)
+{
+	UINT wclen = 0;
+	if (ml) {
+		DWORD mode = 0;
+		ml->ConvertStringToUnicode(&mode, enc, (CHAR*)mb, &mblen, NULL, &wclen);
+	}
+	return wclen;
+}
+
+void
+convMBToWC(int enc, const char *mb, UINT *mblen, wchar_t *wc, UINT *wclen)
+{
+	if (ml) {
+		DWORD mode = 0;
+		ml->ConvertStringToUnicode(&mode, enc, (CHAR*)mb, mblen, wc, wclen);
+	}
 }

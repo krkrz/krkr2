@@ -14,9 +14,13 @@ using namespace std;
 #define CTYPE_URLENCODED _T("application/x-www-form-urlencoded")
 
 // エンコーディング名からコードページを取得
-extern void initCodePage();
-extern void doneCodePage();
-extern int getCodePage(const wchar_t *encoding);
+extern void initEncoding();
+extern void doneEncoding();
+extern int getEncoding(const wchar_t *encoding);
+extern UINT getWCToMBLen(int enc, const wchar_t *wc, UINT wclen);
+extern void convWCToMB(int enc, const wchar_t *wc, UINT *wclen, char *mb, UINT *mblen);
+extern UINT getMBToWCLen(int enc, const char *mb, UINT mblen);
+extern void convMBToWC(int enc, const char *mb, UINT *mblen, wchar_t *wc, UINT *wclen);
 
 /**
  * HttpRequest クラス
@@ -113,10 +117,12 @@ public:
 			case tvtString:
 				{
 					tTJSVariantString *str = data->AsStringNoAddRef();
-					int codePage = getCodePage(http.getRequestEncoding());
-					inputLength = ::WideCharToMultiByte(codePage, 0, *str, str->GetLength(), NULL, 0, NULL, NULL);
+					int enc = getEncoding(http.getRequestEncoding());
+					inputLength = ::getWCToMBLen(enc, *str, str->GetLength());
 					inputData.resize(inputLength);
-					::WideCharToMultiByte(codePage, 0, *str, str->GetLength(), (char*)&inputData[0], inputLength, NULL, NULL);
+					UINT wlen = str->GetLength();
+					UINT blen = inputData.size();
+					::convWCToMB(enc, *str, &wlen, (char*)&inputData[0], &blen);
 				}
 				break;
 			case tvtOctet:
@@ -244,12 +250,12 @@ public:
 		if (outputData.size() > 0) {
 			DWORD size = outputData.size();
 			const char *data = (const char*)&outputData[0];
-			int dlen = outputData.size();
-			int codepage = getCodePage(encoding);
-			int l = ::MultiByteToWideChar(codepage, 0, data, dlen, NULL, 0);
+			UINT dlen = outputData.size();
+			int enc = getEncoding(encoding);
+			UINT l = ::getMBToWCLen(enc, data, dlen);
 			if (l > 0) {
 				tjs_char *str = ret.AllocBuffer(l);
-				::MultiByteToWideChar(codepage, 0, data, dlen, str, l);
+				::convMBToWC(enc, data, &dlen, str, &l);
 			}
 		}
 		return ret;
@@ -610,5 +616,5 @@ NCB_REGISTER_CLASS(HttpRequest) {
 	NCB_PROPERTY_RO(contentLength, getContentLength);
 }
 
-NCB_PRE_REGIST_CALLBACK(initCodePage);
-NCB_POST_UNREGIST_CALLBACK(doneCodePage);
+NCB_PRE_REGIST_CALLBACK(initEncoding);
+NCB_POST_UNREGIST_CALLBACK(doneEncoding);
