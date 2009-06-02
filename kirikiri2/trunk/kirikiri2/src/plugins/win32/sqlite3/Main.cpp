@@ -31,7 +31,7 @@ bind(sqlite3_stmt *stmt, tTJSVariant &variant, int pos)
 	case tvtString:
 		{
 			tTJSVariantString *str = variant.AsStringNoAddRef();
-			sqlite3_bind_text16(stmt, pos, str, str->GetLength()*2, SQLITE_TRANSIENT);
+			sqlite3_bind_text16(stmt, pos, *str, str->GetLength() * sizeof tjs_char, SQLITE_TRANSIENT);
 		}
 		break;
 	case tvtOctet:
@@ -102,7 +102,7 @@ public:
 				// 空文字または ':' で始まる場合は sqlite の特殊な扱い
 				sqlite3_open16(database, &db);
 			} else {
-				filename = TVPGetPlacedPath(filename);
+				filename = TVPNormalizeStorageName(filename);
 				if (filename.length() && !wcschr(filename.c_str(), '>')) {
 					TVPGetLocalName(filename);
 					sqlite3_open16(filename.c_str(), &db);
@@ -129,11 +129,11 @@ public:
 		}
 		sqlite3_stmt *stmt = NULL;
 		int ret;
-		if ((ret = sqlite3_prepare16(self->db, params[1]->GetString(), -1, &stmt, NULL)) == SQLITE_OK) {
+		if ((ret = sqlite3_prepare16_v2(self->db, params[1]->GetString(), -1, &stmt, NULL)) == SQLITE_OK) {
 			sqlite3_reset(stmt);
 			// パラメータをバインド
 			for (int n=2;n<numparams;n++) {
-				bind(stmt, *params[n], n-2);
+				bind(stmt, *params[n], n-1);
 			}
 			if (params[0]->Type() == tvtObject) {
 				tTJSVariantClosure &callback = params[0]->AsObjectClosureNoAddRef();
@@ -162,7 +162,7 @@ public:
 			sqlite3_finalize(stmt);
 		}
 		if (result) {
-			*result = ret;
+			*result = ret == SQLITE_OK || ret == SQLITE_DONE;
 		}
 		return TJS_S_OK;
 	}
@@ -171,11 +171,11 @@ public:
 	 * 値取得用にSQLを実行する。
 	 */
 	static tjs_error execValue(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, Sqlite *self) {
-		if (numparams < 2) {
+		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
 		sqlite3_stmt *stmt = NULL;
-		if (sqlite3_prepare16(self->db, params[0]->GetString(), -1, &stmt, NULL) == SQLITE_OK) {
+		if (sqlite3_prepare16_v2(self->db, params[0]->GetString(), -1, &stmt, NULL) == SQLITE_OK) {
 			sqlite3_reset(stmt);
 			for (int n=1;n<numparams;n++) {
 				bind(stmt, *params[n], n-1);
@@ -202,11 +202,11 @@ public:
 	}
 
 	int getErrorCode() const {
-		return sqlite3_errcode(db);
+		return db ? sqlite3_errcode(db) : -1;
 	}
 	
 	ttstr getErrorMessage() const {
-		return ttstr((const tjs_char*)sqlite3_errmsg16(db));
+		return db ? ttstr((const tjs_char*)sqlite3_errmsg16(db)) : ttstr("database open failed");
 	}
 	
 	/**
@@ -216,6 +216,7 @@ public:
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
+		*result = new Sqlite(params[0]->GetString(), numparams > 1 ? (int)*params[1] != 0 : false);
 		return S_OK;
 	}
 
