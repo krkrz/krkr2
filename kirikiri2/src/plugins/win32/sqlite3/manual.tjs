@@ -16,7 +16,7 @@ class Sqlite
 	 * @param callback コールバック (引数にカラムが列挙されます)
 	 * @param sql 実行するSQL
 	 * @param ... sqlにバインドするパラメータを列挙
-	 * @return エラーコード
+	 * @return 成功なら true
 	 */
 	function exec(callback, sql, ...);
 
