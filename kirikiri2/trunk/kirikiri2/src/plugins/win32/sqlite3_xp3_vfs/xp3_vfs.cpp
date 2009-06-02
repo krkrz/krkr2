@@ -18,7 +18,7 @@
 #include <windows.h>
 #include <assert.h>
 #include "tp_stub.h"
-#include "sqlite3_5_4/sqlite3.h"
+#include "sqlite3/sqlite3.h"
 
 #ifndef SQLITE_DEFAULT_SECTOR_SIZE
 #	define SQLITE_DEFAULT_SECTOR_SIZE 512
@@ -205,7 +205,7 @@ static int xp3Lock(sqlite3_file *id, int locktype)
 	return SQLITE_OK;
 }
 
-static int xp3CheckReservedLock(sqlite3_file *id)
+static int xp3CheckReservedLock(sqlite3_file *id, int *pResOut)
 {
 	// いつもロックしていない
 	return 0;
@@ -287,7 +287,7 @@ static int xp3Delete( sqlite3_vfs *vfs, const char *zFilename, int syncDir )
 	return SQLITE_READONLY;
 }
 
-static int xp3Access( sqlite3_vfs *vfs, const char *zFilename, int flags )
+static int xp3Access( sqlite3_vfs *vfs, const char *zFilename, int flags, int *pResOut )
 {
 	std::wstring	utf16Name;
 	bool ret = utf8ToUtf16( zFilename, utf16Name );
@@ -310,13 +310,8 @@ static int xp3Access( sqlite3_vfs *vfs, const char *zFilename, int flags )
 	default:
 		assert(!"Invalid flags argument");
 	}
-	return rc;
-}
-
-static int xp3GetTempname( sqlite3_vfs *pVfs, int nBuf, char *zBuf )
-{
-	// サポートしていない
-	return SQLITE_NOMEM;
+	*pResOut = rc;
+	return SQLITE_OK;
 }
 
 // XP3内ではフルパスを返さず、そのまま返す
@@ -349,9 +344,9 @@ static void xp3DlError(sqlite3_vfs *pVfs, int nBuf, char *zBufOut )
 	::FormatMessageA( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, zBufOut, nBuf-1, 0 );
 }
 
-void *xp3DlSym( sqlite3_vfs *pVfs, void *pHandle, const char *zSymbol )
+void (*xp3DlSym( sqlite3_vfs *pVfs, void *pHandle, const char *zSymbol ))(void)
 {
-	return ::GetProcAddress( (HMODULE)pHandle, zSymbol );
+	return (void(*)(void))::GetProcAddress((HMODULE)pHandle, zSymbol);
 }
 void xp3DlClose( sqlite3_vfs *pVfs, void *pHandle )
 {
@@ -405,6 +400,22 @@ static int xp3CurrentTime( sqlite3_vfs *pVfs, double *prNow )
 	return 0;
 }
 
+static int xp3GetLastError(sqlite3_vfs *pVfs, int nBuf, char *zBuf){
+	DWORD error = GetLastError();
+	if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,
+						NULL,
+						error,
+						0,
+						zBuf,
+						nBuf-1,
+						0))
+	{
+		sqlite3_snprintf(nBuf, zBuf, "OsError 0x%x (%u)", error, error);
+	}
+	return SQLITE_OK;
+}
+
+
 sqlite3_vfs *getXp3Vfs()
 {
 	static sqlite3_vfs xp3Vfs = {
@@ -418,7 +429,6 @@ sqlite3_vfs *getXp3Vfs()
 		xp3Open,			// xOpen
 		xp3Delete,			// xDelete
 		xp3Access,			// xAccess
-		xp3GetTempname,		// xGetTempName
 		xp3FullPathname,	// xFullPathname
 		xp3DlOpen,			// xDlOpen
 		xp3DlError,			// xDlError
@@ -426,9 +436,9 @@ sqlite3_vfs *getXp3Vfs()
 		xp3DlClose,			// xDlClose
 		xp3Randomness,		// xRandomness
 		xp3Sleep,			// xSleep
-		xp3CurrentTime		// xCurrentTime
-	};
-
+		xp3CurrentTime,		// xCurrentTime
+		xp3GetLastError     // xGetLastError
+		};
 	return &xp3Vfs;
 }
 

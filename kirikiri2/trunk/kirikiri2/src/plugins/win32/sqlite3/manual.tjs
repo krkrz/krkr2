@@ -1,0 +1,238 @@
+/**
+ * Sqliteクラス
+ */
+class Sqlite
+{
+	/**
+	 * コンストラクタ
+	 * @param database データベースファイル
+	 * @param readonly 読み込み専用で開く
+	 * ※読み込み専用時は吉里吉里のファイル機構が使われます。そうでない場合はOSの機構を使います。
+	 */
+	function Sqlite(database, readonly=false);
+
+	/**
+	 * SQLを実行する。
+	 * @param callback コールバック (引数にカラムが列挙されます)
+	 * @param sql 実行するSQL
+	 * @param ... sqlにバインドするパラメータを列挙
+	 * @return エラーコード
+	 */
+	function exec(callback, sql, ...);
+
+	/**
+	 * 値取得用にSQLを実行する。
+	 * @param sql 実行するSQL
+	 * @param ... sqlにバインドするパラメータを列挙
+	 * @return 結果の第一カラム。エラーの場合は void
+	 */
+	function execValue(sql, ...);
+
+	/**
+	 * トランザクションの開始
+	 */
+	function begin();
+
+	/**
+	 * トランザクションのコミット
+	 */
+	function commit();
+
+	/**
+	 * トランザクションのロールバック
+	 */
+	function rollback();
+
+	/**
+	 * 直前のコマンド実行のエラーコード
+	 */
+	property errorCode;
+	
+	/**
+	 * 直前のコマンド実行のエラーメッセージ
+	 */
+	property errorMessage;
+};
+
+/**
+ * Sqliteのステートメントを扱うクラス
+ */
+class SqliteStatement
+{
+	/**
+	 * コンストラクタ
+	 * @param sqlite データベース (Sqliteクラスのインスタンス)
+	 * @param sql SQL 指定すると自動的に open します
+	 */
+	SqliteStatement(sqlite, sql=void);
+
+	/**
+	 * 新規ステートを開く
+	 * @param sql SQL
+	 */
+	function open(sql);
+
+	/**
+	 * ステートを閉じる
+	 */
+	function close();
+	
+	/**
+	 * 元SQL(読み込み専用)
+	 */
+	property sql;
+
+	/**
+	 * バインド状態のリセット
+	 * @return エラーコード
+	 */
+	function reset();
+	
+	/**
+	 * パラメータのバインド
+	 * @parma value 値
+	 * @param column カラム番号またはカラム名(省略時は前回指定値の次のカラム)
+	 * @return エラーコード
+	 */
+	function bind(value, column=void);
+
+	/**
+	 * ステートメント実行
+	 * @return エラーコード
+	 */
+	function step();
+
+	/**
+	 * データ数(読み込み専用)
+	 * 初回の step の後設定されます
+	 */
+	property dataCount;
+
+	/**
+	 * 現在のカラムの数を返す
+	 */
+	property count;
+
+	/**
+	 * カラム名の取得
+	 * @param column カラム番号
+	 * @return カラム名
+	 */
+	function getColumnName(column);
+
+	/**
+	 * カラムのNULL判定
+	 * @param column カラム番号またはカラム名
+	 * @return 指定カラムが NULL かどうか
+	 */
+	function inNull(column);
+
+	/**
+	 * カラムの型の取得
+	 * @param column カラム番号またはカラム名
+	 * @return カラムの型
+	 */
+	function getType(column);
+
+	/**
+	 * 結果の取得。
+	 * このメソッドの他、missing 指定により obj[column] で取得したカラムを直接参照可能です
+	 * @param column カラム番号またはカラム名
+	 * @param defaultValue デフォルト値。カラムが NULL の場合にこの値を返します
+	 * @return 指定カラムの値
+	 */
+	function get(column, defaultValue=void);
+
+	/**
+	 * 直前のコマンド実行のエラーコード
+	 */
+	property errorCode;
+	
+	/**
+	 * 直前の実行のエラーメッセージ
+	 */
+	property errorMessage;
+	
+};
+
+/**
+ * sqliteのスレッド実行サポート
+ */
+class SqliteThread
+{
+	/**
+	 * コンストラクタ
+	 * @param window イベント処理用のウインドウ(Windowクラスのインスタンス)
+	 * @param sqlite データベース (Sqliteクラスのインスタンス)
+	 */
+	function SqliteThread(window, sqlite);
+	
+	/**
+	 * 検索処理をバックグランドでトランザクション実行する。
+	 * 結果は内部に蓄積されて完了後に引き渡されます。
+	 * @param sql 実行するSQL
+	 * @param ... SQLに引き渡すパラメータ(sqlにバインドされます)
+	 * @return エラーコード
+	 */
+	function select(sql, ...);
+	
+	/**
+	 * 更新処理をバックグランドでトランザクション実行する。	  
+	 * @param sql 実行するSQL
+	 * @param 更新用データ行の配列(sqlにバインドされます)
+	 * @return エラーコード
+	 */
+	function update(sql, data);
+	
+	/**
+	 * 実行処理を中止させます
+	 */
+	function abort();
+
+	/**
+	 * 直前のコマンド実行のエラーコード
+	 */
+	property errorCode;
+	
+	/**
+	 * 直前のコマンド実行のエラーメッセージ
+	 */
+	property errorMessage;
+
+	// ----------------------------------------------
+	// イベント
+	// ----------------------------------------------
+
+	/**
+	 * 処理開始
+	 * @param dataCount 取得予定のデータ数
+	 * @param ... 取得するカラム名の列挙
+	 */
+	function onSelectBegin(dataCount, ...);
+
+	/**
+	 * 処理経過
+	 * @param percent 実行状況(パーセント指定)
+	 */
+	function onSelectProgress(percent);
+
+	/**
+	 * 処理終了
+	 * @param status ステータス -1:abortされた 0:成功 その他:エラー
+	 * @param result 取得結果の行の配列
+	 */
+	function onSelectEnd(status, result);
+	
+	/**
+	 * 更新処理経過
+	 * @param percent 実行状況(パーセント指定)
+	 */
+	function onUpdateProgress(percent);
+
+	/**
+	 * 処理終了
+	 * @param status ステータス -1:abortされた 0:成功 その他:エラー
+	 */
+	function onUpdateEnd(status);
+
+};
