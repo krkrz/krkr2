@@ -91,10 +91,10 @@ class SqliteStatement
 	/**
 	 * パラメータのバインド
 	 * @parma value 値
-	 * @param column カラム番号またはカラム名(省略時は前回指定値の次のカラム)
+	 * @param pos パラメータ値(省略時は前回指定値の次)
 	 * @return エラーコード
 	 */
-	function bind(value, column=void);
+	function bind(value, pos=void);
 
 	/**
 	 * ステートメント実行
@@ -114,45 +114,40 @@ class SqliteStatement
 	property count;
 
 	/**
-	 * カラム名の取得
-	 * @param column カラム番号
-	 * @return カラム名
-	 */
-	function getColumnName(column);
-
-	/**
 	 * カラムのNULL判定
 	 * @param column カラム番号またはカラム名
 	 * @return 指定カラムが NULL かどうか
 	 */
-	function inNull(column);
+	function isNull(column);
+
+	// カラムの型識別用
+	SQLITE_INTEGER = 1;
+	SQLITE_FLOAT = 2;
+	SQLITE_TEXT = 3;
+	SQLITE_BLOB = 4;
+	SQLITE_NULL = 5;
 
 	/**
 	 * カラムの型の取得
 	 * @param column カラム番号またはカラム名
-	 * @return カラムの型
+	 * @return カラムの型コード
 	 */
 	function getType(column);
 
 	/**
+	 * カラム名の取得
+	 * @param column カラム番号またはカラム名
+	 * @return カラム名
+	 */
+	function getName(column);
+	
+	/**
 	 * 結果の取得。
-	 * このメソッドの他、missing 指定により obj[column] で取得したカラムを直接参照可能です
 	 * @param column カラム番号またはカラム名
 	 * @param defaultValue デフォルト値。カラムが NULL の場合にこの値を返します
 	 * @return 指定カラムの値
 	 */
 	function get(column, defaultValue=void);
-
-	/**
-	 * 直前のコマンド実行のエラーコード
-	 */
-	property errorCode;
-	
-	/**
-	 * 直前の実行のエラーメッセージ
-	 */
-	property errorMessage;
-	
 };
 
 /**
@@ -188,16 +183,6 @@ class SqliteThread
 	 * 実行処理を中止させます
 	 */
 	function abort();
-
-	/**
-	 * 直前のコマンド実行のエラーコード
-	 */
-	property errorCode;
-	
-	/**
-	 * 直前のコマンド実行のエラーメッセージ
-	 */
-	property errorMessage;
 
 	// ----------------------------------------------
 	// イベント
