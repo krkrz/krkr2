@@ -30,16 +30,19 @@ class Sqlite
 
 	/**
 	 * トランザクションの開始
+	 * @return 成功なら true
 	 */
 	function begin();
 
 	/**
 	 * トランザクションのコミット
+	 * @return 成功なら true
 	 */
 	function commit();
 
 	/**
 	 * トランザクションのロールバック
+	 * @return 成功なら true
 	 */
 	function rollback();
 
@@ -63,14 +66,19 @@ class SqliteStatement
 	 * コンストラクタ
 	 * @param sqlite データベース (Sqliteクラスのインスタンス)
 	 * @param sql SQL 指定すると自動的に open します
+	 * @param ... バインドするパラメータ
+	 * @throw InvalidObject 第一引数が異常
+	 * @throw "failed to open" 指定されたSQLのopenに失敗
 	 */
-	SqliteStatement(sqlite, sql=void);
+	SqliteStatement(sqlite, sql=void, ...);
 
 	/**
 	 * 新規ステートを開く
 	 * @param sql SQL
+	 * @param ... バインドするパラメータ
+	 * @return エラーコード
 	 */
-	function open(sql);
+	function open(sql, ...);
 
 	/**
 	 * ステートを閉じる
@@ -90,18 +98,31 @@ class SqliteStatement
 	
 	/**
 	 * パラメータのバインド
-	 * @parma value 値
-	 * @param pos パラメータ値(省略時は前回指定値の次)
+	 * @parma ... バインドするパラメータを列挙
 	 * @return エラーコード
 	 */
-	function bind(value, pos=void);
+	function bind(...);
 
+	/**
+	 * パラメータのバインド
+	 * @parma value 値
+	 * @param pos パラメータ位置(省略時は前回指定値の次)
+	 * @return エラーコード
+	 */
+	function bindAt(value, pos=void);
+	
 	/**
 	 * ステートメント実行
 	 * @return エラーコード
 	 */
-	function step();
+	function exec();
 
+	/**
+	 * ステートメントステップ実行
+	 * @return 取得データがあれば true
+	 */
+	function step();
+	
 	/**
 	 * データ数(読み込み専用)
 	 * 初回の step の後設定されます

@@ -18,32 +18,27 @@
  * @param variant バインドするデータ
  * @param num バインド位置
  */
-static void
+static int
 bind(sqlite3_stmt *stmt, tTJSVariant &variant, int pos)
 {
 	pos++;
 	switch (variant.Type()) {
 	case tvtInteger:
-		sqlite3_bind_int64(stmt, pos, variant);
-		break;
+		return sqlite3_bind_int64(stmt, pos, variant);
 	case tvtReal:
-		sqlite3_bind_double(stmt, pos, variant);
-		break;
+		return sqlite3_bind_double(stmt, pos, variant);
 	case tvtString:
 		{
 			tTJSVariantString *str = variant.AsStringNoAddRef();
-			sqlite3_bind_text16(stmt, pos, *str, str->GetLength() * sizeof tjs_char, SQLITE_TRANSIENT);
+			return sqlite3_bind_text16(stmt, pos, *str, str->GetLength() * sizeof tjs_char, SQLITE_TRANSIENT);
 		}
-		break;
 	case tvtOctet:
 		{
 			tTJSVariantOctet *octet = variant.AsOctetNoAddRef();
-			sqlite3_bind_blob(stmt, pos, octet->GetData(), octet->GetLength(), SQLITE_STATIC);
+			return sqlite3_bind_blob(stmt, pos, octet->GetData(), octet->GetLength(), SQLITE_STATIC);
 		}
-		break;
 	default:
-		sqlite3_bind_null(stmt, pos);
-		break;
+		return sqlite3_bind_null(stmt, pos);
 	}
 }
 
@@ -54,7 +49,7 @@ bind(sqlite3_stmt *stmt, tTJSVariant &variant, int pos)
  * @param num カラム番号
  */
 static void
-getColumn(sqlite3_stmt *stmt, tTJSVariant &variant, int num)
+getColumnData(sqlite3_stmt *stmt, tTJSVariant &variant, int num)
 {
 	switch (sqlite3_column_type(stmt, num)) {
 	case SQLITE_INTEGER:
@@ -149,7 +144,7 @@ public:
 				while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
 					// 引数に展開
 					for (int i=0;i<argc;i++) {
-						::getColumn(stmt, *args[i], i);
+						::getColumnData(stmt, *args[i], i);
 					}
 					callback.FuncCall(0, NULL, NULL, NULL, argc, args, NULL);
 				}
@@ -185,7 +180,7 @@ public:
 			int argc = sqlite3_column_count(stmt);
 			if (sqlite3_step(stmt) == SQLITE_ROW && argc > 0) {
 				if (result) {
-					::getColumn(stmt, *result, 0);
+					::getColumnData(stmt, *result, 0);
 				}
 			}
 			sqlite3_finalize(stmt);
@@ -193,14 +188,14 @@ public:
 		return TJS_S_OK;
 	}
 	
-	void begin() {
-		sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+	bool begin() {
+		return sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL) == SQLITE_OK;
 	}
-	void commit() {
-		sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
+	bool commit() {
+		return sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL) == SQLITE_OK;
 	}
-	void rollback() {
-		sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
+	bool rollback() {
+		return sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL) == SQLITE_OK;
 	}
 
 	int getErrorCode() const {
@@ -219,7 +214,7 @@ public:
 			return TJS_E_BADPARAMCOUNT;
 		}
 		*result = new Sqlite(params[0]->GetString(), numparams > 1 ? (int)*params[1] != 0 : false);
-		return S_OK;
+		return TJS_S_OK;
 	}
 	
 	sqlite3 *getDatabase() const {
@@ -247,23 +242,35 @@ NCB_REGISTER_CLASS(Sqlite) {
 class SqliteStatement {
 
 public:
-	SqliteStatement(tTJSVariant &sqlite, const tjs_char *sql) : sqlite(sqlite), stmt(NULL) {
-		if (sql) {
-			open(sql);
+	/**
+	 * コンストラクタ
+	 */
+	SqliteStatement(tTJSVariant &sqlite) : sqlite(sqlite), db(NULL), stmt(NULL) {
+		Sqlite *sq = ncbInstanceAdaptor<Sqlite>::GetNativeInstance(sqlite.AsObjectNoAddRef());
+		if (sq) {
+			db = sq->getDatabase();
 		}
 	}
 
+	/**
+	 * デストラクタ
+	 */
 	~SqliteStatement() {
 		close();
 	}
 
-	void open(const tjs_char *sql) {
-		close();
-		Sqlite *sq = ncbInstanceAdaptor<Sqlite>::GetNativeInstance(sqlite.AsObjectNoAddRef());
-		if (sq) {
-			sqlite3_prepare16_v2(sq->getDatabase(), sql, -1, &stmt, NULL);
-			reset();
+	static tjs_error open(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
+		if (numparams < 1) {
+			return TJS_E_BADPARAMCOUNT;
 		}
+		int ret;
+		if ((ret = self->_open(params[0]->GetString())) == SQLITE_OK) {
+			ret = self->_bind(params, 1, numparams-1);
+		}
+		if (result) {
+			*result = ret;
+		}
+		return TJS_S_OK;
 	}
 
 	void close() {
@@ -272,7 +279,7 @@ public:
 			stmt = NULL;
 		}
 	}
-
+	
 	tTJSString getSql() const {
 		ttstr ret;
 		const char *sql = sqlite3_sql(stmt);
@@ -286,24 +293,53 @@ public:
 		return ret;
 	}
 
-	void reset() {
-		sqlite3_reset(stmt);
+	int reset() {
 		bindColumnNo = 0;
+		return sqlite3_reset(stmt);
 	}
 
 	static tjs_error bind(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
-		if (numparams > 1) {
-			self->bindColumnNo = self->getColumn(*params[1]);
+		int ret = self->_bind(params, 0, numparams);
+		if (result) {
+			*result = ret;
 		}
-		::bind(self->stmt, *params[0], self->bindColumnNo++);
 		return TJS_S_OK;
 	}
 	
+	static tjs_error bindAt(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
+		if (numparams < 1) {
+			return TJS_E_BADPARAMCOUNT;
+		}
+		if (numparams > 1) {
+			int col = self->getColumnNo(*params[1]);
+			self->bindColumnNo = col >= 0 ? col : 0;
+		}
+		int ret = self->_bind(params, 0, 1);
+		if (result) {
+			*result = ret;
+		}
+		return TJS_S_OK;
+	}
+
+	// 単純実行
+	int exec() {
+		int ret = sqlite3_step(stmt);
+		if (ret != SQLITE_ROW) {
+			reset();
+		}
+		return ret;
+	}
+
+	// ステップ実行
 	bool step() {
-		return sqlite3_step(stmt) == SQLITE_ROW;
+		if (sqlite3_step(stmt) == SQLITE_ROW) {
+			return true;
+		}
+		reset();
+		return false;
 	}
 
 	int getDataCount() const {
@@ -315,22 +351,22 @@ public:
 	}
 
 	bool isNull(tTJSVariant column) const {
-		return sqlite3_column_type(stmt, getColumn(column)) == SQLITE_NULL;
+		return sqlite3_column_type(stmt, getColumnNo(column)) == SQLITE_NULL;
 	}
 
 	int getType(tTJSVariant column) const {
-		return sqlite3_column_type(stmt, getColumn(column));
+		return sqlite3_column_type(stmt, getColumnNo(column));
 	}
 
 	ttstr getName(tTJSVariant column) const {
-		return (const tjs_char *)sqlite3_column_name16(stmt, getColumn(column));
+		return (const tjs_char *)sqlite3_column_name16(stmt, getColumnNo(column));
 	}
 	
 	static tjs_error get(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
-		int col = self->getColumn(*params[0]);
+		int col = self->getColumnNo(*params[0]);
 		if (sqlite3_column_type(self->stmt, col) == SQLITE_NULL) {
 			if (numparams > 1) {
 				*result = *params[1];
@@ -338,7 +374,26 @@ public:
 				result->Clear();
 			}
 		} else {
-			::getColumn(self->stmt, *result, col);
+			::getColumnData(self->stmt, *result, col);
+		}
+		return TJS_S_OK;
+	}
+
+	// missing method
+	static tjs_error missing(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
+		if (numparams < 3) {return TJS_E_BADPARAMCOUNT;};
+		bool ret = false;
+		if (!(int)*params[0]) {
+			int col = self->getColumnNo(*params[1]);
+			if (col >= 0) {
+				tTJSVariant value;
+				::getColumnData(self->stmt, value, col);
+				params[2]->AsObjectClosureNoAddRef().PropSet(0, NULL, NULL, &value, NULL);
+				ret = true;
+			}
+		}
+		if (result) {
+			*result = ret;
 		}
 		return TJS_S_OK;
 	}
@@ -353,8 +408,19 @@ public:
 		if (params[0]->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Sqlite", NULL) != TJS_S_TRUE) {
 			TVPThrowExceptionMessage(L"InvalidObject");
 		}
-		*result = new SqliteStatement(*params[0], numparams > 1 ? params[1]->GetString() : NULL);
-		return S_OK;
+		SqliteStatement *state = new SqliteStatement(*params[0]);
+		if (numparams > 1) {
+			if (state->_open(params[1]->GetString()) != SQLITE_OK ||
+				(numparams > 2 && state->_bind(params, 2, numparams-2) != SQLITE_OK)) {
+				delete state;
+				TVPThrowExceptionMessage(L"failed to open state");
+				return TJS_E_FAIL;
+			}
+		}
+		tTJSVariant name(TJS_W("missing"));
+		objthis->ClassInstanceInfo(TJS_CII_SET_MISSING, 0, &name);
+		*result = state;
+		return TJS_S_OK;
 	}
 	
 protected:
@@ -364,24 +430,59 @@ protected:
 	 * @param column カラム指定
 	 * @return カラム番号
 	 */
-	int getColumn(const tTJSVariant &column) const {
-		if (column.Type() == tvtString) {
-			const tjs_char *col = column.GetString();
-			if (stmt) {
+	int getColumnNo(const tTJSVariant &column) const {
+		switch (column.Type()) {
+		case tvtInteger:
+		case tvtReal:
+			return column;
+		case tvtString:
+			{
+				const tjs_char *col = column.GetString();
 				int count = sqlite3_column_count(stmt);
 				for (int i=0; i<count; i++) {
-					if (wcscmp(col, (const tjs_char *)sqlite3_column_name16(stmt, i)) == 0)  {
+					if (_wcsicmp(col, (const tjs_char *)sqlite3_column_name16(stmt, i)) == 0)  {
 						return i;
 					}
 				}
 			}
-			return 0;
+		default:
+			return -1;
 		}
-		return column;
+	}
+
+	/**
+	 * sql を開く
+	 * @param sql ステートとして開くsql
+	 * @return エラーコード
+	 */
+	int _open(const tjs_char *sql) {
+		close();
+		int ret;
+		if ((ret = sqlite3_prepare16_v2(db, sql, -1, &stmt, NULL)) == SQLITE_OK) {
+			reset();
+		}
+		return ret;
+	}
+	
+	/**
+	 * バインド処理
+	 * @param params パラメータリスト
+	 * @param start パラメータ開始位置
+	 * @oaram count バインドする個数
+	 * @return エラーコード
+	 */
+	int _bind(tTJSVariant **params, int start, int count) {
+		int ret = SQLITE_OK;
+		while (count > 0 && ret == SQLITE_OK) {
+			ret = ::bind(stmt, *params[start++], bindColumnNo++);
+			count--;
+		}
+		return ret;
 	}
 	
 private:
 	tTJSVariant sqlite;
+	sqlite3 *db;
 	sqlite3_stmt *stmt;
 	int bindColumnNo;
 };
@@ -395,11 +496,13 @@ NCB_REGISTER_CLASS(SqliteStatement) {
 	ENUM(SQLITE_BLOB);
 	ENUM(SQLITE_NULL);
 	Factory(&ClassT::factory);
-	NCB_METHOD(open);
+	RawCallback(TJS_W("open"), &Class::open, 0);
 	NCB_METHOD(close);
 	NCB_PROPERTY_RO(sql, getSql);
 	NCB_METHOD(reset);
 	RawCallback(TJS_W("bind"), &Class::bind, 0);
+	RawCallback(TJS_W("bindAt"), &Class::bindAt, 0);
+	NCB_METHOD(exec);
 	NCB_METHOD(step);
 	NCB_PROPERTY_RO(dataCount, getDataCount);
 	NCB_PROPERTY_RO(count, getCount);
@@ -407,6 +510,7 @@ NCB_REGISTER_CLASS(SqliteStatement) {
 	NCB_METHOD(getType);
 	NCB_METHOD(getName);
 	RawCallback(TJS_W("get"), &Class::get, 0);
+	RawCallback(TJS_W("missing"), &Class::missing, 0);
 };
 
 
