@@ -225,7 +225,39 @@ private:
 	sqlite3 *db;
 };
 
+#define ENUM(n) Variant(#n, (int)n)
+
+
 NCB_REGISTER_CLASS(Sqlite) {
+	ENUM(SQLITE_OK); /* Successful result */
+	ENUM(SQLITE_ERROR); /* SQL error or missing database */
+	ENUM(SQLITE_INTERNAL); /* Internal logic error in SQLite */
+	ENUM(SQLITE_PERM); /* Access permission denied */
+	ENUM(SQLITE_ABORT); /* Callback routine requested an abort */
+	ENUM(SQLITE_BUSY); /* The database file is locked */
+	ENUM(SQLITE_LOCKED); /* A table in the database is locked */
+	ENUM(SQLITE_NOMEM); /* A malloc() failed */
+	ENUM(SQLITE_READONLY); /* Attempt to write a readonly database */
+	ENUM(SQLITE_INTERRUPT); /* Operation terminated by sqlite3_interrupt()*/
+	ENUM(SQLITE_IOERR); /* Some kind of disk I/O error occurred */
+	ENUM(SQLITE_CORRUPT); /* The database disk image is malformed */
+	ENUM(SQLITE_NOTFOUND); /* NOT USED. Table or record not found */
+	ENUM(SQLITE_FULL); /* Insertion failed because database is full */
+	ENUM(SQLITE_CANTOPEN); /* Unable to open the database file */
+	ENUM(SQLITE_PROTOCOL); /* NOT USED. Database lock protocol error */
+	ENUM(SQLITE_EMPTY); /* Database is empty */
+	ENUM(SQLITE_SCHEMA); /* The database schema changed */
+	ENUM(SQLITE_TOOBIG); /* String or BLOB exceeds size limit */
+	ENUM(SQLITE_CONSTRAINT); /* Abort due to constraint violation */
+	ENUM(SQLITE_MISMATCH); /* Data type mismatch */
+	ENUM(SQLITE_MISUSE); /* Library used incorrectly */
+	ENUM(SQLITE_NOLFS); /* Uses OS features not supported on host */
+	ENUM(SQLITE_AUTH); /* Authorization denied */
+	ENUM(SQLITE_FORMAT); /* Auxiliary database format error */
+	ENUM(SQLITE_RANGE); /* 2nd parameter to sqlite3_bind out of range */
+	ENUM(SQLITE_NOTADB); /* File opened that is not a database file */
+	ENUM(SQLITE_ROW); /* sqlite3_step() has another row ready */
+	ENUM(SQLITE_DONE); /* sqlite3_step() has finished executing */
 	Factory(&ClassT::factory);
 	RawCallback(TJS_W("exec"), &Class::exec, 0);
 	RawCallback(TJS_W("execValue"), &Class::execValue, 0);
@@ -486,8 +518,6 @@ private:
 	sqlite3_stmt *stmt;
 	int bindColumnNo;
 };
-
-#define ENUM(n) Variant(#n, (int)n)
 
 NCB_REGISTER_CLASS(SqliteStatement) {
 	ENUM(SQLITE_INTEGER);
