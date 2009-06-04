@@ -8,9 +8,9 @@
 
 // メッセージコード
 #define	WM_SQLITE       (WM_APP+8)
-#define	SQLITE_START    0x0100
-#define	SQLITE_PROGRESS 0x0200
-#define	SQLITE_END      0x0400
+#define	SQLITE_SELECT_START    0x0100
+#define	SQLITE_SELECT_PROGRESS 0x0200
+#define	SQLITE_SELECT_END      0x0300
 
 /**
  * ステートメント tTJSVariant をバインド
@@ -438,7 +438,7 @@ public:
 			return TJS_E_BADPARAMCOUNT;
 		}
 		if (params[0]->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Sqlite", NULL) != TJS_S_TRUE) {
-			TVPThrowExceptionMessage(L"InvalidObject");
+			TVPThrowExceptionMessage(L"use Sqlite class Object");
 		}
 		SqliteStatement *state = new SqliteStatement(*params[0]);
 		if (numparams > 1) {
@@ -541,6 +541,257 @@ NCB_REGISTER_CLASS(SqliteStatement) {
 	NCB_METHOD(getName);
 	RawCallback(TJS_W("get"), &Class::get, 0);
 	RawCallback(TJS_W("missing"), &Class::missing, 0);
+};
+
+
+/**
+ * Sqliteのステートメントを扱うクラス
+ */
+class SqliteThread {
+
+public:
+	/**
+	 * コンストラクタ
+	 */
+	SqliteThread(tTJSVariant &window, tTJSVariant &sqlite) : window(window), sqlite(sqlite), db(NULL), stmt(NULL), canceled(false) {
+		Sqlite *sq = ncbInstanceAdaptor<Sqlite>::GetNativeInstance(sqlite.AsObjectNoAddRef());
+		if (sq) {
+			db = sq->getDatabase();
+		}
+		setReceiver(true);
+	}
+
+	/**
+	 * デストラクタ
+	 */
+	~SqliteThread() {
+		abort();
+		close();
+		setReceiver(false);
+	}
+
+	static tjs_error select(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteThread *self) {
+		if (numparams < 1) {
+			return TJS_E_BADPARAMCOUNT;
+		}
+		self->abort();
+		bool ret = (self->open(params[0]->GetString()) == SQLITE_OK &&
+					self->bind(params, 1, numparams-1) == SQLITE_OK);
+		// スレッド実行開始
+		if (ret) {
+			self->startSelectThread();
+		}
+		if (result) {
+			*result = ret;
+		}
+		return TJS_S_OK;
+	}
+
+	void clearInput() {
+		updateData.Clear();
+	}
+	
+	void clearOutput() {
+		selectResult.Clear();
+	}
+	
+	void abort() {
+		stopThread();
+		clearInput();
+		clearOutput();
+	}
+
+	/**
+	 * インスタンス生成ファクトリ
+	 */
+	static tjs_error factory(SqliteThread **result, tjs_int numparams, tTJSVariant **params, iTJSDispatch2 *objthis) {
+		if (numparams < 2) {
+			return TJS_E_BADPARAMCOUNT;
+		}
+		if (params[0]->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Window", NULL) != TJS_S_TRUE) {
+			TVPThrowExceptionMessage(L"use Window class Object");
+		}
+		if (params[1]->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Sqlite", NULL) != TJS_S_TRUE) {
+			TVPThrowExceptionMessage(L"use Sqlite class Object");
+		}
+		*result = new SqliteThread(*params[0], *params[1]);
+		return TJS_S_OK;
+	}
+	
+protected:
+
+	/**
+	 * sql を開く
+	 * @param sql ステートとして開くsql
+	 * @return エラーコード
+	 */
+	int open(const tjs_char *sql) {
+		close();
+		int ret;
+		if ((ret = sqlite3_prepare16_v2(db, sql, -1, &stmt, NULL)) == SQLITE_OK) {
+			sqlite3_reset(stmt);
+		}
+		return ret;
+	}
+	
+	/**
+	 * バインド処理
+	 * @param params パラメータリスト
+	 * @param start パラメータ開始位置
+	 * @oaram count バインドする個数
+	 * @return エラーコード
+	 */
+	int bind(tTJSVariant **params, int start, int count) {
+		int ret = SQLITE_OK;
+		int n = 0;
+		while (count > 0 && ret == SQLITE_OK) {
+			ret = ::bind(stmt, *params[start++], n++);
+			count--;
+		}
+		return ret;
+	}
+
+	void close() {
+		if (stmt) {
+			sqlite3_finalize(stmt);
+			stmt = NULL;
+		}
+	}
+
+	void checkRunning() {
+		if (threadHandle) {
+			TVPThrowExceptionMessage(TJS_W("already running"));
+		}
+	}
+
+	/**
+	 * イベント処理
+	 */
+	void onEvent(int event) {
+		switch ((event >> 8) & 0xff) {
+		case SQLITE_SELECT_START:
+			{
+				tTJSVariant param;
+				param = selectDataCount;
+				static ttstr eventName(TJS_W("onSelectBegin"));
+				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
+			}
+			break;
+			break;
+		case SQLITE_SELECT_PROGRESS:
+			{
+				tTJSVariant param;
+				param = (event & 0xff);
+				static ttstr eventName(TJS_W("onSelectProgress"));
+				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
+			}
+			break;
+		case SQLITE_SELECT_END:
+			{
+				tTJSVariant params[2];
+				params[0] = (event & 0xff);
+				params[1] = selectResult;
+				static ttstr eventName(TJS_W("onSelectEnd"));
+				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 2, params);
+			}
+			break;
+		}
+	}
+	
+	// ユーザメッセージレシーバの登録/解除
+	void setReceiver(bool enable) {
+		tTJSVariant mode     = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
+		tTJSVariant proc     = (tTVInteger)(tjs_int)receiver;
+		tTJSVariant userdata = (tTVInteger)(tjs_int)this;
+		tTJSVariant *p[] = {&mode, &proc, &userdata};
+		if (window.AsObjectClosureNoAddRef().FuncCall(0, L"registerMessageReceiver", NULL, NULL, 4, p, NULL) != TJS_S_OK) {
+			TVPThrowExceptionMessage(L"can't regist user message receiver");
+		}
+	}
+
+	/**
+	 * イベント受信処理
+	 */
+	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *Message) {
+		if (Message->Msg == WM_SQLITE) {
+			SqliteThread *self = (SqliteThread*)userdata;
+			if (self == (SqliteThread*)Message->WParam) {
+				self->onEvent((int)Message->LParam);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// -----------------------------------------------
+	// スレッド処理
+	// -----------------------------------------------
+
+	// メッセージ送信
+	void postMessage(UINT msg, WPARAM wparam=NULL, LPARAM lparam=NULL) {
+		// ウィンドウハンドルを取得して通知
+		tTJSVariant val;
+		window.AsObjectClosureNoAddRef().PropGet(0, TJS_W("HWND"), NULL, &val, NULL);
+		HWND hwnd = reinterpret_cast<HWND>((tjs_int)(val));
+		::PostMessage(hwnd, msg, wparam, lparam);
+	}
+
+	/**
+	 * バックグラウンドで実行する処理
+	 */
+	void selectThreadMain() {
+		postMessage(WM_SQLITE, (WPARAM)this, (LPARAM)(SQLITE_SELECT_START));
+		if (false) {
+			clearInput();
+			postMessage(WM_SQLITE, (WPARAM)this, (LPARAM)(SQLITE_SELECT_END));
+		} else {
+			clearInput();
+		}
+		postMessage(WM_SQLITE, (WPARAM)this, (LPARAM)(SQLITE_SELECT_END));
+	}
+
+	// 実行スレッド
+	static unsigned __stdcall selectThreadFunc(void *data) {
+		((SqliteThread*)data)->selectThreadMain();
+		_endthreadex(0);
+		return 0;
+	}
+
+	// スレッド処理開始
+	void startSelectThread() {
+		stopThread();
+		canceled = false;
+		threadHandle = (HANDLE)_beginthreadex(NULL, 0, selectThreadFunc, this, 0, NULL);
+	}
+
+	// スレッド処理終了
+	void stopThread() {
+		if (threadHandle) {
+			canceled = true;
+			WaitForSingleObject(threadHandle, INFINITE);
+			CloseHandle(threadHandle);
+			threadHandle = 0;
+		}
+	}
+
+	
+private:
+	iTJSDispatch2 *objthis; ///< 自己オブジェクト情報の参照
+	tTJSVariant window;
+	tTJSVariant sqlite;
+	sqlite3 *db;
+	sqlite3_stmt *stmt;
+
+	// スレッド処理用
+	HANDLE threadHandle; ///< スレッドのハンドル
+	bool canceled; ///< キャンセルされた
+
+	// SELECTの結果
+	int selectDataCount;
+	tTJSVariant selectResult;
+	
+	// UPDATE用データ
+	tTJSVariant updateData;
 };
 
 

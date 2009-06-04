@@ -99,7 +99,7 @@ class SqliteStatement
 	 * @param sqlite データベース (Sqliteクラスのインスタンス)
 	 * @param sql SQL 指定すると自動的に open します
 	 * @param ... バインドするパラメータ
-	 * @throw InvalidObject 第一引数が異常
+	 * @throw "use Sqlite class Object" 第一引数が異常
 	 * @throw "failed to open" 指定されたSQLのopenに失敗
 	 */
 	SqliteStatement(sqlite, sql=void, ...);
@@ -212,6 +212,8 @@ class SqliteThread
 	 * コンストラクタ
 	 * @param window イベント処理用のウインドウ(Windowクラスのインスタンス)
 	 * @param sqlite データベース (Sqliteクラスのインスタンス)
+	 * @throw "use Window class Object" 第一引数が異常
+	 * @throw "use Sqlite class Object" 第一引数が異常
 	 */
 	function SqliteThread(window, sqlite);
 	
@@ -220,15 +222,15 @@ class SqliteThread
 	 * 結果は内部に蓄積されて完了後に引き渡されます。
 	 * @param sql 実行するSQL
 	 * @param ... SQLに引き渡すパラメータ(sqlにバインドされます)
-	 * @return エラーコード
+	 * @return 実行開始できたら true
 	 */
 	function select(sql, ...);
 	
 	/**
 	 * 更新処理をバックグランドでトランザクション実行する。	  
 	 * @param sql 実行するSQL
-	 * @param 更新用データ行の配列(sqlにバインドされます)
-	 * @return エラーコード
+	 * @param 更新用データ行の配列(sqlに必要回数だけバインドされます)
+	 * @return 実行開始できたら true
 	 */
 	function update(sql, data);
 	
@@ -244,9 +246,8 @@ class SqliteThread
 	/**
 	 * 処理開始
 	 * @param dataCount 取得予定のデータ数
-	 * @param ... 取得するカラム名の列挙
 	 */
-	function onSelectBegin(dataCount, ...);
+	function onSelectBegin(dataCount);
 
 	/**
 	 * 処理経過
