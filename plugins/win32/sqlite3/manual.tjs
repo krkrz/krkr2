@@ -159,12 +159,12 @@ class SqliteStatement
 	 * データ数(読み込み専用)
 	 * step の後設定されます
 	 */
-	property dataCount;
+	property count;
 
 	/**
 	 * カラム数(読み込み専用)
 	 */
-	property count;
+	property columnCount;
 
 	/**
 	 * カラムのNULL判定
@@ -265,7 +265,7 @@ class SqliteThread
 	 * onProgress で呼び出す頻度指定
 	 * 指定されてる数を取得するたびに呼び出しが行われる
 	 */
-	property progressCount;
+	property progressUpdateCount;
 
 	// ----------------------------------------------
 	// イベント
