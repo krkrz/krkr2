@@ -460,12 +460,12 @@ public:
 	}
 
 	// データ数
-	int getDataCount() const {
+	int getCount() const {
 		return sqlite3_data_count(stmt);
 	}
 
 	// カラム数
-	int getCount() const {
+	int getColumnCount() const {
 		return sqlite3_column_count(stmt);
 	}
 
@@ -620,8 +620,8 @@ NCB_REGISTER_CLASS(SqliteStatement) {
 	RawCallback(TJS_W("bindAt"), &Class::bindAt, 0);
 	NCB_METHOD(exec);
 	NCB_METHOD(step);
-	NCB_PROPERTY_RO(dataCount, getDataCount);
 	NCB_PROPERTY_RO(count, getCount);
+	NCB_PROPERTY_RO(columnCount, getColumnCount);
 	NCB_METHOD(isNull);
 	NCB_METHOD(getType);
 	NCB_METHOD(getName);
@@ -648,7 +648,7 @@ public:
 	 * コンストラクタ
 	 */
 	SqliteThread(iTJSDispatch2 *objthis, tTJSVariant &window, tTJSVariant &sqlite)
-		 : objthis(objthis), window(window), sqlite(sqlite), db(NULL), stmt(NULL), progressCount(PROGRESS_COUNT),
+		 : objthis(objthis), window(window), sqlite(sqlite), db(NULL), stmt(NULL), progressUpdateCount(PROGRESS_COUNT),
 		   threadHandle(NULL), canceled(false), state(INIT), errorCode(0)
 	{
 		Sqlite *sq = ncbInstanceAdaptor<Sqlite>::GetNativeInstance(sqlite.AsObjectNoAddRef());
@@ -720,12 +720,12 @@ public:
 		return errorCode;
 	}
 
-	int getProgressCount() {
-		return progressCount;
+	int getProgressUpdateCount() {
+		return progressUpdateCount;
 	}
 
-	void setProgressCount(int pc) {
-		progressCount = pc;
+	void setProgressUpdateCount(int pc) {
+		progressUpdateCount = pc;
 	}
 
 	/**
@@ -774,7 +774,8 @@ protected:
 			stmt = NULL;
 		}
 	}
-	
+
+	// ステート変更
 	void onStateChange(State state) {
 		if (state == DONE) {
 			stopThread();
@@ -785,6 +786,7 @@ protected:
 		TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
 	}
 
+	// 実行経過
 	void onProgress(int n) {
 		tTJSVariant param = n;
 		static ttstr eventName(TJS_W("onProgress"));
@@ -840,6 +842,7 @@ protected:
 		window.AsObjectClosureNoAddRef().PropGet(0, TJS_W("HWND"), NULL, &val, NULL);
 		HWND hwnd = reinterpret_cast<HWND>((tjs_int)(val));
 		::PostMessage(hwnd, msg, wparam, lparam);
+		::Sleep(0);
 	}
 
 	// -----------------------------------------------------------------------------------
@@ -850,8 +853,7 @@ protected:
 	void selectThreadMain() {
 		postMessage(WM_SQLITE_STATECHANGE, (WPARAM)this, (LPARAM)WORKING);
 		int n = 0;
-		int nc = progressCount;
-		int percent = -1;
+		int nc = progressUpdateCount;
 		tTJSVariantClosure &vc = selectResult.AsObjectClosureNoAddRef();
 		while (!canceled && (errorCode = sqlite3_step(stmt)) == SQLITE_ROW) {
 			int argc = sqlite3_data_count(stmt);
@@ -868,7 +870,7 @@ protected:
 			n++;
 			if (n == nc) {
 				postMessage(WM_SQLITE_PROGRESS, (WPARAM)this, (LPARAM)nc);
-				nc += progressCount;
+				nc += progressUpdateCount;
 			}
 		}
 		if (canceled) {
@@ -905,19 +907,19 @@ protected:
 	void updateThreadMain() {
 		postMessage(WM_SQLITE_STATECHANGE, (WPARAM)this, (LPARAM)WORKING);
 		int n = 0;
-		int nc = progressCount;
-		int percent = -1;
-		tTJSVariantClosure &vc = selectResult.AsObjectClosureNoAddRef();
+		int nc = progressUpdateCount;
+		tTJSVariantClosure &vc = updateData.AsObjectClosureNoAddRef();
 		sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 		while (!canceled && n < dataNum && (errorCode == SQLITE_OK || errorCode == SQLITE_DONE)) {
 			tTJSVariant line;
 			vc.PropGetByNum(0, n++, &line, NULL);
 			if ((errorCode = ::bindParams(stmt, line)) == SQLITE_OK) {
 				while ((errorCode = sqlite3_step(stmt)) == SQLITE_ROW);
+				sqlite3_reset(stmt);
 			}
 			if (n == nc) {
 				postMessage(WM_SQLITE_PROGRESS, (WPARAM)this, (LPARAM)n);
-				nc += progressCount;
+				nc += progressUpdateCount;
 			}
 		}
 		updateData.Clear();
@@ -973,7 +975,7 @@ private:
 	tTJSVariant sqlite;
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
-	int progressCount;
+	int progressUpdateCount;
 	
 	// スレッド処理用
 	HANDLE threadHandle; ///< スレッドのハンドル
@@ -999,7 +1001,7 @@ NCB_REGISTER_CLASS(SqliteThread) {
 	NCB_PROPERTY_RO(state, getState);
 	NCB_PROPERTY_RO(errorCode, getErrorCode);
 	NCB_PROPERTY_RO(selectResult, getSelectResult);
-	NCB_PROPERTY(progressCount, getProgressCount, setProgressCount);
+	NCB_PROPERTY(progressUpdateCount, getProgressUpdateCount, setProgressUpdateCount);
 };
 
 // --------------------------------------------------------------------------
