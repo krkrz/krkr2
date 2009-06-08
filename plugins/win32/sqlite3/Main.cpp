@@ -893,7 +893,6 @@ protected:
 	void startSelectThread() {
 		iTJSDispatch2 *array = TJSCreateArrayObject();
 		selectResult = tTJSVariant(array, array);
-		dataNum = 1;
 		errorCode = SQLITE_OK;
 		canceled = false;
 		threadHandle = (HANDLE)_beginthreadex(NULL, 0, selectThreadFunc, this, 0, NULL);
@@ -909,8 +908,14 @@ protected:
 		int n = 0;
 		int nc = progressUpdateCount;
 		tTJSVariantClosure &vc = updateData.AsObjectClosureNoAddRef();
+		int count = 0;
+		{
+			tTJSVariant cnt;
+			vc.PropGet(0, L"count", NULL, &cnt, NULL);
+			count = cnt;
+		}
 		sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
-		while (!canceled && n < dataNum && (errorCode == SQLITE_OK || errorCode == SQLITE_DONE)) {
+		while (!canceled && n < count && (errorCode == SQLITE_OK || errorCode == SQLITE_DONE)) {
 			tTJSVariant line;
 			vc.PropGetByNum(0, n++, &line, NULL);
 			if ((errorCode = ::bindParams(stmt, line)) == SQLITE_OK) {
@@ -945,11 +950,6 @@ protected:
 	// スレッド処理開始
 	void startUpdateThread(tTJSVariant &data) {
 		updateData = data;
-		{
-			tTJSVariant cnt;
-			updateData.AsObjectClosureNoAddRef().PropGet(0, L"count", NULL, &cnt, NULL);
-			dataNum = cnt;
-		}
 		errorCode = SQLITE_OK;
 		canceled = false;
 		threadHandle = (HANDLE)_beginthreadex(NULL, 0, updateThreadFunc, this, 0, NULL);
@@ -981,7 +981,6 @@ private:
 	HANDLE threadHandle; ///< スレッドのハンドル
 	bool canceled; ///< キャンセルされた
 	
-	int dataNum; ///< データ数
 	tTJSVariant updateData; ///< UPDATE用データ(配列)
 	State state; ///< ステート
 	int errorCode; ///< エラーコード
