@@ -13,20 +13,20 @@ class Sqlite
 
 	/**
 	 * SQLを実行する。
-	 * @param callback コールバック (引数にカラムが列挙されます)
 	 * @param sql 実行するSQL
-	 * @param ... sqlにバインドするパラメータを列挙
+	 * @param params sqlにバインドするパラメータ(配列または辞書)
+	 * @param callback コールバック (引数にカラムが列挙されます)
 	 * @return 成功なら true
 	 */
-	function exec(callback, sql, ...);
+	function exec(sql, params=void, callback=void);
 
 	/**
 	 * 値取得用にSQLを実行する。
 	 * @param sql 実行するSQL
-	 * @param ... sqlにバインドするパラメータを列挙
+	 * @param params sqlにバインドするパラメータ(配列または辞書)
 	 * @return 結果の第一カラム。エラーの場合は void
 	 */
-	function execValue(sql, ...);
+	function execValue(sql, params);
 
 	/**
 	 * トランザクションの開始
@@ -98,19 +98,19 @@ class SqliteStatement
 	 * コンストラクタ
 	 * @param sqlite データベース (Sqliteクラスのインスタンス)
 	 * @param sql SQL 指定すると自動的に open します
-	 * @param ... バインドするパラメータ
+	 * @param params バインドするパラメータ(配列または辞書)
 	 * @throw "use Sqlite class Object" 第一引数が異常
 	 * @throw "failed to open" 指定されたSQLのopenに失敗
 	 */
-	SqliteStatement(sqlite, sql=void, ...);
+	SqliteStatement(sqlite, sql=void, params=void);
 
 	/**
 	 * 新規ステートを開く
 	 * @param sql SQL
-	 * @param ... バインドするパラメータ
+	 * @param params バインドするパラメータ(配列または辞書)
 	 * @return エラーコード
 	 */
-	function open(sql, ...);
+	function open(sql, params=void);
 
 	/**
 	 * ステートを閉じる
@@ -130,10 +130,10 @@ class SqliteStatement
 	
 	/**
 	 * パラメータのバインド
-	 * @parma ... バインドするパラメータを列挙
+	 * @parma params バインドするパラメータ(配列または辞書)
 	 * @return エラーコード
 	 */
-	function bind(...);
+	function bind(params);
 
 	/**
 	 * パラメータのバインド
@@ -157,12 +157,12 @@ class SqliteStatement
 	
 	/**
 	 * データ数(読み込み専用)
-	 * 初回の step の後設定されます
+	 * step の後設定されます
 	 */
 	property dataCount;
 
 	/**
-	 * 現在のカラムの数を返す
+	 * カラム数(読み込み専用)
 	 */
 	property count;
 
@@ -218,60 +218,68 @@ class SqliteThread
 	function SqliteThread(window, sqlite);
 	
 	/**
-	 * 検索処理をバックグランドでトランザクション実行する。
+	 * 検索処理をバックグランドで実行する。
 	 * 結果は内部に蓄積されて完了後に引き渡されます。
 	 * @param sql 実行するSQL
-	 * @param ... SQLに引き渡すパラメータ(sqlにバインドされます)
-	 * @return 実行開始できたら true
+	 * @param params バインドするパラメータ(配列または辞書)
+	 * @return 処理が開始されたら true
 	 */
-	function select(sql, ...);
+	function select(sql, params);
 	
 	/**
-	 * 更新処理をバックグランドでトランザクション実行する。	  
+	 * 更新処理をバックグランドでトランザクション実行する。
 	 * @param sql 実行するSQL
-	 * @param 更新用データ行の配列(sqlに必要回数だけバインドされます)
-	 * @return 実行開始できたら true
+	 * @param datas 更新用パラメータ(配列または辞書)の配列
+	 * @return 処理が開始されたら true
 	 */
-	function update(sql, data);
+	function update(sql, datas);
 	
 	/**
-	 * 実行処理を中止させます
+	 * 実行処理を中止させます。
+	 * また記録されてる処理結果を破棄します。
 	 */
 	function abort();
+
+	// ステート指定
+	INIT    = 0; ///< 初期状態
+	WORKING = 1; ///< 処理中
+	DONE    = 2; ///< 処理完了
+
+	/**
+	 * 実行ステート
+	 */
+	property state;
+
+	/**
+	 * エラーコード
+	 * 処理中での最後のエラーコードを返します
+	 */
+	property errorCode;
+	
+	/**
+	 * select取得データ(配列)
+	 */
+	property selectResult;
+
+	/**
+	 * onProgress で呼び出す頻度指定
+	 * 指定されてる数を取得するたびに呼び出しが行われる
+	 */
+	property progressCount;
 
 	// ----------------------------------------------
 	// イベント
 	// ----------------------------------------------
 
 	/**
-	 * 処理開始
-	 * @param dataCount 取得予定のデータ数
+	 * 状態変更
+	 * @param state 新規状態
 	 */
-	function onSelectBegin(dataCount);
+	function onStateChange(state);
 
-	/**
-	 * 処理経過
-	 * @param percent 実行状況(パーセント指定)
-	 */
-	function onSelectProgress(percent);
-
-	/**
-	 * 処理終了
-	 * @param status ステータス -1:abortされた 0:成功 その他:エラー
-	 * @param result 取得結果の行の配列
-	 */
-	function onSelectEnd(status, result);
-	
 	/**
 	 * 更新処理経過
-	 * @param percent 実行状況(パーセント指定)
+	 * @param num 取得データ数
 	 */
-	function onUpdateProgress(percent);
-
-	/**
-	 * 処理終了
-	 * @param status ステータス -1:abortされた 0:成功 その他:エラー
-	 */
-	function onUpdateEnd(status);
-
+	function onProgress(num);
 };

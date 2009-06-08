@@ -7,38 +7,134 @@
 
 
 // メッセージコード
-#define	WM_SQLITE       (WM_APP+8)
-#define	SQLITE_SELECT_START    0x0100
-#define	SQLITE_SELECT_PROGRESS 0x0200
-#define	SQLITE_SELECT_END      0x0300
+#define	WM_SQLITE_STATECHANGE (WM_APP+8)
+#define	WM_SQLITE_PROGRESS    (WM_APP+9)
+#define PROGRESS_COUNT 100
 
 /**
  * ステートメント tTJSVariant をバインド
  * @param stmt ステートメント
- * @param variant バインドするデータ
- * @param num バインド位置
+ * @param param バインドするデータ
+ * @param pos バインド位置
+ * @return エラーコード
  */
 static int
-bind(sqlite3_stmt *stmt, tTJSVariant &variant, int pos)
+bindParam(sqlite3_stmt *stmt, const tTJSVariant &param, int pos)
 {
-	pos++;
-	switch (variant.Type()) {
+	switch (param.Type()) {
 	case tvtInteger:
-		return sqlite3_bind_int64(stmt, pos, variant);
+		return sqlite3_bind_int64(stmt, pos, param);
 	case tvtReal:
-		return sqlite3_bind_double(stmt, pos, variant);
+		return sqlite3_bind_double(stmt, pos, param);
 	case tvtString:
 		{
-			tTJSVariantString *str = variant.AsStringNoAddRef();
+			tTJSVariantString *str = param.AsStringNoAddRef();
 			return sqlite3_bind_text16(stmt, pos, *str, str->GetLength() * sizeof tjs_char, SQLITE_TRANSIENT);
 		}
 	case tvtOctet:
 		{
-			tTJSVariantOctet *octet = variant.AsOctetNoAddRef();
+			tTJSVariantOctet *octet = param.AsOctetNoAddRef();
 			return sqlite3_bind_blob(stmt, pos, octet->GetData(), octet->GetLength(), SQLITE_STATIC);
 		}
 	default:
 		return sqlite3_bind_null(stmt, pos);
+	}
+}
+
+/**
+ * バインド位置を取得
+ * @param name パラメータ名
+ * @return バインド位置
+ */
+static int
+getBindPos(sqlite3_stmt *stmt, const tTJSVariant &name)
+{
+	switch (name.Type()) {
+	case tvtInteger:
+	case tvtReal:
+		return (int)name + 1;
+	case tvtString:
+		{
+			int ret = 0;
+			const tjs_char *n = name.GetString();
+			int	len = ::WideCharToMultiByte(CP_UTF8, 0, n, -1, NULL, 0, NULL, NULL);
+			if (len > 0) {
+				char *buf = new char[len + 1];
+				::WideCharToMultiByte(CP_UTF8, 0, n, -1, buf, len, NULL, NULL);
+				buf[len] = '\0';
+				ret =sqlite3_bind_parameter_index(stmt, buf);
+				delete[] buf;
+			}
+			return ret;
+		}
+	default:
+		return 0;
+	}
+}
+
+/**
+ * バインド処理の呼び出し用
+ */
+class BindCaller : public tTJSDispatch /** EnumMembers 用 */
+{
+protected:
+	sqlite3_stmt *stmt;
+	int errorCode;
+public:
+	BindCaller(sqlite3_stmt *stmt) : stmt(stmt), errorCode(SQLITE_OK) {};
+	int getErrorCode() {
+		return errorCode;
+	}
+	virtual tjs_error TJS_INTF_METHOD FuncCall( // function invocation
+												tjs_uint32 flag,			// calling flag
+												const tjs_char * membername,// member name ( NULL for a default member )
+												tjs_uint32 *hint,			// hint for the member name (in/out)
+												tTJSVariant *result,		// result
+												tjs_int numparams,			// number of parameters
+												tTJSVariant **param,		// parameters
+												iTJSDispatch2 *objthis		// object as "this"
+												) {
+		if (numparams > 1) {
+			if ((int)param[1] != TJS_HIDDENMEMBER) {
+				errorCode = bindParam(stmt, *param[1], getBindPos(stmt, *param[0]));
+			}
+		}
+		if (result) {
+			*result = errorCode == SQLITE_OK;
+		}
+		return TJS_S_OK;
+	}
+};
+
+/**
+ * 複数パラメータをバインド
+ * @param stmt ステートメント
+ * @param params 複数パラメータの配列または辞書
+ * @return エラーコード
+ */
+static int
+bindParams(sqlite3_stmt *stmt, const tTJSVariant &params)
+{
+	tTJSVariantClosure &vc = params.AsObjectClosureNoAddRef();
+	if (vc.IsInstanceOf(TJS_IGNOREPROP,NULL,NULL,L"Array",NULL) == TJS_S_TRUE) {
+		int ret = SQLITE_OK;
+		params.AsObjectClosureNoAddRef();
+		tTJSVariant count;
+		vc.PropGet(0, L"count", NULL, &count, NULL);
+		int cnt = count;
+		for (int i=0;i<cnt;i++) {
+			tTJSVariant value;
+			vc.PropGetByNum(0, i, &value, NULL);
+			if ((ret = bindParam(stmt, value, i+1)) != SQLITE_OK) {
+				break;
+			}
+		}
+		return ret;
+	} else {
+		BindCaller caller(stmt);
+		tTJSVariantClosure closure(&caller);
+		vc.EnumMembers(TJS_IGNOREPROP, &closure, NULL);
+		return caller.getErrorCode();
 	}
 }
 
@@ -121,40 +217,38 @@ public:
 	 * SQLを実行する
 	 */
 	static tjs_error exec(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, Sqlite *self) {
-		if (numparams < 2) {
+		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
 		sqlite3_stmt *stmt = NULL;
 		int ret;
-		if ((ret = sqlite3_prepare16_v2(self->db, params[1]->GetString(), -1, &stmt, NULL)) == SQLITE_OK) {
+		if ((ret = sqlite3_prepare16_v2(self->db, params[0]->GetString(), -1, &stmt, NULL)) == SQLITE_OK) {
 			sqlite3_reset(stmt);
-			// パラメータをバインド
-			for (int n=2;n<numparams;n++) {
-				::bind(stmt, *params[n], n-2);
-			}
-			if (params[0]->Type() == tvtObject) {
-				tTJSVariantClosure &callback = params[0]->AsObjectClosureNoAddRef();
-				// カラム数
-				int argc = sqlite3_column_count(stmt);
-				// 引数初期化
-				tTJSVariant **args = new tTJSVariant*[argc];
-				for (int i=0;i<argc;i++) {
-					args[i] = new tTJSVariant();
-				}
-				while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
-					// 引数に展開
+			if (numparams <= 1 || (ret = ::bindParams(stmt, *params[1])) == SQLITE_OK) {
+				if (numparams > 2 && params[2]->Type() == tvtObject) {
+					tTJSVariantClosure &callback = params[2]->AsObjectClosureNoAddRef();
+					// カラム数
+					int argc = sqlite3_column_count(stmt);
+					// 引数初期化
+					tTJSVariant **args = new tTJSVariant*[argc];
 					for (int i=0;i<argc;i++) {
-						::getColumnData(stmt, *args[i], i);
+						args[i] = new tTJSVariant();
 					}
-					callback.FuncCall(0, NULL, NULL, NULL, argc, args, NULL);
+					while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
+						// 引数に展開
+						for (int i=0;i<argc;i++) {
+							::getColumnData(stmt, *args[i], i);
+						}
+						callback.FuncCall(0, NULL, NULL, NULL, argc, args, NULL);
+					}
+					// 引数破棄
+					for (int i=0;i<argc;i++) {
+						delete args[i];
+					}
+					delete[] args;
+				} else {
+					while ((ret = sqlite3_step(stmt)) == SQLITE_ROW);
 				}
-				// 引数破棄
-				for (int i=0;i<argc;i++) {
-					delete args[i];
-				}
-				delete[] args;
-			} else {
-				while ((ret = sqlite3_step(stmt)) == SQLITE_ROW);
 			}
 			sqlite3_finalize(stmt);
 		}
@@ -174,16 +268,15 @@ public:
 		sqlite3_stmt *stmt = NULL;
 		if (sqlite3_prepare16_v2(self->db, params[0]->GetString(), -1, &stmt, NULL) == SQLITE_OK) {
 			sqlite3_reset(stmt);
-			for (int n=1;n<numparams;n++) {
-				::bind(stmt, *params[n], n-2);
-			}
-			int argc = sqlite3_column_count(stmt);
-			if (sqlite3_step(stmt) == SQLITE_ROW && argc > 0) {
-				if (result) {
-					::getColumnData(stmt, *result, 0);
+			if (numparams <= 1 || ::bindParams(stmt, *params[1]) == SQLITE_OK) {
+				int argc = sqlite3_column_count(stmt);
+				if (sqlite3_step(stmt) == SQLITE_ROW && argc > 0) {
+					if (result) {
+						::getColumnData(stmt, *result, 0);
+					}
 				}
+				sqlite3_finalize(stmt);
 			}
-			sqlite3_finalize(stmt);
 		}
 		return TJS_S_OK;
 	}
@@ -291,27 +384,27 @@ public:
 		close();
 	}
 
+	// ステートを開く
 	static tjs_error open(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
-		int ret;
-		if ((ret = self->_open(params[0]->GetString())) == SQLITE_OK) {
-			ret = self->_bind(params, 1, numparams-1);
-		}
+		int ret = self->_open(params[0]->GetString(), numparams > 0 ? params[1]: NULL);
 		if (result) {
 			*result = ret;
 		}
 		return TJS_S_OK;
 	}
 
+	// ステートを閉じる
 	void close() {
 		if (stmt) {
 			sqlite3_finalize(stmt);
 			stmt = NULL;
 		}
 	}
-	
+
+	// sql取得
 	tTJSString getSql() const {
 		ttstr ret;
 		const char *sql = sqlite3_sql(stmt);
@@ -325,31 +418,23 @@ public:
 		return ret;
 	}
 
+	// バインド状態のリセット
 	int reset() {
-		bindColumnNo = 0;
+		bindPos = 1;
 		return sqlite3_reset(stmt);
 	}
 
-	static tjs_error bind(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
-		if (numparams < 1) {
-			return TJS_E_BADPARAMCOUNT;
-		}
-		int ret = self->_bind(params, 0, numparams);
-		if (result) {
-			*result = ret;
-		}
-		return TJS_S_OK;
+	// パラメータのバインド
+	int bind(tTJSVariant params) {
+		return ::bindParams(stmt, params);
 	}
-	
+
+	// 指定位置バインド
 	static tjs_error bindAt(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
-		if (numparams > 1) {
-			int col = self->getColumnNo(*params[1]);
-			self->bindColumnNo = col >= 0 ? col : 0;
-		}
-		int ret = self->_bind(params, 0, 1);
+		int ret = self->_bindAt(*params[0], numparams > 0 ? params[1] : NULL);
 		if (result) {
 			*result = ret;
 		}
@@ -374,26 +459,32 @@ public:
 		return false;
 	}
 
+	// データ数
 	int getDataCount() const {
 		return sqlite3_data_count(stmt);
 	}
 
+	// カラム数
 	int getCount() const {
 		return sqlite3_column_count(stmt);
 	}
 
+	// 指定カラムが NULLか？
 	bool isNull(tTJSVariant column) const {
 		return sqlite3_column_type(stmt, getColumnNo(column)) == SQLITE_NULL;
 	}
 
+	// カラムの型
 	int getType(tTJSVariant column) const {
 		return sqlite3_column_type(stmt, getColumnNo(column));
 	}
 
+	// カラム名
 	ttstr getName(tTJSVariant column) const {
 		return (const tjs_char *)sqlite3_column_name16(stmt, getColumnNo(column));
 	}
-	
+
+	// 値の取得
 	static tjs_error get(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
@@ -442,8 +533,7 @@ public:
 		}
 		SqliteStatement *state = new SqliteStatement(*params[0]);
 		if (numparams > 1) {
-			if (state->_open(params[1]->GetString()) != SQLITE_OK ||
-				(numparams > 2 && state->_bind(params, 2, numparams-2) != SQLITE_OK)) {
+			if (state->_open(params[1]->GetString(), numparams > 2 ? params[2] : NULL) != SQLITE_OK) {
 				delete state;
 				TVPThrowExceptionMessage(L"failed to open state");
 				return TJS_E_FAIL;
@@ -485,38 +575,34 @@ protected:
 	/**
 	 * sql を開く
 	 * @param sql ステートとして開くsql
+	 * @param params パラメータ
 	 * @return エラーコード
 	 */
-	int _open(const tjs_char *sql) {
+	int _open(const tjs_char *sql, const tTJSVariant *params = NULL) {
 		close();
 		int ret;
 		if ((ret = sqlite3_prepare16_v2(db, sql, -1, &stmt, NULL)) == SQLITE_OK) {
 			reset();
+			if (params) {
+				ret = ::bindParams(stmt, *params);
+			}
 		}
 		return ret;
 	}
-	
-	/**
-	 * バインド処理
-	 * @param params パラメータリスト
-	 * @param start パラメータ開始位置
-	 * @oaram count バインドする個数
-	 * @return エラーコード
-	 */
-	int _bind(tTJSVariant **params, int start, int count) {
-		int ret = SQLITE_OK;
-		while (count > 0 && ret == SQLITE_OK) {
-			ret = ::bind(stmt, *params[start++], bindColumnNo++);
-			count--;
+
+	// 指定位置バインド
+	int _bindAt(tTJSVariant &value, tTJSVariant *pos=NULL) {
+		if (pos) {
+			bindPos = ::getBindPos(stmt, *pos);
 		}
-		return ret;
+		return ::bindParam(stmt, value, bindPos++);
 	}
 	
 private:
 	tTJSVariant sqlite;
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
-	int bindColumnNo;
+	int bindPos;
 };
 
 NCB_REGISTER_CLASS(SqliteStatement) {
@@ -530,7 +616,7 @@ NCB_REGISTER_CLASS(SqliteStatement) {
 	NCB_METHOD(close);
 	NCB_PROPERTY_RO(sql, getSql);
 	NCB_METHOD(reset);
-	RawCallback(TJS_W("bind"), &Class::bind, 0);
+	NCB_METHOD(bind);
 	RawCallback(TJS_W("bindAt"), &Class::bindAt, 0);
 	NCB_METHOD(exec);
 	NCB_METHOD(step);
@@ -545,15 +631,26 @@ NCB_REGISTER_CLASS(SqliteStatement) {
 
 
 /**
- * Sqliteのステートメントを扱うクラス
+ * Sqliteのスレッド処理を扱うクラス
  */
 class SqliteThread {
 
 public:
+
+	// ステート
+	enum State {
+		INIT,
+		WORKING,
+		DONE
+	};
+
 	/**
 	 * コンストラクタ
 	 */
-	SqliteThread(tTJSVariant &window, tTJSVariant &sqlite) : window(window), sqlite(sqlite), db(NULL), stmt(NULL), canceled(false) {
+	SqliteThread(iTJSDispatch2 *objthis, tTJSVariant &window, tTJSVariant &sqlite)
+		 : objthis(objthis), window(window), sqlite(sqlite), db(NULL), stmt(NULL), progressCount(PROGRESS_COUNT),
+		   threadHandle(NULL), canceled(false), state(INIT), errorCode(0)
+	{
 		Sqlite *sq = ncbInstanceAdaptor<Sqlite>::GetNativeInstance(sqlite.AsObjectNoAddRef());
 		if (sq) {
 			db = sq->getDatabase();
@@ -566,18 +663,16 @@ public:
 	 */
 	~SqliteThread() {
 		abort();
-		close();
 		setReceiver(false);
 	}
 
+	// 選択処理開始
 	static tjs_error select(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteThread *self) {
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
-		self->abort();
-		bool ret = (self->open(params[0]->GetString()) == SQLITE_OK &&
-					self->bind(params, 1, numparams-1) == SQLITE_OK);
-		// スレッド実行開始
+		self->onStateChange(INIT);
+		bool ret = self->open(params[0]->GetString(), numparams > 1 ? params[1] : NULL) == SQLITE_OK;
 		if (ret) {
 			self->startSelectThread();
 		}
@@ -587,18 +682,50 @@ public:
 		return TJS_S_OK;
 	}
 
-	void clearInput() {
-		updateData.Clear();
+	// 更新処理開始
+	static tjs_error update(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteThread *self) {
+		if (numparams < 2) {
+			return TJS_E_BADPARAMCOUNT;
+		}
+		self->onStateChange(INIT);
+		bool ret = self->open(params[0]->GetString()) == SQLITE_OK;
+		if (ret) {
+			self->startUpdateThread(*params[1]);
+		}
+		if (result) {
+			*result = ret;
+		}
+		return TJS_S_OK;
 	}
-	
-	void clearOutput() {
-		selectResult.Clear();
-	}
-	
+
+	// 処理中断
 	void abort() {
 		stopThread();
-		clearInput();
-		clearOutput();
+		updateData.Clear();
+		selectResult.Clear();
+	}
+
+	// ステート取得
+	int getState() {
+		return state;
+	}
+
+	// 処理結果取得
+	const tTJSVariant &getSelectResult() const {
+		return selectResult;
+	}
+	
+	// エラーコード取得
+	int getErrorCode() {
+		return errorCode;
+	}
+
+	int getProgressCount() {
+		return progressCount;
+	}
+
+	void setProgressCount(int pc) {
+		progressCount = pc;
 	}
 
 	/**
@@ -614,7 +741,7 @@ public:
 		if (params[1]->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Sqlite", NULL) != TJS_S_TRUE) {
 			TVPThrowExceptionMessage(L"use Sqlite class Object");
 		}
-		*result = new SqliteThread(*params[0], *params[1]);
+		*result = new SqliteThread(objthis, *params[0], *params[1]);
 		return TJS_S_OK;
 	}
 	
@@ -625,30 +752,20 @@ protected:
 	 * @param sql ステートとして開くsql
 	 * @return エラーコード
 	 */
-	int open(const tjs_char *sql) {
+	int open(const tjs_char *sql, const tTJSVariant *params = NULL) {
+		if (threadHandle) {
+			TVPThrowExceptionMessage(TJS_W("already running"));
+		}
 		close();
-		int ret;
-		if ((ret = sqlite3_prepare16_v2(db, sql, -1, &stmt, NULL)) == SQLITE_OK) {
+		if ((errorCode = sqlite3_prepare16_v2(db, sql, -1, &stmt, NULL)) == SQLITE_OK) {
 			sqlite3_reset(stmt);
+			if (params) {
+				if ((errorCode = ::bindParams(stmt, *params)) != SQLITE_OK) {
+					close();
+				}
+			}
 		}
-		return ret;
-	}
-	
-	/**
-	 * バインド処理
-	 * @param params パラメータリスト
-	 * @param start パラメータ開始位置
-	 * @oaram count バインドする個数
-	 * @return エラーコード
-	 */
-	int bind(tTJSVariant **params, int start, int count) {
-		int ret = SQLITE_OK;
-		int n = 0;
-		while (count > 0 && ret == SQLITE_OK) {
-			ret = ::bind(stmt, *params[start++], n++);
-			count--;
-		}
-		return ret;
+		return errorCode;
 	}
 
 	void close() {
@@ -657,45 +774,21 @@ protected:
 			stmt = NULL;
 		}
 	}
-
-	void checkRunning() {
-		if (threadHandle) {
-			TVPThrowExceptionMessage(TJS_W("already running"));
+	
+	void onStateChange(State state) {
+		if (state == DONE) {
+			stopThread();
 		}
+		this->state = state;
+		tTJSVariant param = state;
+		static ttstr eventName(TJS_W("onStateChange"));
+		TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
 	}
 
-	/**
-	 * イベント処理
-	 */
-	void onEvent(int event) {
-		switch ((event >> 8) & 0xff) {
-		case SQLITE_SELECT_START:
-			{
-				tTJSVariant param;
-				param = selectDataCount;
-				static ttstr eventName(TJS_W("onSelectBegin"));
-				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
-			}
-			break;
-			break;
-		case SQLITE_SELECT_PROGRESS:
-			{
-				tTJSVariant param;
-				param = (event & 0xff);
-				static ttstr eventName(TJS_W("onSelectProgress"));
-				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
-			}
-			break;
-		case SQLITE_SELECT_END:
-			{
-				tTJSVariant params[2];
-				params[0] = (event & 0xff);
-				params[1] = selectResult;
-				static ttstr eventName(TJS_W("onSelectEnd"));
-				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 2, params);
-			}
-			break;
-		}
+	void onProgress(int n) {
+		tTJSVariant param = n;
+		static ttstr eventName(TJS_W("onProgress"));
+		TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
 	}
 	
 	// ユーザメッセージレシーバの登録/解除
@@ -713,12 +806,25 @@ protected:
 	 * イベント受信処理
 	 */
 	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *Message) {
-		if (Message->Msg == WM_SQLITE) {
-			SqliteThread *self = (SqliteThread*)userdata;
-			if (self == (SqliteThread*)Message->WParam) {
-				self->onEvent((int)Message->LParam);
-				return true;
+		switch (Message->Msg) {
+		case WM_SQLITE_STATECHANGE: 
+			{
+				SqliteThread *self = (SqliteThread*)userdata;
+				if (self == (SqliteThread*)Message->WParam) {
+					self->onStateChange((State)Message->LParam);
+					return true;
+				}
 			}
+			break;
+		case WM_SQLITE_PROGRESS:
+			{
+				SqliteThread *self = (SqliteThread*)userdata;
+				if (self == (SqliteThread*)Message->WParam) {
+					self->onProgress((int)Message->LParam);
+					return true;
+				}
+			}
+			break;
 		}
 		return false;
 	}
@@ -736,18 +842,42 @@ protected:
 		::PostMessage(hwnd, msg, wparam, lparam);
 	}
 
+	// -----------------------------------------------------------------------------------
+	
 	/**
 	 * バックグラウンドで実行する処理
 	 */
 	void selectThreadMain() {
-		postMessage(WM_SQLITE, (WPARAM)this, (LPARAM)(SQLITE_SELECT_START));
-		if (false) {
-			clearInput();
-			postMessage(WM_SQLITE, (WPARAM)this, (LPARAM)(SQLITE_SELECT_END));
-		} else {
-			clearInput();
+		postMessage(WM_SQLITE_STATECHANGE, (WPARAM)this, (LPARAM)WORKING);
+		int n = 0;
+		int nc = progressCount;
+		int percent = -1;
+		tTJSVariantClosure &vc = selectResult.AsObjectClosureNoAddRef();
+		while (!canceled && (errorCode = sqlite3_step(stmt)) == SQLITE_ROW) {
+			int argc = sqlite3_data_count(stmt);
+			iTJSDispatch2 *line = TJSCreateArrayObject();
+			for (int i=0;i<argc;i++) {
+				tTJSVariant value;
+				::getColumnData(stmt, value, i);
+				tTJSVariant *params[] = { &value };
+				line->FuncCall(0, L"add", NULL, NULL, 1, params, line);
+			}
+			tTJSVariant l(line,line);
+			tTJSVariant *params[] = { &l };
+			vc.FuncCall(0, L"add", NULL, NULL, 1, params, NULL);
+			n++;
+			if (n == nc) {
+				postMessage(WM_SQLITE_PROGRESS, (WPARAM)this, (LPARAM)nc);
+				nc += progressCount;
+			}
 		}
-		postMessage(WM_SQLITE, (WPARAM)this, (LPARAM)(SQLITE_SELECT_END));
+		if (canceled) {
+			errorCode = SQLITE_ABORT;
+		}
+		if (errorCode == SQLITE_OK || errorCode == SQLITE_DONE) {
+			postMessage(WM_SQLITE_PROGRESS, (WPARAM)this, (LPARAM)n);
+		}
+		postMessage(WM_SQLITE_STATECHANGE, (WPARAM)this, (LPARAM)DONE);
 	}
 
 	// 実行スレッド
@@ -759,11 +889,72 @@ protected:
 
 	// スレッド処理開始
 	void startSelectThread() {
-		stopThread();
+		iTJSDispatch2 *array = TJSCreateArrayObject();
+		selectResult = tTJSVariant(array, array);
+		dataNum = 1;
+		errorCode = SQLITE_OK;
 		canceled = false;
 		threadHandle = (HANDLE)_beginthreadex(NULL, 0, selectThreadFunc, this, 0, NULL);
 	}
 
+	// -----------------------------------------------------------------------------------
+
+	/**
+	 * バックグラウンドで実行する処理
+	 */
+	void updateThreadMain() {
+		postMessage(WM_SQLITE_STATECHANGE, (WPARAM)this, (LPARAM)WORKING);
+		int n = 0;
+		int nc = progressCount;
+		int percent = -1;
+		tTJSVariantClosure &vc = selectResult.AsObjectClosureNoAddRef();
+		sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+		while (!canceled && n < dataNum && (errorCode == SQLITE_OK || errorCode == SQLITE_DONE)) {
+			tTJSVariant line;
+			vc.PropGetByNum(0, n++, &line, NULL);
+			if ((errorCode = ::bindParams(stmt, line)) == SQLITE_OK) {
+				while ((errorCode = sqlite3_step(stmt)) == SQLITE_ROW);
+			}
+			if (n == nc) {
+				postMessage(WM_SQLITE_PROGRESS, (WPARAM)this, (LPARAM)n);
+				nc += progressCount;
+			}
+		}
+		updateData.Clear();
+		if (canceled) {
+			errorCode = SQLITE_ABORT;
+		}
+		if (errorCode == SQLITE_OK || errorCode == SQLITE_DONE) {
+			sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
+			postMessage(WM_SQLITE_PROGRESS, (WPARAM)this, (LPARAM)n);
+		} else {
+			sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL);
+		}
+		postMessage(WM_SQLITE_STATECHANGE, (WPARAM)this, (LPARAM)DONE);
+	}
+
+	// 実行スレッド
+	static unsigned __stdcall updateThreadFunc(void *data) {
+		((SqliteThread*)data)->updateThreadMain();
+		_endthreadex(0);
+		return 0;
+	}
+
+	// スレッド処理開始
+	void startUpdateThread(tTJSVariant &data) {
+		updateData = data;
+		{
+			tTJSVariant cnt;
+			updateData.AsObjectClosureNoAddRef().PropGet(0, L"count", NULL, &cnt, NULL);
+			dataNum = cnt;
+		}
+		errorCode = SQLITE_OK;
+		canceled = false;
+		threadHandle = (HANDLE)_beginthreadex(NULL, 0, updateThreadFunc, this, 0, NULL);
+	}
+
+	// -----------------------------------------------------------------------------------
+	
 	// スレッド処理終了
 	void stopThread() {
 		if (threadHandle) {
@@ -772,6 +963,7 @@ protected:
 			CloseHandle(threadHandle);
 			threadHandle = 0;
 		}
+		close();
 	}
 
 	
@@ -781,19 +973,34 @@ private:
 	tTJSVariant sqlite;
 	sqlite3 *db;
 	sqlite3_stmt *stmt;
-
+	int progressCount;
+	
 	// スレッド処理用
 	HANDLE threadHandle; ///< スレッドのハンドル
 	bool canceled; ///< キャンセルされた
-
-	// SELECTの結果
-	int selectDataCount;
-	tTJSVariant selectResult;
 	
-	// UPDATE用データ
-	tTJSVariant updateData;
+	int dataNum; ///< データ数
+	tTJSVariant updateData; ///< UPDATE用データ(配列)
+	State state; ///< ステート
+	int errorCode; ///< エラーコード
+	tTJSVariant selectResult; ///< SELECTの結果(配列)
 };
 
+#define ENUM2(n) Variant(#n, (int)SqliteThread::n)
+
+NCB_REGISTER_CLASS(SqliteThread) {
+	ENUM2(INIT);
+	ENUM2(WORKING);
+	ENUM2(DONE);
+	Factory(&ClassT::factory);
+	RawCallback(TJS_W("select"), &Class::select, 0);
+	RawCallback(TJS_W("update"), &Class::update, 0);
+	NCB_METHOD(abort);
+	NCB_PROPERTY_RO(state, getState);
+	NCB_PROPERTY_RO(errorCode, getErrorCode);
+	NCB_PROPERTY_RO(selectResult, getSelectResult);
+	NCB_PROPERTY(progressCount, getProgressCount, setProgressCount);
+};
 
 // --------------------------------------------------------------------------
 
