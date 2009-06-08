@@ -166,6 +166,8 @@ getColumnData(sqlite3_stmt *stmt, tTJSVariant &variant, int num)
 	}
 }
 
+extern void initContainFunc(sqlite3 *db);
+
 /**
  * SqliteƒNƒ‰ƒX
  */
@@ -200,6 +202,9 @@ public:
 					TVPGetLocalName(filename);
 					sqlite3_open16(filename.c_str(), &db);
 				}
+			}
+			if (db) {
+				initContainFunc(db);
 			}
 		}
 	}
@@ -1005,10 +1010,13 @@ NCB_REGISTER_CLASS(SqliteThread) {
 
 // --------------------------------------------------------------------------
 
+extern void initNormalize();
+
 static void
 initSqlite()
 {
 	sqlite3_vfs_register(getXp3Vfs(), 0);
+	initNormalize();
 }
 
 static void

@@ -14,6 +14,11 @@ Author: わたなべごう
 
 詳細は manual.tjs を参照してください。
 
+●SQL拡張
+
+ cnt(a,b)   文字列 a に b が含まれれば真
+ ncnt(a,b)  正規化された文字列 a に 正規化された文字列 b が含まれてれば真
+
 ●ライセンス
 
 sqlite は public domain です。
