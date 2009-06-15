@@ -441,23 +441,27 @@ void tTVPLayerManager::PrimaryMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 			try
 			{
 				tTJSNI_BaseLayer *ll;
-				do
+
+				l->FireMouseEnter();
+
+				// recheck l because the layer may become invalid during
+				// FireMouseEnter call.
+				if(CaptureOwner)
+					ll = CaptureOwner;
+				else
+					ll = GetMostFrontChildAt(x, y);
+
+				if(l != ll)
 				{
-					l->FireMouseEnter();
-
-					// recheck l because the layer may become invalid during
-					// FireMouseEnter call.
-					if(CaptureOwner)
-						ll = CaptureOwner;
-					else
-						ll = GetMostFrontChildAt(x, y);
-
-					if(l == ll) break;
+					l->FireMouseLeave();
 					l = ll;
-				} while(true);
+					if(l) l->FireMouseEnter();
+				}
 
-				l->SetCurrentCursorToWindow();
-				l->SetCurrentHintToWindow();
+				// note: rechecking is done only once to avoid infinite loop
+
+				if(l) l->SetCurrentCursorToWindow();
+				if(l) l->SetCurrentHintToWindow();
 			}
 			catch(...)
 			{
@@ -466,7 +470,8 @@ void tTVPLayerManager::PrimaryMouseMove(tjs_int x, tjs_int y, tjs_uint32 flags)
 			}
 			InNotifyingHintOrCursorChange = false;
 		}
-		else
+
+		if(!l)
 		{
 			SetMouseCursor(0);
 			SetHint(ttstr());
