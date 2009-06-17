@@ -7,6 +7,7 @@ using namespace std;
 
 // バッファ参照用の型
 typedef unsigned char       *WrtRefT;
+typedef unsigned char const *ReadRefT;
 
 /**
  * レイヤのサイズとバッファを取得する
@@ -142,6 +143,65 @@ fillAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispa
 	return TJS_S_OK;
 }
 
+static tjs_error TJS_INTF_METHOD
+copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	ReadRefT sbuf = 0;
+	WrtRefT  dbuf = 0;
+	long w, h, spitch, dpitch, threshold = -1;
+	if (numparams > 0 && param[0]->Type() != tvtVoid) {
+		threshold = (long)(param[0]->AsInteger());
+	}
+
+	if (!GetLayerSize(lay, w, h, spitch)) {
+		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
+	}
+	tTJSVariant val;
+	if (TJS_FAILED(lay->PropGet(0, TJS_W("mainImageBuffer"), 0, &val, lay)) ||
+		(sbuf = reinterpret_cast<ReadRefT>(val.AsInteger())) == NULL) {
+		TVPThrowExceptionMessage(TJS_W("src has no image."));
+	}
+
+	val.Clear();
+	if (TJS_FAILED(lay->PropGet(0, TJS_W("provinceImageBufferForWrite"), 0, &val, lay)) ||
+		(dbuf = reinterpret_cast<WrtRefT>(val.AsInteger())) == NULL) {
+		TVPThrowExceptionMessage(TJS_W("dst has no province image."));
+	}
+	val.Clear();
+	if (TJS_FAILED(lay->PropGet(0, TJS_W("provinceImageBufferPitch"), 0, &val, lay)) ||
+		(dpitch = (long)val.AsInteger()) == 0) {
+		TVPThrowExceptionMessage(TJS_W("dst has no province pitch."));
+	}
+
+	sbuf += 3;
+	unsigned char th = (unsigned char)threshold;
+	int mode = 0;
+	if (threshold >= 0 && threshold < 256) mode = 1;
+	else if (threshold >= 256) mode = 2;
+
+	for (int y = 0; y < h; y++) {
+		WrtRefT  p = dbuf;
+		ReadRefT q = sbuf;
+		switch (mode) {
+		case 0:
+			for (int x = 0; x < w; x++, q+=4) *p++ = *q;
+			break;
+		case 1:
+			for (int x = 0; x < w; x++, q+=4) *p++ = (*q >= th);
+			break;
+		case 2:
+			for (int x = 0; x < w; x++, q+=4) *p++ = 0;
+			break;
+		}
+		sbuf += spitch;
+		dbuf += dpitch;
+	}
+	return TJS_S_OK;
+}
+
+
 NCB_ATTACH_FUNCTION(copyRightBlueToLeftAlpha, Layer, copyRightBlueToLeftAlpha);
 NCB_ATTACH_FUNCTION(copyBottomBlueToTopAlpha, Layer, copyBottomBlueToTopAlpha);
 NCB_ATTACH_FUNCTION(fillAlpha, Layer, fillAlpha);
+
+NCB_ATTACH_FUNCTION(copyAlphaToProvince, Layer, copyAlphaToProvince);

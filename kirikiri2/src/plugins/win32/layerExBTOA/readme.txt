@@ -24,6 +24,16 @@ function copyBottomBlueToTopAlpha();
  */
 function fillAlpha();
 
+/**
+ * レイヤの Alpha CHANNEL を Province Image（領域画像）にコピーする
+ * @param threshold 閾値。省略時またはvoidならそのままコピーする
+ *                  数値を指定するとAlphaが閾値以上なら1，それ以外を0に埋める
+ */
+function copyAlphaToProvince(threshold);
+
+
+
+
 VideoOverlay クラスを使ってレイヤに動画(右半分にα画像)
 を描画したあと、onFrameUpdate() で呼び出してください。
 処理は内部画像データ(imageWidthのサイズ)に対して行われます。
