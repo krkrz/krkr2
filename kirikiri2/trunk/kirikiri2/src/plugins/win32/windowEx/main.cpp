@@ -270,11 +270,17 @@ struct WindowEx
 			break;
 			// システムメニューサイズ変更抑制
 		case WM_INITMENUPOPUP:
-			if (disableResize && HIWORD(mes->LParam)) {
-				HWND hwnd = GetHWND(self);
-				if (hwnd != NULL) mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
-				::EnableMenuItem((HMENU)mes->WParam, SC_SIZE, MF_GRAYED | MF_BYCOMMAND);
-				return (hwnd != NULL);
+			if (HIWORD(mes->LParam)) {
+				if (disableResize) {
+					HWND hwnd = GetHWND(self);
+					if (hwnd != NULL) mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
+					::EnableMenuItem((HMENU)mes->WParam, SC_SIZE, MF_GRAYED | MF_BYCOMMAND);
+					return (hwnd != NULL);
+				}
+			} else if (menuex) {
+				HMENU menu = (HMENU)mes->WParam;
+				int cnt = ::GetMenuItemCount(menu);
+				for (int i = 0; i < cnt; i++) checkUpdateMenuItem(menu, i, ::GetMenuItemID(menu, i));
 			}
 			break;
 
@@ -301,6 +307,10 @@ struct WindowEx
 		return false;
 	}
 
+	// メニュー更新処理（MenuItemEx用）
+	void checkUpdateMenuItem(HMENU, int, UINT);
+	void setMenuItemID(iTJSDispatch2*, UINT, bool);
+
 	// メッセージレシーバ
 	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *mes) {
 		WindowEx *inst = GetInstance((iTJSDispatch2*)userdata);
@@ -318,7 +328,7 @@ struct WindowEx
 
 	// ネイティブインスタンスの生成・破棄にあわせてレシーバを登録・解除する
 	WindowEx(iTJSDispatch2 *obj)
-		:   self(obj),
+		:   self(obj), menuex(0),
 			hasResizing(false),
 			hasMoving(false),
 			hasMove(false),
@@ -327,6 +337,7 @@ struct WindowEx
 		{ regist(true); }
 
 	~WindowEx() {
+		if (menuex) menuex->Release();
 		deleteOverlayBitmap();
 		regist(false);
 	}
@@ -357,7 +368,7 @@ protected:
 		return TJS_S_OK;
 	}
 private:
-	iTJSDispatch2 *self;
+	iTJSDispatch2 *self, *menuex;
 	bool hasResizing, hasMoving, hasMove; //< メソッドが存在するかフラグ
 	bool disableResize; // サイズ変更禁止
 
@@ -564,7 +575,7 @@ struct MenuItemEx
 		return ret;
 	}
 	// ウィンドウを取得
-	static HWND GetHWND(iTJSDispatch2 *obj) {
+	static iTJSDispatch2* GetWindow(iTJSDispatch2 *obj) {
 		if (!obj) return NULL;
 		tTJSVariant val;
 		obj->PropGet(0, TJS_W("root"), 0, &val, obj);
@@ -572,8 +583,11 @@ struct MenuItemEx
 		if (!obj) return NULL;
 		val.Clear();
 		obj->PropGet(0, TJS_W("window"), 0, &val, obj);
-		obj = val.AsObjectNoAddRef();
-		return obj ? WindowEx::GetHWND(obj) : NULL;
+		return val.AsObjectNoAddRef();
+	}
+	static HWND GetHWND(iTJSDispatch2 *obj) {
+		iTJSDispatch2 *win = GetWindow(obj);
+		return win ? WindowEx::GetHWND(win) : NULL;
 	}
 
 	static bool getMenuItemInfo(iTJSDispatch2 *obj, HMENU &hmenu, UINT &index, MENUITEMINFO &mi, UINT mask) {
@@ -628,12 +642,48 @@ struct MenuItemEx
 		}
 	}
 
-	MenuItemEx(iTJSDispatch2* _obj) : obj(_obj), set_rj(false), set_bmp(false), rj(0), bmp(0) {}
-	~MenuItemEx() {}
+	void updateMenuItemInfo(HMENU hmenu, int index) {
+		MENUITEMINFO mi;
+		ZeroMemory(&mi, sizeof(mi));
+		mi.cbSize = sizeof(mi);
+		if (set_bmp) {
+			mi.fMask = MIIM_BITMAP;
+			if (::GetMenuItemInfo(hmenu, index, TRUE, &mi)) {
+				mi.hbmpItem = (HBITMAP)(bmp);
+				::SetMenuItemInfo(hmenu, index, TRUE, &mi);
+			}
+		}
+		if (set_rj) {
+			ZeroMemory(&mi, sizeof(mi));
+			mi.cbSize = sizeof(mi);
+			mi.fMask = MIIM_FTYPE;
+			if (::GetMenuItemInfo(hmenu, index, TRUE, &mi)) {
+				if (rj) mi.fType |= MFT_RIGHTJUSTIFY;
+				else    mi.fType &= MFT_RIGHTJUSTIFY ^ (~0L);
+				::SetMenuItemInfo(hmenu, index, TRUE, &mi);
+			}
+		}
+	}
+
+	MenuItemEx(iTJSDispatch2* _obj) : obj(_obj), set_rj(false), set_bmp(false), rj(0), bmp(0), id(0) {
+		setMenuItemID(true);
+	}
+	~MenuItemEx() {
+		setMenuItemID(false);
+	}
+	void setMenuItemID(bool isset) {
+		if (isset) id = (UINT)GetHMENU(obj);
+		iTJSDispatch2 *win = GetWindow(obj);
+		if (win) {
+			WindowEx *wex = WindowEx::GetInstance(win);
+			if (wex)  wex->setMenuItemID(obj, id, isset);
+		}
+	}
 private:
 	iTJSDispatch2 *obj;
 	bool set_rj, set_bmp;
 	tjs_int  rj,     bmp;
+	UINT id;
 };
 NCB_GET_INSTANCE_HOOK(MenuItemEx)
 {
@@ -660,6 +710,30 @@ NCB_ATTACH_CLASS_WITH_HOOK(MenuItemEx, MenuItem)
 
 	Property(TJS_W("rightJustify"), &Class::getRightJustify, &Class::setRightJustify);
 	Property(TJS_W("bmpItem"),      &Class::getBmpItem,      &Class::setBmpItem     );
+}
+
+
+void WindowEx::checkUpdateMenuItem(HMENU menu, int pos, UINT id) {
+	if (id == 0 || id == (UINT)-1) return;
+
+	ttstr idstr((tjs_int)(id));
+	tTJSVariant var;
+
+	tjs_error chk = menuex->PropGet(TJS_MEMBERMUSTEXIST, idstr.c_str(), idstr.GetHint(),  &var, menuex);
+	if (TJS_SUCCEEDED(chk) && var.Type() == tvtObject) {
+		iTJSDispatch2 *obj = var.AsObjectNoAddRef();
+		MenuItemEx *ex = ncbInstanceAdaptor<MenuItemEx>::GetNativeInstance(obj);
+		if (ex != NULL) ex->updateMenuItemInfo(menu, pos);
+	}
+}
+void WindowEx::setMenuItemID(iTJSDispatch2* obj, UINT id, bool set) {
+	if (id == 0 || id == (UINT)-1) return;
+
+	ttstr idstr((tjs_int)(id));
+	tTJSVariant var(obj, obj);
+
+	if (!menuex) menuex = TJSCreateDictionaryObject();
+	menuex->PropSet(TJS_MEMBERENSURE, idstr.c_str(), idstr.GetHint(),  &var, menuex);
 }
 
 
