@@ -238,6 +238,7 @@ class MenuItem {
 	 * （チェックやラジオ以外の）アイコンの表示
 	 * 設定内容は MenuItem.bi* 定数を使用するか，レイヤオブジェクトを渡す
 	 * ※ Window.menu の子で visible でないと機能しないので注意
+	 *    また，プルダウンメニューは，Window.registerExEvent()をして拡張イベントを登録しないと表示されないので注意
 	 */
 	property bmpItem { getter; setter };
 
