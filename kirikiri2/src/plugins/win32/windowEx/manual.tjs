@@ -236,8 +236,8 @@ class MenuItem {
 
 	/**
 	 * （チェックやラジオ以外の）アイコンの表示
-	 * 設定内容は MenuItem.bi* 定数を使用する
-	 * ※ Window.menu 子で visible でないと機能しないので注意
+	 * 設定内容は MenuItem.bi* 定数を使用するか，レイヤオブジェクトを渡す
+	 * ※ Window.menu の子で visible でないと機能しないので注意
 	 */
 	property bmpItem { getter; setter };
 

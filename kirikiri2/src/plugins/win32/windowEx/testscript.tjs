@@ -2,7 +2,21 @@ System.setArgument("-usedb",   "no");
 System.setArgument("-dbstyle", "gdi");
 
 Plugins.link("windowEx.dll");
-
+MenuItem.setBmpItem = function(bmp) {
+	switch (typeof bmp) {
+	case "Integer": case "Object": bmpItem = bmp; break;
+	case "String":
+		var lay, win = root.window;
+		try {
+			lay = new Layer(win, win.primaryLayer);
+			lay.loadImages(bmp);
+			bmpItem = lay;
+		} catch {
+			bmpItem = (int)bmp;
+		}
+		if (lay) invalidate lay;
+	}
+};
 //Debug.controller.visible = true;
 Debug.console.visible = true;
 var dm = Debug.message;
@@ -12,6 +26,7 @@ with (Debug.console.getPlacement())
 	   "normal", .normalLeft, .normalTop, .normalRight, .normalBottom);
 
 class TestWindow extends Window {
+	var icon;
 	function finalize() { super.finalize(...); }
 	function TestWindow(title) {
 		super.Window();
@@ -20,9 +35,12 @@ class TestWindow extends Window {
 //		borderStyle = bsNone;
 
 		add(new Layer(this, null));
+		add(icon = new Layer(this, primaryLayer));
 		setInnerSize(320, 240);
 		primaryLayer.visible = true;
 		visible = true;
+
+		icon.loadImages("testicon"); //, 0x00FF00);
 
 		createMenu();
 		registerExEvent();
@@ -60,8 +78,8 @@ class TestWindow extends Window {
 		// （子を作る／子が消えるとIDが変わるのでbmpItemが表示されない）
 		var xxx = new MenuItem(this, "xxx");
 		mark.add(xxx);
-		mark.bmpItem = MenuItem.biClose;
-		mark.rightJustify = true;
+		mark.setBmpItem(icon); //"testicon"); //MenuItem.biClose);
+//		mark.rightJustify = true;
 		//mark.remove(xxx);
 
 		// Window直下の HMENU が取得できるかテスト
