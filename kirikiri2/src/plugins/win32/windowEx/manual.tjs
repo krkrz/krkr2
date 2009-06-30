@@ -235,12 +235,14 @@ class MenuItem {
 	property rightJustify { getter; setter };
 
 	/**
-	 * （チェックやラジオ以外の）アイコンの表示
+	 * アイコンの表示
 	 * 設定内容は MenuItem.bi* 定数を使用するか，レイヤオブジェクトを渡す
-	 * ※ Window.menu の子で visible でないと機能しないので注意
+	 * ※ 値を設定する時点で Window.menu の子で visible でないと機能しないので注意
 	 *    また，プルダウンメニューは，Window.registerExEvent()をして拡張イベントを登録しないと表示されないので注意
 	 */
-	property bmpItem { getter; setter };
+//	property bmpItem      { getter; setter }; //< 文字列位置アイコン（チェック／未チェックアイコンの同時指定不可？）
+	property bmpChecked   { getter; setter }; //< チェック時アイコン (0でデフォルト)
+	property bmpUnchecked { getter; setter }; //< 未チェック時アイコン (0でデフォルト)
 
 	/// bmpItem 定数
 	/* static */ var biSystem;					//< HBMMENU_SYSTEM

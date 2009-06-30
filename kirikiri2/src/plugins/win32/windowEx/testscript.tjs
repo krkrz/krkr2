@@ -10,9 +10,9 @@ MenuItem.setBmpItem = function(bmp) {
 		try {
 			lay = new Layer(win, win.primaryLayer);
 			lay.loadImages(bmp);
-			bmpItem = lay;
+			bmpUnchecked = lay;
 		} catch {
-			bmpItem = (int)bmp;
+			bmpUnchecked = (int)bmp;
 		}
 		if (lay) invalidate lay;
 	}
@@ -26,7 +26,7 @@ with (Debug.console.getPlacement())
 	   "normal", .normalLeft, .normalTop, .normalRight, .normalBottom);
 
 class TestWindow extends Window {
-	var icon;
+	var icon, mark;
 	function finalize() { super.finalize(...); }
 	function TestWindow(title) {
 		super.Window();
@@ -42,8 +42,8 @@ class TestWindow extends Window {
 
 		icon.loadImages("testicon"); //, 0x00FF00);
 
-		createMenu();
 		registerExEvent();
+		createMenu();
 	}
 	function createMenu() {
 		var tes1 = new MenuItem(this, "test1");
@@ -52,13 +52,7 @@ class TestWindow extends Window {
 		var min = new MenuItem(this, "");
 		var max = new MenuItem(this, "");
 		var cls = new MenuItem(this, "");
-		var mark;
-
-		tes1.onClick = Debug.console.restoreMaximize;
-		tes2.add(new MenuItem(this, "1"));
-		tes2.add(new MenuItem(this, "2"));
-		tes2.add(mark = new MenuItem(this, "3"));
-		tes2.add(new MenuItem(this, "4"));
+//		var mark;
 
 		min.onClick = minimize;
 		max.onClick = maximize;
@@ -70,18 +64,27 @@ class TestWindow extends Window {
 		menu.add(max);
 		menu.add(cls);
 
+		var ref;
+		tes1.onClick = Debug.console.restoreMaximize;
+		tes2.add(ref = new MenuItem(this, "1")); ref.setBmpItem("testicon2");
+		tes2.add(ref = new MenuItem(this, "2")); ref.setBmpItem("testicon3");
+		tes2.add(new MenuItem(this, "-"));
+		tes2.add(mark = new MenuItem(this, "3"));
+		tes2.add(new MenuItem(this, "4"));
+
 		min.bmpItem = MenuItem.biPopupMinimize;
 		max.bmpItem = MenuItem.biPopupMaximize;
 		cls.bmpItem = MenuItem.biPopupClose;
 		min.rightJustify = true;
 
 		// （子を作る／子が消えるとIDが変わるのでbmpItemが表示されない）
-		var xxx = new MenuItem(this, "xxx");
-		mark.add(xxx);
-		mark.setBmpItem(icon); //"testicon"); //MenuItem.biClose);
+		var sub = new MenuItem(this, "xxx");
+		mark.add(sub);
+		sub.setBmpItem(icon); //"testicon"); //MenuItem.biClose);
 //		mark.rightJustify = true;
-		//mark.remove(xxx);
 
+		dm("mark", mark.HMENU);
+		
 		// Window直下の HMENU が取得できるかテスト
 		var prop = &(MenuItem.HMENU);
 		dm("HMENU", *(prop incontextof menu));
@@ -183,6 +186,8 @@ function TestGetMonitorInfo(args*) {
 
 var testWin = new TestWindow("MainWindow");
 //testWin.add(new TestWindow("SubWindow"));
+
+var testWin2 = new TestWindow("SubWindow");
 
 var timer = new Timer(testWin, "checkTimer");
 timer.interval = 5000;
