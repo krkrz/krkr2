@@ -81,7 +81,7 @@ struct WindowEx
 	static tjs_error TJS_INTF_METHOD resetWindowIcon(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { 
 		HWND hwnd = GetHWND(obj);
 		if (hwnd != NULL) {
-			HICON icon = LoadIcon(GetModuleHandle(0), IDI_APPLICATION);
+			HICON icon = ::LoadIcon(GetModuleHandle(0), IDI_APPLICATION);
 			::PostMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
 		}
 		return TJS_S_OK;
@@ -278,9 +278,11 @@ struct WindowEx
 					return (hwnd != NULL);
 				}
 			} else if (menuex) {
+				mes->Result = ::DefWindowProc(GetHWND(self), mes->Msg, mes->WParam, mes->LParam);
 				HMENU menu = (HMENU)mes->WParam;
 				int cnt = ::GetMenuItemCount(menu);
 				for (int i = 0; i < cnt; i++) checkUpdateMenuItem(menu, i, ::GetMenuItemID(menu, i));
+				return true;
 			}
 			break;
 
@@ -410,7 +412,7 @@ public:
 			drawBitmap(::BeginPaint(hwnd, &ps));
 			::EndPaint(hwnd, &ps);
 		}
-		static HBITMAP CopyLayerToBitmap(HDC dc, bool hasAlpha, iTJSDispatch2 *lay, tjs_int &w, tjs_int &h, tjs_int *x=0, tjs_int *y=0) {
+		static HBITMAP CopyLayerToBitmap(HDC dc, int ts, iTJSDispatch2 *lay, tjs_int &w, tjs_int &h, tjs_int *x=0, tjs_int *y=0) {
 			typedef unsigned char PIX;
 			ncbPropAccessor obj(lay);
 			if (x) *x = obj.getIntValue(TJS_W("left"));
@@ -426,11 +428,12 @@ public:
 			info.bmiHeader.biWidth = w;
 			info.bmiHeader.biHeight = h;
 			info.bmiHeader.biPlanes = 1;
-			info.bmiHeader.biBitCount = hasAlpha ? 32 : 24;
+			info.bmiHeader.biBitCount = (ts > 0) ? 32 : 24;
 
 			HBITMAP bmp = ::CreateDIBSection(dc, (LPBITMAPINFO)&info, DIB_RGB_COLORS, (LPVOID*)&pw, NULL, 0);
 			if (bmp && pw) {
-				if (hasAlpha) {
+				if (ts > 0) {
+					PIX pts = (PIX)ts;
 					for (int y = h-1; y >= 0; y--) {
 						PIX *src = pr + (y * ln);
 						PIX *dst = pw + ((h-1 - y) * ((w*4+3) & ~3L));
@@ -438,7 +441,7 @@ public:
 							dst[0] = src[0];
 							dst[1] = src[1];
 							dst[2] = src[2];
-							dst[3] = src[3];
+							dst[3] =(src[3] >= pts) ? 255: 0;
 						}
 					}
 				} else {
@@ -467,7 +470,7 @@ public:
 			removeBitmap();
 			HDC dc = ::GetDC(overlay);
 			bmpdc  = ::CreateCompatibleDC(dc);
-			bitmap = CopyLayerToBitmap(dc, false, lay, bmpw, bmph, &bmpx, &bmpy);
+			bitmap = CopyLayerToBitmap(dc, 0, lay, bmpw, bmph, &bmpx, &bmpy);
 			if (bitmap) ::SelectObject(bmpdc, bitmap);
 			if (!bitmap || !bmpdc) {
 				removeBitmap();
@@ -551,6 +554,9 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 ////////////////////////////////////////////////////////////////
 struct MenuItemEx
 {
+	enum { BMP_ITEM, BMP_CHK, BMP_UNCHK, BMP_MAX };
+	enum { BMT_NONE, BMT_SYS, BMT_BMP };
+
 	// ƒƒjƒ…[‚ðŽæ“¾
 	static HMENU GetHMENU(iTJSDispatch2 *obj) {
 		if (!obj) return NULL;
@@ -621,41 +627,41 @@ struct MenuItemEx
 		return win ? WindowEx::GetHWND(win) : NULL;
 	}
 
-	void setMenuItemInfo() {
-		iTJSDispatch2 *parent = GetParentMenu(obj);
-		HMENU hmenu = GetHMENU(parent);
-		if (hmenu == NULL) TVPThrowExceptionMessage(TJS_W("Cannot get parent menu."));
-
-		id = (UINT)GetHMENU(obj);
-		if (updateMenuItemInfo(hmenu, id, FALSE) == 0) {
-			UINT index = GetIndex(obj, parent);
-			if (updateMenuItemInfo(hmenu, index, TRUE) == 0) {
-#ifdef DEBUG
-				 TVPAddLog("cant set MenuItemInfo");
-#endif
-			}
-		}
-	}
-
 	// property rightJustify
 	tjs_int getRightJustify() const { return rj; }
 	void setRightJustify(tTJSVariant v) {
 		rj = !!v.AsInteger();
-		set_rj = true;
-		setMenuItemInfo();
+		updateMenuItemInfo();
 		if (IsRootChild(obj)) ::DrawMenuBar(GetHWND(obj));
-		set_rj = !!rj;
 	}
 
 	// property bmpItem
-	tjs_int getBmpItem() const { return bmp; }
-	void setBmpItem(tTJSVariant v) {
-		removeBitmap();
+	tjs_int getBmpItem() const { return getBmpSelect(BMP_ITEM); }
+	void setBmpItem(tTJSVariant v) { setBmpSelect(v, BMP_ITEM); }
+
+	// property bmpChecked
+	tjs_int getBmpChecked() const { return getBmpSelect(BMP_CHK); }
+	void setBmpChecked(tTJSVariant v) { setBmpSelect(v, BMP_CHK); }
+
+	// property bmpUnchecked
+	tjs_int getBmpUnchecked() const { return getBmpSelect(BMP_UNCHK); }
+	void setBmpUnchecked(tTJSVariant v) { setBmpSelect(v, BMP_UNCHK); }
+
+	tjs_int getBmpSelect(int sel) const {
+		switch (bmptype[sel]) {
+		case BMT_SYS: return (tjs_int)bitmap[sel];
+		case BMT_BMP: return -1;
+		default:      return 0;
+		}
+	}
+	void setBmpSelect(tTJSVariant &v, int sel) {
+		removeBitmap(sel);
 		switch (v.Type()) {
 		case tvtVoid:
 		case tvtInteger:
 		case tvtString:
-			bmp = (tjs_int)v.AsInteger();
+			bmptype[sel] = BMT_SYS;
+			bitmap[sel] = (HBITMAP)v.AsInteger();
 			break;
 		case tvtObject:
 			iTJSDispatch2 *lay = v.AsObjectNoAddRef();
@@ -664,59 +670,84 @@ struct MenuItemEx
 			tjs_int w, h;
 			HWND hwnd = GetHWND(obj);
 			HDC dc = ::GetDC(hwnd);
-			bitmap = WindowEx::OverlayBitmap::CopyLayerToBitmap(dc, true, lay, w, h);
+			bitmap[sel] = WindowEx::OverlayBitmap::CopyLayerToBitmap(dc, 64, lay, w, h);
 			::ReleaseDC(hwnd, dc);
-			bmp = (tjs_int)bitmap;
+			bmptype[sel] = BMT_BMP;
 		}
-		set_bmp = true;
-		setMenuItemInfo();
+		updateMenuItemInfo();
 		if (IsRootChild(obj)) ::DrawMenuBar(GetHWND(obj));
-		set_bmp = !!bmp;
 	}
-	void removeBitmap() {
-		if (bitmap) ::DeleteObject(bitmap);
-		bitmap = NULL;
+	void removeBitmap(int sel) {
+		if (bitmap[sel] && bmptype[sel] == BMT_BMP) ::DeleteObject(bitmap[sel]);
+		bmptype[sel] = BMT_NONE;
+		bitmap[ sel] = NULL;
 	}
 
-	int updateMenuItemInfo(HMENU hmenu, int index_or_id, BOOL is_index) {
-		if (!set_bmp && !set_rj) return -1;
+	UINT setMenuItemInfo(HMENU hmenu, int index_or_id, BOOL is_index) {
 		MENUITEMINFO mi;
 		ZeroMemory(&mi, sizeof(mi));
 		mi.cbSize = sizeof(mi);
-		mi.fMask = MIIM_BITMAP | MIIM_FTYPE;
+		mi.fMask = MIIM_ID | MIIM_BITMAP | MIIM_CHECKMARKS | MIIM_FTYPE;
 		if (::GetMenuItemInfo(hmenu, index_or_id, is_index, &mi)) {
-			if (set_bmp) mi.hbmpItem = (HBITMAP)(bmp);
-			if (set_rj) {
-				if (rj) mi.fType |= MFT_RIGHTJUSTIFY;
-				else    mi.fType &= MFT_RIGHTJUSTIFY ^ (~0L);
-			}
+			if (bmptype[BMP_ITEM ]) mi.hbmpItem      = bitmap[BMP_ITEM ];
+			if (bmptype[BMP_CHK  ]) mi.hbmpChecked   = bitmap[BMP_CHK  ];
+			if (bmptype[BMP_UNCHK]) mi.hbmpUnchecked = bitmap[BMP_UNCHK];
+			if (rj > 0)   mi.fType |= MFT_RIGHTJUSTIFY;
+			else if (!rj) mi.fType &= MFT_RIGHTJUSTIFY ^ (~0L);
 			::SetMenuItemInfo(hmenu, index_or_id, is_index, &mi);
-			return 1;
+			return mi.wID;
 		}
 		return 0;
 	}
+	void updateMenuItemInfo() {
+		iTJSDispatch2 *parent = GetParentMenu(obj);
+		HMENU hmenu = GetHMENU(parent);
+		if (hmenu == NULL) TVPThrowExceptionMessage(TJS_W("Cannot get parent menu."));
 
-	MenuItemEx(iTJSDispatch2* _obj) : obj(_obj), set_rj(false), set_bmp(false), rj(0), bmp(0), id(0), bitmap(0) {
-		setMenuItemID(true);
+		if (!id || !setMenuItemInfo(hmenu, id, FALSE)) {
+			if (setMenuItemInfo(hmenu, GetIndex(obj, parent), TRUE))
+				updateMenuItemID();
+		}
 	}
-	~MenuItemEx() {
-		removeBitmap();
-		setMenuItemID(false);
+
+	void updateMenuItemID() {
+		if (id != 0) setMenuItemID(false);
+		iTJSDispatch2 *parent = GetParentMenu(obj);
+		HMENU hmenu = GetHMENU(parent);
+		UINT index = GetIndex(obj, parent);
+		MENUITEMINFO mi;
+		ZeroMemory(&mi, sizeof(mi));
+		mi.cbSize = sizeof(mi);
+		mi.fMask = MIIM_ID | MIIM_DATA;
+		if (::GetMenuItemInfo(hmenu, index, TRUE, &mi)) {
+			HMENU test = GetHMENU(obj);
+			DWORD check = mi.dwItemData;
+			id = mi.wID;
+			setMenuItemID(true);
+		} else id = 0;
 	}
 	void setMenuItemID(bool isset) {
-		if (isset) id = (UINT)GetHMENU(obj);
 		iTJSDispatch2 *win = GetWindow(obj);
 		if (win) {
 			WindowEx *wex = WindowEx::GetInstance(win);
 			if (wex)  wex->setMenuItemID(obj, id, isset);
 		}
 	}
+
+	MenuItemEx(iTJSDispatch2* _obj) : obj(_obj), id(0), rj(-1) {
+		for (int i = 0; i < BMP_MAX; i++) bitmap[i] = NULL, bmptype[i] = 0;
+		updateMenuItemID();
+	}
+	~MenuItemEx() {
+		for (int i = 0; i < BMP_MAX; i++) removeBitmap(i);
+		setMenuItemID(false);
+	}
 private:
 	iTJSDispatch2 *obj;
-	bool set_rj, set_bmp;
-	tjs_int  rj,     bmp;
 	UINT id;
-	HBITMAP bitmap;
+	tjs_int  rj;
+	int    bmptype[BMP_MAX];
+	HBITMAP bitmap[BMP_MAX];
 };
 NCB_GET_INSTANCE_HOOK(MenuItemEx)
 {
@@ -743,6 +774,8 @@ NCB_ATTACH_CLASS_WITH_HOOK(MenuItemEx, MenuItem)
 
 	Property(TJS_W("rightJustify"), &Class::getRightJustify, &Class::setRightJustify);
 	Property(TJS_W("bmpItem"),      &Class::getBmpItem,      &Class::setBmpItem     );
+	Property(TJS_W("bmpChecked"),   &Class::getBmpChecked,   &Class::setBmpChecked  );
+	Property(TJS_W("bmpUnchecked"), &Class::getBmpUnchecked, &Class::setBmpUnchecked);
 }
 
 
@@ -756,7 +789,7 @@ void WindowEx::checkUpdateMenuItem(HMENU menu, int pos, UINT id) {
 	if (TJS_SUCCEEDED(chk) && var.Type() == tvtObject) {
 		iTJSDispatch2 *obj = var.AsObjectNoAddRef();
 		MenuItemEx *ex = ncbInstanceAdaptor<MenuItemEx>::GetNativeInstance(obj);
-		if (ex != NULL) ex->updateMenuItemInfo(menu, pos, TRUE);
+		if (ex != NULL) ex->setMenuItemInfo(menu, pos, TRUE);
 	}
 }
 void WindowEx::setMenuItemID(iTJSDispatch2* obj, UINT id, bool set) {
