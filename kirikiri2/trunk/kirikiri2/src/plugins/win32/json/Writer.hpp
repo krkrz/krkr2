@@ -6,8 +6,10 @@ protected:
 	const tjs_char *newlinestr;
 public:
 	int indent;
+        bool hex;
 	IWriter(int newlinetype=0) {
 		indent = 0;
+                hex = false;
 		switch (newlinetype) {
 		case 1:
 			newlinestr = L"\n";
@@ -62,9 +64,20 @@ public:
 	}
 
 	virtual void write(tTVReal num) {
-		tTJSVariantString *str = TJSRealToString(num);
-		buf += str;
-		str->Release();
+               if (hex) {
+                 tTJSVariantString *str = TJSRealToHexString(num);
+                 buf += str;
+                 str->Release();
+                 buf += L" /* ";
+                 str = TJSRealToString(num);
+                 buf += str;
+                 str->Release();
+                 buf += L" */";
+               } else {
+                 tTJSVariantString *str = TJSRealToString(num);
+                 buf += str;
+                 str->Release();
+               }
 	}
 
 	virtual void write(tTVInteger num) {
@@ -159,9 +172,20 @@ public:
 	}
 
 	virtual void write(tTVReal num) {
-		tTJSVariantString *str = TJSRealToString(num);
-		buf += str;
-		str->Release();
+               if (hex) {
+                 tTJSVariantString *str = TJSRealToHexString(num);
+                 buf += str;
+                 str->Release();
+                 buf += L" /* ";
+                 str = TJSRealToString(num);
+                 buf += str;
+                 str->Release();
+                 buf += L" */";
+               } else {
+                 tTJSVariantString *str = TJSRealToString(num);
+                 buf += str;
+                 str->Release();
+               }
 	}
 
 	virtual void write(tTVInteger num) {

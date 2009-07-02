@@ -267,6 +267,7 @@ public:
 
     HGLOBAL unicodehandle = NULL;
     IStringWriter writer(0);
+    writer.hex = true;
     getVariantString(data, &writer);
     ttstr &unicode = writer.buf;
     
