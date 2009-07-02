@@ -173,6 +173,7 @@ public:
 						   numparams > 1 ? (int)*param[1] != 0: false,
 						   numparams > 2 ? (int)*param[2] : 0
 						   );
+                writer.hex = true;
 		tjs_int count = 0;
 		{
 			tTJSVariant result;
@@ -206,6 +207,7 @@ public:
 						   numparams > 1 ? (int)*param[1] != 0: false,
 						   numparams > 2 ? (int)*param[2] : 0
 						   );
+                writer.hex = true;
 		getArrayString(objthis, &writer);
 		return TJS_S_OK;
 	}
@@ -221,6 +223,7 @@ public:
 													iTJSDispatch2 *objthis) {
 		if (result) {
 			IStringWriter writer(numparams > 0 ? (int)*param[0] : 0);
+                        writer.hex = true;
 			getArrayString(objthis, &writer);
 			*result = writer.buf;
 		}
@@ -258,6 +261,7 @@ public:
 						   numparams > 1 ? (int)*param[1] != 0: false,
 						   numparams > 2 ? (int)*param[2] : 0
 						   );
+                writer.hex = true;
 		getDictString(objthis, &writer);
 		return TJS_S_OK;
 	}
@@ -273,6 +277,7 @@ public:
 													iTJSDispatch2 *objthis) {
 		if (result) {
 			IStringWriter writer(numparams > 0 ? (int)*param[0] : 0);
+                        writer.hex = true;
 			getDictString(objthis, &writer);
 			*result = writer.buf;
 		}
