@@ -252,6 +252,10 @@ tTJSNI_BaseWindow::Invalidate()
 
 
 	inherited::Invalidate();
+
+	/* NOTE: at this point, Owner is still non-null.
+	   Caller must ensure that the Owner being null at the end of the
+	   invalidate chain. */
 }
 //---------------------------------------------------------------------------
 bool tTJSNI_BaseWindow::IsMainWindow() const
