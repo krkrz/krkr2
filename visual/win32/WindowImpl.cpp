@@ -1284,6 +1284,9 @@ void TJS_INTF_METHOD tTJSNI_Window::Invalidate()
 	// remove all events
 	TVPCancelSourceEvents(Owner);
 	TVPCancelInputEvents(this);
+
+	// Set Owner null
+	Owner = NULL;
 }
 //---------------------------------------------------------------------------
 bool tTJSNI_Window::CanDeliverEvents() const
