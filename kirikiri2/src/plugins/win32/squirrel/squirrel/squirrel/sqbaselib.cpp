@@ -281,6 +281,9 @@ void sq_base_register(HSQUIRRELVM v)
 	sq_pushstring(v,_SC("_intsize_"),-1);
 	sq_pushinteger(v,sizeof(SQInteger));
 	sq_createslot(v,-3);
+	sq_pushstring(v,_SC("_floatsize_"),-1);
+	sq_pushinteger(v,sizeof(SQFloat));
+	sq_createslot(v,-3);
 	sq_pop(v,1);
 }
 
@@ -350,7 +353,7 @@ static SQInteger default_delegate_tonumber(HSQUIRRELVM v)
 			v->Push(res);
 			break;
 		}}
-		v->Push(SQObjectPtr(0));
+		v->Push(SQObjectPtr((SQInteger)0));
 		break;
 	case OT_INTEGER:
 	case OT_FLOAT:
@@ -360,7 +363,7 @@ static SQInteger default_delegate_tonumber(HSQUIRRELVM v)
 		v->Push(SQObjectPtr(_integer(o)?(SQInteger)1:(SQInteger)0));
 		break;
 	default:
-		v->Push(SQObjectPtr(0));
+		v->Push(SQObjectPtr((SQInteger)0));
 		break;
 	}
 	return 1;
@@ -438,7 +441,7 @@ static SQInteger obj_includes(HSQUIRRELVM v)
 
 static SQInteger obj_includeCount(HSQUIRRELVM v)
 {
-	int cnt = 0;
+	SQInteger cnt = 0;
 	SQObjectPtr &o = stack_get(v,1);
 	SQObjectPtr &value = stack_get(v, 2);
 	SQObjectPtr refpos, key, val;
@@ -816,10 +819,10 @@ static SQInteger string_replace(HSQUIRRELVM v)
 	const SQChar *strP  = _stringval(str);
 	const SQChar *fromP = _stringval(from);
 	const SQChar *toP   = _stringval(to);
-	int strLen  = _string(str)->_len;
-	int fromLen = _string(from)->_len;
-	int toLen   = _string(to)->_len;
-	int diffLen = toLen - fromLen;
+	SQInteger strLen  = _string(str)->_len;
+	SQInteger fromLen = _string(from)->_len;
+	SQInteger toLen   = _string(to)->_len;
+	SQInteger diffLen = toLen - fromLen;
 
 	const SQChar *p;
 	const SQChar *start = strP;
@@ -854,7 +857,7 @@ static SQInteger string_split(HSQUIRRELVM v)
 	SQObject delim = stack_get(v,2);
 	const SQChar *strP   = _stringval(str);
 	const SQChar *delimP = _stringval(delim);
-	int delimLen = _string(delim)->_len;
+	SQInteger delimLen = _string(delim)->_len;
 	
 	SQArray *ret = SQArray::Create(_ss(v),0);
 	const SQChar *p;
@@ -869,7 +872,7 @@ static SQInteger string_split(HSQUIRRELVM v)
 	return 1;
 }
 
-static int _mbnext(const SQChar *strP, SQInteger idx)
+static SQInteger _mbnext(const SQChar *strP, SQInteger idx)
 {
 #if defined(_UNICODE)
 	return strP[idx] ? 1 : 0;
@@ -878,7 +881,7 @@ static int _mbnext(const SQChar *strP, SQInteger idx)
 #define iskanji1(c) (((((c) ^ 0x20) - 0xa1) & 0xff) < 0x3c)
 #if 0
 	if (strP[idx]) {
-		int i = 0;
+		SQInteger i = 0;
 		while (i<idx) {
 			i += iskanji1(strP[i]) ? 2 : 1;
 		}
@@ -895,7 +898,7 @@ static int _mbnext(const SQChar *strP, SQInteger idx)
 		if ((ch & 0x80) == 0) {
 			return 1;
 		} else if ((ch & 0xc0) == 0x80) {
-			int n = 0;
+			SQInteger n = 0;
 			do {
 				idx++;
 				n++;
@@ -922,11 +925,11 @@ static int _mbnext(const SQChar *strP, SQInteger idx)
 #endif
 }
 
-static int _mblen(const SQChar *strP, SQInteger len)
+static SQInteger _mblen(const SQChar *strP, SQInteger len)
 {
-	int cnt=0;
-	int idx=0;
-	int n=0;
+	SQInteger cnt=0;
+	SQInteger idx=0;
+	SQInteger n=0;
 	while (idx < len && (n = _mbnext(strP,idx)) > 0) {
 		cnt++;
 		idx += n;
@@ -943,7 +946,7 @@ static SQInteger string_mbnext(HSQUIRRELVM v)
 	if (idx < strlen) {
 		v->Push(SQObjectPtr(_mbnext(strP, idx)));
 	} else {
-		v->Push(SQObjectPtr(0));
+		v->Push(SQObjectPtr((SQInteger)0));
 	}
 	return 1;
 }
@@ -965,7 +968,7 @@ static SQInteger string_mbsubstr(HSQUIRRELVM v)
 	const SQChar *strP = _stringval(str);
 	SQInteger strlen   = _string(str)->_len;
 
-	int mblen = _mblen(strP, strlen);
+	SQInteger mblen = _mblen(strP, strlen);
 	SQInteger mbsidx = top > 1 ? tointeger(stack_get(v,2)) : 0;
 	if (mbsidx < 0) mbsidx = mblen + mbsidx;
 	SQInteger mbeidx = top > 2 ? mbsidx + tointeger(stack_get(v,3)) : mblen;
@@ -975,8 +978,8 @@ static SQInteger string_mbsubstr(HSQUIRRELVM v)
 
 	SQInteger sidx = 0;
 	SQInteger eidx = 0;
-	int idx=0;
-	int n=0;
+	SQInteger idx=0;
+	SQInteger n=0;
 	while (idx < mbsidx && (n = _mbnext(strP,sidx)) > 0) {
 		idx++;
 		sidx += n;
@@ -1189,7 +1192,7 @@ static SQInteger thread_wakeup(HSQUIRRELVM v)
 		if(wakeupret) {
 			sq_move(thread,v,2);
 		}
-		if(SQ_SUCCEEDED(sq_wakeupvm(thread,wakeupret,SQTrue,SQFalse))) {
+		if(SQ_SUCCEEDED(sq_wakeupvm(thread,wakeupret,SQTrue,SQTrue,SQFalse))) {
 			sq_move(v,thread,-1);
 			sq_pop(thread,1); //pop retval
 			if(sq_getvmstate(thread) == SQ_VMSTATE_IDLE) {

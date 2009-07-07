@@ -94,12 +94,12 @@ registerTypeTag(const SQChar *typeName, SQUserPointer tag)
  * @return 指定された型のネイティブインスタンス。みつからない場合は NULL
  */
 SQUserPointer
-getInstance(HSQUIRRELVM v, int idx, const SQChar *typeName)
+getInstance(HSQUIRRELVM v, SQInteger idx, const SQChar *typeName)
 {
 	sqobject::ObjectInfo list = typeTagListMap.get(typeName);
 	if (list.isArray()) {
-		int max = list.len();
-		for (int i=0;i<max;i++) {
+		SQInteger max = list.len();
+		for (SQInteger i=0;i<max;i++) {
 			SQUserPointer tag;
 			list.get(i, &tag);
 			SQUserPointer up;

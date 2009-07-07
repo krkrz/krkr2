@@ -12,7 +12,7 @@ extern SQRESULT ERROR_CREATE(HSQUIRRELVM v);
 extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
 void registerInherit(const SQChar *typeName, const SQChar *parentName);
 void registerTypeTag(const SQChar *typeName, SQUserPointer tag);
-SQUserPointer getInstance(HSQUIRRELVM v, int idx, const SQChar *typeName);
+SQUserPointer getInstance(HSQUIRRELVM v, SQInteger idx, const SQChar *typeName);
 
 // å^èÓïÒ
 static const SQChar *typeName = _SC("TJSObject"); ///< å^ñº
@@ -156,7 +156,7 @@ TJSObject::done()
 SQRESULT
 TJSObject::createTJSClass(HSQUIRRELVM v)
 {
-	int top = sq_gettop(v);
+	SQInteger top = sq_gettop(v);
 	if (top < 2) {
 		return sq_throwerror(v, _SC("invalid param"));
 	}
@@ -170,7 +170,7 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 	// ÉÅÉìÉoìoò^
 	const tjs_char *tjsClassName = NULL;
 	tTJSVariant tjsClassObj;
-	for (int i=top;i>1;i--) {
+	for (SQInteger i=top;i>1;i--) {
 		if ((tjsClassName = sqobject::getString(v,i))) {
 			TVPExecuteExpression(tjsClassName, &tjsClassObj);
 			if (tjsClassObj.Type() == tvtObject &&
@@ -223,7 +223,7 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
  * squirrel Ç©ÇÁãgó¢ãgó¢ÉIÉuÉWÉFÉNÉgÇéÊìæ
  */
 bool
-TJSObject::getVariant(HSQUIRRELVM v, int idx, tTJSVariant *variant)
+TJSObject::getVariant(HSQUIRRELVM v, SQInteger idx, tTJSVariant *variant)
 {
 	if (sq_gettype(v, idx) == OT_CLASS) {
 		if (idx < 0) {
@@ -342,11 +342,11 @@ TJSObject::tjsConstructor(HSQUIRRELVM v)
 		tTJSVariant tjsClassObj;
 		if (SQ_SUCCEEDED(sq_getvariant(v, -1, &tjsClassObj)) && tjsClassObj.Type() == tvtObject) {
 			// à¯êîïœä∑
-			int argc = sq_gettop(v) - 2;
+			tjs_int argc = (tjs_int)(sq_gettop(v) - 2);
 			tTJSVariant **args = NULL;
 			if (argc > 0) {
-				args = new tTJSVariant*[argc];
-				for (int i=0;i<argc;i++) {
+				args = new tTJSVariant*[(size_t)argc];
+				for (tjs_int i=0;i<argc;i++) {
 					args[i] = new tTJSVariant();
 					sq_getvariant(v, 2+i, args[i]);
 				}
@@ -389,11 +389,11 @@ TJSObject::tjsInvoker(HSQUIRRELVM v)
 	if (getVariant(v,1,&instance) && instance.Type() == tvtObject) {
 		
 		// à¯êîïœä∑
-		int argc = sq_gettop(v) - 2;
+		tjs_int argc = (tjs_int)(sq_gettop(v) - 2);
 		tTJSVariant **args = NULL;
 		if (argc > 0) {
 			args = new tTJSVariant*[argc];
-			for (int i=0;i<argc;i++) {
+			for (tjs_int i=0;i<argc;i++) {
 				args[i] = new tTJSVariant();
 				sq_getvariant(v, 2+i, args[i]);
 			}
@@ -483,7 +483,7 @@ TJSObject::tjsStaticInvoker(HSQUIRRELVM v)
 	tTJSVariant tjsClassObj;
 	if (SQ_SUCCEEDED(sq_getvariant(v, -2, &tjsClassObj)) && tjsClassObj.Type() == tvtObject) {
 		// à¯êîïœä∑
-		int argc = sq_gettop(v) - 3;
+		tjs_int argc = (tjs_int)(sq_gettop(v) - 3);
 		tTJSVariant **args = NULL;
 		if (argc > 0) {
 			args = new tTJSVariant*[argc];
