@@ -28,7 +28,7 @@ public:
 	 * @param variant Ši”[æ
 	 * @return Ši”[¬Œ÷‚µ‚½‚ç true
 	 */
-	static bool getVariant(HSQUIRRELVM v, int idx, tTJSVariant *variant);
+	static bool getVariant(HSQUIRRELVM v, SQInteger idx, tTJSVariant *variant);
 
 	/**
 	 * ƒXƒ^ƒbƒN‚Ö‚Ì‹g—¢‹g—¢ƒIƒuƒWƒFƒNƒg‚Ì“o˜^

@@ -56,8 +56,8 @@ Thread::_notifyObject(ObjectInfo &target)
 		}
 		_waitSystem.clear();
 	} else {
-		int i = 0;
-		int max = _waitList.len();
+		SQInteger i = 0;
+		SQInteger max = _waitList.len();
 		while (i < max) {
 			ObjectInfo obj = _waitList.get(i);
 			if (obj == target) {
@@ -86,7 +86,7 @@ Thread::_notifyTrigger(const SQChar *name)
 {
 	bool find = false;
 	int i = 0;
-	int max = _waitList.len();
+	SQInteger max = _waitList.len();
 	while (i < max) {
 		ObjectInfo obj = _waitList.get(i);
 		if (obj.isSameString(name)) {
@@ -176,8 +176,8 @@ Thread::_clearWait()
 	_waitSystem.clear();
 
 	// その他の wait の解除
-	int max = _waitList.len();
-	for (int i=0;i<max;i++) {
+	SQInteger max = _waitList.len();
+	for (SQInteger i=0;i<max;i++) {
 		_waitList.get(i).removeWait(self);
 	}
 	_waitList.clearData();
@@ -194,7 +194,7 @@ bool
 Thread::_fork(HSQUIRRELVM v)
 {
 	// スレッドオブジェクトはグローバル上に生成する
-	int max = sq_gettop(v);
+	SQInteger max = sq_gettop(v);
 	HSQUIRRELVM gv = getGlobalVM();
 	sq_pushroottable(gv); // root
 	sq_pushstring(gv, SQTHREADNAME, -1);
@@ -240,14 +240,14 @@ Thread::_wait(HSQUIRRELVM v, int idx)
 {
 	_clearWait();
 	_waitResult.clear();
-	int max = sq_gettop(v);
+	SQInteger max = sq_gettop(v);
 	for (int i=idx;i<=max;i++) {
 		switch (sq_gettype(v, 2)) {
 		case OT_INTEGER:
 		case OT_FLOAT:
 			// 数値の場合はタイムアウト待ち
 			{
-				int timeout;
+				SQInteger timeout;
 				sq_getinteger(v, i, &timeout);
 				if (timeout >= 0) {
 					if (_waitTimeout < 0  || _waitTimeout > timeout) {
@@ -331,7 +331,7 @@ Thread::_exec(HSQUIRRELVM v, int idx)
 	}
 
 	// 引数を記録
-	int max = sq_gettop(v);
+	SQInteger max = sq_gettop(v);
 	if (max > idx) {
 		_args.initArray();
 		for (int i=idx+1;i<=max;i++) {
@@ -348,7 +348,7 @@ Thread::_entryThread(HSQUIRRELVM v)
 {
 	// スレッド情報として登録
 	ObjectInfo thinfo(v,1);
-	int max = threadList.len();
+	SQInteger max = threadList.len();
 	for (int i=0;i<max;i++) {
 		if (threadList.get(i) == thinfo) {
 			return;
@@ -489,10 +489,10 @@ Thread::_main(long diff)
 		if (sq_getvmstate(_thread) == SQ_VMSTATE_SUSPENDED) {
 			_waitResult.push(_thread);
 			_waitResult.clear();
-			result = sq_wakeupvm(_thread, SQTrue, SQFalse, SQTrue);
+			result = sq_wakeupvm(_thread, SQTrue, SQFalse, SQTrue, SQFalse);
 		} else {
 			sq_pushroottable(_thread);
-			int n = _args.pushArray(_thread) + 1;
+			SQInteger n = _args.pushArray(_thread) + 1;
 			_args.clear();
 			result = sq_call(_thread, n, SQFalse, SQTrue);
 		}
@@ -559,8 +559,8 @@ Thread::main(long diff)
 	diffTick = diff;
 	currentTick += diff;
 
-	int i=0;
-	int max = threadList.len();
+	SQInteger i=0;
+	SQInteger max = threadList.len();
 	while (i < max) {
 		Thread *th = threadList.get(i).getThread();
 		if (!th || th->_main(diff)) {
@@ -572,7 +572,7 @@ Thread::main(long diff)
 	}
 	threadList.appendArray(newThreadList);
 	newThreadList.clearData();
-	return threadList.len();
+	return (int)threadList.len();
 };
 
 /**
@@ -616,8 +616,8 @@ Thread::done()
 	// 全スレッドを強制中断
 	threadList.appendArray(newThreadList);
 	newThreadList.clearData();
-	int max = threadList.len();
-	for (int i=0;i<max;i++) {
+	SQInteger max = threadList.len();
+	for (SQInteger i=0;i<max;i++) {
 		Thread *th = threadList.get(i).getThread();
 		if (th) { th->_exit();}
 	}
@@ -666,8 +666,8 @@ Thread::global_getDiffTick(HSQUIRRELVM v)
 SQRESULT
 Thread::global_getCurrentThread(HSQUIRRELVM v)
 {
-	int max = threadList.len();
-	for (int i=0;i<max;i++) {
+	SQInteger max = threadList.len();
+	for (SQInteger i=0;i<max;i++) {
 		ObjectInfo obj = threadList.get(i);
 		Thread *th = obj.getThread();
 		if (th && th->isSameThread(v)) {
@@ -709,8 +709,8 @@ Thread::global_fork(HSQUIRRELVM v)
 Thread *
 Thread::getCurrentThread(HSQUIRRELVM v)
 {
-	int max = threadList.len();
-	for (int i=0;i<max;i++) {
+	SQInteger max = threadList.len();
+	for (SQInteger i=0;i<max;i++) {
 		ObjectInfo obj = threadList.get(i);
 		Thread *th = obj.getThread();
 		if (th && th->isSameThread(v)) {
@@ -797,8 +797,8 @@ SQRESULT
 Thread::global_trigger(HSQUIRRELVM v)
 {
 	const SQChar *name = getString(v, 2);
-	int max = threadList.len();
-	for (int i=0;i<max;i++) {
+	SQInteger max = threadList.len();
+	for (SQInteger i=0;i<max;i++) {
 		ObjectInfo obj = threadList.get(i);
 		obj.notifyTrigger(name);
 	}

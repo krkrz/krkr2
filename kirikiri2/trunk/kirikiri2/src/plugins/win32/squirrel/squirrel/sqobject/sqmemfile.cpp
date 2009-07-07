@@ -121,7 +121,7 @@ static SQInteger file_read(SQUserPointer file,SQUserPointer buf,SQInteger size)
 {
 	MemFile *fp = (MemFile*)file;
 	SQInteger ret;
-	if( ( ret = fp->read(buf,1,size))!=0 )return ret;
+	if( ( ret = (SQInteger)fp->read(buf,1,(int)size))!=0 )return ret;
 	return -1;
 }
 

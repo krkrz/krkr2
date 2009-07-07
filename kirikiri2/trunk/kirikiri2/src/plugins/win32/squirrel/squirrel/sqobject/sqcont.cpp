@@ -10,8 +10,8 @@ static SQRESULT addContinuousHandler(HSQUIRRELVM v)
 {
 	ObjectInfo info(v,-1);
 	if (info.isClosure()) {
-		int max = continuousList.len();
-		for (int i=0;i<max;i++) {
+		SQInteger max = continuousList.len();
+		for (SQInteger i=0;i<max;i++) {
 			ObjectInfo f = continuousList.get(i);
 			if (f == info) {
 				return SQ_OK;
@@ -27,8 +27,8 @@ static SQRESULT removeContinuousHandler(HSQUIRRELVM v)
 {
 	ObjectInfo info(v,-1);
 	if (info.isClosure()) {
-		int max = continuousList.len();
-		int i=0;
+		SQInteger max = continuousList.len();
+		SQInteger i=0;
 		while (i<max) {
 			if (continuousList.get(i) == info) {
 				continuousList.remove(i);
@@ -69,8 +69,8 @@ void registerContinuous()
 /// ハンドラ処理呼び出し。Thread::main の後で呼び出す必要がある
 void mainContinuous()
 {
-	int max = continuousList.len();
-	for (int i=0;i<max;i++) {
+	SQInteger max = continuousList.len();
+	for (SQInteger i=0;i<max;i++) {
 		continuousList.get(i).call(Thread::currentTick, Thread::diffTick);
 	}
 }

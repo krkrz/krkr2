@@ -58,9 +58,9 @@ static SQInteger math_abs(HSQUIRRELVM v)
 
 static SQInteger math_min(HSQUIRRELVM v)
 {
-	int n = sq_gettop(v);
-	int minidx = 2;
-	for (int i=3;i<=n;i++) {
+	SQInteger n = sq_gettop(v);
+	SQInteger minidx = 2;
+	for (SQInteger i=3;i<=n;i++) {
 		sq_push(v, minidx);
 		sq_push(v, i);
 		if (sq_cmp(v) < 0) {
@@ -73,9 +73,9 @@ static SQInteger math_min(HSQUIRRELVM v)
 
 static SQInteger math_max(HSQUIRRELVM v)
 {
-	int n = sq_gettop(v);
-	int maxidx = 2;
-	for (int i=3;i<=n;i++) {
+	SQInteger n = sq_gettop(v);
+	SQInteger maxidx = 2;
+	for (SQInteger i=3;i<=n;i++) {
 		sq_push(v, maxidx);
 		sq_push(v, i);
 		if (sq_cmp(v) > 0) {
