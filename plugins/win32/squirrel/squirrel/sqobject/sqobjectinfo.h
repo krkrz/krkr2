@@ -39,16 +39,16 @@ public:
 	void clear();
 
 	// スタックから取得
-	void getStack(HSQUIRRELVM v, int idx);
+	void getStack(HSQUIRRELVM v, SQInteger idx);
 
     // スタックから弱参照として取得
-	void getStackWeak(HSQUIRRELVM v, int idx);
+	void getStackWeak(HSQUIRRELVM v, SQInteger idx);
   
 	// コンストラクタ
 	ObjectInfo();
 
 	// コンストラクタ
-	ObjectInfo(HSQUIRRELVM v, int idx);
+	ObjectInfo(HSQUIRRELVM v, SQInteger idx);
 
 	// コピーコンストラクタ
 	ObjectInfo(const ObjectInfo &orig);
@@ -111,7 +111,7 @@ public:
 	// ---------------------------------------------------
 
 	/// 配列として初期化
-	void initArray(int size=0);
+	void initArray(SQInteger size=0);
 	
 	/// @return 配列なら true
 	bool isArray() const { return sq_isarray(obj); }
@@ -123,7 +123,7 @@ public:
 	bool isTable() const { return sq_istable(obj); }
 	
 	/// 配列に値を追加
-	void append(HSQUIRRELVM v, int idx);
+	void append(HSQUIRRELVM v, SQInteger idx);
 
 	/// 配列に配列を追加
 	void appendArray(ObjectInfo &array);
@@ -140,7 +140,7 @@ public:
 
 	/// 配列に値を挿入
 	template<typename T>
-	void insert(int index, T value) {
+	void insert(SQInteger index, T value) {
 		HSQUIRRELVM gv = getGlobalVM();
 		push(gv);
 		pushValue(gv, value);
@@ -149,7 +149,7 @@ public:
 	}
 
 	/// 配列の値を削除
-	void remove(int index) {
+	void remove(SQInteger index) {
 		HSQUIRRELVM gv = getGlobalVM();
 		push(gv);
 		sq_arrayremove(gv, -1, index);
@@ -228,14 +228,14 @@ public:
 	}
 
 	/// @return 配列の長さ
-	int len() const;
+	SQInteger len() const;
 
 	/**
 	 * 配列の内容を全部PUSH
 	 * @param v squirrelVM
 	 * @return push した数
 	 */
-	int pushArray(HSQUIRRELVM v) const;
+	SQInteger pushArray(HSQUIRRELVM v) const;
 
 	// ---------------------------------------------------
 	// 関数処理用
@@ -435,14 +435,14 @@ protected:
 
 	// 値の push
 	static void pushValue(HSQUIRRELVM v) {}
-	static void pushValue(HSQUIRRELVM v, int value) { sq_pushinteger(v,value); }
+	static void pushValue(HSQUIRRELVM v, SQInteger value) { sq_pushinteger(v,value); }
 	static void pushValue(HSQUIRRELVM v, const SQChar *value) { sq_pushstring(v,value,-1); }
 	static void pushValue(HSQUIRRELVM v, SQUserPointer value) { sq_pushuserpointer(v,value); }
 	static void pushValue(HSQUIRRELVM v, ObjectInfo &obj) { obj.push(v); }
 	
 	// 値の取得
 	static SQRESULT getValue(HSQUIRRELVM v, void *value) { return SQ_OK; }
-	static SQRESULT getValue(HSQUIRRELVM v, int *value) { return sq_getinteger(v, -1, value); }
+	static SQRESULT getValue(HSQUIRRELVM v, SQInteger *value) { return sq_getinteger(v, -1, value); }
 	static SQRESULT getValue(HSQUIRRELVM v, const SQChar **value) { return sq_getstring(v, -1, value); }
 	static SQRESULT getValue(HSQUIRRELVM v, SQUserPointer *value) { return sq_getuserpointer(v, -1, value); }
 	

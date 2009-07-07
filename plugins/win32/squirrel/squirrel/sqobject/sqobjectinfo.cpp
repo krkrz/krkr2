@@ -32,7 +32,7 @@ ObjectInfo::clear()
 
 // スタックから取得
 void
-ObjectInfo::getStack(HSQUIRRELVM v, int idx)
+ObjectInfo::getStack(HSQUIRRELVM v, SQInteger idx)
 {
 	clear();
 	HSQUIRRELVM gv = getGlobalVM();
@@ -44,7 +44,7 @@ ObjectInfo::getStack(HSQUIRRELVM v, int idx)
 
 // スタックから弱参照として取得
 void
-ObjectInfo::getStackWeak(HSQUIRRELVM v, int idx)
+ObjectInfo::getStackWeak(HSQUIRRELVM v, SQInteger idx)
 {
 	clear();
 	HSQUIRRELVM gv = getGlobalVM();
@@ -63,7 +63,7 @@ ObjectInfo::ObjectInfo() {
 }
 
 // コンストラクタ
-ObjectInfo::ObjectInfo(HSQUIRRELVM v, int idx)
+ObjectInfo::ObjectInfo(HSQUIRRELVM v, SQInteger idx)
 {
 	sq_resetobject(&obj);
 	HSQUIRRELVM gv = getGlobalVM();
@@ -212,7 +212,7 @@ ObjectInfo::isSameString(const SQChar *str) const
 
 /// 配列として初期化
 void
-ObjectInfo::initArray(int size)
+ObjectInfo::initArray(SQInteger size)
 {
 	clear();
 	HSQUIRRELVM gv = getGlobalVM();
@@ -235,7 +235,7 @@ ObjectInfo::initTable()
 }
 
 /// 配列に値を追加
-void ObjectInfo::append(HSQUIRRELVM v, int idx)
+void ObjectInfo::append(HSQUIRRELVM v, SQInteger idx)
 {
 	HSQUIRRELVM gv = getGlobalVM();
 	push(gv);
@@ -249,8 +249,8 @@ void ObjectInfo::appendArray(ObjectInfo &array)
 {
 	HSQUIRRELVM gv = getGlobalVM();
 	push(gv);
-	int max = array.len();
-	for (int i=0;i<max;i++) {
+	SQInteger max = array.len();
+	for (SQInteger i=0;i<max;i++) {
 		array.pushData(gv, i);
 		sq_arrayappend(gv, -2);
 	}
@@ -258,12 +258,12 @@ void ObjectInfo::appendArray(ObjectInfo &array)
 }
 
 /// 配列の長さ
-int
+SQInteger
 ObjectInfo::len() const
 {
 	HSQUIRRELVM gv = getGlobalVM();
 	push(gv);
-	int ret = sq_getsize(gv,-1);
+	SQInteger ret = sq_getsize(gv,-1);
 	sq_pop(gv,1);
 	return ret;
 }
@@ -273,7 +273,7 @@ ObjectInfo::len() const
  * @param v squirrelVM
  * @return push した数
  */
-int
+SQInteger
 ObjectInfo::pushArray(HSQUIRRELVM v) const
 {
 	if (!isArray()) {
@@ -281,8 +281,8 @@ ObjectInfo::pushArray(HSQUIRRELVM v) const
 	}
 	HSQUIRRELVM gv = getGlobalVM();
 	push(gv);
-	int len = sq_getsize(gv,-1);
-	for (int i=0;i<len;i++) {
+	SQInteger len = sq_getsize(gv,-1);
+	for (SQInteger i=0;i<len;i++) {
 		sq_pushinteger(gv, i);
 		if (SQ_SUCCEEDED(sq_get(gv, -2))) {
 			sq_move(v, gv, -1);

@@ -25,7 +25,7 @@ isClosure(SQObjectType type)
  * @param idx インデックス
  * @return 文字列
  */
-const SQChar *getString(HSQUIRRELVM v, int idx) {
+const SQChar *getString(HSQUIRRELVM v, SQInteger idx) {
 	const SQChar *x = NULL;
 	sq_getstring(v, idx, &x);
 	return x;
@@ -88,7 +88,7 @@ Object::_addWait(ObjectInfo &thread)
 void
 Object::_removeWait(ObjectInfo &thread)
 {
-	int i = _waitThreadList.len() - 1;
+	SQInteger i = _waitThreadList.len() - 1;
 	while (i >= 0) {
 		if (_waitThreadList.get(i) == thread) {
 			_waitThreadList.remove(i);
@@ -157,7 +157,7 @@ Object::destructor()
 void
 Object::notify()
 {
-	int max = _waitThreadList.len();
+	SQInteger max = _waitThreadList.len();
 	for (int i=0;i<max;i++) {
 		ObjectInfo th = _waitThreadList.get(i);
 		if (th.notifyObject(self)) {
@@ -173,7 +173,7 @@ Object::notify()
 void
 Object::notifyAll()
 {
-	int max = _waitThreadList.len();
+	SQInteger max = _waitThreadList.len();
 	for (int i=0;i<max;i++) {
 		ObjectInfo th = _waitThreadList.get(i);
 		th.notifyObject(self);

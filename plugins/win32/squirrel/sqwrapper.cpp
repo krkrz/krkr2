@@ -340,7 +340,7 @@ callConstructor(HSQUIRRELVM v)
 		// this を取得
 		iTJSDispatch2 *thisobj = GetDispatch(v, 2);
 		
-		int argc = sq_gettop(v) - 2;
+		tjs_int argc = (tjs_int)(sq_gettop(v) - 2);
 		
 		// 引数変換
 		tTJSVariant **args = new tTJSVariant*[argc];
@@ -349,7 +349,7 @@ callConstructor(HSQUIRRELVM v)
 			sq_getvariant(v, i+3, args[i]);
 		}
 
-		int ret = 0;
+		SQRESULT ret = 0;
 		iTJSDispatch2 *instance = NULL;
 		tjs_error error;
 		if (TJS_SUCCEEDED(error = dispatch->CreateNew(0, NULL, NULL, &instance, argc, args, thisobj))) {
@@ -389,17 +389,17 @@ callMethod(HSQUIRRELVM v)
 		// this を取得
 		iTJSDispatch2 *thisobj = GetDispatch(v, 2);
 		
-		int argc = sq_gettop(v) - 2;
+		tjs_int argc = (tjs_int)(sq_gettop(v) - 2);
 		
 		// 引数変換
 		tTJSVariant **args = new tTJSVariant*[argc];
-		for (int i=0;i<argc;i++) {
+		for (tjs_int i=0;i<argc;i++) {
 			args[i] = new tTJSVariant();
 			sq_getvariant(v, i+3, args[i]);
 		}
 
 		// メソッド呼び出し
-		int ret = 0;
+		SQRESULT ret = 0;
 		tTJSVariant result;
 		tjs_error error;
 		if (TJS_SUCCEEDED(error = dispatch->FuncCall(0, NULL, NULL, &result, argc, args, thisobj))) {
@@ -483,10 +483,10 @@ sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 		sq_pushnull(v);
 		break;
 	case tvtInteger:
-		sq_pushinteger(v, (SQInteger)(variant));
+		sq_pushinteger(v, (SQInteger)(tTVInteger)(variant));
 		break;
 	case tvtReal:
-		sq_pushfloat(v, (SQFloat)(double)(variant));
+		sq_pushfloat(v, (SQFloat)(tTVReal)(variant));
 		break;
 	}
 }
@@ -513,8 +513,8 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 	if (result) {
 		switch (sq_gettype(v, idx)) {
 		case OT_NULL: result->Clear(); break;
-		case OT_INTEGER: { SQInteger i; sq_getinteger(v, idx, &i);	*result = (tjs_int64)i; } break;
-		case OT_FLOAT:   { SQFloat f; sq_getfloat(v, idx, &f); 	    *result = (double)f; } break;
+		case OT_INTEGER: { SQInteger i; sq_getinteger(v, idx, &i);	*result = (tTVInteger)i; } break;
+		case OT_FLOAT:   { SQFloat f; sq_getfloat(v, idx, &f); 	    *result = (tTVReal)f; } break;
 		case OT_BOOL:    { SQBool b; sq_getbool(v, idx, &b);        *result = b != SQFalse; } break;
 		case OT_STRING:  { const SQChar *c; sq_getstring(v, idx, &c); *result = c; } break;
 		case OT_USERDATA:

@@ -39,7 +39,7 @@ SQInteger sqstd_fread(void* buffer, SQInteger size, SQInteger count, SQFILE file
 	IStream *is = (IStream *)file;
 	if (is) {
 		ULONG len;
-		if (is->Read(buffer,size*count,&len) == S_OK) {
+		if (is->Read(buffer,(ULONG)(size*count),&len) == S_OK) {
 			return len / size;
 		} 
 	}
@@ -51,7 +51,7 @@ SQInteger sqstd_fwrite(const SQUserPointer buffer, SQInteger size, SQInteger cou
 	IStream *is = (IStream *)file;
 	if (is) {
 		DWORD len;
-		if (is->Write(buffer,size*count,&len) == S_OK) {
+		if (is->Write(buffer,(ULONG)(size*count),&len) == S_OK) {
 			return len / size;
 		}
 	}
@@ -72,7 +72,7 @@ SQInteger sqstd_fseek(SQFILE file, SQInteger offset, SQInteger origin)
 		LARGE_INTEGER move;
 		move.QuadPart = offset;
 		ULARGE_INTEGER newposition;
-		if (is->Seek(move, origin, &newposition) == S_OK) {
+		if (is->Seek(move, (ULONG)origin, &newposition) == S_OK) {
 			return (SQInteger)newposition.QuadPart;
 		}
 	}
@@ -257,7 +257,7 @@ SQInteger file_read(SQUserPointer file,SQUserPointer buf,SQInteger size)
 {
 	IStream *is = (IStream*)file;
 	ULONG s;
-	if (is->Read(buf, size, &s) == S_OK) {
+	if (is->Read(buf, (ULONG)size, &s) == S_OK) {
 		return (SQInteger)s;
 	}
 	return -1;
@@ -267,7 +267,7 @@ SQInteger file_write(SQUserPointer file,SQUserPointer p,SQInteger size)
 {
 	IStream *is = (IStream*)file;
 	ULONG s;
-	if (is->Write(p, size, &s) == S_OK) {
+	if (is->Write(p, (ULONG)size, &s) == S_OK) {
 		return (SQInteger)s;
 	}
 	return -1;

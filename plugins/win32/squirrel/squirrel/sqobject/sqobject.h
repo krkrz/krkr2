@@ -15,7 +15,7 @@
 
 namespace sqobject {
 
-const SQChar *getString(HSQUIRRELVM v, int idx);
+const SQChar *getString(HSQUIRRELVM v, SQInteger idx);
 
 /**
  * オブジェクト用
