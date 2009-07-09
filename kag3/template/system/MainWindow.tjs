@@ -4140,9 +4140,12 @@ class KAGWindow extends Window
 		if(skipMode == 1 || skipMode == 2) cancelSkip();
 		if(skipMode == 4 && !skipKeyPressing()) cancelSkip();
 		var lasttagname = conductor.lastTagName;
-		if(!autoMode && ((!canIgnoreL() && lasttagname == 'l') || lasttagname == 'p'))
-			{ current.clear2(); return -5; }// いったんイベントを処理(タグは後回し)
-		if(skipMode) { current.clear2(); return -5; }// いったんイベントを処理(タグは後回し)
+		if((!autoMode && ((!canIgnoreL() && lasttagname == 'l') || lasttagname == 'p')) || skipMode)
+		{// いったんイベントを処理(タグは後回し)
+			current.comp.clear2() if currentWithBack;
+			current.clear2();
+			return -5;
+		}
 
 		if(!current.nodeVisible)
 		{
@@ -4156,11 +4159,13 @@ class KAGWindow extends Window
 			conductor.waitWithTimeOut(%[ // タイムアウト付きウェイト
 				click : function
 				{
+					current.comp.clear2() if currentWithBack;
 					current.clear2(); // clear2 を呼ぶ
 					cancelAutoMode();
 				} incontextof this,
 				timeout : function
 				{
+					current.comp.clear2() if currentWithBack;
 					current.clear2(); // clear2 を呼ぶ
 				} incontextof this
 				], autoModePageWait <= 0 ? 1 : autoModePageWait);
@@ -4168,6 +4173,7 @@ class KAGWindow extends Window
 		}
 		else
 		{
+			current.comp.showPageBreakGlyph(pageBreak) if currentWithBack;
 			current.showPageBreakGlyph(pageBreak);
 			storeClickGlyphState("page");
 
@@ -4177,6 +4183,7 @@ class KAGWindow extends Window
 				{
 					clickWaiting = false;
 					fore.base.cursor = cursorDefault;
+					current.comp.clear2() if currentWithBack;
 					current.clear2(); // clear2 を呼ぶ
 					notifyRun();
 				} incontextof this
