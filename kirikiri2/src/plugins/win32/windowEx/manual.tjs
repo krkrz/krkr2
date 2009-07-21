@@ -319,4 +319,18 @@ class System
 	 * SW_ARRANGE は ARW_* の定義がないので直接数値指定で比較すること
 	 */
 	function getSystemMetrics(index);
+
+	/**
+	 * 環境変数を取得
+	 * @param name 環境変数名
+	 * @return 環境変数値（未定義の場合はvoid）
+	 */
+	function readEnvValue(name);
+
+	/**
+	 * 文字列内の「%～%」を環境変数で展開
+	 * @param text 展開する文字列
+	 * @return 展開後文字列
+	 */
+	function expandEnvString(text);
 }
