@@ -1140,6 +1140,45 @@ struct System
 		*r = (tjs_int)::GetSystemMetrics((int)num);
 		return TJS_S_OK;
 	}
+
+	// System.readEnvValue
+	static tjs_error TJS_INTF_METHOD readEnvValue(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		if (n < 1) return TJS_E_BADPARAMCOUNT;
+		if (p[0]->Type() != tvtString) return TJS_E_INVALIDPARAM;
+		ttstr name(p[0]->AsString());
+		if (name == TJS_W("")) return TJS_E_INVALIDPARAM;
+
+		r->Clear();
+		DWORD len = ::GetEnvironmentVariableW(name.c_str(), NULL, 0);
+		if (!len) return TJS_S_OK;
+
+		tjs_char *tmp = new tjs_char[len];
+		if (!tmp) return TJS_E_FAIL;
+		ZeroMemory(tmp, len);
+		DWORD res = ::GetEnvironmentVariableW(name.c_str(), tmp, len);
+//		if (res != len-1) TVPAddImportantLog(TJS_W("ä¬ã´ïœêîí∑Ç™àÍívÇµÇ‹ÇπÇÒ"));
+		*r = ttstr(tmp);
+		delete[] tmp;
+		return TJS_S_OK;
+	}
+	// System.expandEnvString
+	static tjs_error TJS_INTF_METHOD expandEnvString(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		if (n < 1) return TJS_E_BADPARAMCOUNT;
+		ttstr src(p[0]->AsString());
+
+		r->Clear();
+		DWORD len = ::ExpandEnvironmentStrings(src.c_str(), NULL, 0);
+		if (!len) return TJS_E_FAIL;
+
+		tjs_char *tmp = new tjs_char[len];
+		if (!tmp) return TJS_E_FAIL;
+		ZeroMemory(tmp, len);
+		DWORD res = ::ExpandEnvironmentStrings(src.c_str(), tmp, len);
+//		if (res != len) TVPAddImportantLog(TJS_W("ìWäJí∑Ç™àÍívÇµÇ‹ÇπÇÒ"));
+		*r = ttstr(tmp);
+		delete[] tmp;
+		return TJS_S_OK;
+	}
 };
 
 // SystemÇ…ä÷êîÇí«â¡
@@ -1148,4 +1187,6 @@ NCB_ATTACH_FUNCTION(getMonitorInfo,     System, System::getMonitorInfo);
 NCB_ATTACH_FUNCTION(getCursorPos,       System, System::getCursorPos);
 NCB_ATTACH_FUNCTION(setCursorPos,       System, System::setCursorPos);
 NCB_ATTACH_FUNCTION(getSystemMetrics,   System, System::getSystemMetrics);
+NCB_ATTACH_FUNCTION(readEnvValue,       System, System::readEnvValue);
+NCB_ATTACH_FUNCTION(expandEnvString,    System, System::expandEnvString);
 
