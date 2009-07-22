@@ -22,7 +22,7 @@ copy tvpwin32.res tvpwin32.~res /y
 perl basefix.pl
 
 cd %TOP_DIR%\environ\win32
-"c:\Program Files\Borland\CBuilder5\Bin\bcb" tvpwin32.bpr -b -omakeout.txt
+cmd /c "c:\Program Files\Borland\CBuilder5\Bin\bcb" tvpwin32.bpr -b -omakeout.txt
 
 cd %TOP_DIR%\..\..\bin\win32
 del krkr.eXe /Q
