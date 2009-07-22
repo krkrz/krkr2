@@ -422,9 +422,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */saveStruct)
 	{
 		std::vector<iTJSDispatch2 *> stack;
 		stack.push_back(objthis);
-		tTJSStringAppender string;
-		ni->SaveStructuredData(stack, string, TJS_W(""));
-		stream->Write(ttstr(string.GetData(), string.GetLen()));
+		ni->SaveStructuredData(stack, *stream, TJS_W(""));
 	}
 	catch(...)
 	{
@@ -1044,12 +1042,12 @@ tjs_error TJS_INTF_METHOD tTJSArrayNI::tDictionaryEnumCallback::FuncCall(
 }
 //---------------------------------------------------------------------------
 void tTJSArrayNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
-	tTJSStringAppender & string, const ttstr &indentstr)
+                                     iTJSTextWriteStream &stream, const ttstr &indentstr)
 {
 #ifdef TJS_TEXT_OUT_CRLF
-	string += TJS_W("(const) [\r\n");
+	stream.Write(TJS_W("(const) [\r\n"));
 #else
-	string += TJS_W("(const) [\n");
+	stream>Write(TJS_W("(const) [\n"));
 #endif
 
 	ttstr indentstr2 = indentstr + TJS_W(" ");
@@ -1058,40 +1056,40 @@ void tTJSArrayNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
 	tjs_uint c = 0;
 	for(i = Items.begin(); i != Items.end(); i++)
 	{
-		string += indentstr2;
+		stream.Write(indentstr2);
 		tTJSVariantType type = i->Type();
 		if(type == tvtObject)
 		{
 			// object
 			tTJSVariantClosure clo = i->AsObjectClosureNoAddRef();
 			SaveStructuredDataForObject(clo.SelectObjectNoAddRef(),
-				stack, string, indentstr2);
+				stack, stream, indentstr2);
 		}
 		else
 		{
-			string += TJSVariantToExpressionString(*i);
+			stream.Write(TJSVariantToExpressionString(*i));
 		}
 #ifdef TJS_TEXT_OUT_CRLF
 		if(c != Items.size() -1) // unless last
-			string += TJS_W(",\r\n");
+			stream.Write(TJS_W(",\r\n"));
 		else
-			string += TJS_W("\r\n");
+			stream.Write(TJS_W("\r\n"));
 #else
 		if(c != Items.size() -1) // unless last
-			string += TJS_W(",\n");
+			stream.Write(TJS_W(",\n"));
 		else
-			string += TJS_W("\n");
+			stream.Write(TJS_W("\n"));
 #endif
 
 		c++;
 	}
 
-	string += indentstr;
-	string += TJS_W("]");
+	stream.Write(indentstr);
+	stream.Write(TJS_W("]"));
 }
 //---------------------------------------------------------------------------
 void tTJSArrayNI::SaveStructuredDataForObject(iTJSDispatch2 *dsp,
-		std::vector<iTJSDispatch2 *> &stack, tTJSStringAppender &string,
+		std::vector<iTJSDispatch2 *> &stack, iTJSTextWriteStream &stream,
 		const ttstr &indentstr)
 {
 	// check object recursion
@@ -1101,7 +1099,7 @@ void tTJSArrayNI::SaveStructuredDataForObject(iTJSDispatch2 *dsp,
 		if(*i == dsp)
 		{
 			// object recursion detected
-			string += TJS_W("null /* object recursion detected */");
+                        stream.Write(TJS_W("null /* object recursion detected */"));
 			return;
 		}
 	}
@@ -1114,7 +1112,7 @@ void tTJSArrayNI::SaveStructuredDataForObject(iTJSDispatch2 *dsp,
 	{
 		// dictionary
 		stack.push_back(dsp);
-		dicni->SaveStructuredData(stack, string, indentstr);
+		dicni->SaveStructuredData(stack, stream, indentstr);
 		stack.pop_back();
 	}
 	else if(dsp && TJS_SUCCEEDED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
@@ -1122,21 +1120,21 @@ void tTJSArrayNI::SaveStructuredDataForObject(iTJSDispatch2 *dsp,
 	{
 		// array
 		stack.push_back(dsp);
-		arrayni->SaveStructuredData(stack, string, indentstr);
+		arrayni->SaveStructuredData(stack, stream, indentstr);
 		stack.pop_back();
 	}
 	else if(dsp != NULL)
 	{
 		// other objects
-		string += TJS_W("null /* (object) \""); // stored as a null
+		stream.Write(TJS_W("null /* (object) \"")); // stored as a null
 		tTJSVariant val(dsp,dsp);
-		string += ttstr(val).EscapeC();
-		string += TJS_W("\" */");
+		stream.Write(ttstr(val).EscapeC());
+		stream.Write(TJS_W("\" */"));
 	}
 	else
 	{
 		// null
-		string += TJS_W("null");
+		stream.Write(TJS_W("null"));
 	}
 }
 //---------------------------------------------------------------------------
