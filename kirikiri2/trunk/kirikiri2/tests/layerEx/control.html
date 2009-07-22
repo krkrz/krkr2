@@ -56,6 +56,10 @@ function colorize() {
     win.layer.colorize(getInt("hue", 0), getInt("saturation", 128), getFloat("colorizeBlend", 1.0));
 }
 
+function modulate() {
+    win.layer.modulate(getInt("hue2", 0), getInt("saturation2", 0), getInt("luminance", 0));
+}
+
 function noise() {
     win.layer.noise(getInt("noise", 0));
 }
@@ -150,6 +154,7 @@ function stop() {
 明度:<input size=4 id=brightness value=-50> コントラスト:<input size=4 id=contrast value=50> <button onclick='light()'>光補正</button>
 色相:<input size=4 id=hue value=0> 彩度:<input size=4 id=saturation value=128> ブレンド:<input size=4 id=colorizeBlend value=1.0> <button onclick='colorize()'>カラーライズ</button>
 ノイズレベル:<input size=4 id=noise value=100> <button onclick='noise()'>ノイズ</button>
+色相:<input size=4 id=hue2 value=0> 彩度:<input size=4 id=saturation2 value=0> 輝度:<input size=4 id=luminance value=0> <button onclick='modulate()'>modulate</button>
 RGB:<input size=10 id=rgb value="0xaaaa88"> モード:<select id=mode2>
 <option value=0>通常
 <option value=1>覆い焼き（リニア）
