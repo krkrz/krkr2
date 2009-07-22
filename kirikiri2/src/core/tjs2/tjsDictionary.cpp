@@ -75,9 +75,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/saveStruct)
 	{
 		std::vector<iTJSDispatch2 *> stack;
 		stack.push_back(objthis);
-		tTJSStringAppender string;
-		ni->SaveStructuredData(stack, string, TJS_W(""));
-		stream->Write(ttstr(string.GetData(), string.GetLen()));
+		ni->SaveStructuredData(stack, *stream, TJS_W(""));
 	}
 	catch(...)
 	{
@@ -261,30 +259,30 @@ tTJSDictionaryNI::tAssignCallback::FuncCall(tjs_uint32 flag,
 }
 //---------------------------------------------------------------------------
 void tTJSDictionaryNI::SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
-	tTJSStringAppender & string, const ttstr &indentstr)
+	iTJSTextWriteStream & stream, const ttstr &indentstr)
 {
 #ifdef TJS_TEXT_OUT_CRLF
-	string += TJS_W("(const) %[\r\n");
+	stream.Write(TJS_W("(const) %[\r\n"));
 #else
-	string += TJS_W("(const) %[\n");
+	stream.Write(TJS_W("(const) %[\n"));
 #endif
 	ttstr indentstr2 = indentstr + TJS_W(" ");
 
 	tSaveStructCallback callback;
 	callback.Stack = &stack;
-	callback.String = &string;
+	callback.Stream = &stream;
 	callback.IndentStr = &indentstr2;
 	callback.First = true;
 
 	Owner->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&callback, NULL), Owner);
 
 #ifdef TJS_TEXT_OUT_CRLF
-	if(!callback.First) string += TJS_W("\r\n");
+	if(!callback.First) stream.Write(TJS_W("\r\n"));
 #else
-	if(!callback.First) string += TJS_W("\n");
+	if(!callback.First) stream.Write(TJS_W("\n"));
 #endif
-	string += indentstr;
-	string += TJS_W("]");
+	stream.Write(indentstr);
+	stream.Write(TJS_W("]"));
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tSaveStructCallback::FuncCall(
@@ -305,18 +303,18 @@ tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tSaveStructCallback::FuncCall(
 	}
 
 #ifdef TJS_TEXT_OUT_CRLF
-	if(!First) *String += TJS_W(",\r\n");
+	if(!First) Stream->Write(TJS_W(",\r\n"));
 #else
-	if(!First) *String += TJS_W(",\n");
+	if(!First) Stream->Write(TJS_W(",\n"));
 #endif
 
 	First = false;
 
-	*String += *IndentStr;
+	Stream->Write(*IndentStr);
 
-	*String += TJS_W("\"");
-	*String += ttstr(*param[0]).EscapeC();
-	*String += TJS_W("\" => ");
+	Stream->Write(TJS_W("\""));
+	Stream->Write(ttstr(*param[0]).EscapeC());
+	Stream->Write(TJS_W("\" => "));
 
 	tTJSVariantType type = param[2]->Type();
 	if(type == tvtObject)
@@ -324,11 +322,11 @@ tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tSaveStructCallback::FuncCall(
 		// object
 		tTJSVariantClosure clo = param[2]->AsObjectClosureNoAddRef();
 		tTJSArrayNI::SaveStructuredDataForObject(clo.SelectObjectNoAddRef(),
-			*Stack, *String, *IndentStr);
+			*Stack, *Stream, *IndentStr);
 	}
 	else
 	{
-		*String += TJSVariantToExpressionString(*param[2]);
+		Stream->Write(TJSVariantToExpressionString(*param[2]));
 	}
 
 	if(result) *result = (tjs_int)1;
