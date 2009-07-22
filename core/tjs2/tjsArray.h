@@ -52,7 +52,7 @@ public:
 struct tTJSSaveStructuredDataCallback
 {
 	virtual void SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
-		tTJSStringAppender & string, const ttstr&indentstr) = 0;
+                                        iTJSTextWriteStream &stream, const ttstr&indentstr) = 0;
 
 };
 //---------------------------------------------------------------------------
@@ -107,10 +107,10 @@ private:
 
 public:
 	void SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
-		tTJSStringAppender & string, const ttstr&indentstr);
+		iTJSTextWriteStream &stream, const ttstr&indentstr);
 		// method from tTJSSaveStructuredDataCallback
 	static void SaveStructuredDataForObject(iTJSDispatch2 *dsp,
-		std::vector<iTJSDispatch2 *> &stack, tTJSStringAppender &string, const ttstr&indentstr);
+		std::vector<iTJSDispatch2 *> &stack, iTJSTextWriteStream &stream, const ttstr&indentstr);
 
 	void AssignStructure(iTJSDispatch2 * dsp, std::vector<iTJSDispatch2 *> &stack);
 //---------------------------------------------------------------------------

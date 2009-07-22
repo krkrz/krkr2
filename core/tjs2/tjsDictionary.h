@@ -79,13 +79,13 @@ private:
 
 public:
 	void SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
-		tTJSStringAppender & string, const ttstr&indentstr);
+                                iTJSTextWriteStream & stream, const ttstr&indentstr);
 		// method from tTJSSaveStructuredDataCallback
 private:
 	struct tSaveStructCallback : public tTJSDispatch
 	{
 		std::vector<iTJSDispatch2 *> * Stack;
-		tTJSStringAppender * String;
+		iTJSTextWriteStream *Stream;
 		const ttstr * IndentStr;
 		bool First;
 
