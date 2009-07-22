@@ -5,10 +5,12 @@
  * CxImage version 5.99c 17/Oct/2004
  */
 
+#include <windows.h>
+#include <math.h>
 #include "LayerExImage.h"
 
 void
-NI_LayerExImage::lut(BYTE* pLut)
+layerExImage::lut(BYTE* pLut)
 {
 	BYTE *src = (BYTE*)_buffer;
 	for (int i=0; i < _height ; i++){
@@ -29,7 +31,7 @@ NI_LayerExImage::lut(BYTE* pLut)
  * @param contrast ÉRÉìÉgÉâÉXÉg -100 Å`100, 0 ÇÃèÍçáïœâªÇµÇ»Ç¢
  */
 void
-NI_LayerExImage::light(int brightness, int contrast)
+layerExImage::light(int brightness, int contrast)
 {
 	float c = (100 + contrast)/100.0f;
 	brightness +=128;
@@ -38,6 +40,7 @@ NI_LayerExImage::light(int brightness, int contrast)
 		cTable[i] = (BYTE)max(0,min(255,(int)((i-128)*c + brightness)));
 	}
 	lut(cTable);
+	redraw();
 }
 
 
@@ -154,7 +157,7 @@ HSLtoRGB(RGBQUAD lHSLColor)
  * @param blend ÉuÉåÉìÉh 0 (å¯â Ç»Çµ) Å` 1 (full effect)
  */
 void
-NI_LayerExImage::colorize(int hue, int sat, double blend)
+layerExImage::colorize(int hue, int sat, double blend)
 {
 	if (blend < 0.0f) blend = 0.0f;
 	if (blend > 1.0f) blend = 1.0f;
@@ -198,6 +201,123 @@ NI_LayerExImage::colorize(int hue, int sat, double blend)
 		}
 		src += _pitch;
 	}
+	redraw();
+}
+
+static int
+hue2rgb(double n1,double n2, double hue)
+{
+	double color;
+	if (hue < 0) { hue += 1.0; }
+	else if (hue > 1.0) {	hue -= 1.0; };
+	if (hue < 1.0/6.0)
+		color = n1 + (n2-n1)*hue*6.0;
+	else if (hue < 1.0/2.0)
+		color = n2;
+	else if (hue < 2.0/3.0)
+		color = n1+(n2-n1)*(2.0/3.0-hue)*6.0;
+	else
+		color = n1;
+	return (int)(color * 255.0);
+}
+
+static void
+modulate(int &b, int &g, int &r, double h, double s, double l)
+{
+	// RGBê≥ãKâª
+	double red   = r / 255.0;
+	double green = g / 255.0;
+	double blue  = b / 255.0;
+
+	// RGBÇ©ÇÁHSLÇ…ïœä∑
+	double cMax = max(max(red,green), blue);
+	double cMin = min(min(red,green), blue);
+	double delta = cMax - cMin;
+	double add   = cMax + cMin;
+	double luminance = add/2.0;
+	double hue;
+	double saturation;
+	if (delta == 0) {
+		saturation = 0;
+		hue = 0;
+	} else {
+		if (luminance < 0.5) {
+			saturation = delta/add;
+		} else {
+			saturation = delta/(2.0-add);
+		}
+		if (red == cMax) {
+			hue = (green - blue)/delta;
+		} else if (green == cMax) {
+			hue = 2.0 + (blue - red)/delta;
+		} else {
+			hue = 4.0 + (red - green)/delta;
+		}
+		hue /= 6.0;
+	}
+	// êFïœä∑èàóù
+	// %èàóùÇÕÇ±ÇÍÇ≈Ç¢Ç¢ÇÒÇæÇÎÇ§Ç©Åc
+	hue += h;
+	while (hue < 0) { hue += 1.0; };
+	while (hue > 1.0) { hue -= 1.0; };
+	if (s > 0) {
+		saturation += (1.0 - saturation) * s;
+	} else {
+		saturation += saturation * s;
+	}
+	if (l > 0) {
+		luminance += (1.0 - luminance) * l;
+	} else {
+		luminance += luminance * l;
+	}
+
+	// HSLÇ©ÇÁRGBÇ…ñﬂÇ∑
+	if (saturation == 0.0) {
+		r = g = b = (int)(luminance * 255.0);
+	} else {
+		double m2;
+		if (luminance <= 0.5f) {
+			m2 = luminance * (1+saturation);
+		} else {
+			m2 = luminance + saturation - luminance * saturation;
+		}
+		double m1 = 2.0 * luminance - m2;
+		r = hue2rgb(m1,m2,hue+1.0/3.0);
+		g = hue2rgb(m1,m2,hue);
+		b = hue2rgb(m1,m2,hue-1.0/3.0);
+	}
+}
+
+
+/**
+ * êFëäÇ∆ç ìxÇ∆ãPìxí≤êÆ
+ * @param hue êFëä -180Å`180 (ìx)
+ * @param saturation ç ìx -100Å`100 (%)
+ * @param luminance ãPìx -100Å`100 (%)
+ */
+void
+layerExImage::modulate(int hue, int saturation, int luminance)
+{
+	double h = hue / 360.0f;
+	double s = saturation / 100.0f;
+	double l = luminance / 100.0f;
+
+	BYTE *src = (BYTE*)_buffer;
+	for (int y=0; y<_height; y++){
+		BYTE *p = src;
+		for (int x=0; x<_width; x++){
+			int b = p[0];
+			int g = p[1];
+			int r = p[2];
+			::modulate(b,g,r,h,s,l);
+			*p++ = b;
+			*p++ = g;
+			*p++ = r;
+			p++;
+		}
+		src += _pitch;
+	}
+	redraw();
 }
 
 /**
@@ -205,7 +325,7 @@ NI_LayerExImage::colorize(int hue, int sat, double blend)
  * @param level ÉmÉCÉYÉåÉxÉã 0 (no noise) Å` 255 (lot of noise).
  */
 void
-NI_LayerExImage::noise(int level)
+layerExImage::noise(int level)
 {
 	BYTE *src = (BYTE*)_buffer;
 	for (int y=0; y<_height; y++){
@@ -221,4 +341,5 @@ NI_LayerExImage::noise(int level)
 		}
 		src += _pitch;
 	}
+	redraw();
 }
