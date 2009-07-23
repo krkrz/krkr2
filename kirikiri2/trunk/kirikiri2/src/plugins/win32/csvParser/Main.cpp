@@ -57,7 +57,9 @@ public:
 			in = NULL;
 		}
 	}
-	
+ #ifdef getc
+  #undef getc
+ #endif
 	int getc() {
 		if (pos < len) {
 			return buf[pos++];
@@ -77,6 +79,9 @@ public:
 		}
 	}
 
+ #ifdef ungetc
+  #undef ungetc
+ #endif
 	void ungetc() {
 		if (pos > 0) {
 			pos--;
