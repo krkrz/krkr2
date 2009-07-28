@@ -628,7 +628,7 @@ struct MenuItemEx
 	}
 
 	// property rightJustify
-	tjs_int getRightJustify() const { return rj; }
+	tjs_int getRightJustify() const { return rj > 0; }
 	void setRightJustify(tTJSVariant v) {
 		rj = !!v.AsInteger();
 		updateMenuItemInfo();
