@@ -55,6 +55,8 @@ SQEXCEPTION(HSQUIRRELVM v)
 	TVPThrowExceptionMessage(error.c_str());
 }
 
+#define SQUIRRELOBJCLASS L"SquirrelObject"
+
 /**
  * HSQOBJECT 用 iTJSDispatch2 ラッパー
  */
@@ -83,6 +85,10 @@ public:
 		if(v) {
 			sq_release(v, &obj);
 		}
+	}
+
+	void push(HSQUIRRELVM v) {
+		sq_pushobject(v, obj);
 	}
 
 public:
@@ -236,6 +242,19 @@ public:
 			}
 		}
 		return TJS_S_OK;
+	}
+
+	tjs_error TJS_INTF_METHOD IsInstanceOf(
+		tjs_uint32 flag,
+		const tjs_char * membername,
+		tjs_uint32 *hint,
+		const tjs_char * classname,
+		iTJSDispatch2 *objthis
+		) {
+		if (membername == NULL && wcscmp(classname, SQUIRRELOBJCLASS) == 0) {
+			return TJS_S_TRUE;
+		}
+		return TJS_S_FALSE;
 	}
 };
 
@@ -439,40 +458,48 @@ sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 	case tvtObject:
 		if (!TJSObject::pushVariant(v, variant)) {
 
-			// UserData 確保
-			tTJSVariant *self = (tTJSVariant*)sq_newuserdata(v, sizeof tTJSVariant);
-			if (self) {
-				new (self) tTJSVariant();
-				*self = variant;
-				// 開放ロジックを追加
-				sq_setreleasehook(v, -1, variantRelease);
-				
-				// タグ登録
-				sq_settypetag(v, -1, TJSTYPETAG);
-				
-				
-				// メソッド群を追加
-				sq_newtable(v);
-				
-				sq_pushstring(v, L"_get", -1);
-				sq_newclosure(v, get, 0);
-				sq_createslot(v, -3);
-				
-				sq_pushstring(v, L"_set", -1);
-				sq_newclosure(v, set, 0);
-				sq_createslot(v, -3);
-				
-				sq_pushstring(v, L"_call", -1);
-				if (self->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Class", NULL) == TJS_S_TRUE) {
-					sq_newclosure(v, callConstructor, 0);
-				} else {
-					sq_newclosure(v, callMethod, 0);
-				}
-				sq_createslot(v, -3);
-				
-				sq_setdelegate(v, -2);
+			iTJSDispatch2 *obj = variant.AsObjectNoAddRef();
+			if (obj->IsInstanceOf(0, NULL, NULL, SQUIRRELOBJCLASS, obj) == TJS_S_TRUE) {
+				iTJSDispatch2Wrapper *wobj = (iTJSDispatch2Wrapper*)obj;
+				wobj->push(v);
+
 			} else {
-				sq_pushnull(v);
+
+				// UserData 確保
+				tTJSVariant *self = (tTJSVariant*)sq_newuserdata(v, sizeof tTJSVariant);
+				if (self) {
+					new (self) tTJSVariant();
+					*self = variant;
+					// 開放ロジックを追加
+					sq_setreleasehook(v, -1, variantRelease);
+					
+					// タグ登録
+					sq_settypetag(v, -1, TJSTYPETAG);
+					
+					
+					// メソッド群を追加
+					sq_newtable(v);
+					
+					sq_pushstring(v, L"_get", -1);
+					sq_newclosure(v, get, 0);
+					sq_createslot(v, -3);
+					
+					sq_pushstring(v, L"_set", -1);
+					sq_newclosure(v, set, 0);
+					sq_createslot(v, -3);
+					
+					sq_pushstring(v, L"_call", -1);
+					if (self->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Class", NULL) == TJS_S_TRUE) {
+						sq_newclosure(v, callConstructor, 0);
+					} else {
+						sq_newclosure(v, callMethod, 0);
+					}
+					sq_createslot(v, -3);
+				
+					sq_setdelegate(v, -2);
+				} else {
+					sq_pushnull(v);
+				}
 			}
 		}
 		break;
