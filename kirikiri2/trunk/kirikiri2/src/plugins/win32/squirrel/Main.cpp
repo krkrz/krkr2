@@ -33,7 +33,22 @@ static void printFunc(HSQUIRRELVM v, const SQChar* format, ...)
 	va_start(args, format);
 	TCHAR msg[1024];
 	_vsntprintf_s(msg, 1024, _TRUNCATE, format, args);
-	TVPAddLog(ttstr(msg));
+	TCHAR *p = msg;
+	int c;
+	int n = 0;
+	while ((c = *(p+n))) {
+		if (c == '\n') {
+			TVPAddLog(ttstr(p,n));
+			p += n;
+			n = 0;
+			p++;
+		} else {
+			n++;
+		}
+	}
+	if (n > 0) {
+		TVPAddLog(ttstr(p));
+	}
 	va_end(args);
 }
 
@@ -353,9 +368,18 @@ public:
 	}
 	
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
+		static ttstr begin(TJS_W("onSquirrelBegin"));
+		static ttstr end(TJS_W("onSquirrelEnd"));
+		iTJSDispatch2 *global= TVPGetScriptDispatch();
+
 		tjs_uint64 diff = tick - prevTick;
+		tTJSVariant params[2];
+		params[0] = (tjs_int64)diff;
+		params[1] = (tjs_int64)tick;
+		TVPPostEvent(global, global, begin, 0, TVP_EPT_IMMEDIATE, 2, params);
 		sqobject::Thread::main((int)diff);
 		sqobject::mainContinuous();
+		TVPPostEvent(global, global, end, 0, TVP_EPT_IMMEDIATE, 2, params);
 		prevTick = tick;
 	}
 };
