@@ -1,6 +1,7 @@
 #pragma comment(lib, "gdiplus.lib")
 #include "ncbind/ncbind.hpp"
 #include "LayerExDraw.hpp"
+#include <vector>
 #include <stdio.h>
 
 // GDI+ 基本情報
@@ -10,6 +11,18 @@ static ULONG_PTR gdiplusToken;
 /// プライベートフォント情報
 static PrivateFontCollection *privateFontCollection = NULL;
 static vector<void*> fontDatas;
+
+inline static float ToFloat(FIXED& pfx)
+{
+  LONG l = *(LONG *)&pfx;
+
+  return l / 65536.0f;
+}
+
+inline static PointF ToPointF(POINTFX *p)
+{
+  return PointF(ToFloat(p->x), -ToFloat(p->y));
+}
 
 // GDI+ 初期化
 void initGdiPlus()
@@ -264,6 +277,7 @@ FontInfo::clear()
 	delete fontFamily;
 	fontFamily = NULL;
 	familyName = "";
+        gdiPlusUnsupportedFont = false;
 }
 
 /**
@@ -288,9 +302,95 @@ FontInfo::setFamilyName(const tjs_char *familyName)
 			this->familyName = familyName;
 			return;
 		} else {
-			clear();
+                  clear();
+                  gdiPlusUnsupportedFont = true;
+                  this->familyName = familyName;
 		}
 	}
+}
+
+OUTLINETEXTMETRIC *
+FontInfo::createFontMetric(void) const
+{
+  HDC dc = ::CreateCompatibleDC(NULL);
+  if (dc == NULL)
+    return NULL;
+  LOGFONT font;
+  memset(&font, 0, sizeof(font));
+  font.lfHeight = LONG(-emSize);
+  font.lfWeight = (style & 1) ? FW_BOLD : FW_REGULAR;
+  font.lfItalic = style & 2;
+  font.lfUnderline = style & 4;
+  font.lfStrikeOut = style & 8;
+  wcscpy_s(font.lfFaceName, familyName.c_str());
+  HFONT hFont = CreateFontIndirect(&font);
+  if (hFont == NULL) {
+    DeleteObject(dc);
+    return NULL;
+  }
+  HGDIOBJ hOldFont = SelectObject(dc, hFont);
+  DeleteObject(hOldFont);
+  int size = ::GetOutlineTextMetrics(dc, 0, NULL);
+  if (size > 0) {
+    char *buf = new char[size];
+    if (::GetOutlineTextMetrics(dc, size, reinterpret_cast<OUTLINETEXTMETRIC*>(buf))) {
+      DeleteObject(dc);
+      return reinterpret_cast<OUTLINETEXTMETRIC*>(buf);
+    }
+    delete[] buf;
+  }
+
+  DeleteObject(dc);
+  return NULL;
+}
+
+REAL 
+FontInfo::getAscent() const 
+{
+  if (fontFamily) {
+    return fontFamily->GetCellAscent(style) * emSize / fontFamily->GetEmHeight(style);
+  } else if (gdiPlusUnsupportedFont) {
+    OUTLINETEXTMETRIC *otm = createFontMetric();
+    if (otm) {
+      REAL result = REAL(otm->otmTextMetrics.tmAscent);
+      delete otm;
+      return result;
+    }
+  }
+  return 0;
+}
+
+
+REAL 
+FontInfo::getDescent() const 
+{
+  if (fontFamily) {
+    return fontFamily->GetCellDescent(style) * emSize / fontFamily->GetEmHeight(style);
+  } else if (gdiPlusUnsupportedFont) {
+    OUTLINETEXTMETRIC *otm = createFontMetric();
+    if (otm) {
+      REAL result = REAL(otm->otmTextMetrics.tmDescent);
+      delete otm;
+      return result;
+    }
+  }
+  return 0;
+}
+
+REAL 
+FontInfo::getLineSpacing() const 
+{
+  if (fontFamily) {
+    return fontFamily->GetLineSpacing(style) * emSize / fontFamily->GetEmHeight(style);
+  } else if (gdiPlusUnsupportedFont) {
+    OUTLINETEXTMETRIC *otm = createFontMetric();
+    if (otm) {
+      REAL result = REAL(otm->otmTextMetrics.tmHeight + otm->otmTextMetrics.tmExternalLeading * 2);
+      delete otm;
+      return result;
+    }
+  }
+  return 0;
 }
 
 // --------------------------------------------------------
@@ -1340,6 +1440,9 @@ LayerExDraw::drawRectangles(const Appearance *app, tTJSVariant rects)
 RectF
 LayerExDraw::drawPathString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
 {
+  if (font->gdiPlusUnsupportedFont) 
+    return drawPathString2(font, app, x, y, text);
+
 	// 文字列のパスを準備
 	GraphicsPath path;
 	path.AddString(text, -1, font->fontFamily, font->style, font->emSize, PointF(x, y), StringFormat::GenericDefault());
@@ -1387,6 +1490,9 @@ static void transformRect(Matrix &calcTransform, RectF &rect)
 RectF
 LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
 {
+  if (font->gdiPlusUnsupportedFont) 
+    return drawPathString2(font, app, x, y, text);
+
 	graphics->SetTextRenderingHint(textRenderingHint);
 	if (metaGraphics) {
 		metaGraphics->SetTextRenderingHint(textRenderingHint);
@@ -1438,6 +1544,9 @@ LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REA
 RectF
 LayerExDraw::measureString(const FontInfo *font, const tjs_char *text)
 {
+  if (font->gdiPlusUnsupportedFont) 
+    return measureString2(font, text);
+
 	RectF rect;
 	graphics->SetTextRenderingHint(textRenderingHint);
 	Font f(font->fontFamily, font->emSize, font->style, UnitPixel);
@@ -1741,4 +1850,187 @@ LayerExDraw::loadRecord(const tjs_char *filename)
 		return redraw(image);
 	}
 	return false;
+}
+
+/**
+ * グリフアウトラインの取得
+ * @param font フォント
+ * @param offset オフセット
+ * @param path グリフを書き出すパス
+ * @param glyph 描画するグリフ
+ */
+void
+LayerExDraw::getGlyphOutline(const FontInfo *fontInfo, PointF &offset, GraphicsPath *path, UINT glyph)
+{
+  static const MAT2 mat = { { 0, 1 }, { 0, 0 }, { 0, 0 }, { 0, 1 } };
+
+  GLYPHMETRICS gm;
+
+  int size = GetGlyphOutlineW(metaHDC,
+                              glyph,
+                              GGO_BEZIER, //  | GGO_GLYPH_INDEX,
+                              &gm, 
+                              0, 
+                              NULL, 
+                              &mat 
+                              );
+  if (size <= 0) {
+    return;
+  }
+
+  char *buffer = new char[size];
+  int result = GetGlyphOutlineW(metaHDC,
+                                glyph,
+                                GGO_BEZIER, //  | GGO_GLYPH_INDEX,
+                                &gm, 
+                                size, 
+                                buffer, 
+                                &mat 
+                                );
+  if (result <= 0) {
+    delete[] buffer;
+    return;
+  }
+
+  int index = 0;
+  PointF aOffset = offset;
+  aOffset.Y += fontInfo->getAscent();
+
+  while(index < size) {
+    TTPOLYGONHEADER * header = (TTPOLYGONHEADER *)(buffer + index);
+    int endCurve = index + header->cb;
+    index += sizeof(TTPOLYGONHEADER);
+    PointF p0 = ToPointF(&header->pfxStart) + aOffset;
+    while(index < endCurve) {
+      TTPOLYCURVE * hcurve = (TTPOLYCURVE *)(buffer + index);
+      index += 2 * sizeof(WORD);
+      POINTFX * points = (POINTFX *)(buffer + index);
+      index += hcurve->cpfx * sizeof(POINTFX);
+      std::vector<PointF> pts(1 + hcurve->cpfx);
+      pts[0] = p0;
+      for(int i = 0; i < hcurve->cpfx; i++)
+        pts[i + 1] = ToPointF(points + i) + aOffset;
+      p0 = pts[pts.size() - 1];
+      switch(hcurve->wType) {
+      case TT_PRIM_LINE:
+        path->AddLines(&pts[0], int(pts.size()));
+        break;
+
+      case TT_PRIM_QSPLINE:
+        TVPAddLog(ttstr(L"qspline"));
+        break;
+
+      case TT_PRIM_CSPLINE:
+        path->AddBeziers(&pts[0], int(pts.size()));
+        break;
+      }
+    }
+
+    path->CloseFigure();
+  }
+
+  offset.X += gm.gmCellIncX + gm.gmCellIncY;
+
+  delete[] buffer;
+}
+
+/*
+ * テキストアウトラインの取得
+ * @param font フォント
+ * @param offset オフセット
+ * @param path グリフを書き出すパス
+ * @param text 描画するテキスト
+ */
+void
+LayerExDraw::getTextOutline(const FontInfo *fontInfo, PointF &offset, GraphicsPath *path, ttstr text,
+                            LONG *resultFirstA, LONG *resultLastC)
+{
+  if (metaHDC == NULL) 
+    return;
+
+  if (text.IsEmpty())
+    return;
+
+  LOGFONT font;
+  memset(&font, 0, sizeof(font));
+  font.lfHeight = -(LONG(fontInfo->emSize));
+  font.lfWeight = (fontInfo->style & 1) ? FW_BOLD : FW_REGULAR;
+  font.lfItalic = fontInfo->style & 2;
+  font.lfUnderline = fontInfo->style & 4;
+  font.lfStrikeOut = fontInfo->style & 8;
+  wcscpy_s(font.lfFaceName, fontInfo->familyName.c_str());
+
+  HFONT hFont = CreateFontIndirect(&font);
+  HGDIOBJ hOldFont = SelectObject(metaHDC, hFont);
+
+  LONG firstA = 0, lastC = 0;
+  ABC abc;
+  if (GetCharABCWidths(metaHDC, text[0], text[0], &abc)) {
+    firstA = abc.abcA;
+    TVPAddLog(ttstr(L"A:") + tTJSVariant(firstA));
+    if (resultFirstA)
+      *resultFirstA = firstA;
+  }
+  if (GetCharABCWidths(metaHDC, text[text.GetLen() - 1], text[text.GetLen() - 1], &abc)) {
+    lastC = abc.abcC;
+    TVPAddLog(ttstr(L"C:") + tTJSVariant(lastC));
+    if (resultLastC)
+      *resultLastC = lastC;
+  }
+
+  offset.X += firstA + lastC;
+
+  for (tjs_int i = 0; i < text.GetLen(); i++) {
+    this->getGlyphOutline(fontInfo, offset, path, text[i]);
+  }
+
+  SelectObject(metaHDC, hOldFont);
+  DeleteObject(hFont);
+}
+
+/**
+ * 文字列の描画更新領域情報の取得(OpenTypeフォント対応)
+ * @param font フォント
+ * @param text 描画テキスト
+ * @return 更新領域情報の辞書 left, top, width, height
+ */
+RectF 
+LayerExDraw::measureString2(const FontInfo *font, const tjs_char *text)
+{
+  // 文字列のパスを準備
+  GraphicsPath path;
+  PointF offset(0, 0);
+  LONG firstA = 0, lastC = 0;
+  this->getTextOutline(font, offset, &path, text, &firstA, &lastC);
+  RectF result;
+  path.GetBounds(&result, NULL, NULL);
+  result.X -= firstA + lastC;
+  result.Width += (firstA + lastC) * 2;
+  result.Height = font->getLineSpacing();
+  return result;
+}
+
+/**
+ * 文字列の描画(OpenTypeフォント対応)
+ * @param font フォント
+ * @param app アピアランス
+ * @param x 描画位置X
+ * @param y 描画位置Y
+ * @param text 描画テキスト
+ * @return 更新領域情報
+ */
+RectF 
+LayerExDraw::drawPathString2(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
+{
+  // 文字列のパスを準備
+  GraphicsPath path;
+  LONG firstA = 0, lastC = 0;
+  PointF offset(x, y);
+  this->getTextOutline(font, offset, &path, text, &firstA, &lastC);
+  RectF result = drawPath(app, &path);
+  result.X -= firstA + lastC;
+  result.Y = y;
+  result.Width += (firstA + lastC) * 2;
+  result.Height = font->getLineSpacing();
+  return result;
 }
