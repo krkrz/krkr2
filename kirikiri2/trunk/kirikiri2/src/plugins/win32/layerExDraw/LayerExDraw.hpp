@@ -38,11 +38,14 @@ protected:
 	ttstr familyName;
 	REAL emSize; //< フォントサイズ 
 	INT style; //< フォントスタイル
+        bool gdiPlusUnsupportedFont; //< GDI+未サポートフォント
 
 	/**
 	 * フォント情報のクリア
 	 */
 	void clear();
+
+        OUTLINETEXTMETRIC *createFontMetric(void) const;
 
 public:
 
@@ -68,29 +71,9 @@ public:
 	void setStyle(INT style) { this->style = style; }
 	INT getStyle() { return style; }
 
-	REAL getAscent() {
-		if (fontFamily) {
-			return fontFamily->GetCellAscent(style) * emSize / fontFamily->GetEmHeight(style);
-		} else {
-			return 0;
-		}
-	}
-
-	REAL getDescent() {
-		if (fontFamily) {
-			return fontFamily->GetCellDescent(style) * emSize / fontFamily->GetEmHeight(style);
-		} else {
-			return 0;
-		}
-	}
-
-	REAL getLineSpacing() {
-		if (fontFamily) {
-			return fontFamily->GetLineSpacing(style) * emSize / fontFamily->GetEmHeight(style);
-		} else {
-			return 0;
-		}
-	}
+	REAL getAscent() const;
+	REAL getDescent() const;
+	REAL getLineSpacing() const;
 };
 
 /**
@@ -307,6 +290,25 @@ protected:
 	 */
 	RectF drawPath(const Appearance *app, const GraphicsPath *path);
 
+        /**
+         * グリフアウトラインの取得
+         * @param font フォント
+         * @param offset オフセット
+         * @param path グリフを書き出すパス
+         * @param glyph 描画するグリフ
+         */
+        void getGlyphOutline(const FontInfo *font, PointF &offset, GraphicsPath *path, UINT glyph);
+
+        /*
+         * テキストアウトラインの取得
+         * @param font フォント
+         * @param offset オフセット
+         * @param path グリフを書き出すパス
+         * @param text 描画するテキスト
+         * @param resultFirstA 最初の文字のA値を得る
+         * @param resultLastCA 最後の文字のC値を得る
+         */
+        void getTextOutline(const FontInfo *font, PointF &offset, GraphicsPath *path, ttstr text, LONG *resultFirstA = NULL, LONG *resultLastC = NULL);
 
 public:
 	/**
@@ -477,6 +479,17 @@ public:
 	 */
 	RectF drawPathString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
 
+	/**
+	 * 文字列の描画(OpenTypeのPostScriptフォント対応)
+	 * @param font フォント
+	 * @param app アピアランス
+	 * @param x 描画位置X
+	 * @param y 描画位置Y
+	 * @param text 描画テキスト
+	 * @return 更新領域情報
+	 */
+	RectF drawPathString2(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text);
+
 	// -------------------------------------------------------------------------------
 	
 	/**
@@ -497,6 +510,14 @@ public:
 	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	RectF measureString(const FontInfo *font, const tjs_char *text);
+
+	/**
+	 * 文字列の描画更新領域情報の取得(OpenTypeのPostScriptフォント対応)
+	 * @param font フォント
+	 * @param text 描画テキスト
+	 * @return 更新領域情報の辞書 left, top, width, height
+	 */
+	RectF measureString2(const FontInfo *font, const tjs_char *text);
 
 	// -----------------------------------------------------------------------------
 	
