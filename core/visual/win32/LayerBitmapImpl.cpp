@@ -1702,9 +1702,13 @@ static TCanvas * TVPNonBoldFontDCGetCanvas() { return TVPBitmapForNonBoldFontDC-
 //---------------------------------------------------------------------------
 static tjs_int TVPFontDCGetAscentHeight()
 {
-	TEXTMETRIC tm;
-	GetTextMetrics(TVPFontDCGetCanvas()->Handle, &tm);
-	return tm.tmAscent;
+  int otmSize = ::GetOutlineTextMetrics(TVPFontDCGetCanvas()->Handle, 0, NULL);
+  char *otmBuf = new char[otmSize];
+  OUTLINETEXTMETRIC *otm = (OUTLINETEXTMETRIC*)otmBuf;
+  ::GetOutlineTextMetrics(TVPFontDCGetCanvas()->Handle, otmSize, otm);
+  tjs_int result = otm->otmAscent;
+  delete[] otmBuf;
+  return result;
 }
 //---------------------------------------------------------------------------
 static void TVPGetTextExtent(tjs_char ch, tjs_int &w, tjs_int &h)
