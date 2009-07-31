@@ -2,6 +2,7 @@
 #include <tchar.h>
 #include <process.h>
 #include <commctrl.h>
+#include <vector>
 #include "ncbind/ncbind.hpp"
 
 #define CLASSNAME _T("WindowExProgress")
@@ -10,6 +11,157 @@
 #ifndef ID_CANCEL
 #define ID_CANCEL 3
 #endif
+
+/**
+ * 表示画像情報
+ */
+class ImageInfo {
+
+public:
+	ImageInfo() : bitmap(0), bmpdc(0), color(0), left(0), top(0), width(0), height(0) {
+	}
+
+	~ImageInfo() {
+		removeBitmap();
+	}
+
+	// 描画処理
+	void show(HDC dc, PAINTSTRUCT &ps) {
+		if (bitmap) {
+			// ビットマップ描画
+			::BitBlt(dc, left, top, width, height, bmpdc, 0, 0, SRCCOPY);
+		} else {
+			// 矩形描画
+			if (width > 0 && height > 0) {
+				SelectObject(dc, CreateSolidBrush(color));
+				::Rectangle(dc, left, top, width, height);
+				DeleteObject(SelectObject(dc, GetStockObject(WHITE_BRUSH)));
+			}
+		}
+	}
+	
+	/**
+	 * ビットマップを設定
+	 */
+	void setColor(int left, int top, int width, int height, int color) {
+		removeBitmap();
+		this->left   = left;
+		this->top    = top;
+		this->width  = width;
+		this->height = height;
+		this->color  = color;
+	}
+	
+	/**
+	 * ビットマップを設定
+	 */
+	bool setBitmap(int left, int top, iTJSDispatch2 *lay) {
+		
+		typedef unsigned char PIX;
+		if (!lay || !lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay)) return false;
+		
+		this->left = left;
+		this->top  = top;
+		ncbPropAccessor obj(lay);
+		width  = obj.getIntValue(TJS_W("imageWidth"));
+		height = obj.getIntValue(TJS_W("imageHeight"));
+		tjs_int ln = obj.getIntValue(TJS_W("mainImageBufferPitch"));
+		PIX *pw, *pr = reinterpret_cast<unsigned char *>(obj.getIntValue(TJS_W("mainImageBuffer")));
+		
+		BITMAPINFO info;
+		ZeroMemory(&info, sizeof(info));
+		info.bmiHeader.biSize = sizeof(BITMAPINFO);
+		info.bmiHeader.biWidth  = width;
+		info.bmiHeader.biHeight = height;
+		info.bmiHeader.biPlanes = 1;
+		info.bmiHeader.biBitCount = 24;
+		
+		removeBitmap();
+		bmpdc  = ::CreateCompatibleDC(NULL);
+		bitmap = ::CreateDIBSection(bmpdc, (LPBITMAPINFO)&info, DIB_RGB_COLORS, (LPVOID*)&pw, NULL, 0);
+		
+		if (!bitmap || !bmpdc) return false;
+		for (int y = height-1; y >= 0; y--) {
+			PIX *src = pr + (y * ln);
+			PIX *dst = pw + ((height-1 - y) * ((width*3+3) & ~3L));
+			for (int n = width-1; n >= 0; n--, src+=4, dst+=3) {
+				dst[0] = src[0];
+				dst[1] = src[1];
+				dst[2] = src[2];
+			}
+		}
+		::SelectObject(bmpdc, bitmap);
+		return true;
+	}
+
+protected:
+	void removeBitmap() {
+		if (bmpdc) {
+			::DeleteDC(bmpdc);
+			bmpdc  = NULL;
+		}
+		if (bitmap) {
+			::DeleteObject(bitmap);
+			bitmap = NULL;
+		}
+	}
+	
+	HBITMAP bitmap;
+	HDC bmpdc;
+	HBRUSH brush;
+	tjs_int left, top, width, height;
+	int color;
+};
+
+
+/**
+ * 表示メッセージ情報
+ */
+class MessageInfo {
+	
+public:
+
+	MessageInfo() : left(0), top(0), size(0), color(0xffffff), useShadow(false), shadowColor(0), shadowDistanceX(1), shadowDistanceY(1) {
+	}
+
+	~MessageInfo() {
+	}
+
+	bool setText(iTJSDispatch2 *init) {
+		ncbPropAccessor info(init);
+#define GETINTVALUE(a,def) a = info.getIntValue(L#a, def)
+#define GETBOOLVALUE(a,def) a = info.getIntValue(L#a,def?1:0) != 0
+#define GETSTRVALUE(a,def) a = info.getStrValue(L#a,def)
+
+		GETINTVALUE(left, 0);
+		GETINTVALUE(top, 0);
+		GETINTVALUE(size, 12);
+		GETINTVALUE(color, 0xffffff);
+		GETINTVALUE(shadowColor,-1);
+		GETINTVALUE(shadowDistanceX,1);
+		GETINTVALUE(shadowDistanceY,1);
+		useShadow = shadowColor > 0;
+	}
+
+	void show(HDC dc, PAINTSTRUCT &ps) {
+		if (useShadow) {
+//			OutputText(left+shadowDistanceX, top+shadowDistanceY, text.c_str());
+		}
+//		OutputText(left, top, text.c_str());
+	}
+
+protected:
+	int left;
+	int top;
+	ttstr text;
+	int size;
+	int color;
+	bool useShadow;
+	int shadowColor;
+	int shadowDistanceX;
+	int shadowDistanceY;
+	HFONT font;
+};
 
 /**
  * セーブ処理スレッド用情報
@@ -49,8 +201,30 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	ProgressWindow(iTJSDispatch2 *window) : window(window), hParent(0), hWnd(0), thread(0), doneflag(false), cancelflag(false), percent(0), hProgress(0){
+	ProgressWindow(iTJSDispatch2 *window, iTJSDispatch2 *init) : window(window), hParent(0), hWnd(0), thread(0), doneflag(false), cancelflag(false), percent(0),
+	progressBarEnable(true), progressBarHandle(0), progressBarStyle(0),
+	progressBarLeft(-1), progressBarTop(-1), progressBarWidth(-1), progressBarHeight(-1),
+	progressBarColor(0xff000000), progressBarBackColor(0xff000000),
+	cancelButtonEnable(true), cancelButtonHandle(0), cancelButtonCaption(L"Cancel"),
+	cancelButtonLeft(-1), cancelButtonTop(-1), cancelButtonWidth(-1), cancelButtonHeight(-1) {
 		prepare = CreateEvent(NULL, FALSE, FALSE, NULL);
+		if (init) {
+			ncbPropAccessor info(init);
+			GETINTVALUE(progressBarStyle, 0);
+			GETINTVALUE(progressBarTop, -1);
+			GETINTVALUE(progressBarLeft, -1);
+			GETINTVALUE(progressBarWidth, -1);
+			GETINTVALUE(progressBarHeight, -1);
+			GETINTVALUE(progressBarColor, 0xff000000);
+			GETINTVALUE(progressBarBackColor, 0xff000000);
+			GETBOOLVALUE(progressBarEnable, true);
+			GETSTRVALUE(cancelButtonCaption, ttstr("Cancel"));
+			GETINTVALUE(cancelButtonLeft, -1);
+			GETINTVALUE(cancelButtonTop, -1);
+			GETINTVALUE(cancelButtonWidth, -1);
+			GETINTVALUE(cancelButtonHeight, -1);
+			GETBOOLVALUE(cancelButtonEnable, true);
+		}
 		setReceiver(true);
 		start();
 	}
@@ -71,13 +245,21 @@ public:
 	bool doProgress(int percent) {
 		if (percent != this->percent) {
 			this->percent = percent;
-			if (hProgress) {
-				SendMessage(hProgress, PBM_SETPOS, (WPARAM)percent, 0 );
+			if (progressBarHandle) {
+				SendMessage(progressBarHandle, PBM_SETPOS, (WPARAM)percent, 0 );
 			}
 		}
-		return !hWnd && cancelflag;
+		return !hWnd || cancelflag;
 	}
 
+	/**
+	 * プログレス処理のテキストを差し替える
+	 * @param name 識別名
+	 * @param text 表示テキスト
+	 */
+	void setProgressMessage(const tjs_char *name, const tjs_char *text) {
+	}
+	
 protected:
 	iTJSDispatch2 *window; //< 親ウインドウ
 	HWND hParent; //< 親ハンドル
@@ -88,7 +270,25 @@ protected:
 	bool cancelflag; // キャンセルフラグ
 	int percent; // パーセント指定
 
-	HWND hProgress; //< プログレスバーのハンドラ
+	bool progressBarEnable;
+	HWND progressBarHandle; //< プログレスバーのハンドラ
+	int progressBarLeft;
+	int progressBarStyle;
+	int progressBarTop;
+	int progressBarWidth;
+	int progressBarHeight;
+	int progressBarColor;
+	int progressBarBackColor;
+
+	bool cancelButtonEnable;
+	HWND cancelButtonHandle;
+	ttstr cancelButtonCaption;
+	int cancelButtonLeft;
+	int cancelButtonTop;
+	int cancelButtonWidth;
+	int cancelButtonHeight;
+
+	ImageInfo *backGround;
 	
 	/**
 	 * ウインドウプロシージャ
@@ -100,8 +300,8 @@ protected:
 			case WM_PAINT: // 画面更新
 				{
 					PAINTSTRUCT ps;
-					BeginPaint(hWnd, &ps);
-					self->show();
+					HDC dc = BeginPaint(hWnd, &ps);
+					self->show(dc, ps);
 					EndPaint(hWnd, &ps);
 				}
 				return 0;
@@ -230,33 +430,82 @@ protected:
 	}
 
 	// -------------------------------------------------------------
+
+	static int RGBTOBGR(int c) {
+		unsigned int a = (unsigned int)c & 0xff000000;
+		unsigned int r = (unsigned int)c & 0x00ff0000;
+		unsigned int g = (unsigned int)c & 0x0000ff00;
+		unsigned int b = (unsigned int)c & 0x000000ff;
+		return (int)(a | r>>16 | g | b<<16);
+	}
 	
 	/**
 	 * 描画内容生成
 	 */
 	void create() {
 
-		// プログレスバーの配置決定
 		RECT rect;
 		GetClientRect(hWnd, &rect);
 		int swidth  = rect.right  - rect.left;
 		int sheight = rect.bottom - rect.top;
-		int width = swidth/3;
-		int height = sheight/10;
-		// プログレスバーを作成
-		hProgress = CreateWindowEx(0, PROGRESS_CLASS, _T(""),
-								   WS_VISIBLE | WS_CHILD | PBS_SMOOTH,
-								   (swidth-width)/2, (sheight-height)/2, width, height, hWnd, (HMENU)1, GetModuleHandle(NULL), NULL);
-		SendMessage(hProgress, PBM_SETRANGE , 0, MAKELPARAM(0, 100));
-		SendMessage(hProgress, PBM_SETSTEP, 1, 0 );
-		SendMessage(hProgress, PBM_SETPOS, percent, 0);
+		
+		if (progressBarEnable) {
+			// プログレスバーの配置決定
+			if (progressBarWidth < 0) {
+				progressBarWidth = swidth / 3;
+			}
+			if (progressBarHeight < 0) {
+				progressBarHeight = sheight/10;
+			}
+			if (progressBarLeft < 0) {
+				progressBarLeft = (swidth - progressBarWidth)/2;
+			}
+			if (progressBarTop < 0) {
+				progressBarTop = (sheight - progressBarHeight)/2;
+			}
+			// プログレスバーを作成
+			progressBarHandle = CreateWindowEx(0, PROGRESS_CLASS, _T(""),
+											   WS_VISIBLE | WS_CHILD | (progressBarStyle & (PBS_SMOOTH|PBS_VERTICAL)),
+											   progressBarLeft, progressBarTop, progressBarWidth, progressBarHeight,
+											   hWnd, (HMENU)1, GetModuleHandle(NULL), NULL);
+			SendMessage(progressBarHandle, PBM_SETBARCOLOR, 0, RGBTOBGR(progressBarColor));
+			SendMessage(progressBarHandle, PBM_SETBKCOLOR, 0, RGBTOBGR(progressBarBackColor));
+			SendMessage(progressBarHandle, PBM_SETRANGE , 0, MAKELPARAM(0, 100));
+			SendMessage(progressBarHandle, PBM_SETSTEP, 1, 0 );
+			SendMessage(progressBarHandle, PBM_SETPOS, percent, 0);
+		}
+
+		if (cancelButtonEnable) {
+			// キャンセルボタンの配置決定
+			if (cancelButtonWidth < 0) {
+				cancelButtonWidth = cancelButtonCaption.length() * 16 + 8;
+			}
+			if (cancelButtonHeight < 0) {
+				cancelButtonHeight = 24;
+			}
+			if (cancelButtonLeft < 0) {
+				cancelButtonLeft = (swidth - cancelButtonWidth)/2;
+			}
+			if (cancelButtonTop < 0) {
+				cancelButtonTop = sheight - cancelButtonHeight * 3;
+			}
+			// キャンセルボタンを作成
+			cancelButtonHandle = CreateWindow(_T("BUTTON"), cancelButtonCaption.c_str(),
+											  WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+											  cancelButtonLeft, cancelButtonTop, cancelButtonWidth, cancelButtonHeight,
+											  hWnd, (HMENU)ID_CANCEL, GetModuleHandle(NULL), NULL);
+		}
 	}
 	
 	/**
 	 * 画面更新処理
 	 */
-	void show() {
-		// ビットマップ指定があれば背景をそれで塗りつぶす
+	void show(HDC dc, PAINTSTRUCT &ps) {
+		// 背景で塗りつぶし
+
+		// アニメパターンを描画
+
+		// テキストを表示
 	}
 
 	/**
@@ -294,11 +543,11 @@ public:
 	 * 吉里吉里が実行ブロック中でも正常に表示継続します。
 	 * @param init 初期化データ(辞書)
 	 */
-	void startProgress(tTJSVariant init) {
+	void startProgress(iTJSDispatch2 *init) {
 		if (progressWindow) {
 			TVPThrowExceptionMessage(L"already running progress");
 		}
-		progressWindow = new ProgressWindow(objthis);
+		progressWindow = new ProgressWindow(objthis, init);
 	}
 	
 	/**
@@ -340,7 +589,11 @@ NCB_GET_INSTANCE_HOOK(WindowExProgress)
 	}
 };
 
+#define ENUM(n) Variant(#n, (int)n)
+
 NCB_ATTACH_CLASS_WITH_HOOK(WindowExProgress, Window) {
+	ENUM(PBS_SMOOTH);
+	ENUM(PBS_VERTICAL);
 	NCB_METHOD(startProgress);
 	NCB_METHOD(doProgress);
 	NCB_METHOD(endProgress);
