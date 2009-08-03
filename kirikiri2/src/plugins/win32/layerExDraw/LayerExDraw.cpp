@@ -385,7 +385,7 @@ FontInfo::getLineSpacing() const
   } else if (gdiPlusUnsupportedFont) {
     OUTLINETEXTMETRIC *otm = createFontMetric();
     if (otm) {
-      REAL result = REAL(otm->otmTextMetrics.tmHeight + otm->otmTextMetrics.tmExternalLeading * 2);
+      REAL result = REAL(otm->otmTextMetrics.tmHeight + otm->otmTextMetrics.tmExternalLeading);
       delete otm;
       return result;
     }
@@ -1555,6 +1555,32 @@ LayerExDraw::measureString(const FontInfo *font, const tjs_char *text)
 }
 
 /**
+ * 文字列に外接する領域情報の取得
+ * @param font フォント
+ * @param text 描画テキスト
+ * @return 領域情報の辞書 left, top, width, height
+ */
+RectF
+LayerExDraw::measureStringInternal(const FontInfo *font, const tjs_char *text)
+{
+  if (font->gdiPlusUnsupportedFont) 
+    return measureStringInternal2(font, text);
+  
+  RectF rect;
+  graphics->SetTextRenderingHint(textRenderingHint);
+  Font f(font->fontFamily, font->emSize, font->style, UnitPixel);
+  graphics->MeasureString(text, -1, &f, PointF(0,0), StringFormat::GenericDefault(), &rect);
+  CharacterRange charRange(0, INT(wcslen(text)));
+  StringFormat stringFormat = StringFormat::GenericDefault();
+  stringFormat.SetMeasurableCharacterRanges(1, &charRange);
+  Region region;
+  graphics->MeasureCharacterRanges(text, -1, &f, rect, &stringFormat, 1, &region);
+  RectF regionBounds;
+  region.GetBounds(&regionBounds, graphics);
+  return regionBounds;
+}
+
+/**
  * 画像の描画。コピー先は元画像の Bounds を配慮した位置、サイズは Pixel 指定になります。
  * @param x コピー先原点
  * @param y  コピー先原点
@@ -1894,7 +1920,7 @@ LayerExDraw::getGlyphOutline(const FontInfo *fontInfo, PointF &offset, GraphicsP
 
   int index = 0;
   PointF aOffset = offset;
-  aOffset.Y += fontInfo->getAscent();
+  aOffset.Y +=   fontInfo->getAscent();
 
   while(index < size) {
     TTPOLYGONHEADER * header = (TTPOLYGONHEADER *)(buffer + index);
@@ -1929,7 +1955,7 @@ LayerExDraw::getGlyphOutline(const FontInfo *fontInfo, PointF &offset, GraphicsP
     path->CloseFigure();
   }
 
-  offset.X += gm.gmCellIncX + gm.gmCellIncY;
+  offset.X += gm.gmCellIncX;
 
   delete[] buffer;
 }
@@ -1942,8 +1968,7 @@ LayerExDraw::getGlyphOutline(const FontInfo *fontInfo, PointF &offset, GraphicsP
  * @param text 描画するテキスト
  */
 void
-LayerExDraw::getTextOutline(const FontInfo *fontInfo, PointF &offset, GraphicsPath *path, ttstr text,
-                            LONG *resultFirstA, LONG *resultLastC)
+LayerExDraw::getTextOutline(const FontInfo *fontInfo, PointF &offset, GraphicsPath *path, ttstr text)
 {
   if (metaHDC == NULL) 
     return;
@@ -1962,23 +1987,6 @@ LayerExDraw::getTextOutline(const FontInfo *fontInfo, PointF &offset, GraphicsPa
 
   HFONT hFont = CreateFontIndirect(&font);
   HGDIOBJ hOldFont = SelectObject(metaHDC, hFont);
-
-  LONG firstA = 0, lastC = 0;
-  ABC abc;
-  if (GetCharABCWidths(metaHDC, text[0], text[0], &abc)) {
-    firstA = abc.abcA;
-    TVPAddLog(ttstr(L"A:") + tTJSVariant(firstA));
-    if (resultFirstA)
-      *resultFirstA = firstA;
-  }
-  if (GetCharABCWidths(metaHDC, text[text.GetLen() - 1], text[text.GetLen() - 1], &abc)) {
-    lastC = abc.abcC;
-    TVPAddLog(ttstr(L"C:") + tTJSVariant(lastC));
-    if (resultLastC)
-      *resultLastC = lastC;
-  }
-
-  offset.X += firstA + lastC;
 
   for (tjs_int i = 0; i < text.GetLen(); i++) {
     this->getGlyphOutline(fontInfo, offset, path, text[i]);
@@ -2000,12 +2008,33 @@ LayerExDraw::measureString2(const FontInfo *font, const tjs_char *text)
   // 文字列のパスを準備
   GraphicsPath path;
   PointF offset(0, 0);
-  LONG firstA = 0, lastC = 0;
-  this->getTextOutline(font, offset, &path, text, &firstA, &lastC);
+  this->getTextOutline(font, offset, &path, text);
   RectF result;
   path.GetBounds(&result, NULL, NULL);
-  result.X -= firstA + lastC;
-  result.Width += (firstA + lastC) * 2;
+  result.X = 0;
+  result.Y = 0;
+  result.Width += REAL(0.167 * font->emSize * 2);
+  result.Height = REAL(font->getLineSpacing() * 1.124);
+  return result;
+}
+
+/**
+ * 文字列に外接する領域情報の取得(OpenTypeのPostScriptフォント対応)
+ * @param font フォント
+ * @param text 描画テキスト
+ * @return 更新領域情報の辞書 left, top, width, height
+ */
+RectF 
+LayerExDraw::measureStringInternal2(const FontInfo *font, const tjs_char *text)
+{
+  // 文字列のパスを準備
+  GraphicsPath path;
+  PointF offset(0, 0);
+  this->getTextOutline(font, offset, &path, text);
+  RectF result;
+  path.GetBounds(&result, NULL, NULL);
+  result.X = REAL(LONG(0.167 * font->emSize));
+  result.Y = 0;
   result.Height = font->getLineSpacing();
   return result;
 }
@@ -2024,13 +2053,12 @@ LayerExDraw::drawPathString2(const FontInfo *font, const Appearance *app, REAL x
 {
   // 文字列のパスを準備
   GraphicsPath path;
-  LONG firstA = 0, lastC = 0;
-  PointF offset(x, y);
-  this->getTextOutline(font, offset, &path, text, &firstA, &lastC);
+  PointF offset(x + LONG(0.167 * font->emSize), y);
+  this->getTextOutline(font, offset, &path, text);
   RectF result = drawPath(app, &path);
-  result.X -= firstA + lastC;
+  result.X = x;
   result.Y = y;
-  result.Width += (firstA + lastC) * 2;
-  result.Height = font->getLineSpacing();
+  result.Width += REAL(0.167 * font->emSize * 2);
+  result.Height = REAL(font->getLineSpacing() * 1.124);
   return result;
 }

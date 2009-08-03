@@ -772,6 +772,11 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(drawPathString);
 	NCB_METHOD(drawString);
 	NCB_METHOD(measureString);
+	NCB_METHOD(measureStringInternal);
+// äÓñ{ìIÇ…îÒåˆäJä÷êî
+//	NCB_METHOD(drawPathString2);
+//	NCB_METHOD(measureString2);
+//	NCB_METHOD(measureStringInternal);
 
 	NCB_METHOD(drawImage);
 	NCB_METHOD(drawImageRect);
