@@ -112,8 +112,8 @@ IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=2
 MinorVer=31
-Release=2008
-Build=416
+Release=2009
+Build=804
 Debug=0
 PreRelease=0
 Special=0
@@ -125,9 +125,9 @@ CodePage=932
 [Version Info Keys]
 CompanyName=
 FileDescription=TVP(KIRIKIRI) 2 core / Scripting Platform for Win32
-FileVersion=2.31.2008.416
+FileVersion=2.31.2009.804
 InternalName=tvp2/win32
-LegalCopyright=(KIRIKIRI core) (C) 1997-2009 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
+LegalCopyright=(KIRIKIRI core) (C) 1997-2008 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.
 LegalTrademarks=
 OriginalFilename=
 ProductName=
@@ -195,6 +195,9 @@ LinkCGLIB=0
   </IDEOPTIONS>
 
   <FILES>
+    <FILE type="override" value="..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
+      <WARNOPTSTR value=" -w-par"/>
+    </FILE>
     <FILE type="override" value="..\..\tjs2\tjspp.tab.cpp" translator="Auto">
       <CFLAG1 value=" -vGc-"/>
     </FILE>
@@ -206,9 +209,6 @@ LinkCGLIB=0
     </FILE>
     <FILE type="override" value="..\..\visual\tvpgl.c" translator="Auto">
       <CFLAG1 value=" -O2 -r -k- -y -v -vi"/>
-    </FILE>
-    <FILE type="override" value="..\..\visual\GraphicsLoaderIntf.cpp" translator="Auto">
-      <WARNOPTSTR value=" -w-par"/>
     </FILE>
   </FILES>
 </PROJECT>
