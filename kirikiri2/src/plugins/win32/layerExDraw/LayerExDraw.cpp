@@ -352,7 +352,7 @@ FontInfo::getAscent() const
   } else if (gdiPlusUnsupportedFont) {
     OUTLINETEXTMETRIC *otm = createFontMetric();
     if (otm) {
-      REAL result = REAL(otm->otmTextMetrics.tmAscent);
+      REAL result = REAL(otm->otmAscent);
       delete otm;
       return result;
     }
@@ -369,7 +369,7 @@ FontInfo::getDescent() const
   } else if (gdiPlusUnsupportedFont) {
     OUTLINETEXTMETRIC *otm = createFontMetric();
     if (otm) {
-      REAL result = REAL(otm->otmTextMetrics.tmDescent);
+      REAL result = REAL(otm->otmDescent);
       delete otm;
       return result;
     }
