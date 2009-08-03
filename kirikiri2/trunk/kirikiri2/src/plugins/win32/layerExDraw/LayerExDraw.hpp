@@ -305,10 +305,8 @@ protected:
          * @param offset オフセット
          * @param path グリフを書き出すパス
          * @param text 描画するテキスト
-         * @param resultFirstA 最初の文字のA値を得る
-         * @param resultLastCA 最後の文字のC値を得る
          */
-        void getTextOutline(const FontInfo *font, PointF &offset, GraphicsPath *path, ttstr text, LONG *resultFirstA = NULL, LONG *resultLastC = NULL);
+         void getTextOutline(const FontInfo *font, PointF &offset, GraphicsPath *path, ttstr text);
 
 public:
 	/**
@@ -512,12 +510,28 @@ public:
 	RectF measureString(const FontInfo *font, const tjs_char *text);
 
 	/**
+	 * 文字列にぴったりと接っする矩形の取得
+	 * @param font フォント
+	 * @param text 描画テキスト
+	 * @return 領域情報の辞書 left, top, width, height
+	 */
+	RectF measureStringInternal(const FontInfo *font, const tjs_char *text);
+
+	/**
 	 * 文字列の描画更新領域情報の取得(OpenTypeのPostScriptフォント対応)
 	 * @param font フォント
 	 * @param text 描画テキスト
 	 * @return 更新領域情報の辞書 left, top, width, height
 	 */
 	RectF measureString2(const FontInfo *font, const tjs_char *text);
+
+	/**
+	 * 文字列にぴったりと接っする矩形の取得(OpenTypeのPostScriptフォント対応)
+	 * @param font フォント
+	 * @param text 描画テキスト
+	 * @return 領域情報の辞書 left, top, width, height
+	 */
+	RectF measureStringInternal2(const FontInfo *font, const tjs_char *text);
 
 	// -----------------------------------------------------------------------------
 	
