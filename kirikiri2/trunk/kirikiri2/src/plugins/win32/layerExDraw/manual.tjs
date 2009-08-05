@@ -219,6 +219,7 @@ class GdiPlus {
 		property familyName; //< フォントファミリー
 		property emSize;     //< フォントのサイズ
 		property style;      //< フォントのスタイル
+                property forceSelfPathDraw; //< GDI+ のフォント描画機構を使わずに、自前でパスを取得してのフォント描画を行うかどうかを設定する。
 
 		property ascent;      //< ascent (読み出し専用)
 		property descent;     //< descent (読み出し専用)
@@ -663,6 +664,14 @@ class Layer {
 	 * @return 描画領域情報(RectF)
 	 */
 	function measureString(font, text);
+
+	/**
+	 * 文字列の描画領域情報の取得。measureString()で取得した領域に対して、マージンを除いて実際に文字列が存在する領域の矩形を返します。
+	 * @param font フォント
+	 * @param text 描画テキスト
+	 * @return 描画領域情報(RectF)
+	 */
+	function measureStringInternal(font, text);
 
 	// -------------------------------------------------------------
 
