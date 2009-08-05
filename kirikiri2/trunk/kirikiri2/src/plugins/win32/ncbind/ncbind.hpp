@@ -653,6 +653,13 @@ struct ncbPropAccessor {
 			return defaultValue;
 		}
 	}
+	ttstr getStrValue(IndexT ofs, ttstr &defaultValue=ttstr("")) {
+		if (HasValue(ofs)) {
+			return GetValue(ofs, DefsT::Tag<ttstr>());
+		} else {
+			return defaultValue;
+		}
+	}
 	template <typename TargetT>
 	TargetT GetValue(KeyT key, DefsT::Tag<TargetT> const &tag, FlagsT f = 0, HintT hint = 0) {
 		VariantT var;
@@ -669,6 +676,13 @@ struct ncbPropAccessor {
 	tjs_real getRealValue(KeyT key, tjs_real defaultValue=0) {
 		if (HasValue(key)) {
 			return GetValue(key, DefsT::Tag<tjs_real>());
+		} else {
+			return defaultValue;
+		}
+	}
+	ttstr getStrValue(KeyT key, ttstr &defaultValue=ttstr("")) {
+		if (HasValue(key)) {
+			return GetValue(key, DefsT::Tag<ttstr>());
 		} else {
 			return defaultValue;
 		}
