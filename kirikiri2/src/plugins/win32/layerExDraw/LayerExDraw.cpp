@@ -235,7 +235,7 @@ GdiPlus::getFontList(bool privateOnly)
 /**
  * コンストラクタ
  */
-FontInfo::FontInfo() : fontFamily(NULL), emSize(12), style(0) {}
+FontInfo::FontInfo() : fontFamily(NULL), emSize(12), style(0), gdiPlusUnsupportedFont(false), forceSelfPathDraw(false), propertyModified(true) {}
 
 /**
  * コンストラクタ
@@ -243,7 +243,7 @@ FontInfo::FontInfo() : fontFamily(NULL), emSize(12), style(0) {}
  * @param emSize フォントのサイズ
  * @param style フォントスタイル
  */
-FontInfo::FontInfo(const tjs_char *familyName, REAL emSize, INT style) : fontFamily(NULL)
+FontInfo::FontInfo(const tjs_char *familyName, REAL emSize, INT style) : fontFamily(NULL), gdiPlusUnsupportedFont(false), forceSelfPathDraw(false), propertyModified(true)
 {
 	setFamilyName(familyName);
 	setEmSize(emSize);
@@ -278,6 +278,7 @@ FontInfo::clear()
 	fontFamily = NULL;
 	familyName = "";
         gdiPlusUnsupportedFont = false;
+        propertyModified = true;
 }
 
 /**
@@ -286,6 +287,15 @@ FontInfo::clear()
 void
 FontInfo::setFamilyName(const tjs_char *familyName)
 {
+  propertyModified = true;
+
+  if (forceSelfPathDraw) {
+    clear();
+    gdiPlusUnsupportedFont = true;
+    this->familyName = familyName;
+    return;
+  }
+
 	if (familyName) {
 		clear();
 		if (privateFontCollection) {
@@ -309,6 +319,25 @@ FontInfo::setFamilyName(const tjs_char *familyName)
 	}
 }
 
+void
+FontInfo::setForceSelfPathDraw(bool state)
+{
+  forceSelfPathDraw = state;
+  this->setFamilyName(familyName.c_str());
+}
+
+bool
+FontInfo::getForceSelfPathDraw(void) const
+{
+  return forceSelfPathDraw;
+}
+
+bool
+FontInfo::getSelfPathDraw(void) const
+{
+  return forceSelfPathDraw || gdiPlusUnsupportedFont;
+}
+
 OUTLINETEXTMETRIC *
 FontInfo::createFontMetric(void) const
 {
@@ -322,6 +351,7 @@ FontInfo::createFontMetric(void) const
   font.lfItalic = style & 2;
   font.lfUnderline = style & 4;
   font.lfStrikeOut = style & 8;
+  font.lfCharSet = DEFAULT_CHARSET;
   wcscpy_s(font.lfFaceName, familyName.c_str());
   HFONT hFont = CreateFontIndirect(&font);
   if (hFont == NULL) {
@@ -344,53 +374,52 @@ FontInfo::createFontMetric(void) const
   return NULL;
 }
 
-REAL 
-FontInfo::getAscent() const 
+void
+FontInfo::updateSizeParams(void) const
 {
+  if (! propertyModified)
+    return;
+
+  propertyModified = true;
+  ascent = 0;
+  descent = 0;
+  lineSpacing = 0;
+
   if (fontFamily) {
-    return fontFamily->GetCellAscent(style) * emSize / fontFamily->GetEmHeight(style);
-  } else if (gdiPlusUnsupportedFont) {
+    ascent = fontFamily->GetCellAscent(style) * emSize / fontFamily->GetEmHeight(style);
+    descent = fontFamily->GetCellDescent(style) * emSize / fontFamily->GetEmHeight(style);
+    lineSpacing = fontFamily->GetLineSpacing(style) * emSize / fontFamily->GetEmHeight(style);
+  } else {
     OUTLINETEXTMETRIC *otm = createFontMetric();
     if (otm) {
-      REAL result = REAL(otm->otmAscent);
+      ascent = REAL(otm->otmAscent);
+      descent = REAL(otm->otmDescent);
+      lineSpacing = REAL(otm->otmTextMetrics.tmHeight + otm->otmTextMetrics.tmExternalLeading);
       delete otm;
-      return result;
     }
   }
-  return 0;
+}
+
+REAL 
+FontInfo::getAscent() const
+{
+  this->updateSizeParams();
+  return ascent;
 }
 
 
 REAL 
-FontInfo::getDescent() const 
+FontInfo::getDescent() const
 {
-  if (fontFamily) {
-    return fontFamily->GetCellDescent(style) * emSize / fontFamily->GetEmHeight(style);
-  } else if (gdiPlusUnsupportedFont) {
-    OUTLINETEXTMETRIC *otm = createFontMetric();
-    if (otm) {
-      REAL result = REAL(otm->otmDescent);
-      delete otm;
-      return result;
-    }
-  }
-  return 0;
+  this->updateSizeParams();
+  return descent;
 }
 
 REAL 
-FontInfo::getLineSpacing() const 
+FontInfo::getLineSpacing() const
 {
-  if (fontFamily) {
-    return fontFamily->GetLineSpacing(style) * emSize / fontFamily->GetEmHeight(style);
-  } else if (gdiPlusUnsupportedFont) {
-    OUTLINETEXTMETRIC *otm = createFontMetric();
-    if (otm) {
-      REAL result = REAL(otm->otmTextMetrics.tmHeight + otm->otmTextMetrics.tmExternalLeading);
-      delete otm;
-      return result;
-    }
-  }
-  return 0;
+  this->updateSizeParams();
+  return lineSpacing;
 }
 
 // --------------------------------------------------------
@@ -1440,7 +1469,7 @@ LayerExDraw::drawRectangles(const Appearance *app, tTJSVariant rects)
 RectF
 LayerExDraw::drawPathString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
 {
-  if (font->gdiPlusUnsupportedFont) 
+  if (font->getSelfPathDraw())
     return drawPathString2(font, app, x, y, text);
 
 	// 文字列のパスを準備
@@ -1490,7 +1519,7 @@ static void transformRect(Matrix &calcTransform, RectF &rect)
 RectF
 LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REAL y, const tjs_char *text)
 {
-  if (font->gdiPlusUnsupportedFont) 
+  if (font->getSelfPathDraw())
     return drawPathString2(font, app, x, y, text);
 
 	graphics->SetTextRenderingHint(textRenderingHint);
@@ -1544,7 +1573,7 @@ LayerExDraw::drawString(const FontInfo *font, const Appearance *app, REAL x, REA
 RectF
 LayerExDraw::measureString(const FontInfo *font, const tjs_char *text)
 {
-  if (font->gdiPlusUnsupportedFont) 
+  if (font->getSelfPathDraw())
     return measureString2(font, text);
 
 	RectF rect;
@@ -1563,7 +1592,7 @@ LayerExDraw::measureString(const FontInfo *font, const tjs_char *text)
 RectF
 LayerExDraw::measureStringInternal(const FontInfo *font, const tjs_char *text)
 {
-  if (font->gdiPlusUnsupportedFont) 
+  if (font->getSelfPathDraw())
     return measureStringInternal2(font, text);
   
   RectF rect;
@@ -1983,6 +2012,7 @@ LayerExDraw::getTextOutline(const FontInfo *fontInfo, PointF &offset, GraphicsPa
   font.lfItalic = fontInfo->style & 2;
   font.lfUnderline = fontInfo->style & 4;
   font.lfStrikeOut = fontInfo->style & 8;
+  font.lfCharSet = DEFAULT_CHARSET;
   wcscpy_s(font.lfFaceName, fontInfo->familyName.c_str());
 
   HFONT hFont = CreateFontIndirect(&font);

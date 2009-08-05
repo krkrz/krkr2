@@ -39,6 +39,11 @@ protected:
 	REAL emSize; //< フォントサイズ 
 	INT style; //< フォントスタイル
         bool gdiPlusUnsupportedFont; //< GDI+未サポートフォント
+        bool forceSelfPathDraw; // 自前パス描画強制
+        mutable bool propertyModified;
+        mutable REAL ascent;
+        mutable REAL descent;
+        mutable REAL lineSpacing;
 
 	/**
 	 * フォント情報のクリア
@@ -66,11 +71,15 @@ public:
 
 	void setFamilyName(const tjs_char *familyName);
 	const tjs_char *getFamilyName() { return familyName.c_str(); }
-	void setEmSize(REAL emSize) { this->emSize = emSize; }
+	void setEmSize(REAL emSize) { this->emSize = emSize; propertyModified = true; }
 	REAL getEmSize() {  return emSize; }
-	void setStyle(INT style) { this->style = style; }
+	void setStyle(INT style) { this->style = style; propertyModified = true; }
 	INT getStyle() { return style; }
+        void setForceSelfPathDraw(bool state);
+        bool getForceSelfPathDraw(void) const;
+        bool getSelfPathDraw(void) const;
 
+        void updateSizeParams(void) const;
 	REAL getAscent() const;
 	REAL getDescent() const;
 	REAL getLineSpacing() const;
