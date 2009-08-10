@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>仮想マシン</title>
+
+<para>
+<ptitle>TJS2 VM</ptitle>
+　TJS2 は、スクリプトをいったん仮想マシン (TJS2 <kw>VM</kw>) 用のバイナリコードにコンパイルしてから実行します。<r/>
+　例外が発生したときやダンプを行ったときにこの TJS2 VM のコードの逆アセンブル結果が表示されるので、この仮想マシンについて簡単に説明します。<r/>
+</para>
+
+<para>
+<ptitle>命令コード</ptitle>
+　TJS2 VM は関数やプロパティなどの実行単位ごとに独立していて、ある一つの関数が他の関数と命令コード空間、レジスタ空間、フラグ、定数領域を共有することはありません。<r/>
+　命令ポインタ (ip) は関数などの頭でかならず 0 から始まります。<r/>
+　命令コードを人間が読みやすい簡単な名前で表したものをニーモニックと呼びます。
+</para>
+
+<para>
+<ptitle>レジスタ</ptitle>
+　TJS2 VM のレジスタは、ニーモニック中では %(数字) で表されます。数字は負の数になることもあり得ます。レジスタ数に制限はありません。ローカル変数や計算中の一時的な値などはすべてレジスタに記録されます。主記憶 (メインメモリ) やスタックは存在しません。<r/>
+　レジスタが表す値は TJS2 のいわゆる変数と同じで、整数、実数、オブジェクト、文字列、オクテット列、void を表すことができます。<r/>
+　現バージョンでは、レジスタ %0 は常に void になります。レジスタ %-1 は this になります。レジスタ %-2 は <kw>this proxy</kw> と呼ばれる特殊なオブジェクトで、このオブジェクトに対してメンバ参照を行うと、まず this を見て、そこに無ければ global を見に行くという動作をします。this proxy は global レベルの実行単位には存在しません。関数などの引数は %-3 や %-4 などのレジスタにあらかじめ格納された状態で実行が開始されます。<r/>
+　このような、あらかじめ用途が決まっていたり、実行前に値があらかじめ入っているレジスタ以外の値は、実行開始の時点では不定です。<r/>
+</para>
+
+<para>
+<ptitle>フラグ</ptitle>
+　TJS2 VM にはフラグが１つだけあり、比較結果が格納されます。フラグは真か偽の値のみをとります。<r/>
+</para>
+
+<para>
+<ptitle>定数領域</ptitle>
+　TJS2 VM の定数領域は定数を記憶する場所で、ニーモニック中では *(数字) で表されます。定数領域は読み出し専用で、レジスタへこの定数領域の値を移すには const 命令が用いられます。また、関数名やプロパティ名など、名前でオブジェクトのメンバをアクセスするための「名前」もこの定数領域に格納されます。<r/>
+</para>
+
+<para>
+<ptitle>VM ニーモニック一覧</ptitle>
+　オペランドに <tt>%obj.*name</tt> や <tt>%obj.%name</tt> の形式を持つものがありますが、これらはオブジェクトのメンバ参照を伴うものです。<r/>
+　オペランドに <tt>%obj.*name</tt> の形式を持つものは直接参照を行うもので、レジスタ <tt>%obj</tt> で表されたオブジェクトから <tt>*name</tt> で表された名前をもったメンバを参照します。<r/>
+　オペランドに <tt>%obj.%name</tt> の形式を持つものは間接参照を行うもので、レジスタ <tt>%obj</tt> で表されたオブジェクトから <tt>%name</tt> で表された名前をもったメンバを参照します。<r/>
+　このような命令のニーモニックは d または pd (direct / property direct) や i または pi (indirect / property indirect) のサフィックスをもちます。<r/>
+　サフィックスに p を持つ物は、対象レジスタのプロパティハンドラを動作させます (単項 '*' 演算子の動作をします)。<r/>
+<r/>
+<r/>
+<dl>
+
+<dt><kw>nop</kw><r/>(no operation)</dt>
+<dd>
+　何もしません。
+</dd>
+
+
+<dt><kw>const</kw><r/>(copy constant value)</dt>
+<dd>
+書式: <tt>const %dest, *src</tt><r/><r/>
+　*src で示された定数領域の値を %dest で示されたレジスタにコピーします。
+</dd>
+
+
+<dt><kw>cp</kw><r/>(copy register)</dt>
+<dd>
+書式: <tt>cp %dest, %src</tt><r/><r/>
+　%src で示されたレジスタの値を %dest で示されたレジスタにコピーします。
+</dd>
+
+
+<dt><kw>cl</kw><r/>(clear register)</dt>
+<dd>
+書式: <tt>cl %dest</tt><r/><r/>
+　%dest で示されたレジスタを void にします。
+</dd>
+
+
+<dt><kw>ccl</kw><r/>(clear register)</dt>
+<dd>
+書式: <tt>ccl %low-%high</tt><r/><r/>
+　%low で示されたレジスタ から %high で示されたレジスタの範囲をすべて void にします。
+</dd>
+
+
+<dt><kw>tt</kw><r/>(test true)</dt>
+<dd>
+書式: <tt>tt %reg</tt><r/><r/>
+　%reg で示されたレジスタが真を表していればフラグを真に、偽を表していればフラグを偽に設定します。
+</dd>
+
+
+<dt><kw>tf</kw><r/>(test false)</dt>
+<dd>
+書式: <tt>tf %reg</tt><r/><r/>
+　tt と逆で、%reg で示されたレジスタが真を表していればフラグを偽に、偽を表していればフラグを真に設定します。
+</dd>
+
+
+<dt><kw>ceq</kw><r/>(compare equal)</dt>
+<dd>
+書式: <tt>ceq %reg1, %reg2</tt><r/><r/>
+　%reg1 と %reg2 が通常比較 ( == 演算子の動作 ) で一致すればフラグを真、そうでなければ偽に設定します。
+</dd>
+
+
+<dt><kw>cdeq</kw><r/>(compare distinct equal)</dt>
+<dd>
+書式: <tt>cdeq %reg1, %reg2</tt><r/><r/>
+　%reg1 と %reg2 が識別比較 ( === 演算子の動作 ) で一致すればフラグを真、そうでなければ偽に設定します。
+</dd>
+
+
+<dt><kw>clt</kw><r/>(compare littler than)</dt>
+<dd>
+書式: <tt>clt %reg1, %reg2</tt><r/><r/>
+　%reg1 &gt; %reg2 ならばフラグを真、そうでなければ偽に設定します。
+</dd>
+
+
+<dt><kw>cgt</kw><r/>(compare greater than)</dt>
+<dd>
+書式: <tt>cgt %reg1, %reg2</tt><r/><r/>
+　%reg1 &lt; %reg2 ならばフラグを真、そうでなければ偽に設定します。
+</dd>
+
+
+<dt><kw>setf</kw><r/>(set flag)</dt>
+<dd>
+書式: <tt>setf %dest</tt><r/><r/>
+　フラグが真ならば %dest を真 (整数非0) に、偽ならば偽 (整数0) に設定します。
+</dd>
+
+
+<dt><kw>setnf</kw><r/>(set not flag)</dt>
+<dd>
+書式: <tt>setnf %dest</tt><r/><r/>
+　setf と逆で、フラグが偽ならば %dest を真 (整数非0) に、真ならば偽 (整数0) に設定します。
+</dd>
+
+
+<dt><kw>lnot</kw><r/>(logical not)</dt>
+<dd>
+書式: <tt>lnot %reg</tt><r/><r/>
+　%reg の真偽を逆にします。
+</dd>
+
+
+<dt><kw>nf</kw><r/>(not flag)</dt>
+<dd>
+書式: <tt>nf</tt><r/><r/>
+　フラグの真偽を逆にします。
+</dd>
+
+
+<dt><kw>jf</kw><r/>(jump if flag)</dt>
+<dd>
+書式: <tt>jf ip</tt><r/><r/>
+　フラグが真ならば ip にジャンプします。
+</dd>
+
+
+<dt><kw>jnf</kw><r/>(jump if not flag)</dt>
+<dd>
+書式: <tt>jnf ip</tt><r/><r/>
+　フラグが偽ならば ip にジャンプします。
+</dd>
+
+
+<dt><kw>inc</kw>, <kw>incpd</kw>, <kw>incpi</kw>, <kw>incp</kw><r/>(increment)</dt>
+<dd>
+書式: <tt>inc %reg</tt><r/>
+書式: <tt>incpd %res, %obj.*name</tt><r/>
+書式: <tt>incpi %res, %obj.%name</tt><r/>
+書式: <tt>incp %res, %propobj</tt><r/>
+<r/>
+　%reg または %obj.*name または %obj.%name または %propobj をインクリメントします。<r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>dec</kw>, <kw>decpd</kw>, <kw>decpi</kw>, <kw>decp</kw><r/>(decrement)</dt>
+<dd>
+書式: <tt>dec %reg</tt><r/>
+書式: <tt>decpd %res, %obj.*name</tt><r/>
+書式: <tt>decpi %res, %obj.%name</tt><r/>
+書式: <tt>decp %res, %propobj</tt><r/>
+<r/>
+　%reg または %obj.*name または %obj.%name または %propobj をデクリメントします。<r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>lor</kw>, <kw>lorpd</kw>, <kw>lorpi</kw>, <kw>lorp</kw><r/>(logical or)</dt>
+<dd>
+書式: <tt>lor %dest, %src</tt><r/><r/>
+　%dest と %src の論理和をとり、結果を %dest に格納します。<r/><r/>
+書式: <tt>lorpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name と %src の論理和をとり、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>lorpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src の論理和をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>lorp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src の論理和をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>land</kw>, <kw>landpd</kw>, <kw>landpi</kw>, <kw>landp</kw><r/>(logical and)</dt>
+<dd>
+書式: <tt>land %dest, %src</tt><r/><r/>
+　%dest と %src の論理積をとり、結果を %dest に格納します。<r/><r/>
+書式: <tt>landpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name と %src の論理積をとり、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>landpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src の論理積をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>landp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src の論理積をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>bor</kw>, <kw>borpd</kw>, <kw>borpi</kw>, <kw>borp</kw><r/>(bitwise or)</dt>
+<dd>
+書式: <tt>bor %dest, %src</tt><r/><r/>
+　%dest と %src のビットごとの論理和をとり、結果を %dest に格納します。<r/><r/>
+書式: <tt>borpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name と %src のビットごとの論理和をとり、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>borpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src のビットごとの論理和をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>borp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src のビットごとの論理和をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>bxor</kw>, <kw>bxorpd</kw>, <kw>bxorpi</kw>, <kw>bxorp</kw><r/>(bitwise xor)</dt>
+<dd>
+書式: <tt>bxor %dest, %src</tt><r/><r/>
+　%dest と %src のビットごとの排他的論理和をとり、結果を %dest に格納します。<r/><r/>
+書式: <tt>bxorpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name と %src のビットごとの排他的論理和をとり、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>bxorpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src のビットごとの排他的論理和をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>bxorp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src のビットごとの排他的論理和をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>band</kw>, <kw>bandpd</kw>, <kw>bandpi</kw>, <kw>bandp</kw><r/>(bitwise and)</dt>
+<dd>
+書式: <tt>band %dest, %src</tt><r/><r/>
+　%dest と %src のビットごとの論理積をとり、結果を %dest に格納します。<r/><r/>
+書式: <tt>bandpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name と %src のビットごとの論理積をとり、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>bandpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name と %src のビットごとの論理積をとり、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>bandp %res, %propobj, %src</tt><r/><r/>
+　%propobj と %src のビットごとの論理積をとり、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>sar</kw>, <kw>sarpd</kw>, <kw>sarpi</kw>, <kw>sarp</kw><r/>(shift arithmetic right)</dt>
+<dd>
+書式: <tt>sar %dest, %src</tt><r/><r/>
+　%dest を %src で表された回数分算術右シフトを行った結果を %dest に格納します。<r/><r/>
+書式: <tt>sarpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name を %src で表された回数分算術右シフトを行った結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>sarpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で表された回数分算術右シフトを行った結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>sarp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で表された回数分算術右シフトを行った結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>sal</kw>, <kw>salpd</kw>, <kw>salpi</kw>, <kw>salp</kw><r/>(shift arithmetic left)</dt>
+<dd>
+書式: <tt>sal %dest, %src</tt><r/><r/>
+　%dest を %src で表された回数分算術左シフトを行った結果を %dest に格納します。<r/><r/>
+書式: <tt>salpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name を %src で表された回数分算術左シフトを行った結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>salpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で表された回数分算術左シフトを行った結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>salp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で表された回数分算術左シフトを行った結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>sr</kw>, <kw>srpd</kw>, <kw>srpi</kw>, <kw>srp</kw><r/>(shift bitwise right)</dt>
+<dd>
+書式: <tt>sr %dest, %src</tt><r/><r/>
+　%dest を %src で表された回数分ビット右シフトを行った結果を %dest に格納します。<r/><r/>
+書式: <tt>srpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name を %src で表された回数分ビット右シフトを行った結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>srpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で表された回数分ビット右シフトを行った結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>srp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で表された回数分ビット右シフトを行った結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>add</kw>, <kw>addpd</kw>, <kw>addpi</kw>, <kw>addp</kw><r/>(add)</dt>
+<dd>
+書式: <tt>add %dest, %src</tt><r/><r/>
+　%dest に %src を加算し、結果を %dest に格納します。<r/><r/>
+書式: <tt>addpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name に %src を加算し、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>addpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name に %src を加算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>addp %res, %propobj, %src</tt><r/><r/>
+　%propobj に %src を加算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>sub</kw>, <kw>subpd</kw>, <kw>subpi</kw>, <kw>subp</kw><r/>(subtract)</dt>
+<dd>
+書式: <tt>sub %dest, %src</tt><r/><r/>
+　%dest から %src を減算し、結果を %dest に格納します。<r/><r/>
+書式: <tt>subpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name から %src を減算し、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>subpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name から %src を減算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>subp %res, %propobj, %src</tt><r/><r/>
+　%propobj から %src を減算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>mod</kw>, <kw>modpd</kw>, <kw>modpi</kw>, <kw>modp</kw><r/>(modulo)</dt>
+<dd>
+書式: <tt>mod %dest, %src</tt><r/><r/>
+　%dest を %src で割ったあまりを %dest に格納します。<r/><r/>
+書式: <tt>modpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name を %src で割ったあまりを %obj.*name に格納します。<r/><r/>
+書式: <tt>modpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で割ったあまりを %obj.%name に格納します。<r/><r/>
+書式: <tt>modp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で割ったあまりを %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>div</kw>, <kw>divpd</kw>, <kw>divpi</kw>, <kw>divp</kw><r/>(real divide)</dt>
+<dd>
+書式: <tt>div %dest, %src</tt><r/><r/>
+　%dest を %src で実数除算し、結果を %dest に格納します。<r/><r/>
+書式: <tt>divpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name を %src で実数除算し、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>divpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で実数除算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>divp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で実数除算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>idiv</kw>, <kw>idivpd</kw>, <kw>idivpi</kw>, <kw>idivp</kw><r/>(integer divide)</dt>
+<dd>
+書式: <tt>idiv %dest, %src</tt><r/><r/>
+　%dest を %src で整数除算し、結果を %dest に格納します。<r/><r/>
+書式: <tt>idivpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name を %src で整数除算し、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>idivpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name を %src で整数除算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>divp %res, %propobj, %src</tt><r/><r/>
+　%propobj を %src で整数除算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>mul</kw>, <kw>mulpd</kw>, <kw>mulpi</kw>, <kw>mulp</kw><r/>(multiply)</dt>
+<dd>
+書式: <tt>mul %dest, %src</tt><r/><r/>
+　%dest に %src を乗算し、結果を %dest に格納します。<r/><r/>
+書式: <tt>mulpd %res, %obj.*name, %src</tt><r/><r/>
+　%obj.*name に %src を乗算し、結果を %obj.*name に格納します。<r/><r/>
+書式: <tt>mulpi %res, %obj.%name, %src</tt><r/><r/>
+　%obj.%name に %src を乗算し、結果を %obj.%name に格納します。<r/><r/>
+書式: <tt>mulp %res, %propobj, %src</tt><r/><r/>
+　%propobj に %src を乗算し、結果を %propobj に格納します。<r/><r/>
+　上記の命令の中で、%res をパラメータに持つ物は、res が 0 で無ければ結果を %res にも格納します。<r/>
+</dd>
+
+
+<dt><kw>bnot</kw><r/>(bitwise not)</dt>
+<dd>
+書式: <tt>bnot %reg</tt><r/><r/>
+　%reg をビットごとの真偽を逆にし、%reg に再び格納します。
+</dd>
+
+
+<dt><kw>asc</kw><r/>(make ascii string)</dt>
+<dd>
+書式: <tt>asc %reg</tt><r/><r/>
+　%reg で表された数値に相当する１文字を作成し、それを再び %reg に格納します。
+</dd>
+
+
+<dt><kw>chr</kw><r/>(cheracter code)</dt>
+<dd>
+書式: <tt>chr %reg</tt><r/><r/>
+　%reg で表された文字列の最初の一文字の文字コードを %reg に格納します。
+</dd>
+
+
+<dt><kw>num</kw><r/>(number)</dt>
+<dd>
+書式: <tt>num %reg</tt><r/><r/>
+　%reg で表されたレジスタを数値に変換します。
+</dd>
+
+
+<dt><kw>chs</kw><r/>(change sign)</dt>
+<dd>
+書式: <tt>chs %reg</tt><r/><r/>
+　%reg で表されたレジスタの数値の正負を逆にします。
+</dd>
+
+
+<dt><kw>inv</kw><r/>(invalidate)</dt>
+<dd>
+書式: <tt>inv %reg</tt><r/><r/>
+　%reg で表されたオブジェクトを無効化します。
+</dd>
+
+
+<dt><kw>chkinv</kw><r/>(invalidate)</dt>
+<dd>
+書式: <tt>chkinv %reg</tt><r/><r/>
+　%reg で表されたオブジェクトが無効化されていなければ %reg を真に、そうでなければ偽に設定します。
+</dd>
+
+
+<dt><kw>int</kw><r/>(convert to integer)</dt>
+<dd>
+書式: <tt>int %reg</tt><r/><r/>
+　%reg で表されたレジスタを整数に変換します。
+</dd>
+
+
+<dt><kw>real</kw><r/>(convert to real)</dt>
+<dd>
+書式: <tt>real %reg</tt><r/><r/>
+　%reg で表されたレジスタを実数に変換します。
+</dd>
+
+
+<dt><kw>string</kw><r/>(convert to string)</dt>
+<dd>
+書式: <tt>string %reg</tt><r/><r/>
+　%reg で表されたレジスタを文字列に変換します。
+</dd>
+
+
+<dt><kw>octet</kw><r/>(convert to octet)</dt>
+<dd>
+書式: <tt>octet %reg</tt><r/><r/>
+　%reg で表されたレジスタをオクテット列に変換します。
+</dd>
+
+
+<dt><kw>typeof</kw>, <kw>typeofd</kw>, <kw>typeofi</kw><r/>(check type)</dt>
+<dd>
+書式: <tt>typeof %reg</tt><r/>
+書式: <tt>typeofd %obj.*name</tt><r/>
+書式: <tt>typeofi %obj.%name</tt><r/>
+<r/>
+　%reg または %obj.*name または %obj.%name の型を調べ、その型を表す文字列を再び %reg または %obj.*name または %obj.%name に格納します。
+</dd>
+
+
+<dt><kw>eval</kw><r/>(evaluate expression)</dt>
+<dd>
+書式: <tt>eval %reg</tt><r/><r/>
+　%reg で表された文字列を式として実行し、その結果を再び %reg に格納します。
+</dd>
+
+
+<dt><kw>eexp</kw><r/>(execute expression)</dt>
+<dd>
+書式: <tt>eexp %reg</tt><r/><r/>
+　%reg で表された文字列を式として実行し、結果を捨てます。
+</dd>
+
+
+<dt><kw>chkins</kw><r/>(check instance)</dt>
+<dd>
+書式: <tt>chkins %reg, %classname</tt><r/><r/>
+　%reg で表されたオブジェクトが、%classname で表されたクラス名のクラスのインスタンスであれば %reg に真を、そうでなければ偽を格納します。
+</dd>
+
+
+<dt><kw>call</kw>, <kw>calld</kw>, <kw>calli</kw><r/>(function call)</dt>
+<dd>
+書式: <tt>call %dest, %func(%arg1, %arg2, %arg3, ...)</tt><r/>
+書式: <tt>calld %dest, %obj.*name(%arg1, %arg2, %arg3, ...)</tt><r/>
+書式: <tt>calli %dest, %obj.%name(%arg1, %arg2, %arg3, ...)</tt><r/>
+<r/>
+　%func または %obj.*name または %obj.%name で表された関数オブジェクトを、%arg1, %arg2, %arg3 ... の引数で呼び出し、結果を %dest に格納します。%dest が %0 の場合は結果は ( %0 には格納されずに ) 捨てられます。
+</dd>
+
+
+<dt><kw>new</kw><r/>(create new)</dt>
+<dd>
+書式: <tt>new %dest, %func(%arg1, %arg2, %arg3, ...)</tt><r/><r/>
+　%func で表されたクラスオブジェクトを、%arg1, %arg2, %arg3 ... の引数で構築し、結果を %dest に格納します。
+</dd>
+
+
+<dt><kw>gpd</kw>, <kw>gpds</kw><r/>(get property direct)</dt>
+<dd>
+書式: <tt>gpd %dest, %obj.*name</tt><r/>
+書式: <tt>gpds %dest, %obj.*name</tt><r/>
+<r/>
+　%obj で表されたオブジェクトから *name で表されたメンバを参照し、その値を %dest にコピーします。<r/>
+　gpd はプロパティハンドラの呼び出しを伴いますが、gpds はプロパティハンドラを呼び出さず、プロパティオブジェクト自体を取得します。
+</dd>
+
+
+<dt><kw>gpi</kw>, <kw>gpis</kw><r/>(get property indirect)</dt>
+<dd>
+書式: <tt>gpi %dest, %obj.%name</tt><r/>
+書式: <tt>gpis %dest, %obj.%name</tt><r/>
+<r/>
+　%obj で表されたオブジェクトから %name で表されたメンバを参照し、その値を %dest にコピーします。<r/>
+　gpi はプロパティハンドラの呼び出しを伴いますが、gpis はプロパティハンドラを呼び出さず、プロパティオブジェクト自体を取得します。
+</dd>
+
+
+<dt><kw>spd</kw>, <kw>spde</kw>, <kw>spdeh</kw>, <kw>spds</kw><r/>(set property direct)</dt>
+<dd>
+書式: <tt>spd %obj.*name</tt><r/>
+書式: <tt>spde %obj.*name</tt><r/>
+書式: <tt>spdeh %obj.*name</tt><r/>
+書式: <tt>spds %obj.*name</tt><r/>
+<r/>
+　%obj で表されたオブジェクトの *name で表されたメンバに、%src の値を代入します。<r/>
+　spd は通常のアクセスを行いますが、メンバが存在しない場合は例外が発生します。<r/>
+　spde はメンバが存在しなければメンバを新規に作成します。<r/>
+　spdeh はメンバを隠しメンバとして設定します。現バージョンでは意味を持ちません。<r/>
+　spds はプロパティハンドラを呼び出さず、プロパティオブジェクト自体を置き換えます。
+</dd>
+
+
+<dt><kw>spi</kw>, <kw>spie</kw>, <kw>spis</kw><r/>(set property indirect)</dt>
+<dd>
+書式: <tt>spi %obj.%name</tt><r/>
+書式: <tt>spie %obj.%name</tt><r/>
+書式: <tt>spis %obj.%name</tt><r/>
+<r/>
+　%obj で表されたオブジェクトの %name で表されたメンバに、%src の値を代入します。<r/>
+　spi は通常のアクセスを行いますが、メンバが存在しない場合は例外が発生します。<r/>
+　spie はメンバが存在しなければメンバを新規に作成します。<r/>
+　spis はプロパティハンドラを呼び出さず、プロパティオブジェクト自体を置き換えます。
+</dd>
+
+
+<dt><kw>getp</kw></dt>
+<dd>
+書式: <tt>getp %reg, %propobj</tt><r/>
+<r/>
+　%propobj で表されたプロパティオブジェクトの getter を動作させ、プロパティの値を得て、%reg に代入します。単項 '*' 演算子の動作を行います。<r/>
+</dd>
+
+<dt><kw>setp</kw></dt>
+<dd>
+書式: <tt>setp %propobj, %reg</tt><r/>
+<r/>
+　%propobj で表されたプロパティオブジェクトの setter を動作させ、%reg の値を設定します。単項 '*' 演算子の動作を行います。<r/>
+</dd>
+
+<dt><kw>deld</kw>, <kw>deli</kw><r/>(delete member)</dt>
+<dd>
+書式: <tt>deld %reg, %obj.*name</tt><r/>
+書式: <tt>deli %reg, %obj.%name</tt><r/>
+<r/>
+　%obj で表されたオブジェクトの *name または %name で表されたメンバを削除します。<r/>
+　削除が成功したかどうかの真偽を %reg に格納しますが、%reg が %0 の場合は結果を捨てます。
+</dd>
+
+
+<dt><kw>srv</kw><r/>(set result value)</dt>
+<dd>
+書式: <tt>srv %reg</tt><r/><r/>
+　%reg の値を関数の戻り値とします ( 関数の戻り値は %reg で表された値になります )。
+</dd>
+
+
+<dt><kw>ret</kw><r/>(return)</dt>
+<dd>
+書式: <tt>ret</tt><r/><r/>
+　呼び出し元に戻ります。
+</dd>
+
+
+<dt><kw>entry</kw><r/>(enter try block)</dt>
+<dd>
+書式: <tt>entry ip, %reg</tt><r/><r/>
+　例外保護されたブロックに入ります。例外が発生した場合、ip にジャンプし、例外オブジェクトを %reg に設定します。
+</dd>
+
+
+<dt><kw>extry</kw><r/>(exit from try block)</dt>
+<dd>
+書式: <tt>extry</tt><r/><r/>
+　例外保護されたブロックから出ます。
+</dd>
+
+
+<dt><kw>throw</kw><r/>(throw exception object)</dt>
+<dd>
+書式: <tt>throw %reg</tt><r/><r/>
+　%reg で表されたオブジェクトを例外オブジェクトとして投げます。
+</dd>
+
+
+<dt><kw>chgthis</kw><r/>(change this)</dt>
+<dd>
+書式: <tt>chgthis %dest, %src</tt><r/><r/>
+　%dest で表されたオブジェクトのクロージャ部分を、%src で示されたオブジェクトに変更します。
+</dd>
+
+
+<dt><kw>global</kw><r/>(get global object)</dt>
+<dd>
+書式: <tt>global %dest</tt><r/><r/>
+　グローバルオブジェクトを %dest に格納します。
+</dd>
+
+
+<dt><kw>addci</kw><r/>(add class instance information)</dt>
+<dd>
+書式: <tt>addci %dest, %info</tt><r/><r/>
+　%dest で表されるオブジェクトのクラスインスタンス情報に %info を追加します。
+</dd>
+
+<dt><kw>regmember</kw><r/>(register members)</dt>
+<dd>
+書式: <tt>regmember</tt><r/><r/>
+　クラスのメンバを "this" オブジェクトに登録します。内部的に用いられます。
+</dd>
+
+
+
+<dt><kw>debugger</kw><r/>(call debugger)</dt>
+<dd>
+書式: <tt>debugger</tt><r/><r/>
+　実行を中断し、デバッガを呼び出します。現バージョンの実装では、TJS2デバッガではなく、ネイティブなデバッガを呼び出します。
+</dd>
+
+
+</dl>
+
+</para>
+
+</doc>
+

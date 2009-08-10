@@ -1,0 +1,34 @@
+ICON1                   ICON    DISCARDABLE     "krkrtpc.ico"
+
+VERSION_INFO VERSIONINFO
+ FILEVERSION 1,2,0,0
+ PRODUCTVERSION 1,2,0,0
+ FILEFLAGSMASK 0x3fL
+ FILEFLAGS 0x0L
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041104b0"
+        BEGIN
+            VALUE "Comments", "This program needs krdevui.dll .\0"
+            VALUE "CompanyName", " \0"
+            VALUE "FileDescription", "TVP(kirikiri) Graphic Converter\0"
+            VALUE "FileVersion", "1.2.0.0\0"
+            VALUE "InternalName", "\0"
+            VALUE "LegalCopyright", "Copyright (C)2001-2009, W.Dee All rights reserved\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "krkrtpc.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "TVP\0"
+            VALUE "ProductVersion", "1, 2, 0, 0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x411, 1200
+    END
+END

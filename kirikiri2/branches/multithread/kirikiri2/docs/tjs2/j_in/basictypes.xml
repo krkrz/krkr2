@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>TJS2 の基本型</title>
+
+<para>
+<ptitle>プリミティブ型</ptitle>
+　tjsTypes.h で定義されているプリミティブ型がいくつかあります。<r/>
+<r/>
+<dl>
+
+<dt><kw>tjs_int</kw></dt>
+<dd>符号あり整数(最低32bit)</dd>
+
+<dt><kw>tjs_uint</kw></dt>
+<dd>符号なし整数(最低32bit)</dd>
+
+<dt><kw>tjs_int8</kw></dt>
+<dd>8bitの符号あり整数</dd>
+
+<dt><kw>tjs_uint8</kw></dt>
+<dd>8bitの符号なし整数</dd>
+
+<dt><kw>tjs_int16</kw></dt>
+<dd>16bitの符号あり整数</dd>
+
+<dt><kw>tjs_uint16</kw></dt>
+<dd>16bitの符号なし整数</dd>
+
+<dt><kw>tjs_int32</kw></dt>
+<dd>32bitの符号あり整数</dd>
+
+<dt><kw>tjs_uint32</kw></dt>
+<dd>32bitの符号なし整数</dd>
+
+<dt><kw>tjs_int64</kw></dt>
+<dd>64bitの符号あり整数</dd>
+
+<dt><kw>tjs_uint64</kw></dt>
+<dd>64bitの符号なし整数</dd>
+
+<dt><kw>tjs_char</kw></dt>
+<dd>ワイド文字(TJS2の文字列型のプリミティブ型として使用されます)</dd>
+
+<dt><kw>tjs_nchar</kw></dt>
+<dd>ナロー文字</dd>
+
+<dt><kw>tjs_real</kw></dt>
+<dd>実数型(double)</dd>
+
+<dt><kw>tTVInteger</kw></dt>
+<dd>tjs_int64と同じ</dd>
+
+<dt><kw>tTVReal</kw></dt>
+<dd>tjs_realと同じ</dd>
+</dl>
+</para>
+
+
+
+
+<para>
+<ptitle>tTJSString</ptitle>
+　tTJSString 型は TJS2 で用いる文字列型で、tjs_char 型のゼロ終結文字列を扱います。tjsString.cpp / tjsString.h に定義されています。また、短く <tt>ttstr</tt> という型名でも利用可能です。<r/>
+　この型は文字列用のメモリの管理を自動的に行うほか、<link href="variant" /> との親和性が高い型です。<r/>
+</para>
+
+<para>
+<ptitle>eTJS</ptitle>
+　eTJS 型は C++ 例外オブジェクトの基本型です。tjsError.h に定義されています。<kw>GetMessage</kw> というメソッドがあり、例外とともに投げられたメッセージ文字列を取得することができます。
+</para>
+
+
+<para>
+<ptitle>TJS_W</ptitle>
+　文字列リテラルを tjs_char * 型に変換するためのマクロです。<r/>
+<r/>
+例 : TJS_W("文字列リテラル")<r/>
+</para>
+
+</doc>

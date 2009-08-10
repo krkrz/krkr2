@@ -1,0 +1,34 @@
+function do_exception
+{
+	Debug.message("about to throw an exception");
+	var a = 3;
+	var b = 0;
+	var c = a \ b;
+}
+
+Plugins.link("wsh.dll");
+
+Scripts.execStorageWSH("test2.js");
+Debug.message("jsfunc:" + jsfunc(1,2,3));
+
+// exec の場合は第二引数で指定
+Scripts.exec('Debug.message(1,2,3,4,null);');
+Scripts.execWSH('Debug.message(1,2,3,4,null);', "JScript");
+
+// VBS 用に生成関数
+function createWindow() {
+	Debug.message("call createWindow");
+	return new Window();
+}
+
+// VBS 用に生成関数
+function createLayer(win, parent=null) {
+    Debug.message("call createLayer:" + win + ":" + parent);
+    return new Layer(win, parent);
+}
+
+// execStorage の場合は拡張子判定、または第二引数で指定。引数指定が優先されます。
+Scripts.execStorage("test.tjs");
+Scripts.execStorageWSH("test.js");
+Scripts.execStorageWSH("test.vbs");
+

@@ -1,0 +1,293 @@
+Plugins.link("krrlicht.dll");
+Storages.addAutoPath("sample/");
+Storages.addAutoPath("../layerExDraw/");
+Storages.addAutoPath("../layerEx/");
+
+Scripts.execStorage("UpdateRegion.tjs");
+Scripts.execStorage("AffineLayer.tjs");
+
+var WIDTH=800;
+var HEIGHT=450;
+
+function dm(msg) {
+	Debug.message(msg);
+}
+
+
+/**
+ * 初期化処理サンプル
+ */
+function initData(device) {
+	dm("データを初期化");
+	var driver = device.videoDriver;
+	var smgr = device.sceneManager;
+	var gui = device.guiEnvironment;
+	
+	smgr.ambientColor = 0xffffff;
+	smgr.loadScene("example.irr");
+	smgr.addLightSceneNode(null, [0,0,0], 0xffffff, 100, 1);
+
+	// アニメーション追加してみる
+	var node = smgr.addSphereSceneNode(5, 16, 0, -1, [0,0,0], [0,0,0], [1,1,1]);
+	if (node) {
+		dm("sphere scene node を追加");
+		node.position = [0,0,30];
+		node.setMaterialTexture(0, driver.getTexture("wall.jpg"));
+		node.setMaterialFlag(3, false);
+	}
+
+	var n = smgr.addCubeSceneNode(10,0,-1,[0,0,0],[0,0,0],[1,1,1]);
+	if (n) {
+		dm("cube を追加");
+		n.setMaterialTexture(0, driver.getTexture("t351sml.jpg"));
+		n.setMaterialFlag(3, false);
+		var anim = smgr.createFlyCircleAnimator([0,0,30], 20, 0.001, [0,1,0]);
+		if (anim) {
+			dm("cube にあにめーたを追加");
+			n.addAnimator(anim);
+		} else {
+			dm("あにめーた取得失敗？:" + anim);
+		}
+	}
+
+	var anms = smgr.addAnimatedMeshSceneNode(smgr.getMesh("sydney.md2"),
+											 0, -1, [0,0,0], [0,0,0], [1,1,1], false);
+	if (anms) {
+		dm("AnimatedMesh を追加");
+		var anim = smgr.createFlyStraightAnimator([100,0,60], [-100,0,60], 2500, true);
+		if (anim){
+			dm("AnimatedMesh にあにめーたを追加");
+			anms.addAnimator(anim);
+		}
+		anms.setMaterialFlag(3, false);
+		anms.setFrameLoop(160, 183);
+		anms.setAnimationSpeed(40);
+		anms.setMD2Animation(1);
+		anms.rotation = [0,180,0];
+		anms.setMaterialTexture(0, driver.getTexture("sydney.bmp"));
+	}
+
+	//gui.addImage(driver.getTexture("irrlichtlogoalpha2.tga"), [10,10], true, 0, -1, null);
+	
+	smgr.addCameraSceneNode(null, [0,0,-40], [0,0,0], 2);
+}
+
+/**
+ * ベースレイヤ
+ * Irrlicht 的にテクスチャとして配置可能なレイヤとして機能する
+ */
+class BaseLayer extends Layer
+{
+	var layer;
+	
+	function BaseLayer(win, width, height) {
+		super.Layer(win, null);
+
+		setSize(width, height);
+		fillRect(0,0,width,height,0);
+		
+		// 表示レイヤ
+		layer = new AffineLayer(window, this);
+		layer.loadImages("test.png");
+		layer.setSizeToImageSize();
+		layer.visible = true;
+	}
+
+	function finalize() {
+		invalidate layer;
+	}
+}
+
+/**
+ * DrawDevice用のテスト
+ * 吉里吉里の表示系そのものが Irrlicht ベースになる
+ */
+class DrawDeviceWindow extends Window
+{
+	var base;
+	var base2;
+	var base3;
+
+	/**
+	 * コンストラクタ
+	 */
+	function DrawDeviceWindow() {
+		super.Window();
+		showScrollBars = false;
+		setInnerSize(WIDTH, HEIGHT);
+
+		// Irrlicht
+		drawDevice = new Irrlicht.DrawDevice(WIDTH, HEIGHT);
+		drawDevice.onAttach = initData;
+		//drawDevice.zoomMode = false;
+		
+		// 1枚目のプライマリレイヤ
+		// 解像度半分
+		//base = new BaseLayer(this, WIDTH/2, HEIGHT/2);
+		//add(base);
+		
+		// 2枚目のプライマリレイヤ
+		base2 = new BaseLayer(this, WIDTH, HEIGHT);
+		add(base2);
+
+		// 3枚目のプライマリレイヤ
+		base3 = new BaseLayer(this, WIDTH*2, HEIGHT*2);
+		add(base3);
+
+		// 更新処理
+		System.addContinuousHandler(update);
+	}
+
+	function finalize() {
+		System.removeContinuousHandler(update);
+	}
+
+	// レイヤに対して描画更新する
+	function update(tick) {
+		if (drawDevice.videoDriver) {
+			caption = "drawdeviceのテスト:" + drawDevice.videoDriver.getFPS();
+		}
+	}
+	
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+		}
+	}
+};
+
+/**
+ * レイヤ描画のテスト。
+ * device.updateToLayer() でレイヤに対して描画結果がコピーされる。
+ */
+class SimpleDeviceWindow extends Window
+{
+	var device;
+	var base;
+
+	/**
+	 * コンストラクタ
+	 */
+	function SimpleDeviceWindow() {
+		super.Window();
+		showScrollBars = false;
+		setInnerSize(WIDTH, HEIGHT);
+
+		// Irrlicht
+		device = new Irrlicht.SimpleDevice(this, WIDTH, HEIGHT);
+		device.onAttach = initData;
+		add(device);
+
+		// プライマリレイヤ
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		add(base);
+		
+		// 更新処理
+		System.addContinuousHandler(update);
+	}
+
+	function finalize() {
+		System.removeContinuousHandler(update);
+	}
+	
+	// レイヤに対して描画更新する
+	function update(tick) {
+		device.updateToLayer(base);
+		if (device.videoDriver) {
+			caption = "レイヤ描画のテスト:" + device.videoDriver.getFPS();
+		}
+	}
+
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+		}
+	}
+};
+
+/**
+ * レイヤ描画のテスト。
+ * device.updateToLayer() でレイヤに対して描画結果がコピーされる。
+ */
+class WindowWindow extends Window
+{
+	var device;
+
+	/**
+	 * コンストラクタ
+	 */
+	function WindowWindow() {
+		super.Window();
+		showScrollBars = false;
+		setInnerSize(WIDTH, HEIGHT);
+
+		// Irrlicht
+		device = new Irrlicht.Window(this, 0, 0, WIDTH, HEIGHT);
+		device.onAttach = initData;
+		add(device);
+		device.visible = true;
+		
+		// 更新処理
+		System.addContinuousHandler(update);
+	}
+
+	function finalize() {
+		System.removeContinuousHandler(update);
+	}
+
+	// レイヤに対して描画更新する
+	function update(tick) {
+		if (device.videoDriver) {
+			caption = "ウインドウ描画のテスト:" + device.videoDriver.getFPS();
+		}
+	}
+
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+		}
+	}
+};
+
+
+class CaptureWindow extends Window
+{
+	var base;
+	var target;
+	
+	function CaptureWindow(target) {
+		super.Window();
+		setInnerSize(WIDTH, HEIGHT);
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		add(base);
+		this.target = target;
+	}
+
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_SPACE) {
+			base.copyIImage(target.videoDriver.createScreenShot());
+		}
+	}
+};
+
+var win = new DrawDeviceWindow();
+win.visible = true;
+
+//var win2 = new SimpleDeviceWindow();
+//win2.visible = true;
+
+//var win3 = new WindowWindow();
+//win3.visible = true;
+
+//var capwin = new CaptureWindow(win.drawDevice);
+//capwin.visible = true;

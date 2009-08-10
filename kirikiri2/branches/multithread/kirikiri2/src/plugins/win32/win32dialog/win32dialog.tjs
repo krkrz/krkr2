@@ -1,0 +1,382 @@
+Plugins.link("win32dialog.dll") if (typeof global.WIN32Dialog == "undefined");
+
+class WIN32DialogEX extends WIN32Dialog {
+	// コンストラクタ
+	function WIN32DialogEX(owner) {
+		this.owner = owner if (typeof owner == "Object");
+		super.WIN32Dialog(null); // 必ず自分自身にイベントを投げる
+	}
+	function finalize() {
+		removeAllBitmap();
+		super.finalize(...);
+	}
+	// オーナーへのイベント投げは自分
+	var owner;
+
+	// テンプレート情報保持用クラス
+	var Header = global.WIN32Dialog.Header;
+	var Items  = global.WIN32Dialog.Items;
+
+	var itemMap   = %[];
+	var itemNames = [];
+
+	// 各コントロールの結果保持用
+	var itemResults;
+
+	// 文字列ID割り当てる番号
+	var namedIDnumber = 10000;
+
+	property dm { getter { return global.Debug.message; } }
+
+	property results { getter { return itemResults; } }
+
+	// テンプレートを流し込む
+	function store(elm) {
+		if (typeof elm != 'Object') return false;
+
+		var head = new Header();
+		var items = [];
+		var cnt = 0, n = (typeof elm.items == "Object") ? elm.items.count : 0;
+
+		head.store(elm);
+		for (var i = 0; i < n; i++) {
+			if (typeof elm.items[i] != 'Object') continue;
+			var tmp = %[];
+			(global.Dictionary.assign incontextof tmp)(elm.items[i], true);
+
+			// パラメータのエイリアス
+			makeAlias(tmp, "id", "ID");
+			makeAlias(tmp, "cx", "w");
+			makeAlias(tmp, "cy", "h");
+			makeAlias(tmp, "windowClass", "class");
+
+			var origID;
+			switch (typeof tmp.id) {
+			case "String":
+				if (tmp.id != "") {
+					origID = tmp.id;
+					tmp.id = namedIDnumber++; // 文字列のIDは数値に置き換える
+				}
+				break;
+			case "Integer":
+				origID = tmp.id;
+				break;
+			default:
+				tmp.id = -1;
+				break;
+			}
+
+			// itemMap / itemNames を設定
+			//dm(i, origID);
+			if (origID != "" && origID != -1) {
+				if (typeof itemMap[origID] == "undefined") itemNames.add(origID);
+				else if (!tmp.multipleid) throw new Exception(@"IDが重複しています: ${i}, ${origID}, ${tmp.id}");
+				itemMap[origID] = tmp;
+			}
+
+			var item = new Items();
+			items.add(item);
+			item.store(tmp);
+			cnt++;
+		}
+		head.dlgItems = cnt;
+
+		// プラグインにテンプレ情報を渡す
+		makeTemplate(head, items*);
+
+		invalidate head;
+		for (var i = 0; i < cnt; i++) invalidate items[i];
+	}
+
+	// エイリアス生成
+	function makeAlias(dict, orig, alias) {
+		if (typeof dict[alias] != "undefined" && typeof tmp[orig] == "undefined") {
+			tmp[orig] = tmp[alias];
+			delete tmp[alias];
+		}
+	}
+
+	// 文字列IDを渡せるように
+	function getNumberdId(id) {
+		var item = itemMap[id];
+		return (typeof item == "Object" && typeof item.id != "undefined") ? item.id : id;
+	}
+	function getItem(id)               { return super.getItem(        getNumberdId(id)); }
+	function setItemInt(id, value)     { return super.setItemInt(     getNumberdId(id), value); }
+	function getItemInt(id)            { return super.getItemInt(     getNumberdId(id)); }
+	function setItemText(id, value)    { return super.setItemText(    getNumberdId(id), value); }
+	function getItemText(id)           { return super.getItemText(    getNumberdId(id)); }
+	function setItemEnabled(id, value) { return super.setItemEnabled( getNumberdId(id), value); }
+	function getItemEnabled(id)        { return super.getItemEnabled( getNumberdId(id)); }
+	function setItemFocus(id)          { return super.setItemFocus(   getNumberdId(id)); }
+	function setItemPos(id, x, y)      { return super.setItemPos(     getNumberdId(id), x, y); }
+	function setItemSize(id, w, h)     { return super.setItemSize(    getNumberdId(id), w, h); }
+	function setItemBitmap(id, layer)  {
+		var bmp;
+		if (typeof   layer == "Object" && layer) {
+			if (     layer instanceof "Layer" ) bmp = new global.WIN32Dialog.Bitmap(layer);
+			else if (layer instanceof "Bitmap") bmp = layer;
+		}
+		if (bmp === void) return;
+		allBitmaps.add(bmp);
+		return super.setItemBitmap(getNumberdId(id), bmp);
+	}
+	var allBitmaps = [];
+	function removeAllBitmap() {
+		for (var i = allBitmaps.count-1; i >= 0; i--) invalidate allBitmaps[i];
+		allBitmaps.clear();
+	}
+	function sendItemMessage(id, msg, *) {
+		id = getNumberdId(id);
+		var sim = super.sendItemMessage;
+		switch (typeof msg) {
+		case "Integer": return sim(id, msg, *);
+		case "String":  return sim(id, this[msg], *);
+		case "Object":  return sim(id, msg.message, msg.wparam, msg.lparam);
+		}
+	}
+	function getCheckBox(id)        { return sendItemMessage(id, BM_GETCHECK, 0, 0); }
+	function setCheckBox(id, value) { return sendItemMessage(id, BM_SETCHECK, +value, 0); }
+
+	// 初期化処理用
+	function setListBoxTexts( *) { return addItemStrings(LB_ADDSTRING, *); }
+	function setComboBoxTexts(*) { return addItemStrings(CB_ADDSTRING, *); }
+	function selectListBox( *)   { return selectItem(LB_SETCURSEL, *); }
+	function selectComboBox(*)   { return selectItem(CB_SETCURSEL, *); }
+
+	function addItemStrings(msg, id, list) {
+		for (var i = 0; i < list.count; i++) sendItemMessage(id, msg, 0, list[i]);
+	}
+	function selectItem(msg, id, value) {
+		sendItemMessage(id, msg, +value, 0) if (msg !== void);
+	}
+
+
+	var parent;
+
+	// リソース読み込み上書き
+	function loadResource(dll, res) {
+		if (dll != "")  with (Storages) {
+			var path = .getPlacedPath(dll);
+			if (path == "") throw new Exception(@"${dll} が見つかりません");
+			dll = .getLocalName(path);
+		} else dll = void;
+		//dm("loadResource", dll, res);
+		super.loadResource(dll, res);
+	}
+
+	// オープン処理上書き
+	function open(win) {
+		parent = win;
+		var r = super.open(...);
+		//結果辞書を返す
+		return %[ result:r, items:itemResults ];
+	}
+
+	// クローズ処理上書き
+	function close() {
+		if (!modeless) makeResults();
+		var r = super.close(...);
+		removeAllBitmap();
+		return r;
+	}
+	// 結果を保持する
+	function makeResults() {
+		itemResults = %[];
+		for (var i = 0; i < itemNames.count; i++) {
+			var name = itemNames[i];
+			itemResults[name] = getResult(name);
+		}
+	}
+
+	// イベントフック
+	function onInit(*) {
+		super.onInit(...);
+		initItems();
+		throwEvent("onInit", *);
+		return true;
+	}
+	function onCommand(*) {
+		super.onCommand(...);
+		throwEvent("onCommand", *);
+		return defaultCommand(...);
+	}
+	function onSize(*)    { super.onSize(   ...); return throwEvent("onSize",    *); }
+	function onHScroll(*) { super.onHScroll(...); return throwEvent("onHScroll", *); }
+	function onVScroll(*) { super.onVScroll(...); return throwEvent("onVScroll", *); }
+	function onNotify( *) { super.onNotify( ...); return throwEvent("onNotify",  *); }
+	function throwEvent(tag, *) {
+		if (typeof owner == "Object" && typeof owner[tag] != "undefined") return owner[tag](*);
+		return false;
+	}
+
+	// 指定ウィンドウの中央に配置（ただし画面外にならないこと）
+	function setCenterPosition(win = parent) {
+		// モニタ情報の取得
+		var x1, y1, x2, y2, monitor;
+		if (typeof System.getMonitorInfo != "undefined") {
+			var info = System.getMonitorInfo(true, win);
+			monitor = info.work if (typeof info == "Object");
+		}
+		monitor = %[ x:0, y:0, w:System.screenWidth, h:System.screenHeight ] if (monitor === void);
+		with (monitor) x1=.x, y1=.y, x2=.w+x1, y2=.h+y1;
+
+		// 位置決定
+		var w = width, h = height;
+		var x = (x1+x2 - w)\2, y = (y1+y2 - h)\2;
+		if (win && typeof win == "Object" && win instanceof "Window" && isvalid win) with (win) {
+			x = ((.width  - w)\2) + .left;
+			y = ((.height - h)\2) + .top;
+		}
+		// モニタからはみ出ていたら内側へ移動
+		x = x2 - width  if (x + w > x2);
+		y = y2 - height if (y + h > y2);
+		x = x1          if (x < x1);
+		y = y1          if (y < y1);
+		setPos(x, y);
+	}
+
+	// 初期パラメータを設定する
+	function initItems() {
+		for (var i = 0; i < itemNames.count; i++) {
+			var name = itemNames[i];
+			var item = itemMap[name];
+			setParams(name, item.init) if (item.init != void);
+		}
+	}
+
+	// デフォルトコマンドイベント
+	function defaultCommand(msg, wp, lp) {
+		switch (wp) {
+		case IDOK:
+		case IDCANCEL:
+		case IDABORT:
+			close(wp);
+			return true;
+		}
+		return false;
+	}
+
+	function setParams(id, elm) {
+		if (typeof elm != "Object") return;
+		if (elm instanceof "Array") {
+			for (var i = 0; i < elm.count; i++) setParams(id, elm[i]);
+		} else {
+			var ext = [];
+			ext.assign(elm);
+			for (var i = 0; i < ext.count; i+=2) {
+				var key = ext[i], value = ext[i+1];
+				//dm("setParams", key, value);
+				if (typeof this[key] == "Object" && this[key] instanceof "Function") this[key](id, value);
+				else throw new Exception(@"不明な initParam: ${key}");
+			}
+		}
+	}
+	function setInitParams(elm, forced = false) {
+		var ext = [];
+		ext.assign(elm);
+		for (var i = 0; i < ext.count; i+=2) {
+			var item, key = ext[i], value = ext[i+1];
+			if (key == "") continue;
+			if (forced && typeof itemMap[key] == "undefined") {
+				itemNames.add(key);
+				itemMap[key] = %[];
+			}
+			var item = itemMap[key];
+			if (item !== void) item.init = value;
+		}
+	}
+	function getItemClass(itemOrId) {
+		var item = itemOrId;
+		item = itemMap[itemOrId] if (typeof itemOrId != "Object" && itemOrId != "");
+		if (typeof item == "Object") {
+			var cls = item.windowClass;
+			cls = cls.toLowerCase() if (typeof cls == "String");
+			switch (cls) {
+			case 0x80: case "button":    return BUTTON;
+			case 0x81: case "edit":      return EDIT;
+			case 0x82: case "static":    return STATIC;
+			case 0x83: case "listbox":   return LISTBOX;
+			case 0x85: case "combobox":  return COMBOBOX;
+			case 0x84: case "scrollbar": return SCROLLBAR;
+			}
+		}
+	}
+	function getResult(id) {
+		var item = (id != "") ? itemMap[id] : void;
+		if (item === void) return;
+		var style = item.style;
+
+		switch (getItemClass(item)) {
+
+		case BUTTON:
+			// ラジオボタンの場合はその状態
+			if (style & BS_AUTOCHECKBOX ||
+				style & BS_CHECKBOX ||
+				style & BS_AUTORADIOBUTTON ||
+				style & BS_RADIOBUTTON) return getCheckBox(id);
+			// それ以外はステート
+			return sendItemMessage(id, BM_GETSTATE, 0, 0);
+
+		case EDIT:
+		case STATIC:
+			return getItemText(id);
+
+		case LISTBOX:
+			// 複数選択できるか
+			if (style & LBS_MULTIPLESEL) {
+				var cnt = sendItemMessage(id, LB_GETCOUNT, 0, 0);
+				var rslt = [];
+				for (var i = 0; i < cnt; i++)
+					rslt.add(sendItemMessage(id, LB_GETSEL, i, 0));
+				return rslt;
+			}
+			// それ以外は選択インデックス
+			return sendItemMessage(id, LB_GETCURSEL, 0, 0);
+
+		case COMBOBOX:
+			// ドロップダウンリストでは選択インデックスを返す
+			if (style & CBS_DROPDOWNLIST)
+				return sendItemMessage(id, CB_GETCURSEL, 0, 0);
+
+			// それ以外はテキスト
+			return getItemText(id);
+
+		case SCROLLBAR:
+			return sendItemMessage(id, SBM_GETPOS, 0, 0);
+		}
+	}
+
+	function Control(text, id, wndcls, style, x, y, width, height, exStyle = 0) {
+		return %[ windowClass:wndcls, x:x, y:y, cx:width, cy:height, title:text, style:style|WS_VISIBLE, exStyle:exStyle, id:id ];
+	}
+
+	// 各種テンプレートを生成する関数
+
+	// ボタン系列
+	function DefPushButton(  text, id,    x, y, w, h, style=WS_TABSTOP, ex=0) { return Control(text, id, BUTTON, style|BS_DEFPUSHBUTTON,   x, y, w, h, ex); }
+	function    PushButton(  text, id,    x, y, w, h, style=WS_TABSTOP, ex=0) { return Control(text, id, BUTTON, style|BS_PUSHBUTTON,      x, y, w, h, ex); }
+	function AutoCheckBox(   text, id,    x, y, w, h, style=WS_TABSTOP, ex=0) { return Control(text, id, BUTTON, style|BS_AUTOCHECKBOX,    x, y, w, h, ex); }
+	function     CheckBox(   text, id,    x, y, w, h, style=WS_TABSTOP, ex=0) { return Control(text, id, BUTTON, style|BS_CHECKBOX,        x, y, w, h, ex); }
+	function AutoRadioButton(text, id,    x, y, w, h, style=WS_TABSTOP, ex=0) { return Control(text, id, BUTTON, style|BS_AUTORADIOBUTTON, x, y, w, h, ex); }
+	function     RadioButton(text, id,    x, y, w, h, style=WS_TABSTOP, ex=0) { return Control(text, id, BUTTON, style|BS_RADIOBUTTON,     x, y, w, h, ex); }
+	function GroupBox(       text, id=-1, x, y, w, h, style=0,          ex=0) { return Control(text, id, BUTTON, style|BS_GROUPBOX,        x, y, w, h, ex); }
+
+	// スタティック系列
+	function LText(          text, id,    x, y, w, h, style=WS_GROUP,   ex=0) { return Control(text, id, STATIC, style|SS_LEFT,            x, y, w, h, ex); }
+	function CText(          text, id,    x, y, w, h, style=WS_GROUP,   ex=0) { return Control(text, id, STATIC, style|SS_CENTER,          x, y, w, h, ex); }
+	function RText(          text, id,    x, y, w, h, style=WS_GROUP,   ex=0) { return Control(text, id, STATIC, style|SS_RIGHT,           x, y, w, h, ex); }
+	function Icon(           text, id,    x, y, w, h, style=0,          ex=0) { return Control(text, id, STATIC, style|SS_ICON,            x, y, 0, 0, ex); } // w,h は無視される
+
+	// エディット系列 EDITTEXT, BEDIT, HEDIT, or IEDIT. 
+	function EditText(             id,    x, y, w, h, style=ES_LEFT|WS_BORDER|WS_TABSTOP, ex=0) { return Control(, id, EDIT,      style, x, y, w, h, ex); } // ES_*,  WS_TABSTOP, WS_GROUP, WS_VSCROLL, WS_HSCROLL, WS_DISABLED
+	// リストボックス系列
+	function ListBox(              id,    x, y, w, h, style=LBS_NOTIFY|WS_BORDER,         ex=0) { return Control(, id, LISTBOX,   style, x, y, w, h, ex); } // LBS_*, WS_BORDER, WS_VSCROLL
+	// コンボボックス系列
+	function ComboBox(             id,    x, y, w, h, style=CBS_DROPDOWN|WS_TABSTOP,      ex=0) { return Control(, id, COMBOBOX,  style, x, y, w, h, ex); } // CBS_*, WS_TABSTOP, WS_GROUP, WS_VSCROLL, WS_DISABLED
+
+
+	// スクロールバー系列
+}
+
+

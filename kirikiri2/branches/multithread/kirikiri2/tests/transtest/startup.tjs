@@ -1,0 +1,85 @@
+// トランジションのテスト
+
+Plugins.link("extrans.dll");
+
+class TestWindow extends Window
+{
+	var fore; // プライマリ
+	var lay0; // レイヤ その1
+	var lay1; // レイヤ その2
+	var back; // 裏
+	var lay2; // レイヤ その3
+	var lay3; // レイヤ その4
+
+	function TestWindow()
+	{
+		super.Window(...);
+
+		setInnerSize(640, 480);
+
+		add(fore = new Layer(this, null));
+		add(lay0 = new Layer(this, fore));
+		add(lay1 = new Layer(this, fore));
+		add(back = new Layer(this, fore));
+		add(lay2 = new Layer(this, back));
+		add(lay3 = new Layer(this, back));
+
+		fore.loadImages("../../../../tlg4comp/b.png"); // "../kag3/bgimage/_24_3");
+		fore.setSizeToImageSize();
+		back.loadImages("../../../../tlg4comp/b2.bmp");
+//		back.loadImages("../kag3/bgimage/white");
+		back.setSizeToImageSize();
+		back.type = ltCoverRect;
+
+		var childvisible = true;
+
+		lay0.loadImages("../kag3/fgimage/uni");
+		lay0.setSizeToImageSize();
+		lay0.left = 100;
+		lay0.visible = childvisible;
+		lay1.loadImages("../kag3/fgimage/uni");
+		lay1.setSizeToImageSize();
+		lay1.left = 150;
+		lay1.top = 11;
+		lay1.visible = childvisible;
+		lay2.loadImages("../kag3/fgimage/uni");
+		lay2.doGrayScale();
+		lay2.setSizeToImageSize();
+		lay2.left = 50;
+		lay2.visible = childvisible;
+		lay3.loadImages("../kag3/fgimage/uni");
+		lay3.doGrayScale();
+		lay3.setSizeToImageSize();
+		lay3.left = 100;
+		lay3.top = 13;
+		lay3.visible = childvisible;
+
+		visible = true;
+	}
+
+	function onClick()
+	{
+		fore.stopTransition();
+		Debug.message("beginTransition : dest=" + fore + " src=" + back);
+		fore.beginTransition("ripple", true, back,
+			%[time : 5000, roundness : 1, maxdrift : 24, speed : 6, factor : 0.4]);
+//		lay1.beginTransition("crossfade", true, lay3,
+//			%[time : 1000, roundness : 2, maxdrift : 24, speed : 6, factor : 0.4]);
+	}
+
+	function action(ev)
+	{
+		if(ev.type == 'onTransitionCompleted')
+		{
+			Debug.message("onTransitionCompleted : dest=" + ev.dest + " src=" + ev.src);
+			var tmp = fore;
+			fore = back;
+			back = tmp;
+//			var tmp = lay1;
+//			lay3 = lay1;
+//			lay1 = tmp;
+		}
+	}
+}
+
+var a = new TestWindow();

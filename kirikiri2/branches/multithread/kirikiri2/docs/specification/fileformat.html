@@ -1,0 +1,190 @@
+<html>
+<head>
+<meta HTTP-EQUIV="CONTENT-TYPE" CONTENT="TEXT/HTML; CHARSET=SHIFT_JIS">
+<title>吉里吉里2/KAG3 機能仕様書 / ファイルフォーマット</title>
+<link rel="stylesheet" href="styles-site.css" type="text/css" />
+</head>
+<body>
+<a name="top"></a>
+<div id="top_link"><a href="./index.html">Topへ</a></div>
+<div id="container">
+<div id="title-banner">
+<h1>ファイルフォーマット</h1>
+</div>
+
+<div class="content">
+<p>吉里吉里2/KAG3がサポートするファイルフォーマットついて記載。</p>
+<h3>目次</h3>
+<p><a href="#fileformat">ファイルフォーマット</a><br />
+</p>
+<br>
+<div class="title_bar"><a name="fileformat">ファイルフォーマット</a></div>
+<br>
+<table frame="box" rules="all">
+	<thead><tr><td>種類</td><td>形式</td><td>拡張子</td><td>説明</td></tr></thead>
+	<tbody>
+		<tr>
+			<td rowspan="7">静止画像</td>
+			<td>Windows ビットマップ (Bitmap)</td>
+			<td>.bmp</td>
+			<td>無圧縮形式のみサポート。<br />
+			32ビットビットマップの場合、αチャンネル付きと見なされる。</td>
+		</tr>
+		<tr>
+			<td>JPEG</td>
+			<td>.jpg<br />.jpeg</td>
+			<td>読み込み時精度を指定可能。<br />
+			設定可能な値は 'high' (高い), 'normal' (標準), 'low' (低い) のいずれか。<br />
+			デフォルトは'normal'。<br />
+			low はIDCTに固定小数点(整数)ANN、色差拡大補間なし。<br />
+			normal はIDCTに固定小数点(整数)ANN、色差拡大補間あり。<br />
+			high はIDCTに浮動小数点AAN、色差拡大補間あり。<br />
+			指定方法については<a href="http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/CommandLine.html#id47">起動オプション -jpegdec (JPEG画像デコード精度)</a>を参照のこと。<br />
+			<!--※ IDCTに固定小数点(整数)LLM、色差拡大補間ありがデフォルトの方がいいと思われる。--></td>
+		</tr>
+		<tr>
+			<td>Portable Network Graphic (PNG)</td>
+			<td>.png</td>
+			<td>αチャンネルや透明色指定に対応。</td>
+		</tr>
+		<tr>
+			<td>Entis Rasterized Image format (ERI)</td>
+			<td>.eri</td>
+			<td>L.Entis 氏の提唱する可逆圧縮フォーマット<br />
+			アルファチャネル付きのものも読み込むことができる。<br />
+			詳細は<a href="http://www.entis.jp/eridev/frame.html">ERI Developer's site</a>を参照のこと。</td>
+		</tr>
+		<tr>
+			<td>TLG5</td>
+			<td>.tlg</td>
+			<td>吉里吉里独自形式。<br />
+			展開速度が高速(PNGの4倍速程度)なのが特徴。<br />
+			<a href="http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/TPC.html">画像フォーマットコンバータ</a>で変換可能。</td>
+		</tr>
+		<tr>
+			<td>TLG6</td>
+			<td>.tlg</td>
+			<td>吉里吉里独自形式。<br />
+			PNGやTLG5よりも圧縮率は高いが、TLG5の倍ほど展開に時間がかかります。<br />
+			ただ、それでもPNGの2倍速程度なので高速です。<br />
+			<a href="http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/TPC.html">画像フォーマットコンバータ</a>で変換可能。</td>
+		</tr>
+		<tr>
+			<td>その他</td>
+			<td>.*</td>
+			<td>Susie-plugin による拡張が可能。</td>
+		</tr>
+
+		<tr>
+			<td rowspan="5">音声</td>
+			<td>WAVE</td>
+			<td>.wav</td>
+			<td>無圧縮WAVE形式をサポート。</td>
+		</tr>
+		<tr>
+			<td>Ogg Vorbis</td>
+			<td>.ogg</td>
+			<td>要wuvorbis.dllプラグイン</td>
+		</tr>
+		<tr>
+			<td>MIDI</td>
+			<td>.smf<br />.mid</td>
+			<td><br /></td>
+		</tr>
+		<tr>
+			<td>CD-DA</td>
+			<td>.cda</td>
+			<td>CD-XA形式のCDに対応。</td>
+		</tr>
+		<tr>
+			<td>その他</td>
+			<td>.*</td>
+			<td>プラグインにより拡張可能。</td>
+		</tr>
+
+		<tr>
+			<td rowspan="4">動画</td>
+			<td>MPEG I</td>
+			<td>.mpg<br />.mpeg<br />.mpv<br />.m1v<br />.dat</td>
+			<td>MPEG Iのみサポート。<br />
+			MPEG2などそれ以降は非サポート。<br />
+			要 krmovie.dll。<br />
+			再生機にWindows Media Player 6.4以降、<br />
+			またはDirectX 7以降がインストールされていること。</td>
+		</tr>
+		<tr>
+			<td>Adobe Flash</td>
+			<td>.swf</td>
+			<td>要 krflash.dll。<br />
+			再生機にFlash Playerがインストールされていること。</td>
+		</tr>
+		<tr>
+			<td>Windows Media Video (WMV)</td>
+			<td>.wmv</td>
+			<td>要 krmovie.dll。<br />
+			再生機にWindows Media Player 9以降がインストールされていること。</td>
+		</tr>
+		<tr>
+			<td>AVI</td>
+			<td>.avi</td>
+			<td>非公式サポート。<br />
+			要 krmovie.dll。<br />
+			Codecなどの問題により再生出来ないことなどがあり、公式サポートは行わない。</td>
+		</tr>
+
+		<tr>
+			<td rowspan="1">アニメーション</td>
+			<td>ASD ファイル</td>
+			<td>.asd</td>
+			<td>吉里吉里独自形式。<br />
+			KAG3 でサポートされる。<br />
+			AnimationLayer.tjsのコメント、もしくは<a href="http://homepage1.nifty.com/gutchie/KAG3Animation.html">吉里吉里2/KAG3のアニメーション</a>を参照のこと</td>
+		</tr>
+
+		<tr>
+			<td rowspan="3">アーカイブ</td>
+			<td>XP3</td>
+			<td>.xp3</td>
+			<td>吉里吉里独自形式。<br />
+			<a href="http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/Releaser.html">Releaser</a>にて作成する。</td>
+		</tr>
+		<tr>
+			<td>PEXP3</td>
+			<td>.exe</td>
+			<td>吉里吉里独自形式。<br />
+			吉里吉里実行ファイル（krkr.eXe）とXP3形式を組み合わせたもの。<br />
+			非推奨形式。<br />
+			<a href="http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/Releaser.html">Releaser</a>にて作成する。</td>
+		</tr>
+		<tr>
+			<td>その他</td>
+			<td>.*</td>
+			<td>プラグインにより拡張可能。</td>
+		</tr>
+
+		<tr>
+			<td rowspan="2">フォント</td>
+			<td>レンダリング済みフォント</td>
+			<td>.tft</td>
+			<td>吉里吉里独自形式。<br />
+			<a href="http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/FontMaker.html">レンダリング済みフォントデータ作成ツール</a>にて生成する</td>
+		</tr>
+		<tr>
+			<td>TrueType/OpenType フォント</td>
+			<td>.ttf<br />.otf</td>
+			<td>非公式サポート。<br />
+			システムにフォントをインストールすることなく使える。<br />
+			要<a href="../../src/plugins/win32/addFont/">addFont.dll</a>。Windows2000/XP/Vista のみ対応。</td>
+		</tr>
+
+	</tbody>
+</table>
+<br />
+<br />
+<br />
+</div>
+</div>
+
+</body>
+</html>
+

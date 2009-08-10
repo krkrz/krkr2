@@ -1,0 +1,97 @@
+Plugins.link("messenger.dll");
+Plugins.link("shellExecute.dll");
+
+var WIDTH=640;
+var HEIGHT=480;
+
+class MyWindow extends Window
+{
+	//  メニュ
+	var sendmenu;
+	var execmenu;
+	var storemenu;
+	var base;
+	var process;
+	
+	function MyWindow() {
+		super.Window();
+		caption = "MSG送受信テスト";
+		menu.add(sendmenu = new MenuItem(this, "送信(&S)"));
+		menu.add(execmenu = new MenuItem(this, "実行(&X)"));
+		menu.add(storemenu = new MenuItem(this, "HWND出力(&H)"));
+		
+        // ベースレイヤ
+		base = new Layer(this,null);
+		base.visible=true;
+		base.setSize(WIDTH,HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0x000000);
+		setInnerSize(base.width, base.height);
+        add(base);
+		messageEnable = true;
+		ypos = 0;
+
+		registerUserMessageReceiver(0, 0x100, onMyKeyDown, 0);
+		registerUserMessageReceiver(0, 0x104, onMySysKeyDown, 0);
+		registerUserMessageReceiver(0, 0x106, onMySysCharDown, 0);
+	}
+	
+	function onMyKeyDown(userdata, wparam, lparam) {
+		Debug.message("HOOKキーがおされた:" + wparam + ":" + lparam);
+		// return true; にすると、onKeyDown にイベントが通らなくなる
+		return false;
+	}
+
+	function onMySysKeyDown(userdata, wparam, lparam) {
+		Debug.message("システムキーがおされた:" + wparam + ":" + lparam);
+		return true;
+	}
+
+	function onMySysCharDown(userdata, wparam, lparam) {
+		Debug.message("WM_SYSCHAR:" + wparam + ":" + lparam);
+		return true;
+	}
+	
+	function onKeyDown(key, shift, process) {
+		Debug.message("MAINキーがおされた:" + key + ":" + shift + ":" + process);
+	}
+	
+	var ypos;
+
+	// メッセージ受信イベント
+	function onMessageReceived(key, msg) {
+		base.drawText(0, ypos, "メッセージ受信:" + key + ":" + msg, 0xffffff);
+		ypos += 20;
+	}
+
+	// 実行終了イベント
+	function onShellExecuted(process, code) {
+		base.drawText(0, ypos, "実行終了:" + process + ":" + code, 0xffffff);
+		ypos += 20;
+	}
+
+	// 実行部
+	function action(ev)	{
+		if(ev.type == "onClick") {
+			if(ev.target == sendmenu) {
+				sendMessage("TEST APPLICATION", "送信データ");
+			} else if (ev.target == execmenu) {
+				if (process) {
+					terminateProcess(process, 1);
+					process = void;
+				}
+				process = shellExecute("cmd.exe", "");
+			} else if (ev.target == storemenu) {
+				if (storeHWND == "") {
+					storeHWND = "HWND";
+				} else {
+					storeHWND = "";
+				}
+			}
+		}
+	}
+	
+}
+
+// 窓
+var win = new MyWindow();
+win.visible=true;

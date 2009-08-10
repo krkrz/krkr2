@@ -1,0 +1,153 @@
+Plugins.link("psd.dll");
+
+function dm() {
+	Debug.message(...);
+}
+
+var WIDTH=800;
+var HEIGHT=600;
+
+class MyWindow extends Window
+{
+	var base;
+	var layers;
+	var filemenu;
+	var exitmenu;
+	var openmenu;
+	
+	function MyWindow() {
+		super.Window();
+		menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+		filemenu.add(openmenu = new MenuItem(this, "開く(&O)"));
+		filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
+
+		setInnerSize(WIDTH, HEIGHT);
+
+		// プライマリレイヤ
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0xff000000);
+		add(base);
+
+		layers = [];
+	}
+
+	function clear() {
+		for (var i=0;i<layers.count;i++) {
+			invalidate layers[i];
+		}
+		layers.clear();
+	}
+	
+	function open(filename) {
+		clear();
+		var psd = new PSD();
+		if (!psd.load(filename)) {
+			System.inform("ロードに失敗しました");
+			return;
+		}
+
+		// 情報表示
+		dm("width:" + psd.width);
+		dm("height:" + psd.height);
+		dm("channels:" + psd.channels);
+		dm("depth:" + psd.depth);
+		dm("color_mode:" + psd.color_mode);
+		dm("layer_count:" + psd.layer_count);
+
+		var count = psd.layer_count;
+		for (var i=0;i<count;i++) {
+			var info = psd.getLayerInfo(i);
+			dm(@'■レイヤ${i}: "${psd.getLayerName(i)}"\n' + dictToString(info));
+
+			if (psd.getLayerType(i) == PSD.layer_type_normal) {
+				var layer = new Layer(this, base);
+				psd.getLayerData(layer, i);
+				layers.add(layer);
+			}
+		}
+
+		var sliceinfo;
+		if ((sliceinfo = psd.getSlices()) !== void) with (sliceinfo) {
+			var slay = new Layer(this, base);
+			slay.name = "slices";
+			slay.setImageSize(.right - .left, .bottom - .top);
+			slay.setSizeToImageSize();
+			slay.visible = true;
+			layers.add(slay);
+			dm("slices\n" + dictToString(sliceinfo));
+			dm(@"slice counts ${.slices.count}");
+			for (var i = 0; i < .slices.count; i++) {
+				var s = .slices[i];
+				if (typeof s == "Object") {
+					var w = s.right - s.left;
+					var h = s.bottom - s.top;
+					var col = s.color;
+					slay.fillRect(s.left, s.top, 1, h, 0xC0000000 | col);
+					slay.fillRect(s.left, s.top, w, 1, 0xC0000000 | col);
+					slay.drawText(s.left, s.top, string s.group_id, 0x808080, 255, true) if (s.group_id != 0);
+					dm(@'■スライス${i}: "${s.name}"\n' + dictToString(s));
+				}
+			}
+		}
+
+		var guideinfo;
+		if ((guideinfo = psd.getGuides()) !== void) {
+			var glay = new Layer(this, base);
+			glay.name = "guides";
+			glay.setImageSize(psd.width, psd.height);
+			glay.setSizeToImageSize();
+			glay.visible = true;
+			layers.add(glay);
+
+			var h = guideinfo.horizontal, v = guideinfo.vertical;
+			dm("guides", (h !== void) ? h.count : "", (v !== void) ? v.count : "");
+			if (h !== void) for (var i = 0; i < h.count; i++) {
+				dm("horz", h[i]);
+				glay.fillRect(0, h[i] \ 32, psd.width, 1,  0xC0808080);
+			}
+			if (v !== void) for (var i = 0; i < h.count; i++) {
+				dm("vert", v[i]);
+				glay.fillRect(v[i] \ 32, 0, 1, psd.height, 0xC0808080);
+			}
+		}
+
+	}
+	function dictToString(dic) {
+		var ret = [], tmp = [];
+		tmp.assign(dic);
+		for (var i = 0; i < tmp.count; i+=2) {
+			var name = tmp[i], value = tmp[i+1];
+			if (name != "") {
+				value = "0x%08X".sprintf(value) if (name.indexOf("color") >= 0);
+				ret.add(@"    ${name}:${value}");
+			}
+		}
+		ret.sort();
+		return ret.join("\n");
+	}
+
+	function openDialog() {
+		var fileDialog =%[
+		filter : [ "PSDファイル(*.psd)|*.psd" ],
+		title  :   "PSDファイルの読込み",
+			];
+		if (!Storages.selectFile(fileDialog)) return; // キャンセルで抜ける
+		open(fileDialog.name);
+	}
+	
+	// 実行部
+	function action(ev)	{
+		if(ev.type == "onClick") {
+			if (ev.target == exitmenu) {
+				close();
+			} else if (ev.target == openmenu) {
+				openDialog();
+			}
+		}
+	}
+};
+
+Debug.console.visible = true;
+var win = new MyWindow();
+win.visible = true;

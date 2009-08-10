@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>with ステートメント</title>
+
+<para>
+<ptitle>with ステートメント</ptitle>
+　<kw>with</kw> ステートメントは、<tt>.</tt> (ドット) 演算子における左側 (オブジェクト) を省略した場合に参照するオブジェクトを指定するものです。<r/>
+<r/>
+　構文は以下の通りです。<r/>
+<bq>
+with(expression)<r/>
+	ステートメントまたはブロック<r/>
+</bq>
+<r/>
+　「ステートメントまたはブロック」内で、左側が省略された <tt>.</tt> (ドット)演算子が使用された場合、その <tt>.</tt> (ドット)演算子が参照するオブジェクトは、with ステートメントの expression で指定したオブジェクトになります。<r/>
+<r/>
+<example>
+	with(obj) .member = 1; // obj.member = 1; と同じ<r/>
+<r/>
+	with(obj)<r/>
+	{<r/>
+		.member1 = 1; // obj.member1 に 1 を代入<r/>
+		.member2 = 2; // obj.member2 に 2 を代入<r/>
+		.member3++; // obj.member3 をインクリメント<r/>
+		.method(); // obj.method を呼び出す<r/>
+	}<r/>
+</example>
+<r/>
+　このステートメントは特に、オブジェクトに大量のプロパティを設定したり、連続してメソッドを呼ぶ際に、タイピングを減らすことができます。<r/>
+<r/>
+　たとえば<r/>
+<r/>
+<bq>
+	var object = new Foo();<r/>
+	object.setPos(0, 0);<r/>
+	object.setSize(100, 100);<r/>
+	object.name = "名前無し";<r/>
+	object.color = 0xffffffff;<r/>
+</bq>
+<r/>
+　のようなスクリプトを以下のように書くことができます。<r/>
+<r/>
+<bq>
+	var object = new Foo();<r/>
+	with(object)<r/>
+	{<r/>
+		.setPos(0, 0);<r/>
+		.setSize(100, 100);<r/>
+		.name = "名前無し";<r/>
+		.color = 0xffffffff;<r/>
+	}<r/>
+</bq>
+<r/>
+</para>
+
+<para>
+<ptitle>with ステートメントとオブジェクト</ptitle>
+　with ステートメントで指定した expression は、with が実行される最初に１回だけ評価され、あとはそれを参照するだけになります。<r/>
+<r/>
+　たとえば、<r/>
+<r/>
+<bq>
+this.dic = %[];<r/>
+with(this.dic)<r/>
+{<r/>
+	.member = 1; // this.dic.member に 1 を代入<r/>
+	this.dic = 0; // dic に何か別の物を代入<r/>
+	.member = 2; // this.dic.member に 2 を代入<r/>
+}<r/>
+</bq>
+<r/>
+　と書いても、２回目の .member への代入は成功するでしょう。with が実行される最初の状態で this.dic が評価され、あとはその評価された結果を用いているからです。毎回 this.dic を評価する訳ではありません。<r/>
+<r/>
+　評価は最初の１回だけのため、何回もオブジェクトを参照するような用途では、オブジェクトを参照するためのコードが毎回生成されるようなことがなくなり、高速になる場合があります。<r/>
+<r/>
+　上記の例は以下と等価のコードが生成されると考えることが出来ます。<r/>
+<r/>
+<bq>
+this.dic = %[];<r/>
+{<r/>
+	var 無名の特別なローカル変数 = this.dic;<r/>
+	無名の特別なローカル変数.member = 1;<r/>
+	this.dic = 0;<r/>
+	無名の特別なローカル変数.member = 2;<r/>
+}<r/>
+</bq>
+<r/>
+　with ステートメントでは、左側が省略された . (ドット) 演算子でしかアクセスできない、無名の特別なローカル変数に expression の評価の結果が代入され、以降、左側が省略された . (ドット) 演算子では、その「無名の特別なローカル変数」が参照されるようになります。<r/>
+　expression を評価した結果が保持されるスコープも、上記の「無名の特別なローカル変数」のローカル変数スコープと同じとみなすことができます ( with ステートメントが影響を与える範囲もその通りとなります )。<r/>
+</para>
+
+
+<para>
+<ptitle>with ステートメント外での . 演算子</ptitle>
+　with ステートメント外で <tt>.</tt> (ドット) 演算子の左側が省略された場合、グローバルオブジェクトを参照することになります。<r/>
+　たとえば、with ステートメント外で<r/>
+<r/>
+<tt>.foo = 1;</tt><r/>
+<r/>
+　と記述すると<r/>
+<r/>
+<tt>global.foo = 1;</tt><r/>
+<r/>
+　と同じ意味になります。<r/>
+</para>
+
+</doc>
+

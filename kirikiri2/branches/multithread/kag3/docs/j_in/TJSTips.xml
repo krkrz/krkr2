@@ -1,0 +1,785 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>TJSをもっと使うために</title>
+
+<para>
+<ptitle>TJS2とKAG</ptitle>
+　TJS ( TJS2 ) は吉里吉里本体が直接理解できるスクリプト言語で、JavaScript や JAVA ににています。KAG はこの TJS スクリプトで記述されています。<r/>
+　TJS スクリプトは KAG が理解する ( 抽象的な ) シナリオよりもよりシステム側に近い ( 具体的な ) 記述をすることが可能で、扱いは難しくなりますができることの幅はぐっと広がります。<r/>
+<r/>
+　KAG には eval emb link if タグなどの exp 属性、各タグの cond 属性、エンティティ ( &amp; 付きのタグの属性 ) などなど、「TJS式」を指定する場面がいくつかあります。<r/>
+　TJS式を使うと、普通は KAG の裏に隠れている 吉里吉里に比較的簡単にアクセスすることができます。<r/>
+　また、iscript タグは、TJS2 スクリプトを直接実行することができます。これにより、高度な処理を実行したり、KAGの機能を拡張したりすることができます。<r/>
+<r/>
+　TJS2 の細かい文法については TJS2 のリファレンスを、吉里吉里本体の機能については吉里吉里２のリファレンスをご覧ください。<r/>
+</para>
+
+<para>
+<ptitle>KAG のオブジェクト構造</ptitle>
+　KAG それ自体は TJS2 スクリプトで記述されているため、( 良くも悪くも ) KAG の内部構造に直接アクセスすることができます。<r/>
+　KAG の管理するオブジェクトの変数に値を書き込む事などは相当注意したほうが良いですが、KAG 内部の変数を参照してより高度なシナリオ記述に応用することもできます。<r/>
+<r/>
+<dl>
+<dt><kw>KAGWindow クラス</kw>のオブジェクト</dt>
+<dd>
+　KAGWindow クラス ( MainWindow.tjs に記述 ) は、KAG のウィンドウを管理するためのクラスで、このクラスのオブジェクトがグローバル変数の <tt><kw>kag</kw></tt> としてアクセスできます。<r/>
+　たとえば、KAGWindow クラスの <tt>skipMode</tt> という変数 ( 現在どのようなモードでスキップ処理中かが入っている変数 ) にアクセスするには <tt><kw>kag.skipMode</kw></tt> とします。
+</dd>
+<dt><kw>背景レイヤ</kw></dt>
+<dd>
+　背景レイヤは <kw>BaseLayer クラス</kw> ( GraphicLayer.tjs に記述 ) のオブジェクトです。<r/>
+　表画面の背景レイヤは <tt><kw>kag.fore.base</kw></tt>、裏画面の背景レイヤは <tt><kw>kag.back.base</kw></tt> でアクセスできます。
+</dd>
+<dt><kw>前景レイヤ</kw></dt>
+<dd>
+　前景レイヤは <kw>CharacterLayer クラス</kw> ( GraphicLayer.tjs に記述 ) のオブジェクトです。<r/>
+　表画面の前景レイヤは <tt><kw>kag.fore.layers</kw>[n]</tt>、裏画面の前景レイヤは <tt><kw>kag.back.layers</kw>[n]</tt> でアクセスできます ( n は前景レイヤ番号 0 ～ )。
+</dd>
+<dt><kw>メッセージレイヤ</kw></dt>
+<dd>
+　メッセージレイヤは <kw>MessageLayer クラス</kw> ( MessageLayer.tjs に記述 ) のオブジェクトです。<r/>
+　表画面のメッセージレイヤは <tt><kw>kag.fore.messages</kw>[n]</tt>、裏画面のメッセージレイヤは <tt><kw>kag.back.messages</kw>[n]</tt> でアクセスできます ( n はメッセージレイヤ番号 0 ～ )。<r/>
+　<tt><kw>kag.current</kw></tt> は現在操作対象となっているメッセージレイヤを表します。
+</dd>
+<dt><kw>メッセージレイヤ内のオブジェクト</kw></dt>
+<dd>
+　メッセージレイヤ内に作成した、グラフィカルボタン、エディット、チェックボックスなどにアクセスするにはメッセージレイヤの links を使います。<r/>
+　links は配列オブジェクトで、リンク、グラフィカルボタン、エディット、チェックボックスなどが作成された順に、それぞれを管理するオブジェクトへの参照が格納されています。そのうち、グラフィカルボタン、エディット、チェックボックス についてはさらにそのなかの object 変数にアクセスすることによって各クラスのオブジェクトに直接アクセスできます。<r/>
+　たとえば、表画面のメッセージレイヤ0に以下のような記述があって、<r/>
+<bq>
+@cm<r/>
+@edit length=420 name="f.name"<r/>
+</bq>
+    　このエディットにフォーカスを設定する ( キーボードから入力できるようにする ) にはさらに<r/>
+<bq>
+@eval exp="kag.fore.messages[0].links[0].object.focus()"<r/>
+</bq>
+　と記述することができます ( エディットを表示してユーザに入力をすぐに促したいときに便利 )。
+</dd>
+<dt><kw>効果音バッファ</kw></dt>
+<dd>
+　効果音バッファは <kw>SESoundBuffer クラス</kw> ( SE.tjs に記述 ) のオブジェクトです。<r/>
+　<tt><kw>kag.se</kw>[n]</tt> でアクセスできます ( n は効果音バッファ番号 0 ～ )。
+</dd>
+<dt><kw>BGM オブジェクト</kw></dt>
+<dd>
+　BGM オブジェクトは <kw>BGM クラス</kw> ( BGM.tjs に記述 ) のオブジェクトです。<r/>
+　<tt><kw>kag.bgm</kw></tt> でアクセスできます。
+</dd>
+<dt><kw>メニュー</kw></dt>
+<dd>
+　メニューオブジェクトには <tt><kw>kag.menu</kw></tt> でアクセスできます。<tt>kag.menu</tt> は
+MenuItem クラスのオブジェクトで、<tt>kag.menu</tt> それ自体はメニューバーを
+示しており、その子に登録されたアイテムがメニューバーに並ぶことになります。<r/>
+　メニュー項目は Menus.tjs で作成していていますが、Menus.tjs を直接書き換えると
+KAGシステムのアップデートなどでいちいち書き換えなければならなくなるので、後述するように
+AfterInit.tjs を作成してそこに変更点を記述すると楽です。
+</dd>
+</dl>
+</para>
+
+
+<para>
+<ptitle>TJS を使うときの注意</ptitle>
+　KAG が栞に保存しない物に直接手を加えると、KAG が栞を読み込んでもそこの部分を再現できません。<r/>
+　KAG プラグインの onStore や onRestore をフックして栞に情報を保存するようにすれば問題ないのですが、そうしない場合は注意する必要があります。<r/>
+　特に Layer クラスに属する描画メソッドなどを使って、KAG の管理する背景レイヤや前景レイヤの内容に変更を加える場合などは注意が必要です。KAG は、レイヤにどのような画像が読み込まれていたかまでは記録しますが、レイヤに加えられた描画や変更までは記録しません。ですので、そのような状態で「栞を保存可能なラベル」を通過し、そこで栞を保存し、その栞を読み出しても、レイヤに加えた変更は再現できないことになります。<r/>
+　このような場合は、次に「栞を保存可能なラベル」を通過するまでに画像をクリアしたり別の画像を読み込むなどして KAG が管理しきれる状態に戻しておくか、あるいは「栞を保存可能なラベル」を書かない、などで回避することができます。<r/>
+　TJS を使う場合は、栞との関連について十分注意してください。<r/>
+</para>
+
+<para>
+<ptitle>式中の演算や条件判断、表示に使うもの</ptitle>
+<dl>
+<dt><tt><kw>&amp;&amp;</kw></tt> と <tt><kw>||</kw></tt></dt>
+<dd>
+　この二つは演算子で、<tt>&amp;&amp;</tt> は「かつ」を表し、<tt>||</tt> は「または」を表します。<r/>
+　たとえば、<tt>f.flag1</tt> が 1 で、かつ、<tt>f.flag2</tt> が 2 の場合、という条件で何かをやりたい場合は、<r/>
+<r/>
+<tt>[if exp="f.flag1==1 &amp;&amp; f.flag2==1"]</tt><r/>
+<r/>
+　と書くことができます。<r/>
+　また、f.flag1 が 1 または 2 または 3 の場合、という条件の場合は、<r/>
+<r/>
+<tt>[if exp="f.flag1==1 || f.flag1==2 || f.flag1==3"]</tt><r/>
+<r/>
+　と書くことができます ( f.flag1 が整数ならば <tt>f.flag1>=1 &amp;&amp; f.flag1&lt;=3</tt> とも書けますが )。<r/>
+　普通の数式で足し算よりもかけ算を優先して計算しないとならないように、<tt>&amp;&amp;</tt> と <tt>||</tt> には優先順位に違いがあって、<tt>&amp;&amp;</tt> の方が優先されます。<r/>
+　ですので、たとえば <tt>f.flag1</tt> が 1 の場合で、かつ、<tt>f.flag2</tt> が 3 または 5 のとき、という場合は、<r/>
+<r/>
+<tt>[if exp="f.flag1==1 &amp;&amp; (f.flag2==3 || f.flag2==5)"]</tt><r/>
+<r/>
+　のように ( ) カッコでくくらなければなりません。
+</dd>
+
+<dt><tt><kw>random</kw></tt> と <tt><kw>intrandom</kw></tt></dt>
+<dd>
+　random は 0 以上 1 未満の実数の乱数となります。<r/>
+<r/>
+<example>@eval exp="f.ransuu = random"</example>
+<r/>
+　上記の例のようにすると、f.ransuu には 0 以上 1 未満の実数の乱数が入ります。<r/>
+<r/>
+　これに対し、intrandom は指定値以上、指定値以下の整数の乱数を返す関数です。<r/>
+<r/>
+書式 : <tt>intrandom(<b>最小値</b>, <b>最大値</b>)</tt><r/>
+<r/>
+<example>@eval exp="f.ransuu = intrandom(0, 5)"</example>
+<r/>
+　上記の例
+のようにすると 0 以上 5 以下の整数の乱数が f.ransuu に入ります。
+</dd>
+<dt><tt><kw>length</kw></tt></dt>
+<dd>
+　length は、文字列の長さを得ることのできるものです。使い方は、文字列の代入された変数の後に . (ドット) を書き、続けて length と書きます。<r/>
+<r/>
+<example>[if exp="f.namae.length>=8"]名前が長すぎます。[l][jump target=*input][endif]</example>
+<r/>
+　上記の例では、f.namae の長さが8文字以上だった場合に「名前が長すぎます。」と表示し、*input ラベルにジャンプします。<r/>
+　文字は半角、全角問わず、一文字は一文字として数えられます。これは他の文字列を扱う機能でも同じです。
+</dd>
+
+<dt><tt><kw>substring</kw></tt></dt>
+<dd>
+　substring は、文字列の一部分(部分文字列)を取り出すことのできるものです。<r/>
+　使い方は、文字列の代入された変数 ( または文字列を表すもの ) のあとに . (ドット) を書き、続けて<r/>
+<r/>
+<tt>substring(<b>切り取り開始位置</b>, <b>切り取る長さ</b>)</tt><r/>
+<r/>
+　の書式で記述します。切り取り開始位置は 0 が先頭を表します。<r/>
+<r/>
+　たとえば、f.furigana 変数の２番目の文字を取り出したい場合、<tt>f.furigana.substring(1, 1)</tt> で取り出すことができます。<r/>
+<r/>
+<example>@emb exp="f.furigana.substring(1, 1)"</example>
+<r/>
+　上記の例では、f.furigana 変数の２番目の文字を表示します。
+</dd>
+
+<dt><tt><kw>indexOf</kw></tt></dt>
+<dd>
+　indexOf (インデックス・オブ) は、文字列中の部分文字列が最初に現れる位置を得ることができます。使い方をかえれば、ある文字列中に他の文字列が入っているかどうかを調べることができます。<r/>
+<r/>
+書式 : <tt><b>文字列</b>.indexOf(<b>部分文字列</b>)</tt><r/>
+<r/>
+　たとえば、文字列が <tt>"ABCDEFGHIJKL"</tt> で、部分文字列が <tt>"ABC"</tt> であった場合、<tt>"ABCDEFGHIJKL".indexOf("ABC")</tt> は <b>0</b> になります。部分文字列が <tt>"BCD"</tt> の場合は <b>1</b>、<tt>"DEF"</tt> の場合は <b>3</b> になります。
+　もし、部分文字列が文字列中に現れなかった場合は <b>-1</b> になりますので、部分文字列が文字列の一部であるかどうかを判定するには -1 と比較すればいいことになります。<r/>
+<r/>
+<example>[if exp="'尼屁尻'.indexOf(f.objname)!=-1"]～～[endif]</example>
+<r/>
+　上記例では、<tt>f.objname</tt> が <tt>"尼" "屁" "尻" "尼屁" "屁尻" "尼屁尻"</tt> のいずれかであった場合に <tt>endif</tt> までを実行します。<r/>
+　これを、<tt>"尼屁" "屁尻" "尼屁尻"</tt> では NG にしたい場合 ( <tt>"尼" "屁" "尻"</tt> の場合のみ OK にしたい場合 )、<tt>'尼屁尻'</tt>のそれぞれを <tt>f.objname</tt> 内では現れることのない文字(や記号) で区切ることによって実現できます。<r/>
+　たとえば、\v という特殊な制御記号をつかって区切ると、上記の例は<r/>
+<r/>
+<tt>[if exp="'尼\v屁\v尻'.indexOf(f.objname)!=-1"]～～[endif]</tt>
+<r/>
+とかくことができます ( \v は通常、f.objname 内には現れないから )。<r/>
+<r/>
+　下記例では、f.itemname 内に 'コップ' という文字列が含まれている場合に endif までを実行します。<r/>
+<r/>
+<example>[if exp="f.itemname.indexOf('コップ')!=-1"]～～[endif]</example>
+</dd>
+
+<dt><kw>正規表現</kw></dt>
+<dd>
+　正規表現パターン ( / と / で囲まれた部分 ) を使って正規表現パターンによる文字列の分解や検査を行うことができます。<r/>
+　正規表現パターンそのものは Perl の正規表現によく似ています ( 使い方は違いますが正規表現パターンはほぼ互換です )。<r/>
+<r/>
+　文字列が目的のパターンに適合しているかどうかを調べるには <tt><kw>test</kw></tt> を使います。<r/>
+<r/>
+<example>[if exp="/[^0-9]/.test(f.nyuryoku)"]入力された文字に数字以外が混じっています[endif]</example>
+<r/>
+　上記の例のようにして test を使います。test はパターンに合致すると真を、合致しないと偽を返す関数(正規表現オブジェクトのメソッド)です。上記の例では、<tt>[^0-9]</tt> つまり数字以外が混じっているかどうかを検査する正規表現パターンを用いて、<tt>f.nyuryoku</tt> に数字以外の文字が混じっているかを検査しています。<r/>
+<r/>
+　文字列を分解するには <tt><kw>match</kw></tt> を使います。<tt>match</tt> は配列オブジェクトを返します。パターンに合致しなかった場合は配列の要素数 ( <tt>count</tt> ) が 0 になります。それ以外の場合、要素 0 はマッチした部分全体、要素 1 からあとはパターン中の ( ) (カッコ) に対応してマッチした部分が返されます。<r/>
+<r/>
+<example>
+[eval exp="f.matched = /([0-9０-９]+)[-－]([0-9０-９]+)/.match(f.input)"]<r/>
+[if exp="f.matched.count == 0"]「数値-数値」の形式で入力してください。[jump target=*input][endif]<r/>
+[eval exp="f.s1 = str2num(f.matched[1]), f.s2 = str2num(f.matched[2])"]<r/>
+</example>
+　上記の例では、<tt>f.input</tt> が「数値-数値」の形式に合致しているかをテストして、合致していれば - (ハイフン) の前の部分の <tt>f.s1</tt> に、後の部分を <tt>f.s2</tt> に、数値に変換してから代入しています。
+</dd>
+
+<dt><tt><kw>str2num</kw></tt></dt>
+<dd>
+　str2num は、文字列を数値に変換します。<r/>
+<r/>
+書式 : <tt>str2num(<b>文字列または文字列の入った変数</b>)</tt><r/>
+<r/>
+　単項の <tt>+</tt> 演算子と違うのは、<tt>str2num</tt> は、全角の数字であっても数値に変換できるということです。input タグのように、ユーザが全角で数値を入力してしまう可能性のある場合に使用できると思います。数値として認識できない文字列が渡された場合は 0 になります。<r/>
+<r/>
+<example>[input name="f.kazu" prompt="数値を入力してください"][emb exp="f.kazu=str2num(f.kazu)"]</example>
+</dd>
+
+
+<dt><tt><kw>kansuuji</kw></tt> と <tt><kw>kansuuji_simple</kw></tt></dt>
+<dd>
+　<tt>kansuuji</tt> は、指定された数値を漢数字表記にします。<tt>kansuuji_simple</tt> も同様ですが、桁を表す単位をつけません。<r/>
+　9223372036854775807 という数値を、<tt>kansuuji</tt> の場合は "九百二十二京三千三百七十二兆三百六十八億五千四百七十七万五千八百七" に、<tt>kansuuji_simple</tt> の場合は "九二二三三七二〇三六八五四七七五八〇七" に変換します。<r/>
+<example>
+@emb exp="kansuuji(f.num)"<r/>
+</example>
+　上記の例では、f.num を漢数字表記にして表示しています。<r/>
+</dd>
+
+<dt><tt><kw>number_format</kw></tt></dt>
+<dd>
+　<tt>number_format</tt> は、指定された数値を3桁ごとに , (カンマ) で区切った表記にします。たとえば、9223372036854775807 という数値ならば "9,223,372,036,854,775,807" に変換されます。<r/>
+<example>
+@emb exp="number_format(f.num)"<r/>
+</example>
+　上記の例では、f.num を 3桁ごとにカンマで区切って表示しています。<r/>
+</dd>
+
+
+<dt><tt><kw>Storages.addAutoPath</kw> と <kw>System.exePath</kw></tt></dt>
+<dd>
+　Storages.addAutoPath は、自動検索パスを追加します。<r/>
+　System.exePath は、吉里吉里実行可能ファイルの設置されているフォルダを示します。<r/>
+　詳しくは吉里吉里 SDK Help を参照していただきたいのですが、これらを使うとアーカイブやフォルダに自動検索パスを設定できます。<r/>
+　自動検索パスは、わざわざフォルダを指定しなくても、ファイルを自動的に見つけてくるための仕組みです。標準では、system image scenario bgimage fgimage bgm sound rule others video のすべてが設定されていますが、Storages.addAutoPath で追加することができます。<r/>
+System.exePath は、吉里吉里実行可能ファイルのあるフォルダです。<r/>
+<r/>
+　たとえば、吉里吉里実行可能ファイルの直下に cgdata というフォルダがあって、そこの中を自動検索パスに指定したい場合は、<r/>
+<r/>
+<tt>[eval exp="Storages.addAutoPath(System.exePath + 'cgdata/')"]</tt><r/>
+<r/>
+　とします ( cgdata の後の二つの / は必ずつけてください )。<r/>
+<r/>
+　もし、吉里吉里実行可能ファイルと同じ場所に cgdata.xp3 というアーカイブファイルがあって、このアーカイブ内に自動検索パスを指定したい場合は、<r/>
+<r/>
+<tt>[eval exp="Storages.addAutoPath(System.exePath + 'cgdata.xp3&gt;')"]</tt><r/>
+<r/>
+　とします。cgdata.xp3 の後の記号は '&gt;' です。アーカイブ内に検索パスを指定する場合は &gt; で、フォルダ内に検索パスを指定する場合は / です。<r/>
+　アーカイブの後の記号は 吉里吉里２ 2.19 beta 14 で '#' から '&gt;' に変更となりました。<r/>
+</dd>
+
+<dt><tt><kw>Storages.searchCD</kw></tt></dt>
+<dd>
+　Storages.searchCD は、引数に渡されたボリュームラベルを持つ CD が挿入されたドライブの文字を返します。<r/>
+　たとえば、上記 Storages.addAutoPath と組み合わせて、FOO_BAR_DISC というボリュームラベルを持つ CD-ROM 内の image というフォルダに自動検索パスを追加したい場合、<r/>
+<r/>
+<tt>[eval exp="Storages.addAutoPath(Storages.searchCD('FOO_BAR_DISC') + ':image/')"]</tt><r/>
+<r/>
+　と記述することができます。<r/>
+<r/>
+　Stotages.searchCD は、指定されたボリュームラベルを持つ CD が挿入されたドライブが見つからない場合は空文字列を返すので、たとえば指定の CD-ROM がドライブに挿入されていることを確認するために、<r/>
+<r/>
+<tt>[if exp="Storages.searchCD('FOO_BAR_DISC') == ''"]CDが挿入されていません[endif]</tt><r/>
+<r/>
+　のように記述することができます。
+</dd>
+
+<dt><tt><kw>System.readRegValue</kw></tt></dt>
+<dd>
+　System.readRegValue では、レジストリに書き込まれた値を読むことができます。たとえば、HKEY_LOCAL_MACHINE\SOFTWARE\Dee\kirikiri\installpath を f.installpath に読み込むには、<r/>
+<r/>
+<tt>[eval exp="f.installpath = System.readRegValue('HKEY_LOCAL_MACHINE\\SOFTWARE\\Dee\\kirikiri\\installpath')"]</tt>
+<r/>
+　とします。'' で囲まれた中では \ は \\ と記述しなければならないことに注意してください。<r/>
+　文字列と数値の値のみを読むことができます。レジストリに値が存在しない場合は void になるので、<tt>===</tt> (識別演算子) を用いて<r/>
+<r/>
+<tt>[if exp="f.installpath === void"]インストールされていません[endif]</tt><r/>
+<r/>
+　のような記述をすることができます。
+</dd>
+
+<dt><tt><kw>kag.clickCount</kw></tt></dt>
+<dd>
+　画面上をマウスでクリックするたびに 1 が加算されます。この変数には値を代入してもかまいませんので、0 に設定しておけば、マウスがクリックされたことを、この変数が 0 以外の数値になっていることで知ることができます。
+</dd>
+
+<dt><tt><kw>kag.lastMouseDownX</kw> と <kw>kag.lastMouseDownY</kw></tt></dt>
+<dd>
+　これらは、最後にマウスがクリックされた座標を表しています。kag.lastMouseDownX は最後にクリックされた X 座標、kag.lastMouseDownY は最後にクリックされた Y 座標です。
+</dd>
+
+<dt><tt><kw>kag.lastWaitTime</kw></tt></dt>
+<dd>
+　wait タグを mode=until で使用したとき、実際に wait タグがまとうとした時間が設定されます。すでにまとうとしていた時間が過ぎていた場合は 0 になりますので、wait タグの直後でこの変数が 0 でないかどうかを判断すれば、処理が追いついているかどうかを判断することができます。<r/>
+　ちなみに、クリックなどで wait が中断された場合は、この変数は正確に待っていた時間を表す訳ではありません ( 中断がなかったとした場合の時間を表しています )。
+</dd>
+
+<dt><tt><kw>kag.skipMode</kw></tt></dt>
+<dd>
+　現在のスキップのモードを表す値が入っています。0=スキップなし, 1=クリック待ち記号まで, 2=改ページ待ち記号まで, 3=次の停止まで、となっています。<r/>
+　たとえば、声や効果音などをスキップ中には再生したくない場合は、<r/>
+<r/>
+<tt>@playse cond="kag.skipMode&lt;=1" storage="hogehoeg.wav"</tt><r/>
+<r/>
+　のように記述することができます。
+</dd>
+
+<dt><tt><kw>kag.autoMode</kw></tt></dt>
+<dd>
+　自動読みすすみの処理中の時に真、それ以外の時に偽になっています。<r/>
+　たとえば、声や効果音などの終了を、自動読みすすみの時のみに処理したい場合は、<r/>
+<r/>
+<tt>@ws cond="kag.autoMode"</tt><r/>
+<r/>
+　のように記述することができます。
+</dd>
+
+<dt><tt><kw>kag.getBookMarkPageName</kw></tt></dt>
+<dd>
+　<tt>kag.getBookMarkPageName</tt> は、非フリーセーブモードにおいて、引数に指定された番号 ( 0 ～ ) で示された、栞の場所の名前を得ることが出来ます。<r/>
+　KAG のメニューからではなく、画面上で栞を示してユーザーにたどる栞を選ばせたいときに使うことが出来ます。<r/>
+　<tt>kag.restoreBookMark</tt> と組み合わせて使います。
+<r/>
+<example>
+[locate x=10 y=100][link exp="kag.restoreBookMark(0)"][emb exp="kag.getBookMarkPageName(0)"][endlink]<r/>
+[locate x=10 y=130][link exp="kag.restoreBookMark(1)"][emb exp="kag.getBookMarkPageName(1)"][endlink]<r/>
+(以下同様)<r/>
+</example>
+</dd>
+
+<dt><tt><kw>mp</kw></tt></dt>
+<dd>
+　<tt>mp</tt> は、マクロ中にて、マクロに渡された属性が記録された辞書配列を表します。<r/>
+<example>
+@macro name=fimg<r/>
+@image *<r/>
+@eval exp="sf[mp.storage]=1"<r/>
+@endmacro<r/>
+</example>
+　上記の例では、たとえば <tt>@fimg layer=base page=fore storage="bg_03"</tt> と記述された場合、このマクロが実行されている間は <tt>mp.layer</tt> は <tt>'base'</tt>、<tt>mp.page</tt> は <tt>'fore'</tt>、<tt>'mp.storage'</tt> は <tt>'bg_03'</tt> になっています。つまり、マクロに渡された属性を <tt>mp.</tt> の後に指定することによって、その属性の値を得ることができます。<r/>
+　このマクロを <tt>@fimg layer=base page=fore storage="bg_03"</tt> として使用した場合、exp タグで <tt>sf[mp.storage]=1</tt> が実行されるため、<tt>sf['bg_03']</tt> が 1 になります。<r/>
+　このマクロは、image/img タグの代わりに使うことにより、表示した画像を自動的にシステム変数に記録するマクロとして使用することができます。
+</dd>
+
+<dt><tt><kw>System.getKeyState</kw></tt></dt>
+<dd>
+　<tt>System.getKeyState</tt> は、現在その時点で、指定されたキーが押されているかどうかを判断することができます。<r/>
+<example>
+@jump target=*shift_key_pressed cond="System.getKeyState(VK_SHIFT)"<r/>
+; シフトキーが押されていれば、*shift_key_pressed にジャンプする<r/>
+</example>
+詳しくは吉里吉里２ SDK Help を参照してください。<r/>
+<r/>
+　KAG3はゲームパッド(ジョイスティック)からの入力を受け付けますが、ゲームバッドの上に物が乗っかっている、あるいはジョイスティックの軸の調整が不十分という場合には、正常に作品の操作をできない場合があります。<r/>
+　作品開始時にゲームパッドのボタンが押されていれば、ユーザに対して警告をすることができます (通常、作品開始時にゲームパッドのボタンが押されていることはなく、押されているとなれば、ユーザの意図しない理由で押されたままになっている可能性が高いため)。<r/>
+　USB接続のゲームパッドなどでは下記の例では「押されっぱなし」の検出がうまくいかないかもしれませんので、適宜ドキュメントなどでの補足を推奨します。<r/>
+<example>
+@if exp="System.getKeyState(VK_PADANY)"<r/>
+@wait time=500<r/>
+@if exp="System.getKeyState(VK_PADANY)"<r/>
+; VK_PADANYでは、ゲームパッドのいずれかのボタンが押されている時に真を返す<r/>
+; 500ms(0.5秒間)をすぎてもなお押されているようならばメッセージを表示<r/>
+ゲームパッド(ジョイスティック)のボタンが押されたままになっています。<r/>
+ゲームパッドの上に物が乗っかっていないか、あるいはジョイスティックの<r/>
+軸の調整がされているかを確認してください。<r/>
+状況が改善しない場合は、ゲームパッド(ジョイスティック)を抜いてください。<r/>
+それでも状況が改善しなければ、ゲームを終了し、「エンジン設定」を起動し、<r/>
+「入力-パッド使用可否」の設定を「使用しない」に設定してください。<r/>
+[s]<r/>
+@endif<r/>
+@endif<r/>
+</example>
+
+</dd>
+
+
+
+</dl>
+
+
+
+</para>
+
+<para>
+<ptitle>リンクやボタンの exp 属性などに指定するもの</ptitle>
+<dl>
+<dt><tt><kw>System.shellExecute</kw></tt></dt>
+<dd>
+　System.shellExecute は、引数に指定されたファイルを開きます。URL を指定するとブラウザが開くので、link タグなどを使ってこの式を実行させれば、Web ページへのリンクなどを作成することが出来ます。<r/>
+<r/>
+<example>[link exp="System.shellExecute('http://www.yahoo.co.jp/')"]http://www.yahoo.co.jp/[endlink]</example>
+</dd>
+
+<dt><tt><kw>kag.close</kw></tt> と <tt><kw>kag.shutdown</kw></tt></dt>
+<dd>
+　kag.close は、KAG を終了させます。終了確認を行う設定にしている場合は終了確認があります。<r/>
+　kag.shutdown も KAG を終了させますが、終了確認はありません。<r/>
+　なお、終了に System.exit() を使用すると、システム変数が保存されずに終了される場合があるので<b>使用しないでください</b>。また、これらは eval タグの exp 属性では指定しないでください (代わりに close タグを使用してください)。<r/>
+<r/>
+<example>
+[link exp="kag.close()"]終了[endlink]<r/>
+[link exp="kag.shutdown()"]終了[endlink]<r/>
+</example>
+</dd>
+
+<dt><tt><kw>kag.restoreBookMark</kw></tt> と <tt><kw>kag.storeBookMark</kw></tt></dt>
+<dd>
+　kag.restoreBookMark は、非フリーセーブモードにおいて、引数に指定された番号で示された栞をたどります。<r/>
+　同様に、kag.storeBookMark は、引数に指定された番号で示された栞を挟みます。<r/>
+　ただし、これを直接呼び出すと、[store] タグで栞の使用が禁止されていても栞の操作が出来てしまいます。<r/>
+　これらは、成功すると真を、失敗すると偽を返します。<r/>
+　例は kag.getBookMarkPageName の物を参照してください。
+</dd>
+
+<dt><tt><kw>kag.loadBookMarkFromFileWithAsk</kw></tt> と <tt><kw>kag.saveBookMarkToFileWithAsk</kw></tt></dt>
+<dd>
+　kag.loadBookMarkFromFileWithAsk は、フリーセーブモードにおいて、ファイル選択ダイアログボックスを表示し、ユーザに栞データを選択させます。ユーザが OK ボタンを押すとその栞から再開します。<r/>
+　同様に、kag.saveBookMarkToFileWithAsk は、ファイル選択ダイアログボックスを表示し、栞を保存します。<r/>
+　これらは、成功すると真を、ユーザがキャンセルをするか、あるいは失敗すると偽を返します。<r/>
+<example>
+[link exp="kag.loadBookMarkFromFileWithAsk()"]栞をたどる[endlink]<r/>
+[link exp="kag.saveBookMarkToFileWithAsk()"]栞をはさむ[endlink]<r/>
+</example>
+</dd>
+
+<dt><tt><kw>kag.callExtraConductor</kw></tt></dt>
+<dd>
+　kag.callExtraConductor は、TJS の制御によって KAG のシナリオをサブルーチンとして呼び出すために用います。このメソッドでシナリオを呼び出すときは、シナリオがクリック待ちや s タグで停止中である必要があります ( kag.inStable や KAG プラグインの onStableStateChanged で知ることができます )。<r/>
+　kag.callExtraConductor には引数が３つあります。<r/>
+　最初の引数は呼び出すシナリオファイルです。次の引数は呼び出すラベルです。<r/>
+　３番目の引数は省略可能ですが、KAG のシナリオから戻ったときに実行する関数/メソッドを指定します。必要ない場合は指定しなくてかまいません。<r/>
+<r/>
+<example>[button graphic="showhist" exp="kag.callExtraConductor('rclick.ks', '*showhist')"]</example>
+<r/>
+　これで呼び出すサブルーチンの書き方は、右クリックサブルーチンの書き方に準じます。<r/>
+　右クリックサブルーチン中や、すでにこの機能を使って KAG のシナリオを呼び出している最中では、この機能は使用できません。
+</dd>
+
+<dt><tt><kw>kag.se[n].play</kw></tt></dt>
+<dd>
+　効果音バッファの play メソッドは、効果音の再生を開始します。<r/>
+　以下の形式で指定します。<r/>
+<r/>
+　<bq>kag.se[効果音バッファ番号].play(%[storage: 再生する効果音のファイル名, loop: ループするか]);</bq>
+<r/>
+　これをたとえば、以下の例のように link タグの onenter 属性に指定すれば、選択肢の上にマウスカーソルが乗ったときに効果音を発音することができます。<r/>
+<r/>
+<example>[link target=*foo onenter="kag.se[0].play(%[storage:'select.wav', loop: false])"]選択肢～[endlink]</example>
+<r/>
+　この例では、効果音バッファ 0 番で select.wav を、ループをせずに再生します。他にも TJS の制御で効果音を鳴らしたいときに便利です。
+</dd>
+</dl>
+</para>
+
+<para>
+<ptitle>配列</ptitle>
+　吉里吉里２/KAG3 では配列を簡単に使うことができます。<r/>
+　配列を使う場合は、最初に <tt><kw>[ ]</kw></tt> を使って配列を宣言しないとなりません。<r/>
+<r/>
+<example>[eval exp="f.hairetsu = []"]</example>
+<r/>
+　上記の例では、<tt>f.hairetsu</tt> を配列として使うことを宣言しています。もしすでに <tt>f.hairetsu</tt> が配列だったり、他の数値とか文字列であったとすると <tt>f.hairetsu</tt> の内容は消去されてしまいますので注意してください。<r/>
+　システム変数などで配列を使いたい場合は、初期状態では変数はすべて void が代入されていると見なされることを利用して、<r/>
+<r/>
+<example>[eval exp="sf.hairetsu = [] if sf.hairetsu === void"]</example>
+<r/>
+　とすれば、初回起動時だけ配列を宣言することができます。２回目以降でも配列が消去されることはありません。<r/>
+<r/>
+　配列に値を代入するには <tt>[ ]</tt> を使います。<tt>[ ]</tt> 内には添え字 ( 要素番号 ) を書きます。添え字は 0 から始まります。<r/>
+<r/>
+<example>[eval exp="f.hairetsu[0] = 'zero', f.hairetsu[1] = 'one'"]</example>
+<r/>
+　上記の例では <tt>f.hairetsu[0]</tt> に 'zero' を、<tt>f.hairetsu[1]</tt> に 'one' を代入しています。<r/>
+　配列の要素数は宣言する必要はありません。必要な大きさまで自動的に拡張されます。配列の要素数を得たり設定したりするには <tt><kw>count</kw></tt> プロパティを用いて <tt>f.hairetsu.count</tt> などとします。 <r/>
+<r/>
+　表示も同様に行えます。<r/>
+<r/>
+<example>0 : [emb exp="f.hairetsu[0]"]    1 : [emb exp="f.hairetsu[1]"]</example>
+<r/>
+　２次元配列を用いるのはすこし難しいですが、例だけ挙げておきます。<r/>
+<bq>
+@iscript<r/>
+// １次元目の要素数が 5 の２次元配列を作成する<r/>
+f.twodim = [] if f.twodim === void; // twodim に１次元目の配列を作成<r/>
+for(var i = 0; i &lt; 5; i++) f.twodim[i] = [] if f.twodim[i] === void;<r/>
+// この状態で f.twodim[0] ～ f.twodim[4] がそれぞれ配列なので<r/>
+// f.twodim[0][3] や f.twodim[4][2] などと指定できる<r/>
+@endscript<r/>
+<r/>
+// あるいは、単純にたとえば１次元目の要素数が5の配列を作成するならば<r/>
+f.twodim = [ [], [], [], [], [] ];<r/>
+// ( 配列を [] で作成するときにその中に初期要素をカンマで区切って指定できるが、<r/>
+//   そのときに初期要素として配列を入れ子に指定する )<r/>
+</bq>
+</para>
+
+<para>
+<ptitle>辞書配列</ptitle>
+　吉里吉里２/KAG3 では辞書配列も使うことができます。<r/>
+　辞書配列 ( 連想配列とも呼びます ) とは、名前と、それに対応する値の組を覚えることのできる配列です。<r/>
+　辞書配列を使う場合は、配列と同じように、最初に <tt><kw>%[ ]</kw></tt> を使って配列を宣言しないとなりません。<r/>
+<r/>
+<example>[eval exp="f.dict = %[]"]</example>
+<r/>
+　上記の例では、f.dict を辞書配列として使うことを宣言しています。もしすでに f.hairetsu が辞書配列だったりしたばあいの注意は配列と同じです。<r/>
+<r/>
+　辞書配列に値を代入するにも <tt>[ ]</tt> を使います ( <tt>%[ ]</tt> ではありません )。<tt>[ ]</tt> 内には「名前」となるものを書きます。<r/>
+<r/>
+<example>[eval exp="f.dict['zero'] = 0, f.dict['one'] = 1"]</example>
+<r/>
+　上記の例では <tt>f.dict['zero']</tt> に <tt>0</tt> を、<tt>f.dict['one']</tt> に <tt>1</tt> を代入しています。普通の配列と違うのは文字列を <tt>[ ]</tt> 内に指定することです。<r/>
+<r/>
+　表示も同様に行えます。<r/>
+<r/>
+<example>zero : [emb exp="f.dict['zero']"]    one : [emb exp="f.dict['one']"]</example>
+<r/>
+　ちなみに <tt>[ ]</tt> ではなく <tt>.</tt> を使うこともできます。<tt>f.dict['zero']</tt> は <tt>f.dict.zero</tt> 、<tt>f.dict['one']</tt> は <tt>f.dict.one</tt> と記述することができます ( ただし . の次には「予約語」や「変数名として使えない名前」が来ることはできません )。<r/>
+<r/>
+　実は KAG の <tt>f</tt> や <tt>sf</tt> といったもの自体も辞書配列で、<tt>f.dict</tt> としたばあいは、辞書配列の中の <tt>'dict'</tt> という名前のついた値にアクセスしていたことになります ( もちろん、<tt>f['dict']</tt> でもアクセスできます )。<r/>
+</para>
+
+
+<para>
+<ptitle>日付/時刻を得る</ptitle>
+　現在の日付や時刻を得るには以下のようにします。<r/>
+<bq>
+[iscript]<r/>
+{<r/>
+	// ↑  endscript の中を {  } で囲むのは この中で宣言された変数を<r/>
+	// ローカル変数にするため ( そうしないとグローバル変数になる )<r/>
+	var d = new Date(); // Date クラスのオブジェクトを作成<r/>
+	// Date クラスのオブジェクトは、作成時に引数に何も指定しなければ<r/>
+	// 作成時点の現在時刻を保持している<r/>
+	f.year = d.getYear();  // f.year に 年<r/>
+	f.month = d.getMonth() + 1; // f.month に 月<r/>
+	f.date = d.getDate(); // f.date に 日<r/>
+	f.hours = d.getHours(); // f.hours に 時<r/>
+	f.minutes = d.getMinutes(); // f.minutes に 分<r/>
+	f.seconds = d.getSeconds(); // f.seconds に 秒<r/>
+}<r/>
+[endscript]<r/>
+</bq>
+</para>
+
+<para>
+<ptitle>process</ptitle>
+　<tt>kag.process</tt> は、シナリオを指定した位置から実行します。<r/>
+　最初の引数は読み込むシナリオファイル名です。空文字列を指定すると現在のシナリオファイルが使用されます。<r/>
+　２番目の引数は、実行を開始するラベルです。空文字列を指定するとシナリオファイルの先頭から実行します。<r/>
+<r/>
+<example>
+kag.process('', '*label2')<r/>
+kag.process('scenario4.ks', '*label5')<r/>
+</example>
+<r/>
+　たとえシナリオが実行中であろうとも、強制的にそのラベルに飛ぶので注意してください。<r/>
+</para>
+
+
+<para>
+<ptitle>leftClickHook, rightClickHook, keyDownHook</ptitle>
+　KAG は、左クリックされたとき、右クリックされたとき、キーが押されたときのそれぞれの場合に、登録した関数を呼び出す機能があり、フックと呼んでいます。<r/>
+　フックは、複数の関数を登録できるように配列になっています。それぞれ <tt>kag.leftClickHook</tt>、<tt>kag.rightClickHook</tt>、<tt>kag.keyDownHook</tt> でアクセスできるようになっています。<r/>
+　これらに登録した関数で true が返されると、KAG はもともとその機能に割り当てられていた機能を実行しません。たとえば、R キーが押されたとき、keyDownHook に登録された関数が true を返すと、元々の機能である「メッセージ履歴を表示する」の機能は実行されなくなります。<r/>
+<r/>
+　leftClickHook と rightClickHook には、呼び出される関数に引数はありません。<r/>
+　leftClickHook は、Enter キーや Space キー等でも発生します。また、マウスで選択肢などをクリックしたときには発生しません。<r/>
+<r/>
+<example>
+@iscript<r/>
+function myLeftClickHook()<r/>
+{<r/>
+	kag.process('', '*label');<r/>
+	return true;<r/>
+}<r/>
+@endscript<r/>
+@eval exp="kag.leftClickHook.add(myLeftClickHook)"<r/>
+@s<r/>
+<r/>
+*label<r/>
+@eval exp="kag.leftClickHook.remove(myLeftClickHook)"<r/>
+やあー。<r/>
+@s<r/>
+</example>
+<r/>
+　上記の例では、クリックされると *label が実行されます。<r/>
+　強制的に実行が *label に移るので注意してください。トランジションや自動移動を実行中等の場合は stoptrans や stopmove タグで実行を停止したほうが安全です。<r/>
+<r/>
+　keyDownHook は、呼び出される関数には２つ引数が渡されて、一つ目は押されたキーの仮想キーコード、二つ目はそのキーが押されていたときに同時に押されていたシフト系のキーの状態です。詳しくは吉里吉里２ SDK Help を参照してください。<r/>
+<r/>
+<example>
+@iscript<r/>
+function myKeyDownHook(key, shift)<r/>
+{<r/>
+	if(key == #'R')<r/>
+	{<r/>
+		// R のキーが押されたら<r/>
+		kag.process('', '*label');<r/>
+		return true;<r/>
+	}<r/>
+}<r/>
+@endscript<r/>
+@eval exp="kag.keyDownHook.add(myKeyDownHook)"<r/>
+@s<r/>
+<r/>
+*label<r/>
+@eval exp="kag.keyDownHook.remove(myKeyDownHook)"<r/>
+やあー。<r/>
+@s<r/>
+</example>
+</para>
+
+<para>
+<ptitle>touchImages</ptitle>
+　<tt>System.touchImages</tt> は、画像をキャッシュに読み込みます。<r/>
+　詳しくは 吉里吉里２ドキュメントの System.touchImages をご覧ください。このメソッドは、たとえばなにかのウェイトで時間があいたときを利用して、画像を先読みしておく用途に使えます。<r/>
+　KAG で使う場合は、前景、背景画像 ( ただし key 属性を指定しないものに限る ) に対して有効です。image や img タグの storage 属性に指定するものと同じ物を storages 引数に配列にして指定してください。<r/>
+　第２引数は -2*1024*1024 あたりを指定しておくと良いようです。<r/>
+　第３引数には、待つ時間 - 200ms あたりを指定しておくと良いようです。<r/>
+<r/>
+<example>
+@resetwait<r/>
+@eval exp="System.touchImages(['24_5', '24_4', 'uni', '24'], -2*1024*1024, 800)"<r/>
+@wait mode=until time=1000<r/>
+</example>
+<r/>
+　ただし、このメソッドは、画像がキャッシュに入るということは保証しないという、不確定的なものです。ですから、絶対に画像を先に読んでおかなければいけない用途には使うべきではありません。そのような用途には後述の assignImages の項で説明する方法を使う方が確実です。<r/>
+</para>
+
+<para>
+<ptitle>assignImages</ptitle>
+　<tt>assignImages</tt> は、レイヤの画像を他のレイヤにコピーします。<r/>
+　たとえば、<r/>
+<r/>
+<tt>@eval exp="kag.fore.base.assignImages(kag.fore.layers[0])"</tt><r/>
+<r/>
+　とすれば、表前景レイヤ 0 に読み込まれている画像を表背景レイヤにコピーすることができます。<r/>
+　assignImages は実際には画像のデータをコピーはせず、「コピー元とコピー先の画像が同じになった」という印を付けるだけなので高速です。デモシーンなどで、シーンの途中で画像を読み込むときのタイムロスが問題になるような場合に、あらかじめ画像を非表示の前景レイヤなどに読み込んでおいてから、必要なときに背景レイヤなどにコピーする用途に使えます。<r/>
+</para>
+
+
+<para>
+<ptitle>hact タグの応用</ptitle>
+　hact タグはメッセージ履歴をクリックしたときに任意の TJS 式を実行できるようにするもので、音声履歴 ( 声つきのゲームなどでメッセージ履歴をクリックしたときにそのメッセージに対応する音声を再生できるようにするもの ) を実装することができます。<r/>
+　以下は、それを実現するための例で、音声を再生するためのマクロ pv と、音声を停止するためのマクロ sv を定義するものです。<r/>
+<example>
+@iscript<r/>
+function stopAllVoices()<r/>
+{<r/>
+	// 2 ～ 6 のすべての効果音を停止する<r/>
+	for(var i = 2; i &lt;= 6; i++) kag.se[i].stop();<r/>
+}<r/>
+function playVoice(buf, storage)<r/>
+{<r/>
+	// 効果音バッファ buf にて storage を再生する<r/>
+	// KAG がスキップ処理中の場合は処理を行わない<r/>
+	if(!kag.skipMode)<r/>
+	{<r/>
+		stopAllVoices();<r/>
+		kag.se[buf].play(%[ storage : storage ]);<r/>
+	}<r/>
+}<r/>
+function createHistoryActionExp(buf, storage)<r/>
+{<r/>
+	// メッセージ履歴をクリックしたときに実行する TJS 式を生成する<r/>
+	return "stopAllVoices(), kag.se[" + buf  +"].play(%[ storage : '" + storage + "' ])";<r/>
+}<r/>
+@endscript<r/>
+@macro name=pv<r/>
+@hact exp="&amp;createHistoryActionExp(mp.b, mp.s)"<r/>
+@eval exp="playVoice(mp.b, mp.s)"<r/>
+@endmacro<r/>
+@macro name=waitvoices<r/>
+@ws buf=2<r/>
+@ws buf=3<r/>
+@ws buf=4<r/>
+@ws buf=5<r/>
+@ws buf=6<r/>
+@endmacro<r/>
+@macro name=sv<r/>
+@endhact<r/>
+@waitvoices cond="kag.autoMode"<r/>
+@eval exp="stopAllVoices()"<r/>
+@endmacro<r/>
+</example>
+<r/>
+　createHistoryActionExp 関数では、hact タグの exp 属性に渡すための TJS 式を生成しています。ここで生成した TJS 式が実行されることになります。<r/>
+<r/>
+　このマクロを使った例は以下のようになります。<r/>
+<r/>
+<example>
+[pv b=2 s=hoge.ogg]ほげ[l][sv][r]<r/>
+[pv b=3 s=hogera.ogg]ほげら[l][sv][r]<r/>
+[pv b=4 s=hogemoge.ogg]ほげもげ[p][sv]<r/>
+</example>
+</para>
+
+
+
+<para>
+<ptitle>初期化時に実行されるスクリプト</ptitle>
+　KAG はシステムのカスタマイズのために、初期化のいくつかの段階において 任意の TJS スクリプトを実行する機能があります。現バージョンでは以下の方法が用意されています。<r/>
+<r/>
+<dl>
+<dt><kw>Override.tjs</kw></dt>
+<dd>
+　このファイルは MainWindow.tjs が読み込まれた後に、もし存在すれば実行されます。初期状態ではこのファイルは存在しないので、新しく作成してください。
+</dd>
+
+<dt><kw>AfterInit.tjs</kw></dt>
+<dd>
+　すべての初期化が終わり、 first.ks が実行される直前に実行されます。このファイルも初期状態では存在しないので、新しく作成してください。
+</dd>
+
+<dt>「<kw>追加の設定</kw>」</dt>
+<dd>
+　Config.tjs 内には、いくつか「◆ ウィンドウや動作の追加の設定」など、「追加の設定」を記述できるところがあります。そこに記述した内容は Config.tjs の実行される各段階で実行されます。
+</dd>
+</dl>
+</para>
+
+<para>
+<ptitle>メニューのカスタマイズ</ptitle>
+　メニュー項目に、たとえば、単純な on/off だけの設定項目を追加するには、AfterInit.tjs に以下のような内容を書きます。<r/>
+<r/>
+<example>
+kag.menu.insert(kag.optionsMenu =<r/>
+	new KAGMenuItem(this, "効果(&amp;G)", 0, void, false), 2);<r/>
+kag.optionsMenu.stopRecur = true;<r/>
+<r/>
+kag.optionsMenu.add(<r/>
+	kag.doTransMenuItem = new KAGMenuItem(<r/>
+		this,<r/>
+		"画面切り替えを行う(&amp;T)",<r/>
+		0,<r/>
+		function(sender) { sf.dotrans = sender.checked = !sf.dotrans; },<r/>
+		false));<r/>
+<r/>
+if(sf.dotrans === void) sf.dotrans = true;<r/>
+kag.doTransMenuItem.checked = sf.dotrans;<r/>
+<r/>
+kag.optionsMenu.add(<r/>
+	kag.playSEItem = new KAGMenuItem(<r/>
+		this,<r/>
+		"効果音を再生する(&amp;S)",<r/>
+		0,<r/>
+		function(sender) { sf.playse = sender.checked = !sf.playse; },<r/>
+		false));<r/>
+<r/>
+if(sf.playse === void) sf.playse = true;<r/>
+kag.playSEItem.checked = sf.playse;<r/>
+</example>
+<r/>
+　<tt>kag.menu.insert(kag.optionsMenu = new KAGMenuItem(this, "効果(&amp;G)", 0, void, false), 2);</tt> では、KAG のメニューバーに「効果」メニューを挿入しています。kag.optionMenu がその「効果」メニューのオブジェクトになります。insert メソッドの第２引数は、メニュー項目を挿入する位置です。<r/>
+　次の行ではそのオブジェクトの stopRecur を true に設定していますが、これは kag.internalSetMenuAccessibleAll で不必要なメニューアイテムの検索を行わないようにするためです。<r/>
+<r/>
+　その kag.optioneMenu に、add メソッドで子のメニュー項目を作成しています。<r/>
+<r/>
+　KAGMenuItem の第４引数は、メニューアイテムがクリックされたときに実行する式を指定します。<r/>
+<r/>
+　<tt>if(sf.dotrans === void) sf.dotrans = true;</tt> では、sf.dotrans が void ( つまり、何も値が無い状態 ) の時に、初期値を入れています。<tt>kag.doTransMenuItem.checked = sf.dotrans;</tt> では、メニューアイテムのチェックの初期状態を設定しています。システム変数に記録しているため、プログラムを終了しても次回に設定が引き継がれます。<r/>
+<r/>
+　あとは sf.dotrans や sf.playse に現在のメニューの状態が記録されているので、<r/>
+<r/>
+<tt>@playse storage="kon.wav" cond="sf.playse"</tt>
+<r/>
+　のようにして使用することができます。<r/>
+<r/>
+　応用でいろいろできると思います。<r/>
+</para>
+
+
+<para>
+<ptitle>KAG用プラグインを書く</ptitle>
+　<kw>KAGPlugin クラス</kw> のサブクラスを作り、KAG に登録することで KAG の機能を拡張するプラグインを作ることができます。<r/>
+　サンプルが KAG の配布ファイルとともに配布されていると思うので参照してみてください。<r/>
+</para>
+
+</doc>
+

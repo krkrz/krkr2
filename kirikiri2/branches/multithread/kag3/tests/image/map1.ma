@@ -1,0 +1,12 @@
+11:  hint="埼玉"; storage="maptest2.ks"; target="*m11"; onenter="dm('entered in 埼玉')"; onleave="dm('leaved from 埼玉')"; exp="dm('processing 埼玉')";
+8: hint="群馬"; storage="maptest2.ks"; target="*m8"; onenter="dm('entered in 群馬')"; onleave="dm('leaved from 群馬')"; exp="dm('processing 群馬')";
+7: hint="栃木"; storage="maptest2.ks"; target="*m7"; onenter="dm('entered in 栃木')"; onleave="dm('leaved from 栃木')"; exp="dm('processing 栃木')";
+9: hint="茨城"; storage="maptest2.ks"; target="*m9"; onenter="dm('entered in 茨城')"; onleave="dm('leaved from 茨城')"; exp="dm('processing 茨城')";
+10: hint="千葉"; storage="maptest2.ks"; target="*m10"; onenter="dm('entered in 千葉')"; onleave="dm('leaved from 千葉')"; exp="dm('processing 千葉')";
+12: hint="東京"; storage="maptest2.ks"; target="*m12"; onenter="dm('entered in 東京')"; onleave="dm('leaved from 東京')"; exp="dm('processing 東京')";
+2: hint="神奈川"; storage="maptest2.ks"; target="*m2"; onenter="dm('entered in 神奈川')"; onleave="dm('leaved from 埼玉')"; exp="dm('processing 神奈川')";
+3: hint="山梨"; storage="maptest2.ks"; target="*m3"; onenter="dm('entered in 山梨')"; onleave="dm('leaved from 山梨')"; exp="dm('processing 山梨')";
+1: hint="静岡"; storage="maptest2.ks"; target="*m1"; onenter="dm('entered in 静岡')"; onleave="dm('leaved from 静岡')"; exp="dm('processing 静岡')";
+4: hint="長野"; storage="maptest2.ks"; target="*m4"; onenter="dm('entered in 長野')"; onleave="dm('leaved from 長野')"; exp="dm('processing 長野')";
+5: hint="新潟"; storage="maptest2.ks"; target="*m5"; onenter="dm('entered in 新潟')"; onleave="dm('leaved from 新潟')"; exp="dm('processing 新潟')";
+6: hint="福島"; storage="maptest2.ks"; target="*m6"; onenter="dm('entered in 福島')"; onleave="dm('leaved from 福島')"; exp="dm('processing 福島')";

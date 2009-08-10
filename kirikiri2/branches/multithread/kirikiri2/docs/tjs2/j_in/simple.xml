@@ -1,0 +1,641 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>基本的な使い方</title>
+
+<para>
+<ptitle>コンパイル</ptitle>
+　Borland C++ 5.5 以降 ( C++ Builder 5 以降 ) でコンパイルをすることができます。<r/>
+<r/>
+　コンパイルには boost.org の regex++ が必要になります。<r/>
+<r/>
+　regex++ をインストールした後、各 cpp ファイルをコンパイルしてください。<r/>
+<r/>
+　C++ Builder の場合は、tjs2 の各 cpp ファイルをすべてプロジェクトに追加するだけで OK です。<r/>
+<r/>
+　gcc 3 以降でもコンパイルできます ( 2.95 でもコンパイルできますが wstring 関連の修正が必要 )。<r/>
+</para>
+
+<para>
+<ptitle>簡単な例</ptitle>
+<r/>
+<example><lc/>
+<l/>#include &lt;stdio.h><r/>
+<l/>#include "tjs.h"<r/>
+<l/>#include "tjsError.h"<r/>
+<l/><r/>
+<l/>int main(int argc, char* argv[])<r/>
+<l/>{<r/>
+<l/>	setlocale(LC_ALL, ""); // ロケールを設定<r/>
+<l/><r/>
+<l/>	tTJS *tjsengine = new tTJS(); // TJS2 スクリプトエンジンを作成<r/>
+<l/><r/>
+<l/>	try<r/>
+<l/>	{<r/>
+<l/>		tTJSVariant result; // 結果を受け取るための変数<r/>
+<l/><r/>
+<l/>		tjsengine->ExecScript(<r/>
+<l/>			TJS_W(<r/>
+<l/>				"function test(x, y) { return x*y; } \n"<r/>
+<l/>				"return test(4, 5);\n"),<r/>
+<l/>				&amp;result, NULL,<r/>
+<l/>				TJS_W("test code"));	// テストスクリプトを実行<r/>
+<l/><r/>
+<l/>		printf("結果 : %d\n", (int)result); // 結果を表示<r/>
+<l/>	}<r/>
+<l/>	catch(eTJSError &amp;e)<r/>
+<l/>	{<r/>
+<l/>		printf("エラーが発生しました : %ls\n", e.GetMessage().c_str());<r/>
+<l/>	}<r/>
+<l/>	catch(...)<r/>
+<l/>	{<r/>
+<l/>		printf("エラーが発生しました\n");<r/>
+<l/>	}<r/>
+<l/><r/>
+<l/>	tjsengine->Shutdown(); // TJS2 スクリプトエンジンをシャットダウン<r/>
+<l/>	tjsengine->Release(); // TJS2 スクリプトエンジンを解放<r/>
+<l/><r/>
+<l/>	return 0;<r/>
+<l/>}<r/>
+</example>
+<r/>
+
+<dl>
+
+<dt>2～3行目</dt>
+<dd>
+TJS2 を使用するのに必要なヘッダファイルを読み込んでいます。tjsError.h は TJS の C++ 例外に関する宣言が含まれています。
+</dd>
+
+
+
+<dt>7行目</dt>
+<dd>
+setlocale でロケールを指定しています。ロケールを指定しないと "C" ロケールになるため、日本語文字のナロー文字とワイド文字間の変換がうまくいきません。
+</dd>
+
+
+
+<dt>9行目</dt>
+<dd>
+TJS2 スクリプトエンジンを new 演算子で作成しています。
+</dd>
+
+
+
+<dt>11行目</dt>
+<dd>
+try ブロックに入っています。TJS2 のエラーは例外により通知されるため、例外処理には慎重になる必要があります。
+</dd>
+
+
+
+<dt>13行目</dt>
+<dd>
+　スクリプトを実行した結果を受け取るための tTJSVariant 型の変数を宣言しています。
+</dd>
+
+
+
+<dt>15～20行目</dt>
+<dd>
+　tTJS::ExecScript を使ってスクリプトを実行しています。<r/>
+　第１引数には実行するスクリプトを指定します。tjs_char * 型で渡すために、文字列リテラルを TJS_W マクロを使ってワイド文字列に変換しています。スクリプトでは、関数 test を定義し、その関数を呼んだ結果を返しています。<r/>
+　この例では return 文により実行の結果を返し、それを result 変数で受け取っていますが、結果を受け取る必要がない場合は return 文も tTJS::ExecScript の２番目の引数も必要ありません ( その場合は２番目の引数は NULL を指定します )。<r/>
+　tTJS::ExecScript の３番目の引数は実行コンテキストですが、ここでは NULL を指定します。NULL を指定すると スクリプトは global コンテキスト上で実行されます。<r/>
+　tTJS::ExecScript の４番目の引数は、このスクリプトの名前を指定します。NULLの場合は匿名として扱われます。人間が可読な名前である必要があります。
+</dd>
+
+
+
+<dt>22行目</dt>
+<dd>
+　結果を表示しています。ここでは tTJSVariant を int 型にキャストしています。
+</dd>
+
+
+
+<dt>24行目</dt>
+<dd>
+　eTJSError 型の例外を受け取っています。
+</dd>
+
+
+
+<dt>26行目</dt>
+<dd>
+　eTJSError::GetMessage を使って、例外の理由を表示しています。メッセージを const tjs_char * に変換するために tTJSString::c_str を使っています。tjs_char は ワイド文字のため、printf の変換指定子には %ls を指定しています。
+</dd>
+
+
+
+<dt>28行目</dt>
+<dd>
+　その他の例外を受け取っています。
+</dd>
+
+
+
+<dt>33～34行目</dt>
+<dd>
+　TJS2 スクリプトエンジンを解放しています。解放に先立ち、tTJS::Shutdown を使って TJS2 スクリプトエンジンをシャットダウンしています。
+</dd>
+</dl>
+</para>
+
+
+<para>
+<ptitle>TJS2側の関数の呼び出し</ptitle>
+　TJS2側で宣言した関数をC++から呼び出す方法です。<r/>
+　前述の try ブロックの中を以下のように書いてみます。<r/>
+<r/>
+<example><lc/>
+<l/>		tTJSVariant result; // 結果を受け取るための変数<r/>
+<l/><r/>
+<l/>		tjsengine->ExecScript(<r/>
+<l/>			TJS_W("function test(x, y) { return x*y; }"), NULL, NULL, TJS_W("test"));<r/>
+<l/><r/>
+<l/>		tjsengine->EvalExpression(TJS_W("test(4, 5)"), &amp;result, NULL, NULL);<r/>
+<l/>			// tTJS::EvalExpression を使って式を実行<r/>
+<l/><r/>
+<l/>		printf("結果 : %d\n", (int)result); // 結果を表示<r/>
+<l/><r/>
+<l/>		iTJSDispatch2 * global = tjsengine->GetGlobalNoAddRef();<r/>
+<l/>			// グローバルオブジェクトを取得<r/>
+<l/><r/>
+<l/>		tTJSVariant param[] = { 4, 5 }; // パラメータとして渡す変数<r/>
+<l/>		tTJSVariant *p_param[] = { param + 0, param + 1 }; // 変数へのポインタの配列<r/>
+<l/><r/>
+<l/>		TJS_THROW_IF_ERROR(global->FuncCall(0, TJS_W("test"), NULL, &amp;result, 2, p_param, NULL));<r/>
+<l/>			// test を関数として呼び出す<r/>
+<l/><r/>
+<l/>		printf("結果 : %d\n", (int)result); // 結果を表示<r/>
+</example>
+<r/>
+<dl>
+
+<dt>3～4行目</dt>
+<dd>
+　関数 test を宣言しています。test は global に登録されます。
+</dd>
+
+
+
+<dt>6行目</dt>
+<dd>
+　tTJS::EvalExpression を使って式を実行しています。それほど速度的にシビアでなくてもよいならば、このように 式を文字列として渡してその結果を受け取ると楽です。<r/>
+　ちなみに、単純な式 ( 関数宣言など、他の実行単位を含まないようなもの ) ならば、ある程度、コンパイル結果がキャッシュされ、２回目以降の式評価を高速に行うことができます。
+</dd>
+
+
+
+<dt>11行目</dt>
+<dd>
+　グローバルオブジェクトを取得しています。tTJS::GetGlobal と tTJS::GetGlobalNoAddRef の違いは、前者が global オブジェクトの参照カウンタをインクリメントするのに対し、後者はインクリメントしないと言うことです。<r/>
+　参照カウンタをインクリメントし、使い終わったらデクリメントすると言うことは、その間中、そのオブジェクトが消滅しないようにロックをかけると言うことです。この例のように、global オブジェクトが消滅する心配のない場合は参照カウンタを操作する必要はありませんので tTJS::GetGlobalNoAddRef を使うことができます。また、この場合は使い終わったときの Release は必要ありません。
+</dd>
+
+
+
+<dt>14～15行目</dt>
+<dd>
+　関数に渡すパラメータを準備しています。iTJSDispatch::FuncCall は、関数に渡すパラメータとして tTJSVariant 型のポインタの配列を必要とするため、このような準備が必要になります。
+</dd>
+
+
+
+<dt>17行目</dt>
+<dd>
+　iTJSDispatch2::FuncCall を使って、関数 "test" を呼び出しています。<r/>
+　FuncCall の最後の引数は、関数 test に渡される this (実行コンテキスト) ですが、この例で宣言した test 内では this を使っていないので NULL を指定してかまいません。実行すべきコンテキストがある場合は、そのオブジェクトを指定する必要があります。<r/>
+　TJS_THROW_IF_ERROR は、tjs_error 型の結果がエラーだった場合、それに対応するエラーメッセージとともに例外を送出するマクロです。
+</dd>
+</dl>
+
+</para>
+
+
+<para>
+<ptitle>ネイティブ関数</ptitle>
+　ネイティブ実装 (C++などで実装された関数) を作成し、TJS2 側からそれにアクセスすることができます。<r/>
+　C++ でなくても、iTJSDispatch2 を実装できる言語ならば、どのような言語で書かれた関数でも呼び出すことができますが、C++ が一番楽でしょう。<r/>
+<r/>
+　C++ で 関数を書く場合は、tTJSNativeFunction (tjsNative.h に記述) からクラスを導出するのが楽です (しかし、iTJSDispatch2 の FuncCall を実装するだけでも関数として動作はできます)。<r/>
+<r/>
+　与えられた２つの引数を乗算して返す、簡単な関数を実装してみます。<r/>
+<example><lc/>
+<l/>class TestFunc : public tTJSNativeFunction<r/>
+<l/>{<r/>
+<l/>public:<r/>
+<l/>	tjs_error Process(tTJSVariant *result, tjs_int numparams,<r/>
+<l/>		tTJSVariant **param, iTJSDispatch2 *objthis)<r/>
+<l/>	{<r/>
+<l/>		if(numparams &lt; 2) return TJS_E_BADPARAMCOUNT; // 引数が足りない<r/>
+<l/><r/>
+<l/>		if(!result) return TJS_S_OK; // 結果を格納しなくて良い場合はそのままもどる<r/>
+<l/><r/>
+<l/>		*result = *param[0] * *param[1]; // 計算<r/>
+<l/><r/>
+<l/>		return TJS_S_OK; // 正常に終わったことを示すため TJS_S_OK を返す<r/>
+<l/>	}<r/>
+<l/>};<r/>
+</example>
+<r/>
+　tTJSNativeFunction を継承したクラスで実装すべきなのは、上記の通り Process メソッドだけです。<r/>
+　Process メソッドの引数は以下の通りです。<r/>
+<r/>
+
+<dl>
+
+<dt>tTJSVariant *result</dt>
+<dd>
+　関数の結果を格納するための tTJSVariant 型の変数へのポインタが渡されます。<b>呼び出し側が結果を必要としない場合は NULL が渡されます</b>ので注意してください。
+</dd>
+
+
+
+<dt>tjs_int numparams</dt>
+<dd>
+　関数に渡された引数の数です。
+</dd>
+
+
+
+<dt>tTJSVariant **param</dt>
+<dd>
+　関数に渡された引数が格納された tTJSVariant 型の変数へのポインタの配列です。
+</dd>
+
+
+
+<dt>iTJSDispatch2 *objthis</dt>
+<dd>
+　関数が実行されるべきコンテキストです。コンテキストに依存しない実装をする場合は無視してかまいません。
+</dd>
+</dl>
+<r/>
+<r/>
+<r/>
+　ネイティブ関数は TJS2 からアクセス可能にするため、TJS2 内からアクセスできるオブジェクトに登録する必要があります。以下の例では、global に "test" という名前で登録しています。また、実際にその関数を呼び出しています。<r/>
+<example><lc/>
+<l/>		iTJSDispatch2 * global = tjsengine->GetGlobalNoAddRef();<r/>
+<l/>			// グローバルオブジェクトを取得<r/>
+<l/><r/>
+<l/>		iTJSDispatch2 *func = new TestFunc(); // TestFunc のオブジェクトを作成<r/>
+<l/>		tTJSVariant func_var(func); // tTJSVariant 型 func_var にオブジェクトを設定<r/>
+<l/>		func->Release(); // func を Release<r/>
+<l/><r/>
+<l/>		TJS_THROW_IF_ERROR(<r/>
+<l/>			global->PropSet(TJS_MEMBERENSURE, TJS_W("test"), NULL, &amp;func_var, NULL));<r/>
+<l/>				// 登録<r/>
+<l/><r/>
+<l/>		tTJSVariant result; // 結果を受け取るための変数<r/>
+<l/>		tjsengine->EvalExpression(TJS_W("test(4, 5)"), &amp;result, NULL, NULL);<r/>
+<l/>			// tTJS::EvalExpression を使って式を実行<r/>
+<l/><r/>
+<l/>		printf("結果 : %d\n", (int)result); // 結果を表示<r/>
+</example>
+<r/>
+<dl>
+
+<dt>4～6行目</dt>
+<dd>
+　ネイティブ関数を実装してあるクラス TestFunc のオブジェクトを作成し、それを tTJSVariant 型に変換しています。<r/>
+　5行目で tTJSVariant 型に変換していますが、この時点で tTJSVariant 型が 関数オブジェクトの参照カウンタを自動的に管理するので、6行目で関数オブジェクトを Release しています。
+</dd>
+
+
+
+<dt>8～9行目</dt>
+<dd>
+　global オブジェクトに関数を "test" という名前で登録しています。global オブジェクトの iTJSDispatch2::PropSet を呼んでいますが、メンバを新規作成させるために TJS_MEMBERENSURE フラグを伴って呼び出しています。
+</dd>
+
+
+
+<dt>12～16行目</dt>
+<dd>
+　実際に関数を呼び出し、結果を表示しています。
+</dd>
+</dl>
+</para>
+
+<para>
+<ptitle>ネイティブクラス</ptitle>
+　TJS2 は C++ 等の言語で書かれたネイティブクラスを扱うための機構を持っています。<r/>
+　各オブジェクト (iTJSDispatch2 インターフェース) にはネイティブインスタンスと呼ばれる、iTJSNativeInstance 型のオブジェクトを登録することができ、これを オブジェクトから取り出すことができます。<r/>
+　ネイティブインスタンスは一意なクラス ID で識別され、ネイティブクラスの作成時にはクラス ID を取得する必要があります。<r/>
+<r/>
+　しかし、これらの操作を行う為のマクロ群が tjsNative.h に定義されているので、これらを利用するのが楽です。<r/>
+　以下の例は、これらのマクロを使って簡単なクラスを実装するものです。<r/>
+<r/>
+　まず、ネイティブインスタンスの実装です。ネイティブインスタンスを実装するには tTJSNativeInstance からクラスを導出します。tTJSNativeInstance は tjsNative.cpp / tjsNative.h に実装されているクラスで、iTJSNativeInstance の基本的な動作を実装しています。<r/>
+<r/>
+<example><lc/>
+<l/>class NI_Test : public tTJSNativeInstance // ネイティブインスタンス<r/>
+<l/>{<r/>
+<l/>public:<r/>
+<l/>	NI_Test()<r/>
+<l/>	{<r/>
+<l/>		// コンストラクタ<r/>
+<l/>		Value = 0;<r/>
+<l/>	}<r/>
+<l/><r/>
+<l/>	tjs_error TJS_INTF_METHOD<r/>
+<l/>		Construct(tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *tjs_obj)<r/>
+<l/>	{<r/>
+<l/>		// TJS2 オブジェクトが作成されるときに呼ばれる<r/>
+<l/><r/>
+<l/>		// 引数があればそれを初期値として Value に入れる<r/>
+<l/>		if(numparams >= 1 &amp;&amp; param[0]->Type() != tvtVoid)<r/>
+<l/>			Value = (tjs_int)*param[0];<r/>
+<l/><r/>
+<l/>		return S_OK;<r/>
+<l/>	}<r/>
+<l/><r/>
+<l/>	void TJS_INTF_METHOD Invalidate()<r/>
+<l/>	{<r/>
+<l/>		// オブジェクトが無効化されるときに呼ばれる<r/>
+<l/>	}<r/>
+<l/><r/>
+<l/>	void SetValue(tjs_int n) { Value = n; }<r/>
+<l/>	tjs_int GetValue() const { return Value; }<r/>
+<l/><r/>
+<l/>	tjs_int GetSquare() const { return Value*Value; }<r/>
+<l/>	void Add(tjs_int n) { Value += n; }<r/>
+<l/>	void Print() const { printf("%d\n", Value); }<r/>
+<l/><r/>
+<l/>private:<r/>
+<l/>	tjs_int Value; // 値<r/>
+<l/>};<r/>
+</example>
+<r/>
+<dl>
+
+<dt>35行目</dt>
+<dd>
+　話が前後しますが、データメンバです。ネイティブインスタンスには、必要なデータメンバを自由に書くことができます。
+</dd>
+
+
+<dt>4～8行目</dt>
+<dd>
+　NI_Test のコンストラクタです。C++ クラスとしての初期化は 後述の Construct よりもここで済ませておき、Construct での初期化は最小限の物にすることをおすすめします。<r/>
+　この例では、データメンバの Value に初期値として 0 を設定しています。
+</dd>
+
+
+
+<dt>10～20行目</dt>
+<dd>
+　new 演算子で TJS2 オブジェクトが作成されるときに呼ばれます。numparams と param 引数は new 演算子に渡された引数を表しています。<r/>
+　tjs_obj 引数は、作成される TJS オブジェクトです。<r/>
+　この例では、引数があれば (さらにそれが void で無ければ )、それを Value の初期値として設定しています。
+</dd>
+
+
+
+<dt>22～25行目</dt>
+<dd>
+　オブジェクトが無効化されるときに呼ばれるメソッドです。ここに終了処理を書くと良いでしょう。<r/>
+　この例では何もしません。
+</dd>
+
+
+
+<dt>27～32行目</dt>
+<dd>
+　データメンバを操作するための公開メソッド群です。後述するネイティブクラス内で、これらを利用するコードを書きます。
+</dd>
+</dl>
+
+<r/>
+　オブジェクトを作成するためにはクラスが必要ですので、クラスを記述します。クラスは tTJSNativeClass を導出する形で実装します。tTJSNativeClass は iTJSDispatch2 インターフェースを持っていて、ネイティブクラスとして振る舞うための基本的な動作が実装されています。<r/>
+　TJS からアクセス可能なメソッドやプロパティは、ネイティブクラスのコンストラクタ内に記述します。<r/>
+<r/>
+<example><lc/>
+<l/>class NC_Test : public tTJSNativeClass // ネイティブクラス<r/>
+<l/>{<r/>
+<l/>public:<r/>
+<l/>	NC_Test(); // コンストラクタ; 下に記述<r/>
+<l/><r/>
+<l/>	static tjs_uint32 ClassID; // クラスID<r/>
+<l/><r/>
+<l/>private:<r/>
+<l/>	tTJSNativeInstance *CreateNativeInstance()<r/>
+<l/>	{<r/>
+<l/>		return new NI_Test(); // ネイティブインスタンスを作成して返す<r/>
+<l/>	}<r/>
+<l/>};<r/>
+<l/>tjs_uint32 NC_Test::ClassID = (tjs_uint32)-1; // クラスID<r/>
+</example>
+<r/>
+<dl>
+
+<dt>4行目</dt>
+<dd>
+　このクラスのコンストラクタです。実装は後述します。
+</dd>
+
+
+
+<dt>6行目</dt>
+<dd>
+　このクラスのクラス ID を保持するための変数です。14行目に実体があります。
+</dd>
+
+
+
+<dt>9～12行目</dt>
+<dd>
+　CreateNativeInstance メソッドは、ネイティブインスタンスを作成すべきタイミングで呼ばれるメソッドです。ここでは NI_Test クラスのオブジェクトを作成して返しています。
+</dd>
+</dl>
+<r/>
+
+<r/>
+<r/>
+
+<example><lc/>
+<l/>NC_Test::NC_Test() : tTJSNativeClass(TJS_W("Test"))<r/>
+<l/>{<r/>
+<l/>	TJS_BEGIN_NATIVE_MEMBERS(/*TJS class name*/Test)<r/>
+<l/><r/>
+<l/>		TJS_DECL_EMPTY_FINALIZE_METHOD<r/>
+<l/><r/>
+<l/>		TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL(<r/>
+<l/>			/*var.name*/_this,<r/>
+<l/>			/*var.type*/NI_Test,<r/>
+<l/>			/*TJS class name*/Test)<r/>
+<l/>		{<r/>
+<l/>			// NI_Test::Construct にも内容を記述できるので<r/>
+<l/>			// ここでは何もしない<r/>
+<l/>			return TJS_S_OK;<r/>
+<l/>		}<r/>
+<l/>		TJS_END_NATIVE_CONSTRUCTOR_DECL(/*TJS class name*/Test)<r/>
+<l/><r/>
+<l/>		TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/print) // print メソッド<r/>
+<l/>		{<r/>
+<l/>			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,<r/>
+<l/>				/*var. type*/NI_Test);<r/>
+<l/><r/>
+<l/>			_this->Print();<r/>
+<l/><r/>
+<l/>			return TJS_S_OK;<r/>
+<l/>		}<r/>
+<l/>		TJS_END_NATIVE_METHOD_DECL(/*func. name*/print)<r/>
+<l/><r/>
+<l/>		TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/add) // add メソッド<r/>
+<l/>		{<r/>
+<l/>			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,<r/>
+<l/>				/*var. type*/NI_Test);<r/>
+<l/><r/>
+<l/>			if(numparams &lt; 1) return TJS_E_BADPARAMCOUNT;<r/>
+<l/><r/>
+<l/>			_this->Add((tjs_int)*param[0]);<r/>
+<l/><r/>
+<l/>			return TJS_S_OK;<r/>
+<l/>		}<r/>
+<l/>		TJS_END_NATIVE_METHOD_DECL(/*func. name*/add)<r/>
+<l/><r/>
+<l/>		TJS_BEGIN_NATIVE_PROP_DECL(value) // value プロパティ<r/>
+<l/>		{<r/>
+<l/>			TJS_BEGIN_NATIVE_PROP_GETTER<r/>
+<l/>			{<r/>
+<l/>				TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,<r/>
+<l/>					/*var. type*/NI_Test);<r/>
+<l/>				*result = _this->GetValue();<r/>
+<l/>				return TJS_S_OK;<r/>
+<l/>			}<r/>
+<l/>			TJS_END_NATIVE_PROP_GETTER<r/>
+<l/><r/>
+<l/>			TJS_BEGIN_NATIVE_PROP_SETTER<r/>
+<l/>			{<r/>
+<l/>				TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,<r/>
+<l/>					/*var. type*/NI_Test);<r/>
+<l/>				_this->SetValue((tjs_int)*param);<r/>
+<l/>				return TJS_S_OK;<r/>
+<l/>			}<r/>
+<l/>			TJS_END_NATIVE_PROP_SETTER<r/>
+<l/>		}<r/>
+<l/>		TJS_END_NATIVE_PROP_DECL(value)<r/>
+<l/><r/>
+<l/>		TJS_BEGIN_NATIVE_PROP_DECL(square) // square 読み出し専用プロパティ<r/>
+<l/>		{<r/>
+<l/>			TJS_BEGIN_NATIVE_PROP_GETTER<r/>
+<l/>			{<r/>
+<l/>				TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,<r/>
+<l/>					/*var. type*/NI_Test);<r/>
+<l/><r/>
+<l/>				*result = _this->GetSquare();<r/>
+<l/><r/>
+<l/>				return TJS_S_OK;<r/>
+<l/>			}<r/>
+<l/>			TJS_END_NATIVE_PROP_GETTER<r/>
+<l/><r/>
+<l/>			TJS_DENY_NATIVE_PROP_SETTER<r/>
+<l/>		}<r/>
+<l/>		TJS_END_NATIVE_PROP_DECL(square)<r/>
+<l/><r/>
+<l/>	TJS_END_NATIVE_MEMBERS<r/>
+<l/>}<r/>
+</example>
+<r/>
+<dl>
+
+<dt>1行目</dt>
+<dd>
+　NC_Test のコンストラクタです。親クラスである tTJSNativeClass のコンストラクタには TJS2 内で使用するクラス名を指定します。
+</dd>
+
+
+
+<dt>3行目</dt>
+<dd>
+　TJS_BEGIN_NATIVE_MEMBERS マクロです。引数には TJS2 内で使用するクラス名を指定します。<r/>
+　このマクロと TJS_END_NATIVE_MEMBERS マクロで挟まれた場所に、クラスのメンバとなるべきメソッドやプロパティの記述をします。
+</dd>
+
+
+
+<dt>4行目</dt>
+<dd>
+　空の finalize メソッドを宣言しています。finalize に相当する処理は tTJSNativeInstance::Invalidate をオーバーライドすることでも実装できますので、通常は空のメソッドで十分です。
+
+</dd>
+
+
+
+<dt>7～16行目</dt>
+<dd>
+　(TJSの) コンストラクタを宣言しています。TJS でクラスを書くとき、クラス内でクラスと同名のメソッドを宣言している部分に相当します。<r/>
+<r/>
+　TJS_BEGIN_NATIVE_CONSTRUCTOR_DECL マクロの１番目の引数はネイティブインスタンスに割り当てる変数名で、２場面目の引数はその変数の型名です。この例でのこのブロック内では NI_Test * _this という変数が利用可能で、ネイティブインスタンスにアクセスすることができます。<r/>
+　マクロの３番目の引数は、TJS 内で使用するクラス名を指定します。TJS_END_NATIVE_CONSTRUCTOR_DECL マクロの引数も同様です。<r/>
+　ここも、コンストラクタに相当する処理は tTJSNativeInstance::Construct をオーバーライドする事で実装できるので、ここでは何もせずに S_OK を返します。
+
+</dd>
+
+
+
+<dt>18～27行目</dt>
+<dd>
+　print メソッドを宣言しています。メソッド名は TJS_BEGIN_NATIVE_METHOD_DECL と TJS_END_NATIVE_METHOD_DECL の両マクロに同じものを指定する必要があります。<r/>
+　このマクロ内で使用可能な変数に tjs_int numparams と tTJSVariant **param があって、それぞれ、渡された引数の数と引数を示しています。このメソッドではそれらは使用していません。<r/>
+　20～21行目は、オブジェクトからネイティブインスタンスを取り出すためのマクロです。この例では _this という NI_Test * 型の変数にネイティブインスタンスを取り出す、という意味になります。以降、_this という変数でネイティブインスタンスにアクセスできます。23行目で、そのネイティブインスタンスの Print メソッドを呼び出しています。
+</dd>
+
+
+
+<dt>29～40行目</dt>
+<dd>
+　add メソッドを宣言しています。ここでは numparams と param を使用しています。
+</dd>
+
+
+
+
+<dt>42～62行目</dt>
+<dd>
+　value プロパティを宣言しています。TJS_BEGIN_NATIVE_PROP_DECL と TJS_END_NATIVE_PROP_DECL の両マクロには、メソッドの宣言と同じく、プロパティ名を指定します。<r/>
+<r/>
+　TJS_BEGIN_NATIVE_PROP_GETTER と TJS_END_NATIVE_PROP_GETTER マクロで囲まれた場所には、ゲッターを記述することができます。ゲッター内では tTJSVariant 型である *result に値を設定するように記述します。<r/>
+　同様に、TJS_BEGIN_NATIVE_PROP_SETTER と TJS_END_NATIVE_PROP_SETTER マクロで囲まれた場所にはセッターを記述することができます。セッター内では tTJSVariant 型である *param に設定されるべき値が格納されているので、それを使って処理をします。
+</dd>
+
+
+
+<dt>64～79行目</dt>
+<dd>
+　ここでは読み出し専用プロパティを宣言しています。セッターの代わりに TJS_DENY_NATIVE_PROP_SETTER を書くことにより、読み出し専用プロパティを作ることができます。
+</dd>
+</dl>
+<r/>
+
+<r/>
+<r/>
+　ネイティブクラスの登録は、ネイティブ関数の登録と同じです。以下にテストコードを例示します。<r/>
+<r/>
+<example><lc/>
+<l/>		iTJSDispatch2 * global = tjsengine->GetGlobalNoAddRef();<r/>
+<l/>			// グローバルオブジェクトを取得<r/>
+<l/><r/>
+<l/>		iTJSDispatch2 *cls = new NC_Test(); // NC_Test のオブジェクトを作成<r/>
+<l/>		tTJSVariant cls_var(cls); // tTJSVariant 型 cls_var にオブジェクトを設定<r/>
+<l/>		cls->Release(); // cls を Release<r/>
+<l/><r/>
+<l/>		TJS_THROW_IF_ERROR(<r/>
+<l/>			global->PropSet(TJS_MEMBERENSURE, TJS_W("Test"), NULL, &amp;cls_var, NULL));<r/>
+<l/>				// 登録<r/>
+<l/><r/>
+<l/>		tjsengine->ExecScript(TJS_W(<r/>
+<l/>			"var test = new Test();\n"<r/>
+<l/>			"test.value = 5;\n"<r/>
+<l/>			"var test2 = new Test(test.square);\n"<r/>
+<l/>			"test2.add(3);\n"<r/>
+<l/>			"test2.print();\n\0"),<r/>
+<l/>				NULL, NULL, NULL); // スクリプトを実行<r/>
+</example>
+<r/>
+</para>
+
+</doc>
