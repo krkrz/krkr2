@@ -1,0 +1,61 @@
+class TestApp extends Window
+{
+  var rootLayer;
+  var testLayer;
+  var blackLayer;
+  var whiteLayer;
+
+  function TestApp {
+    super.Window();
+
+    borderStyle = bsSingle;
+    caption = "multi thread test app";
+    setInnerSize(640, 480);
+    setPos(100, 100);
+
+    rootLayer = new Layer(this, null);
+    rootLayer.setSize(innerWidth, innerHeight);
+    rootLayer.hasImage = false;
+    rootLayer.visible = true;
+
+    testLayer = new Layer(this, rootLayer);
+    testLayer.setSize(innerWidth, innerHeight);
+    testLayer.visible = true;
+
+    blackLayer = new Layer(this, rootLayer);
+    blackLayer.setSize(innerWidth, innerHeight);
+    blackLayer.fillRect(0, 0, innerWidth, innerHeight, 0xFF000000);
+
+    whiteLayer = new Layer(this, rootLayer);
+    whiteLayer.setSize(innerWidth, innerHeight);
+    whiteLayer.fillRect(0, 0, innerWidth, innerHeight, 0xFFFFFFFF);
+
+    add(rootLayer);
+
+    visible = true;
+    Debug.console.visible = true;
+
+    System.drawThreadNum = 0;
+    Debug.message("thread_num = processor_num;");
+    bltBench();
+
+    for (var i = 1; i <= 8; i++) {
+      System.drawThreadNum = i;
+      Debug.message("thread_num = %d;".sprintf(i));
+      bltBench();
+    }
+  }
+
+  function bltBench {
+    var beginTick = System.getTickCount();
+    for (var i = 0; i < 1000; i++) {
+      testLayer.operateRect(0, 0, blackLayer, 0, 0, innerWidth, innerHeight);
+      testLayer.operateRect(0, 0, whiteLayer, 0, 0, innerWidth, innerHeight);
+    }
+    var diffTick = System.getTickCount() - beginTick;
+    Debug.message("blt: %dmsec".sprintf(diffTick));
+  }
+};
+
+global.app = new TestApp();
+

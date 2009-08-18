@@ -8,11 +8,14 @@
 //---------------------------------------------------------------------------
 // Base Layer Bitmap implementation
 //---------------------------------------------------------------------------
+#include <vector>
+
 #include "tjsCommHead.h"
 
 #include "LayerBitmapIntf.h"
 #include "MsgIntf.h"
 #include "Resampler.h"
+#include "DebugIntf.h"
 #include "tvpgl.h"
 #include "argb.h"
 #include "tjsUtils.h"
@@ -32,7 +35,6 @@
 //---------------------------------------------------------------------------
 
 
-
 //---------------------------------------------------------------------------
 // intact ( does not affect ) gamma adjustment data
 tTVPGLGammaAdjustData TVPIntactGammaAdjustData =
@@ -40,6 +42,103 @@ tTVPGLGammaAdjustData TVPIntactGammaAdjustData =
 //---------------------------------------------------------------------------
 
 
+//---------------------------------------------------------------------------
+static const tjs_int TVPMaxThreadNum = 8;
+tjs_int TVPDrawThreadNum = 0;
+struct ThreadInfo {
+  HANDLE thread;
+  HANDLE pongEvent;
+  LPTHREAD_START_ROUTINE lpStartAddress;
+  LPVOID lpParameter;
+};
+static std::vector<ThreadInfo*> TVPThreadList;
+static std::vector<HANDLE> TVPPongEventList;
+static HANDLE TVPThreadPingEvent;
+static std::vector<tjs_int> TVPProcesserIdList;
+
+//---------------------------------------------------------------------------
+static tjs_int GetProcesserNum(void)
+{
+  static tjs_int processor_num = 0;
+  if (! processor_num) {
+    SYSTEM_INFO info;
+    GetSystemInfo(&info);
+    processor_num = info.dwNumberOfProcessors;
+  }
+  return processor_num;
+}
+//---------------------------------------------------------------------------
+static tjs_int GetThreadNum(void)
+{
+  tjs_int threadNum = TVPDrawThreadNum ? TVPDrawThreadNum : GetProcesserNum();
+  threadNum = std::min(threadNum, TVPMaxThreadNum);
+  return threadNum;
+}
+//---------------------------------------------------------------------------
+static DWORD WINAPI ThreadLoop(LPVOID p)
+{
+  ThreadInfo *threadInfo = (ThreadInfo*)p;
+  for(;;) {
+    SignalObjectAndWait(threadInfo->pongEvent, TVPThreadPingEvent, INFINITE, FALSE);
+    (threadInfo->lpStartAddress)(threadInfo->lpParameter);
+  }
+  return TRUE;
+}
+//---------------------------------------------------------------------------
+static void PrepareThread(tjs_int threadNum)
+{
+  if (TVPThreadPingEvent == NULL)
+    TVPThreadPingEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  if (TVPProcesserIdList.empty()) {
+    DWORD processAffinityMask, systemAffinityMask;
+    GetProcessAffinityMask(GetCurrentProcess(),
+                           &processAffinityMask,
+                           &systemAffinityMask);
+    for (tjs_int i = 0; i < MAXIMUM_PROCESSORS; i++) {
+      if (processAffinityMask & (1 << i))
+        TVPProcesserIdList.push_back(i);
+    }
+    if (TVPProcesserIdList.empty())
+      TVPProcesserIdList.push_back(MAXIMUM_PROCESSORS);
+  }
+  while (TVPThreadList.size() < threadNum) {
+      ThreadInfo *threadInfo = new ThreadInfo();
+    threadInfo->pongEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    threadInfo->thread = CreateThread(NULL, 0, ThreadLoop, threadInfo, 0, NULL);
+    SetThreadIdealProcessor(threadInfo->thread, TVPProcesserIdList[TVPThreadList.size() % TVPProcesserIdList.size()]);
+    WaitForSingleObject(threadInfo->pongEvent, INFINITE);
+    TVPThreadList.push_back(threadInfo);
+    TVPPongEventList.push_back(threadInfo->pongEvent);
+  }
+  while (TVPThreadList.size() > threadNum) {
+    ThreadInfo *threadInfo = TVPThreadList.back();
+    TerminateThread(threadInfo->thread, TRUE);
+    DeleteObject(threadInfo->pongEvent);
+    delete threadInfo;
+    TVPThreadList.pop_back();
+    TVPPongEventList.pop_back();
+  }
+}
+
+//---------------------------------------------------------------------------
+static void SetupThread(tjs_int index,
+                        LPTHREAD_START_ROUTINE func,
+                        LPVOID param)
+{
+  ThreadInfo *threadInfo = TVPThreadList[index];
+  threadInfo->lpStartAddress = func;
+  threadInfo->lpParameter = param;
+}
+//---------------------------------------------------------------------------
+static void ExecThread(void) 
+{
+  PulseEvent(TVPThreadPingEvent);
+  WaitForMultipleObjects(TVPPongEventList.size(),
+                         &(TVPPongEventList[0]),
+                         TRUE,
+                         INFINITE);
+}
+//---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 #define RET_VOID
@@ -653,20 +752,69 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 
 	if(refrect.top >= refrect.bottom) return false; // not drawable
 
-
-	// blt
- 	tjs_int dpitch = GetPitchBytes();
-	tjs_int spitch = ref->GetPitchBytes();
-	tjs_int w = refrect.get_width();
 	tjs_int h = refrect.get_height();
+        tjs_int threadNum = GetThreadNum();
+        PrepareThread(threadNum);
+        InternalBltParam params[TVPMaxThreadNum];
+        for (tjs_int i = 0; i < threadNum; i++) {
+          tjs_int y0, y1;
+          y0 = h * i / threadNum;
+          y1=  h * (i + 1) / threadNum;
+          InternalBltParam *param = params + i;
+          param->self = this;
+          param->dest = (tjs_uint8*)GetScanLineForWrite(0);
+          param->dpitch = GetPitchBytes();;
+          param->dx = rect.left;
+          param->dy = rect.top + y0;
+          param->w = refrect.get_width();;
+          param->h = y1 - y0;
+          param->src = (const tjs_uint8*)ref->GetScanLine(0);
+          param->spitch = ref->GetPitchBytes();
+          param->sx = refrect.left;
+          param->sy = refrect.top + y0;
+          param->method = method;
+          param->opa = opa;
+          param->hda = hda;
+          SetupThread(i, &InternalBltEntry, LPVOID(param));
+        }
+        ExecThread();
 
-	// Blt performs always forward transfer;
-	// this does not consider the duplicated area of the same bitmap.
+        return true;
+}
 
-	tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(rect.top) +
-		rect.left*sizeof(tjs_uint32);
-	const tjs_uint8 * src = (const tjs_uint8*)ref->GetScanLine(refrect.top) +
-		refrect.left*sizeof(tjs_uint32);
+
+DWORD WINAPI tTVPBaseBitmap::InternalBltEntry(LPVOID v)
+{
+  const InternalBltParam *param = (const InternalBltParam *)v;
+  param->self->InternalBlt(param);
+  return TRUE;
+}
+
+void tTVPBaseBitmap::InternalBlt(const InternalBltParam *param)
+{
+  tjs_uint8 *dest;
+  const tjs_uint8 *src;
+  tjs_int dpitch, dx, dy, w, h, spitch, sx, sy;
+  tTVPBBBltMethod method;
+  tjs_int opa;
+  bool hda;
+
+  dest = param->dest;
+  dpitch = param->dpitch;
+  dx = param->dx;
+  dy = param->dy;
+  w = param->w;
+  h = param->h;
+  src = param->src;
+  spitch = param->spitch;
+  sx = param->sx;
+  sy = param->sy;
+  method = param->method;
+  opa = param->opa;
+  hda = param->hda;
+
+  dest += dy * dpitch + dx * sizeof(tjs_uint32);
+  src  += sy * spitch + sx * sizeof(tjs_uint32);
 
 #define TVP_BLEND_4(basename) /* blend for 4 types (normal, opacity, HDA, HDA opacity) */ \
 	if(opa == 255)                                                            \
@@ -940,8 +1088,6 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	default:
 				 ;
 	}
-
-	return true;
 }
 //---------------------------------------------------------------------------
 

@@ -117,6 +117,7 @@ struct t2DAffineMatrix
 
 //---------------------------------------------------------------------------
 extern tTVPGLGammaAdjustData TVPIntactGammaAdjustData;
+extern tjs_int TVPDrawThreadNum;
 //---------------------------------------------------------------------------
 
 
@@ -153,6 +154,25 @@ public:
 
 private:
 	bool BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa, bool additive);
+
+        struct InternalBltParam {
+          tTVPBaseBitmap *self;
+          tjs_uint8 *dest;
+          tjs_int dpitch;
+          tjs_int dx;
+          tjs_int dy;
+          tjs_int w;
+          tjs_int h;
+          const tjs_int8 *src;
+          tjs_int spitch;
+          tjs_int sx;
+          tjs_int sy;
+          tTVPBBBltMethod method;
+          tjs_int opa;
+          bool hda;
+        };
+        static DWORD WINAPI InternalBltEntry(LPVOID param);
+        void InternalBlt(const InternalBltParam *param);
 
 public:
 	bool FillColorOnAlpha(tTVPRect rect, tjs_uint32 color, tjs_int opa)
