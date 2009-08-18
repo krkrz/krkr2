@@ -359,17 +359,20 @@ FontInfo::createFontMetric(void) const
     return NULL;
   }
   HGDIOBJ hOldFont = SelectObject(dc, hFont);
-  DeleteObject(hOldFont);
   int size = ::GetOutlineTextMetrics(dc, 0, NULL);
   if (size > 0) {
     char *buf = new char[size];
     if (::GetOutlineTextMetrics(dc, size, reinterpret_cast<OUTLINETEXTMETRIC*>(buf))) {
+      SelectObject(dc, hOldFont);
+      DeleteObject(hFont);
       DeleteObject(dc);
       return reinterpret_cast<OUTLINETEXTMETRIC*>(buf);
     }
     delete[] buf;
   }
 
+  SelectObject(dc, hOldFont);
+  DeleteObject(hFont);
   DeleteObject(dc);
   return NULL;
 }
@@ -380,7 +383,7 @@ FontInfo::updateSizeParams(void) const
   if (! propertyModified)
     return;
 
-  propertyModified = true;
+  propertyModified = false;
   ascent = 0;
   descent = 0;
   lineSpacing = 0;
@@ -1949,7 +1952,7 @@ LayerExDraw::getGlyphOutline(const FontInfo *fontInfo, PointF &offset, GraphicsP
 
   int index = 0;
   PointF aOffset = offset;
-  aOffset.Y +=   fontInfo->getAscent();
+  aOffset.Y += fontInfo->getAscent();
 
   while(index < size) {
     TTPOLYGONHEADER * header = (TTPOLYGONHEADER *)(buffer + index);
