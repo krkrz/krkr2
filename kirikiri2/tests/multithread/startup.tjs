@@ -35,6 +35,10 @@ class TestApp extends Window
     visible = true;
     Debug.console.visible = true;
 
+    totalBench();
+  }
+
+  function totalBench {
     System.drawThreadNum = 0;
     Debug.message("thread_num = processor_num;");
     bltBench();
