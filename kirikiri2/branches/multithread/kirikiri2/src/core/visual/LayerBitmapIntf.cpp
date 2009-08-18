@@ -102,10 +102,11 @@ static void PrepareThread(tjs_int threadNum)
       TVPProcesserIdList.push_back(MAXIMUM_PROCESSORS);
   }
   while (TVPThreadList.size() < threadNum) {
-      ThreadInfo *threadInfo = new ThreadInfo();
+    ThreadInfo *threadInfo = new ThreadInfo();
     threadInfo->pongEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    threadInfo->thread = CreateThread(NULL, 0, ThreadLoop, threadInfo, 0, NULL);
+    threadInfo->thread = CreateThread(NULL, 0, ThreadLoop, threadInfo, CREATE_SUSPENDED, NULL);
     SetThreadIdealProcessor(threadInfo->thread, TVPProcesserIdList[TVPThreadList.size() % TVPProcesserIdList.size()]);
+    ResumeThread(threadInfo->thread);
     WaitForSingleObject(threadInfo->pongEvent, INFINITE);
     TVPThreadList.push_back(threadInfo);
     TVPPongEventList.push_back(threadInfo->pongEvent);
