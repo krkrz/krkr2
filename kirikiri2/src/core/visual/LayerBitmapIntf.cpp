@@ -47,6 +47,7 @@ static const tjs_int TVPMaxThreadNum = 8;
 tjs_int TVPDrawThreadNum = 0;
 struct ThreadInfo {
   HANDLE thread;
+  HANDLE pingEvent;
   HANDLE pongEvent;
   LPTHREAD_START_ROUTINE lpStartAddress;
   LPVOID lpParameter;
@@ -55,6 +56,7 @@ static std::vector<ThreadInfo*> TVPThreadList;
 static std::vector<HANDLE> TVPPongEventList;
 static HANDLE TVPThreadPingEvent;
 static std::vector<tjs_int> TVPProcesserIdList;
+static tjs_int TVPRunningThreadCount;
 
 //---------------------------------------------------------------------------
 static tjs_int GetProcesserNum(void)
@@ -79,7 +81,7 @@ static DWORD WINAPI ThreadLoop(LPVOID p)
 {
   ThreadInfo *threadInfo = (ThreadInfo*)p;
   for(;;) {
-    SignalObjectAndWait(threadInfo->pongEvent, TVPThreadPingEvent, INFINITE, FALSE);
+    SignalObjectAndWait(threadInfo->pongEvent, threadInfo->pingEvent, INFINITE, FALSE);
     (threadInfo->lpStartAddress)(threadInfo->lpParameter);
   }
   return TRUE;
@@ -87,6 +89,7 @@ static DWORD WINAPI ThreadLoop(LPVOID p)
 //---------------------------------------------------------------------------
 static void PrepareThread(tjs_int threadNum)
 {
+  TVPRunningThreadCount = 0;
   if (TVPThreadPingEvent == NULL)
     TVPThreadPingEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   if (TVPProcesserIdList.empty()) {
@@ -103,6 +106,7 @@ static void PrepareThread(tjs_int threadNum)
   }
   while (TVPThreadList.size() < threadNum) {
     ThreadInfo *threadInfo = new ThreadInfo();
+    threadInfo->pingEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     threadInfo->pongEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     threadInfo->thread = CreateThread(NULL, 0, ThreadLoop, threadInfo, CREATE_SUSPENDED, NULL);
     SetThreadIdealProcessor(threadInfo->thread, TVPProcesserIdList[TVPThreadList.size() % TVPProcesserIdList.size()]);
@@ -115,6 +119,7 @@ static void PrepareThread(tjs_int threadNum)
     ThreadInfo *threadInfo = TVPThreadList.back();
     TerminateThread(threadInfo->thread, TRUE);
     DeleteObject(threadInfo->pongEvent);
+    DeleteObject(threadInfo->pingEvent);
     delete threadInfo;
     TVPThreadList.pop_back();
     TVPPongEventList.pop_back();
@@ -126,15 +131,26 @@ static void SetupThread(tjs_int index,
                         LPTHREAD_START_ROUTINE func,
                         LPVOID param)
 {
-  ThreadInfo *threadInfo = TVPThreadList[index];
+  ThreadInfo *threadInfo;
+
+  if (TVPRunningThreadCount < TVPThreadList.size()) {
+    threadInfo = TVPThreadList[TVPRunningThreadCount++];
+  } else {
+    DWORD retval = WaitForMultipleObjects(TVPPongEventList.size(),
+                                          &(TVPPongEventList[0]),
+                                          FALSE,
+                                          INFINITE);
+    threadInfo = TVPThreadList[ retval - WAIT_OBJECT_0 ];
+  }
   threadInfo->lpStartAddress = func;
   threadInfo->lpParameter = param;
+  SetEvent(threadInfo->pingEvent);
 }
 //---------------------------------------------------------------------------
 static void ExecThread(void) 
 {
-  PulseEvent(TVPThreadPingEvent);
-  WaitForMultipleObjects(TVPPongEventList.size(),
+//  PulseEvent(TVPThreadPingEvent);
+  WaitForMultipleObjects(TVPRunningThreadCount,
                          &(TVPPongEventList[0]),
                          TRUE,
                          INFINITE);
@@ -753,30 +769,40 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 
 	if(refrect.top >= refrect.bottom) return false; // not drawable
 
+        tjs_uint8 *dest = (tjs_uint8*)GetScanLineForWrite(0);
+        const tjs_uint8 *src = (const tjs_uint8*)ref->GetScanLine(0);
+        tjs_int dpitch = GetPitchBytes();
+        tjs_int spitch = ref->GetPitchBytes();
+	tjs_int w = refrect.get_width();
 	tjs_int h = refrect.get_height();
         tjs_int threadNum = GetThreadNum();
+
         PrepareThread(threadNum);
-        InternalBltParam params[TVPMaxThreadNum];
-        for (tjs_int i = 0; i < threadNum; i++) {
+        InternalBltParam params[TVPMaxThreadNum + 1];
+        tjs_int divNum = threadNum; 
+        for (tjs_int i = 0; i < divNum; i++) {
           tjs_int y0, y1;
-          y0 = h * i / threadNum;
-          y1=  h * (i + 1) / threadNum;
-          InternalBltParam *param = params + i;
+          y0 = h * i / divNum;
+          y1=  h * (i + 1) / divNum;
+          InternalBltParam *param = params + i % (TVPMaxThreadNum + 1);
           param->self = this;
-          param->dest = (tjs_uint8*)GetScanLineForWrite(0);
-          param->dpitch = GetPitchBytes();;
+          param->dest = dest;
+          param->dpitch = dpitch;
           param->dx = rect.left;
           param->dy = rect.top + y0;
-          param->w = refrect.get_width();;
+          param->w = w;
           param->h = y1 - y0;
-          param->src = (const tjs_uint8*)ref->GetScanLine(0);
-          param->spitch = ref->GetPitchBytes();
+          param->src = src;
+          param->spitch = spitch;
           param->sx = refrect.left;
           param->sy = refrect.top + y0;
           param->method = method;
           param->opa = opa;
           param->hda = hda;
-          SetupThread(i, &InternalBltEntry, LPVOID(param));
+          if (i == divNum - 1)
+            InternalBlt(param);
+          else
+            SetupThread(i, &InternalBltEntry, LPVOID(param));
         }
         ExecThread();
 
