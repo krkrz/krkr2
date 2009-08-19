@@ -4,13 +4,14 @@ class TestApp extends Window
   var testLayer;
   var blackLayer;
   var whiteLayer;
+  var timer;
 
   function TestApp {
     super.Window();
 
     borderStyle = bsSingle;
     caption = "multi thread test app";
-    setInnerSize(640, 480);
+    setInnerSize(640, 480); // 640, 480);
     setPos(100, 100);
 
     rootLayer = new Layer(this, null);
@@ -35,10 +36,14 @@ class TestApp extends Window
     visible = true;
     Debug.console.visible = true;
 
-    totalBench();
+    timer = new Timer(this, "totalBench");
+    timer.interval = 1000;
+    timer.enabled = true;
   }
 
   function totalBench {
+    timer.enabled = false;
+
     System.drawThreadNum = 0;
     Debug.message("thread_num = processor_num;");
     bltBench();
