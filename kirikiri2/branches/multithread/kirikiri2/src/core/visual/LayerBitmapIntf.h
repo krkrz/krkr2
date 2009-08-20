@@ -155,6 +155,94 @@ public:
 private:
 	bool BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa, bool additive);
 
+        struct InternalFillParam {
+          tTVPBaseBitmap *self;
+          tjs_uint8 *dest;
+          tjs_int x;
+          tjs_int y;
+          tjs_int w;
+          tjs_int h;
+          tjs_int pitch;
+          tjs_uint32 value;
+          bool is32bpp;
+        };
+        static void InternalFillEntry(void *param);
+        void InternalFill(const InternalFillParam *param);
+
+        struct InternalFillColorParam {
+          tTVPBaseBitmap *self;
+          tjs_uint8 *dest;
+          tjs_int x;
+          tjs_int y;
+          tjs_int w;
+          tjs_int h;
+          tjs_int pitch;
+          tjs_uint32 color;
+          tjs_int opa;
+        };
+        static void InternalFillColorEntry(void *param);
+        void InternalFillColor(const InternalFillColorParam *param);
+
+        struct InternalBlendColorParam {
+          tTVPBaseBitmap *self;
+          tjs_uint8 *dest;
+          tjs_int x;
+          tjs_int y;
+          tjs_int w;
+          tjs_int h;
+          tjs_int pitch;
+          tjs_uint32 color;
+          tjs_int opa;
+          bool additive;
+        };
+        static void InternalBlendColorEntry(void *param);
+        void InternalBlendColor(const InternalBlendColorParam *param);
+
+        struct InternalRemoveConstOpacityParam {
+          tTVPBaseBitmap *self;
+          tjs_uint8 *dest;
+          tjs_int x;
+          tjs_int y;
+          tjs_int w;
+          tjs_int h;
+          tjs_int pitch;
+          tjs_int level;
+        };
+        static void InternalRemoveConstOpacityEntry(void *param);
+        void InternalRemoveConstOpacity(const InternalRemoveConstOpacityParam *param);
+  
+        struct InternalFillMaskParam {
+          tTVPBaseBitmap *self;
+          tjs_uint8 *dest;
+          tjs_int x;
+          tjs_int y;
+          tjs_int w;
+          tjs_int h;
+          tjs_int pitch;
+          tjs_int value;
+        };
+        static void InternalFillMaskEntry(void *param);
+        void InternalFillMask(const InternalFillMaskParam *param);
+
+        struct InternalCopyRectParam {
+          tTVPBaseBitmap *self;
+          tjs_int pixelsize;
+          tjs_uint8 *dest;
+          tjs_int dpitch;
+          tjs_int dx;
+          tjs_int dy;
+          tjs_int w;
+          tjs_int h;
+          const tjs_int8 *src;
+          tjs_int spitch;
+          tjs_int sx;
+          tjs_int sy;
+          tjs_int plane;
+          bool backwardCopy;
+        };
+        static void InternalCopyRectEntry(void *param);
+        void InternalCopyRect(const InternalCopyRectParam *param);
+
         struct InternalBltParam {
           tTVPBaseBitmap *self;
           tjs_uint8 *dest;
@@ -171,7 +259,7 @@ private:
           tjs_int opa;
           bool hda;
         };
-        static DWORD WINAPI InternalBltEntry(LPVOID param);
+        static void InternalBltEntry(void *param);
         void InternalBlt(const InternalBltParam *param);
 
 public:
