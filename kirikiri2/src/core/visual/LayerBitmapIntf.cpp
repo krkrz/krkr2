@@ -45,18 +45,20 @@ tTVPGLGammaAdjustData TVPIntactGammaAdjustData =
 //---------------------------------------------------------------------------
 static const tjs_int TVPMaxThreadNum = 8;
 tjs_int TVPDrawThreadNum = 0;
+typedef void (*TVP_THREAD_TASK_FUNC)(void *);
+typedef void * TVP_THREAD_PARAM;
 struct ThreadInfo {
   HANDLE thread;
   HANDLE pingEvent;
   HANDLE pongEvent;
-  LPTHREAD_START_ROUTINE lpStartAddress;
-  LPVOID lpParameter;
+  TVP_THREAD_TASK_FUNC  lpStartAddress;
+  TVP_THREAD_PARAM lpParameter;
 };
 static std::vector<ThreadInfo*> TVPThreadList;
 static std::vector<HANDLE> TVPPongEventList;
-static HANDLE TVPThreadPingEvent;
 static std::vector<tjs_int> TVPProcesserIdList;
 static tjs_int TVPRunningThreadCount;
+static tjs_int TVPThreadTaskNum, TVPThreadTaskCount;
 
 //---------------------------------------------------------------------------
 static tjs_int GetProcesserNum(void)
@@ -87,11 +89,12 @@ static DWORD WINAPI ThreadLoop(LPVOID p)
   return TRUE;
 }
 //---------------------------------------------------------------------------
-static void PrepareThread(tjs_int threadNum)
+static void BeginThreadTask(tjs_int taskNum)
 {
+  TVPThreadTaskNum = taskNum;
+  TVPThreadTaskCount = 0;
   TVPRunningThreadCount = 0;
-  if (TVPThreadPingEvent == NULL)
-    TVPThreadPingEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  tjs_int threadNum = GetThreadNum();
   if (TVPProcesserIdList.empty()) {
     DWORD processAffinityMask, systemAffinityMask;
     GetProcessAffinityMask(GetCurrentProcess(),
@@ -127,10 +130,13 @@ static void PrepareThread(tjs_int threadNum)
 }
 
 //---------------------------------------------------------------------------
-static void SetupThread(tjs_int index,
-                        LPTHREAD_START_ROUTINE func,
-                        LPVOID param)
+static void ExecThreadTask(TVP_THREAD_TASK_FUNC func,
+                           TVP_THREAD_PARAM param)
 {
+  if (++TVPThreadTaskCount == TVPThreadTaskNum) {
+    func(param);
+    return;
+  }
   ThreadInfo *threadInfo;
 
   if (TVPRunningThreadCount < TVPThreadList.size()) {
@@ -147,9 +153,8 @@ static void SetupThread(tjs_int index,
   SetEvent(threadInfo->pingEvent);
 }
 //---------------------------------------------------------------------------
-static void ExecThread(void) 
+static void EndThreadTask(void) 
 {
-//  PulseEvent(TVPThreadPingEvent);
   WaitForMultipleObjects(TVPRunningThreadCount,
                          &(TVPPongEventList[0]),
                          TRUE,
@@ -304,28 +309,73 @@ bool tTVPBaseBitmap::Fill(tTVPRect rect, tjs_uint32 value)
 		}
 	}
 
-	if(Is32BPP())
+        tjs_int pitch = GetPitchBytes();
+        tjs_uint8 *dest = (tjs_uint8*)GetScanLineForWrite(0);
+        tjs_int h = rect.bottom - rect.top;
+        tjs_int w = rect.right - rect.left;
+        bool is32bpp = Is32BPP();
+
+        tjs_int taskNum = GetThreadNum();
+        BeginThreadTask(taskNum);
+        InternalFillParam params[TVPMaxThreadNum + 1];
+        for (tjs_int i = 0; i < taskNum; i++) {
+          tjs_int y0, y1;
+          y0 = h * i / taskNum;
+          y1 = h * (i + 1) / taskNum;
+          InternalFillParam *param = params + i % (TVPMaxThreadNum + 1);
+          param->self = this;
+          param->dest = dest;
+          param->pitch = pitch;
+          param->x = rect.left;
+          param->y = rect.top + y0;
+          param->w = w;
+          param->h = y1 - y0;
+          param->value = value;
+          param->is32bpp = is32bpp;
+          ExecThreadTask(&InternalFillEntry, TVP_THREAD_PARAM(param));
+        }
+        EndThreadTask();
+
+        return true;
+}
+
+void tTVPBaseBitmap::InternalFillEntry(void *v)
+{
+  const InternalFillParam *param = (const InternalFillParam *)v;
+  param->self->InternalFill(param);
+}
+
+void tTVPBaseBitmap::InternalFill(const InternalFillParam *param)
+{
+
+
+	if(param->is32bpp)
 	{
 		// 32bpp
-		tjs_int pitch = GetPitchBytes();
-		tjs_uint8 *sc = (tjs_uint8*)GetScanLineForWrite(rect.top);
-		tjs_int height = rect.bottom - rect.top;
-		tjs_int width = rect.right - rect.left;
+		tjs_int pitch = param->pitch;
+		tjs_uint8 *sc = param->dest + param->y * pitch;
+                tjs_int x = param->x;
+		tjs_int height = param->h;
+		tjs_int width = param->w;
+                tjs_uint32 value = param->value;
 
+                // don't use no cache version. (for test reason)
+#if 0
 		if(height * width >= 64*1024/4)
 		{
-			for(;rect.top < rect.bottom; rect.top++)
+                        while (height--) 
 			{
-				tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+				tjs_uint32 * p = (tjs_uint32*)sc + x;
 				TVPFillARGB_NC(p, width, value);
 				sc += pitch;
 			}
 		}
 		else
+#endif
 		{
-			for(;rect.top < rect.bottom; rect.top++)
+                        while (height--)
 			{
-				tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+				tjs_uint32 * p = (tjs_uint32*)sc + x;
 				TVPFillARGB(p, width, value);
 				sc += pitch;
 			}
@@ -334,18 +384,20 @@ bool tTVPBaseBitmap::Fill(tTVPRect rect, tjs_uint32 value)
 	else
 	{
 		// 8bpp
-		tjs_int pitch = GetPitchBytes();
-		tjs_uint8 *sc = (tjs_uint8*)GetScanLineForWrite(rect.top);
+		tjs_int pitch = param->pitch;
+		tjs_uint8 *sc = param->dest + param->y * pitch;
+                tjs_int x = param->x;
+                tjs_int height = param->h;
+                tjs_int width = param->w;
+                tjs_uint32 value = param->value;
 
-		for(;rect.top < rect.bottom; rect.top++)
+		while (height--)
 		{
-			tjs_uint8 * p = (tjs_uint8*)sc + rect.left;
-			memset(p, value, rect.right - rect.left);
+			tjs_uint8 * p = (tjs_uint8*)sc + x;
+			memset(p, value, width);
 			sc += pitch;
 		}
 	}
-
-	return true;
 }
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
@@ -364,15 +416,56 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
 	if(opa > 255) opa = 255;
 
 	tjs_int pitch = GetPitchBytes();
-	tjs_uint8 *sc = (tjs_uint8*)GetScanLineForWrite(rect.top);
-	tjs_int width = rect.right - rect.left;
+	tjs_uint8 *dest = (tjs_uint8*)GetScanLineForWrite(0);
+        tjs_int h = rect.bottom - rect.top;
+        tjs_int w = rect.right - rect.left;
 
+        tjs_int taskNum = GetThreadNum();
+        BeginThreadTask(taskNum);
+        InternalFillColorParam params[TVPMaxThreadNum + 1];
+        for (tjs_int i = 0; i < taskNum; i++) {
+          tjs_int y0, y1;
+          y0 = h * i / taskNum;
+          y1 = h * (i + 1) / taskNum;
+          InternalFillColorParam *param = params + i % (TVPMaxThreadNum + 1);
+          param->self = this;
+          param->dest = dest;
+          param->pitch = pitch;
+          param->x = rect.left;
+          param->y = rect.top + y0;
+          param->w = w;
+          param->h = y1 - y0;
+          param->color = color;
+          param->opa = opa;
+          ExecThreadTask(&InternalFillColorEntry, TVP_THREAD_PARAM(param));
+        }
+        EndThreadTask();
+
+        return true;
+}
+
+void tTVPBaseBitmap::InternalFillColorEntry(void *v)
+{
+  const InternalFillColorParam *param = (const InternalFillColorParam *)v;
+  param->self->InternalFillColor(param);
+}
+
+void tTVPBaseBitmap::InternalFillColor(const InternalFillColorParam *param)
+{
+  tjs_uint8 *sc = param->dest + param->y * param->pitch;
+  tjs_int opa = param->opa;
+  tjs_uint32 color = param->color;
+  tjs_int left = param->x;
+  tjs_int width = param->w;
+  tjs_int height = param->h;
+  tjs_int pitch = param->pitch;
+        
 	if(opa == 255)
 	{
 		// complete opaque fill
-		for(;rect.top < rect.bottom; rect.top++)
+		while(height--)
 		{
-			tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+			tjs_uint32 * p = (tjs_uint32*)sc + left;
 			TVPFillColor(p, width, color);
 			sc += pitch;
 		}
@@ -380,15 +473,13 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
 	else
 	{
 		// alpha fill
-		for(;rect.top < rect.bottom; rect.top++)
+                while(height--)
 		{
-			tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+			tjs_uint32 * p = (tjs_uint32*)sc + left;
 			TVPConstColorAlphaBlend(p, width, color, opa);
 			sc += pitch;
 		}
 	}
-
-	return true;
 }
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
@@ -405,28 +496,72 @@ bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
 	if(opa < 0) opa = 0;
 	if(opa > 255) opa = 255;
 
+        if(opa == 255 && !IsIndependent())
+          {
+            if(rect.left == 0 && rect.top == 0 &&
+               rect.right == (tjs_int)GetWidth() && rect.bottom == (tjs_int)GetHeight())
+              {
+                // cover overall
+                IndependNoCopy(); // indepent with no-copy
+              }
+          }
+
+	tjs_int pitch = GetPitchBytes();
+	tjs_uint8 *dest = (tjs_uint8*)GetScanLineForWrite(0);
+        tjs_int h = rect.bottom - rect.top;
+        tjs_int w = rect.right - rect.left;
+
+        tjs_int taskNum = GetThreadNum();
+        BeginThreadTask(taskNum);
+        InternalBlendColorParam params[TVPMaxThreadNum + 1];
+        for (tjs_int i = 0; i < taskNum; i++) {
+          tjs_int y0, y1;
+          y0 = h * i / taskNum;
+          y1 = h * (i + 1) / taskNum;
+          InternalBlendColorParam *param = params + i % (TVPMaxThreadNum + 1);
+          param->self = this;
+          param->dest = dest;
+          param->pitch = pitch;
+          param->x = rect.left;
+          param->y = rect.top + y0;
+          param->w = w;
+          param->h = y1 - y0;
+          param->color = color;
+          param->opa = opa;
+          param->additive = additive;
+          ExecThreadTask(&InternalBlendColorEntry, TVP_THREAD_PARAM(param));
+        }
+        EndThreadTask();
+
+        return true;
+}
+
+void tTVPBaseBitmap::InternalBlendColorEntry(void *v)
+{
+  const InternalBlendColorParam *param = (const InternalBlendColorParam *)v;
+  param->self->InternalBlendColor(param);
+}
+
+void tTVPBaseBitmap::InternalBlendColor(const InternalBlendColorParam *param)
+{
+  tjs_uint32 color = param->color;
+  tjs_int opa = param->opa;
+  bool additive = param->additive;
+
 	if(opa == 255)
 	{
 		// complete opaque fill
 		color |= 0xff000000;
 
-		if(!IsIndependent())
-		{
-			if(rect.left == 0 && rect.top == 0 &&
-				rect.right == (tjs_int)GetWidth() && rect.bottom == (tjs_int)GetHeight())
-			{
-				// cover overall
-				IndependNoCopy(); // indepent with no-copy
-			}
-		}
+		tjs_int pitch = param->pitch;
+		tjs_uint8 *sc = param->dest + pitch * param->y;
+                tjs_int left = param->x;
+		tjs_int width = param->w;
+                tjs_int height = param->h;
 
-		tjs_int pitch = GetPitchBytes();
-		tjs_uint8 *sc = (tjs_uint8*)GetScanLineForWrite(rect.top);
-		tjs_int width = rect.right - rect.left;
-
-		for(;rect.top < rect.bottom; rect.top++)
+                while (height--)
 		{
-			tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+			tjs_uint32 * p = (tjs_uint32*)sc + left;
 			TVPFillARGB(p, width, color);
 			sc += pitch;
 		}
@@ -434,31 +569,31 @@ bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
 	else
 	{
 		// alpha fill
-		tjs_int pitch = GetPitchBytes();
-		tjs_uint8 *sc = (tjs_uint8*)GetScanLineForWrite(rect.top);
-		tjs_int width = rect.right - rect.left;
+		tjs_int pitch = param->pitch;
+		tjs_uint8 *sc = param->dest + pitch * param->y;
+                tjs_int left = param->x;
+		tjs_int width = param->w;
+                tjs_int height = param->h;
 
 		if(!additive)
 		{
-			for(;rect.top < rect.bottom; rect.top++)
+                        while(height--)
 			{
-				tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+				tjs_uint32 * p = (tjs_uint32*)sc + left;
 				TVPConstColorAlphaBlend_d(p, width, color, opa);
 				sc += pitch;
 			}
 		}
 		else
 		{
-			for(;rect.top < rect.bottom; rect.top++)
+                        while(height--)
 			{
-				tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+				tjs_uint32 * p = (tjs_uint32*)sc + left;
 				TVPConstColorAlphaBlend_a(p, width, color, opa);
 				sc += pitch;
 			}
 		}
 	}
-
-	return true;
 }
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
@@ -476,31 +611,68 @@ bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
 	if(level > 255) level = 255;
 
 	tjs_int pitch = GetPitchBytes();
-	tjs_uint8 *sc = (tjs_uint8*)GetScanLineForWrite(rect.top);
-	tjs_int width = rect.right - rect.left;
+	tjs_uint8 *dest = (tjs_uint8*)GetScanLineForWrite(0);
+        tjs_int h = rect.bottom - rect.top;
+        tjs_int w = rect.right - rect.left;
+
+        tjs_int taskNum = GetThreadNum();
+        BeginThreadTask(taskNum);
+        InternalRemoveConstOpacityParam params[TVPMaxThreadNum + 1];
+        for (tjs_int i = 0; i < taskNum; i++) {
+          tjs_int y0, y1;
+          y0 = h * i / taskNum;
+          y1 = h * (i + 1) / taskNum;
+          InternalRemoveConstOpacityParam *param = params + i % (TVPMaxThreadNum + 1);
+          param->self = this;
+          param->dest = dest;
+          param->pitch = pitch;
+          param->x = rect.left;
+          param->y = rect.top + y0;
+          param->w = w;
+          param->h = y1 - y0;
+          param->level = level;
+          ExecThreadTask(&InternalRemoveConstOpacityEntry, TVP_THREAD_PARAM(param));
+        }
+        EndThreadTask();
+
+        return true;
+}
+
+void tTVPBaseBitmap::InternalRemoveConstOpacityEntry(void *v)
+{
+  const InternalRemoveConstOpacityParam *param = (const InternalRemoveConstOpacityParam *)v;
+  param->self->InternalRemoveConstOpacity(param);
+}
+
+void tTVPBaseBitmap::InternalRemoveConstOpacity(const InternalRemoveConstOpacityParam *param)
+{
+  tjs_int pitch = param->pitch;
+  tjs_uint8 *sc = param->dest + pitch * param->y;
+  tjs_int left = param->x;
+  tjs_int width = param->w;
+  tjs_int height = param->h;
+  tjs_int level = param->level;
 
 	if(level == 255)
 	{
 		// completely remove opacity
-		for(;rect.top < rect.bottom; rect.top++)
+                while(height--)
 		{
-			tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+			tjs_uint32 * p = (tjs_uint32*)sc + left;
 			TVPFillMask(p, width, 0);
 			sc += pitch;
 		}
 	}
 	else
 	{
-		for(;rect.top < rect.bottom; rect.top++)
+                while(height--)
 		{
-			tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+			tjs_uint32 * p = (tjs_uint32*)sc + left;
 			TVPRemoveConstOpacity(p, width, level);
 			sc += pitch;
 		}
 
 	}
-
-	return true;
 }
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::FillMask(tTVPRect rect, tjs_int value)
@@ -511,18 +683,54 @@ bool tTVPBaseBitmap::FillMask(tTVPRect rect, tjs_int value)
 	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
 
 	tjs_int pitch = GetPitchBytes();
-	tjs_uint8 *sc = (tjs_uint8*)GetScanLineForWrite(rect.top);
-	tjs_int width = rect.right - rect.left;
+	tjs_uint8 *dest = (tjs_uint8*)GetScanLineForWrite(0);
+        tjs_int h = rect.bottom - rect.top;
+        tjs_int w = rect.right - rect.left;
 
+        tjs_int taskNum = GetThreadNum();
+        BeginThreadTask(taskNum);
+        InternalFillMaskParam params[TVPMaxThreadNum + 1];
+        for (tjs_int i = 0; i < taskNum; i++) {
+          tjs_int y0, y1;
+          y0 = h * i / taskNum;
+          y1 = h * (i + 1) / taskNum;
+          InternalFillMaskParam *param = params + i % (TVPMaxThreadNum + 1);
+          param->self = this;
+          param->dest = dest;
+          param->pitch = pitch;
+          param->x = rect.left;
+          param->y = rect.top + y0;
+          param->w = w;
+          param->h = y1 - y0;
+          param->value = value;
+          ExecThreadTask(&InternalFillMaskEntry, TVP_THREAD_PARAM(param));
+        }
+        EndThreadTask();
 
-	for(;rect.top < rect.bottom; rect.top++)
+        return true;
+}
+
+void tTVPBaseBitmap::InternalFillMaskEntry(void *v)
+{
+  const InternalFillMaskParam *param = (const InternalFillMaskParam *)v;
+  param->self->InternalFillMask(param);
+}
+
+void tTVPBaseBitmap::InternalFillMask(const InternalFillMaskParam *param)
+{
+  tjs_int pitch = param->pitch;
+  tjs_uint8 *sc = param->dest + pitch * param->y;
+  tjs_int left = param->x;
+  tjs_int width = param->w;
+  tjs_int height = param->h;
+  tjs_int value = param->value;
+
+        while(height--)
 	{
-		tjs_uint32 * p = (tjs_uint32*)sc + rect.left;
+		tjs_uint32 * p = (tjs_uint32*)sc + left;
 		TVPFillMask(p, width, value);
 		sc += pitch;
 	}
-
-	return true;
 }
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
@@ -606,21 +814,74 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	if(refrect.top >= refrect.bottom) return false; // not drawable
 
 
+        // transfer
+        tjs_uint8 *dest = (tjs_uint8*)GetScanLineForWrite(0);
+        const tjs_uint8 *src = (const tjs_uint8*)ref->GetScanLine(0);
+        tjs_int dpitch = GetPitchBytes();
+        tjs_int spitch = ref->GetPitchBytes();
+	tjs_int w = refrect.get_width();
+	tjs_int h = refrect.get_height();
+	tjs_int pixelsize = (Is32BPP()?sizeof(tjs_uint32):sizeof(tjs_uint8));
+        bool backwardCopy = (ref == this && rect.top > refrect.top);
+
+        tjs_int taskNum = GetThreadNum();
+        BeginThreadTask(taskNum);
+        InternalCopyRectParam params[TVPMaxThreadNum + 1];
+        for (tjs_int i = 0; i < taskNum; i++) {
+          tjs_int y0, y1;
+          y0 = h * i / taskNum;
+          y1=  h * (i + 1) / taskNum;
+          InternalCopyRectParam *param = params + i % (TVPMaxThreadNum + 1);
+          param->self = this;
+          param->pixelsize = pixelsize;
+          param->dest = dest;
+          param->dpitch = dpitch;
+          param->dx = rect.left;
+          param->dy = rect.top + y0;
+          param->w = w;
+          param->h = y1 - y0;
+          param->src = src;
+          param->spitch = spitch;
+          param->sx = refrect.left;
+          param->sy = refrect.top + y0;
+          param->plane = plane;
+          param->backwardCopy = backwardCopy;
+          ExecThreadTask(&InternalCopyRectEntry, TVP_THREAD_PARAM(param));
+        }
+        EndThreadTask();
+
+        return true;
+}
+
+void tTVPBaseBitmap::InternalCopyRectEntry(void *v)
+{
+  const InternalCopyRectParam *param = (const InternalCopyRectParam *)v;
+  param->self->InternalCopyRect(param);
+}
+
+void tTVPBaseBitmap::InternalCopyRect(const InternalCopyRectParam *param)
+{
 	// transfer
 	tjs_int pixelsize = (Is32BPP()?sizeof(tjs_uint32):sizeof(tjs_uint8));
-	tjs_int dpitch = GetPitchBytes();
-	tjs_int spitch = ref->GetPitchBytes();
-	tjs_int w;
-	tjs_int wbytes = (w = refrect.get_width()) * pixelsize;
-	tjs_int h = refrect.get_height();
+	tjs_int dpitch = param->dpitch;
+	tjs_int spitch = param->spitch;
+	tjs_int w = param->w;
+	tjs_int wbytes = param->w * pixelsize;
+	tjs_int h = param->h;
+        tjs_int plane = param->plane;
+        bool backwardCopy = param->backwardCopy;
 
-	if(ref == this && rect.top > refrect.top)
+	if(backwardCopy)
 	{
 		// backward copy
+#if 0
 		tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(rect.bottom-1) +
 			rect.left*pixelsize;
 		const tjs_uint8 * src = (const tjs_uint8*)ref->GetScanLine(refrect.bottom-1) +
 			refrect.left*pixelsize;
+#endif
+		tjs_uint8 * dest = param->dest + dpitch * (param->dy + param->h - 1) + param->sx * pixelsize;
+		const tjs_uint8 * src = param->src + spitch * (param->sy + param->h - 1) + param->sx * pixelsize;
 
 		switch(plane)
 		{
@@ -653,10 +914,14 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	else
 	{
 		// forward copy
+#if 0
 		tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(rect.top) +
 			rect.left*pixelsize;
 		const tjs_uint8 * src = (const tjs_uint8*)ref->GetScanLine(refrect.top) +
 			refrect.left*pixelsize;
+#endif
+		tjs_uint8 * dest = param->dest + dpitch * (param->dy) + param->sx * pixelsize;
+		const tjs_uint8 * src = param->src + spitch * (param->sy) + param->sx * pixelsize;
 
 		switch(plane)
 		{
@@ -686,8 +951,6 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 			break;
 		}
 	}
-
-	return true;
 }
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
@@ -775,15 +1038,14 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
         tjs_int spitch = ref->GetPitchBytes();
 	tjs_int w = refrect.get_width();
 	tjs_int h = refrect.get_height();
-        tjs_int threadNum = GetThreadNum();
 
-        PrepareThread(threadNum);
+        tjs_int taskNum = GetThreadNum();
+        BeginThreadTask(taskNum);
         InternalBltParam params[TVPMaxThreadNum + 1];
-        tjs_int divNum = threadNum; 
-        for (tjs_int i = 0; i < divNum; i++) {
+        for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
-          y0 = h * i / divNum;
-          y1=  h * (i + 1) / divNum;
+          y0 = h * i / taskNum;
+          y1=  h * (i + 1) / taskNum;
           InternalBltParam *param = params + i % (TVPMaxThreadNum + 1);
           param->self = this;
           param->dest = dest;
@@ -799,22 +1061,18 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
           param->method = method;
           param->opa = opa;
           param->hda = hda;
-          if (i == divNum - 1)
-            InternalBlt(param);
-          else
-            SetupThread(i, &InternalBltEntry, LPVOID(param));
+          ExecThreadTask(&InternalBltEntry, TVP_THREAD_PARAM(param));
         }
-        ExecThread();
+        EndThreadTask();
 
         return true;
 }
 
 
-DWORD WINAPI tTVPBaseBitmap::InternalBltEntry(LPVOID v)
+void tTVPBaseBitmap::InternalBltEntry(void *v)
 {
   const InternalBltParam *param = (const InternalBltParam *)v;
   param->self->InternalBlt(param);
-  return TRUE;
 }
 
 void tTVPBaseBitmap::InternalBlt(const InternalBltParam *param)
