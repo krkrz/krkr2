@@ -103,7 +103,9 @@ class SelectButtonLayer extends ButtonLayer
 	{
         if(onenter !== void) Scripts.eval(onenter);
         super.onMouseEnter(...);
+		_ignoreFocusJump = true;
         focus();
+		_ignoreFocusJump = void;
 	}
 
 	function onMouseLeave()
@@ -120,10 +122,11 @@ class SelectButtonLayer extends ButtonLayer
         }
         if (this isvalid) super.onMouseDown(...);
     }
-    
+
+	function onButtonClick() { owner.onButtonClick(this); }
     function onExecute(x, y, button, shift)	{
-        if (enabled && button == mbLeft) {
-            owner.onButtonClick(this);
+        if (nodeEnabled && button == mbLeft) {
+			onButtonClick();
         }
         if (this isvalid) super.onExecute(...);
 	}
@@ -134,7 +137,7 @@ class SelectButtonLayer extends ButtonLayer
 		if (window.preProcessKeys(key, shift)) return;
 		switch (key) {
 		case VK_SPACE: case VK_RETURN:
-			owner.onButtonClick(this) if (enabled);
+			onButtonClick() if (nodeEnabled);
 			break;
 		case VK_ESCAPE:
 			return window.processKeys(key, shift);
@@ -545,9 +548,10 @@ class SelectLayer {
      */
     function setParent(parent, absolute) {
         for (var i=0; i<selects.count;i++) {
-            var select = selects[i];
-            select.parent   = parent;
-            select.absolute = absolute + 4 + i;
+			with (selects[i]) {
+				.parent   = parent;
+				.absolute = absolute + 4 + i;
+			}
         }
     }
 
@@ -576,13 +580,12 @@ class SelectLayer {
      * 選択処理開始
      */
     function start(parent, absolute) {
+		setParent(...);
 		var cnt = selects.count;
 		var pos = getSelectPositions(cnt);
 		for (var i=0; i<cnt; i++) {
 			with (selects[i]) {
 				var xy = pos[i];
-				.parent   = parent;
-				.absolute = absolute + 4 + i;
 				.setPos(xy[0] - .width/2, xy[1] - .height/2);
 			}
 		}
@@ -590,8 +593,18 @@ class SelectLayer {
 		playSE(opense, opensebuf);
     }
 
+	/**
+	 * 選択肢終了
+	 */
+	function end(select) {
+		window.insertTag("doneselect", %[ tag:select.tag ]);
+		if (setVisibleTime(false, fadeTime)) {
+			window.insertTag("wact", %[ target:this ]);
+		}
+	}
+
     /**
-     * 完了
+     * 完了（doneselectタグから呼ばれる）
      */
     function done() {
 		playSE(closese, closesebuf) if (visible);
@@ -610,20 +623,15 @@ class SelectLayer {
     /**
      * 処理終了
      */
-    function onButtonClick(select) {
-		if (select === void) return;
+    function onButtonClick(sel) {
+		var select = (sel && typeof sel == "Object" && sel isvalid) ? sel : %[];
 		Scripts.eval(select.onclick) if select.onclick != '';
-		if (select isvalid) {
-			if (select.storage != '' || select.target != '')	{
-				window.process(select.storage, select.target);
-			} else {
-				window.processGo();
-			}
-			window.insertTag("doneselect", %[ tag:select.tag ]);
-			if (setVisibleTime(false, fadeTime)) {
-				window.insertTag("wact", %[ target:this ]);
-			}
+		if (select.storage != '' || select.target != '') {
+			window.process(select.storage, select.target);
+		} else {
+			window.processGo();
 		}
+		end(select);
 	}
 
 	var invisibleByUser = false; // ユーザにより一時的に不可視

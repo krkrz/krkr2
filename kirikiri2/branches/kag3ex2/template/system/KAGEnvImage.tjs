@@ -552,7 +552,7 @@ class KAGEnvImage {
         getter() {
             if (env.colorall) {
                 return env.bgamma;
-            } else {
+			} else {
                 return _bgamma;
             }
         }
@@ -568,38 +568,112 @@ class KAGEnvImage {
 	var _blurx;
 	property blurx {
 		getter() {
-			if (env.colorall) {
-				return env.blurx;
-            } else {
-				return _blurx;
-            }
+			return _blurx;
         }
 		setter(v) {
 			_blurx = v;
-			if (!env.colorall) {
-				redraw = true;
-            }
+			redraw = true;
         }
     }
 
 	var _blury;
 	property blury {
 		getter() {
-			if (env.colorall) {
-				return env.blury;
-            } else {
-				return _blury;
-            }
+			return _blury;
         }
 		setter(v) {
 			_blury = v;
-			if (!env.colorall) {
-				redraw = true;
-            }
+			redraw = true;
         }
     }
 
-	// フィルタ加工処理
+	// コントラスト
+	var _contrast;
+	property contrast {
+		getter() {
+			return _contrast;
+        }
+		setter(v) {
+			_contrast = v;
+			redraw = true;
+        }
+    }
+
+	// 明度
+	var _brightness;
+	property brightness {
+		getter() {
+			return _brightness;
+        }
+		setter(v) {
+			_brightness = v;
+			redraw = true;
+        }
+    }
+
+	// 色相
+	var _hue;
+	property hue {
+		getter() {
+			return _hue;
+        }
+		setter(v) {
+			_hue = v;
+			redraw = true;
+        }
+    }
+
+	// 彩度
+	var _saturation;
+	property saturation {
+		getter() {
+			return _saturation;
+		}
+		setter(v) {
+			_saturation = v;
+			redraw = true;
+        }
+    }
+
+	// 輝度
+	var _luminance;
+	property luminance {
+		getter() {
+			return _luminance;
+		}
+		setter(v) {
+			_luminance = v;
+			redraw = true;
+        }
+    }
+
+	// ノイズ
+	var _noise;
+	property noise {
+		getter() {
+			return _noise;
+		}
+		setter(v) {
+			_noise = v;
+			redraw = true;
+        }
+    }
+
+	// スクリプト画像加工処理
+	var _script;
+	property script {
+		getter() {
+			return _script;
+		}
+		setter(v) {
+			if (_script !== v) {
+				_script = v !== void && (typeof v == "String" && v.length > 0) ? v : void;
+				redraw = true;
+			}
+		}
+	}
+	
+	// カラーフィルタ加工処理
 	var _filter;
 	property filter {
 		getter() {
@@ -639,6 +713,12 @@ class KAGEnvImage {
 		_bgamma = void;
 		_blurx  = void;
 		_blury  = void;
+		_contrast = void;
+		_brightness = void;
+		_hue = void;
+		_saturation = void;
+		_luminance = void;
+		_noise = void;
 		_filter = void;
 		if (!env.colorall) {
 			redraw = true;
@@ -711,6 +791,14 @@ class KAGEnvImage {
 		_grayscale = void;
 		_blurx = void;
 		_blury = void;
+
+		_contrast = void;
+		_brightness = void;
+		_hue = void;
+		_saturation = void;
+		_luminance = void;
+		_noise = void;
+		
 		_filter = void;
         
 		actionList.clear();
@@ -986,11 +1074,7 @@ class KAGEnvImage {
 		if (env.actions !== void) {
 			var action = createAction(name, elm);
 			if (action !== void) {
-				if (action instanceof "Dictionary" && action.module == "") {
-					stopAction(true);
-				} else {
-					addAction(action);
-				}
+				addAction(action);
 				return true;
 			}
 		}
@@ -1320,11 +1404,12 @@ class KAGEnvImage {
     reset : function(param, elm) {
 		resetColor(param, elm);
 		resetPos(param, elm);
+		script = void;
     } incontextof this,
 	resetpos : this.resetPos incontextof this,
 	resetcolor : this.resetColor incontextof this,
 	grayscale : function(param, elm) {
-        grayscale = param;
+		grayscale = param;
     } incontextof this,
     rgamma : function(param, elm) {
         rgamma = param;
@@ -1336,18 +1421,39 @@ class KAGEnvImage {
         bgamma = param;
     } incontextof this,
 	blurx : function(param, elm) {
-        blurx = param;
-    } incontextof this,
+		blurx = param;
+	} incontextof this,
 	blury : function(param, elm) {
         blury = param;
     } incontextof this,
 	blur : function(param, elm) {
 		blurx = blury = param;
     } incontextof this,
+	contrast : function(param, elm) {
+		contrast = +param;
+    } incontextof this,
+	brightness : function(param, elm) {
+		brightness = +param;
+    } incontextof this,
+	hue : function(param, elm) {
+		hue = +param;
+    } incontextof this,
+	saturation : function(param, elm) {
+		saturation = +param;
+    } incontextof this,
+	luminance : function(param, elm) {
+		luminance = +param;
+    } incontextof this,
+	noise : function(param, elm) {
+		noise = +param;
+	} incontextof this,
 	filter : function(param, elm) {
 		filter = param;
     } incontextof this,
-    action : setAction incontextof this,
+	script : function(param, elm) {
+		script = param;
+    } incontextof this,
+	action : setAction incontextof this,
     stopaction : stopAction incontextof this,
 	xpos : this.setXPos incontextof this,
 	ypos : this.setYPos incontextof this,
@@ -1426,7 +1532,14 @@ class KAGEnvImage {
         f.bgamma    = _bgamma;
 		f.blurx     = _blurx;
 		f.blury     = _blury;
-		f.filter    = _filter;
+		f.contrast = _contrast;
+		f.brightness = _brightness;
+		f.hue = _hue;
+		f.saturation = _saturation;
+		f.luminance = _luminance;
+		f.noise = _noise;
+		f.filter = _filter;
+		f.script = _script;
 
 		f.absolute = absolute;
 	}
@@ -1485,14 +1598,28 @@ class KAGEnvImage {
         _bgamma    = f.bgamma;
 		_blurx     = f.blurx;
 		_blury     = f.blury;
+		_contrast = f.contrast;
+		_brightness = f.brightness;
+		_hue = f.hue;
+		_saturation = f.saturation;
+		_luminance = f.luminance;
+		_noise = f.noise;
 		_filter    = f.filter;
+		_script    = f.script;
 		if (_grayscale !== void ||
 			_rgamma    !== void ||
 			_ggamma    !== void ||
 			_bgamma    !== void ||
 			_blurx     !== void ||
 			_blury     !== void ||
-			_filter    !== void) {
+			_contrast !== void ||
+			_brightness !== void ||
+			_hue !== void ||
+			_saturation !== void ||
+			_luminance !== void ||
+			_noise !== void ||
+			_filter !== void ||
+			_script !== void) {
             redraw = true;
         }
 
@@ -1554,14 +1681,28 @@ class KAGEnvImage {
         _bgamma    = orig.bgamma;
 		_blurx     = orig.blurx;
 		_blury     = orig.blury;
-		_filter    = orig.filter;
+		_contrast = orig.contrast;
+		_brightness = orig.brightness;
+		_hue = orig.hue;
+		_saturation = orig.saturation;
+		_luminance = orig.luminance;
+		_noise = orig.noise;
+		_filter = orig.filter;
+		_script = orig.script;
 		if (_grayscale !== void ||
 			_rgamma    !== void ||
 			_ggamma    !== void ||
 			_bgamma    !== void ||
 			_blurx     !== void ||
 			_blury     !== void ||
-			_filter    !== void) {
+			_contrast !== void ||
+			_brightness !== void ||
+			_hue !== void ||
+			_saturation !== void ||
+			_luminance !== void ||
+			_noise !== void ||
+			_filter !== void ||
+			_script !== void) {
             redraw = true;
         }
 	}
@@ -1842,6 +1983,34 @@ class KAGEnvImage {
 
 			if (redraw) {
 				drawLayer(targetLayer);
+				if (script !== void) {
+					// スクリプト適用
+					try {
+						var args = script.split(",");
+						var name = args.shift();
+						var func;
+						for (var i=args.count-1;i>=0;i--) {
+							args[i] = Scripts.eval(args[i]);
+						}
+						if ((func = env.scripts[name]) !== void) {
+							(func incontextof targetLayer)(args*);
+						} else if ((func = targetLayer[name]) !== void && func instanceof "Function") {
+							func(args*);
+						}
+					} catch(e) {
+						Debug.message("%s:failed to run script:%s".sprintf(name, script));
+					}
+				}
+				if (noise !== void) {
+					targetLayer.noise(noise);
+				}
+				if (contrast !== void || brightness !== void) {
+					targetLayer.light(brightness, contrast);
+				}
+				if (hue !== void || saturation !== void || luminance !== void) {
+					//dm("HSL補正処理 %d:%d:%d".sprintf(hue, saturation, luminance));
+					targetLayer.modulate(hue, saturation, luminance);
+				}
 				if (filter !== void) {
 					var f = filter.split(":");
 					var color   = f.count > 0 ? +f[0]:0xffffffff;
@@ -1852,6 +2021,9 @@ class KAGEnvImage {
 						}
 					}
 				}
+				if (blurx || blury) {
+					targetLayer.doBoxBlur(blurx, blury);
+				}
 				if (grayscale) {
 					targetLayer.doGrayScale();
 				}
@@ -1859,9 +2031,6 @@ class KAGEnvImage {
 					targetLayer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
 											ggamma == void ? 1.0 : ggamma, 0, 255,
 											bgamma == void ? 1.0 : bgamma, 0, 255);
-				}
-				if (blurx || blury) {
-					targetLayer.doBoxBlur(blurx, blury);
 				}
 				// 描画処理中に必要な情報更新が行われる場合があるので
 				// オフセット調整はこの位置で行う

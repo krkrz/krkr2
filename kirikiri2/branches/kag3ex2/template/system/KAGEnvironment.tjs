@@ -28,7 +28,7 @@ class KAGEnvironment extends KAGEnvImage {
     var events;       //< イベント絵情報
     var positions;    //< 配置情報
     var actions;      //< アクション情報
-    var transitions;  //< トランジション情報
+	var transitions;  //< トランジション情報
     var defaultTime;  //< デフォルトの時間
 	var yoffset;      //< キャラクタ配置のyoffset 値
 	var xoffset;      //< キャラクタ配置のyoffset 値
@@ -40,7 +40,10 @@ class KAGEnvironment extends KAGEnvImage {
     var faceLevelName;//< フェイスウインドウ用の表示名
     var emotions;
 	var emotionmap;
+	var searchSmallLevel; //< 拡張立ち絵で小さい立ち絵を探索するかどうか
 
+	var scripts = %[];      //< 画像加工スクリプト群
+	
     /// キャラクタ初期化情報一覧
     var characterInits;
     /// キャラクタ情報
@@ -135,32 +138,6 @@ class KAGEnvironment extends KAGEnvImage {
         }
     }
 
-    property blurx {
-        getter() {
-            return _blurx;
-        }
-        setter(v) {
-			_blurx = v;
-			if (colorall) {
-				setColorAll(true);
-            }
-            redraw = true;
-        }
-    }
-
-    property blury {
-        getter() {
-            return _blury;
-        }
-        setter(v) {
-			_blury = v;
-			if (colorall) {
-				setColorAll(true);
-            }
-            redraw = true;
-        }
-    }
-	
     function resetColor(param, elm) {
         _grayscale = void;
         _rgamma = void;
@@ -168,8 +145,14 @@ class KAGEnvironment extends KAGEnvImage {
         _bgamma = void;
 		_blurx = void;
 		_blury = void;
-        if (colorall) {
-            setColorAll(true);
+		_contrast = void;
+		_brightness = void;
+		_hue = void;
+		_saturation = void;
+		_luminance = void;
+		_noise = void;
+		if (colorall) {
+			setColorAll(true);
         }
         redraw = true;
     }
@@ -375,7 +358,7 @@ class KAGEnvironment extends KAGEnvImage {
 		// 初期化情報展開
 		envinfo = loadEnvinfo();
 
-        if (envinfo) {
+		if (envinfo) {
             // デバッグ表示 
             times       = envinfo.times;
             stages      = envinfo.stages;
@@ -384,8 +367,8 @@ class KAGEnvironment extends KAGEnvImage {
             actions     = envinfo.actions;
 			emotions    = envinfo.emotions;
             emotionmap  = envinfo.emotionmap;
-            transitions = envinfo.transitions;
-            defaultTime = envinfo.defaultTime;
+			transitions = envinfo.transitions;
+			defaultTime = envinfo.defaultTime;
             yoffset     = (int)envinfo.yoffset;
             xoffset     = (int)envinfo.xoffset;
             defaultXpos = (int)envinfo.defaultXpos;
@@ -395,8 +378,9 @@ class KAGEnvironment extends KAGEnvImage {
             levels       = envinfo.levels;
             faceLevelName = envinfo.faceLevelName;
             showFaceMode  = envinfo.showFaceMode;
-            faceFadeTime  = envinfo.faceFadeTime;
-            bothFace = envinfo.bothFace !== void ? envinfo.bothFace : true;
+			faceFadeTime  = envinfo.faceFadeTime;
+			bothFace = envinfo.bothFace !== void ? envinfo.bothFace : true;
+			searchSmallLevel = envinfo.searchSmallLevel !== void ? envinfo.searchSmallLevel : true;
         
             // キャラクタ情報初期化処理
             if (envinfo.characters !== void) {
@@ -433,6 +417,13 @@ class KAGEnvironment extends KAGEnvImage {
 			eventLevel = 5;
 		}
 
+		// スクリプト
+		if (Storages.isExistentStorage(   "envscript.tjs")) try {
+			scripts = Scripts.evalStorage("envscript.tjs");
+		} catch(e) {
+			Debug.message("envscript.tjs の読み込みに失敗しました:" + e.message);
+		}
+		
 		initEnv();
 	}
 	
@@ -612,6 +603,7 @@ class KAGEnvironment extends KAGEnvImage {
      * 全要素消去
      */
     function hideAll(param, elm) {
+		hideEvent(param, elm);
 		hideBase(param, elm);
 		hideCharacters(param, elm);
         hideLayers(param, elm);
@@ -2247,8 +2239,22 @@ class KAGEnvironment extends KAGEnvImage {
 			if (time > 0) {
 				doCameraAct("camerazoom", +getRelative(param,camerazoom), time, elm);
 			} else {
+
+
+				var cz = _camerazoom;
 				_camerazoom = +getRelative(param,camerazoom);
-				updateCameraFlag = true;
+
+				if (transMode && ((cz <= 100 &&  _camerazoom > 100) ||
+								  (cz > 100 && _camerazoom <= 100))) {
+					// カメラが100%境界を越える場合は、
+					// キャラの立ち絵生成レベル画像を1つあげるため再描画する
+					foreach(characters, function(name, value, dict) {
+						value.setRedraw();
+					});
+					redraw = true;
+				} else {
+					updateCameraFlag = true;
+				}
 			}
 		}
 		return 0;

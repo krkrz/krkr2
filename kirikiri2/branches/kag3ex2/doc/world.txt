@@ -184,28 +184,14 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 
 Ÿallchar
 
-•\Ž¦‚³‚ê‚Ä‚¢‚é‘SƒLƒƒƒ‰‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·B
-Œ´‘¥”ñ“¯ŠúŽÀs‚É‚È‚è‚Ü‚·‚ªAabsolute •ÏX‚È‚Ç”ñ“¯Šú‚ÅŽÀs‚Å‚«‚È‚¢
-ƒRƒ}ƒ“ƒh‚Ìê‡‚É‚ÍŒÂ•Ê‚ª‡‚ÉŽÀs‚³‚ê‚é‚±‚Æ‚É‚È‚è‚Ü‚·B
+‘SƒLƒƒƒ‰‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
 
 ‘®«
-    force   •\Ž¦‚³‚ê‚Ä‚È‚¢ƒLƒƒƒ‰‚É‚àƒRƒ}ƒ“ƒh‚ð”­s‚µ‚Ü‚·B
     poscond Žw’è‚³‚ê‚½êŠ‚É‚¢‚éƒLƒƒƒ‰‚É‚Ì‚ÝŽÀs‚µ‚Ü‚·
-    trans   Žw’è‚³‚ê‚Ä‚¢‚éê‡‚ÍA“à•”“I‚É begintrans/endtrans
-            ‚Å‚­‚­‚Á‚½ó‘Ô‚ÅŽÀs‚µ‚Ü‚·
-    sync    ‘S‘Ì‚Ìˆ—‚Ì‚ ‚Æ“¯Šú‚µ‚Ü‚·
 
 Ÿalllayer
 
-•\Ž¦‚³‚ê‚Ä‚¢‚é‘SƒŒƒCƒ„‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
-Œ´‘¥”ñ“¯ŠúŽÀs‚É‚È‚è‚Ü‚·‚ªAabsolute •ÏX‚È‚Ç”ñ“¯Šú‚ÅŽÀs‚Å‚«‚È‚¢
-ƒRƒ}ƒ“ƒh‚Ìê‡‚É‚ÍŒÂ•Ê‚ª‡‚ÉŽÀs‚³‚ê‚é‚±‚Æ‚É‚È‚è‚Ü‚·B
-
-‘®«
-    force   •\Ž¦‚³‚ê‚Ä‚È‚¢ƒŒƒCƒ„‚É‚àƒRƒ}ƒ“ƒh‚ð”­s‚µ‚Ü‚·B
-    trans   Žw’è‚³‚ê‚Ä‚¢‚éê‡‚ÍA“à•”“I‚É begintrans/endtrans
-            ‚Å‚­‚­‚Á‚½ó‘Ô‚ÅŽÀs‚µ‚Ü‚·
-    sync    ‘S‘Ì‚Ìˆ—‚Ì‚ ‚Æ“¯Šú‚µ‚Ü‚·
+‘SƒŒƒCƒ„‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
 
 Ÿallse
 
@@ -332,22 +318,49 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
     hide        ƒŒƒCƒ„‚ð•\Ž¦‚µ‚È‚¢
 
     type        ƒŒƒCƒ„‡¬ƒ‚[ƒh
+
+    --  “ÁŽê‰æ‘œ•â³ˆ— -------------------------------------
+
+    ‚±‚ê‚ç‚Ìˆ—‚Í‰æ‘œ‚ª“®“I‚É‰ÁHˆ—‚³‚ê‚Ü‚·B
+    ˆ—‚Ì‚½‚ß‚â‚âŽžŠÔ‚ª‚©‚©‚è‚Ü‚·B
+
+    script      envscript.tjs ‚Å’è‹`‚³‚ê‚½ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚ðŒÄ‚Ño‚µ‚Ä
+                ‰æ‘œ‰ÁH‚µ‚Ü‚·BƒJƒ“ƒ}‹æØ‚è‚ÅÅ‰‚Ìƒpƒ‰ƒ[ƒ^‚ªŠÖ”–¼A
+                Žc‚è‚Íˆø”‚É‚È‚è‚Ü‚·
+    
+    noise       ‰æ‘œ‚ÉƒmƒCƒYˆ—‚ðs‚¢‚Ü‚· 0`255
+
+    contrast    ‰æ‘œ‚ÌƒRƒ“ƒgƒ‰ƒXƒg‚ð•â³‚µ‚Ü‚· -100`100
+    brightness  ‰æ‘œ‚Ì–¾“x‚ð•â³‚µ‚Ü‚· -255`255
+
+    hue         ‰æ‘œ‚ÌF‘Š‚ð•â³‚µ‚Ü‚· -180`180(“x)
+    saturation  ‰æ‘œ‚ÌÊ“x‚ð•â³‚µ‚Ü‚· -100`100(%)
+    luminance   ‰æ‘œ‚Ì‹P“x‚ð•â³‚µ‚Ü‚· -100`100(%)
+
+    filter      ‰æ‘œ‚ÉFƒ}ƒXƒN‚ÅƒtƒBƒ‹ƒ^‚ð‘‚¯‚Ü‚·B
+        @@    ‘Ž®: 0xAARRGGBB:‡¬ƒ‚[ƒhŽw’è
+
+    blurx       ƒ{ƒbƒNƒXƒuƒ‰[X—Ê
+    blury       ƒ{ƒbƒNƒXƒuƒ‰[Y—Ê
+    blur        ƒ{ƒbƒNƒXƒuƒ‰[XY“¯ŽžŽw’è
+
+    ¦ˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ÍŠÂ‹«‚Ì colorall Žw’è‚Ì‰e‹¿‚ð‚¤‚¯‚Ü‚·
+
     grayscale   ‰æ‘œ‚Ì•\Ž¦‚ªƒOƒŒ[ƒXƒP[ƒ‹‚É‚È‚è‚Ü‚·
     rgamma      ‰æ‘œ‚ÌRƒKƒ“ƒ}•â³‚ðs‚¢‚Ü‚·
     ggamma      ‰æ‘œ‚ÌGƒKƒ“ƒ}•â³‚ðs‚¢‚Ü‚·
     bgamma      ‰æ‘œ‚ÌBƒKƒ“ƒ}•â³‚ðs‚¢‚Ü‚·
-    filter      ‰æ‘œ‚ÉFƒ}ƒXƒN‚ÅƒtƒBƒ‹ƒ^‚ð‘‚¯‚Ü‚·B
-        @@    ‘Ž®: 0xAARRGGBB:‡¬ƒ‚[ƒhŽw’è
-    blurx       ƒ{ƒbƒNƒXƒuƒ‰[X—Ê
-    blury       ƒ{ƒbƒNƒXƒuƒ‰[Y—Ê
-    blur        ƒ{ƒbƒNƒXƒuƒ‰[XY“¯ŽžŽw’è
+
+    ----------------------------------------------------------
 
     raster      ƒ‰ƒXƒ^[ƒXƒNƒ[ƒ‹Œø‰Ê‚ÌU•‚ðŽw’è‚µ‚Ü‚·
     rasterlines ƒ‰ƒXƒ^[ƒXƒNƒ[ƒ‹Œø‰Ê‚Ìã‰ºƒ‰ƒCƒ“”‚Ì”ÍˆÍ‚ðŽw’è‚µ‚Ü‚·
     rastercycle ƒ‰ƒXƒ^[ƒXƒNƒ[ƒ‹Œø‰Ê‚Ì”g‚Ì•\Ž¦ŽüŠú‚ðŽw’è‚µ‚Ü‚·
     
     resetpos    xpos, ypos, rotate, zoom, afx, afy, raster ‚Ì‰Šú‰»
-    resetcolor  type,grayscale,rgamma,ggamma,bgamma,blurx,blury,filter 
+    resetcolor  type,noise,grayscale,rgamma,ggamma,bgamma,
+                contrast, brightness, hue, saturation, luminance, 
+                blurx,blury,filter 
                 ‚ð‰Šú‰»‚µ‚Ü‚·
     reset       resetpos, resetcolor ‚ðˆê“x‚ÉŽÀs
 
@@ -397,7 +410,6 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
                 ƒLƒƒƒ‰ƒNƒ^‚ÆƒŒƒCƒ„‚·‚×‚ÄÁ‹Ž‚³‚êA
                 •‘‘ä‚âƒCƒxƒ“ƒg‚à•\Ž¦‚È‚µ‚Ìó‘Ô‚É‚È‚è‚Ü‚·B
     nostopbgm   initŽž‚ÉBGM‚ðŒp‘±‚³‚¹‚Ü‚·
-    keepvoice   initŽž‚ÉƒLƒƒƒ‰‚Ìƒ{ƒCƒXî•ñ‚ÍŽc‚µ‚Ü‚·
 
     stage       •‘‘ä–¼‚ðŽw’è‚µ‚Ü‚·BÈ—ª•\‹L‰Â”\
                 •‘‘ä‚Í‚ ‚ç‚©‚¶‚ß envinit.tjs ‚Å“o˜^‚µ‚Ä‚¨‚«‚Ü‚·B
@@ -420,19 +432,14 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 
     shiftx      ‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊX time,accel,nowait—LŒø
     shifty      ‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊY time,accel,nowait—LŒø
-    camerax     ƒJƒƒ‰‚ÌˆÊ’uŽw’èX time,accel,nowait—LŒøA‘Š‘ÎŽw’è—LŒø
-    cameray     ƒJƒƒ‰‚ÌˆÊ’uŽw’èY time,accel,nowait—LŒøA‘Š‘ÎŽw’è—LŒø
-    camerazoom  ƒJƒƒ‰‚ÌƒY[ƒ€Žw’è time,accel,nowait—LŒøA‘Š‘ÎŽw’è—LŒø
+    camerax     ƒJƒƒ‰‚ÌˆÊ’uŽw’èX time,accel,nowait—LŒø
+    cameray     ƒJƒƒ‰‚ÌˆÊ’uŽw’èY time,accel,nowait—LŒø
+    camerazoom  ƒJƒƒ‰‚ÌƒY[ƒ€Žw’è time,accel,nowait—LŒø
     resetcamera ƒJƒƒ‰‚ÌˆÊ’u‚Ì‰Šú‰» time,accel,nowait—LŒø
     actioncamera ƒJƒƒ‰ƒAƒNƒVƒ‡ƒ“‚ÌŽw’è(actionƒRƒ}ƒ“ƒh‚Æ“¯“™‚ÌŽw’è)
     stopcamera  ƒJƒƒ‰ƒAƒNƒVƒ‡ƒ“‚Ì’âŽ~(stopaction‚Æ“™‰¿)
-
-    camerach	Žw’è‚·‚é‚ÆAƒJƒƒ‰Žw’èƒRƒ}ƒ“ƒh‚ÌŠî€’l‚ª‚»‚ÌƒLƒƒƒ‰‚Ì
-@@@@@@@@Šç‚Ì’†‰›•Œ»Ý‚ÌƒŒƒxƒ‹‚ª100%‚É‚È‚éƒTƒCƒYA‚É‚È‚è‚Ü‚·B
-@@@@@@@@‘Š‘ÎŽw’è‚Å’²®‚µ‚Ä‚­‚¾‚³‚¢B
-
-@@@@@@@@—á [env camerach=ƒ‹ƒŠ camerax=@ cameray=@ cameraz=@]@
-@@@@@@@@ƒ‹ƒŠ‚ÉƒJƒƒ‰‚ð‚ ‚í‚¹‚é
+    camerach	Žw’è‚³‚ê‚½ƒLƒƒƒ‰‚ÌŠç‚ÌˆÊ’u‚ðƒJƒƒ‰ˆÚ“®‚ÌŒ´“_‚Æ‚·‚é
+		¦—§‚¿ŠG‚Å–¢’è‹`‚Ìê‡‚ÍƒGƒ‚[ƒVƒ‡ƒ“Œ´“_‚ªŽQÆ‚³‚ê‚é
 
 ŸƒvƒƒpƒeƒB
 
@@ -520,10 +527,11 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 
     stopvoice   ƒ{ƒCƒXÄ¶‚ð‹­§’âŽ~‚µ‚Ü‚·
 
-    bvoice      BGV‚Æ‚µ‚ÄÄ¶‚³‚ê‚éƒ{ƒCƒX‚ðŽw’è‚µ‚Ü‚·B
-                ƒ‹[ƒvÄ¶Žž‚ÍAŠY“–ƒLƒƒƒ‰‚Ì‘¼‚Ìƒ{ƒCƒXÄ¶’†‚Í’âŽ~‚µ‚ÄA
-				ƒ{ƒCƒX‚ª‚Æ‚Ü‚é‚ÆÄ“xÄ¶‚³‚ê‚Ü‚·B‹ó•¶Žš‚Å’âŽ~‚µ‚Ü‚·B
-	loop		bvoice ‚Ìƒ‹[ƒvŽw’è (–¢Žw’èŽž‚Í—LŒø)
+    bvoice      — ‚Åƒ‹[ƒvÄ¶‚³‚ê‚éƒ{ƒCƒX‚ðŽw’è‚µ‚Ü‚·B
+                ŠY“–ƒLƒƒƒ‰‚Ì‘¼‚Ìƒ{ƒCƒXÄ¶’†‚Í’âŽ~‚µ‚Ü‚·Bƒ{ƒCƒX‚ª‚Æ‚Ü‚é‚Æ
+                ÄŠJ‚µ‚Äƒ‹[ƒvÄ¶‚³‚ê‚Ü‚·B‹ó•¶Žš‚ðŽw’è‚·‚é‚Æ’âŽ~‚µ‚Ü‚·B
+	•â•ƒpƒ‰ƒ[ƒ^
+	loop	ƒ‹[ƒvŽw’è‚µ‚Ü‚·
 
 —á:ƒ{ƒCƒX”Ô†‚ðŽw’è‚µ‚ÄÄ¶
 ------------------------------------
@@ -604,6 +612,35 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
     tiley   ƒ^ƒCƒ‹YƒIƒtƒZƒbƒg
 
     copy    •ÊƒŒƒCƒ„‚Ì‘®«‚ð•¡»‚·‚é
+
+    fire        ‰ŠƒGƒtƒFƒNƒgŽí‰æ‘œŽw’è
+    firecolor   ‰ŠƒGƒtƒFƒNƒgƒJƒ‰[Žw’è red, blue, white ‚Ü‚½‚Í 
+            0xRRGGBB ‚ÅFŽw’èBFŽw’è‚ð 0xRRGGBB:0xRRGGBB ‚Æ ":" ‚Å
+            ˜A‚Ë‚é‚ÆA‚»‚ÌƒOƒ‰ƒf[ƒVƒ‡ƒ“‚É‚È‚è‚Ü‚·B
+            æ‚É‹Lq‚µ‚½‚Ù‚¤‚ª‰·“x‚ª‚‚¢•”•ª‚ÌF‚Å‚·B
+            •½‹Ï“I‚ÉF”z’u‚³‚ê‚Ü‚·‚ªA":" ‚ð•¡”‹Lq‚·‚é‚Æ‚»‚Ì
+            •”•ª‚Ì—Ìˆæ‚ª’·‚­‚È‚è‚Ü‚·Bƒ¿’l‚ÍüŒ`‚É‚È‚è‚Ü‚·
+    firegamma   firecolor ‚Å’¼ÚFŽw’è‚µ‚½ê‡A‚»‚ê‚Ìƒ¿’l‚Ì•Ï“®‚ð
+            üŒ`‚Å‚È‚­‚·‚éê‡‚ÉŽw’è‚µ‚Ü‚·B
+    firelayer   256~1 ƒTƒCƒY‚ÌƒŒƒCƒ„‚Å‰Š‚ÌFƒ}ƒbƒv‰æ‘œ‚ð’¼ÚŽw’è‚µ‚Ü‚·
+    firewidth   ‰ŠƒGƒtƒFƒNƒg—ÌˆæƒTƒCƒYŽw’èBÈ—ªŽž‚ÍŒ³ƒtƒ@ƒCƒ‹ƒTƒCƒY
+    fireheight  ‰ŠƒGƒtƒFƒNƒg—ÌˆæƒTƒCƒYŽw’èBÈ—ªŽž‚ÍŒ³ƒtƒ@ƒCƒ‹ƒTƒCƒY
+    fireleft    ‰ŠƒGƒtƒFƒNƒgŽí‰æ‘œ”z’uˆÊ’u
+    firetop     ‰ŠƒGƒtƒFƒNƒgŽí‰æ‘œ”z’uˆÊ’u
+    firemargin  ‰ŠƒGƒtƒFƒNƒg‰æ‘œ—Ìˆæ‚ð‘OŒã¶‰E‚É‚±‚ê‚¾‚¯Šg’£
+    forceh  ‰¡•ûŒüƒtƒH[ƒXŽw’è(-8`8)
+    forcev  c•ûŒüƒtƒH[ƒXŽw’è(-8`8)
+    boundRangeH ‰¡•ûŒüƒoƒEƒ“ƒhƒŒƒ“ƒW 0`16
+    boundRangeV c•ûŒüƒoƒEƒ“ƒhƒŒƒ“ƒW 0`16
+    scalingCoeff    ƒXƒP[ƒŠƒ“ƒOŒW” 0`0.01
+    numOfBlurForCoolMap ƒuƒ‰[“K—p‰ñ” 0`
+    textureFilterType ƒeƒNƒXƒ`ƒƒƒtƒBƒ‹ƒ^@0:ƒjƒAƒŒƒXƒlƒCƒo[, 1:ƒoƒCƒŠƒjƒA
+    coolRange   ‹­‚³‚ÌU‚ê•‚ðÝ’è 0`256
+    coolStrength    ‹­‚³ 0`255
+    coolParticleDensityDenominator  —â‹p—±Žq”Z“x•ª•ê 0>
+    coolParticleDensityNumerator    —â‹p—±Žq”Z“x•ªŽq 0>
+    edgeSmoothing@‰Š‚Ì’[‚ð–Ú—§‚¿‚É‚­‚­‚·‚é‚©‚Ç‚¤‚©
+
 
 ŸƒvƒƒpƒeƒB
 
@@ -766,3 +803,15 @@ sync Žw’è‚Å“¯Šú“®ì‚µ‚Ä‚¢‚éƒAƒNƒVƒ‡ƒ“‚ÍAƒNƒŠƒbƒN‘€ì‚É‚æ‚Á‚ÄƒLƒƒƒ“ƒZƒ‹‚³‚ê‚Ü‚·
 ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŒp‘±‚µ‚½‚¢ê‡‚ÍAnowait ƒpƒ‰ƒ[ƒ^‚ðŽw’è‚µ‚Ü‚·B
 
 stoptrans ‚ðŽg‚¤‚ÆAnowait Žw’è‚ÌƒAƒNƒVƒ‡ƒ“‚à‹­§“I‚É’âŽ~‚Æ‚È‚è‚Ü‚·B
+
+œdelayrun
+
+ƒRƒ}ƒ“ƒh‚ð’x‰„ŽÀs‚³‚¹‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·
+
+[ƒRƒ}ƒ“ƒh delayrun=’x‰„Žw’è]
+
+ElineMode‚É‚æ‚é‰üƒy[ƒWˆ—‘O(ƒNƒŠƒbƒN‘Ò‚¿‚ÌŒã)A
+  ‚Ü‚½‚Í [delaydone] ƒRƒ}ƒ“ƒh‚Å’x‰„‚ÍƒLƒƒƒ“ƒZƒ‹‚³‚ê‚Ü‚·
+E”’lŽw’è‚µ‚½ê‡‚ÍŽw’è‚ÌŽžŠÔ(ms’PˆÊ)’x‰„‚µ‚Ä‚©‚çŽÀs‚³‚ê‚Ü‚·
+E•¶Žš—ñŽw’è‚µ‚½ê‡‚ÍAŽŸ‚ÉÄ¶‚³‚ê‚éƒ{ƒCƒX’†‚Ìƒ‰ƒxƒ‹‚Ìƒ^ƒCƒ~ƒ“ƒO‚ÅŽÀs‚³‚ê‚Ü‚·
+E•¶Žš—ñŽw’è‚ÅAƒ{ƒCƒXÄ¶‚ª–³‚©‚Á‚½ê‡‚Í‹­§“I‚É–`“ª‚Å‚ÌŽÀs‚É‚È‚è‚Ü‚·B

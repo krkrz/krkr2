@@ -208,8 +208,7 @@ class StandViewModelessDialog {
 	}
 	function onInit() {
 		maprect = dialog.mapRect(maprect);
-		dm("onInit", StructToString(maprect));
-		
+		//dm("onInit", StructToString(maprect));
 	}
 	function onSize(msg, wp, lp) {
 		var w = (lp&0xFFFF), h = (lp>>16)&0xFFFF;
@@ -284,7 +283,9 @@ class StandViewWindow extends Window
 
 	var limitmenuitem;
 	var limitMenuNames;
-
+	var limitfaceitem;
+	var limitFaceNames;
+	
 	var characters = %[];
 	
 	var currentCh; //< 現在選択中のキャラクタオブジェクト
@@ -346,6 +347,7 @@ class StandViewWindow extends Window
 		filemenu.add(new MenuItem(this, "-"));
 
 		filemenu.add(limitmenuitem = new CommandMenuItem(this, "リスト表示を限定(&L)", toggleLimitMenuNames));
+		filemenu.add(limitfaceitem = new CommandMenuItem(this, "表情リスト表示を限定(&L)", toggleLimitFaceNames));
 		filemenu.add(new CommandMenuItem(this, "サブウィンドウ表示(&V)", showModelessDialog));
 
 		clipmenu = new MenuItem(this, "選択時クリップボード");
@@ -583,7 +585,7 @@ class StandViewWindow extends Window
 				// レイヤ複製
 				var cp = new Layer(this, elm.base);
 				with (cp) {
-					.assignImages(layer._image);
+					.assignImages(layer._image._image);
 					.setSizeToImageSize();
 					.name = name;
 					.faceRect = rect;
@@ -970,7 +972,7 @@ class StandViewWindow extends Window
 			with (currentCh) {
 				createMenu(posemenu,  .getPoseNames( limitMenuNames),  StandPoseMenuItem,  .pose);
 				createMenu(dressmenu, .getDressNames(limitMenuNames), StandDressMenuItem, .dress);
-				createMenu(facemenu,  .getFaceNames( limitMenuNames),  StandFaceMenuItem,  .face);
+				createMenu(facemenu,  .getFaceNames( limitFaceNames),  StandFaceMenuItem,  .face);
 				if (typeof .diff != "undefined") {
 					createMenu(diffmenu,  .getDiffNames(limitMenuNames),  StandDiffMenuItem,  .diff);
 					diffmenu.visible = true;
@@ -984,7 +986,7 @@ class StandViewWindow extends Window
 				var basexoff = .init.xoffset !== void ? +.init.xoffset : +env.xoffset;
 				var yoff = (.yoffset !== void ? +.yoffset : 0) + baseyoff;
 				var xoff = (.xoffset !== void ? +.xoffset : 0) + basexoff;
-				dm("offset:" + xoff + "," + yoff);
+				//dm("offset:" + xoff + "," + yoff);
 				var zoom = 100;
 				var levelYoffset = 0;
 				var levelXoffset = 0;
@@ -1022,6 +1024,15 @@ class StandViewWindow extends Window
 	}
 	function toggleLimitMenuNames() { setLimitMenuNames(!limitMenuNames); }
 
+	// メニューの一覧を限定するモード設定
+	function setLimitFaceNames(en) {
+		limitFaceNames = en;
+		var item = limitfaceitem;
+		item.checked = en if (item !== void);
+		store();
+	}
+	function toggleLimitFaceNames() { setLimitFaceNames(!limitFaceNames); }
+	
 	// -------------------------------------------------------
 	// キャラ指定
 	// -------------------------------------------------------

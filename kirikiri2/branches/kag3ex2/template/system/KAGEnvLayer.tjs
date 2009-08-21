@@ -22,6 +22,10 @@ class KAGEnvLayer extends KAGEnvImage {
 	var movieAlpha;
 	var movieLayer;
 
+	// 炎エフェクト
+	var fireFile;
+	var fireInfo;
+
 	// タイル描画処理
 	var tileFile;
 
@@ -81,6 +85,11 @@ class KAGEnvLayer extends KAGEnvImage {
 		f.movieFile = movieFile;
 		f.movieLoop = movieLoop;
 		f.movieAlpha = movieAlpha;
+		f.fireFile = fireFile;
+		if (fireFile !== void) {
+			f.fireInfo = %[];
+			(Dictionary.assign incontextof f.fireInfo)(fireInfo);
+		}
 		f.tileFile = tileFile;
 		f.tilex = tilex;
 		f.tiley = tiley;
@@ -94,6 +103,13 @@ class KAGEnvLayer extends KAGEnvImage {
 		movieFile = f.movieFile;
 		movieLoop = f.movieLoop;
 		movieAlpha = f.movieAlpha;
+		fireFile = f.fireFile;
+		if (fireFile !== void) {
+			fireInfo = %[];
+			(Dictionary.assign incontextof fireInfo)(f.fireInfo);
+		} else {
+			fireInfo = void;
+		}
 		tileFile = f.tileFile;
 		tilex = f.tilex;
 		tiley = f.tiley;
@@ -103,16 +119,25 @@ class KAGEnvLayer extends KAGEnvImage {
     }
 
 	function copy(orig) {
-		imageFile = orig.imageFile;
-		imageColor = orig.imageColor;
-		movieFile = orig.movieFile;
-		movieLoop = orig.movieLoop;
-		movieAlpha = orig.movieAlpha;
-		tileFile = orig.tileFile;
-		tilex = orig.tilex;
-		tiley = orig.tiley;
-		width = orig.width;
-		height = orig.height;
+		if (orig instanceof "KAGEnvLayer") {
+			imageFile = orig.imageFile;
+			imageColor = orig.imageColor;
+			movieFile = orig.movieFile;
+			movieLoop = orig.movieLoop;
+			movieAlpha = orig.movieAlpha;
+			fireFile = orig.fireFile;
+			if (fireFile) {
+				fireInfo = %[];
+				(Dictionary.assign incontextof fireInfo)(orig.fireInfo);
+			} else {
+				fireInfo = void;
+			}
+			tileFile = orig.tileFile;
+			tilex = orig.tilex;
+			tiley = orig.tiley;
+			width = orig.width;
+			height = orig.height;
+		}
 		super.copy(orig);
 	}
 	
@@ -122,6 +147,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		initFile(elm);
 		
 		movieFile = void;
+		fireFile = void;
 		tileFile  = void;
 		imageFile = file;
 		imageColor = void;
@@ -156,6 +182,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		imageColor = +color;
 		tileFile  = void;
 		movieFile = void;
+		fireFile = void;
 		
 		// 背景指定時に座標指定がなければ場所情報を初期化する
 		if (elm.xpos === void) {
@@ -180,6 +207,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		imageFile = void;
 		imageColor = void;
 		tileFile  = void;
+		fireFile = void;
 		movieFile = file;
 		movieAlpha = elm.alpha !== void ? elm.alpha : false;
 		movieLoop  = elm.loop !== void ? +elm.loop : false;
@@ -205,12 +233,42 @@ class KAGEnvLayer extends KAGEnvImage {
 		return true;
     }
 
+	// ムービーファイルを指定
+	function setFireFile(file, elm) {
+		
+		initFile(elm);
+
+		imageFile = void;
+		imageColor = void;
+		tileFile  = void;
+		movieFile = void;
+		fireFile = file;
+		fireInfo = %[];
+		(Dictionary.assign incontextof fireInfo)(elm);
+		
+		// 背景指定時に座標指定がなければ場所情報を初期化する
+		if (elm.xpos === void) {
+			xpos = void;
+        }
+		if (elm.ypos === void) {
+			ypos = void;
+        }
+
+		if (elm.hide === void) {
+			disp = SHOW;
+			redraw = true;
+		}
+
+		return true;
+    }
+	
 	// 塗りつぶしイメージファイルを指定
 	function setTileFile(file, elm) {
 
 		initFile(elm);
 		
 		movieFile = void;
+		fireFile = void;
 		imageFile = void;
 		imageColor = void;
 		tileFile = file;
@@ -264,6 +322,29 @@ class KAGEnvLayer extends KAGEnvImage {
 	noflag : null,
 	width : function(param, elm) { width = param; } incontextof this,
 	height : function(param, elm) { height = param; } incontextof this,
+	fire: function(param, elm) {
+		setFireFile(param, elm);
+	} incontextof this,
+	scalingcoeff : null,
+	texturefiltertype: null,
+	forceh : null,
+	forceb : null,
+	boundrangeh : null,
+	boundrangeb : null,
+	numofblurforcoolmap : null,
+	texturefiltertype : null,
+	coolrange : null,
+	coolstrength : null,
+	coolparticledensitydenominator : null,
+	coolparticledensitynumerator : null,
+	edgesmoothing : null,
+	firewidth : null,
+	fireheight: null,
+	fireleft : null,
+	firetop : null,
+	firemargin : null,
+	firecolor : null,
+	firegamma: null
 		];
 
     /**
@@ -324,6 +405,7 @@ class KAGEnvLayer extends KAGEnvImage {
 	function drawLayer(layer) {
 		layer.stopMovie();
 		layer.clearTile();
+		layer.stopFire();
 		if (isShowBU()) {
 			if (tileFile !== void) {
 				// タイル画像ロード
@@ -339,7 +421,7 @@ class KAGEnvLayer extends KAGEnvImage {
 						}
 					}
 				} catch (e) {
-					errorLayer(layer, imageFile + ":タイル画像がロードできません");
+					errorLayer(layer, imageFile + ":タイル画像がロードできません:" + e.message);
 				}
 			} else if (imageFile !== void) {
 				// 画像のロード
@@ -348,7 +430,7 @@ class KAGEnvLayer extends KAGEnvImage {
 					_width  = layer.width;
 					_height = layer.height;
 				} catch (e) {
-					errorLayer(layer, imageFile + ":画像がロードできません");
+					errorLayer(layer, imageFile + ":画像がロードできません:" + e.message);
 				}
 			} else if (movieFile !== void) {
 				// ムービーのロード
@@ -357,12 +439,19 @@ class KAGEnvLayer extends KAGEnvImage {
 					_width  = layer.width;
 					_height = layer.height;
 				} catch(e) {
-					errorLayer(layer, movieFile + ":ムービーがロードできません");
+					errorLayer(layer, movieFile + ":ムービーがロードできません:" + e.message);
 				}
 			} else if (imageColor !== void) {
 				// 塗りつぶし
 				layer.setSize(_width, _height);
 				layer.fillRect(0, 0, layer.width, layer.height, imageColor);
+			} else if (fireFile !== void) {
+				// 炎エフェクト
+				try {
+					layer.startFire(fireFile, fireInfo);
+				} catch(e) {
+					errorLayer(layer, fireFile + ":炎エフェクトがロードできません:" + e.message);
+				}
 			}
 		}
 	}

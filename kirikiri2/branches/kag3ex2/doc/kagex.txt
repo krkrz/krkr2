@@ -154,6 +154,34 @@ color, storage, tile, movie は排他で、この順で有効です。
             ※opacity と type は画像ロード時のものに初期化されます
     tilex   タイル位置X
     tiley   タイル位置Y
+
+    fire    炎エフェクト種画像指定。color, storage, tile, movie があると無効
+    firecolor   炎エフェクトカラー指定 red, blue, white または 
+            0xRRGGBB で色指定。色指定を 0xRRGGBB:0xRRGGBB と ":" で
+            連ねると、そのグラデーションになります。
+            先に記述したほうが温度が高い部分の色です。
+            平均的に色配置されますが、":" を複数記述するとその
+            部分の領域が長くなります。α値は線形になります
+    firegamma   firecolor で直接色指定した場合、それのα値の変動を
+            線形でなくする場合に指定します。
+    firelayer   256×1 サイズのレイヤで炎の色マップ画像を直接指定します
+    firewidth   炎エフェクト領域サイズ指定。省略時は元ファイルサイズ
+    fireheight  炎エフェクト領域サイズ指定。省略時は元ファイルサイズ
+    fireleft    炎エフェクト種画像配置位置
+    firetop     炎エフェクト種画像配置位置
+    firemargin  炎エフェクト画像領域を前後左右にこれだけ拡張
+    forceh  横方向フォース指定(-8～8)
+    forcev  縦方向フォース指定(-8～8)
+    boundRangeH 横方向バウンドレンジ 0～16
+    boundRangeV 縦方向バウンドレンジ 0～16
+    scalingCoeff    スケーリング係数 0～0.01
+    numOfBlurForCoolMap ブラー適用回数 0～
+    textureFilterType テクスチャフィルタ　0:ニアレスネイバー, 1:バイリニア
+    coolRange   強さの振れ幅を設定 0～256
+    coolStrength    強さ 0～255
+    coolParticleDensityDenominator  冷却粒子濃度分母 0>
+    coolParticleDensityNumerator    冷却粒子濃度分子 0>
+    edgeSmoothing　炎の端を目立ちにくくするかどうか
  
 ◆layopt (拡張)
 
@@ -186,6 +214,8 @@ color, storage, tile, movie は排他で、この順で有効です。
     rastercycle ラスタースクロールの周期
     tilex   タイル位置X
     tiley   タイル位置Y
+
+　　＋炎エフェクトのパラメータも指定可能
 
 ◆laylevel (新規)
 
@@ -241,7 +271,7 @@ layer パラメータを指定すると、前景レイヤの動画再生完了を待ちます
     time    アクションが実行される時間を指定します。未指定時は無限ループ
     delay   アクション開始までの遅延時間を指定します
     nowait  アクションに対する wait を無効にする 
-			(wact や wait のアクション解除処理に反応しなくなります)
+            (wact や wait のアクション解除処理に反応しなくなります)
     action  アクションの直接指定(グローバルな辞書または配列の名前)
     module  アクションのモジュール指定(旧スタイル)
     
@@ -856,13 +886,13 @@ sevolume        SE のボリューム  0～100
   WORLD 拡張のボイス機能が値として参照しています
 
 voiceenable                 ボイスが有効
-voicevolume                 ボイスのマスターボリューム 0～100
+voicevolume                 ボイスのボリューム 0～100
 getVoiceOn(name)            指定された名前のキャラのボイスが有効かどうか
 getVoiceVolume(name)        指定された名前のキャラのボイスのボリュームの取得
 setVoiceVolume(name,vol)    指定された名前のキャラのボイスのボリュームの指定
 
 bgvenable                   バックグラウンドボイスが有効
-bgvvolume                   バックグラウンドボイスのマスターボリューム 0～100
+bgvvolume                   バックグラウンドボイスのボリューム 0～100
 getBGVVolume(name)          指定された名前のキャラのBGVのボリュームの取得
 
 ●自動ラベル処理について

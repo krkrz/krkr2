@@ -140,6 +140,7 @@ class KAGEnvSE {
     canskip : null,
     buf : null,
     name : null,
+    nosync : null,
         ];
 
     var doflag;

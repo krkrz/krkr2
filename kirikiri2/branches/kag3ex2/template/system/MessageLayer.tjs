@@ -699,6 +699,8 @@ class NameLayer extends RelativeLayer
 
 	// テキストの横方向アライン (-1:左, 0:中央, 1:右
 	var align = -1;
+	// テキストの縦方向アライン
+	var valign = -1;
 
 	/**
 	 * 名前処理
@@ -714,13 +716,18 @@ class NameLayer extends RelativeLayer
 	function processNameText(text) {
 		if (text != "") {
 			fillRect(0, 0, width, height, 0);
-			var x = 0;
+			var x = 0, y = 0;
 			if (align >= 0) {
 				var w = font.getTextWidth(text);
 				x = width - w;
 				x \= 2 if (align == 0);
 			}
-			draw(x, 0, text);
+			if (valign >= 0) {
+				var h = font.getTextHeight(text);
+				y = height - h;
+				y \= 2 if (valign == 0);
+			}
+			draw(x, y, text);
 			visible = true;
 		} else {
 			visible = false;
@@ -743,7 +750,17 @@ class NameLayer extends RelativeLayer
 			visible = false;
 		}
 	}
-	
+	function store() {
+		var dic = super.store();
+		dic.align  = align;
+		dic.valign = valign;
+		return dic;
+	}
+	function restore(dic) {
+		align  = dic.align  if (dic.align  !== void);
+		valign = dic.valign if (dic.valign !== void);
+		return super.restore(dic);
+	}
 }
 
 class FaceLayer extends RelativeLayer
@@ -1482,7 +1499,8 @@ class MessageLayer extends AnimKAGLayer
             nameLayer.height   = +elm.nameheight if elm.nameheight !== void;
             nameLayer.absolute = +elm.nameabsolute if elm.nameabsolute !== void;
             nameLayer.originMode = +elm.nameorigin if elm.nameorigin !== void;
-			nameLayer.align    = +elm.namealign  if elm.namealign  !== void;
+			nameLayer.align    = +elm.namealign  if elm.namealign   !== void;
+			nameLayer.valign   = +elm.namevalign if elm.namevalign  !== void;
         } else {
             invalidateNameLayer();
         }
@@ -2340,6 +2358,14 @@ class MessageLayer extends AnimKAGLayer
 		return false;
 	}
 	function drawTextToLayer(lay, x, y, text, color) {
+		var win = lay.window;
+		if (typeof   win.bitmapFont == "Object" && win.bitmapFont) {
+			var dt = win.bitmapFont.drawTextToLayer;
+			// ビットマップフォント指定による強制描画
+			dt(lay, x+shadowOffsetX, y+shadowOffsetY, text, shadowColor) if (shadow);
+			dt(lay, x, y, text, color);
+			return;
+		}
 		var dt = lay.drawText;
 		if (!vertical && edge && antialiased && typeof lay.drawPathString != "undefined") {
 			// layerExDraw拡張
@@ -2419,9 +2445,18 @@ class MessageLayer extends AnimKAGLayer
 			updateApp(base, color);
 			updateFont(lf);
 			var fw = 0, fh = lf.height, sx = x;
-			for (var i = 0; i < len; i++, x+=fw) {
-				var ch = text.charAt(i);
-				ds(font, app, x-(fh*100/600)-((fw=gtw(ch))*10/600), y, ch);
+			if (typeof lay.measureStringInternal == "Object") {
+				var ms=lay.measureStringInternal;
+				for (var i = 0; i < len; i++, x+=fw) {
+					var ch = text.charAt(i);
+					with (ms(font, ch)) ds(font, app, x-.left, y-.top, ch);
+					fw = gtw(ch);
+				}
+			} else {
+				for (var i = 0; i < len; i++, x+=fw) {
+					var ch = text.charAt(i);
+					ds(font, app, x-(fh*100/600)-((fw=gtw(ch))*10/600), y, ch);
+				}
 			}
 			// layerExDrawのupdate領域が狭い場合があるので手動で更新
 			lay.update(sx-padding, y-padding, (x-sx)+padding*2, fh+padding*2);
@@ -4246,8 +4281,11 @@ class MessageLayer extends AnimKAGLayer
         // 名前レイヤ
         if (src.nameLayer !== void) {
             initNameLayer();
-            nameLayer.assignImages(src.nameLayer, true);
-			nameLayer.align = src.nameLayer.align;
+			with (nameLayer) {
+				.assignImages(src.nameLayer, true);
+				.align  = src.nameLayer.align;
+				.valign = src.nameLayer.valign;
+			}
         } else {
             invalidateNameLayer();
         }

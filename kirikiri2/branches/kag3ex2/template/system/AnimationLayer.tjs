@@ -828,6 +828,7 @@ class AnimationLayer extends AffineLayer
 
 	function applyColorCorrection(layer, param)
 	{
+		if (param === void) return;
 		// layer に対して色補正を行う
 		var orgface = layer.face;
 		var orgholdlpha = layer.holdAlpha;
@@ -1069,16 +1070,17 @@ class AnimationLayer extends AffineLayer
 	/*タグハンドラ*/function load(elm)
 	{
 		// 画像を読み込む
-		var key = (elm.key !== void) ? elm.key : Anim_loadParams.key;
+		var lp = Anim_loadParams !== void ? Anim_loadParams : %[];
+		var key = (elm.key !== void) ? elm.key : lp.key;
 		var storage = elm.storage;
 		var otype = type;
 		superLoadImages(storage, key);
 		type = otype;
-		applyColorCorrection(this, Anim_loadParams);
+		applyColorCorrection(this, lp);
 		// 上下反転
-		flipUD() if (Anim_loadParams.flipud !== void && +Anim_loadParams.flipud);
+		flipUD() if (lp.flipud !== void && +lp.flipud);
 		// 左右反転
-		flipLR() if (Anim_loadParams.fliplr !== void && +Anim_loadParams.fliplr);
+		flipLR() if (lp.fliplr !== void && +lp.fliplr);
 
 		return -4; // 一旦イベント処理
 	}

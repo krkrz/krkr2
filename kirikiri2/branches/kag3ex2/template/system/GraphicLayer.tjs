@@ -1,6 +1,70 @@
 // GraphicLayer.tjs - グラフィック系レイヤ(背景,キャラクタ)
 // Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
+// 動画α処理用プラグイン
+if (typeof global.Layer.copyBottomBlueToTopAlpha == "undefined") {
+	try {
+		Plugins.link("layerExBtoA.dll");
+	} catch(e) {
+	}
+}
+
+// 動画α処理用プラグイン
+class __dummyGfxFire { function gfxFire { throw new Exception("炎エフェクトは使用できません（gfxEffectプラグインが必要です）"); } }
+if (typeof global.gfxFire == "undefined") {
+	try {
+		Plugins.link("gfxEffect.dll");
+		Debug.notice( 
+			"---- gfxEffect Plugin copyright info ----\n"
+			"A C-program for MT19937, with initialization improved 2002/1/26.\n"
+			"Coded by Takuji Nishimura and Makoto Matsumoto.\n"
+			"\n"
+			"Before using, initialize the state by using init_genrand(seed)\n"
+			"or init_by_array(init_key, key_length).\n"
+			"\n"
+			"Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,\n"
+			"All rights reserved.\n"
+			"\n"
+			"Redistribution and use in source and binary forms, with or without\n"
+			"modification, are permitted provided that the following conditions\n"
+			"are met:\n"
+			"\n"
+			"1. Redistributions of source code must retain the above copyright\n"
+			"notice, this list of conditions and the following disclaimer.\n"
+			"\n"
+			"2. Redistributions in binary form must reproduce the above copyright\n"
+			"notice, this list of conditions and the following disclaimer in the\n"
+			"documentation and/or other materials provided with the distribution.\n"
+			"\n"
+			"3. The names of its contributors may not be used to endorse or promote\n"
+			"products derived from this software without specific prior written\n"
+			"permission.\n"
+			"\n"
+			"THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n"
+			"\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n"
+			"LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n"
+			"A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR\n"
+			"CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,\n"
+			"EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,\n"
+			"PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR\n"
+			"PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF\n"
+			"LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING\n"
+			"NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\n"
+			"SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n"
+			"\n"
+			"\n"
+			"Any feedback is very welcome.\n"
+			"http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html\n"
+			"email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)\n"
+			"------------------------------------------------------");
+		invalidate global.__dummyGfxFire;
+		delete     global.__dummyGfxFire;
+	} catch(e) {
+		//Debug.message(e.message);
+		global.gfxFire = __dummyGfxFire;
+	}
+}
+
 class ProvinceContext
 {
 	// 領域アクション用コンテキスト
@@ -496,6 +560,7 @@ class MovieControlLayer extends VideoOverlay {
 	function MovieControlLayer(window) {
 		super.VideoOverlay(window);
 		targetLayer = new Layer(window, window.primaryLayer);
+		
 		mode = vomLayer;
 		layer1 = targetLayer;
 		status = "unload";
@@ -510,7 +575,7 @@ class MovieControlLayer extends VideoOverlay {
 	}
 
 	function finalize() {
-		clear();
+		stop();
 		layer1 = null;
 		invalidate targetLayer;
 	}
@@ -585,6 +650,272 @@ class MovieControlLayer extends VideoOverlay {
 	}
 };
 
+// レイヤの炎エフェクト処理用
+class FireController extends gfxFire
+{
+	var	playing = false; // タイマーが始動しているかどうか
+	var targetLayer; // 処理対象レイヤ
+	var	seedLayer; // シード素材レイヤ
+	var colorLayer; // 色指定用
+	var	lastTick; // 前回処理時tick値
+	var layers = []; // 描画対象
+	var info = %[]; // 指定パラメータ保持用
+	
+	function FireController(window) {
+		super.gfxFire();
+		targetLayer = new Layer(window, window.primaryLayer);
+		seedLayer = new Layer(window, window.primaryLayer);
+		colorLayer = new Layer(window, window.primaryLayer);
+		playing = false;
+	}
+
+	function finalize() {
+		stop();
+	}
+
+	property isPlaying {
+		getter() {
+			return playing && layers.count > 0;
+		}
+	}
+
+	property width {
+		getter() {
+			return targetLayer.width;
+		}
+	}
+
+	property height {
+		getter() {
+			return targetLayer.height;
+		}
+	}
+	// レイヤ登録
+	function entry(layer) {
+		layers.remove(layer);
+		layers.add(layer);
+	}
+
+	// レイヤ解除
+	function leave(layer) {
+		layers.remove(layer);
+	}
+
+	// ----------------------------------
+
+	var params = [
+		"scalingCoeff",
+		"textureFilterType"
+		];
+	
+	var wrapParams = [
+		"forceH",
+		"forceV",
+		"boundRangeH",
+		"boundRangeV"
+		];	
+	
+	var coolParams = [
+		"numOfBlurForCoolMap",
+		"textureFilterType",
+		"coolRange",
+		"coolStrength",
+		"coolParticleDensityDenominator",
+		"coolParticleDensityNumerator",
+		"edgeSmoothing"
+		];
+
+	// パラメータ更新処理
+	function updateParam(elm, params) {
+		var update = false;
+		for (var i=0;i<params.count;i++) {
+			var name = params[i];
+			var ename = name.toLowerCase();
+			if (elm[ename] !== void) {
+				info[ename] = elm[ename];
+				this[name] = +elm[ename];
+				update = true;
+			}
+		}
+		return update;
+	}
+
+	function blend(c1,c2,r,max) {
+		return (c1 * r + c2 * (max-r)) / max;
+	}
+	
+	// カラー更新処理
+	function updateColor(elm) {
+		if (elm.firelayer !== void) {
+			// 色レイヤ指定
+			setCustomColorTable(colorLayer);
+			colorLayer.loadImages(elm.firelayer);
+			applyCustom();
+			info.firelayer = elm.firelayer;
+		} else if (elm.firecolor !== void) {
+			switch (elm.firecolor) {
+			case "blue":
+				applyBlue();
+				break;
+			case "red":
+				applyRed();
+				break;
+			case "white":
+				applyWhite();
+				break;
+			default:
+				// カラー指定で対応
+				colorLayer.setSize(256,1);
+				colorLayer.fillRect(0,0,256,1,0xffffffff);
+				var colors = elm.firecolor.split(":");
+				var n = colors.count - 1;
+				var start = 0;
+				var color1 = +colors[0];
+				var color2;
+				var start=0;
+				var end=0;
+				var c = 0;
+				while (c<n) {
+					start = (int)(255.0 * c / n);
+					color2 = +colors[c];
+					do {
+						c++;
+					} while (c<n && colors[c] == "");
+					end   = (int)(255.0 * c / n);
+					color1 = +colors[c];
+					var diff  = end - start;
+					//dm("start:%d %d(%06x)-%d(%06x)".sprintf(diff,start,color2,end,color1));
+					var r1 = (color1 >> 16) & 0xff;
+					var g1 = (color1 >> 8) & 0xff;
+					var b1 = (color1      ) & 0xff;
+					var r2 = (color2 >> 16) & 0xff;
+					var g2 = (color2 >> 8) & 0xff;
+					var b2 = (color2      ) & 0xff;
+					for (var i=0;i<diff;i++) {
+						var color = ((blend(r1,r2,i,diff) << 16) |
+									 (blend(g1,g2,i,diff) << 8) |
+									 (blend(b1,b2,i,diff)));
+						//dm("color:%d:%08x".sprintf(start+i,color));
+						colorLayer.setMainPixel(start+i,0,color);
+					}
+				}
+				for (var i=end;i<256;i++) {
+					//dm("Xcolor:%d:%08x".sprintf(i,color1));
+					colorLayer.setMainPixel(i,0,color1);
+				}
+				var gamma = elm.firegamma !== void ? +elm.firegamma : 1;
+				for (var i=0;i<256;i++) {
+					var gamma = Math.pow(i / 255.0, 1.0/gamma) * 255;
+					colorLayer.setMaskPixel(i,0,gamma);
+					//dm("trans:%d:%d".sprintf(i,gamma));
+				}
+				setCustomColorTable(colorLayer);
+				applyCustom();
+			}
+			info.firegamma = elm.firegamma;
+			info.firecolor = elm.firecolor;
+		}
+	}
+
+	/**
+	 * エフェクト再生開始
+	 * @param storage シード画像ファイル名
+	 * @param elm 追加パラメータ
+	 */
+	function start(storage, elm) {
+		if (!playing) {
+
+			info.storage = storage;
+			info.firemargin = elm.firemargin;
+			info.firewidth  = elm.firewidth;
+			info.fireheight = elm.fireheight;
+			info.fireleft   = elm.fireleft;
+			info.firetop    = elm.firetop;
+
+			if (typeof storage == "Object" && storage instanceof "Layer") {
+				seedLayer.assignImages(storage);
+			} else {
+				seedLayer.loadImages(storage);
+			}
+			seedLayer.setSizeToImageSize();
+			var width  = elm.firewidth  !== void ? +elm.firewidth  : seedLayer.width;
+			var height = elm.fireheight !== void ? +elm.fireheight : seedLayer.height;
+			var left   = elm.fireleft !== void ? +elm.fireleft : 0;
+			var top    = elm.firetop  !== void ? +elm.firetop  : 0;
+			if (elm.firemargin !== void) {
+				var firemargin = +elm.firemargin;
+				width  += firemargin * 2;
+				height += firemargin * 2;
+				left += firemargin;
+				top  += firemargin;
+			}
+
+			width = width + 15 \ 16;
+			height = height + 15 \ 16;
+			targetLayer.setSize(width,height);
+			targetLayer.fillRect(0,0,width,height,0);
+//			targetLayer.face = dfAddAlpha;
+//			targetLayer.type = ltAddAlpha;
+			
+			// パラメータ更新
+			updateParam(elm, params);
+			updateParam(elm, wrapParams);
+			updateParam(elm, coolParams);
+			updateColor(elm);
+			
+			init(targetLayer);
+			setFireSeed(seedLayer);
+			setFireSeedPos(left, top);
+			
+			lastTick = System.getTickCount();
+			playing = true;
+		}
+	}
+
+	// パラメータ更新
+	function setOptions(elm) {
+		if (playing) {
+			updateParam(elm, params);
+			if (updateParam(elm, wrapParams)) {
+				updateWarpMap();
+			}
+			if (updateParam(elm, coolParams)) {
+				updateCoolMap();
+			}
+			udpateColor(elm);
+		}
+	}
+
+	// 停止
+	function stop() {
+		if (playing) {
+			clearFireSeed();
+			var layers2 = [];
+			layers2.assign(this.layers);
+			for (var i=0;i<layers2.count;i++) {
+				layers2[i].notifyStopFire();
+			}
+			playing = false;
+		}
+	}
+
+	// 更新処理用
+	function update(tick) {
+		if (playing) {
+			var	interval = tick - lastTick;
+			if (interval > 16 ) {
+				cycle();
+				for (var i=0;i<layers.count;i++) {
+					layers[i].assignImagesForMovie(targetLayer);
+					layers[i].setSize(targetLayer.width, targetLayer.height);
+				}
+				lastTick = tick;
+			}
+		}
+	}
+}
+
+
 /**
  * AffineLayer 対応拡張処理＋ムービー再生機能対応
  */
@@ -600,6 +931,7 @@ class GraphicLayerEx extends GraphicLayer {
 		stopRaster();
 		clearTile();
 		stopMovie();
+		stopFire();
 		super.finalize(...);
 	}
 
@@ -671,6 +1003,9 @@ class GraphicLayerEx extends GraphicLayer {
 		var e = %[];
 		(Dictionary.assign incontextof e)(elm);
 		_setOptions(e);
+		if (fire !== void) {
+			fire.setOptions(elm);
+		}
 		super.setOptions(e);
 	}
 
@@ -679,6 +1014,7 @@ class GraphicLayerEx extends GraphicLayer {
 		stopRaster();
 		clearTile();
 		stopMovie();
+		stopFire();
 		super.loadImages(elm);
 		if (elm !== void) {
 			if (elm.color === void && elm.storage === void) {
@@ -690,6 +1026,8 @@ class GraphicLayerEx extends GraphicLayer {
 					setTileImage(elm.tile);
 				} else if (elm.movie !== void) {
 					startMovie(elm.movie, +elm.loop, +elm.alpha);
+				} else if (elm.fire !== void) {
+					startFire(elm.fire, elm);
 				}
 			}
 			_setOptions(elm);
@@ -703,6 +1041,7 @@ class GraphicLayerEx extends GraphicLayer {
 		stopRaster();
 		clearTile();
 		stopMovie();
+		stopFire();
 		super.freeImage(...);
 		reset();
     }
@@ -729,6 +1068,10 @@ class GraphicLayerEx extends GraphicLayer {
 			dic.movieLoop = movieLoop;
 			dic.movieAlpha = movieAlpha;
 		}
+		if (fire !== void) {
+			dic.fireInfo = %[];
+			(Dictionary.assign incontextof dic.fireInfo)(fire.info);
+		}
 		if (_rasterStart !== void) {
 			dic.raster      = _raster;
 			dic.rasterLines = _rasterLines;
@@ -742,6 +1085,7 @@ class GraphicLayerEx extends GraphicLayer {
 		stopRaster();
 		clearTile();
 		stopMovie();
+		stopFire();
 		super.restore(dic);
 		rotate = dic.rotate if dic.rotate !== void; 
 		zoomx  = dic.zoomx  if dic.zoomx  !== void;
@@ -760,9 +1104,15 @@ class GraphicLayerEx extends GraphicLayer {
 			setTilePos(dic.tilex, dic.tiley);
 		} else if (dic.movieFile !== void) {
 			try {
-				startMovie(dic.movieFile, dic.loop, dic.alpha);
+				startMovie(dic.movieFile, dic.movieLoop, dic.movieAlpha);
 			} catch (e) {
 				dm("ロード時に動画の読み込みに失敗しました:" + movieFile);
+			}
+		} else if (dic.fireInfo !== void) {
+			try {
+				startFire(dic.fireInfo.storage, dic.fireInfo);
+			} catch (e) {
+				dm("ロード時に炎エフェクトの読み込みに失敗しました:" + movieFile);
 			}
 		}
 		if (dic.raster !== void) {
@@ -815,12 +1165,48 @@ class GraphicLayerEx extends GraphicLayer {
 		}
 	}
 
+    // --------------------------------------------
+	// ムービー拡張
+    // --------------------------------------------
+
+	// ムービー用情報
+	var fire;
+
+	/**
+	 * ムービー再生開始
+	 */
+	function startFire(storage, elm) {
+		//dm("ムービー開始 %s %d %d".sprintf(filename, loop, alpha));
+		fire = window.getLayerFire();
+		fire.entry(this);
+		fire.start(storage, elm);
+		setSize(fire.width, fire.height);
+	}
+	
+	/**
+	 * ムービー終了通知
+	 */
+	function notifyStopFire() {
+		//dm("ムービー終了通知");
+		stopFire();
+	}
+
+	/**
+	 * ムービー停止
+	 */
+	function stopFire() {
+		if (fire !== void) {
+			fire.leave(this);
+			fire = void;
+		}
+	}
+
+	// -------------------------------------------------
+	
 	function assignImagesForMovie(src) {
 		super.assignImages(src);
 		applyColorCorrection(this, Anim_loadParams);
 	}
-	
-	// -------------------------------------------------
 	
 	function assign(src)
 	{
@@ -830,6 +1216,7 @@ class GraphicLayerEx extends GraphicLayer {
 		visvalue = src.visvalue;
 		clearTile();
 		stopMovie();
+		stopFire();
 		// ムービー情報をコピー
 		if (src.movie !== void) {
 			movieFile = src.movieFile;
@@ -842,6 +1229,11 @@ class GraphicLayerEx extends GraphicLayer {
 		if (src.tileImage !== void) {
 			setTileImage(src.tileImage);
 			setTilePos(src.tilex, src.tiley);
+		}
+		// 炎エフェクト情報をコピー
+		if (src.fire !== void) {
+			fire = src.fire;
+			fire.entry(this);
 		}
 		// アクションもコピー
 		window.copyAction(src, this, onActionCompleted);

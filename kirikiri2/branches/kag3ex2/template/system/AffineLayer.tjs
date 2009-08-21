@@ -14,15 +14,6 @@ if (typeof global.Layer.drawImage == "undefined") {
 	}
 }
 
-// 動画α処理用プラグイン
-if (typeof global.Layer.copyBottomBlueToTopAlpha == "undefined") {
-	try {
-		Plugins.link("layerExBtoA.dll");
-	} catch(e) {
-	}
-}
-
-
 // --------------------------------------------------------------------------
 
 // 解像度情報
@@ -693,7 +684,11 @@ class BitmapAffineSourceLayer extends AffineSourceLayer {
     function noise(level) {
         _image.noise(...);
     }
-    
+
+	function modulate(hue, saturation, luminance) {
+		_image.modulate(...);
+    }
+	
     function doDropShadow(dx=10, dy=10, blur=3, shadowColor=0x000000, shadowOpacity=200) {
         _image.doDropShadow(...);
     }
@@ -1724,6 +1719,12 @@ class AffineLayer extends KAGLayer {
 		_initBitmap();
         _image.noise(...);
         calcAffine();
+    }
+
+	function modulate(hue, saturation, luminance) {
+		_initBitmap();
+        _image.modulate(...);
+		calcAffine();
     }
     
     function doDropShadow(dx=10, dy=10, blur=3, shadowColor=0x000000, shadowOpacity=200) {

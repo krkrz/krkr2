@@ -521,10 +521,34 @@ class SliderLayer extends KAGLayer
         }
 
         var normal = states.normal;
-        if (normal !== void) {
-            var over = states.over !== void ? states.over.storage : void;
-            var on   = states.on   !== void ? states.on.storage   : void;
-            loadTabs(normal.storage, over, on);
+		if (normal !== void) {
+			var over = (states.over !== void) ? states.over : normal;
+			var on   = (states.on   !== void) ? states.on   : over;
+			var minox = (int)Math.min(normal.ox, over.ox, on.ox);
+			var minoy = (int)Math.min(normal.oy, over.oy, on.oy);
+			var maxdx = (int)Math.min(normal.ox+normal.w, over.ox+over.w, on.ox+on.w);
+			var maxdy = (int)Math.min(normal.oy+normal.h, over.oy+over.h, on.oy+on.h);
+			var w = width, h = height;
+			if (vertical) h = maxdy - minoy, minox = 0;
+			else          w = maxdx - minox, minoy = 0;
+			Slider_tabWidth  = w;
+			Slider_tabHeight = h;
+			createTabImage();
+			with (tabImage) {
+				.setImageSize(w*3, h);
+				.setSize(w, h);
+				.fillRect(0, 0, w*3, h, 0);
+
+				temp.loadImages(normal.storage);
+				var cr = .copyRect;
+				with (normal) cr(w*0+.ox-minox, .oy-minoy, temp, 0, 0, temp.imageWidth, temp.imageHeight);
+
+				temp.loadImages(over.storage) if (normal.storage != over.storage);
+				with (over  ) cr(w*2+.ox-minox, .oy-minoy, temp, 0, 0, temp.imageWidth, temp.imageHeight);
+
+				temp.loadImages(on.storage) if (over.storage != on.storage);
+				with (on    ) cr(w*1+.ox-minox, .oy-minoy, temp, 0, 0, temp.imageWidth, temp.imageHeight);
+			}
         }
     }
     
@@ -549,10 +573,7 @@ class SliderLayer extends KAGLayer
      * @param storage 画像  通常/押し下げ/オーバーが連結された画像
      */
     function loadTab(storage, key) {
-        if (tabImage === void) {
-            tabImage = new global.Layer(window, this);
-			tabImage.name = "tabImage";
-        }
+		createTabImage();
         tabImage.loadImages(storage, key);
         tabImage.setSizeToImageSize();
         Slider_tabWidth  = tabImage.imageWidth / 3;
@@ -566,10 +587,7 @@ class SliderLayer extends KAGLayer
      * @param on 押し下げ時画像
      */
     function loadTabs(normal, over, on) {
-        if (tabImage === void) {
-            tabImage = new global.Layer(window, this);
-			tabImage.name = "tabImage";
-        }
+		createTabImage();
         var temp = window.temporaryLayer;
         temp.loadImages(normal);
         var w = temp.imageWidth;
@@ -589,5 +607,12 @@ class SliderLayer extends KAGLayer
         Slider_tabWidth = w;
         Slider_tabHeight = h;
     }
+
+	function createTabImage() {
+		if (tabImage === void) {
+			tabImage = new global.Layer(window, this);
+			tabImage.name = "tabImage";
+		}
+	}
 
 }

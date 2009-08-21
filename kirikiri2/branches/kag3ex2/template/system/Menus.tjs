@@ -162,20 +162,11 @@ function KAGWindow_createMenus()
 		debugMenu.add(this.debugWinMenuItem = new KAGMenuItem(this, "デバッグ窓表示", 0,
 			onDebugWinMenuItemClick, false));
     
-        debugMenu.add(new MenuItem(this, "-"));
-
-        debugMenu.add(this.autoLabelSaveModeMenuItem = new KAGMenuItem(this, "自動ラベルセーブ", 0,
-			onAutoLabelSaveModeMenuItemClick, false));
-
-		debugMenu.add(this.skipToPrevLabelMenuItem = new KAGMenuItem(this, "前のラベルに戻る\tAlt+←", 0,
-			onSkipToPrevLabelMenuItemClick, false));
-    
-		debugMenu.add(this.skipToNextLabelMenuItem = new KAGMenuItem(this, "次のラベルに進む\tAlt+→", 0,
-			onSkipToNextLabelMenuItemClick, false));
+        debugMenu.add(this.backToAutoLabelStoreMenuItem = new KAGMenuItem(this, "直前の通過記録に戻る\tShift+BS", 0,
+			onBackToAutoLabelStoreMenuItemClick, false));
 
         debugMenu.add(new MenuItem(this, "-"));
 
-    
 		debugMenu.add(this.chDebugLogMenuItem = new KAGMenuItem(this, "KAGEXログモード", 0,
 			onChDebugLogMenuItemClick, false));
 
