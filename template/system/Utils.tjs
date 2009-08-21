@@ -270,11 +270,12 @@ function drawTextKinsokuRect(layer, text, elm) {
 
 	var cur = "", lines = [], len = text.length;
 	for (var ch, i = 0, y = 0; i <= len; i++) {
-		if (i == len || gtw(cur + (ch = text.charAt(i))) >= w) {
+		if (i == len || (ch = text.charAt(i)) == "\n" || gtw(cur + ch) >= w) {
 			var next = ch, cl;
+			if (next == "\n") next = "";
 			// 行末禁則チェック
-			while ((cl = cur.length) > 0 &&
-				   wwLeading.indexOf((ch = cur.charAt(cl-1))) >= 0) {
+			else while ((cl = cur.length) > 0 &&
+						wwLeading.indexOf((ch = cur.charAt(cl-1))) >= 0) {
 				next = ch + next;
 				cur  = cur.substr(0, cl-1);
 			}
@@ -289,7 +290,7 @@ function drawTextKinsokuRect(layer, text, elm) {
 				break;
 			}
 			// 行頭禁則チェック
-			if (i < len) {
+			if (i < len && next != "") {
 				while ((cl = cur.length) > 0 &&
 					   wwFollowing.indexOf(next.charAt(0)) >= 0) {
 					next = cur.charAt(cl-1) + next;
@@ -364,3 +365,57 @@ function getParentWindowCenterPos(win, w, h)
 	y = y1     if (y < y1);
 	return %[ x:x, y:y ];
 }
+
+/**
+ * 環境変数を展開する
+ */
+function expandEnvironmentString(text) {
+	// プラグインで追加されていればそちらを使用（⇒windowEx.dll)
+	if (typeof System.expandEnvString == "Object") return System.expandEnvString(text);
+	// 自力で展開してみる（簡易実装）
+	var expand = function (self, str, map = %[]) {
+		return /%(.*?)%/g.replace(str, function(m) {
+			if (m[1] != "") {
+				var name = m[1].toLowerCase(), read = global.System.readRegValue, assign = global.Dictionary.assign;
+				switch (name) {
+				case "username":
+				case "userprofile":
+				case "homepath":
+				case "homedrive":
+				case "appdata":
+				case "localappdata":
+					return read("HKEY_CURRENT_USER\\Volatile Environment\\"+name);
+				case "systemroot":
+					return read("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SystemRoot");
+				default:
+					var usr = "HKEY_CURRENT_USER\\Environment\\"+name;
+					var sys = "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\\"+name;
+					if        (!this.map[usr] && (name = read(usr)) != "") {
+						var cmap = %[ usr => true ];
+						(assign incontextof cmap)(this.map, false);
+						return this.self(this.self, name, cmap);
+					} else if (!this.map[sys] && (name = read(sys)) != "") {
+						var cmap = %[ usr => true, sys => true ];
+						(assign incontextof cmap)(this.map, false);
+						return this.self(this.self, name, cmap);
+					}
+					break;
+				}
+			}
+			return m[0];
+		} incontextof %[ self:self, map:map ]);
+	};
+	try { text = expand(expand, text); } catch(e) { Debug.message(e.message); }
+	return text;
+}
+/**
+ * システムマウスカーソルを取得する
+ */
+function getSystemMouseCursor(tag, noValue) {
+	var reg = System.readRegValue("HKEY_CURRENT_USER\\Control Panel\\Cursors\\"+tag);
+	if (reg == "") return noValue;
+	reg = expandEnvironmentString(reg);
+	var file = Storages.getFullPath(reg);
+	return Storages.isExistentStorage(file) ? file : noValue;
+}
+

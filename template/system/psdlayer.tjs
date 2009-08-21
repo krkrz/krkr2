@@ -688,7 +688,7 @@ class PSDLayer extends RepaintLayer {
 									info.layer,
 									_region.left - info.left,
 									_region.top  - info.top,
-									_region.width, _region.height);
+									_region.width, _region.height, omAuto, info.opacity);
 					}
 				}
 			}

@@ -175,6 +175,7 @@ class KAGEnvBgm {
     overlap : null,
     canskip : null,
 	noflag : null,
+    nosync : null,
         ];
 
     var doflag;

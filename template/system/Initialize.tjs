@@ -32,6 +32,10 @@ if (!debugWindowEnabled) {
 		System.terminate();
 		return true;
 	};
+	// コンソール・コントローラーを殺す
+	var dummy = %[];
+	&Debug.console    = dummy;
+	&Debug.controller = dummy;
 } else {
 	// デバッグ時処理
 	System.exceptionHandler = function (e) {
@@ -52,8 +56,11 @@ if (!debugWindowEnabled) {
 		return false; // false を返すと通常の例外処理
 	};
 
-	// msgreceiver.dll読み込みはデバッグ時のみ
-	try { Plugins.link("tools/msgreceiver.dll"); } catch(e) {}
+	// messenger.dll読み込みはデバッグ時のみ
+	try {
+		var plug = "tools/messenger.dll";
+		Plugins.link(plug) if (Storages.isExistentStorage(System.exePath+plug));
+	} catch(e) {}
 };
 
 /*
@@ -266,7 +273,10 @@ if(typeof global.config_version == "undefined" || config_version != kagVersion)
 if(!System.createAppLock((System.exePath + lockKey).replace(/[^A-Za-z]/g, '_')) && typeof global.restart == "undefined")
 {
 	// すでに起動している
-	System.inform(System.title + "はすでに起動しています");
+	if (debugWindowEnabled && typeof Window.sendMessage == "Object" &&   System.getArgument("-sendmessage") != "") {
+		// 外部制御メッセージを送る
+		try { (Window.sendMessage incontextof %[ HWND:0 ])(System.title, System.getArgument("-sendmessage")); } catch {}
+	} else System.inform(System.title + "はすでに起動しています");
 	System.exit();
 }
 
@@ -300,6 +310,7 @@ if (typeof global.ratPlayerEnabled != "undefined" && global.ratPlayerEnabled) {
 
 // add by GoWatanabe
 KAGLoadScript("LayerEx.tjs");
+KAGLoadScript("BitmapFont.tjs");
 
 KAGLoadScript("Utils.tjs");
 KAGLoadScript("KAGLayer.tjs");

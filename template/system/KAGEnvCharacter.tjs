@@ -90,9 +90,9 @@ class EmotionLayer extends EnvGraphicLayer {
 				yoffset = (int)(owner.yoffset !== void ? +owner.yoffset : 0) + baseyoff;
 				var levelInfo = ownerenv.levels[owner.level];
 				if (levelInfo !== void) {
-					levelz = (int)levelInfo.zoom    if levelInfo.zoom    !== void;
-					levelxoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
-					levelyoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
+					levelz       = levelInfo.zoom !== void ? (int)levelInfo.zoom : 100;
+					levelxoffset = levelInfo.xoffset !== void ? (int)levelInfo.xoffset : 0;
+					levelyoffset = levelInfo.yoffset !== void ? (int)levelInfo.yoffset : 0;
 				}
 				zoom = levelInfo !== void && levelInfo.zoom !== void ? levelInfo.zoom : 100;
 			}
@@ -148,9 +148,9 @@ class EnvCharacterGraphicLayer extends EnvGraphicLayer {
 				yoffset = (int)(owner.yoffset !== void ? +owner.yoffset : 0) + baseyoff;
 				var levelInfo = ownerenv.levels[owner.level];
 				if (levelInfo !== void) {
-					levelz       = (int)levelInfo.zoom    if levelInfo.zoom    !== void;
-					levelxoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
-					levelyoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
+					levelz       = levelInfo.zoom !== void ? (int)levelInfo.zoom : 100;
+					levelxoffset = levelInfo.xoffset !== void ? (int)levelInfo.xoffset : 0;
+					levelyoffset = levelInfo.yoffset !== void ? (int)levelInfo.yoffset : 0;
 				}
 			}
 			//dm("リセット処理 level:" + owner.level);
@@ -1093,7 +1093,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 
 				// ポーズ別補正
 				var info = getEmotionInfo(emotion);
-				//dm("エモーション原点:" + info.emoX + "," + info.emoY + " rev:" + info.emoRev);
+				//dm("エモーション原点:" + info.emoX + "," + info.emoY + " rev:" + info.emoRev + " level:" + levelName);
 				
 				// 新規エモーションレイヤ
 				if (emotionLayer === void) {
@@ -1133,17 +1133,19 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 					.originx = layer.originx;
 					.originy = layer.originy;
 					.setPos(layer.left + info.emoX, layer.top + info.emoY);
-					var action = createAction(emoAction, %[time:emotion.time]);
-					if (action !== void) {
-						//dm("エモーションアクション時刻:" + action.time);
-						var target = (action instanceof "Array") ? action[action.count-1] : action;
-						if (emotion.nowait !== void) {
-							target.nowait = +emotion.nowait;
-						} else if (target.nowait == void) {
-							target.nowait = true;
+					if (emoAction !== void) {
+						var action = createAction(emoAction, %[time:emotion.time]);
+						if (action !== void) {
+							//dm("エモーションアクション時刻:" + action.time);
+							var target = (action instanceof "Array") ? action[action.count-1] : action;
+							if (emotion.nowait !== void) {
+								target.nowait = +emotion.nowait;
+							} else if (target.nowait == void) {
+								target.nowait = true;
+							}
+							target.hide = +target.hide if target.hide !== void;
+							.beginAction(action);
 						}
-						target.hide = +target.hide if target.hide !== void;
-						.beginAction(action);
 					}
 					.parent   = layer.parent;
 					.absolute = layer.absolute+1;
@@ -1488,7 +1490,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	function openBackVoice(voicename, loop) {
 		if (voicename !== void && voicename != ""){
 			voicename = getVoicename(voicename);
-			if (voicename !== void && kag.getVoiceOn(init.voiceName) && kag.bgvenable) {
+			if (voicename !== void && kag.getVoiceOn(init.voiceName) && (loop ? kag.bgvenable : kag.voiceenable)) {
 				if (backVoiceBuffer === void) {
 					backVoiceBuffer = new BackVoiceTrack(this);
 				}

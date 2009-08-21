@@ -25,6 +25,14 @@
 //     * @param level ノイズレベル 0 (no noise) ～ 255 (lot of noise).
 //     */
 //    function noize(level);
+//
+//	/**
+//	 * 色相と彩度と輝度の変更
+//	 * @param hue 色相 -180～180 (度)
+//	 * @param saturation 彩度 -100～100 (%)
+//	 * @param luminance 輝度 -100～100 (%)
+//	 */
+//	function modulate(hue, saturation, luminance);
 
 Plugins.link("layerExImage.dll");
 

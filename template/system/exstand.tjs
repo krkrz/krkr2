@@ -502,18 +502,36 @@ function getFixedFaceName(info, currentFaceName, faceName)
 /**
  * 立ち絵に対する想定レベルを返す
  */
-function checkStandLayerLevel(level, levelMax, standInfo)
+function checkStandLayerLevel(level, levelMax, standInfo, levels, searchSmallLevel=true)
 {
 	var currentImageLevel = void;
 	for (var l=level;l<levelMax;l++) {
+		var levelInfo;
+		var levelName;
+		if (levels !== void && (levelInfo = levels[l]) !== void && (levelName = levelInfo.name) !== void) {
+			var file = standInfo.filename + "_" + levelName + ".txt";
+			if (Storages.isExistentStorage(file)) {
+				currentImageLevel = l;
+				break;
+			}
+		}
 		var file = standInfo.filename + "_" + l + ".txt";
 		if (Storages.isExistentStorage(file)) {
 			currentImageLevel = l;
 			break;
 		}
 	}
-	if (currentImageLevel === void) {
+	if (searchSmallLevel && currentImageLevel === void) {
 		for (var l=level;l>=0;l--) {
+			var levelInfo;
+			var levelName;
+			if (levels !== void && (levelInfo = levels[l]) !== void && (levelName = levelInfo.name) !== void) {
+				var file = standInfo.filename + "_" + (levelInfo[l].name) + ".txt";
+				if (Storages.isExistentStorage(file)) {
+					currentImageLevel = l;
+					break;
+				}
+			}
 			var file = standInfo.filename + "_" + l + ".txt";
 			if (Storages.isExistentStorage(file)) {
 				currentImageLevel = l;
@@ -579,12 +597,23 @@ class StandLayer extends PSDLayer {
 	 * @param level レベル
 	 * @param imageLevel 実画像のレベル指定
 	 */
-	function setLevel(level, imageLevel) {
+	function setLevel(level, imageLevel, levels) {
 		//dm("レベル指定:" + level);
 		if (level !== currentLevel) {
 			currentLevel = level;
 			currentImageLevel = imageLevel;
-			var filename = imageLevel === void ? info.filename + ".txt" : info.filename + "_" + imageLevel + ".txt";
+			var filename;
+			if (imageLevel === void) {
+				filename = info.filename + ".txt";
+			} else {
+				var levelInfo;
+				var levelName;
+				if (levels !== void && (levelInfo = levels[imageLevel]) !== void && (levelName = levelInfo.name) !== void) {
+					filename = info.filename + "_" + levelName + ".txt";
+				} else {
+					filename = info.filename + "_" + imageLevel + ".txt";
+				}
+			}
 			//dm("発見ファイル:" + filename);
 			if (currentFilename != filename) {
 				//dm("レイヤの読み込み:" + filename);
@@ -1044,7 +1073,9 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		// 立ち絵情報
 		var standInfo = getStandInfo(poseName);
 		// 実画像のレベルを取得
-		var imageLevel = checkStandLayerLevel(level, env.levels.count, standInfo);
+		var l = env.camerazoom > 100 && level < env.levels.count-1 ? level + 1 : level;
+		var imageLevel = checkStandLayerLevel(l, env.levels.count, standInfo, env.levels, env.searchSmallLevel);
+		//dm("立ち絵レイヤ取得 name:%s cz:%d level:%d l:%d imageLevel:%d".sprintf(name, env.camerazoom, level, l, imageLevel));
 		// 該当ポーズの立ち絵リスト
 		var standlayers = standlayerMap[poseName];
 		if (standlayers === void) {
@@ -1059,14 +1090,14 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					standlayers.erase(i);
 					standlayers.insert(0, standlayer);
 				}
-				standlayer.setLevel(level, imageLevel);
+				standlayer.setLevel(level, imageLevel, env.levels);
 				return standlayer;
 			}
 		}
 		// 見つからない場合は新規に作成
 		var standlayer = new StandLayer(kag.temporaryLayer, standInfo);
 		standlayer.name = name + "_" + poseName;
-		standlayer.setLevel(level, imageLevel);
+		standlayer.setLevel(level, imageLevel, env.levels);
 		if (standlayers.count > 3) { // キャッシュは3つまで
 			standlayers.erase(standlayers.count - 1);
 		}
