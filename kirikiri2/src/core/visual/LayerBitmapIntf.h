@@ -155,7 +155,7 @@ public:
 private:
 	bool BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa, bool additive);
 
-        struct InternalFillParam {
+        struct PartialFillParam {
           tTVPBaseBitmap *self;
           tjs_uint8 *dest;
           tjs_int x;
@@ -166,10 +166,10 @@ private:
           tjs_uint32 value;
           bool is32bpp;
         };
-        static void InternalFillEntry(void *param);
-        void InternalFill(const InternalFillParam *param);
+        static void PartialFillEntry(void *param);
+        void PartialFill(const PartialFillParam *param);
 
-        struct InternalFillColorParam {
+        struct PartialFillColorParam {
           tTVPBaseBitmap *self;
           tjs_uint8 *dest;
           tjs_int x;
@@ -180,10 +180,10 @@ private:
           tjs_uint32 color;
           tjs_int opa;
         };
-        static void InternalFillColorEntry(void *param);
-        void InternalFillColor(const InternalFillColorParam *param);
+        static void PartialFillColorEntry(void *param);
+        void PartialFillColor(const PartialFillColorParam *param);
 
-        struct InternalBlendColorParam {
+        struct PartialBlendColorParam {
           tTVPBaseBitmap *self;
           tjs_uint8 *dest;
           tjs_int x;
@@ -195,10 +195,10 @@ private:
           tjs_int opa;
           bool additive;
         };
-        static void InternalBlendColorEntry(void *param);
-        void InternalBlendColor(const InternalBlendColorParam *param);
+        static void PartialBlendColorEntry(void *param);
+        void PartialBlendColor(const PartialBlendColorParam *param);
 
-        struct InternalRemoveConstOpacityParam {
+        struct PartialRemoveConstOpacityParam {
           tTVPBaseBitmap *self;
           tjs_uint8 *dest;
           tjs_int x;
@@ -208,10 +208,10 @@ private:
           tjs_int pitch;
           tjs_int level;
         };
-        static void InternalRemoveConstOpacityEntry(void *param);
-        void InternalRemoveConstOpacity(const InternalRemoveConstOpacityParam *param);
+        static void PartialRemoveConstOpacityEntry(void *param);
+        void PartialRemoveConstOpacity(const PartialRemoveConstOpacityParam *param);
   
-        struct InternalFillMaskParam {
+        struct PartialFillMaskParam {
           tTVPBaseBitmap *self;
           tjs_uint8 *dest;
           tjs_int x;
@@ -221,10 +221,10 @@ private:
           tjs_int pitch;
           tjs_int value;
         };
-        static void InternalFillMaskEntry(void *param);
-        void InternalFillMask(const InternalFillMaskParam *param);
+        static void PartialFillMaskEntry(void *param);
+        void PartialFillMask(const PartialFillMaskParam *param);
 
-        struct InternalCopyRectParam {
+        struct PartialCopyRectParam {
           tTVPBaseBitmap *self;
           tjs_int pixelsize;
           tjs_uint8 *dest;
@@ -240,10 +240,10 @@ private:
           tjs_int plane;
           bool backwardCopy;
         };
-        static void InternalCopyRectEntry(void *param);
-        void InternalCopyRect(const InternalCopyRectParam *param);
+        static void PartialCopyRectEntry(void *param);
+        void PartialCopyRect(const PartialCopyRectParam *param);
 
-        struct InternalBltParam {
+        struct PartialBltParam {
           tTVPBaseBitmap *self;
           tjs_uint8 *dest;
           tjs_int dpitch;
@@ -259,8 +259,8 @@ private:
           tjs_int opa;
           bool hda;
         };
-        static void InternalBltEntry(void *param);
-        void InternalBlt(const InternalBltParam *param);
+        static void PartialBltEntry(void *param);
+        void PartialBlt(const PartialBltParam *param);
 
 public:
 	bool FillColorOnAlpha(tTVPRect rect, tjs_uint32 color, tjs_int opa)
@@ -343,6 +343,40 @@ private:
 			tjs_int syl,
 			const tTVPRect & srccliprect,
 			const tTVPRect & srcrect);
+
+        struct PartialAffineBltParam {
+          tTVPBaseBitmap *self;
+          tjs_uint8 *dest;
+          tjs_int destpitch;
+          tjs_int yc;
+          tjs_int yclim;
+          tjs_int scanlinestart;
+          tjs_int scanlineend;
+          tjs_int *points_x;
+          tjs_int *points_y;
+          tTVPRect *refrect;
+          tjs_int sxstep;
+          tjs_int systep;
+          tTVPRect *destrect;
+          tTVPBBBltMethod method;
+          tjs_int opa;
+          bool hda;
+          tTVPBBStretchType type;
+          bool clear;
+          tjs_uint32 clearcolor;
+          const tjs_uint8 *src;
+          tjs_int srcpitch;
+          tTVPRect *srccliprect;
+          tTVPRect *srcrect;
+          // below variable returns value to main thread.
+          tjs_int leftlimit;
+          tjs_int rightlimit;
+          tjs_int mostupper;
+          tjs_int mostbottom;
+          bool firstline;
+        };
+        static void PartialAffineBltEntry(void *param);
+        void PartialAffineBlt(PartialAffineBltParam *param);
 
 	int InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const tTVPPointD * points,

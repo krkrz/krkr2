@@ -317,12 +317,12 @@ bool tTVPBaseBitmap::Fill(tTVPRect rect, tjs_uint32 value)
 
         tjs_int taskNum = GetThreadNum();
         BeginThreadTask(taskNum);
-        InternalFillParam params[TVPMaxThreadNum + 1];
+        PartialFillParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
           y0 = h * i / taskNum;
           y1 = h * (i + 1) / taskNum;
-          InternalFillParam *param = params + i % (TVPMaxThreadNum + 1);
+          PartialFillParam *param = params + i;
           param->self = this;
           param->dest = dest;
           param->pitch = pitch;
@@ -332,20 +332,20 @@ bool tTVPBaseBitmap::Fill(tTVPRect rect, tjs_uint32 value)
           param->h = y1 - y0;
           param->value = value;
           param->is32bpp = is32bpp;
-          ExecThreadTask(&InternalFillEntry, TVP_THREAD_PARAM(param));
+          ExecThreadTask(&PartialFillEntry, TVP_THREAD_PARAM(param));
         }
         EndThreadTask();
 
         return true;
 }
 
-void tTVPBaseBitmap::InternalFillEntry(void *v)
+void tTVPBaseBitmap::PartialFillEntry(void *v)
 {
-  const InternalFillParam *param = (const InternalFillParam *)v;
-  param->self->InternalFill(param);
+  const PartialFillParam *param = (const PartialFillParam *)v;
+  param->self->PartialFill(param);
 }
 
-void tTVPBaseBitmap::InternalFill(const InternalFillParam *param)
+void tTVPBaseBitmap::PartialFill(const PartialFillParam *param)
 {
 
 
@@ -422,12 +422,12 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
 
         tjs_int taskNum = GetThreadNum();
         BeginThreadTask(taskNum);
-        InternalFillColorParam params[TVPMaxThreadNum + 1];
+        PartialFillColorParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
           y0 = h * i / taskNum;
           y1 = h * (i + 1) / taskNum;
-          InternalFillColorParam *param = params + i % (TVPMaxThreadNum + 1);
+          PartialFillColorParam *param = params + i;
           param->self = this;
           param->dest = dest;
           param->pitch = pitch;
@@ -437,20 +437,20 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
           param->h = y1 - y0;
           param->color = color;
           param->opa = opa;
-          ExecThreadTask(&InternalFillColorEntry, TVP_THREAD_PARAM(param));
+          ExecThreadTask(&PartialFillColorEntry, TVP_THREAD_PARAM(param));
         }
         EndThreadTask();
 
         return true;
 }
 
-void tTVPBaseBitmap::InternalFillColorEntry(void *v)
+void tTVPBaseBitmap::PartialFillColorEntry(void *v)
 {
-  const InternalFillColorParam *param = (const InternalFillColorParam *)v;
-  param->self->InternalFillColor(param);
+  const PartialFillColorParam *param = (const PartialFillColorParam *)v;
+  param->self->PartialFillColor(param);
 }
 
-void tTVPBaseBitmap::InternalFillColor(const InternalFillColorParam *param)
+void tTVPBaseBitmap::PartialFillColor(const PartialFillColorParam *param)
 {
   tjs_uint8 *sc = param->dest + param->y * param->pitch;
   tjs_int opa = param->opa;
@@ -513,12 +513,12 @@ bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
 
         tjs_int taskNum = GetThreadNum();
         BeginThreadTask(taskNum);
-        InternalBlendColorParam params[TVPMaxThreadNum + 1];
+        PartialBlendColorParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
           y0 = h * i / taskNum;
           y1 = h * (i + 1) / taskNum;
-          InternalBlendColorParam *param = params + i % (TVPMaxThreadNum + 1);
+          PartialBlendColorParam *param = params + i;
           param->self = this;
           param->dest = dest;
           param->pitch = pitch;
@@ -529,20 +529,20 @@ bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
           param->color = color;
           param->opa = opa;
           param->additive = additive;
-          ExecThreadTask(&InternalBlendColorEntry, TVP_THREAD_PARAM(param));
+          ExecThreadTask(&PartialBlendColorEntry, TVP_THREAD_PARAM(param));
         }
         EndThreadTask();
 
         return true;
 }
 
-void tTVPBaseBitmap::InternalBlendColorEntry(void *v)
+void tTVPBaseBitmap::PartialBlendColorEntry(void *v)
 {
-  const InternalBlendColorParam *param = (const InternalBlendColorParam *)v;
-  param->self->InternalBlendColor(param);
+  const PartialBlendColorParam *param = (const PartialBlendColorParam *)v;
+  param->self->PartialBlendColor(param);
 }
 
-void tTVPBaseBitmap::InternalBlendColor(const InternalBlendColorParam *param)
+void tTVPBaseBitmap::PartialBlendColor(const PartialBlendColorParam *param)
 {
   tjs_uint32 color = param->color;
   tjs_int opa = param->opa;
@@ -617,12 +617,12 @@ bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
 
         tjs_int taskNum = GetThreadNum();
         BeginThreadTask(taskNum);
-        InternalRemoveConstOpacityParam params[TVPMaxThreadNum + 1];
+        PartialRemoveConstOpacityParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
           y0 = h * i / taskNum;
           y1 = h * (i + 1) / taskNum;
-          InternalRemoveConstOpacityParam *param = params + i % (TVPMaxThreadNum + 1);
+          PartialRemoveConstOpacityParam *param = params + i;
           param->self = this;
           param->dest = dest;
           param->pitch = pitch;
@@ -631,20 +631,20 @@ bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
           param->w = w;
           param->h = y1 - y0;
           param->level = level;
-          ExecThreadTask(&InternalRemoveConstOpacityEntry, TVP_THREAD_PARAM(param));
+          ExecThreadTask(&PartialRemoveConstOpacityEntry, TVP_THREAD_PARAM(param));
         }
         EndThreadTask();
 
         return true;
 }
 
-void tTVPBaseBitmap::InternalRemoveConstOpacityEntry(void *v)
+void tTVPBaseBitmap::PartialRemoveConstOpacityEntry(void *v)
 {
-  const InternalRemoveConstOpacityParam *param = (const InternalRemoveConstOpacityParam *)v;
-  param->self->InternalRemoveConstOpacity(param);
+  const PartialRemoveConstOpacityParam *param = (const PartialRemoveConstOpacityParam *)v;
+  param->self->PartialRemoveConstOpacity(param);
 }
 
-void tTVPBaseBitmap::InternalRemoveConstOpacity(const InternalRemoveConstOpacityParam *param)
+void tTVPBaseBitmap::PartialRemoveConstOpacity(const PartialRemoveConstOpacityParam *param)
 {
   tjs_int pitch = param->pitch;
   tjs_uint8 *sc = param->dest + pitch * param->y;
@@ -689,12 +689,12 @@ bool tTVPBaseBitmap::FillMask(tTVPRect rect, tjs_int value)
 
         tjs_int taskNum = GetThreadNum();
         BeginThreadTask(taskNum);
-        InternalFillMaskParam params[TVPMaxThreadNum + 1];
+        PartialFillMaskParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
           y0 = h * i / taskNum;
           y1 = h * (i + 1) / taskNum;
-          InternalFillMaskParam *param = params + i % (TVPMaxThreadNum + 1);
+          PartialFillMaskParam *param = params + i;
           param->self = this;
           param->dest = dest;
           param->pitch = pitch;
@@ -703,20 +703,20 @@ bool tTVPBaseBitmap::FillMask(tTVPRect rect, tjs_int value)
           param->w = w;
           param->h = y1 - y0;
           param->value = value;
-          ExecThreadTask(&InternalFillMaskEntry, TVP_THREAD_PARAM(param));
+          ExecThreadTask(&PartialFillMaskEntry, TVP_THREAD_PARAM(param));
         }
         EndThreadTask();
 
         return true;
 }
 
-void tTVPBaseBitmap::InternalFillMaskEntry(void *v)
+void tTVPBaseBitmap::PartialFillMaskEntry(void *v)
 {
-  const InternalFillMaskParam *param = (const InternalFillMaskParam *)v;
-  param->self->InternalFillMask(param);
+  const PartialFillMaskParam *param = (const PartialFillMaskParam *)v;
+  param->self->PartialFillMask(param);
 }
 
-void tTVPBaseBitmap::InternalFillMask(const InternalFillMaskParam *param)
+void tTVPBaseBitmap::PartialFillMask(const PartialFillMaskParam *param)
 {
   tjs_int pitch = param->pitch;
   tjs_uint8 *sc = param->dest + pitch * param->y;
@@ -826,12 +826,12 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 
         tjs_int taskNum = GetThreadNum();
         BeginThreadTask(taskNum);
-        InternalCopyRectParam params[TVPMaxThreadNum + 1];
+        PartialCopyRectParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
           y0 = h * i / taskNum;
           y1=  h * (i + 1) / taskNum;
-          InternalCopyRectParam *param = params + i % (TVPMaxThreadNum + 1);
+          PartialCopyRectParam *param = params + i;
           param->self = this;
           param->pixelsize = pixelsize;
           param->dest = dest;
@@ -846,20 +846,20 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
           param->sy = refrect.top + y0;
           param->plane = plane;
           param->backwardCopy = backwardCopy;
-          ExecThreadTask(&InternalCopyRectEntry, TVP_THREAD_PARAM(param));
+          ExecThreadTask(&PartialCopyRectEntry, TVP_THREAD_PARAM(param));
         }
         EndThreadTask();
 
         return true;
 }
 
-void tTVPBaseBitmap::InternalCopyRectEntry(void *v)
+void tTVPBaseBitmap::PartialCopyRectEntry(void *v)
 {
-  const InternalCopyRectParam *param = (const InternalCopyRectParam *)v;
-  param->self->InternalCopyRect(param);
+  const PartialCopyRectParam *param = (const PartialCopyRectParam *)v;
+  param->self->PartialCopyRect(param);
 }
 
-void tTVPBaseBitmap::InternalCopyRect(const InternalCopyRectParam *param)
+void tTVPBaseBitmap::PartialCopyRect(const PartialCopyRectParam *param)
 {
 	// transfer
 	tjs_int pixelsize = (Is32BPP()?sizeof(tjs_uint32):sizeof(tjs_uint8));
@@ -880,7 +880,7 @@ void tTVPBaseBitmap::InternalCopyRect(const InternalCopyRectParam *param)
 		const tjs_uint8 * src = (const tjs_uint8*)ref->GetScanLine(refrect.bottom-1) +
 			refrect.left*pixelsize;
 #endif
-		tjs_uint8 * dest = param->dest + dpitch * (param->dy + param->h - 1) + param->sx * pixelsize;
+		tjs_uint8 * dest = param->dest + dpitch * (param->dy + param->h - 1) + param->dx * pixelsize;
 		const tjs_uint8 * src = param->src + spitch * (param->sy + param->h - 1) + param->sx * pixelsize;
 
 		switch(plane)
@@ -920,7 +920,7 @@ void tTVPBaseBitmap::InternalCopyRect(const InternalCopyRectParam *param)
 		const tjs_uint8 * src = (const tjs_uint8*)ref->GetScanLine(refrect.top) +
 			refrect.left*pixelsize;
 #endif
-		tjs_uint8 * dest = param->dest + dpitch * (param->dy) + param->sx * pixelsize;
+		tjs_uint8 * dest = param->dest + dpitch * (param->dy) + param->dx * pixelsize;
 		const tjs_uint8 * src = param->src + spitch * (param->sy) + param->sx * pixelsize;
 
 		switch(plane)
@@ -1041,12 +1041,12 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 
         tjs_int taskNum = GetThreadNum();
         BeginThreadTask(taskNum);
-        InternalBltParam params[TVPMaxThreadNum + 1];
+        PartialBltParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
           y0 = h * i / taskNum;
           y1=  h * (i + 1) / taskNum;
-          InternalBltParam *param = params + i % (TVPMaxThreadNum + 1);
+          PartialBltParam *param = params + i;
           param->self = this;
           param->dest = dest;
           param->dpitch = dpitch;
@@ -1061,7 +1061,7 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
           param->method = method;
           param->opa = opa;
           param->hda = hda;
-          ExecThreadTask(&InternalBltEntry, TVP_THREAD_PARAM(param));
+          ExecThreadTask(&PartialBltEntry, TVP_THREAD_PARAM(param));
         }
         EndThreadTask();
 
@@ -1069,13 +1069,13 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 }
 
 
-void tTVPBaseBitmap::InternalBltEntry(void *v)
+void tTVPBaseBitmap::PartialBltEntry(void *v)
 {
-  const InternalBltParam *param = (const InternalBltParam *)v;
-  param->self->InternalBlt(param);
+  const PartialBltParam *param = (const PartialBltParam *)v;
+  param->self->PartialBlt(param);
 }
 
-void tTVPBaseBitmap::InternalBlt(const InternalBltParam *param)
+void tTVPBaseBitmap::PartialBlt(const PartialBltParam *param)
 {
   tjs_uint8 *dest;
   const tjs_uint8 *src;
@@ -2674,8 +2674,8 @@ int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *r
 	const tjs_uint8 * src = (const tjs_uint8 *)ref->GetScanLine(0);
 	tjs_int srcpitch = ref->GetPitchBytes();
 
-	yc    = yc    * 65536;
-	yclim = yclim * 65536;
+//	yc    = yc    * 65536;
+//	yclim = yclim * 65536;
 
 	// make srccliprect
 	tTVPRect srccliprect;
@@ -2693,6 +2693,163 @@ int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *r
 	tjs_int mostbottom = -1;
 	bool firstline = true;
 
+        tjs_int ych = yclim - yc;
+
+        tjs_int taskNum = GetThreadNum();
+        BeginThreadTask(taskNum);
+        PartialAffineBltParam params[TVPMaxThreadNum];
+        for (tjs_int i = 0; i < taskNum; i++) {
+          tjs_int y0, y1;
+          y0 = ych * i / taskNum;
+          y1=  ych * (i + 1) / taskNum;
+          PartialAffineBltParam *param = params + i;
+          param->self = this;
+          param->dest = dest + destpitch * y0;
+          param->destpitch = destpitch;
+          param->yc = (yc + y0) * 65536;
+          param->yclim = (yc + y1) * 65536;
+          param->scanlinestart = scanlinestart;
+          param->scanlineend = scanlineend;
+          param->points_x = points_x;
+          param->points_y = points_y;
+          param->refrect = &refrect;
+          param->sxstep = sxstep;
+          param->systep = systep;
+          param->destrect = &destrect;
+          param->method = method;
+          param->opa = opa;
+          param->hda = hda;
+          param->type = type;
+          param->clear = clear;
+          param->clearcolor = clearcolor;
+          param->leftlimit = leftlimit;
+          param->rightlimit = rightlimit;
+          param->mostupper = mostupper;
+          param->mostbottom = mostbottom;
+          param->firstline = firstline;
+          param->src = src;
+          param->srcpitch = srcpitch;
+          param->srccliprect = &srccliprect;
+          param->srcrect = &srcrect;
+          ExecThreadTask(&PartialAffineBltEntry, TVP_THREAD_PARAM(param));
+        }
+        EndThreadTask();
+
+        // update area param
+        for (tjs_int i = 0; i < taskNum; i++) {
+          PartialAffineBltParam *param = params + i;
+          if (param->firstline)
+            continue;
+          if (firstline) {
+            firstline = false;
+            leftlimit = param->leftlimit;
+            rightlimit = param->rightlimit;
+            mostupper = param->mostupper;
+            mostbottom  = param->mostbottom;
+          } else {
+            if (param->leftlimit < leftlimit) leftlimit = param->leftlimit;
+            if (param->rightlimit > rightlimit) rightlimit = param->rightlimit;
+            if (param->mostupper < mostupper) mostupper = param->mostupper;
+            if (param->mostbottom > mostbottom) mostbottom = param->mostbottom;
+          }
+        }
+
+	// clear upper and lower area of the affine transformation
+	if(clear)
+	{
+		tjs_int h;
+		tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(0);
+		tjs_uint8 * p;
+		if(mostupper == -1 && mostbottom == -1)
+		{
+			// special case: nothing was drawn;
+			// clear entire area of the destrect
+			mostupper  = destrect.bottom;
+			mostbottom = destrect.bottom - 1;
+		}
+
+		h = mostupper - destrect.top;
+		if(h > 0)
+		{
+			p = dest + destrect.top * destpitch;
+			do
+				(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)p + destrect.left,
+					destrect.right - destrect.left, clearcolor),
+				p += destpitch;
+			while(--h);
+		}
+
+		h = destrect.bottom - (mostbottom + 1);
+		if(h > 0)
+		{
+			p = dest + (mostbottom + 1) * destpitch;
+			do
+				(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)p + destrect.left,
+					destrect.right - destrect.left, clearcolor),
+				p += destpitch;
+			while(--h);
+		}
+
+	}
+
+	// fill members of updaterect
+	if(updaterect)
+	{
+		if(clear)
+		{
+			// clear is specified
+			*updaterect = destrect;
+				// update rectangle is the same as the destination rectangle
+		}
+		else if(!firstline)
+		{
+			// update area is being
+			updaterect->left = leftlimit;
+			updaterect->right = rightlimit + 1;
+			updaterect->top = mostupper;
+			updaterect->bottom = mostbottom + 1;
+		}
+	}
+
+	return (clear || !firstline)?2:0;
+}
+
+void tTVPBaseBitmap::PartialAffineBltEntry(void *v)
+{
+  PartialAffineBltParam *param = (PartialAffineBltParam *)v;
+  param->self->PartialAffineBlt(param);
+}
+
+void tTVPBaseBitmap::PartialAffineBlt(PartialAffineBltParam *param)
+{
+  tjs_uint8 *dest = param->dest;
+  const tjs_int destpitch = param->destpitch;
+  tjs_int yc = param->yc;
+  tjs_int yclim = param->yclim;
+  const tjs_int scanlinestart = param->scanlinestart;
+  const tjs_int scanlineend = param->scanlineend;
+  const tjs_int *points_x = param->points_x;
+  const tjs_int *points_y = param->points_y;
+  const tTVPRect &refrect = *(param->refrect);
+  const tjs_int sxstep = param->sxstep;
+  const tjs_int systep = param->systep;
+  const tTVPRect &destrect = *(param->destrect);
+  const tTVPBBBltMethod method = param->method;
+  const tjs_int opa = param->opa;
+  const bool hda = param->hda;
+  const tTVPBBStretchType type = param->type;
+  const bool clear = param->clear;
+  const tjs_uint32 clearcolor = param->clearcolor;
+  const tjs_uint8 *const src  = param->src;
+  const tjs_int srcpitch = param->srcpitch;
+  const tTVPRect &srccliprect = *(param->srccliprect);
+  const tTVPRect &srcrect = *(param->srcrect);
+
+  tjs_int &leftlimit = param->leftlimit;
+  tjs_int &rightlimit = param->rightlimit;
+  tjs_int &mostupper = param->mostupper;
+  tjs_int &mostbottom = param->mostbottom;
+  bool &firstline = param->firstline;
 
 	for(; yc <= yclim; yc+=65536, dest += destpitch)
 	{
@@ -3144,66 +3301,8 @@ int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *r
 			}
 		}
 	}
-
-	// clear upper and lower area of the affine transformation
-	if(clear)
-	{
-		tjs_int h;
-		tjs_uint8 * dest = (tjs_uint8*)GetScanLineForWrite(0);
-		tjs_uint8 * p;
-		if(mostupper == -1 && mostbottom == -1)
-		{
-			// special case: nothing was drawn;
-			// clear entire area of the destrect
-			mostupper  = destrect.bottom;
-			mostbottom = destrect.bottom - 1;
-		}
-
-		h = mostupper - destrect.top;
-		if(h > 0)
-		{
-			p = dest + destrect.top * destpitch;
-			do
-				(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)p + destrect.left,
-					destrect.right - destrect.left, clearcolor),
-				p += destpitch;
-			while(--h);
-		}
-
-		h = destrect.bottom - (mostbottom + 1);
-		if(h > 0)
-		{
-			p = dest + (mostbottom + 1) * destpitch;
-			do
-				(hda?TVPFillColor:TVPFillARGB)((tjs_uint32*)p + destrect.left,
-					destrect.right - destrect.left, clearcolor),
-				p += destpitch;
-			while(--h);
-		}
-
-	}
-
-	// fill members of updaterect
-	if(updaterect)
-	{
-		if(clear)
-		{
-			// clear is specified
-			*updaterect = destrect;
-				// update rectangle is the same as the destination rectangle
-		}
-		else if(!firstline)
-		{
-			// update area is being
-			updaterect->left = leftlimit;
-			updaterect->right = rightlimit + 1;
-			updaterect->top = mostupper;
-			updaterect->bottom = mostbottom + 1;
-		}
-	}
-
-	return (clear || !firstline)?2:0;
 }
+
 //---------------------------------------------------------------------------
 bool tTVPBaseBitmap::AffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
 		tTVPRect refrect, const tTVPPointD * points_in,
