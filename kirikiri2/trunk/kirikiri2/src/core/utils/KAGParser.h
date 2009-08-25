@@ -264,7 +264,9 @@ private:
 	bool SkipCommentOrLabel(); // skip comment or label and go to next line
 
 	void PushMacroArgs(iTJSDispatch2 *args);
+public:
 	void PopMacroArgs();
+private:
 	void ClearMacroArgs();
 	void PopMacroArgsTo(tjs_uint base);
 
