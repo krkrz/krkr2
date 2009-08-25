@@ -2393,6 +2393,16 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/clearCallStack)
 }
 TJS_END_NATIVE_METHOD_DECL(/*func. name*/clearCallStack)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/popMacroArgs) // undoc
+{
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_KAGParser);
+
+	_this->PopMacroArgs();
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL(/*func. name*/popMacroArgs)
+//----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/interrupt)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_KAGParser);
