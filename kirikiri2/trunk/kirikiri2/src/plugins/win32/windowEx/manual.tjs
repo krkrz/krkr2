@@ -334,3 +334,20 @@ class System
 	 */
 	function expandEnvString(text);
 }
+
+/**
+ * Scripts拡張
+ */
+class Scripts
+{
+	/**
+	 * Scripts.evalのエラーログ出力抑制
+	 * @param enabled 出力許可
+	 * @return 元の値
+	 *
+	 * enabled に false を設定すると Scripts.eval の評価処理を
+	 * TVPExecuteExpression 経由で行うようになり，例外発生時にログが出力されない
+	 * 吉里吉里のバージョンアップに伴い仕様が変わる可能性があるので注意のこと
+	 */
+	function setEvalErrorLog(enabled);
+}
