@@ -306,9 +306,23 @@ TJSObject::TJSObject(HSQUIRRELVM v, tTJSVariant &instance) : instance(instance)
 	initSelf(v, -1);
 }
 
+static bool TJS_USERENTRY Catch(void * data, const tTVPExceptionDesc & desc) {
+	return false;
+}
+
+static void TJS_USERENTRY TryInvalidate(void * data) {
+	tTJSVariant *v = (tTJSVariant*)data;
+	if (v && v->Type() == tvtObject) {
+		if (v->AsObjectClosureNoAddRef().IsValid(0, NULL, NULL, NULL)) {
+			v->AsObjectClosureNoAddRef().Invalidate(0, NULL, NULL, NULL);
+		}
+	}
+}
+
 // デストラクタ
 TJSObject::~TJSObject()
 {
+	TVPDoTryBlock(TryInvalidate, Catch, NULL, (void *)&instance);
 }
 
 /**
@@ -360,7 +374,7 @@ public:
 		target = r;
 		return result;
 	}
-	
+
 	SQRESULT exec() {
 		TVPDoTryBlock(TryExec, Catch, Finally, (void *)this);
 		return result;
@@ -394,7 +408,7 @@ private:
 		FuncInfo *info = (FuncInfo*)data;
 		info->_TryCreate();
 	}
-	
+
 	void _TryExec() {
 		tjs_error error;
 		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().FuncCall(0, sqobject::getString(v,-1), NULL, &r, argc, args, NULL))) {

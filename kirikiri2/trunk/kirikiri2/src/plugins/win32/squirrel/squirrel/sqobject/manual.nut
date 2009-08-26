@@ -254,20 +254,21 @@ function notify(trigger);
 // ------------------------------------------------
 
 /**
- * 描画処理前に呼び出されるファンクションを登録する。
+ * スレッド処理前後に呼び出されるファンクションを登録する。
  * ファンクションは function(currentTick, diffTick) の形で呼び出されます。
  * この呼び出しはスレッドによるものではないため、処理中に suspend() / wait() を
  * 呼ぶとエラーになるので注意してください。必ず1度で呼びきれるものを渡す必要があります。
  * currentTick, diffTick は、その回のスレッド呼び出し処理冒頭での値になります。
  * @param func 登録するファンクション
+ * @param type 0:スレッド処理の前 1:スレッド処理の後
  */
-function addContinuousHandler(func);
+function addContinuousHandler(func, type=1);
 
 /**
  * 描画処理前に呼び出されるファンクションを登録解除する
  * @param func 登録解除するファンクション
  */
-function removeContinuousHandler(func);
+function removeContinuousHandler(func, type=1);
 
 /**
  * 全 continuous handler を解除する

@@ -154,8 +154,9 @@ public:
 		sq_settypetag(v, -1, typetag);
 		::registerTypeTag(typeName, typetag);
 		
-		// コンストラクタを登録
+		// コンストラクタ・デストラクタを登録
 		Register(constructor, _SC("constructor"));
+		Register(destructor, _SC("destructor"));
 	}
 	
 	/*
@@ -193,7 +194,15 @@ public:
 			return ERROR_CREATE(v);
 		}
 	}
-
+	
+	/**
+	 * デストラクタ
+	 * なにもしない。Object が解放時に呼び出すのでエラーがでないように対策
+	 */
+	static SQRESULT destructor(HSQUIRRELVM v) {
+		return SQ_OK;
+	}
+	
 	// -------------------------------------------------
 	// スタティック関数の登録
 	// -------------------------------------------------

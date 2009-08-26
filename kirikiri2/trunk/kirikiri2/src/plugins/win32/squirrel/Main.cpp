@@ -349,7 +349,7 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 // Continuous Handelr 用
 class SQThreadContinuous : public tTVPContinuousEventCallbackIntf {
 public:
-	SQThreadContinuous() {
+	SQThreadContinuous() : working(false) {
 	}
 
 	~SQThreadContinuous() {
@@ -359,12 +359,18 @@ public:
 	tjs_uint64 prevTick;
 	
 	void start() {
-		TVPAddContinuousEventHook(this);
-		prevTick = TVPGetTickCount();
+		if (!working) {
+			TVPAddContinuousEventHook(this);
+			prevTick = TVPGetTickCount();
+			working = true;
+		}
 	}
 
 	void stop() {
-		TVPRemoveContinuousEventHook(this);
+		if (working) {
+			TVPRemoveContinuousEventHook(this);
+			working = false;
+		}
 	}
 	
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
@@ -377,11 +383,19 @@ public:
 		params[0] = (tjs_int64)diff;
 		params[1] = (tjs_int64)tick;
 		TVPPostEvent(global, global, begin, 0, TVP_EPT_IMMEDIATE, 2, params);
+		sqobject::beforeContinuous((int)diff);
 		sqobject::Thread::main((int)diff);
-		sqobject::mainContinuous();
+		sqobject::afterContinuous();
 		TVPPostEvent(global, global, end, 0, TVP_EPT_IMMEDIATE, 2, params);
 		prevTick = tick;
 	}
+
+	bool isWorking() {
+		return working;
+	}
+
+private:
+	bool working;
 };
 
 SQThreadContinuous sqthreadcont;
@@ -721,6 +735,28 @@ public:
 		return TJS_S_OK;
 	}
 
+
+	/**
+	 * スレッド動作を停止
+	 */
+	static tjs_error TJS_INTF_METHOD stopSQ(tTJSVariant *result,
+											tjs_int numparams,
+											tTJSVariant **param,
+											iTJSDispatch2 *objthis) {
+		sqthreadcont.stop();
+		return TJS_S_OK;
+	}
+
+	/**
+	 * スレッド動作を開始
+	 */
+	static tjs_error TJS_INTF_METHOD startSQ(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis) {
+		sqthreadcont.start();
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
@@ -738,6 +774,8 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("unregisterSQ",     &ScriptsSquirrel::unregisterSQ,    TJS_STATICMEMBER);
 	RawCallback("compileSQ",        &ScriptsSquirrel::compile,        TJS_STATICMEMBER);
 	RawCallback("compileStorageSQ", &ScriptsSquirrel::compileStorage, TJS_STATICMEMBER);
+	RawCallback("stopSQ", &ScriptsSquirrel::stopSQ, TJS_STATICMEMBER);
+	RawCallback("startSQ", &ScriptsSquirrel::startSQ, TJS_STATICMEMBER);
 };
 
 /**
@@ -887,16 +925,6 @@ NCB_REGISTER_CLASS(SQFunction) {
 //---------------------------------------------------------------------------
 
 /**
- * スタック情報の表示
- */
-static SQInteger
-printCallStack(HSQUIRRELVM v)
-{
-	sqstd_printcallstack(v);
-	return 0;
-}
-
-/**
  * 登録処理前
  */
 static void PreRegistCallback()
@@ -911,16 +939,10 @@ static void PreRegistCallback()
 	// 出力用
 	sq_setprintfunc(vm, printFunc);
 
-	sq_pushroottable(vm);
-
 	// その他の基本ライブラリの登録
+	sq_pushroottable(vm);
 	sqstd_register_iolib(vm);
 	sqstd_register_bloblib(vm);
-	// printCallStack の登録
-	sq_pushstring(vm, _SC("printCallStack"), -1);
-	sq_newclosure(vm, printCallStack, 0);
-	sq_createslot(vm, -3);
-
 	sq_pop(vm, 1);
 	
 	sqobject::registerContinuous();
