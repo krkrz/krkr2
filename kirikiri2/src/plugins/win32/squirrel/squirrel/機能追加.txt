@@ -69,3 +69,9 @@ findall(value)            要素 value を持つキーの配列を返す
 includes(value)           要素 value を含むなら true を返す
 includeCount(value)       要素 value を含む数を返す
 
+◇auxライブラリグローバル関数追加
+
+※sqstd_seterrorhandlers() 呼び出し時に併せて登録
+
+printCallStack()	   スタックの内容をコンソールに表示
+notifyAllExceptions(value) 全例外のエラー表示通知を行うかどうかを指定

@@ -3,21 +3,63 @@
 
 namespace sqobject {
 
-ObjectInfo continuousList;
+ObjectInfo beforeContinuousList;
+ObjectInfo afterContinuousList;
+
+// リストに追加(既に登録されてる場合は無視)
+static void add(ObjectInfo &list, ObjectInfo &info)
+{
+	SQInteger max = list.len();
+	for (SQInteger i=0;i<max;i++) {
+		ObjectInfo f = list.get(i);
+		if (f == info) {
+			return;
+		}
+	}
+	list.append(info);
+}
+
+// リストから削除(全部削除)
+static void remove(ObjectInfo &list, ObjectInfo &info)
+{
+	SQInteger max = list.len();
+	SQInteger i=0;
+	while (i<max) {
+		if (list.get(i) == info) {
+			list.remove(i);
+			max--;
+		} else {
+			i++;
+		}
+	}
+}
+
+static void call(ObjectInfo &list, int tick, int diff)
+{
+	SQInteger max = list.len();
+	SQInteger i=0;
+	for (SQInteger i=0;i<max;i++) {
+		if (SQ_FAILED(list.get(i).call(tick, diff))) {
+			list.remove(i);
+			max--;
+		}
+	}
+}
 
 /// ハンドラ登録
 static SQRESULT addContinuousHandler(HSQUIRRELVM v)
 {
-	ObjectInfo info(v,-1);
-	if (info.isClosure()) {
-		SQInteger max = continuousList.len();
-		for (SQInteger i=0;i<max;i++) {
-			ObjectInfo f = continuousList.get(i);
-			if (f == info) {
-				return SQ_OK;
-			}
-		}
-		continuousList.append(info);
+	ObjectInfo info(v,2);
+	SQInteger type;
+	if (sq_gettop(v) >= 3) {
+		sq_getinteger(v, 3, &type);
+	} else {
+		type=1;
+	}
+	if (type == 0) {
+		add(beforeContinuousList, info);
+	} else if (type == 1) {
+		add(afterContinuousList, info);
 	}
 	return SQ_OK;
 }
@@ -25,25 +67,25 @@ static SQRESULT addContinuousHandler(HSQUIRRELVM v)
 /// ハンドラ削除
 static SQRESULT removeContinuousHandler(HSQUIRRELVM v)
 {
-	ObjectInfo info(v,-1);
-	if (info.isClosure()) {
-		SQInteger max = continuousList.len();
-		SQInteger i=0;
-		while (i<max) {
-			if (continuousList.get(i) == info) {
-				continuousList.remove(i);
-				max--;
-			} else {
-				i++;
-			}
-		}
+	ObjectInfo info(v,2);
+	SQInteger type;
+	if (sq_gettop(v) >= 3) {
+		sq_getinteger(v, 3, &type);
+	} else {
+		type=1;
+	}
+	if (type == 0) {
+		remove(beforeContinuousList, info);
+	} else if (type == 1) {
+		remove(afterContinuousList, info);
 	}
 	return SQ_OK;
 }
 
 static SQRESULT clearContinuousHandler(HSQUIRRELVM v)
 {
-	continuousList.clearData();
+	beforeContinuousList.clearData();
+	afterContinuousList.clearData();
 	return SQ_OK;
 }
 
@@ -51,35 +93,41 @@ static SQRESULT clearContinuousHandler(HSQUIRRELVM v)
 /// 機能登録
 void registerContinuous()
 {
-#define REGISTERMETHOD(name) \
+#define REGISTERMETHOD(name, n, type) \
 	sq_pushstring(v, _SC(#name), -1);\
 	sq_newclosure(v, name, 0);\
+	sq_setparamscheck(v, n, type);\
 	sq_createslot(v, -3);
 
 	HSQUIRRELVM v = getGlobalVM();
 	sq_pushroottable(v); // root
-	REGISTERMETHOD(addContinuousHandler);
-	REGISTERMETHOD(removeContinuousHandler);
-	REGISTERMETHOD(clearContinuousHandler);
+	REGISTERMETHOD(addContinuousHandler, -2, _SC(".cn"));
+	REGISTERMETHOD(removeContinuousHandler, -2, _SC(".cn"));
+	REGISTERMETHOD(clearContinuousHandler, 0, _SC(""));
 	sq_pop(v,1);
 
-	continuousList.initArray();
+	beforeContinuousList.initArray();
+	afterContinuousList.initArray();
 }
 
 /// ハンドラ処理呼び出し。Thread::main の後で呼び出す必要がある
-void mainContinuous()
+void beforeContinuous(int diff)
 {
-	SQInteger max = continuousList.len();
-	for (SQInteger i=0;i<max;i++) {
-		continuousList.get(i).call(Thread::currentTick, Thread::diffTick);
-	}
+	call(beforeContinuousList, Thread::currentTick + diff, diff);
+}
+
+void afterContinuous()
+{
+	call(afterContinuousList, Thread::currentTick, Thread::diffTick);
 }
 
 /// 機能終了
 void doneContinuous()
 {
-	continuousList.clearData();
-	continuousList.clear();
+	beforeContinuousList.clearData();
+	beforeContinuousList.clear();
+	afterContinuousList.clearData();
+	afterContinuousList.clear();
 }
 
 };

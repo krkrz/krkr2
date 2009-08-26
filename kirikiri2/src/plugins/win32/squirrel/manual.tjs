@@ -106,6 +106,16 @@ class Scripts {
 	 * @param name 登録名称
 	 */
 	function unregisterSQ(name);
+
+	/**
+	 * 疑似スレッド動作を停止する
+	 */
+	function stopSQ();
+
+	/**
+	 * 疑似スレッド動作を開始する
+	 */
+	function startSQ();
 }
 
 /**

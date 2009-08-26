@@ -83,6 +83,7 @@ Object::registerClass()
 {
 	SQCLASS(Object);
 	SQVCONSTRUCTOR(Object);
+	SQDESTRUCTOR(Object);
 	SQFUNC(Object,notify);
 	SQFUNC(Object,notifyAll);
 	SQVFUNC(Object,hasSetProp);
@@ -104,6 +105,7 @@ Thread::registerClass()
 {
 	SQCLASSEX(Thread, Object);
 	SQVCONSTRUCTOR(Thread);
+	SQDESTRUCTOR(Thread);
 	SQVFUNC(Thread,exec);
 	SQVFUNC(Thread,exit);
 	SQFUNC(Thread,stop);

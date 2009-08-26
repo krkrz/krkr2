@@ -47,6 +47,9 @@ struct SQTemplate {
   static SQRESULT noconstructor(HSQUIRRELVM v) {
 	return sq_throwerror(v, "can't create instance");
   }
+  static SQRESULT destructor(HSQUIRRELVM v) {
+	  return SQ_OK;
+  }
 };
 
 /**
@@ -120,6 +123,9 @@ SQRESULT pushnewsqobj(HSQUIRRELVM v, const SQChar *className, T *obj) {
 // 自前コンストラクタ
 #define SQMYCONSTRUCTOR(constructor) cls.staticFuncVarArgs(constructor, _SC("constructor"))
 #define SQMYCONSTRUCTOR_(constructor, TypeCheck) cls.staticFuncVarArgs(constructor, _SC("constructor"), TypeCheck)
+
+// デストラクタ(空)
+#define SQDESTRUCTOR(Class) cls.staticFuncVarArgs(SQTemplate<Class>::destructor, _SC("destructor"))
 
 // ----------------------------------------------
 // ファンクション登録用マクロ
