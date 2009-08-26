@@ -50,7 +50,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../;squirrel/include;squirrel/sqobject"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SQUIRRELBASE_EXPORTS;SQUSEDOUBLE;_SQ64"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SQUIRRELBASE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -146,7 +146,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../;squirrel/include;squirrel/sqobject"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SQUIRRELBASE_EXPORTS;SQUSEDOUBLE;_SQ64"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SQUIRRELBASE_EXPORTS"
 				RuntimeLibrary="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
