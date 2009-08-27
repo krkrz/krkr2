@@ -892,6 +892,7 @@ struct ConsoleEx
 	}
 	// setPos
 	static tjs_error TJS_INTF_METHOD setPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		if (n < 2) return TJS_E_BADPARAMCOUNT;
 		HWND hwnd = GetHWND();
 		if (hwnd != NULL) {
 			UINT flag = SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER;
@@ -910,12 +911,27 @@ struct ConsoleEx
 		}
 		return TJS_S_OK;
 	}
+	static tjs_error TJS_INTF_METHOD bringAfter(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND();
+		if (hwnd != NULL) {
+			HWND ins = NULL;
+			if (n >= 1 && p[0]->Type() == tvtObject) {
+				iTJSDispatch2 *win = p[0]->AsObjectNoAddRef();
+				if (win && win->IsInstanceOf(0, 0, 0, TJS_W("Window"), win))
+					ins = WindowEx::GetHWND(win);
+			}
+			::SetWindowPos(hwnd, ins, 0, 0, 0, 0,
+						   SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER);
+		}
+		return TJS_S_OK;
+	}
 };
 NCB_ATTACH_FUNCTION_WITHTAG(restoreMaximize, Debug_console, Debug.console, ConsoleEx::restoreMaximize);
 NCB_ATTACH_FUNCTION_WITHTAG(maximize,        Debug_console, Debug.console, ConsoleEx::maximize);
 NCB_ATTACH_FUNCTION_WITHTAG(setPos,          Debug_console, Debug.console, ConsoleEx::setPos);
 NCB_ATTACH_FUNCTION_WITHTAG(getPlacement,    Debug_console, Debug.console, ConsoleEx::getPlacement);
 NCB_ATTACH_FUNCTION_WITHTAG(setPlacement,    Debug_console, Debug.console, ConsoleEx::setPlacement);
+NCB_ATTACH_FUNCTION_WITHTAG(bringAfter,      Debug_console, Debug.console, ConsoleEx::bringAfter);
 
 
 ////////////////////////////////////////////////////////////////
