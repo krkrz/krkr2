@@ -267,6 +267,7 @@ class Console {
 	function getPlacement();     //< WindowPlacementの取得
 	function setPlacement(dict); //< WindowPlacementの設定
 	//※ 起動後１度はvisible=trueしてウィンドウを生成しないと失敗する
+	function bringAfter(win);    //< 優先順位の変更
 }
 
 /**
