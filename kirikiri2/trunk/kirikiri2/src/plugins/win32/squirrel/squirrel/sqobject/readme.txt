@@ -160,8 +160,9 @@ continuous handler: 制御が終わったあとの自律計算処理
 
 ・sqobject::registerContinuous() を呼び出すことで機能登録されます
 
-・sqobject::Thread::main(diff) を呼び出した後で、
-  sqobject::mainContinuous() を呼び出してください
+・sqobject::Thread::main(diff) を呼び出す前に
+  sqobject::beforeContinuous(diff) を、呼び出した後に
+  sqobject::afterContinuous() を呼び出してください
 
 ・全処理終了時には　sqoject::doneContinuous() を呼び出します
 
