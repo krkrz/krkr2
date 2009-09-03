@@ -126,6 +126,13 @@ function KAGWindow_createMenus()
 		displayMenu.add(this.fullScreenMenuItem = new KAGMenuItem(this, "フルスクリーン(&F)", 1,
 			onFullScreenMenuItemClick, false));
 
+		displayMenu.add(new MenuItem(this, "-"));
+
+		displayMenu.add(this.resetWindowSizeMenuItem = new KAGMenuItem(this, "標準ウィンドウサイズ(&D)", 0,
+			/**/           onResetWindowSizeMenuItemClick, false));
+		displayMenu.add(this.disableWindowResizeMenuItem = new KAGMenuItem(this, "リサイズを禁止(&Z)", 0,
+			/**/           onDisableWinwodResizeMenuItemClick, false));
+
 	menu.add(this.helpMenu = new KAGMenuItem(this, "ヘルプ(&H)", 0, void, false));
 
 		helpMenu.add(this.helpIndexMenuItem = new KAGMenuItem(this, "目次(&I) ...", 0,

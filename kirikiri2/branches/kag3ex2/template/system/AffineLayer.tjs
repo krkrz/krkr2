@@ -1504,7 +1504,9 @@ class AffineLayer extends KAGLayer {
 	function assignImages(src) {
 		if (src instanceof "AffineLayer") {
 			stopRaster();
+			var old =_image;
 			_image  = src._image.clone(this);
+			invalidate old if (old && isvalid old);
 			defaultAfx = src.defaultAfx;
 			defaultAfy = src.defaultAfy;
 			_rotate = src._rotate;

@@ -1019,6 +1019,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	function finalize() {
 		stopAnim();
 		System.removeContinuousHandler(updateHandler);
+		clearStandLayers();
 		invalidateListMap(standlayerList, standlayerMap);
 		invalidateListMap(currentPoseNameList, currentPoseNameMap);
 		invalidateListMap(currentDiffNameList, currentDiffNameMap);
@@ -1087,8 +1088,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			var standlayer = standlayers[i];
 			if (standlayer.currentImageLevel === imageLevel) { // 既にロード済み
 				if (i != 0) {
-					standlayers.erase(i);
-					standlayers.insert(0, standlayer);
+					// 先頭に移動させる
+					with (standlayers) .unshift(.pop()); //standlayers.erase(i); standlayers.insert(0, standlayer);
 				}
 				standlayer.setLevel(level, imageLevel, env.levels);
 				return standlayer;
@@ -1098,13 +1099,29 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		var standlayer = new StandLayer(kag.temporaryLayer, standInfo);
 		standlayer.name = name + "_" + poseName;
 		standlayer.setLevel(level, imageLevel, env.levels);
-		if (standlayers.count > 3) { // キャッシュは3つまで
-			standlayers.erase(standlayers.count - 1);
+		while (standlayers.count > 3) { // キャッシュは4つまで
+			var old = standlayers.pop(); //erase(standlayers.count - 1);
+			invalidate old;
 		}
-		standlayers.insert(0,standlayer);
+		standlayers.unshift(standlayer); // insert(0,standlayer);
 		return standlayer;
 	}
-	
+
+	function clearStandLayers() {
+		// キャッシュを全削除する
+		(Dictionary.clear incontextof standlayerMap)(); 
+		for (var i=standlayerList.count-1;i>=0;i--) {
+			var standlayers = standlayerList[i];
+			if (standlayers) {
+				for (var j=standlayers.count-1;j>=0;j--) {
+					invalidate standlayers[j] if (standlayers[j]);
+				}
+				invalidate standlayers;
+			}
+		}
+		standlayerList.clear();
+	}
+
 	// -----------------------------------------------------------------
 	// 各種ロジックの差し替え
 
@@ -1789,7 +1806,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		var ret = super.tagfunc(elm);
 		if (!isShowBU()) {
 			// レイヤを破棄
-			clearListMap(standlayerList, standlayerMap);
+			clearStandLayers(); // clearListMap(standlayerList, standlayerMap);
 		}
 		return ret;
 	}
