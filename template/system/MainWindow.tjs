@@ -1680,15 +1680,17 @@ class KAGWindow extends Window
 		];
 	// 擬似フルスクリーン時ショートカットキー処理
 	function pseudoMenuShortcut(key, shift) {
-		var table, info, func;
-		if (pseudoFullScreened &&
-			(table = _pseudoFullScreen.shortcut) !== void &&
-			(info  = table[key])  !== void &&
-			(func  = info[+shift]) !== void &&
-			!(shift & ssRepeat))
-		{
-			func();
-			return true;
+		if (pseudoFullScreened) {
+			shift &= ~ssRepeat if (shift & ssAlt); // [XXX] ALTでリピートフラグが正しく立たない
+			var table, info, func;
+			if ((table = _pseudoFullScreen.shortcut) !== void &&
+				(info  = table[key])  !== void &&
+				(func  = info[+shift]) !== void &&
+				!(shift & ssRepeat))
+			{
+				func();
+				return true;
+			}
 		}
 		return false;
 	}
@@ -1767,14 +1769,30 @@ class KAGWindow extends Window
 			callResizeHook();
 			_onResizeProcess = true;
 		}
+		updateResizeMenuItems();
 		return super.onResize();
 	}
+
+	function updateResizeMenuItems() {
+		var maxfull = fullScreened || (typeof this.maximized != "undefined" && maximized);
+		var en = exEventEnabled && !maxfull;
+		if (typeof this.resetWindowSizeMenuItem == "Object") with (resetWindowSizeMenuItem) {
+			.enabled = en;
+			.checked = en && (origZoomNumer == origZoomDenom);
+		}
+		if (typeof this.disableWindowResizeMenuItem == "Object") with (disableWindowResizeMenuItem) {
+			.enabled = en;
+			.checked = !windowResizeable;
+		}
+	}
+
 	var _windowResizeable = true; // フレームを掴んでリサイズ可能かどうか
 	property windowResizeable {
 		getter { return _windowResizeable; }
 		setter(v) {
 			_windowResizeable = v;
 			disableResize = !v if (exEventEnabled);
+			updateResizeMenuItems();
 		}
 	}
 	function onResizing(rect) {
@@ -1989,44 +2007,34 @@ class KAGWindow extends Window
 
 	function onWindowedMenuItemClick(sender)
 	{
-		if(fullScreened)
-		{
-			try
-			{
-				fullScreen = false;
-			}
-			catch(e)
-			{
-				Debug.notice("ウィンドウモードに移行できませんでした : " + e.message);
-			}
-			fullScreened = fullScreen;
-			if(fullScreened)
-				fullScreenMenuItem.checked = true;
-			else
-				windowedMenuItem.checked = true;
+		changeFullScreenOrWindow(false);
+	}
+	function onFullScreenMenuItemClick(sender)
+	{
+		changeFullScreenOrWindow(true);
+	}
+	function changeFullScreenOrWindow(isfull)
+	{
+		if ( !fullScreened == !isfull) return;
+		try { fullScreen   =   isfull; }
+		catch(e) {
+			Debug.notice((isfull ? "フルスクリーン" : "ウィンドウ") + "モードに移行できませんでした : " + e.message);
 		}
+		var  menu = ((fullScreened = fullScreen) != 0) ? "fullScreenMenuItem" : "windowedMenuItem";
+		this[menu].checked = true if (typeof this[menu] == "Object");
+		updateResizeMenuItems();
 		saveSystemVariables();
 	}
 
-	function onFullScreenMenuItemClick(sender)
+	function onResetWindowSizeMenuItemClick()
 	{
-		if(!fullScreened)
-		{
-			try
-			{
-				fullScreen = true;
-			}
-			catch(e)
-			{
-				Debug.notice("フルスクリーンモードに移行できませんでした : " + e.message);
-			}
-			fullScreened = fullScreen;
-			if(fullScreened)
-				fullScreenMenuItem.checked = true;
-			else
-				windowedMenuItem.checked = true;
-		}
-		saveSystemVariables();
+		setZoom(1, 1);
+		updateResizeMenuItems();
+	}
+	function onDisableWinwodResizeMenuItemClick()
+	{
+		windowResizeable = !windowResizeable;
+		updateResizeMenuItems();
 	}
 
 	function onHelpIndexMenuItemClick(sender)
@@ -2454,6 +2462,7 @@ class KAGWindow extends Window
             debugWinMenuItem.checked = debugwin.visible;
         }
 
+		updateResizeMenuItems();
     }
 
 	function clearSystemVariables()
@@ -2589,7 +2598,7 @@ class KAGWindow extends Window
 		f.quakeHorzMax = quakeHorzMax;
 		f.quakeVertMax = quakeVertMax;
 		f.quakePhase = quakePhase;
-		f.textWriteenabled = textWriteEnabled;
+		f.textWriteEnabled = textWriteEnabled;
 		f.historyWriteEnabled = historyWriteEnabled;
 		f.historyEnabled = historyEnabled;
 		f.numCharacterLayers = numCharacterLayers;

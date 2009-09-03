@@ -199,27 +199,34 @@ function foreach(dict, func, *) {
 }
 
 /**
+ * 存在するファイルの拡張子を補完してファイル名を返す
+ * @param storage ファイル名（拡張子指定がない場合は exts* で補完）
+ * @param exts* 拡張子リスト（先に来た方が優先）
+ * @return 拡張子まで指定された画像ファイル名。存在しなければ void
+ */
+function getExistFileNameAutoExtFill(storage, exts*)
+{
+	with (Storages) if (!.isExistentStorage(storage)/*&& .extractStorageExt(storage) == ""*/) {
+		var chop = .chopStorageExt(storage) + ".";
+		storage = void;
+		for (var i = 0, test, cnt = exts.count; i < cnt; i++) {
+			test = chop + exts[i];
+			if (.isExistentStorage(test)) {
+				storage = test;
+				break;
+			}
+		}
+	}
+	return storage;
+}
+
+/**
  * 指定した名前の画像ファイルが存在すればその名前を返す
  * @return 拡張子まで指定された画像ファイル名。存在しなければ void
  */
 function getExistImageName(storage)
 {
-	var test;
-	if(!Storages.isExistentStorage(storage)) {
-		if (test = storage + ".png", Storages.isExistentStorage(test))
-			storage = test;
-		else if (test = storage + ".tlg", Storages.isExistentStorage(test))
-			storage = test;
-		else if (test = storage + ".tlg5", Storages.isExistentStorage(test))
-			storage = test;
-		else if (test = storage + ".tlg6", Storages.isExistentStorage(test))
-			storage = test;
-		else if (test = storage + ".bmp", Storages.isExistentStorage(test))
-			storage = test;
-		else
-			storage = void;
-	}
-	return storage;
+	return getExistFileNameAutoExtFill(storage, "png", "tlg", "tlg5", "tlg6", "jpeg", "jpg");
 }
 
 /**

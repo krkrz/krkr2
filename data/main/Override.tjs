@@ -140,6 +140,13 @@ function KAGWindow_createMenus()
 		displayMenu.add(this.fullScreenMenuItem = new KAGMenuItem(this, "FULLSCREEN(&F)", 1,
 			onFullScreenMenuItemClick, false));
 
+		displayMenu.add(new MenuItem(this, "-"));
+
+		displayMenu.add(this.resetWindowSizeMenuItem = new KAGMenuItem(this, "DEFAULT SIZE(&R)", 0,
+			/**/           onResetWindowSizeMenuItemClick, false));
+		displayMenu.add(this.disableWindowResizeMenuItem = new KAGMenuItem(this, "DISABLE RESIZE(&Z)", 0,
+			/**/           onDisableWinwodResizeMenuItemClick, false));
+
 	menu.add(this.skipToNextStopMenuItem = new KAGMenuItem(this, "SKIP(F6)", 0, onSkipToNextStopMenuItemClick, false));
 	menu.add(this.showHistoryMenuItem = new KAGMenuItem(this, "BACKLOG(F7)", 0, onShowHistoryMenuItemClick, false));
 	menu.add(this.autoModeMenuItem = new KAGMenuItem(this, "AUTO(F8)", 0, onAutoModeMenuItemClick, false));

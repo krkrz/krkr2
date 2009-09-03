@@ -412,11 +412,15 @@ function uiloadEntry(layer, names, dic, elm, table, evals, order)
 }
 
 function uiloadGetRect(tag, result) {
-	if (tag.indexOf(".") < 0)
+	if (tag.indexOf(".") < 0) {
+		if (result[tag] === void) return void;
 		with (result[tag]) return %[x:.x, y:.y, w:.width, h:.height, ox:0, oy:0];
+	}
 	var div = tag.split(".");
 	var p = result[div[0]];
+	if (p === void) return void;
 	var s = p.uistates[div[1]];
+	if (s === void) return void;
 	return %[x:p.x + s.ox, y:p.y + s.oy, w:s.w, h:s.h, ox:s.ox, oy:s.oy];
 }
 function uiloadSetRect(target, rect, brect, x, y, w, h) {
