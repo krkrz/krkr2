@@ -220,3 +220,12 @@ dm("ウィンドウ指定モニタ取得テスト");
 TestGetMonitorInfo("true",   testWin);
 TestGetMonitorInfo("false",  testWin);
 
+var testPad = new Pad();
+testPad.onClose = function { System.inform("onClose"); };
+testPad.visible=true;
+testPad.registerExEvent();
+testPad.borderStyle = bsToolWindow;
+testPad.registerExEvent();
+
+var testPad2 = new Pad();
+testPad2.registerExEvent();
