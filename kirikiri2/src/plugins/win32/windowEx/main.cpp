@@ -935,6 +935,129 @@ NCB_ATTACH_FUNCTION_WITHTAG(bringAfter,      Debug_console, Debug.console, Conso
 
 
 ////////////////////////////////////////////////////////////////
+struct PadEx
+{
+	struct SearchWork {
+		ttstr name, title;
+		HWND result;
+	};
+	static BOOL CALLBACK SearchWindowClassAndTitle(HWND hwnd, LPARAM lp) {
+		SearchWork *wk = (SearchWork*)lp;
+		tjs_char name[CLASSNAME_MAX];
+		::GetClassNameW(hwnd, name, CLASSNAME_MAX);
+		name[CLASSNAME_MAX-1] = 0;
+		if (wk->name == ttstr(name)) {
+			::GetWindowTextW(hwnd, name, CLASSNAME_MAX);
+			if (wk->title == ttstr(name)) {
+				wk->result = hwnd;
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
+	static HWND GetHWND(iTJSDispatch2 *obj) {
+		tTJSVariant val, _uuid;
+		TVPExecuteExpression(TJS_W("System.createUUID()"), &_uuid);
+		obj->PropGet(0, TJS_W("title"), 0, &val,   obj);
+		obj->PropSet(0, TJS_W("title"), 0, &_uuid, obj);
+
+		SearchWork wk = { TJS_W("TTVPPadForm"), _uuid, NULL };
+		::EnumThreadWindows(GetCurrentThreadId(), SearchWindowClassAndTitle, (LPARAM)&wk);
+		obj->PropSet(0, TJS_W("title"), 0, &val, obj);
+		return wk.result;
+	}
+
+
+	// メンバが存在するか
+	bool hasMember(tjs_char const *name) const {
+		tTJSVariant func;
+		return TJS_SUCCEEDED(self->PropGet(TJS_MEMBERMUSTEXIST, name, 0, &func, self));
+	}
+
+	// TJSメソッド呼び出し
+	tjs_error funcCall(tjs_char const *name, tTJSVariant *result, tjs_int numparams = 0, tTJSVariant **params = 0) const {
+		return self->FuncCall(0, name, 0, result, numparams, params, self);
+	}
+
+	// 引数なしコールバック
+	bool callback(tjs_char const *name) const {
+		if (!hasMember(name)) return false;
+		tTJSVariant rslt;
+		funcCall(name, &rslt, 0, 0);
+		return !!rslt.AsInteger();
+	}
+
+	void onClose() { callback(TJS_W("onClose")); }
+
+
+	PadEx(iTJSDispatch2 *obj) : self(obj), hwnd(0) {}
+	~PadEx()                { regist(false); }
+	void registerExEvents() { regist(true);  }
+
+	// 登録・解除
+	void regist(bool en) {
+		HWND now = en ? GetHWND(self) : NULL;
+		bool same = (now == hwnd && now != NULL);
+		if (hwnd != NULL && (!en || !same)) {
+			if (OrigWndProc != NULL && hwnd != NULL && ::IsWindow(hwnd)) {
+				// WndProc戻し
+				WNDPROC proc =     (WNDPROC)::GetWindowLong(hwnd, GWL_WNDPROC);
+				if (proc == HookWindowProc) ::SetWindowLong(hwnd, GWL_WNDPROC, (LONG)OrigWndProc);
+				// UserData戻し
+				LONG ud =              ::GetWindowLong(hwnd, GWL_USERDATA);
+				if ( ud == (LONG)this) ::SetWindowLong(hwnd, GWL_USERDATA, 0);
+			}
+		}
+		hwnd = now;
+		if (!en) return;
+		if (hwnd == NULL) TVPThrowExceptionMessage(TJS_W("Cannot get Pad window handle."));
+
+		LONG ud = ::GetWindowLong(hwnd, GWL_USERDATA);
+		if (!ud)  ::SetWindowLong(hwnd, GWL_USERDATA, (LONG)this);
+		else if (ud != (LONG)this) TVPThrowExceptionMessage(TJS_W("Cannot set Pad user data."));
+
+		WNDPROC proc = (WNDPROC)::GetWindowLong(hwnd, GWL_WNDPROC);
+		if (proc != HookWindowProc) {
+			if (OrigWndProc == NULL) OrigWndProc = proc;
+			else if (proc != OrigWndProc) TVPThrowExceptionMessage(TJS_W("Cannot set Pad proc."));
+			::SetWindowLong(hwnd, GWL_WNDPROC, (LONG)HookWindowProc);
+		}
+	}
+	static LRESULT CALLBACK HookWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+		if (uMsg == WM_SYSCOMMAND) {
+			PadEx *self = (PadEx*)::GetWindowLong(hwnd, GWL_USERDATA);
+			if (self != NULL) {
+				switch (wParam & 0xFFF0) {
+				case SC_CLOSE: self->onClose(); break;
+				}
+			}
+		}
+		return (OrigWndProc ? OrigWndProc(hwnd, uMsg, wParam, lParam)
+				:         ::DefWindowProc(hwnd, uMsg, wParam, lParam));
+	}
+
+private:
+	iTJSDispatch2 *self;
+	HWND hwnd;
+	static WNDPROC OrigWndProc;
+};
+WNDPROC PadEx::OrigWndProc = 0;
+
+NCB_GET_INSTANCE_HOOK(PadEx)
+{
+	/**/  NCB_GET_INSTANCE_HOOK_CLASS () {}
+	/**/ ~NCB_GET_INSTANCE_HOOK_CLASS () {}
+	NCB_INSTANCE_GETTER(objthis) {
+		ClassT* obj = GetNativeInstance(objthis);
+		if (!obj) SetNativeInstance(objthis, (obj = new ClassT(objthis)));
+		return obj;
+	}
+};
+NCB_ATTACH_CLASS_WITH_HOOK(PadEx, Pad)
+{
+	Method(     TJS_W("registerExEvent"),     &Class::registerExEvents);
+}
+////////////////////////////////////////////////////////////////
 
 struct System
 {
