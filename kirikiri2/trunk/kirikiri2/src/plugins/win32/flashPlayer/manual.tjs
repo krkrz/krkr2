@@ -1,0 +1,134 @@
+/**
+ * 擬似記述マニュアル
+ */
+
+class FlashPlayer {
+
+    /**
+	 * コンストラクタ
+	 * @param width プレイヤー横幅
+	 * @param height プレイヤー縦幅
+	 */
+	function FlashPlayer(width, height);
+
+	/**
+	 * プレイヤーサイズの変更
+	 * @param width
+	 * @param height
+	 */
+	function setSize(width, height);
+
+	/**
+	 * レイヤに対して現在の描画内容を出力する。レイヤのサイズが小さい場合はトリミングされます
+	 * @param layer 対象レイヤ
+	 * @param onlyUpdate true:前回からの更新領域のみ書き出す false:全画面書き出す
+	 */
+	function draw(layer, onlyUpdate=false);
+
+	/**
+	 * マウスメッセージ投入
+	 */
+
+	/**
+	 * キーボードメッセージ投入
+	 */
+
+	// -------------------------------------------------
+	// イベント
+	// -------------------------------------------------
+
+	/*
+	 * 描画内容が更新された場合に呼び出されるイベント
+	 * 通常はこのイベントがきた場合に draw() で描画内容を取得します
+	 */
+	function onUpdateFrame();
+
+	// -------------------------------------------------
+	// プロパティ
+	// -------------------------------------------------
+
+	/**
+	 * ReadOnly
+	 */
+	property readyState;
+
+	/**
+	 * ReadOnly
+	 */
+	property totalFrames;
+
+	property playing;
+
+	property quality;
+	property scaleMode;
+	property alighMode;
+	property backgroundColor;
+	property loop;
+	property movie;
+	property frameNum;
+
+	// -------------------------------------------------
+	// 制御コマンド
+	// -------------------------------------------------
+
+	/**
+	 * @param left
+	 * @param top
+	 * @param right
+	 * @param bottom
+	 * @return 成功したらtrue
+	 */
+	function setZoomRect(left, top, right, bottom);
+
+	/**
+	 * @param factor
+	 * @return 成功したらtrue
+	 */
+	function zoom(factor);
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param mode
+	 * @return 成功したらtrue
+	 */
+	function pan(x, y, mode);
+
+	/**
+	 * @return 成功したらtrue
+	 */
+	function play();
+	
+	/**
+	 * @return 成功したらtrue
+	 */
+	function stop();
+
+
+	/**
+	 * @return 成功したらtrue
+	 */
+	function back();
+
+
+	/**
+	 * @return 成功したらtrue
+	 */
+	function forward();
+
+	/**
+	 * @return 成功したらtrue
+	 */
+	function rewind();
+
+	/**
+	 * @return 成功したらtrue
+	 */
+	function stopPlay();
+
+	/**
+	 * @param frameNum
+	 * @return 成功したらtrue
+	 */
+	function gotoFrame(frameNum);
+};
