@@ -726,10 +726,6 @@ protected:
 		}
 
 		control->PutWMode(L"transparent");
-		//control->PutScale(L"showAll");
-		//control->PutBackgroundColor(0x00000000);
-		//control->PutEmbedMovie(FALSE);
-
 		setSize(width, height);
 		
 		if (FAILED(oleobj->DoVerb(OLEIVERB_SHOW, NULL, (IOleClientSite *)this, 0, NULL, NULL))) {
