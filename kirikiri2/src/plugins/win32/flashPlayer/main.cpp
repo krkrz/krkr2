@@ -624,24 +624,131 @@ public:
 		return TJS_S_OK;
 	}
 	
-	// XXX マウス入力他差し替え処理を作る
-	LRESULT sendMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) {
-		if (uMsg == WM_MOUSEMOVE || uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP || uMsg == WM_LBUTTONDBLCLK
-			|| uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP || uMsg == WM_RBUTTONDBLCLK
-			|| uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP || uMsg == WM_MBUTTONDBLCLK
-			|| uMsg == WM_MOUSEWHEEL 
-			|| uMsg == WM_KEYDOWN || uMsg == WM_KEYUP || uMsg == WM_CHAR
-			|| uMsg == WM_SETCURSOR
-			)
-		{
+	/**
+	 * キーダウンの通知
+	 * @param key キーコード
+	 * @return 処理されたら true
+	 */
+	bool doKeyDown(int key) {
+		if (windowless) {
 			LRESULT res;
-			if (SUCCEEDED(windowless->OnWindowMessage(uMsg, wParam, lParam, &res))) {
-				return res;
-			}
+			return SUCCEEDED(windowless->OnWindowMessage(WM_KEYDOWN, key, 0, &res));
 		}
-		return 0;
+		return false;
 	}
 
+	/**
+	 * キーアップの通知
+	 * @param key キーコード
+	 * @return 処理されたら true
+	 */
+	bool doKeyUp(int key) {
+		if (windowless) {
+			LRESULT res;
+			return SUCCEEDED(windowless->OnWindowMessage(WM_KEYUP, key, 0, &res));
+		}
+		return false;
+	}
+
+	/**
+	 * マウスが領域に入った通知
+	 */
+	void doMouseEnter() {
+		mousemap = 0;
+	}
+
+	/**
+	 * マウスが領域から出た通知
+	 */
+	void doMouseLeave() {
+		mousemap = 0;
+	}
+
+	/**
+	 * マウスキーおしさげ通知
+	 * @param x 座標
+	 * @param y 座標
+	 * @param button 押し下げたボタン
+	 * @param shift シフト状態
+	 * @return 処理されたら true
+	 */
+	bool doMouseDown(int x, int y, int button, int shift) {
+		if (windowless) {
+			UINT uMsg;
+			switch (button) {
+			case mbLeft:   uMsg = WM_LBUTTONDOWN; mousemap |= MK_LBUTTON; break;
+			case mbMiddle: uMsg = WM_MBUTTONDOWN; mousemap |= MK_MBUTTON; break;
+			case mbRight:  uMsg = WM_RBUTTONDOWN; mousemap |= MK_RBUTTON; break;
+			default: return false;
+			}
+			WPARAM wParam = getMouseShift(shift);
+			LPARAM lParam = MAKELONG(x, y);
+			LRESULT res;
+			return SUCCEEDED(windowless->OnWindowMessage(uMsg, wParam, lParam, &res));
+		}
+		return false;
+	}
+
+	/**
+	 * マウス移動通知
+	 * @param x 座標
+	 * @param y 座標
+	 * @param shift シフト状態
+	 * @return 処理されたら true
+	 */
+	bool doMouseMove(int x, int y, int shift) {
+		if (windowless) {
+			WPARAM wParam = getMouseShift(shift);
+			LPARAM lParam = MAKELONG(x, y);
+			LRESULT res;
+			bool ret = SUCCEEDED(windowless->OnWindowMessage(WM_MOUSEMOVE, wParam, lParam, &res));
+			return ret;
+		}
+		return false;
+	}
+	
+	/**
+	 * マウスキーおしあげ通知
+	 * @param x 座標
+	 * @param y 座標
+	 * @param button 押し上げたボタン
+	 * @param shift シフト状態
+	 * @return 処理されたら true
+	 */
+	bool doMouseUp(int x, int y, int button, int shift) {
+		if (windowless) {
+			UINT uMsg;
+			switch (button) {
+			case mbLeft:   uMsg = WM_LBUTTONUP; mousemap &= ~MK_LBUTTON; break;
+			case mbMiddle: uMsg = WM_MBUTTONUP; mousemap &= ~MK_MBUTTON; break;
+			case mbRight:  uMsg = WM_RBUTTONUP; mousemap &= ~MK_RBUTTON; break;
+			default: return false;
+			}
+			WPARAM wParam = getMouseShift(shift);
+			LPARAM lParam = MAKELONG(x, y);
+			LRESULT res;
+			return SUCCEEDED(windowless->OnWindowMessage(uMsg, wParam, lParam, &res));
+		}
+		return false;
+	}
+
+	/**
+	 * マウスホイール通知
+	 * @param shift シフト状態
+	 * @param delta ホイール回転量
+	 * @param x 座標
+	 * @param y 座標
+	 * @return 処理されたら true
+	 */
+	bool doMouseWheel(int shift, int delta, int x, int y) {
+		if (windowless) {
+			WPARAM wParam = MAKEWORD(getMouseShift(shift), (WORD)delta);
+			LPARAM lParam = MAKELONG(x, y);
+			LRESULT res;
+			return SUCCEEDED(windowless->OnWindowMessage(WM_MOUSEWHEEL, wParam, lParam, &res));
+		}
+		return false;
+	}
 	
 public:
 	//interface methods
@@ -873,6 +980,13 @@ protected:
 		return TRUE;
 	}
 
+	/**
+	 * シフト状態処理用
+	 */
+	WORD getMouseShift(int shift) {
+		return mousemap | ((shift & TVP_SS_SHIFT) ? MK_SHIFT : 0) | ((shift & TVP_SS_CTRL) ? MK_CONTROL : 0);
+	}
+	
 private:
 	iTJSDispatch2 *objthis; ///< 自己オブジェクト情報の参照
 	int refCount; ///< リファレンスカウント
@@ -896,6 +1010,9 @@ private:
 	HDC hdc;
 	HBITMAP bmp;
 	BYTE *pixels;
+
+	WORD mousemap; //< マウス入力状態
+
 };
 
 NCB_REGISTER_CLASS(FlashPlayer) {
@@ -903,6 +1020,14 @@ NCB_REGISTER_CLASS(FlashPlayer) {
 	NCB_METHOD(setSize);
 	NCB_METHOD(hitTest);
 	RawCallback(TJS_W("draw"), &Class::draw, 0);
+	NCB_METHOD(doKeyDown);
+	NCB_METHOD(doKeyUp);
+	NCB_METHOD(doMouseEnter);
+	NCB_METHOD(doMouseLeave);
+	NCB_METHOD(doMouseDown);
+	NCB_METHOD(doMouseMove);
+	NCB_METHOD(doMouseUp);
+	NCB_METHOD(doMouseWheel);
 
 	NCB_PROPERTY_RO(readyState, getReadyState);
 	NCB_PROPERTY_RO(totalFrames, getTotalFrames);
