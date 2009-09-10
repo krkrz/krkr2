@@ -47,15 +47,8 @@ class FlashPlayer {
 	// プロパティ
 	// -------------------------------------------------
 
-	/**
-	 * ReadOnly
-	 */
-	property readyState;
-
-	/**
-	 * ReadOnly
-	 */
-	property totalFrames;
+	property readyState; // RO
+	property totalFrames; // RO
 
 	property playing;
 
@@ -67,6 +60,28 @@ class FlashPlayer {
 	property movie;
 	property frameNum;
 
+	property currentFrame; // RO
+	property percentLoaded; // RO
+	property flashVersion; // RO
+
+	property sAlign;
+	property menu;
+	property base;
+	property scale;
+	property deviceFont;
+	property embedMovie;
+	property bgColor;
+	property quality2;
+
+	property swRemote;
+	property flashVars;
+	property allowScriptAccess;
+	property movieData;
+	property seamlessTabbing;
+	property profile;
+	property profileAddress;
+	property profilePort;
+	
 	// -------------------------------------------------
 	// 制御コマンド
 	// -------------------------------------------------
@@ -131,4 +146,27 @@ class FlashPlayer {
 	 * @return 成功したらtrue
 	 */
 	function gotoFrame(frameNum);
+
+	function isPlaying();
+	function getFrameLoaded(frameNum)
+	function loadMovie(layer, url);
+	function tGotoFrame(target, frameNum);
+	function tGotoLabel(target, label);
+	function tCurrentFrame(target);
+	function tCurrentLabel(target);
+	function tPlay(target);
+	function tStopPlay(target);
+	function setVariable(name, value);
+	function getVariable(name);
+	function tSetProperty(target, prop, value);
+	function tGetProperty(target, prop);
+	function tCallFrame(target, frameNum);
+	function tCallLabel(target, label);
+	function tSetPropertyNum(target, prop, num);
+	function tGetPropertyNum(target, prop);
+	function enforceLocalSecurity();
+	function callFunction(request);
+	function setReturnValue(returnValue);
+	function disableLocalSecurity();
+
 };

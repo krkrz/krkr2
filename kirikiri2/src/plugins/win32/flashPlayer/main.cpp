@@ -222,123 +222,262 @@ public:
 		return SUCCEEDED(control->GotoFrame(frameNum));
 	}
 
-#if 0
-	long CurrentFrame();
-    VARIANT_BOOL IsPlaying();
-    long PercentLoaded();
-    VARIANT_BOOL FrameLoaded (
-        long FrameNum );
-    long FlashVersion();
-    _bstr_t GetWMode();
-    void PutWMode (
-        _bstr_t pVal );
-    _bstr_t GetSAlign();
-    void PutSAlign (
-        _bstr_t pVal );
-    VARIANT_BOOL GetMenu();
-    void PutMenu (
-        VARIANT_BOOL pVal );
-    _bstr_t GetBase();
-    void PutBase (
-        _bstr_t pVal );
-    _bstr_t GetScale();
-    void PutScale (
-        _bstr_t pVal );
-    VARIANT_BOOL GetDeviceFont();
-    void PutDeviceFont (
-        VARIANT_BOOL pVal );
-    VARIANT_BOOL GetEmbedMovie();
-    void PutEmbedMovie (
-        VARIANT_BOOL pVal );
-    _bstr_t GetBGColor();
-    void PutBGColor (
-        _bstr_t pVal );
-    _bstr_t GetQuality2();
-    void PutQuality2 (
-        _bstr_t pVal );
-#endif
+	long getCurrentFrame() {
+		CHECK;
+		return control->CurrentFrame();
+	}
+
+	bool isPlaying() {
+		CHECK;
+		return control->IsPlaying() != VARIANT_FALSE;
+	}
+
+	long getPercentLoaded() {
+		CHECK;
+		return control->PercentLoaded();
+	}
+	
+	bool getFrameLoaded(long frameNum) {
+		CHECK;
+		return control->FrameLoaded(frameNum) != VARIANT_FALSE;
+	}
+
+	long getFlashVersion() {
+		CHECK;
+		return control->FlashVersion();
+	}
+	
+	ttstr getSAlign() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetSAlign());
+	}
+	void setSAlign(const tjs_char *val) {
+		CHECK;
+		control->PutSAlign(val);
+	}
+
+	bool getMenu() {
+		CHECK;
+		return control->GetMenu() != VARIANT_FALSE;
+	}
+	void setMenu(bool val) {
+		CHECK;
+		control->PutMenu(val);
+	}
+	
+	ttstr getBase() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetBase());
+	}
+	void setBase(const tjs_char *val) {
+		CHECK;
+		control->PutBase(val);
+	}
+
+	ttstr getScale() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetScale());
+	}
+	void setScale(const tjs_char *val) {
+		CHECK;
+		control->PutScale(val);
+	}
+
+	bool getDeviceFont() {
+		CHECK;
+		return control->GetDeviceFont() != VARIANT_FALSE;
+	}
+	void setDeviceFont(bool val) {
+		CHECK;
+		control->PutDeviceFont(val);
+	}
+
+	bool getEmbedMovie() {
+		CHECK;
+		return control->GetEmbedMovie() != VARIANT_FALSE;
+	}
+	void setEmbedMovie(bool val) {
+		CHECK;
+		control->PutEmbedMovie(val);
+	}
+
+	ttstr getBgColor() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetBGColor());
+	}
+	void setBgColor(const tjs_char *val) {
+		CHECK;
+		control->PutBGColor(val);
+	}
+
+	ttstr getQuality2() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetQuality2());
+	}
+	void setQuality2(const tjs_char *val) {
+		CHECK;
+		control->PutQuality2(val);
+	}
 	
 	bool loadMovie(int layer, const tjs_char *url) {
+		CHECK;
 		return SUCCEEDED(control->LoadMovie(layer, url));
 	}
 
-#if 0
-    HRESULT TGotoFrame (
-        _bstr_t target,
-        long FrameNum );
-    HRESULT TGotoLabel (
-        _bstr_t target,
-        _bstr_t label );
-    long TCurrentFrame (
-        _bstr_t target );
-    _bstr_t TCurrentLabel (
-        _bstr_t target );
-    HRESULT TPlay (
-        _bstr_t target );
-    HRESULT TStopPlay (
-        _bstr_t target );
-    HRESULT SetVariable (
-        _bstr_t name,
-        _bstr_t value );
-    _bstr_t GetVariable (
-        _bstr_t name );
-    HRESULT TSetProperty (
-        _bstr_t target,
-        int property,
-        _bstr_t value );
-    _bstr_t TGetProperty (
-        _bstr_t target,
-        int property );
-    HRESULT TCallFrame (
-        _bstr_t target,
-        int FrameNum );
-    HRESULT TCallLabel (
-        _bstr_t target,
-        _bstr_t label );
-    HRESULT TSetPropertyNum (
-        _bstr_t target,
-        int property,
-        double value );
-    double TGetPropertyNum (
-        _bstr_t target,
-        int property );
-    double TGetPropertyAsNumber (
-        _bstr_t target,
-        int property );
-    _bstr_t GetSWRemote ( );
-    void PutSWRemote (
-        _bstr_t pVal );
-    _bstr_t GetFlashVars ( );
-    void PutFlashVars (
-        _bstr_t pVal );
-    _bstr_t GetAllowScriptAccess ( );
-    void PutAllowScriptAccess (
-        _bstr_t pVal );
-    _bstr_t GetMovieData ( );
-    void PutMovieData (
-        _bstr_t pVal );
-    IUnknownPtr GetInlineData ( );
-    void PutInlineData (
-        IUnknown * ppIUnknown );
-    VARIANT_BOOL GetSeamlessTabbing ( );
-    void PutSeamlessTabbing (
-        VARIANT_BOOL pVal );
-    HRESULT EnforceLocalSecurity ( );
-    VARIANT_BOOL GetProfile ( );
-    void PutProfile (
-        VARIANT_BOOL pVal );
-    _bstr_t GetProfileAddress ( );
-    void PutProfileAddress (
-        _bstr_t pVal );
-    long GetProfilePort ( );
-    void PutProfilePort (
-        long pVal );
-    _bstr_t CallFunction (
-        _bstr_t request );
-    HRESULT SetReturnValue (
-        _bstr_t returnValue );
-    HRESULT DisableLocalSecurity ( );
-#endif
+	bool tGotoFrame(const tjs_char *target, long frameNum) {
+		CHECK;
+		return SUCCEEDED(control->TGotoFrame(target, frameNum));
+	}
+	bool tGotoLabel(const tjs_char *target, const tjs_char *label) {
+		CHECK;
+		return SUCCEEDED(control->TGotoLabel(target, label));
+	}
+	long tCurrentFrame(const tjs_char *target) {
+		CHECK;
+		return control->TCurrentFrame(target);
+	}
+
+	ttstr tCurrentLabel(const tjs_char *target) {
+		CHECK;
+		return ttstr((const wchar_t*)control->TCurrentLabel(target));
+	}
+
+	bool tPlay(const tjs_char *target) {
+		CHECK;
+		return SUCCEEDED(control->TPlay(target));
+	}
+	bool tStopPlay(const tjs_char *target) {
+		CHECK;
+		return SUCCEEDED(control->TStopPlay(target));
+	}
+
+	bool setVariable(const tjs_char *name, const tjs_char *value) {
+		CHECK;
+		return SUCCEEDED(control->SetVariable(name, value));
+	}
+	ttstr getVariable(const tjs_char *name) {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetVariable(name));
+	}
+
+	bool tSetProperty(const tjs_char *target, int property, const tjs_char *value) {
+		CHECK;
+		return SUCCEEDED(control->TSetProperty (target, property, value));
+	}
+	ttstr tGetProperty(const tjs_char *target, int property) {
+		CHECK;
+		return ttstr((const wchar_t*)control->TGetProperty(target, property));
+	}
+
+	bool tCallFrame(const tjs_char *target, int frameNum) {
+		CHECK;
+		return SUCCEEDED(control->TCallFrame(target, frameNum));
+	}
+	bool tCallLabel(const tjs_char *target, const tjs_char *label) {
+		CHECK;
+		return SUCCEEDED(control->TCallLabel(target, label));
+	}
+
+	bool tSetPropertyNum(const tjs_char *target, int property, double num) {
+		CHECK;
+		return SUCCEEDED(control->TSetPropertyNum (target, property, num));
+	}
+	double tGetPropertyNum(const tjs_char *target, int property) {
+		CHECK;
+		return control->TGetPropertyNum(target, property);
+	}
+	
+	ttstr getSWRemote() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetSWRemote());
+	}
+	void setSWRemote(const tjs_char *val) {
+		CHECK;
+		control->PutSWRemote(val);
+	}
+
+	ttstr getFlashVars() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetFlashVars());
+	}
+	void setFlashVars(const tjs_char *val) {
+		CHECK;
+		control->PutFlashVars(val);
+	}
+
+	ttstr getAllowScriptAccess() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetAllowScriptAccess());
+	}
+	void setAllowScriptAccess(const tjs_char *val) {
+		CHECK;
+		control->PutAllowScriptAccess(val);
+	}
+
+	ttstr getMovieData() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetMovieData());
+	}
+	void setMovieData(const tjs_char *val) {
+		CHECK;
+		control->PutMovieData(val);
+	}
+
+	bool getSeamlessTabbing() {
+		CHECK;
+		return control->GetSeamlessTabbing() != VARIANT_FALSE;
+	}
+	void setSeamlessTabbing(bool val) {
+		CHECK;
+		control->PutSeamlessTabbing(val ? VARIANT_TRUE : VARIANT_FALSE);
+	}
+
+	bool enforceLocalSecurity() {
+		CHECK;
+		return SUCCEEDED(control->EnforceLocalSecurity());
+	}
+
+	bool getProfile() {
+		CHECK;
+		return control->GetProfile() != VARIANT_FALSE;
+	}
+	void setProfile(bool val) {
+		CHECK;
+		control->PutProfile(val ? VARIANT_TRUE : VARIANT_FALSE);
+	}
+
+	ttstr getProfileAddress() {
+		CHECK;
+		return ttstr((const wchar_t*)control->GetProfileAddress());
+	}
+	void setProfileAddress(const tjs_char *val) {
+		CHECK;
+		control->PutProfileAddress(val);
+	}
+
+	int getProfilePort() {
+		CHECK;
+		return control->GetProfilePort();
+	}
+	void setProfilePort(int val) {
+		CHECK;
+		control->PutProfilePort(val);
+	}
+
+	ttstr callFunction (const tjs_char *request) {
+		CHECK;
+		return ttstr((const wchar_t*)control->CallFunction(request));
+	}
+
+	bool setReturnValue(const tjs_char *ret) {
+		CHECK;
+		return SUCCEEDED(control->SetReturnValue(ret));
+	}
+	
+	bool disableLocalSecurity() {
+		CHECK;
+		return SUCCEEDED(control->DisableLocalSecurity());
+	}
 	
 	/**
 	 * サイズを指定
@@ -786,7 +925,56 @@ NCB_REGISTER_CLASS(FlashPlayer) {
 	NCB_METHOD(rewind);
 	NCB_METHOD(stopPlay);
 	NCB_METHOD(gotoFrame);
+
+	NCB_PROPERTY_RO(currentFrame, getCurrentFrame);
+	NCB_METHOD(isPlaying);
+	NCB_PROPERTY_RO(percentLoaded, getPercentLoaded);
+
+	NCB_METHOD(getFrameLoaded);
+	NCB_PROPERTY_RO(flashVersion, getFlashVersion);
+	NCB_PROPERTY(sAlign, getSAlign, setSAlign);
+		
+	NCB_PROPERTY(menu, getMenu, setMenu);
+	NCB_PROPERTY(base, getBase, setBase);
+	NCB_PROPERTY(scale, getScale, setScale);
+	NCB_PROPERTY(deviceFont, getDeviceFont, setDeviceFont);
+	NCB_PROPERTY(embedMovie, getEmbedMovie, setEmbedMovie);
+	NCB_PROPERTY(bgColor, getBgColor, setBgColor);
+	NCB_PROPERTY(quality2, getQuality2, setQuality2);
+
 	NCB_METHOD(loadMovie);
+
+	NCB_METHOD(tGotoFrame);
+	NCB_METHOD(tGotoLabel);
+	NCB_METHOD(tCurrentFrame);
+	NCB_METHOD(tCurrentLabel);
+	NCB_METHOD(tPlay);
+	NCB_METHOD(tStopPlay);
+	NCB_METHOD(setVariable);
+	NCB_METHOD(getVariable);
+	NCB_METHOD(tSetProperty);
+	NCB_METHOD(tGetProperty);
+	NCB_METHOD(tCallFrame);
+	NCB_METHOD(tCallLabel);
+	NCB_METHOD(tSetPropertyNum);
+	NCB_METHOD(tGetPropertyNum);
+
+	NCB_PROPERTY(swRemote, getSWRemote, setSWRemote);
+	NCB_PROPERTY(flashVars, getFlashVars, setFlashVars);
+	NCB_PROPERTY(allowScriptAccess, getAllowScriptAccess, setAllowScriptAccess);
+	
+	NCB_PROPERTY(movieData, getMovieData, setMovieData);
+	NCB_PROPERTY(seamlessTabbing, getSeamlessTabbing, setSeamlessTabbing);
+
+	NCB_METHOD(enforceLocalSecurity);
+
+	NCB_PROPERTY(profile, getProfile, setProfile);
+	NCB_PROPERTY(profileAddress, getProfileAddress, setProfileAddress);
+	NCB_PROPERTY(profilePort, getProfilePort, setProfilePort);
+
+	NCB_METHOD(callFunction);
+	NCB_METHOD(setReturnValue);
+	NCB_METHOD(disableLocalSecurity);
 };
 
 //---------------------------------------------------------------------------
