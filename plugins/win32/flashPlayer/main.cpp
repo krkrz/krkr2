@@ -562,11 +562,6 @@ public:
 		return ttstr((const wchar_t*)control->CallFunction(request));
 	}
 
-	bool setReturnValue(const tjs_char *ret) {
-		CHECK;
-		return SUCCEEDED(control->SetReturnValue(ret));
-	}
-	
 	bool disableLocalSecurity() {
 		CHECK;
 		return SUCCEEDED(control->DisableLocalSecurity());
@@ -1086,10 +1081,12 @@ public:
 			break;
 		case 0xc5:
 			if (argc >= 1) {
+				// External API XXX
 				tTJSVariant param;
 				storeVariant(param, rargv[argc-1]);
-				static ttstr eventName(TJS_W("onFlashCall"));
-				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
+				//static ttstr eventName(TJS_W("onFlashCall"));
+				//TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
+				//control->SetReturnValue(ret));
 				return S_OK;
 			}
 			break;
@@ -1265,7 +1262,6 @@ NCB_REGISTER_CLASS(FlashPlayer) {
 	NCB_PROPERTY(profilePort, getProfilePort, setProfilePort);
 
 	NCB_METHOD(callFunction);
-	NCB_METHOD(setReturnValue);
 	NCB_METHOD(disableLocalSecurity);
 };
 
