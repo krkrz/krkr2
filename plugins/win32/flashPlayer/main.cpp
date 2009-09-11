@@ -571,13 +571,62 @@ public:
 		CHECK;
 		return SUCCEEDED(control->DisableLocalSecurity());
 	}
+
+	// --------------------------------------------------
+	// プレイヤー制御
+	// --------------------------------------------------
+
+	/**
+	 * 指定した吉里吉里のファイルを動画とみなして初期化する
+	 * @param storage 吉里吉里のファイル
+	 * @return 読み込みに成功したら true
+	 */
+	bool initMovie(const tjs_char *storage) {
+		bool ret = false;
+		if (oleobj) {
+			IPersistStreamInit * psStreamInit = 0;
+			if (SUCCEEDED(oleobj->QueryInterface(::IID_IPersistStreamInit,  (LPVOID*)&psStreamInit))) {
+				if (SUCCEEDED(psStreamInit->InitNew())) {
+					IStream *in = TVPCreateIStream(storage, TJS_BS_READ);
+					if (in) {
+						STATSTG stat;
+						in->Stat(&stat, STATFLAG_NONAME);
+						// サイズあふれ無視XXX
+						ULONG size = (ULONG)stat.cbSize.QuadPart;
+						HGLOBAL hBuffer = ::GlobalAlloc(GMEM_MOVEABLE, size + 8);
+						if (hBuffer)	{
+							unsigned char* pBuffer = (unsigned char*)::GlobalLock(hBuffer);
+							if (pBuffer) {
+								memcpy(pBuffer, "fUfU", 4);
+								*(ULONG*)(pBuffer+4) = size;
+								if (in->Read(pBuffer+8, size, &size) == S_OK) {
+									IStream* pStream = NULL;
+									if(::CreateStreamOnHGlobal(hBuffer, FALSE, &pStream) == S_OK) 	{
+										if (SUCCEEDED(psStreamInit->Load(pStream))) {
+											ret = true;
+										}
+										pStream->Release();
+									}
+								}
+								::GlobalUnlock(hBuffer);
+							}
+							::GlobalFree(hBuffer);
+						}
+						in->Release();
+					}
+				}
+				psStreamInit->Release();
+			}
+		}
+		return ret;
+	}
 	
 	/**
 	 * サイズを指定
 	 * @param width 横幅
 	 * @param height 縦幅
 	 */
-	virtual void setSize(int width, int height) {
+	void setSize(int width, int height) {
 		RECT rect = {0,0,width,height};
 		if (windowless) {
 			windowless->SetObjectRects(&rect, &rect);
@@ -1134,6 +1183,7 @@ private:
 
 NCB_REGISTER_CLASS(FlashPlayer) {
 	Factory(&ClassT::factory);
+	NCB_METHOD(initMovie);
 	NCB_METHOD(setSize);
 	NCB_METHOD(hitTest);
 	RawCallback(TJS_W("draw"), &Class::draw, 0);
