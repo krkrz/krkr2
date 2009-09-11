@@ -243,7 +243,6 @@ class FlashPlayer {
 	function tGetPropertyNum(target, prop);
 	function enforceLocalSecurity();
 	function callFunction(request);
-	function setReturnValue(returnValue);
 	function disableLocalSecurity();
 
 	// -------------------------------------------------
@@ -264,9 +263,4 @@ class FlashPlayer {
 	 *
 	 */
 	function onFSCommand(command, args);
-
-	/**
-	 *
-	 */
-	function onFlashCall(request);
 };
