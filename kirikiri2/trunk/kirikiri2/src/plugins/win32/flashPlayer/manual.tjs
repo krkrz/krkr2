@@ -12,6 +12,13 @@ class FlashPlayer {
 	 */
 	function FlashPlayer(width, height);
 
+	/*
+	 * 指定した吉里吉里のファイルを動画として初期化する
+	 * @param storage 吉里吉里のファイル
+	 * @return 読み込みに成功したら true
+	 */
+	function initMovie(storage);
+	
 	/**
 	 * プレイヤーサイズの変更
 	 * @param width
@@ -210,8 +217,16 @@ class FlashPlayer {
 	function gotoFrame(frameNum);
 
 	function isPlaying();
-	function getFrameLoaded(frameNum)
+	function getFrameLoaded(frameNum);
+
+	/**
+	 * ムービーをロードする
+	 * @param layer
+	 * @param url ムービーのURL。
+	 * 吉里吉里のストレージ名ではなく、ローカルファイル名ないしネット上のファイルである必要があります。
+	 */
 	function loadMovie(layer, url);
+
 	function tGotoFrame(target, frameNum);
 	function tGotoLabel(target, label);
 	function tCurrentFrame(target);
