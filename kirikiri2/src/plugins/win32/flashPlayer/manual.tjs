@@ -242,7 +242,6 @@ class FlashPlayer {
 	function tSetPropertyNum(target, prop, num);
 	function tGetPropertyNum(target, prop);
 	function enforceLocalSecurity();
-	function callFunction(request);
 	function disableLocalSecurity();
 
 	// -------------------------------------------------
