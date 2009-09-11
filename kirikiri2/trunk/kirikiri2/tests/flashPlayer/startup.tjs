@@ -110,6 +110,7 @@ class MyWindow extends Window
 		with (layer) {
 			.setPos(0, 0);
 			.visible = true;
+			.initMovie("test.swf");
 		}
 		add(layer);
 		
@@ -120,8 +121,6 @@ class MyWindow extends Window
 			.visible = true;
 		}
 		add(layer2);
-		
-		layer.loadMovie(0, Storages.getLocalName(Storages.getPlacedPath("test.swf")));
 	}
 
 	// é¿çsïî
