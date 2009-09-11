@@ -118,6 +118,7 @@ class MyWindow extends Window
 		with (layer2) {
 			.setPos(0,0,WIDTH,HEIGHT);
 			.fillRect(WIDTH/4,HEIGHT/4,WIDTH/2,HEIGHT/2,0x80ffff00);
+			.drawText(20,20,"この文字と黄色の矩形は吉里吉里のレイヤに描画されています。フラッシュによるレイヤの上にも下にも配置できます",0x000000);
 			.visible = true;
 		}
 		add(layer2);
