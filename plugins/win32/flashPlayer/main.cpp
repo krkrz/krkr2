@@ -17,6 +17,99 @@ static void log(const tjs_char *format, ...)
 
 #import "c:\\windows\\system32\\macromed\\flash\\flash8g.ocx" named_guids
 
+static void
+storeVariant(tTJSVariant &result, VARIANT &variant)
+{
+	result.Clear();
+	switch (variant.vt) {
+	case VT_NULL:
+		result = (iTJSDispatch2*)NULL;
+		break;
+	case VT_I8:
+		result = variant.llVal;
+		break;
+	case VT_I4:
+		result = (tjs_int32)variant.lVal;
+		break;
+	case VT_UI1:
+		result = (tjs_int32)variant.bVal;
+		break;
+	case VT_I2:
+		result = (tjs_int32)variant.iVal;
+		break;
+	case VT_R4:
+		result = (double)variant.fltVal;
+		break;
+	case VT_R8:
+		result = variant.dblVal;
+		break;
+	case VT_BOOL:
+		result = (variant.boolVal == VARIANT_TRUE);
+		break;
+	case VT_BSTR:
+		result = variant.bstrVal;
+		break;
+	case VT_ARRAY | VT_UI1:
+		{
+			SAFEARRAY *psa = variant.parray;
+			unsigned char *p;
+			if (SUCCEEDED(SafeArrayAccessData(psa, (LPVOID*)&p))) {
+				// p;
+				//psa->rgsabound->cElements;
+				// XXX variant にどう入れよう？
+				SafeArrayUnaccessData(psa);
+			}
+		}
+		break;
+	case VT_UNKNOWN:
+	case VT_DISPATCH:
+		result = (iTJSDispatch2*)NULL;
+		break;
+	case VT_BYREF | VT_I8:
+		result = *variant.pllVal;
+		break;
+	case VT_BYREF | VT_I4:
+		result = (tjs_int32)*variant.plVal;
+		break;
+	case VT_BYREF | VT_UI1:
+		result = (tjs_int32)*variant.pbVal;
+		break;
+	case VT_BYREF | VT_I2:
+		result = (tjs_int32)*variant.piVal;
+		break;
+	case VT_BYREF | VT_R4:
+		result = *variant.pfltVal;
+		break;
+	case VT_BYREF | VT_R8:
+		result = *variant.pdblVal;
+		break;
+	case VT_BYREF | VT_BOOL:
+		result = (*variant.pboolVal == VARIANT_TRUE);
+		break;
+	case VT_BYREF | VT_BSTR:
+		result = *variant.pbstrVal;
+		break;
+	case VT_BYREF | VT_ARRAY | VT_UI1:
+		{
+			SAFEARRAY *psa = *(variant.pparray);
+			const tjs_uint8 *p;
+			if (SUCCEEDED(SafeArrayAccessData(psa, (LPVOID*)&p))) {
+				result = tTJSVariant(p, psa->rgsabound->cElements);
+				SafeArrayUnaccessData(psa);
+			}
+		}
+		break;
+	case VT_BYREF | VT_UNKNOWN:
+	case VT_BYREF | VT_DISPATCH:
+		result = (iTJSDispatch2*)NULL;
+		break;
+	case (VT_BYREF | VT_VARIANT):
+		storeVariant(result, *variant.pvarVal);
+	default:
+		;//log(L"unkown result type");
+	}
+}
+
 class FlashPlayer : public IOleClientSite,
 					public IOleInPlaceSiteWindowless,
 					public IOleInPlaceFrame,
@@ -906,31 +999,55 @@ public:
         /* [out][in] */ DISPPARAMS __RPC_FAR *pDispParams,
         /* [out] */ VARIANT __RPC_FAR *pVarResult,
         /* [out] */ EXCEPINFO __RPC_FAR *pExcepInfo,
-		/* [out] */ UINT __RPC_FAR *puArgErr) { return S_OK; }
+		/* [out] */ UINT __RPC_FAR *puArgErr) { 
 
-public:
-	//DShockwaveFlashEvents
-	HRESULT STDMETHODCALLTYPE OnReadyStateChange (long newState) {
-		tTJSVariant param(newState);
-		static ttstr eventName(TJS_W("onReadyStateChange"));
-		TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
-		return S_OK;
-	}
+		// _IShockwaveFlashEvents用に実装
 
-	HRESULT STDMETHODCALLTYPE OnProgress (long percentDone) {
-		tTJSVariant param(percentDone);
-		static ttstr eventName(TJS_W("onProgress"));
-		TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
-		return S_OK;
-	}
+		int      argc = pDispParams->cArgs;
+		VARIANT *rargv = pDispParams->rgvarg;
 
-	HRESULT STDMETHODCALLTYPE FSCommand (_bstr_t command, _bstr_t args) {
-		tTJSVariant params[2];
-		params[0] = (wchar_t*)command;
-		params[1] = (wchar_t*)args;
-		static ttstr eventName(TJS_W("onFSCommand"));
-		TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 2, params);
-		return S_OK;
+		switch (dispIdMember) {
+		case DISPID_READYSTATECHANGE:
+			if (argc >= 1) {
+				tTJSVariant param;
+				storeVariant(param, rargv[argc-1]);
+				static ttstr eventName(TJS_W("onReadyStateChange"));
+				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
+				return S_OK;
+			}
+			break;
+		case 0x7a6:
+			if (argc >= 1) {
+				tTJSVariant param;
+				storeVariant(param, rargv[argc-1]);
+				static ttstr eventName(TJS_W("onProgress"));
+				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
+				return S_OK;
+			}
+			break;
+		case 0x96:
+			if (argc >= 2) {
+				tTJSVariant params[2];
+				storeVariant(params[0], rargv[argc-1]);
+				storeVariant(params[1], rargv[argc-2]);
+				static ttstr eventName(TJS_W("onFSCommand"));
+				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 2, params);
+				return S_OK;
+			}
+			break;
+		case 0xc5:
+			if (argc >= 1) {
+				tTJSVariant param;
+				storeVariant(param, rargv[argc-1]);
+				static ttstr eventName(TJS_W("onFlashCall"));
+				TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
+				return S_OK;
+			}
+			break;
+		default:
+			return DISP_E_MEMBERNOTFOUND;
+		}
+		return NOERROR;
 	}
 
 protected:
@@ -1104,10 +1221,6 @@ NCB_REGISTER_CLASS(FlashPlayer) {
 
 //---------------------------------------------------------------------------
 
-// 吉里吉里のアーカイブにアクセスするための処理
-void registArchive();
-void unregistArchive();
-
 static BOOL gOLEInitialized = false;
 
 /**
@@ -1122,23 +1235,6 @@ static void PreRegistCallback()
 			log(L"OLE 初期化失敗");
 		}
 	}
-	
-	// アーカイブ処理
-//	registArchive();
-}
-
-/**
- * 登録処理後
- */
-static void PostRegistCallback()
-{
-}
-
-/**
- * 開放処理前
- */
-static void PreUnregistCallback()
-{
 }
 
 /**
@@ -1146,9 +1242,6 @@ static void PreUnregistCallback()
  */
 static void PostUnregistCallback()
 {
-	// アーカイブ終了
-//	unregistArchive();
-	
 	if (gOLEInitialized) {
 		OleUninitialize();
 		gOLEInitialized = false;
@@ -1157,6 +1250,4 @@ static void PostUnregistCallback()
 
 
 NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
-NCB_POST_REGIST_CALLBACK(PostRegistCallback);
-NCB_PRE_UNREGIST_CALLBACK(PreUnregistCallback);
 NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
