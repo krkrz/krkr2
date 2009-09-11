@@ -1,0 +1,138 @@
+Plugins.link("flashPlayer.dll");
+
+var WIDTH=800;
+var HEIGHT=600;
+
+function dm() {
+	Debug.message(...);
+}
+
+class FlashLayer extends Layer, FlashPlayer {
+
+	function FlashLayer(window, parent, width, height) {
+		global.Layer.Layer(window, parent);
+		global.Layer.setSize(width, height);
+		global.FlashPlayer.FlashPlayer(width, height);
+		hitThreshold = 0;
+	}
+
+	// -------------------------------------
+	// サイズ変更差し替え
+	// -------------------------------------
+
+	function setSize(width, height) {
+		global.Layer.setSize(width, height);
+		global.FlashPlayer.setSize(width, height);
+	}
+	
+	// -------------------------------------
+	// レイヤイベント処理部
+	// -------------------------------------
+
+	function onKeyDown(key) {
+		doKeyDown(key);
+	}
+
+	function onKeyUp(key) {
+		doKeyUp(key);
+	}
+
+	function onMouseEnter() {
+		doMouseEnter();
+	}
+
+	function onMouseLeave() {
+		doMouseLeave();
+	}
+
+	function onMouseDown(x, y, button, shift) {
+		doMouseDown(x, y, button, shift);
+	}
+
+	function onMouseMove(x, y, shift) {
+		//dm("move:%d %d".sprintf(x, y));
+		doMouseMove(x, y, shift);
+	}
+
+	function onMouseUp(x, y, button, shift) {
+		doMouseUp(x, y, button, shift);
+	}
+
+	function onMouseWheel(shift, delta, x, y) {
+		doMouseWheel(shift, delta, x, y);
+	}
+
+	function onHitTest(x, y, hit) {
+		global.Layer.onHitTest(x, y, hitTest(x, y));
+	}
+	
+	// -------------------------------------
+	// Flashイベント処理部
+	// -------------------------------------
+
+	function onFrameUpdate() {
+		draw(this, true);
+	}
+	
+	function onReadyStateChange(value) {
+		dm("state:%s".sprintf(value));
+	}
+	
+	function onProgress(value) {
+		dm("progress:%s".sprintf(value));
+	}
+	
+	function onFSCommand(cmd, args) {
+		dm("fscommand:%s %s".sprintf(cmd, args));
+	}
+}
+
+class MyWindow extends Window
+{
+	var base;
+	var layer;
+	var layer2;
+	var exit;
+	
+	function MyWindow() {
+		super.Window();
+		menu.add(exit = new MenuItem(this, "終了"));
+		setInnerSize(WIDTH, HEIGHT);
+
+		// プライマリレイヤ
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0xffffffff);
+		add(base);
+		
+		// Flash表示レイヤ
+		layer = new FlashLayer(this, base, WIDTH, HEIGHT);
+		with (layer) {
+			.setPos(0, 0);
+			.visible = true;
+		}
+		add(layer);
+		
+		layer2 = new Layer(this, base);
+		with (layer2) {
+			.setPos(0,0,WIDTH,HEIGHT);
+			.fillRect(WIDTH/4,HEIGHT/4,WIDTH/2,HEIGHT/2,0x80ffff00);
+			.visible = true;
+		}
+		add(layer2);
+		
+		layer.loadMovie(0, Storages.getLocalName(Storages.getPlacedPath("test.swf")));
+	}
+
+	// 実行部
+	function action(ev)	{
+		if(ev.type == "onClick") {
+			if (ev.target == exit) {
+				System.terminate();
+			}
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;
