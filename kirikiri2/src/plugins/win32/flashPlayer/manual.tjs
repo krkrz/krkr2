@@ -108,7 +108,7 @@ class FlashPlayer {
 	function onUpdateFrame();
 
 	// -------------------------------------------------
-	// プロパティ
+	// Flash プロパティ
 	// -------------------------------------------------
 
 	property readyState; // RO
@@ -147,7 +147,7 @@ class FlashPlayer {
 	property profilePort;
 	
 	// -------------------------------------------------
-	// 制御コマンド
+	// Flash 制御コマンド
 	// -------------------------------------------------
 
 	/**
@@ -231,4 +231,27 @@ class FlashPlayer {
 	function setReturnValue(returnValue);
 	function disableLocalSecurity();
 
+	// -------------------------------------------------
+	// Flash イベント
+	// -------------------------------------------------
+	
+	/**
+	 *
+	 */
+	function onReadyStateChange(newState);
+
+	/**
+	 *
+	 */
+	function onProgress(percentDone);
+
+	/**
+	 *
+	 */
+	function onFSCommand(command, args);
+
+	/**
+	 *
+	 */
+	function onFlashCall(request);
 };
