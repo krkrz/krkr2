@@ -557,11 +557,6 @@ public:
 		control->PutProfilePort(val);
 	}
 
-	ttstr callFunction (const tjs_char *request) {
-		CHECK;
-		return ttstr((const wchar_t*)control->CallFunction(request));
-	}
-
 	bool disableLocalSecurity() {
 		CHECK;
 		return SUCCEEDED(control->DisableLocalSecurity());
@@ -1261,7 +1256,6 @@ NCB_REGISTER_CLASS(FlashPlayer) {
 	NCB_PROPERTY(profileAddress, getProfileAddress, setProfileAddress);
 	NCB_PROPERTY(profilePort, getProfilePort, setProfilePort);
 
-	NCB_METHOD(callFunction);
 	NCB_METHOD(disableLocalSecurity);
 };
 
