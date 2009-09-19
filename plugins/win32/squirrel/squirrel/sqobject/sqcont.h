@@ -14,7 +14,7 @@ namespace sqobject {
 /// 機能登録
 void registerContinuous();
 /// ハンドラ処理呼び出し。Thread::main の前で呼び出す必要がある
-void beforeContinuous(int diff);
+void beforeContinuous();
 /// ハンドラ処理呼び出し。Thread::main の後で呼び出す必要がある
 void afterContinuous();
 /// 機能終了

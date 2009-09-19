@@ -374,19 +374,22 @@ public:
 	}
 	
 	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
-		static ttstr begin(TJS_W("onSquirrelBegin"));
-		static ttstr end(TJS_W("onSquirrelEnd"));
 		iTJSDispatch2 *global= TVPGetScriptDispatch();
-
-		tjs_uint64 diff = tick - prevTick;
+		sqobject::Thread::update((int)(tick - prevTick));
 		tTJSVariant params[2];
-		params[0] = (tjs_int64)diff;
-		params[1] = (tjs_int64)tick;
-		TVPPostEvent(global, global, begin, 0, TVP_EPT_IMMEDIATE, 2, params);
-		sqobject::beforeContinuous((int)diff);
-		sqobject::Thread::main((int)diff);
+		params[0] = sqobject::Thread::currentTick;
+		params[1] = sqobject::Thread::diffTick;
+		{
+			static ttstr begin(TJS_W("onSquirrelBegin"));
+			TVPPostEvent(global, global, begin, 0, TVP_EPT_IMMEDIATE, 2, params);
+		}
+		sqobject::beforeContinuous();
+		sqobject::Thread::main();
 		sqobject::afterContinuous();
-		TVPPostEvent(global, global, end, 0, TVP_EPT_IMMEDIATE, 2, params);
+		{
+			static ttstr end(TJS_W("onSquirrelEnd"));
+			TVPPostEvent(global, global, end, 0, TVP_EPT_IMMEDIATE, 2, params);
+		}
 		prevTick = tick;
 	}
 
