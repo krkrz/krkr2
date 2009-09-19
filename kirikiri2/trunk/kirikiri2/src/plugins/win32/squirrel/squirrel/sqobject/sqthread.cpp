@@ -542,10 +542,15 @@ Thread::init()
 	newThreadList.initArray();
 }
 
+void
+Thread::update(long diff)
+{
+	diffTick = diff;
+	currentTick += diff;
+}
 
 /*
  * 実行処理メインループ
- * @param diff 経過時間
  * 現在存在するスレッドを総なめで１度だけ実行する。
  * システム本体のメインループ(イベント処理＋画像処理)
  * から1度だけ呼び出すことで機能する。それぞれのスレッドは、
@@ -554,16 +559,13 @@ Thread::init()
  * @return 動作中のスレッドの数
  */
 int
-Thread::main(long diff)
+Thread::main()
 {
-	diffTick = diff;
-	currentTick += diff;
-
 	SQInteger i=0;
 	SQInteger max = threadList.len();
 	while (i < max) {
 		Thread *th = threadList.get(i).getThread();
-		if (!th || th->_main(diff)) {
+		if (!th || th->_main(diffTick)) {
 			threadList.remove(i);
 			max--;
 		} else {

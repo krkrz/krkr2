@@ -110,12 +110,13 @@ void registerContinuous()
 	afterContinuousList.initArray();
 }
 
-/// ハンドラ処理呼び出し。Thread::main の後で呼び出す必要がある
-void beforeContinuous(int diff)
+/// ハンドラ処理呼び出し。Thread::main の前で呼び出す
+void beforeContinuous()
 {
-	call(beforeContinuousList, Thread::currentTick + diff, diff);
+	call(beforeContinuousList, Thread::currentTick, Thread::diffTick);
 }
 
+/// ハンドラ処理呼び出し。Thread::main の後で呼び出す
 void afterContinuous()
 {
 	call(afterContinuousList, Thread::currentTick, Thread::diffTick);

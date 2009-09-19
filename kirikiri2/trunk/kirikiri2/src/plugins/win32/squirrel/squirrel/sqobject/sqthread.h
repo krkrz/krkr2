@@ -261,10 +261,15 @@ public:
 	 * 動作スレッド初期化
 	 */
 	static void init();
+
+	/*
+	 * 時間更新
+	 * @param diff 経過時間
+	 */
+	static void update(long diff);
 	
 	/*
 	 * 実行処理メインループ
-	 * @param diff 経過時間
 	 * 現在存在するスレッドを総なめで１度だけ実行する。
 	 * システム本体のメインループ(イベント処理＋画像処理)
 	 * から1度だけ呼び出すことで機能する。それぞれのスレッドは、
@@ -272,7 +277,7 @@ public:
 	 * 次のスレッドに委譲する必要がある。
 	 * @return 
 	 */
-	static int main(long diff);
+	static int main();
 
 	/**
 	 * スクリプト実行開始用
