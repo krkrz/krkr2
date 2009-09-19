@@ -164,14 +164,14 @@ class SQContinuous {
 
 /**
  * squirrelの疑似スレッド処理が実行される前に呼ばれるイベント
+ * @param tick tick値 (squirrelのtick値なので注意。long値)
  * @param diff 前回呼び出しからの経過時間
- * @param tick tick値
  */
-function onSquirrelBegin(diff, tick);
+function onSquirrelBegin(tick, diff);
 
 /**
  * squirrelの疑似スレッド処理が実行された後に呼ばれるイベント
+ * @param tick tick値 (squirrelのtick値なので注意。long値)
  * @param diff 前回呼び出しからの経過時間
- * @param tick tick値
  */
-function onSquirrelEnd(diff, tick);
+function onSquirrelEnd(tick, diff);
