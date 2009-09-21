@@ -221,6 +221,43 @@ class Window {
 	 *
 	 */
 	function setOverlayBitmap(layer)
+
+	/**
+	 * 非クライアントエリアマウスイベント
+	 * @param x, y マウス座標
+	 * @param ht 領域の種類（NCHITTEST定数）
+	 * @param btn マウスボタン（mbLeft, mbRight, mbMiddle）
+	 */
+	function onNcMouseMove(x, y, ht);
+	function onNcMouseUp(  x, y, btn, ht);
+	function onNcMouseDown(x, y, btn, ht);
+	function onNcMouseLeave();
+
+	/// NCHITTEST定数
+	/* static */ var nchtError;					//< HTERROR
+	/* static */ var nchtTransparent;			//< HTTRANSPARENT
+	/* static */ var nchtNoWhere;				//< HTNOWHERE
+	/* static */ var nchtClient;				//< HTCLIENT
+	/* static */ var nchtCaption;				//< HTCAPTION
+	/* static */ var nchtSysMenu;				//< HTSYSMENU
+	/* static */ var nchtSize;					//< HTSIZE
+	/* static */ var nchtGrowBox;				//< HTGROWBOX
+	/* static */ var nchtMenu;					//< HTMENU
+	/* static */ var nchtHScroll;				//< HTHSCROLL
+	/* static */ var nchtVScroll;				//< HTVSCROLL
+	/* static */ var nchtMinButton;				//< HTMINBUTTON
+	/* static */ var nchtReduce;				//< HTREDUCE
+	/* static */ var nchtMaxButton;				//< HTMAXBUTTON
+	/* static */ var nchtZoom;					//< HTZOOM
+	/* static */ var nchtLeft;					//< HTLEFT
+	/* static */ var nchtRight;					//< HTRIGHT
+	/* static */ var nchtTop;					//< HTTOP
+	/* static */ var nchtTopLeft;				//< HTTOPLEFT
+	/* static */ var nchtTopRight;				//< HTTOPRIGHT
+	/* static */ var nchtBottom;				//< HTBOTTOM
+	/* static */ var nchtBottomLeft;			//< HTBOTTOMLEFT
+	/* static */ var nchtBottomRight;			//< HTBOTTOMRIGHT
+	/* static */ var nchtBorder;				//< HTBORDER
 }
 
 /**
@@ -255,6 +292,10 @@ class MenuItem {
 	/* static */ var biPopupRestore;			//< HBMMENU_POPUP_RESTORE
 	/* static */ var biPopupMaximize;			//< HBMMENU_POPUP_MAXIMIZE
 	/* static */ var biPopupMinimize;			//< HBMMENU_POPUP_MINIMIZE
+
+	function appendSystemMenu();   //< システムメニューに追加（サブメニューの場合はpopup()同様の条件必須）
+	function restoreSystemMenu();  //< システムメニューを初期状態に戻す
+	function separateSystemMenu(); //< システムメニューにセパレータを追加
 }
 
 /**

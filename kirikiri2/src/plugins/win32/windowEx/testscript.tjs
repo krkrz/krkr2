@@ -79,6 +79,14 @@ class TestWindow extends Window {
 
 		// （子を作る／子が消えるとIDが変わるのでbmpItemが表示されない）
 		var sub = new MenuItem(this, "xxx");
+		sub.onClick = function { inform("xxx"); } incontextof System;
+		tes2.appendSystemMenu();
+//		(new MenuItem(this, "-")).appendSystemMenu();
+		tes1.separateSystemMenu();
+		tes1.group = 1;
+		tes1.checked = true;
+		tes1.appendSystemMenu();
+
 		mark.add(sub);
 		sub.setBmpItem(icon); //"testicon"); //MenuItem.biClose);
 //		mark.rightJustify = true;
@@ -157,6 +165,11 @@ class TestWindow extends Window {
 	function checkTimer() {
 		dm(@"${caption}.maximized: ${maximized}");
 	}
+
+//	function onNcMouseMove(*)  { dm("ncMouseMove",  *); }
+	function onNcMouseLeave(*) { dm("ncMouseLeave", *); }
+	function onNcMouseUp(*)    { dm("ncMouseUp",    *); }
+	function onNcMouseDown(*)  { dm("ncMouseDown",  *); }
 }
 
 function RectToString(rect) {
