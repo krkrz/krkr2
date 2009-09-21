@@ -21,6 +21,10 @@
 #define EXEV_ACTIVATE  TJS_W("onActivateChanged")
 #define EXEV_SCREENSV  TJS_W("onScreenSave")
 #define EXEV_MONITORPW TJS_W("onMonitorPower")
+#define EXEV_NCMSMOVE  TJS_W("onNcMouseMove")
+#define EXEV_NCMSLEAVE TJS_W("onNcMouseLeave")
+#define EXEV_NCMSDOWN  TJS_W("onNcMouseDown")
+#define EXEV_NCMSUP    TJS_W("onNcMouseUp")
 
 ////////////////////////////////////////////////////////////////
 
@@ -207,6 +211,14 @@ struct WindowEx
 		return !!rslt.AsInteger();
 	}
 
+	// ４個渡しコールバック
+	bool callback(tjs_char const *name, int a, int b, int c, int d) const {
+		tTJSVariant va(a), vb(b), vc(c), vd(d);
+		tTJSVariant rslt, *params[] = { &va, &vb, &vc, &vd };
+		funcCall(name, &rslt, 4, params);
+		return !!rslt.AsInteger();
+	}
+
 	// 矩形渡しコールバック
 	bool callback(tjs_char const *name, RECT *rect, int type = 0) const {
 		ncbDictionaryAccessor dict;
@@ -226,7 +238,21 @@ struct WindowEx
 	// メッセージ処理
 	bool onMessage(tTVPWindowMessage *mes) {
 		switch (mes->Msg) {
+		case TVP_WM_ATTACH:
+			cachedHWND = (HWND)mes->LParam;
+			break;
+		case TVP_WM_DETACH:
+			cachedHWND = NULL;
+			deleteOverlayBitmap();
+			break;
+		}
+		HWND hwnd = cachedHWND;
+		if (hwnd != NULL) switch (mes->Msg) {
 		case WM_SYSCOMMAND:
+			if (sysCmdThrough && (mes->WParam & 0xFFFF) < 0xF000) {
+				mes->Result = ::SendMessage(hwnd, WM_COMMAND, mes->WParam & 0xFFFF, 0);
+				return true;
+			}
 			switch (mes->WParam & 0xFFF0) {
 			case SC_MAXIMIZE:     return callback(EXEV_QUERYMAX);
 			case SC_SCREENSAVE:   return callback(EXEV_SCREENSV);
@@ -253,32 +279,42 @@ struct WindowEx
 			// サイズ変更カーソルを抑制
 		case WM_NCHITTEST:
 			if (disableResize) {
-				HWND hwnd = GetHWND(self);
-				if (hwnd != NULL) {
-					LRESULT res = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
-					switch (res) {
-						/**/             case HTLEFT:       case HTRIGHT:
-					case HTTOP:       case HTTOPLEFT:    case HTTOPRIGHT:
-					case HTBOTTOM: case HTBOTTOMLEFT: case HTBOTTOMRIGHT:
-						res = HTBORDER;
-						break;
-					}
-					mes->Result = res;
-					return true;
+				LRESULT res = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
+				switch (res) {
+					/**/             case HTLEFT:       case HTRIGHT:
+				case HTTOP:       case HTTOPLEFT:    case HTTOPRIGHT:
+				case HTBOTTOM: case HTBOTTOMLEFT: case HTBOTTOMRIGHT:
+					res = HTBORDER;
+					break;
 				}
+				mes->Result = res;
+				return true;
 			}
 			break;
-			// システムメニューサイズ変更抑制
+
+		case WM_NCLBUTTONDOWN: callback(EXEV_NCMSDOWN, (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam), 0/*mbLeft*/,   (int)mes->WParam); break;
+		case WM_NCRBUTTONDOWN: callback(EXEV_NCMSDOWN, (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam), 1/*mbRight*/,  (int)mes->WParam); break;
+		case WM_NCMBUTTONDOWN: callback(EXEV_NCMSDOWN, (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam), 2/*mbMiddle*/, (int)mes->WParam); break;
+
+		case WM_NCLBUTTONUP:   callback(EXEV_NCMSUP,   (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam), 0/*mbLeft*/,   (int)mes->WParam); break;
+		case WM_NCRBUTTONUP:   callback(EXEV_NCMSUP,   (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam), 1/*mbRight*/,  (int)mes->WParam); break;
+		case WM_NCMBUTTONUP:   callback(EXEV_NCMSUP,   (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam), 2/*mbMiddle*/, (int)mes->WParam); break;
+
+		case WM_NCMOUSELEAVE:  callback(EXEV_NCMSLEAVE); break;
+		case WM_NCMOUSEMOVE:
+			if (hasNcMsMove)   callback(EXEV_NCMSMOVE, (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam), (int)mes->WParam, 0);
+			break;
 		case WM_INITMENUPOPUP:
 			if (HIWORD(mes->LParam)) {
 				if (disableResize) {
-					HWND hwnd = GetHWND(self);
-					if (hwnd != NULL) mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
+					// システムメニューサイズ変更抑制
+					mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
 					::EnableMenuItem((HMENU)mes->WParam, SC_SIZE, MF_GRAYED | MF_BYCOMMAND);
-					return (hwnd != NULL);
+					return true;
 				}
 			} else if (menuex) {
-				mes->Result = ::DefWindowProc(GetHWND(self), mes->Msg, mes->WParam, mes->LParam);
+				// メニューアイコン強制差し替え
+				mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
 				HMENU menu = (HMENU)mes->WParam;
 				int cnt = ::GetMenuItemCount(menu);
 				for (int i = 0; i < cnt; i++) checkUpdateMenuItem(menu, i, ::GetMenuItemID(menu, i));
@@ -301,10 +337,6 @@ struct WindowEx
 
 		case WM_ACTIVATE:
 			return callback(EXEV_ACTIVATE, (int)(mes->WParam & 0xFFFF), (int)((mes->WParam >> 16) & 0xFFFF));
-
-		case TVP_WM_DETACH:
-			deleteOverlayBitmap();
-			break;
 		}
 		return false;
 	}
@@ -330,13 +362,17 @@ struct WindowEx
 
 	// ネイティブインスタンスの生成・破棄にあわせてレシーバを登録・解除する
 	WindowEx(iTJSDispatch2 *obj)
-		:   self(obj), menuex(0),
+		:   self(obj), menuex(0), cachedHWND(0),
 			hasResizing(false),
 			hasMoving(false),
 			hasMove(false),
 			disableResize(false),
+			sysCmdThrough(false),
 			ovbmp(NULL)
-		{ regist(true); }
+		{
+			cachedHWND = GetHWND(self);
+			regist(true);
+		}
 
 	~WindowEx() {
 		if (menuex) menuex->Release();
@@ -348,11 +384,13 @@ struct WindowEx
 		hasResizing = hasMember(EXEV_RESIZING);
 		hasMoving   = hasMember(EXEV_MOVING);
 		hasMove     = hasMember(EXEV_MOVE);
+		hasNcMsMove = hasMember(EXEV_NCMSMOVE);
 	}
 	void deleteOverlayBitmap() {
 		if (ovbmp) delete ovbmp;
 		ovbmp = NULL;
 	}
+	void setSystemCommandThrough(bool b) { sysCmdThrough = b; }
 
 protected:
 	tjs_error _setOverlayBitmap(tjs_int n, tTJSVariant **p) {
@@ -371,9 +409,14 @@ protected:
 	}
 private:
 	iTJSDispatch2 *self, *menuex;
-	bool hasResizing, hasMoving, hasMove; //< メソッドが存在するかフラグ
-	bool disableResize; // サイズ変更禁止
+	HWND cachedHWND;
+	bool hasResizing, hasMoving, hasMove, hasNcMsMove; //< メソッドが存在するかフラグ
+	bool disableResize; //< サイズ変更禁止
+	bool sysCmdThrough; //< システムメニューにメニューを追加した
 public:
+	//----------------------------------------------------------
+	// オーバーレイビットマップ用サブクラス
+	//----------------------------------------------------------
 	struct OverlayBitmap {
 		OverlayBitmap() : overlay(0), bitmap(0), bmpdc(0) {}
 		~OverlayBitmap() {
@@ -537,6 +580,31 @@ NCB_GET_INSTANCE_HOOK(WindowEx)
 // メソッド追加
 NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 {
+	Variant(TJS_W("nchtError"),       (tjs_int)HTERROR);
+	Variant(TJS_W("nchtTransparent"), (tjs_int)HTTRANSPARENT);
+	Variant(TJS_W("nchtNoWhere"),     (tjs_int)HTNOWHERE);
+	Variant(TJS_W("nchtClient"),      (tjs_int)HTCLIENT);
+	Variant(TJS_W("nchtCaption"),     (tjs_int)HTCAPTION);
+	Variant(TJS_W("nchtSysMenu"),     (tjs_int)HTSYSMENU);
+	Variant(TJS_W("nchtSize"),        (tjs_int)HTSIZE);
+	Variant(TJS_W("nchtGrowBox"),     (tjs_int)HTGROWBOX);
+	Variant(TJS_W("nchtMenu"),        (tjs_int)HTMENU);
+	Variant(TJS_W("nchtHScroll"),     (tjs_int)HTHSCROLL);
+	Variant(TJS_W("nchtVScroll"),     (tjs_int)HTVSCROLL);
+	Variant(TJS_W("nchtMinButton"),   (tjs_int)HTMINBUTTON);
+	Variant(TJS_W("nchtReduce"),      (tjs_int)HTREDUCE);
+	Variant(TJS_W("nchtMaxButton"),   (tjs_int)HTMAXBUTTON);
+	Variant(TJS_W("nchtZoom"),        (tjs_int)HTZOOM);
+	Variant(TJS_W("nchtLeft"),        (tjs_int)HTLEFT);
+	Variant(TJS_W("nchtRight"),       (tjs_int)HTRIGHT);
+	Variant(TJS_W("nchtTop"),         (tjs_int)HTTOP);
+	Variant(TJS_W("nchtTopLeft"),     (tjs_int)HTTOPLEFT);
+	Variant(TJS_W("nchtTopRight"),    (tjs_int)HTTOPRIGHT);
+	Variant(TJS_W("nchtBottom"),      (tjs_int)HTBOTTOM);
+	Variant(TJS_W("nchtBottomLeft"),  (tjs_int)HTBOTTOMLEFT);
+	Variant(TJS_W("nchtBottomRight"), (tjs_int)HTBOTTOMRIGHT);
+	Variant(TJS_W("nchtBorder"),      (tjs_int)HTBORDER);
+
 	RawCallback(TJS_W("minimize"),            &Class::minimize,          0);
 	RawCallback(TJS_W("maximize"),            &Class::maximize,          0);
 	RawCallback(TJS_W("maximized"),           &Class::getMaximized,      &Class::setMaximized, 0);
@@ -710,21 +778,20 @@ struct MenuItemEx
 		}
 	}
 
-	void updateMenuItemID() {
-		if (id != 0) setMenuItemID(false);
+	static UINT GetMenuItemID(iTJSDispatch2 *obj) {
 		iTJSDispatch2 *parent = GetParentMenu(obj);
 		HMENU hmenu = GetHMENU(parent);
 		UINT index = GetIndex(obj, parent);
 		MENUITEMINFO mi;
 		ZeroMemory(&mi, sizeof(mi));
 		mi.cbSize = sizeof(mi);
-		mi.fMask = MIIM_ID | MIIM_DATA;
-		if (::GetMenuItemInfo(hmenu, index, TRUE, &mi)) {
-			HMENU test = GetHMENU(obj);
-			DWORD check = mi.dwItemData;
-			id = mi.wID;
-			setMenuItemID(true);
-		} else id = 0;
+		mi.fMask = MIIM_ID;
+		return ::GetMenuItemInfo(hmenu, index, TRUE, &mi) ? mi.wID : 0;
+	}
+	void updateMenuItemID() {
+		if (id != 0) setMenuItemID(false);
+		id = GetMenuItemID(obj);
+		if (id != 0) setMenuItemID(true);
 	}
 	void setMenuItemID(bool isset) {
 		iTJSDispatch2 *win = GetWindow(obj);
@@ -748,6 +815,75 @@ private:
 	tjs_int  rj;
 	int    bmptype[BMP_MAX];
 	HBITMAP bitmap[BMP_MAX];
+
+public:
+	// MenuItem.appendSystemMenu()
+	static tjs_error TJS_INTF_METHOD appendSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		HMENU menu = ::GetSystemMenu(GetHWND(objthis), FALSE);
+		tTJSVariant val;
+		objthis->PropGet(0, TJS_W("caption"), 0, &val, objthis);
+		ttstr caption(val);
+		MENUITEMINFO mi;
+		ZeroMemory(&mi, sizeof(mi));
+		mi.cbSize = sizeof(mi);
+		if (caption == TJS_W("-")) {
+			mi.fMask = MIIM_FTYPE;
+			mi.fType = MFT_SEPARATOR;
+		} else {
+			mi.fMask = MIIM_FTYPE | MIIM_STRING;
+			mi.dwTypeData = (LPWSTR)caption.c_str();
+
+			val.Clear();
+			objthis->PropGet(0, TJS_W("children"), 0, &val, objthis);
+			ncbPropAccessor children(val);
+			if (children.IsValid() && children.GetArrayCount() > 0) {
+				mi.fMask |= MIIM_SUBMENU;
+				mi.hSubMenu = GetHMENU(objthis);
+			} else {
+				mi.fMask |= MIIM_ID;
+				mi.wID = GetMenuItemID(objthis);
+				val.Clear();
+				objthis->PropGet(0, TJS_W("enabled"), 0, &val, objthis);
+				if (!val.AsInteger()) {
+					mi.fMask |= MIIM_STATE;
+					mi.fState |= MFS_DISABLED;
+				}
+				val.Clear();
+				objthis->PropGet(0, TJS_W("checked"), 0, &val, objthis);
+				if (val.AsInteger()) {
+					mi.fMask |= MIIM_STATE;
+					mi.fState |= MFS_CHECKED;
+				}
+				val.Clear();
+				objthis->PropGet(0, TJS_W("group"), 0, &val, objthis);
+				if (val.AsInteger() > 0) mi.fType |= MFT_RADIOCHECK;
+			}
+		}
+		bool result = !!::InsertMenuItem(menu, ::GetMenuItemCount(menu), TRUE, &mi);
+		if (result) {
+			WindowEx *wex = WindowEx::GetInstance(GetWindow(objthis));
+			if (wex)  wex->setSystemCommandThrough(true);
+		}
+		if (r) *r = result;
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD restoreSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		::GetSystemMenu(GetHWND(objthis), TRUE);
+		WindowEx *wex = WindowEx::GetInstance(GetWindow(objthis));
+		if (wex)  wex->setSystemCommandThrough(false);
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD separateSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		HMENU menu = ::GetSystemMenu(GetHWND(objthis), FALSE);
+		MENUITEMINFO mi;
+		ZeroMemory(&mi, sizeof(mi));
+		mi.cbSize = sizeof(mi);
+		mi.fMask = MIIM_FTYPE;
+		mi.fType = MFT_SEPARATOR;
+		bool result = !!::InsertMenuItem(menu, ::GetMenuItemCount(menu), TRUE, &mi);
+		if (r) *r = result;
+		return TJS_S_OK;
+	}
 };
 NCB_GET_INSTANCE_HOOK(MenuItemEx)
 {
@@ -777,6 +913,9 @@ NCB_ATTACH_CLASS_WITH_HOOK(MenuItemEx, MenuItem)
 	Property(TJS_W("bmpChecked"),   &Class::getBmpChecked,   &Class::setBmpChecked  );
 	Property(TJS_W("bmpUnchecked"), &Class::getBmpUnchecked, &Class::setBmpUnchecked);
 }
+NCB_ATTACH_FUNCTION(appendSystemMenu,    MenuItem, MenuItemEx::appendSystemMenu );
+NCB_ATTACH_FUNCTION(restoreSystemMenu,   MenuItem, MenuItemEx::restoreSystemMenu);
+NCB_ATTACH_FUNCTION(separateSystemMenu,  MenuItem, MenuItemEx::separateSystemMenu );
 
 
 void WindowEx::checkUpdateMenuItem(HMENU menu, int pos, UINT id) {
