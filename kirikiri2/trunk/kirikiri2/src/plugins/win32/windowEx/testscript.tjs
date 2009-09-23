@@ -80,12 +80,6 @@ class TestWindow extends Window {
 		// （子を作る／子が消えるとIDが変わるのでbmpItemが表示されない）
 		var sub = new MenuItem(this, "xxx");
 		sub.onClick = function { inform("xxx"); } incontextof System;
-		tes2.appendSystemMenu();
-//		(new MenuItem(this, "-")).appendSystemMenu();
-		tes1.separateSystemMenu();
-		tes1.group = 1;
-		tes1.checked = true;
-		tes1.appendSystemMenu();
 
 		mark.add(sub);
 		sub.setBmpItem(icon); //"testicon"); //MenuItem.biClose);
@@ -97,6 +91,7 @@ class TestWindow extends Window {
 		var prop = &(MenuItem.HMENU);
 		dm("HMENU", *(prop incontextof menu));
 
+		exSystemMenu = tes2.children;
 		menu.visible = true;
 	}
 	function onCloseQuery()    { return super.onCloseQuery(true); }
@@ -153,8 +148,13 @@ class TestWindow extends Window {
 	property ltwh       { getter {                        return @"TJS:${left},${top}/${width},${height}"; } }
 	property iwh        { getter {                        return @"IWH:${innerWidth},${innerHeight}"; } }
 
-	function onMouseUp(x, y) {
-		menu.children[1].popup(tpmTopAlign|tpmLeftAlign, x, y);
+	function onMouseUp(x, y, btn) {
+		switch (btn) {
+		case  mbRight: menu.children[1].popup(tpmTopAlign|tpmLeftAlign, x, y); break;
+		case  mbLeft :
+			onExSystemMenuSelected(menu.children[1].popupEx(tpmTopAlign|tpmLeftAlign));
+			break;
+		}
 	}
 	function onDisplayChanged() {
 		dm("DisplayChanged", System.screenWidth, System.screenHeight);
@@ -170,6 +170,10 @@ class TestWindow extends Window {
 	function onNcMouseLeave(*) { dm("ncMouseLeave", *); }
 	function onNcMouseUp(*)    { dm("ncMouseUp",    *); }
 	function onNcMouseDown(*)  { dm("ncMouseDown",  *); }
+
+	function onExSystemMenuSelected(obj) {
+		obj.onClick() if (typeof obj == "Object" && typeof obj.onClick == "Object" && obj.onClick instanceof "Function");
+	}
 }
 
 function RectToString(rect) {

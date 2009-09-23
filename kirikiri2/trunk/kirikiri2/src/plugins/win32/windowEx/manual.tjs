@@ -258,6 +258,14 @@ class Window {
 	/* static */ var nchtBottomLeft;			//< HTBOTTOMLEFT
 	/* static */ var nchtBottomRight;			//< HTBOTTOMRIGHT
 	/* static */ var nchtBorder;				//< HTBORDER
+
+	/**
+	 * システムメニューに追加
+	 * setter は registerExEvent() で拡張イベントを登録していないと例外が発生する
+	 * MenuItemまたは辞書の配列を指定する
+	 * このメニューが選択されると onExSystemMenuSelected(選択されたオブジェクト) コールバックが発生
+	 */
+	property exSystemMenu { getter; setter; }
 }
 
 /**
@@ -293,9 +301,19 @@ class MenuItem {
 	/* static */ var biPopupMaximize;			//< HBMMENU_POPUP_MAXIMIZE
 	/* static */ var biPopupMinimize;			//< HBMMENU_POPUP_MINIMIZE
 
-	function appendSystemMenu();   //< システムメニューに追加（サブメニューの場合はpopup()同様の条件必須）
-	function restoreSystemMenu();  //< システムメニューを初期状態に戻す
-	function separateSystemMenu(); //< システムメニューにセパレータを追加
+	/**
+	 * ポップアップ表示
+	 * @param flags
+	 * @param x, y  表示位置（スクリーン座標，省略時マウスカーソル位置）
+	 * @param hwnd オーナウィンドウ（省略時インスタンス所属ウィンドウ）
+	 * @param rect オーバーラップ禁止範囲（%[ x, y, w, h ]，省略時禁止範囲無し）
+	 * @param menulist メニュー一覧配列（MenuItemのインスタンスである必要はなく，辞書を並べても良い）
+	 * @return 選択されたオブジェクト
+	 * 
+	 * MenuItem.popupのようにウィンドウメニュー所属である必要はなく，また一覧も辞書の配列を渡すなどができる
+	 * この関数によるポップアップでのbmp*プロパティによるアイコン表示はされないので注意
+	 */
+	function popupEx(flags, x=cursorX, y=cursorY, hwnd=this.root.window, rect, menulist=this.children);
 }
 
 /**

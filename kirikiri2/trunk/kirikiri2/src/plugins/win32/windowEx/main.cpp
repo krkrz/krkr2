@@ -25,6 +25,7 @@
 #define EXEV_NCMSLEAVE TJS_W("onNcMouseLeave")
 #define EXEV_NCMSDOWN  TJS_W("onNcMouseDown")
 #define EXEV_NCMSUP    TJS_W("onNcMouseUp")
+#define EXEV_SYSMENU   TJS_W("onExSystemMenuSelected")
 
 ////////////////////////////////////////////////////////////////
 
@@ -181,6 +182,23 @@ struct WindowEx
 		return (self != NULL) ? self->_setOverlayBitmap(n, p) : TJS_E_ACCESSDENYED;
 	}
 
+	// property exSystemMenu
+	static tjs_error TJS_INTF_METHOD getExSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		WindowEx *self = GetInstance(obj);
+		if (r) *r = (self != NULL && self->sysMenuModified);
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setExSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		WindowEx *self = GetInstance(obj);
+		if (self == NULL) return TJS_E_ACCESSDENYED;
+		if (self->sysMenuModified != NULL) {
+			self->resetSystemMenu();
+			self->sysMenuModified->Release();
+		}
+		/**/self->sysMenuModified = p[0]->AsObject();
+		return TJS_S_OK;
+	}
+
 	//--------------------------------------------------------------
 	// 拡張イベント用
 
@@ -200,6 +218,14 @@ struct WindowEx
 		if (!hasMember(name)) return false;
 		tTJSVariant rslt;
 		funcCall(name, &rslt, 0, 0);
+		return !!rslt.AsInteger();
+	}
+
+	// variant渡しコールバック
+	bool callback(tjs_char const *name, tTJSVariant *v) const {
+		if (!hasMember(name)) return false;
+		tTJSVariant rslt;
+		funcCall(name, &rslt, 1, &v);
 		return !!rslt.AsInteger();
 	}
 
@@ -242,6 +268,12 @@ struct WindowEx
 			cachedHWND = (HWND)mes->LParam;
 			break;
 		case TVP_WM_DETACH:
+			resetSystemMenu();
+			if (sysMenu != NULL) {
+				::DestroyMenu(sysMenu);
+				sysMenu = NULL;
+				if (cachedHWND != NULL) ::GetSystemMenu(cachedHWND, TRUE);
+			}
 			cachedHWND = NULL;
 			deleteOverlayBitmap();
 			break;
@@ -249,11 +281,18 @@ struct WindowEx
 		HWND hwnd = cachedHWND;
 		if (hwnd != NULL) switch (mes->Msg) {
 		case WM_SYSCOMMAND:
-			if (sysCmdThrough && (mes->WParam & 0xFFFF) < 0xF000) {
-				mes->Result = ::SendMessage(hwnd, WM_COMMAND, mes->WParam & 0xFFFF, 0);
-				return true;
+			if (sysMenuModMap != NULL && (mes->WParam & 0xFFFF) < 0xF000) {
+				tTJSVariant var;
+				if (TJS_SUCCEEDED(sysMenuModMap->PropGetByNum(0, (tjs_int)(mes->WParam & 0xFFFF), &var, sysMenuModMap))) {
+					return callback(EXEV_SYSMENU, &var);
+				}
 			}
 			switch (mes->WParam & 0xFFF0) {
+			case SC_KEYMENU:
+			case SC_MOUSEMENU:
+				// システムメニューのカスタム
+				modifySystemMenu();
+				break;
 			case SC_MAXIMIZE:     return callback(EXEV_QUERYMAX);
 			case SC_SCREENSAVE:   return callback(EXEV_SCREENSV);
 			case SC_MONITORPOWER: return callback(EXEV_MONITORPW, (int)mes->LParam, 0);
@@ -362,12 +401,14 @@ struct WindowEx
 
 	// ネイティブインスタンスの生成・破棄にあわせてレシーバを登録・解除する
 	WindowEx(iTJSDispatch2 *obj)
-		:   self(obj), menuex(0), cachedHWND(0),
+		:   self(obj), menuex(0),
+			sysMenuModified(0), sysMenuModMap(0),
+			cachedHWND(0),
+			sysMenu(0),
 			hasResizing(false),
 			hasMoving(false),
 			hasMove(false),
 			disableResize(false),
-			sysCmdThrough(false),
 			ovbmp(NULL)
 		{
 			cachedHWND = GetHWND(self);
@@ -375,7 +416,9 @@ struct WindowEx
 		}
 
 	~WindowEx() {
-		if (menuex) menuex->Release();
+		if (menuex)          menuex         ->Release();
+		if (sysMenuModified) sysMenuModified->Release();
+		resetSystemMenu();
 		deleteOverlayBitmap();
 		regist(false);
 	}
@@ -390,7 +433,9 @@ struct WindowEx
 		if (ovbmp) delete ovbmp;
 		ovbmp = NULL;
 	}
-	void setSystemCommandThrough(bool b) { sysCmdThrough = b; }
+
+	void resetSystemMenu();
+	void modifySystemMenu();
 
 protected:
 	tjs_error _setOverlayBitmap(tjs_int n, tTJSVariant **p) {
@@ -409,10 +454,11 @@ protected:
 	}
 private:
 	iTJSDispatch2 *self, *menuex;
+	iTJSDispatch2 *sysMenuModified, *sysMenuModMap; //< システムメニュー改変用
 	HWND cachedHWND;
+	HMENU sysMenu;
 	bool hasResizing, hasMoving, hasMove, hasNcMsMove; //< メソッドが存在するかフラグ
 	bool disableResize; //< サイズ変更禁止
-	bool sysCmdThrough; //< システムメニューにメニューを追加した
 public:
 	//----------------------------------------------------------
 	// オーバーレイビットマップ用サブクラス
@@ -613,8 +659,9 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 	RawCallback(TJS_W("getWindowRect"),       &Class::getWindowRect,     0);
 	RawCallback(TJS_W("getClientRect"),       &Class::getClientRect,     0);
 	RawCallback(TJS_W("getNormalRect"),       &Class::getNormalRect,     0);
-	RawCallback(TJS_W("disableResize"),       &Class::setDisableResize,  &Class::setDisableResize, 0);
+	RawCallback(TJS_W("disableResize"),       &Class::getDisableResize,  &Class::setDisableResize, 0);
 	RawCallback(TJS_W("setOverlayBitmap"),    &Class::setOverlayBitmap,  0);
+	RawCallback(TJS_W("exSystemMenu"),        &Class::getExSystemMenu,   &Class::setExSystemMenu, 0);
 
 	Method(     TJS_W("registerExEvent"),     &Class::checkExEvents);
 }
@@ -817,71 +864,166 @@ private:
 	HBITMAP bitmap[BMP_MAX];
 
 public:
-	// MenuItem.appendSystemMenu()
-	static tjs_error TJS_INTF_METHOD appendSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
-		HMENU menu = ::GetSystemMenu(GetHWND(objthis), FALSE);
+	static bool InsertMenuItem(HMENU menu, iTJSDispatch2 *obj, WORD &curid, WORD idmv, iTJSDispatch2 *items, DWORD sysdt) {
+		if (obj == NULL) return false;
+		// 非表示ならないもしない
 		tTJSVariant val;
-		objthis->PropGet(0, TJS_W("caption"), 0, &val, objthis);
-		ttstr caption(val);
+		obj->PropGet(0, TJS_W("visible"), 0, &val, obj);
+		if (val.Type() != tvtVoid && !(tjs_int)val) return false;
+
 		MENUITEMINFO mi;
 		ZeroMemory(&mi, sizeof(mi));
 		mi.cbSize = sizeof(mi);
+
+		// caption取得
+		val.Clear();
+		obj->PropGet(0, TJS_W("caption"), 0, &val, obj);
+		ttstr caption(val);
 		if (caption == TJS_W("-")) {
+			// 区切り
 			mi.fMask = MIIM_FTYPE;
 			mi.fType = MFT_SEPARATOR;
 		} else {
 			mi.fMask = MIIM_FTYPE | MIIM_STRING;
 			mi.dwTypeData = (LPWSTR)caption.c_str();
 
+			// サブメニューがあるか
+			HMENU submenu = NULL;
 			val.Clear();
-			objthis->PropGet(0, TJS_W("children"), 0, &val, objthis);
-			ncbPropAccessor children(val);
-			if (children.IsValid() && children.GetArrayCount() > 0) {
-				mi.fMask |= MIIM_SUBMENU;
-				mi.hSubMenu = GetHMENU(objthis);
-			} else {
-				mi.fMask |= MIIM_ID;
-				mi.wID = GetMenuItemID(objthis);
-				val.Clear();
-				objthis->PropGet(0, TJS_W("enabled"), 0, &val, objthis);
-				if (!val.AsInteger()) {
-					mi.fMask |= MIIM_STATE;
-					mi.fState |= MFS_DISABLED;
+			obj->PropGet(0, TJS_W("children"), 0, &val, obj);
+			if (val.Type() == tvtObject) {
+				submenu = CreateMenuList(NULL, val.AsObjectNoAddRef(), curid, idmv, items, sysdt);
+				if (submenu != NULL) {
+					mi.fMask |= MIIM_SUBMENU;
+					mi.hSubMenu = submenu;
 				}
+			}
+			if (submenu == NULL) {
+				// サブメニューなし
+				mi.fMask |= MIIM_ID;
+				mi.wID = curid;
+				if (items != NULL) {
+					tTJSVariant append(obj);
+					items->PropSetByNum(TJS_MEMBERENSURE, (tjs_int)curid, &append, items);
+				}
+				curid += idmv;
+
+				// チェックマーク
 				val.Clear();
-				objthis->PropGet(0, TJS_W("checked"), 0, &val, objthis);
-				if (val.AsInteger()) {
+				obj->PropGet(0, TJS_W("checked"), 0, &val, obj);
+				if (val.Type() != tvtVoid && !!(tjs_int)val) {
 					mi.fMask |= MIIM_STATE;
 					mi.fState |= MFS_CHECKED;
 				}
+				// ラジオマーク
 				val.Clear();
-				objthis->PropGet(0, TJS_W("group"), 0, &val, objthis);
-				if (val.AsInteger() > 0) mi.fType |= MFT_RADIOCHECK;
+				obj->PropGet(0, TJS_W("group"), 0, &val, obj);
+				if (val.Type() == tvtInteger && (tjs_int)val > 0) mi.fType |= MFT_RADIOCHECK;
+			}
+			// 有効・無効
+			val.Clear();
+			obj->PropGet(0, TJS_W("enabled"), 0, &val, obj);
+			if (val.Type() != tvtVoid && !(tjs_int)val) {
+				mi.fMask |= MIIM_STATE;
+				mi.fState |= MFS_DISABLED;
 			}
 		}
-		bool result = !!::InsertMenuItem(menu, ::GetMenuItemCount(menu), TRUE, &mi);
-		if (result) {
-			WindowEx *wex = WindowEx::GetInstance(GetWindow(objthis));
-			if (wex)  wex->setSystemCommandThrough(true);
+		// 挿入する位置
+		UINT pos = ::GetMenuItemCount(menu);
+		BOOL insPos = TRUE;
+		if (sysdt > 0) {
+			// DATAを埋め込む（システムメニュー用）
+			mi.fMask |= MIIM_DATA;
+			mi.dwItemData = sysdt;
+
+			val.Clear();
+			obj->PropGet(0, TJS_W("insertPos"), 0, &val, obj);
+			if (val.Type() == tvtInteger) {
+				tjs_int n = (tjs_int)val;
+				if (n >= 0) pos = (UINT)n;
+			} else {
+				val.Clear();
+				obj->PropGet(0, TJS_W("insertID"), 0, &val, obj);
+				if (val.Type() == tvtInteger) {
+					tjs_int n = (tjs_int)val;
+					if (n >= 0) {
+						pos = (UINT)n;
+						insPos = FALSE;
+					}
+				}
+			}
 		}
-		if (r) *r = result;
-		return TJS_S_OK;
+		return !!::InsertMenuItem(menu, pos, insPos, &mi);
 	}
-	static tjs_error TJS_INTF_METHOD restoreSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
-		::GetSystemMenu(GetHWND(objthis), TRUE);
-		WindowEx *wex = WindowEx::GetInstance(GetWindow(objthis));
-		if (wex)  wex->setSystemCommandThrough(false);
-		return TJS_S_OK;
+	static HMENU CreateMenuList(HMENU menu, iTJSDispatch2 *obj, WORD &curid, WORD idmv, iTJSDispatch2 *items, DWORD sysdt) {
+		HMENU       ret = NULL;
+		tjs_int     count = 0;
+		tTJSVariant val;
+		// 子の個数を取得（エラーの場合は何もしない）
+		if (obj == NULL || TJS_FAILED(obj->PropGet(0, TJS_W("count"), 0, &val, obj)) ||
+			val.Type() != tvtInteger || (count = (tjs_int)val) <= 0) return ret;
+		ret = (menu != NULL) ? menu : (::CreatePopupMenu());
+		bool created = false;
+		for (tjs_int i = 0; i < count; i++) {
+			val.Clear();
+			if (TJS_SUCCEEDED(obj->PropGetByNum(0, i, &val, obj))) {
+				created |= InsertMenuItem(ret, val.AsObjectNoAddRef(), curid, idmv, items, sysdt);
+			}
+		}
+		// １つも生成されず，CreatePopupMenuをしている場合にはメニューを破棄
+		if (!created && menu == NULL) ::DestroyMenu(ret);
+		return created ? ret : NULL;
 	}
-	static tjs_error TJS_INTF_METHOD separateSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
-		HMENU menu = ::GetSystemMenu(GetHWND(objthis), FALSE);
+	static void RemoveMenuList(HMENU menu, DWORD sysdt) {
+		UINT cnt = ::GetMenuItemCount(menu);
 		MENUITEMINFO mi;
 		ZeroMemory(&mi, sizeof(mi));
 		mi.cbSize = sizeof(mi);
-		mi.fMask = MIIM_FTYPE;
-		mi.fType = MFT_SEPARATOR;
-		bool result = !!::InsertMenuItem(menu, ::GetMenuItemCount(menu), TRUE, &mi);
-		if (r) *r = result;
+		mi.fMask = MIIM_DATA;
+		for (int i = ((int)cnt)-1; i >= 0; i--) {
+			if (::GetMenuItemInfo(menu, i, TRUE, &mi) && mi.dwItemData == sysdt)
+				::DeleteMenu(menu, i, MF_BYPOSITION);
+		}
+	}
+
+	// MenuItem.popupEx(flags, x=cursorX, y=cursorY, hwnd=this.root.window, rect, menulist=this.children)
+	static tjs_error TJS_INTF_METHOD popupEx(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		iTJSDispatch2 *list = NULL;
+		HWND hwnd = NULL;
+		UINT flags = 0;
+		POINT pt = { 0, 0 };
+		TPMPARAMS *ptpm = NULL, tpm;
+		::GetCursorPos(&pt);
+		if (n >= 1) flags = (UINT)p[0]->AsInteger();
+		if (n >= 2 && p[1]->Type() != tvtVoid) pt.x = (int)p[1]->AsInteger();
+		if (n >= 3 && p[2]->Type() != tvtVoid) pt.y = (int)p[2]->AsInteger();
+		if (n >= 4 && p[3]->Type() == tvtObject) hwnd = WindowEx::GetHWND(p[3]->AsObjectNoAddRef());
+		else hwnd = GetHWND(objthis);
+		if (n >= 5 && p[4]->Type() == tvtObject) {
+			ZeroMemory(&tpm, sizeof(tpm));
+			tpm.cbSize = sizeof(tpm);
+			ncbPropAccessor rect(*(p[4]));
+			WindowEx::GetRect(&tpm.rcExclude, rect);
+			ptpm = &tpm;
+		}
+		if (n >= 6) list = p[5]->AsObjectNoAddRef();
+		if (list == NULL && objthis != NULL) {
+			tTJSVariant val;
+			objthis->PropGet(0, TJS_W("children"), 0, &val, objthis);
+			if (val.Type() == tvtObject) list = val.AsObjectNoAddRef();
+		}
+		iTJSDispatch2 *items = TJSCreateDictionaryObject();
+		WORD id = 0x4000;
+		HMENU menu = CreateMenuList(NULL, list, id, 1, items, 0);
+		if (menu != NULL) {
+			tTJSVariant val;
+			flags |= TPM_NONOTIFY | TPM_RETURNCMD;
+			id = (WORD)::TrackPopupMenuEx(menu, flags, pt.x, pt.y, hwnd, ptpm);
+			if (TJS_SUCCEEDED(items->PropGetByNum(0, (tjs_int)id, &val, items)) && val.Type() == tvtObject) {
+				if (r) *r = val;
+			}
+		}
+		items->Release();
 		return TJS_S_OK;
 	}
 };
@@ -913,9 +1055,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(MenuItemEx, MenuItem)
 	Property(TJS_W("bmpChecked"),   &Class::getBmpChecked,   &Class::setBmpChecked  );
 	Property(TJS_W("bmpUnchecked"), &Class::getBmpUnchecked, &Class::setBmpUnchecked);
 }
-NCB_ATTACH_FUNCTION(appendSystemMenu,    MenuItem, MenuItemEx::appendSystemMenu );
-NCB_ATTACH_FUNCTION(restoreSystemMenu,   MenuItem, MenuItemEx::restoreSystemMenu);
-NCB_ATTACH_FUNCTION(separateSystemMenu,  MenuItem, MenuItemEx::separateSystemMenu );
+NCB_ATTACH_FUNCTION(popupEx, MenuItem, MenuItemEx::popupEx);
 
 
 void WindowEx::checkUpdateMenuItem(HMENU menu, int pos, UINT id) {
@@ -939,6 +1079,27 @@ void WindowEx::setMenuItemID(iTJSDispatch2* obj, UINT id, bool set) {
 
 	if (!menuex) menuex = TJSCreateDictionaryObject();
 	menuex->PropSet(TJS_MEMBERENSURE, idstr.c_str(), idstr.GetHint(),  &var, menuex);
+}
+
+void WindowEx::resetSystemMenu() {
+	if (sysMenu != NULL && sysMenuModified != NULL) {
+		MenuItemEx::RemoveMenuList(sysMenu, (DWORD)sysMenuModified);
+	}
+	if (sysMenuModMap != NULL) sysMenuModMap->Release();
+	sysMenuModMap = NULL;
+}
+void WindowEx::modifySystemMenu() {
+	resetSystemMenu();
+	if (sysMenuModified == NULL || cachedHWND == NULL) return;
+	sysMenuModMap = TJSCreateDictionaryObject();
+	WORD id = 0xF000-1;
+	if (sysMenu == NULL) sysMenu = ::GetSystemMenu(cachedHWND, FALSE);
+	sysMenu = MenuItemEx::CreateMenuList(sysMenu, sysMenuModified, id, -1, sysMenuModMap, (DWORD)sysMenuModified);
+	if (sysMenu == NULL) {
+		::GetSystemMenu(cachedHWND, TRUE);
+		sysMenuModMap->Release();
+		sysMenuModMap = NULL;
+	}
 }
 
 
