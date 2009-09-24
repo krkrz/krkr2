@@ -266,6 +266,10 @@ class Window {
 	 * このメニューが選択されると onExSystemMenuSelected(選択されたオブジェクト) コールバックが発生
 	 */
 	property exSystemMenu { getter; setter; }
+
+
+	property enableNCMouseEvent { getter; setter; } //< WM_SETCURSORのコールバックonNonCapMouseEventを有効にする（デフォルト：false）
+	function onNonCapMouseEvent(ht, ev); //< WM_SETCURSORコールバック：ht=LOWORD(LParam), ev=HIWORD(LParam)
 }
 
 /**
