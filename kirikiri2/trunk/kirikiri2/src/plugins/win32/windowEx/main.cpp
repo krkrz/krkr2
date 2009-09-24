@@ -26,6 +26,7 @@
 #define EXEV_NCMSDOWN  TJS_W("onNcMouseDown")
 #define EXEV_NCMSUP    TJS_W("onNcMouseUp")
 #define EXEV_SYSMENU   TJS_W("onExSystemMenuSelected")
+#define EXEV_NCMSEV    TJS_W("onNonCapMouseEvent")
 
 ////////////////////////////////////////////////////////////////
 
@@ -185,7 +186,7 @@ struct WindowEx
 	// property exSystemMenu
 	static tjs_error TJS_INTF_METHOD getExSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		WindowEx *self = GetInstance(obj);
-		if (r) *r = (self != NULL && self->sysMenuModified);
+		if (r && self != NULL) *r = tTJSVariant(self->sysMenuModified, self->sysMenuModified);
 		return TJS_S_OK;
 	}
 	static tjs_error TJS_INTF_METHOD setExSystemMenu(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
@@ -196,6 +197,20 @@ struct WindowEx
 			self->sysMenuModified->Release();
 		}
 		/**/self->sysMenuModified = p[0]->AsObject();
+		/**/self->modifySystemMenu();
+		return TJS_S_OK;
+	}
+
+	// property enableNCMouseEvent
+	static tjs_error TJS_INTF_METHOD getEnNCMEvent(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		WindowEx *self = GetInstance(obj);
+		if (r) *r = (self != NULL && self->enableNCMEvent);
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setEnNCMEvent(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		WindowEx *self = GetInstance(obj);
+		if (self == NULL) return TJS_E_ACCESSDENYED;
+		self->enableNCMEvent = !!p[0]->AsInteger();
 		return TJS_S_OK;
 	}
 
@@ -266,6 +281,7 @@ struct WindowEx
 		switch (mes->Msg) {
 		case TVP_WM_ATTACH:
 			cachedHWND = (HWND)mes->LParam;
+			if (sysMenuModified != NULL) modifySystemMenu();
 			break;
 		case TVP_WM_DETACH:
 			resetSystemMenu();
@@ -280,6 +296,10 @@ struct WindowEx
 		}
 		HWND hwnd = cachedHWND;
 		if (hwnd != NULL) switch (mes->Msg) {
+		case WM_SETCURSOR:
+			if (enableNCMEvent)
+				return callback(EXEV_NCMSEV, (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam));
+			break;
 		case WM_SYSCOMMAND:
 			if (sysMenuModMap != NULL && (mes->WParam & 0xFFFF) < 0xF000) {
 				tTJSVariant var;
@@ -288,11 +308,6 @@ struct WindowEx
 				}
 			}
 			switch (mes->WParam & 0xFFF0) {
-			case SC_KEYMENU:
-			case SC_MOUSEMENU:
-				// システムメニューのカスタム
-				modifySystemMenu();
-				break;
 			case SC_MAXIMIZE:     return callback(EXEV_QUERYMAX);
 			case SC_SCREENSAVE:   return callback(EXEV_SCREENSV);
 			case SC_MONITORPOWER: return callback(EXEV_MONITORPW, (int)mes->LParam, 0);
@@ -345,6 +360,7 @@ struct WindowEx
 			break;
 		case WM_INITMENUPOPUP:
 			if (HIWORD(mes->LParam)) {
+				if (sysMenu != NULL && sysMenu == (HMENU)mes->WParam) modifySystemMenu();
 				if (disableResize) {
 					// システムメニューサイズ変更抑制
 					mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
@@ -409,6 +425,7 @@ struct WindowEx
 			hasMoving(false),
 			hasMove(false),
 			disableResize(false),
+			enableNCMEvent(false),
 			ovbmp(NULL)
 		{
 			cachedHWND = GetHWND(self);
@@ -459,6 +476,7 @@ private:
 	HMENU sysMenu;
 	bool hasResizing, hasMoving, hasMove, hasNcMsMove; //< メソッドが存在するかフラグ
 	bool disableResize; //< サイズ変更禁止
+	bool enableNCMEvent; //< WM_SETCURSORコールバック
 public:
 	//----------------------------------------------------------
 	// オーバーレイビットマップ用サブクラス
@@ -626,8 +644,8 @@ NCB_GET_INSTANCE_HOOK(WindowEx)
 // メソッド追加
 NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 {
-	Variant(TJS_W("nchtError"),       (tjs_int)HTERROR);
-	Variant(TJS_W("nchtTransparent"), (tjs_int)HTTRANSPARENT);
+	Variant(TJS_W("nchtError"),       (tjs_int)(HTERROR & 0xFFFF));
+	Variant(TJS_W("nchtTransparent"), (tjs_int)(HTTRANSPARENT & 0xFFFF));
 	Variant(TJS_W("nchtNoWhere"),     (tjs_int)HTNOWHERE);
 	Variant(TJS_W("nchtClient"),      (tjs_int)HTCLIENT);
 	Variant(TJS_W("nchtCaption"),     (tjs_int)HTCAPTION);
@@ -662,6 +680,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 	RawCallback(TJS_W("disableResize"),       &Class::getDisableResize,  &Class::setDisableResize, 0);
 	RawCallback(TJS_W("setOverlayBitmap"),    &Class::setOverlayBitmap,  0);
 	RawCallback(TJS_W("exSystemMenu"),        &Class::getExSystemMenu,   &Class::setExSystemMenu, 0);
+	RawCallback(TJS_W("enableNCMouseEvent"),  &Class::getEnNCMEvent,     &Class::setEnNCMEvent, 0);
 
 	Method(     TJS_W("registerExEvent"),     &Class::checkExEvents);
 }
