@@ -367,14 +367,34 @@ struct MatrixConvertor : public GdipTypeConvertor<T> {
 	}
 };
 
-static void MatrixInit(GdipWrapper<Matrix> *obj)
+static tjs_error
+MatrixFactory(GdipWrapper<Matrix> **result, tjs_int numparams, tTJSVariant **params, iTJSDispatch2 *objthis)
 {
-	obj->setGdipObject(new Matrix());
+	Matrix *matrix = NULL;
+	RectF *rect = NULL;
+	PointF *point = NULL;
+	if (numparams == 0) {
+		matrix = new Matrix();
+	} else if (numparams == 2 &&
+			   (params[0]->Type() == tvtObject && (rect = ncbInstanceAdaptor<RectF>::GetNativeInstance(params[0]->AsObjectNoAddRef()))) &&
+			   (params[1]->Type() == tvtObject && (point = ncbInstanceAdaptor<PointF>::GetNativeInstance(params[0]->AsObjectNoAddRef())))) {
+		matrix = new Matrix(*rect, point);
+	} else if (numparams == 6) {
+		matrix = new Matrix(params[0]->AsReal(),
+							params[1]->AsReal(),
+							params[2]->AsReal(),
+							params[3]->AsReal(),
+							params[4]->AsReal(),
+							params[5]->AsReal());
+	} else {
+		return TJS_E_INVALIDPARAM;
+	}
+	*result = new GdipWrapper<Matrix>(matrix);
+	return TJS_S_OK;
 }
 
 NCB_REGISTER_GDIP_SUBCLASS2(Matrix, MatrixConvertor)
-NCB_CONSTRUCTOR(());
-NCB_METHOD_PROXY(init, MatrixInit);
+Factory(MatrixFactory);
 NCB_GDIP_METHOD(OffsetX);
 NCB_GDIP_METHOD(OffsetY);
 NCB_GDIP_METHOD(Equals);
@@ -411,7 +431,7 @@ struct ImageConvertor : public GdipTypeConvertor<T> {
 			} else {
 				LayerExDraw *layer = ncbInstanceAdaptor<LayerExDraw>::GetNativeInstance(src.AsObjectNoAddRef());
 				if (layer) {
-					dst = layer->getImage();
+					dst = *layer;
 				} else {
 					dst = NULL;
 				}
@@ -424,9 +444,33 @@ struct ImageConvertor : public GdipTypeConvertor<T> {
 	}
 };
 
+
+static tjs_error
+ImageFactory(GdipWrapper<Image> **result, tjs_int numparams, tTJSVariant **params, iTJSDispatch2 *objthis)
+{
+	if (numparams == 0) {
+		*result = new GdipWrapper<Image>();
+		return TJS_S_OK;
+	} else if (numparams > 0 && params[0]->Type() == tvtString) {
+		Image *image = loadImage(params[0]->GetString());
+		if (image) {
+			*result = new GdipWrapper<Image>(image);
+			return TJS_S_OK;
+		} else {
+			TVPThrowExceptionMessage(TJS_W("cannot open:%1"), *params[0]);
+		}
+	}
+	return TJS_E_INVALIDPARAM;
+}
+
 static void ImageLoad(GdipWrapper<Image> *obj, const tjs_char *filename)
 {
-	obj->setGdipObject(loadImage(filename));
+	Image *image = loadImage(filename);
+	if (image) {
+		obj->setGdipObject(image);
+	} else {
+		TVPThrowExceptionMessage(TJS_W("cannot open:%1"), ttstr(filename));
+	}
 }
 
 static tTJSVariant ImageClone(GdipWrapper<Image> *obj)
@@ -467,7 +511,7 @@ static tTJSVariant ImageBounds(GdipWrapper<Image> *obj)
 }
 
 NCB_REGISTER_GDIP_SUBCLASS2(Image, ImageConvertor)
-NCB_CONSTRUCTOR(());
+Factory(ImageFactory);
 NCB_METHOD_PROXY(load, ImageLoad);
 NCB_METHOD_PROXY(Clone, ImageClone);
 NCB_METHOD_PROXY(GetBounds, ImageBounds);
@@ -719,6 +763,28 @@ NCB_REGISTER_CLASS(GdiPlus)
 	NCB_SUBCLASS(Appearance,Appearance);
 }
 
+#if 0
+template <class T>
+struct LayerExConvertor {
+	typedef T *ClassP;
+	void operator ()(ClassP &dst, const tTJSVariant &src) {
+		if (src.Type() == tvtObject) {
+			LayerExDraw *layer = ncbInstanceAdaptor<LayerExDraw>::GetNativeInstance(src.AsObjectNoAddRef());
+			if (layer) {
+				*dst = (ClassP)layer;
+			} else {
+				*dst = NULL;
+			}
+		}
+	}
+};
+#define LAYEREXCONV(type) \
+NCB_SET_CONVERTOR(type*, LayerExConvertor<type>) \
+NCB_SET_CONVERTOR(const type*, LayerExConvertor<const type>) \
+LAYEREXCONV(Bitmap);
+LAYEREXCONV(Graphics);
+#endif
+
 NCB_GET_INSTANCE_HOOK(LayerExDraw)
 {
 	// インスタンスゲッタ
@@ -735,6 +801,8 @@ NCB_GET_INSTANCE_HOOK(LayerExDraw)
 	~NCB_GET_INSTANCE_HOOK_CLASS () {
 	}
 };
+
+#define LAYEREX_METHOD(type,name)  Method(TJS_W(# name), &Type::name, Bridge<LayerExDraw::BridgeFunctor<type>>())
 
 // フックつきアタッチ
 NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
