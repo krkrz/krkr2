@@ -91,9 +91,6 @@ Image *loadImage(const tjs_char *name)
 		delete image;
 		image = NULL;
 	}
-	if (!image) {
-		TVPThrowExceptionMessage((ttstr(L"cannot load : ") + name).c_str());
-	}
 	return image;
 }
 
@@ -183,7 +180,7 @@ GdiPlus::addPrivateFont(const tjs_char *fontFileName)
 			}
 		}
 	}
-	TVPThrowExceptionMessage((ttstr(TJS_W("cannot open : ")) + fontFileName).c_str());
+	TVPThrowExceptionMessage(L"cannot open:%1", fontFileName);
 }
 
 /**
@@ -666,14 +663,16 @@ Brush* createBrush(const tTJSVariant colorOrBrush)
 			{
 				ttstr imgname = info.GetValue(L"image", ncbTypedefs::Tag<ttstr>());
 				Image *image = loadImage(imgname.c_str());
-				WrapMode wrapMode = (WrapMode)info.getIntValue(L"wrapMode", WrapModeTile);
-				tTJSVariant dstRect;
-				if (info.checkVariant(L"dstRect", dstRect)) {
-					brush = new TextureBrush(image, wrapMode, getRect(dstRect));
-				} else {
-					brush = new TextureBrush(image, wrapMode);
+				if (image) {
+					WrapMode wrapMode = (WrapMode)info.getIntValue(L"wrapMode", WrapModeTile);
+					tTJSVariant dstRect;
+					if (info.checkVariant(L"dstRect", dstRect)) {
+						brush = new TextureBrush(image, wrapMode, getRect(dstRect));
+					} else {
+						brush = new TextureBrush(image, wrapMode);
+					}
+					delete image;
 				}
-				delete image;
 				break;
 			}
 		case BrushTypePathGradient:

@@ -222,10 +222,20 @@ public:
 	}
 	int getUpdateWhenDraw() { return updateWhenDraw ? 1 : 0; }
 
-	Image *getImage() {
-		return (Image*)bitmap;
-	}
+	inline operator Image*() const { return (Image*)bitmap; }
+	inline operator Bitmap*() const { return bitmap; }
+	inline operator Graphics*() const { return graphics; }
+	inline operator const Image*() const { return (const Image*)bitmap; }
+	inline operator const Bitmap*() const { return bitmap; }
+	inline operator const Graphics*() const { return graphics; }
 	
+	template <class T>
+	struct BridgeFunctor {
+		T* operator()(LayerExDraw *p) const {
+			return (T*)*p;
+		}
+	};
+
 public:	
 	LayerExDraw(DispatchT obj);
 	~LayerExDraw();
