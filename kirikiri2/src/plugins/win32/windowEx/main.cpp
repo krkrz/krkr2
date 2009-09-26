@@ -26,7 +26,10 @@
 #define EXEV_NCMSDOWN  TJS_W("onNcMouseDown")
 #define EXEV_NCMSUP    TJS_W("onNcMouseUp")
 #define EXEV_SYSMENU   TJS_W("onExSystemMenuSelected")
+#define EXEV_KEYMENU   TJS_W("onStartKeyMenu")
+#define EXEV_ACCELKEY  TJS_W("onAccelKeyMenu")
 #define EXEV_NCMSEV    TJS_W("onNonCapMouseEvent")
+#define EXEV_MSGHOOK   TJS_W("onWindowsMessageHook")
 
 ////////////////////////////////////////////////////////////////
 
@@ -70,8 +73,8 @@ struct WindowEx
 	}
 
 	// SYSCOMMANDを送る
-	static tjs_error postSysCommand(iTJSDispatch2 *objthis, WPARAM param) {
-		::PostMessage(GetHWND(objthis), WM_SYSCOMMAND, param, 0);
+	static tjs_error postSysCommand(iTJSDispatch2 *objthis, WPARAM wp, LPARAM lp = 0) {
+		::PostMessage(GetHWND(objthis), WM_SYSCOMMAND, wp, lp);
 		return TJS_S_OK;
 	}
 
@@ -82,6 +85,7 @@ struct WindowEx
 	static tjs_error TJS_INTF_METHOD minimize(   tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_MINIMIZE); }
 	static tjs_error TJS_INTF_METHOD maximize(   tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_MAXIMIZE); }
 	static tjs_error TJS_INTF_METHOD showRestore(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { return postSysCommand(obj, SC_RESTORE);  }
+	static tjs_error TJS_INTF_METHOD focusMenuByKey(tTJSVariant *r,tjs_int n,tTJSVariant **p,iTJSDispatch2 *obj) { return postSysCommand(obj, SC_KEYMENU, n >= 0 ? (LPARAM)p[0]->AsInteger() : 0);  }
 
 	// resetWindowIcon
 	static tjs_error TJS_INTF_METHOD resetWindowIcon(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { 
@@ -214,6 +218,38 @@ struct WindowEx
 		return TJS_S_OK;
 	}
 
+	// ncHitTest
+	static tjs_error TJS_INTF_METHOD nonClientHitTest(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		if (n < 2) return TJS_E_BADPARAMCOUNT;
+		tjs_int x = (p[0]->AsInteger()) & 0xFFFF;
+		tjs_int y = (p[1]->AsInteger()) & 0xFFFF;
+		if (r) *r = (tjs_int)::SendMessage(GetHWND(obj), WM_NCHITTEST, 0, (LPARAM)(x | y << 16));
+		return TJS_S_OK;
+	}
+
+	// setMessageHook
+	static tjs_error TJS_INTF_METHOD setMessageHook(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		WindowEx *self = GetInstance(obj);
+		if (self == NULL) return TJS_E_ACCESSDENYED;
+		bool on  = (n >= 1) ? !!p[0]->AsInteger() : false;
+		bool ret = false;
+		if (n >= 2) {
+			tjs_int num = -1;
+			if (p[1]->Type() == tvtString) {
+				ttstr key(*p[1]);
+				num = getWindowNotificationNum(key);
+			} else {
+				num = (tjs_int)*p[1];
+			}
+			if (num < 0 || num >= 0x400) return TJS_E_FAIL;
+			ret = self->setMessageHookOnel(on, num);
+		} else {
+			ret = self->setMessageHookAll(on);
+		}
+		if (r) *r = ret;
+		return TJS_S_OK;
+	}
+
 	//--------------------------------------------------------------
 	// 拡張イベント用
 
@@ -295,10 +331,21 @@ struct WindowEx
 			break;
 		}
 		HWND hwnd = cachedHWND;
-		if (hwnd != NULL) switch (mes->Msg) {
+		if (hwnd == NULL) return false;
+		if (enableWinMsgHook && mes->Msg < 0x400 && (bitHooks[mes->Msg>>5] & (1<<(mes->Msg&31)))) {
+			callback(EXEV_MSGHOOK, mes->Msg, mes->WParam, mes->LParam, 0);
+		}
+		switch (mes->Msg) {
 		case WM_SETCURSOR:
 			if (enableNCMEvent)
 				return callback(EXEV_NCMSEV, (int)LOWORD(mes->LParam), (int)HIWORD(mes->LParam));
+			break;
+		case WM_MENUCHAR:
+			if (callback(EXEV_ACCELKEY, (int)LOWORD(mes->WParam), (int)HIWORD(mes->WParam))) {
+				LRESULT res =     mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
+				if (!HIWORD(res)) mes->Result |= (1 << 16);
+				return true;
+			}
 			break;
 		case WM_SYSCOMMAND:
 			if (sysMenuModMap != NULL && (mes->WParam & 0xFFFF) < 0xF000) {
@@ -311,6 +358,7 @@ struct WindowEx
 			case SC_MAXIMIZE:     return callback(EXEV_QUERYMAX);
 			case SC_SCREENSAVE:   return callback(EXEV_SCREENSV);
 			case SC_MONITORPOWER: return callback(EXEV_MONITORPW, (int)mes->LParam, 0);
+			case SC_KEYMENU:      return callback(EXEV_KEYMENU,   (int)mes->LParam, 0);
 			}
 			break;
 		case WM_SIZE:
@@ -426,10 +474,12 @@ struct WindowEx
 			hasMove(false),
 			disableResize(false),
 			enableNCMEvent(false),
+			enableWinMsgHook(false),
 			ovbmp(NULL)
 		{
 			cachedHWND = GetHWND(self);
 			regist(true);
+			setMessageHookAll(false);
 		}
 
 	~WindowEx() {
@@ -453,6 +503,40 @@ struct WindowEx
 
 	void resetSystemMenu();
 	void modifySystemMenu();
+	bool setMessageHookOnel(bool on, tjs_int num) {
+		if (num >= 0 && num < 0x400) {
+			if (on) {
+				bitHooks[num>>5] |=   1L<<(num&31);
+				enableWinMsgHook = true;
+			} else {
+				enableWinMsgHook = false;
+				bitHooks[num>>5] &= ~(1L<<(num&31));
+				for (int i = 0; i < 0x0400/32; i++)
+					if (bitHooks[i]) { enableWinMsgHook = true; break; }
+			}
+		}
+		return enableWinMsgHook;
+	}
+	bool setMessageHookAll(bool on) {
+		DWORD v = on ? ~0L : 0;
+		for (int i = 0; i < 0x0400/32; i++) bitHooks[i] = v;
+		return (enableWinMsgHook = on);
+	}
+
+	static tjs_int getWindowNotificationNum(ttstr key) {
+		tTJSVariant tmp;
+		if (!_getNotificationVariant(tmp))
+			TVPThrowExceptionMessage(TJS_W("cache setup failed."));
+		ncbPropAccessor nf(tmp);
+		return nf.getIntValue(key.c_str(), -1);
+	}
+	static ttstr getWindowNotificationName(tjs_int num) {
+		tTJSVariant tmp;
+		if (!_getNotificationVariant(tmp))
+			TVPThrowExceptionMessage(TJS_W("cache setup failed."));
+		ncbPropAccessor nf(tmp);
+		return nf.getStrValue(num);
+	}
 
 protected:
 	tjs_error _setOverlayBitmap(tjs_int n, tTJSVariant **p) {
@@ -469,6 +553,86 @@ protected:
 		}
 		return TJS_S_OK;
 	}
+	static bool _getNotificationVariant(tTJSVariant &tmp) {
+		iTJSDispatch2 *obj =  TVPGetScriptDispatch();
+		tmp.Clear();
+		bool hasval = TJS_SUCCEEDED(obj->PropGet(TJS_MEMBERMUSTEXIST, TJS_W("Window"), 0, &tmp, obj));
+		obj->Release();
+		if (!hasval) return false;
+
+		obj = tmp.AsObjectNoAddRef();
+		tmp.Clear();
+		if (TJS_FAILED(obj->PropGet(TJS_MEMBERMUSTEXIST, TJS_W("_Notifications"), 0, &tmp, obj))) {
+			ncbDictionaryAccessor dict;
+#ifndef WM_CTLCOLOR
+#define WM_CTLCOLOR 0x0019
+#endif
+#define WM(key) dict.SetValue(TJS_W(# key), WM_ ## key), dict.SetValue(WM_ ## key, ttstr(TJS_W(# key)))
+			WM(NULL),						WM(CREATE),						WM(DESTROY),					WM(MOVE),					
+			WM(SIZE),						WM(ACTIVATE),					WM(SETFOCUS),					WM(KILLFOCUS),				
+			WM(ENABLE),						WM(SETREDRAW),					WM(SETTEXT),					WM(GETTEXT),				
+			WM(GETTEXTLENGTH),				WM(PAINT),						WM(CLOSE),						WM(QUERYENDSESSION),		
+			WM(QUERYOPEN),					WM(ENDSESSION),					WM(QUIT),						WM(ERASEBKGND),				
+			WM(SYSCOLORCHANGE),				WM(SHOWWINDOW),					WM(CTLCOLOR),					WM(WININICHANGE),			
+			WM(SETTINGCHANGE),				WM(DEVMODECHANGE),				WM(ACTIVATEAPP),				WM(FONTCHANGE),				
+			WM(TIMECHANGE),					WM(CANCELMODE),					WM(SETCURSOR),					WM(MOUSEACTIVATE),			
+			WM(CHILDACTIVATE),				WM(QUEUESYNC),					WM(GETMINMAXINFO),				WM(PAINTICON),				
+			WM(ICONERASEBKGND),				WM(NEXTDLGCTL),					WM(SPOOLERSTATUS),				WM(DRAWITEM),				
+			WM(MEASUREITEM),				WM(DELETEITEM),					WM(VKEYTOITEM),					WM(CHARTOITEM),				
+			WM(SETFONT),					WM(GETFONT),					WM(SETHOTKEY),					WM(GETHOTKEY),				
+			WM(QUERYDRAGICON),				WM(COMPAREITEM),				WM(GETOBJECT),					WM(COMPACTING),				
+			WM(COMMNOTIFY),					WM(WINDOWPOSCHANGING),			WM(WINDOWPOSCHANGED),			WM(POWER),					
+			WM(COPYDATA),					WM(CANCELJOURNAL),				WM(NOTIFY),						WM(INPUTLANGCHANGEREQUEST),	
+			WM(INPUTLANGCHANGE),			WM(TCARD),						WM(HELP),						WM(USERCHANGED),			
+			WM(NOTIFYFORMAT),				WM(CONTEXTMENU),				WM(STYLECHANGING),				WM(STYLECHANGED),			
+			WM(DISPLAYCHANGE),				WM(GETICON),					WM(SETICON),					WM(NCCREATE),				
+			WM(NCDESTROY),					WM(NCCALCSIZE),					WM(NCHITTEST),					WM(NCPAINT),				
+			WM(NCACTIVATE),					WM(GETDLGCODE),					WM(SYNCPAINT),					WM(NCMOUSEMOVE),			
+			WM(NCLBUTTONDOWN),				WM(NCLBUTTONUP),				WM(NCLBUTTONDBLCLK),			WM(NCRBUTTONDOWN),			
+			WM(NCRBUTTONUP),				WM(NCRBUTTONDBLCLK),			WM(NCMBUTTONDOWN),				WM(NCMBUTTONUP),			
+			WM(NCMBUTTONDBLCLK),			WM(NCXBUTTONDOWN),				WM(NCXBUTTONUP),				WM(NCXBUTTONDBLCLK),		
+			WM(INPUT_DEVICE_CHANGE),		WM(INPUT),						WM(KEYFIRST),					WM(KEYDOWN),				
+			WM(KEYUP),						WM(CHAR),						WM(DEADCHAR),					WM(SYSKEYDOWN),				
+			WM(SYSKEYUP),					WM(SYSCHAR),					WM(SYSDEADCHAR),				WM(UNICHAR),				
+			WM(KEYLAST),					WM(KEYLAST),					WM(IME_STARTCOMPOSITION),		WM(IME_ENDCOMPOSITION),		
+			WM(IME_COMPOSITION),			WM(IME_KEYLAST),				WM(INITDIALOG),					WM(COMMAND),				
+			WM(SYSCOMMAND),					WM(TIMER),						WM(HSCROLL),					WM(VSCROLL),				
+			WM(INITMENU),					WM(INITMENUPOPUP),				WM(MENUSELECT),					WM(MENUCHAR),				
+			WM(ENTERIDLE),					WM(MENURBUTTONUP),				WM(MENUDRAG),					WM(MENUGETOBJECT),			
+			WM(UNINITMENUPOPUP),			WM(MENUCOMMAND),				WM(CHANGEUISTATE),				WM(UPDATEUISTATE),			
+			WM(QUERYUISTATE),				WM(CTLCOLORMSGBOX),				WM(CTLCOLOREDIT),				WM(CTLCOLORLISTBOX),		
+			WM(CTLCOLORBTN),				WM(CTLCOLORDLG),				WM(CTLCOLORSCROLLBAR),			WM(CTLCOLORSTATIC),			
+			WM(MOUSEFIRST),					WM(MOUSEMOVE),					WM(LBUTTONDOWN),				WM(LBUTTONUP),				
+			WM(LBUTTONDBLCLK),				WM(RBUTTONDOWN),				WM(RBUTTONUP),					WM(RBUTTONDBLCLK),			
+			WM(MBUTTONDOWN),				WM(MBUTTONUP),					WM(MBUTTONDBLCLK),				WM(MOUSEWHEEL),				
+			WM(XBUTTONDOWN),				WM(XBUTTONUP),					WM(XBUTTONDBLCLK),				WM(MOUSEHWHEEL),			
+			WM(MOUSELAST),					WM(MOUSELAST),					WM(MOUSELAST),					WM(MOUSELAST),				
+			WM(PARENTNOTIFY),				WM(ENTERMENULOOP),				WM(EXITMENULOOP),				WM(NEXTMENU),				
+			WM(SIZING),						WM(CAPTURECHANGED),				WM(MOVING),						WM(POWERBROADCAST),			
+			WM(DEVICECHANGE),				WM(MDICREATE),					WM(MDIDESTROY),					WM(MDIACTIVATE),			
+			WM(MDIRESTORE),					WM(MDINEXT),					WM(MDIMAXIMIZE),				WM(MDITILE),				
+			WM(MDICASCADE),					WM(MDIICONARRANGE),				WM(MDIGETACTIVE),				WM(MDISETMENU),				
+			WM(ENTERSIZEMOVE),				WM(EXITSIZEMOVE),				WM(DROPFILES),					WM(MDIREFRESHMENU),			
+			WM(IME_SETCONTEXT),				WM(IME_NOTIFY),					WM(IME_CONTROL),				WM(IME_COMPOSITIONFULL),	
+			WM(IME_SELECT),					WM(IME_CHAR),					WM(IME_REQUEST),				WM(IME_KEYDOWN),			
+			WM(IME_KEYUP),					WM(MOUSEHOVER),					WM(MOUSELEAVE),					WM(NCMOUSEHOVER),			
+			WM(NCMOUSELEAVE),				WM(WTSSESSION_CHANGE),			WM(TABLET_FIRST),				WM(TABLET_LAST),			
+			WM(CUT),						WM(COPY),						WM(PASTE),						WM(CLEAR),					
+			WM(UNDO),						WM(RENDERFORMAT),				WM(RENDERALLFORMATS),			WM(DESTROYCLIPBOARD),		
+			WM(DRAWCLIPBOARD),				WM(PAINTCLIPBOARD),				WM(VSCROLLCLIPBOARD),			WM(SIZECLIPBOARD),			
+			WM(ASKCBFORMATNAME),			WM(CHANGECBCHAIN),				WM(HSCROLLCLIPBOARD),			WM(QUERYNEWPALETTE),		
+			WM(PALETTEISCHANGING),			WM(PALETTECHANGED),				WM(HOTKEY),						WM(PRINT),					
+			WM(PRINTCLIENT),				WM(APPCOMMAND),					WM(THEMECHANGED),				WM(CLIPBOARDUPDATE),		
+			WM(DWMCOMPOSITIONCHANGED),		WM(DWMNCRENDERINGCHANGED),		WM(DWMCOLORIZATIONCOLORCHANGED),WM(DWMWINDOWMAXIMIZEDCHANGE),
+			WM(GETTITLEBARINFOEX),			WM(HANDHELDFIRST),				WM(HANDHELDLAST),				WM(AFXFIRST),				
+			WM(AFXLAST),					WM(PENWINFIRST),				WM(PENWINLAST),
+#undef WM
+			tmp = dict;
+			if (TJS_FAILED(obj->PropSet(TJS_MEMBERENSURE, TJS_W("_Notifications"), 0, &tmp, obj)))
+				return false;
+		}
+		return true;
+	}
 private:
 	iTJSDispatch2 *self, *menuex;
 	iTJSDispatch2 *sysMenuModified, *sysMenuModMap; //< システムメニュー改変用
@@ -477,6 +641,8 @@ private:
 	bool hasResizing, hasMoving, hasMove, hasNcMsMove; //< メソッドが存在するかフラグ
 	bool disableResize; //< サイズ変更禁止
 	bool enableNCMEvent; //< WM_SETCURSORコールバック
+	bool enableWinMsgHook; //< メッセージフック有効
+	DWORD bitHooks[0x0400/32];
 public:
 	//----------------------------------------------------------
 	// オーバーレイビットマップ用サブクラス
@@ -678,11 +844,16 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 	RawCallback(TJS_W("getClientRect"),       &Class::getClientRect,     0);
 	RawCallback(TJS_W("getNormalRect"),       &Class::getNormalRect,     0);
 	RawCallback(TJS_W("disableResize"),       &Class::getDisableResize,  &Class::setDisableResize, 0);
-	RawCallback(TJS_W("setOverlayBitmap"),    &Class::setOverlayBitmap,  0);
+	RawCallback(TJS_W("setOverlayBitmap"),                               &Class::setOverlayBitmap,  0);
 	RawCallback(TJS_W("exSystemMenu"),        &Class::getExSystemMenu,   &Class::setExSystemMenu, 0);
 	RawCallback(TJS_W("enableNCMouseEvent"),  &Class::getEnNCMEvent,     &Class::setEnNCMEvent, 0);
+	RawCallback(TJS_W("ncHitTest"),           &Class::nonClientHitTest,  0);
+	RawCallback(TJS_W("focusMenuByKey"),      &Class::focusMenuByKey,    0);
+	RawCallback(TJS_W("setMessageHook"),      &Class::setMessageHook,    0);
 
 	Method(     TJS_W("registerExEvent"),     &Class::checkExEvents);
+	Method(     TJS_W("getNotificationNum"),  &Class::getWindowNotificationNum);
+	Method(     TJS_W("getNotificationName"), &Class::getWindowNotificationName);
 }
 
 ////////////////////////////////////////////////////////////////

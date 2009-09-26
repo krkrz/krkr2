@@ -233,6 +233,12 @@ class Window {
 	function onNcMouseDown(x, y, btn, ht);
 	function onNcMouseLeave();
 
+	/**
+	 * 非クライアントエリア調査
+	 * @param x, y スクリーン座標
+	 */
+	function ncHitTest(x, y);
+
 	/// NCHITTEST定数
 	/* static */ var nchtError;					//< HTERROR
 	/* static */ var nchtTransparent;			//< HTTRANSPARENT
@@ -268,8 +274,16 @@ class Window {
 	property exSystemMenu { getter; setter; }
 
 
+	// 以下特殊用途
 	property enableNCMouseEvent { getter; setter; } //< WM_SETCURSORのコールバックonNonCapMouseEventを有効にする（デフォルト：false）
 	function onNonCapMouseEvent(ht, ev); //< WM_SETCURSORコールバック：ht=LOWORD(LParam), ev=HIWORD(LParam)
+	function focusMenuByKey(key); //< SC_KEYMENUを送る
+	function onStartKeyMenu(key); //< SC_KEYMENU通知コールバック
+	function onAccelKeyMenu(key,st); //< WM_MENUCHAR通知コールバック
+	function setMessageHook(on, ev); //< メッセージフックを設定(on:有効, ev:イベント番号またはイベント名文字：省略時全部）
+	function onWindowsMessageHook(msg,wp,lp); //< setMessageHookで指定したイベント発生時のコールバック
+	/*static*/function getNotificationNum(name); //< WM_XXXイベント番号を取得（WM_は除いて渡す）
+	/*static*/function getNotificationName(num); //< イベント番号からWM_XXXを取得（WM_を除いて返る）
 }
 
 /**
