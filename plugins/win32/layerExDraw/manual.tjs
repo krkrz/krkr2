@@ -193,6 +193,7 @@ class GdiPlus {
 	/**
 	 * プライベートフォントの追加(static)
 	 * @param fontFileName フォントファイル名
+	 * @throws Exception フォントファイルが開けない
 	 * アプリケーション固有のフォントを追加します。
 	 * 吉里吉里アーカイブ中にあるフォントも登録できます。
 	 */
@@ -249,6 +250,7 @@ class GdiPlus {
 		 * @param colorOrBrush ARGB色指定またはブラシ情報（辞書）
 		 * @param ox 表示オフセットX
 		 * @param oy 表示オフセットY
+		 * @throws Exception ブラシ生成に失敗
 		 *
 		 * ブラシ情報定義
 		 * 基本  点指定は [x,y] の配列または %[x:x, y:y] の辞書
@@ -307,6 +309,7 @@ class GdiPlus {
 		 * @param widthOrOption ペン幅またはペン情報（辞書）
 		 * @param ox 表示オフセットX
 		 * @param oy 表示オフセットY
+		 * @throws Exception ブラシ生成に失敗
 		 *
 		 * ペン情報定義: widthOrOption が辞書の場合は詳細情報定義になります
 		 * パラメータについては GDI+ のドキュメントを見て研究してください
@@ -364,10 +367,31 @@ class GdiPlus {
 	 * マトリックス情報を取り扱うクラス
 	 */
 	class Matrix {
-		// コンストラクタ XXX 現時点では引数は処理できません。初期化後、必ず init() が必要です
-		function Matrix();
-		function init();
 
+		/**
+		 * コンストラクタ
+		 * 正規マトリックスを生成する
+		 */
+		function Matrix();
+
+		/**
+		 * コンストラクタ
+		 * @param rectF 矩形(RectFクラス) マトリックスの回転部
+		 * @param pointF ポイント(PointFクラス) マトリックスの移動部
+		 */
+		function Matrix(rectF, pointF);
+
+		/**
+		 * コンストラクタ
+		 * @param m11 第1行1列
+		 * @param m12 第1行2列
+		 * @param m21 第2行1列
+		 * @param m22 第2行2列
+		 * @param dx  第3行1列
+		 * @param dy  第3行2列
+		 */
+		function Matrix(m11, m12, m21, m22, dx, dy);
+		
 		function OffsetX();
 		function OffsetY();
 		function Equals();
@@ -391,12 +415,17 @@ class GdiPlus {
 	 */
 	class Image {
 
-		// コンストラクタ XXX 現時点では引数は処理できません。初期化後、かならず load() が必要です。
-		function Image();
+		/**
+		 * コンストラクタ
+		 * @param filename ファイル名。指定された場合は自動的にロードします
+		 * @throws Exception 画像ロードに失敗
+		 */
+		function Image(filename=void);
 		
 		/**
 		 * 画像をロードする
 		 * @param filename 画像ファイル名
+		 * @throws Exception 画像ロードに失敗
 		 */
 		function load(filename);
 
