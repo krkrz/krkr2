@@ -26,9 +26,9 @@ with (Debug.console.getPlacement())
 	   "normal", .normalLeft, .normalTop, .normalRight, .normalBottom);
 
 class TestWindow extends Window {
-	var icon, mark;
+	var icon, mark, ex;
 	function finalize() { super.finalize(...); }
-	function TestWindow(title) {
+	function TestWindow(title, ex = true) {
 		super.Window();
 
 		caption = title;
@@ -40,10 +40,13 @@ class TestWindow extends Window {
 		primaryLayer.visible = true;
 		visible = true;
 
-		icon.loadImages("testicon"); //, 0x00FF00);
+		if (ex) {
+			icon.loadImages("testicon"); //, 0x00FF00);
 
-		registerExEvent();
-		createMenu();
+			registerExEvent();
+			createMenu();
+		}
+		this.ex = ex;
 	}
 	function createMenu() {
 		var tes1 = new MenuItem(this, "test1");
@@ -79,7 +82,7 @@ class TestWindow extends Window {
 
 		// （子を作る／子が消えるとIDが変わるのでbmpItemが表示されない）
 		var sub = new MenuItem(this, "xxx");
-		sub.onClick = function { inform("xxx"); } incontextof System;
+		sub.onClick = function { System.inform("xxx"); focusMenuByKey(); } incontextof this;
 
 		mark.add(sub);
 		sub.setBmpItem(icon); //"testicon"); //MenuItem.biClose);
@@ -149,6 +152,7 @@ class TestWindow extends Window {
 	property iwh        { getter {                        return @"IWH:${innerWidth},${innerHeight}"; } }
 
 	function onMouseUp(x, y, btn) {
+		if (!ex) return;
 		switch (btn) {
 		case  mbRight: menu.children[1].popup(tpmTopAlign|tpmLeftAlign, x, y); break;
 		case  mbLeft :
@@ -204,7 +208,7 @@ function TestGetMonitorInfo(args*) {
 var testWin = new TestWindow("MainWindow");
 //testWin.add(new TestWindow("SubWindow"));
 
-var testWin2 = new TestWindow("SubWindow");
+var subWin = new TestWindow("SubWindow"/*, false*/);
 
 var timer = new Timer(testWin, "checkTimer");
 timer.interval = 5000;
