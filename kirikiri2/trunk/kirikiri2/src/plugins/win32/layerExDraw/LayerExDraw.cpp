@@ -1931,22 +1931,30 @@ LayerExDraw::getGlyphOutline(const FontInfo *fontInfo, PointF &offset, GraphicsP
                               NULL, 
                               &mat 
                               );
-  if (size <= 0) {
-    return;
-  }
-
-  char *buffer = new char[size];
-  int result = GetGlyphOutlineW(metaHDC,
-                                glyph,
-                                GGO_BEZIER, //  | GGO_GLYPH_INDEX,
-                                &gm, 
-                                size, 
-                                buffer, 
-                                &mat 
-                                );
-  if (result <= 0) {
-    delete[] buffer;
-    return;
+  char *buffer = NULL;
+  if (size > 0) {
+	  buffer = new char[size];
+	  int result = GetGlyphOutlineW(metaHDC,
+									glyph,
+									GGO_BEZIER, //  | GGO_GLYPH_INDEX,
+									&gm, 
+									size, 
+									buffer, 
+									&mat 
+									);
+	  if (result <= 0) {
+		  delete[] buffer;
+		  return;
+	  }
+  } else {
+	  GetGlyphOutlineW(metaHDC,
+					   glyph,
+					   GGO_METRICS,
+					   &gm, 
+					   0, 
+					   NULL, 
+					   &mat 
+					   );
   }
 
   int index = 0;
