@@ -3652,6 +3652,12 @@ class KAGWindow extends Window
 		// restore から呼ばれ、栞を保存したときに揺れていた場合は揺らす
 		if(quaking && quakeEndTick == -1)
 			quakeTimer.enabled =true;
+		// MEMO: time 属性付きの quake は restore() 時に復旧されないが
+		//  セーブラベルと quake の位置によっては quaking の値が狂う場合がある。
+		//  quaking 自体あまり必要には見えないが互換性維持のためここで帳尻を合わせておく。
+		else
+		if(!quakeTimer.enabled)	// 誤って restoreQuake() が呼び出された場合の quaking 値の保護
+			quaking = false;
 	}
 
 	function stopQuake()
