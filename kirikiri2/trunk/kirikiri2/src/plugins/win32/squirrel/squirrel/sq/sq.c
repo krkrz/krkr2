@@ -16,6 +16,7 @@
 #include <sqstdmath.h>	
 #include <sqstdstring.h>
 #include <sqstdaux.h>
+#include "sqobject/sqobject.h"
 
 #ifdef SQUNICODE
 #define scfprintf fwprintf
@@ -287,7 +288,8 @@ int main(int argc, char* argv[])
 	_CrtSetAllocHook(MemAllocHook);
 #endif
 	
-	v=sq_open(1024);
+	//v= sq_open(1024);
+	v= sqobject::init();
 	sq_setprintfunc(v,printfunc);
 
 	sq_pushroottable(v);
@@ -295,13 +297,15 @@ int main(int argc, char* argv[])
 	sqstd_register_bloblib(v);
 	sqstd_register_iolib(v);
 	sqstd_register_systemlib(v);
-	sqstd_register_mathlib(v);
-	sqstd_register_stringlib(v);
+//	sqstd_register_mathlib(v);
+//	sqstd_register_stringlib(v);
 
 	//aux library
 	//sets error handlers
-	sqstd_seterrorhandlers(v);
+//	sqstd_seterrorhandlers(v);
 
+	sqobject::Object::registerClass();
+	
 	//gets arguments
 	switch(getargs(v,argc,argv))
 	{
@@ -313,7 +317,8 @@ int main(int argc, char* argv[])
 		break;
 	}
 
-	sq_close(v);
+	//sq_close(v);
+	sqobject::done();
 	
 #if defined(_MSC_VER) && defined(_DEBUG)
 	_getch();
