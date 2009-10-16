@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "ncbind/ncbind.hpp"
+#include <vector>
 
 #include <squirrel.h>
 #include <sqstdio.h>
@@ -343,6 +344,33 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 }
 
 //---------------------------------------------------------------------------
+
+/**
+ * System クラスへの Squirrel 実行メソッドの追加
+ */
+class SystemSquirrel {
+public:
+	SystemSquirrel() {};
+
+	// squirrel終了時にシステムを終了させる
+	static bool exitOnSquirrelDone;
+	
+	static void setExitOnSquirrelDone(bool value) {
+		exitOnSquirrelDone = value;
+	}
+
+	static bool getExitOnSquirrelDone() {
+		return exitOnSquirrelDone;
+	}
+};
+
+bool SystemSquirrel::exitOnSquirrelDone = false;
+
+NCB_ATTACH_CLASS(SystemSquirrel, System) {
+	NCB_PROPERTY(exitOnSquirrelDone, getExitOnSquirrelDone, setExitOnSquirrelDone);
+}
+
+//---------------------------------------------------------------------------
 // sqyurrel スレッド処理用インターフェース
 //---------------------------------------------------------------------------
 
@@ -391,6 +419,17 @@ public:
 			TVPPostEvent(global, global, end, 0, TVP_EPT_IMMEDIATE, 2, params);
 		}
 		prevTick = tick;
+
+		// 終了処理
+		if (SystemSquirrel::exitOnSquirrelDone && sqobject::Thread::getThreadCount() == 0) {
+			// スレッドが全部終了してコンソールとコントローラも出てなければ終了
+			tTJSVariant consoleVisible, controllerVisible;
+			TVPExecuteExpression("Debug.console.visible", &consoleVisible);
+			TVPExecuteExpression("Debug.controller.visible", &controllerVisible);
+			if (!consoleVisible.AsInteger() && !controllerVisible.AsInteger()) {
+				TVPExecuteScript("System.terminate();");
+			}
+		}
 	}
 
 	bool isWorking() {
@@ -998,6 +1037,34 @@ static void PostRegistCallback()
 	// スレッド機構初期化
 	sqobject::Thread::init();
 	sqthreadcont.start();
+
+	// 初期スクリプト実行
+	if (TVPIsExistentStorage(L"startup.nut")) {
+		// 引数リストを生成
+		std::vector<ttstr>args;
+		int argc = 0;
+		while (true) {
+			ttstr argname = ttstr("-arg") + ttstr(argc);
+			tTJSVariant arg;
+			if (TVPGetCommandLine(argname.c_str(), &arg)) {
+				args.push_back(arg.GetString());
+				argc++;
+			} else {
+				break;
+			}
+		}
+		const SQChar **argv = NULL;
+		if (argc > 0) {
+			argv = (const SQChar**)malloc(sizeof(SQChar*) * argc);
+			for (int i=0;i<argc;i++) {
+				argv[i] = args[i].c_str();
+			}
+		}
+		if (!sqobject::Thread::fork(L"startup.nut", argc, argv)) {
+			TVPAddLog(L"failed to fork startup.nut");
+		}
+		free(argv);
+	}
 }
 
 /**
@@ -1005,11 +1072,12 @@ static void PostRegistCallback()
  */
 static void PreUnregistCallback()
 {
+	// スレッド系停止
 	sqthreadcont.stop();
 	sqobject::doneContinuous();
 	sqobject::Thread::done();
 	TJSObject::done();
-
+	
 	if (ArrayCountProp) {
 		ArrayCountProp->Release();
 		ArrayCountProp = NULL;
@@ -1033,7 +1101,6 @@ static void PostUnregistCallback()
 {
 	// squirrel 終了
 	sqobject::done();
-	TVPAddLog(L"squirrel終了");
 }
 
 NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
