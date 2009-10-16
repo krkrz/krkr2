@@ -1,7 +1,16 @@
 Author: 渡邊剛(go@wamsoft.jp)
 Date: 2009/4/29
 
+●Object/Thread機能
+
+疑似スレッド処理のフレームワークのコードが追加されています。
+詳細は sqobject/readme.txt を参照してください。
+関連して sq コマンドも Object 機能が組み込まれています。
+※ Thread は対応させていません
+
 ●squirrel機能追加
+
+以下のような機能が標準delegate/標準ライブラリに拡張されています。
 
 ◇数学関数追加
 
