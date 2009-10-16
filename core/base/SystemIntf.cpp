@@ -395,6 +395,24 @@ TJS_BEGIN_NATIVE_PROP_DECL(exitOnWindowClose)
 }
 TJS_END_NATIVE_PROP_DECL(exitOnWindowClose)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(exitOnNoWindowStartup)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		*result = TVPTerminateOnNoWindowStartup;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_BEGIN_NATIVE_PROP_SETTER
+	{
+		TVPTerminateOnNoWindowStartup = (tjs_int)*param;
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(exitOnNoWindowStartup)
+//----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
