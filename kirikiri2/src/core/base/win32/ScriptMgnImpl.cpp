@@ -313,7 +313,7 @@ void TVPInitializeStartupScript()
 	TVPStartObjectHashMap();
 
 	TVPExecuteStartupScript();
-	if(TVPGetWindowCount() == 0 && (TVPMainForm && !TVPMainForm->Visible))
+	if(TVPTerminateOnNoWindowStartup && TVPGetWindowCount() == 0 && (TVPMainForm && !TVPMainForm->Visible))
 	{
 		// no window is created and main window is invisible
 		Application->Terminate();

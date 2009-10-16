@@ -1278,6 +1278,7 @@ void TVPAfterSystemUninit()
 //---------------------------------------------------------------------------
 bool TVPTerminated = false;
 bool TVPTerminateOnWindowClose = true;
+bool TVPTerminateOnNoWindowStartup = true;
 //---------------------------------------------------------------------------
 void TVPTerminateAsync()
 {
