@@ -577,6 +577,12 @@ Thread::main()
 	return (int)threadList.len();
 };
 
+int
+Thread::getThreadCount()
+{
+	return (int)threadList.len();
+}
+
 /**
  * スクリプト実行開始用
  * @param scriptName スクリプト名
