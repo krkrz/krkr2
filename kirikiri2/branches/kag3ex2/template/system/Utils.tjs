@@ -244,6 +244,7 @@ function getExistImageName(storage)
  *           conttext, // 続き表記文字(省略時:"…")
  *           nodraw, //trueなら描画しない（配列のみ返す）
  *           drawtext, // 描画メソッド上書き
+ *           chsep, // １文字ずつ描画
  *           ];
  * @return 分割したテキストのArray([ line1, line2, ... ])
  */
@@ -328,11 +329,19 @@ function drawTextKinsokuRect(layer, text, elm) {
 			}
 		}
 		for (var i = 0; i < lc; i++, y+=step) {
-			var text = lines[i];
+			var text = lines[i], dx = x;
 			switch (halign) {
-			case -1: dt(layer, x,                     y, text, color, param*); break;
-			case  0: dt(layer, x + (w - gtw(text))\2, y, text, color, param*); break;
-			case  1: dt(layer, x + (w - gtw(text)),   y, text, color, param*); break;
+			case  0: dx += (w - gtw(text))\2; break;
+			case  1: dx += (w - gtw(text));   break;
+			}
+			if (!elm.chsep) dt(layer, dx, y, text, color, param*);
+			else if (text != "") {
+				// １文字ずつ描画
+				for (var j = 0, len = text.length; j < len; j++) {
+					var ch = text.charAt(j);
+					dt(layer, dx, y, ch, color, param*);
+					dx += gtw(ch);
+				}
 			}
 		}
 	}

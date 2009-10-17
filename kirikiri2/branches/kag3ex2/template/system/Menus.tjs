@@ -320,9 +320,11 @@ class KAGMenuItem extends MenuItem
 // ウィンドウのメニュー部分のみshowModalで表示
 class PopupMenuWindow extends Window
 {
+	var owner, exev;
 	var autoclose; // 自動で閉じるか 0:閉じない, -1:マウス操作, 1:キー操作
-	function PopupMenuWindow(win, ac, x, y, w) {
+	function PopupMenuWindow(win, ac, x, y, w, show = true) {
 		super.Window();
+		owner = win;
 		autoclose = ac;
 
 		// スタイル設定
@@ -331,8 +333,16 @@ class PopupMenuWindow extends Window
 		showScrollBars = false;
 
 		menu.visible = true;
-		if (typeof this.registerExEvent != "undefined") {
+		if (typeof this.registerExEvent == "Object") {
 			registerExEvent();
+			with (win) {
+				.onNonCapMouseEvent = function(rg, ev) {
+					if (!isvalid this) return;
+					close() if (exev && autoclose < 0 && ev == 0x0200);
+					return (rg == global.Window.nchtError);
+				} incontextof this;
+				.enableNCMouseEvent = exev = true;
+			}
 		} else if (autoclose) {
 			var f10 = new MenuItem(this, "");
 			menu.add(f10);
@@ -362,10 +372,29 @@ class PopupMenuWindow extends Window
 		setInnerSize(w, 1);
 //		height--;
 
-		showModal();
+		if (autoclose > 0 && typeof this.setMessageHook == "Object") {
+			setMessageHook(true, "SHOWWINDOW");
+		}
+		showModal() if (show);
 	}
 	function finalize() { super.finalize(...); }
 	function onCloseQuery() { return super.onCloseQuery(true); }
+
+	function onWindowsMessageHook(msg, wp, lp) {
+		setMessageHook(false);
+		focusMenuByKey();
+	}
+
+	var _closed;
+	function close() {
+		if (!isvalid this || _closed) return;
+		if (exev) {
+			owner.enableNCMouseEvent = exev = false;
+			delete owner.onNonCapMouseEvent;
+		}
+		_closed = true;
+		return super.close(...);
+	}
 
 	// メニューを複製
 	function copyMenu(dst, srclist) {

@@ -3,32 +3,43 @@
  */
 class VoiceTrack extends WaveSoundBuffer {
 
-    var owner;
+	var owner;
+	var labelCount;
     
     function VoiceTrack(owner) {
-        this.owner = owner;
+		this.owner = owner;
+		labelCount = 0;
 		super.WaveSoundBuffer(owner);
     }
-
+	
     function play() {
-        owner.onStartVoice();
-        super.play(...);
+		owner.onStartVoice();
+		super.play(...);
+		var names = [];
+		names.assign(labels);
+		var n = 0;
+		for (var i=0;i<names.count;i+=2) {
+			kag.entryDelay(names[i]);
+			kag.entryDelay("vl" + ++n);
+		}
+		labelCount = 0;
     }
 
     var prevstatus = "unload"; // 直前のステータス
 
     function onStatusChanged() {
-        super.onStatusChanged(...);
-        var ps = prevstatus;
-        var cs = status;
+		super.onStatusChanged(...);
+		var ps = prevstatus;
+		var cs = status;
         prevstatus = cs;
-        if(ps == "play" && cs == "stop") {
-            owner.onStopVoice();
-        }
+		if(ps == "play" && cs == "stop") {
+			owner.onStopVoice();
+		}
     }
 
 	function onLabel(name) {
-		kag.conductor.extractDelay(name);
+		kag.extractDelay(name);
+		kag.extractDelay("vl" + ++labelCount);
 	}
 };
 
@@ -37,8 +48,22 @@ class VoiceTrack extends WaveSoundBuffer {
  */
 class BackVoiceTrack extends WaveSoundBuffer {
 
+	var labelCount;
+	
 	function BackVoiceTrack(owner) {
 		super.WaveSoundBuffer(owner);
+	}
+
+    function play() {
+		super.play(...);
+		var names = [];
+		names.assign(labels);
+		var n = 0;
+		for (var i=0;i<names.count;i+=2) {
+			kag.entryDelay(names[i]);
+			kag.entryDelay("vl" + ++n);
+		}
+		labelCount = 0;
     }
 
 	function onFadeCompleted() {
@@ -48,7 +73,8 @@ class BackVoiceTrack extends WaveSoundBuffer {
 	}
 
 	function onLabel(name) {
-		kag.conductor.extractDelay(name);
+		kag.extractDelay(name);
+		kag.extractDelay("vl" + ++labelCount);
 	}
 };
 
@@ -1143,7 +1169,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 							} else if (target.nowait == void) {
 								target.nowait = true;
 							}
-							target.hide = +target.hide if target.hide !== void;
+							target.hide = +emotion.hide if emotion.hide !== void;
 							.beginAction(action);
 						}
 					}
@@ -1427,7 +1453,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 		if (ret) {
             voiceEndTime = System.getTickCount() + ret;
 		} else {
-			kag.conductor.extractDelay("*");
+			kag.extractDelay("*");
 			onStopVoice();
 		}
         return ret;

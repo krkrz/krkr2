@@ -268,13 +268,14 @@ class ButtonLayer extends AnimKAGLayer
     }
 
 	// offsを考慮してボタンをコピーする
-    function _copyButton2(w, h, num, temp, ox, oy) {
-        var cw = temp.imageWidth, ch = temp.imageHeight;
+    function _copyButton2(w, h, num, temp, ox, oy, cx = 0, cy = 0, cw, ch) {
+		cw = temp.imageWidth  if (cw === void);
+		ch = temp.imageHeight if (ch === void);
         // 隣にハミ出さないように調整
 		if (ox + cw > w) cw = w - ox;
 		if (oy + ch > h) ch = h - oy;
 		// コピーする
-		operateRect(w*num + ox, oy, temp, 0, 0, cw, ch);
+		operateRect(w*num + ox, oy, temp, cx, cy, cw, ch);
 	}
 
 	// uistatesを取得しつつボタンコピーをする
@@ -289,7 +290,8 @@ class ButtonLayer extends AnimKAGLayer
 			if (match !== void && match.storage != "") {
 				var temp = window.temporaryLayer;
 				temp.loadImages(match.storage);
-				_copyButton2(.width, .height, num, temp, match.ox, match.oy);
+				_copyButton2(.width, .height, num, temp, match.ox, match.oy,
+							 match.cx, match.cy, match.cw, match.ch);
 			}
 		}
 		return match;
@@ -380,13 +382,12 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onMouseUp()
 	{
+        if (!isvalid this) return;
 		// onMouseUp イベントハンドラ
-        if(Butt_mouseDown) onExecute(...);
-        if (isvalid this) {
-            Butt_mouseDown = false;
-            update();
-            super.onMouseUp(...);
-        }
+		if(Butt_mouseDown) onExecute(...);
+		Butt_mouseDown = false;
+		update();
+		super.onMouseUp(...);
 	}
 
 	function onClick()

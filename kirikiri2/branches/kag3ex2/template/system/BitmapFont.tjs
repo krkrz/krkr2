@@ -7,6 +7,7 @@ class BitmapFont {
 	var cw;  // セルサイズ横幅
 	var ch;  // セルサイズ縦幅
 	var name;
+	var owner;
 
 	/**
 	 * コンストラクタ
@@ -14,6 +15,7 @@ class BitmapFont {
 	 * @param name フォント名
 	 */
 	function BitmapFont(window) {
+		owner = window;
 		layer = new Layer(window, window.primaryLayer);
 		layer.name = "ビットマップフォント用データ";
 		tmplayer = new Layer(window, window.primaryLayer);
@@ -66,6 +68,7 @@ class BitmapFont {
 		copyOneAlpha, copyOneShrinkAlpha, copyOneStretchAlpha ];
 
 	function drawTextToLayer(lay, x, y, text, color, alpha = 255) {
+		if (text == "") return;
 		var dsize = Math.abs(lay.font.height);
 		var w = cw-1, h = ch-1, z = dsize / size;
 		var dw = w*z, dh = h*z, idw = (int)Math.ceil(dw), idh = (int)Math.ceil(dh);
@@ -96,6 +99,9 @@ class BitmapFont {
 				x += info.wx * z;
 			} else err += c;
 		}
-		Debug.message("BitmapFont/undefined font", err) if (err != "");
+		if (err != "") {
+			var func = typeof owner.errorCmd == "Object" ? owner.errorCmd : Debug.message;
+			func("BitmapFont/undefined font: " + err);
+		}
 	}
 };
