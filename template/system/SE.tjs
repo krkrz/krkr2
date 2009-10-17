@@ -69,7 +69,8 @@ class SESoundBuffer extends WaveSoundBuffer
                 (start = start.samplePosition) !== void) {
                 super.samplePosition = start;
             }
-            super.play();
+			owner.onSEStart(labels);
+			super.play();
 		}
 		catch(e)
 		{

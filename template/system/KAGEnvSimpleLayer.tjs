@@ -41,5 +41,6 @@ class KAGEnvSimpleLayer extends KAGEnvLayer, KAGEnvLevelLayer {
 	front : this.setFront incontextof this,
 	back : this.setBack incontextof this,
     level : this.setLevel incontextof this,
+	levelz: function (param, elm) { this.levelz = +param; } incontextof this,
         ];
 }

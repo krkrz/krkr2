@@ -50,10 +50,7 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
     function setImageFile(file, elm) {
 
 		initFile(elm);
-		
-		movieFile = void;
-		tileFile  = void;
-		imageColor = void;
+		clearFileState();
 
 		var eventTrans;
         

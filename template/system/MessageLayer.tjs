@@ -88,7 +88,7 @@ class LinkButtonLayer extends ButtonLayer
 	}
 
 	function internalUpdateProperty() {
-		var en = super.enabled = getEnabled(_enabled);
+		var en = super.enabled = getEnabled();
 		if (en) {
 			hitType = _eventTransparent ? htProvince : htMask; 
 			// ボタン画像は領域画像は持っていないので
@@ -158,7 +158,9 @@ class LinkButtonLayer extends ButtonLayer
         }
     }
 	property radio { getter { return groupName != ""; } }
-	function getEnabled(en) { return en && !(radio && toggle); }
+	function getEnabled(en = _enabled) { return en && !(radio && toggle); }
+	function canExecute() { return getEnabled() && (hitType == htMask && hitThreshold < 256); }
+
 }
 
 class LinkCheckBoxLayer extends CheckBoxLayer
@@ -1005,6 +1007,7 @@ class MessageLayer extends AnimKAGLayer
 	/*CS*/var defaultLinkOpacity = 64; // デフォルトのリンクの不透明度
 
 	/*CS*/var defaultFontSize = 24; // デフォルトのフォント高さ
+	/*CS*/var nameLayerFontSize = 0; // 名前レイヤのフォントサイズ(0でdefaultFontSizeを使用）
 	/*C*/var fontSize; // フォント高さ
 	/*C*/var _fontSize; // 仮フォント高さ
 	/*CS*/var defaultLineSize = 0; // デフォルトのライン高さ
@@ -1592,7 +1595,7 @@ class MessageLayer extends AnimKAGLayer
     function resetNameLayerFont() {
         if (nameLayer !== void) {
             nameLayer.font.face   = userFace;
-            nameLayer.font.height = defaultFontSize;
+			nameLayer.font.height = nameLayerFontSize ? nameLayerFontSize : defaultFontSize;
 			nameLayer.font.bold   = defaultBold;
         }
     }
@@ -3393,9 +3396,9 @@ class MessageLayer extends AnimKAGLayer
 		if(ln === void) return;
 
         // XXX 足してみた
-        if (ln.object !== void && !ln.object.enabled) {
-            return;
-        }
+		if (ln.object !== void) with (ln.object) {
+			if (!(typeof .canExecute == "Object" ? .canExecute() : .enabled)) return;
+		}
 
         // ボタンの場合の特殊処理
         if (ln.type == ltButton) {
@@ -4214,6 +4217,7 @@ class MessageLayer extends AnimKAGLayer
 		defaultLinkColor = src.defaultLinkColor;
 		defaultLinkOpacity = src.defaultLinkOpacity;
 		defaultFontSize = src.defaultFontSize;
+		nameLayerFontSize = src.nameLayerFontSize;
 		fontSize = src.fontSize;
 		_fontSize = src._fontSize;
 		defaultLineSize = src.defaultLineSize;
@@ -4371,6 +4375,7 @@ class MessageLayer extends AnimKAGLayer
 		dic.defaultLinkColor = defaultLinkColor;
 		dic.defaultLinkOpacity = defaultLinkOpacity;
 		dic.defaultFontSize = defaultFontSize;
+		dic.nameLayerFontSize = nameLayerFontSize;
 		dic.defaultLineSize = defaultLineSize;
 		dic.defaultRubySize = defaultRubySize;
 		dic.defaultRubyOffset = defaultRubyOffset;
@@ -4428,6 +4433,7 @@ class MessageLayer extends AnimKAGLayer
 		defaultLinkColor = dic.defaultLinkColor if dic.defaultLinkColor !== void;
 		defaultLinkOpacity = dic.defaultLinkOpacity if dic.defaultLinkOpacity !== void;
 		defaultFontSize = dic.defaultFontSize if dic.defaultFontSize !== void;
+		nameLayerFontSize = dic.nameLayerFontSize if dic.nameLayerFontSize !== void;
 		defaultLineSize = dic.defaultLineSize if dic.defaultLineSize !== void;
 		defaultRubySize = dic.defaultRubySize if dic.defaultRubySize !== void;
 		defaultRubyOffset = dic.defaultRubyOffset if dic.defaultRubyOffset !== void;

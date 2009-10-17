@@ -230,7 +230,7 @@ class KAGWindow extends Window
 	function getVoicePlayingScript(result) {
 		var ret = "";
 		if (result !== void && result.count > 0) {
-			ret += "kag.mainConductor.extractDelay();";
+			ret += "kag.extractDelay();";
 			ret += "global.world_object.env.stopAllVoice();";
 			for (var i=0;i<result.count;i++) {
 				var info = result[i];
@@ -316,35 +316,40 @@ class KAGWindow extends Window
 			return _skipNoDisp;
 		}
 		setter(v) {
-			_skipNoDisp = v;
-			if (current !== void && currentNum == 0) {
-				if(currentWithBack) current.comp.clear(elm.all);
-				current.clear(true);
-				if (v) {
-					if (skipNoDispWin === void) {
-						skipNoDispWin = new Layer(this, primaryLayer);
-						skipNoDispWin.name = "スキップ情報レイヤ";
-						skipNoDispWin.setSize(scWidth, 30);
-						skipNoDispWin.setPos(0, scHeight - 30);
-						skipNoDispWin.hitThreshold = 256;
-					}
-					dm("次の選択肢まで非表示スキップ開始");
-					if (historyWriteEnabled) {
-						historyLayer.clearAction();
-						historyLayer.reline();
-					}
-					skipNoDispStartTime = System.getTickCount();
-				} else {
-					if (skipNoDispWin !== void) {
-						invalidate skipNoDispWin;
-						skipNoDispWin = void;
-					}
-					dm("スキップにかかった時間:" + (System.getTickCount() - skipNoDispStartTime) + "(ms)");
+			if (!_skipNoDisp == !v) return;
+			if ((_skipNoDisp = !!v) != 0) {
+				if (skipNoDispWin === void) {
+					skipNoDispWin = new Layer(this, primaryLayer);
+					skipNoDispWin.name = "スキップ情報レイヤ";
+					skipNoDispWin.setSize(scWidth, 30);
+					skipNoDispWin.setPos(0, scHeight - 30);
+					skipNoDispWin.hitThreshold = 256;
 				}
+				dm("次の選択肢まで非表示スキップ開始");
+				if (historyWriteEnabled) {
+					historyLayer.clearAction();
+					historyLayer.reline();
+				}
+				skipNoDispStartTime = System.getTickCount();
+			} else {
+				if (skipNoDispWin !== void) {
+					invalidate skipNoDispWin;
+					skipNoDispWin = void;
+				}
+				dm("スキップにかかった時間:" + (System.getTickCount() - skipNoDispStartTime) + "(ms)");
 			}
+			onSkipNoDispChanged(_skipNoDisp);
 		}
 	}
-	
+	var _clearMessageLayerNumOnSkipNoDispChanged = 0;
+	function onSkipNoDispChanged(v) {
+		if (current !== void && currentNum == _clearMessageLayerNumOnSkipNoDispChanged) {
+			if(currentWithBack) current.comp.clear(true);
+			current.clear(true);
+		}
+		callHook("onSkipNoDispChanged", v);
+	}
+
     var _skipMode = SKIP_NONE; // スキップのモード
 	// SKIP_NONE スキップなし, SKIP_CLICK クリック待ち記号まで, SKIP_PAGE 改ページ待ち記号まで
 	// SKIP_STOP 次の停止まで SKIP_FAST 早送り SKIP_LABEL 次のラベルまで強制スキップ
@@ -753,20 +758,15 @@ class KAGWindow extends Window
 
 		// タグ展開
 		// これによりアクションや動画が生成される場合があるので先に行う
-		work = true if conductor.extractDelay(now);
+		work = true if updateDelay(now);
 		
 		// アクション更新
 		updateAction(now);
 		work = true if actionCount > 0;
 
-		// 動画更新
-		updateLayerMovies();
-		work = true if movieLayers.count > 0;
+		// GenericFlip更新
+		if (updateGenericFlips(now)) work = true;
 
-		// 炎エフェクト更新
-		updateLayerFires(now);
-		work = true if fireLayers.count > 0;
-		
 		// 画面切り替えレイヤ更新
 		if (_transLayer !== void) {
 			_transLayer.update(now);
@@ -841,6 +841,7 @@ class KAGWindow extends Window
 			ch2ndNoChangeMenuItem.checked = true;
 
 		if(ismain) (Menu_visible_config incontextof this)();
+		menuBarEnable = menu.visible; // メニューバー有効フラグはvisible_config後のvisible状態とする
 
 		createBookMarkSubMenus();
 
@@ -856,10 +857,13 @@ class KAGWindow extends Window
 
 				cursorPointed =       getSystemMouseCursor("Hand", cursorPointed)
 					if (typeof global.getSystemMouseCursor == "Object");
+
+				createMenuBarHideMenu();
 			} else {
 				// 拡張イベントなし
 				borderStyle = bsSingle;
 				innerSunken = true;
+				menuBarMode = 0; // 強制固定
 			}
 		}
 		else
@@ -999,12 +1003,11 @@ class KAGWindow extends Window
 		stableHandlers.add(defaultStableHandler);
 		runHandlers.add(defaultRunHandler);
 
-		// システム変数の読み込み
-		if(ismain) loadSystemVariables();
+		if(ismain) {
+			// システム変数の読み込み
+			loadSystemVariables();
 
-		// システム変数を反映
-		if(ismain)
-		{
+			// システム変数を反映
 			setSystemStateFromSystemVariables();
 			setBookMarkMenuCaptions();
 		}
@@ -1039,26 +1042,31 @@ class KAGWindow extends Window
 					max = .windowMaximized;
 					// コンソール表示状態もついでに復帰
 					if (debugWindowEnabled) with (Debug.console) try {
-						var vis =  +scflags.consoleVisible;
-						var place = scflags.consolePlacement;
+						var vis   = +scflags.consoleVisible;
+						var place =  scflags.consolePlacement;
+						var max   = (typeof place == "Object" && place.showCmd == 3/*SW_SHOWMAMIMIZED*/);
+						var force = (System.getArgument("-consolerepos") == "yes");
+						.visible = true if (force);
 						.visible = vis;
-						if (vis && typeof place == "Object" && typeof .setPos == "Object") {
+						place = .getPlacement() if (typeof .getPlacement == "Object");
+						if ((vis || force) && typeof place == "Object" && typeof .setPos == "Object") {
 							var x, y, w, h;
 							with (place) x=.normalLeft, y=.normalTop, w=.normalRight-x, h=.normalBottom-y;
-							var mon = System.getMonitorInfo(false, x, y, w, h), setPos = .setPos;
+							var mon = System.getMonitorInfo(true, x, y, w, h), setPos = .setPos;
 							if (mon !== void) with (mon.work) {
+								if (mon.monitor !== void) (x += .x - mon.monitor.x), (y += .y - mon.monitor.y);
 								var resize = false;
 								if (.w < w) w=.w, resize=true;
 								if (.h < h) h=.h, resize=true;
-								if (.x+.w < x+w) x=.x+.w-w;
-								if (.y+.h < y+h) y=.y+.h-h;
-								if (.x > x) x=.x;
-								if (.y > y) y=.y;
+								if (.x+.w < x+w\3) x=.x+.w-w;
+								if (.y+.h < y+h\3) y=.y+.h-h;
+								if (.x > x+w*2\3 ) x=.x;
+								if (.y > y       ) y=.y;
 								if (resize) setPos(x, y, w, h);
 								else        setPos(x, y);
 							}
-							.maximize() if (place.showCmd == 3/*SW_SHOWMAMIMIZED*/ && typeof .maximize == "Object");
 						}
+						.maximize() if (vis && max && typeof .maximize == "Object");
 					} catch {}
 				}
 			}
@@ -1113,25 +1121,24 @@ class KAGWindow extends Window
 		createPadKeyMap();
 
 		// ウィンドウを表示
-		if(ismain) visible = !invisible;
-
-		// 前回起動時にフルスクリーンだった場合はフルスクリーンにしてみる
-		// または画面サイズがウィンドウサイズよりも小さい場合はフルスクリーンにしてみる
-		if(ismain && visible)
-		{
-			if ((scflags.fullScreen !== void && +scflags.fullScreen) || forcefull)
-				onFullScreenMenuItemClick(this);
-		}
-
-		// いったんシステム変数を書き出す
 		if(ismain) {
-			// scflags.fullScreen が破棄されてしまうため保存
-			var origfs = scflags.fullScreen;
+			// フルスクリーン状態
+			var fs = scflags.fullScreen;
 
+			visible = !invisible;
+
+			// ログウィンドウ位置初期化（デバッグ時のみ）
+			initLogPad(true) if (debugWindowEnabled && logMode && !fs);
+
+			// 前回起動時にフルスクリーンだった場合はフルスクリーンにしてみる
+			// または画面サイズがウィンドウサイズよりも小さい場合はフルスクリーンにしてみる
+			onFullScreenMenuItemClick(this) if (visible && (!!fs || forcefull));
+
+			// いったんシステム変数を書き出す
 			saveSystemVariables();
 
 			// !visible 時は scflags.fullScreen を復帰
-			scflags.fullScreen = origfs if (!visible);
+			scflags.fullScreen = fs if (!visible);
 
 			if (debugWindowEnabled) {
 				// デバッグ時にはautoLabelStoreを有効にする
@@ -1183,7 +1190,7 @@ class KAGWindow extends Window
 		saveSystemVariables();
         if(!askOnClose) {
 			// コンソールを最大化で閉じないように
-			with (Debug.console) .restoreMaximize() if (.visible && typeof .restoreMaximize != "undefined");
+			with (Debug.console) .restoreMaximize() if (debugWindowEnabled && typeof .restoreMaximize != "undefined");
 			return super.onCloseQuery(true);
 		}
         if (currentDialog === void) {
@@ -1520,8 +1527,8 @@ class KAGWindow extends Window
 					_pseudoFullScreen =
 						%[	/**/x:left, y:top, w:width, h:height,
 							/**/max:max, restmax:(System.getArgument("-restoremaximizebyf2w") == "yes"),
-							/**/rect:getNormalRect(), bs:borderStyle, menu:menu.visible,
-							/**/shortcut:(menu.visible ? makePseudoMenuTable(menu) : void) ];
+							/**/rect:getNormalRect(), bs:borderStyle, //menu:menu.visible,
+							/**/shortcut:(menuBarEnable ? makePseudoMenuTable(menu) : void) ];
 					if (!max) {
 						visible = false;
 						trig.maximize = true;
@@ -1533,12 +1540,14 @@ class KAGWindow extends Window
 					setInnerSize(pxWidth, pxHeight);
 					resetPrimaryPos();
 					trig = void;
+					menu.visible = menuBarEnable && menuBarState;
 					super.fullScreen = true;
 					min = -1;
 					// 解像度が変わる場合があるので
 					_lastWindowSize.fullscreen = %[ 
 						/**/w:System.screenWidth, h:System.screenHeight, x:0, y:0 ];
 				}
+				updateMenuBarState();
 				SetWindowControlMenu(this, min, 0, 1, 1);
 			} else {
 				super.fullScreen = false;
@@ -1546,7 +1555,7 @@ class KAGWindow extends Window
 					visible = false;
 					setPos (.x, .y);
 					setSize(.w, .h);
-					menu.visible  = .menu;
+					// menu.visible  = .menu;
 					borderStyle   = .bs;
 
 					trig.callResize = true;
@@ -1563,6 +1572,7 @@ class KAGWindow extends Window
 
 				// メニューを消す
 				SetWindowControlMenu(this);
+				updateMenuBarState();
 				_lastWindowSize = void;
 			}
 			if (trig !== void) with (trig) {
@@ -1635,6 +1645,138 @@ class KAGWindow extends Window
 		top++, top--; // VCRなムービーが追従するようにおまじない XXX
 	}
 
+	var menuBarMode = 1; // 0:固定・変更不可，1:固定・変更可（menuBarState準拠）
+	var menuBarEnable;   // メニューバー有効
+	var menuBarState;  // 現在のメニューの表示状態(0:非表示，1:表示，-1:自動表示）
+	var defaultMenuBarState = 1; // 初期状態
+	var menuBarHideButtonVisible = true; // メニューバーに消す・復帰ボタンを表示する
+	var menuBarHideAutoVisible   = true; // 自動表示の有効フラグ
+	var menuBarRightClickEnabled = true; // メニューバー上の右クリックを有効
+	var menuBarTempMenuEnabled   = true; // 一時メニュー表示を有効
+
+	var menuBarHideMenuItem;
+	var menuBarHidePopupMenu;
+	var menuBarHideSysMenu;
+	var menuBarHidePseudoShortcut;
+	property menuBarHideModeEnable { getter { return menuBarMode && menuBarEnable; } }
+	function updateMenuBarState() {
+		if (!menuBarHideModeEnable) return;
+		menuBarState = (int)menuBarState;
+		menuBarState = -1 if (menuBarState < 0);
+		menuBarState =  1 if (menuBarState > 0 || (!menuBarHideAutoVisible && menuBarState < 0));
+
+		menu.visible = (menuBarState > 0) if (!fullScreen);
+		var list = menuBarHidePopupMenu;
+		for (var i = list.count-1; i >= 0; i--)
+			 with (list[i]) .checked = (.state == menuBarState);
+		if (!menuBarHideAutoVisible) {
+			list = menuBarHideSysMenu;
+			for (var i = list.count-1; i >= 0; i--)
+				with (list[i]) if (typeof .state != "undefined") .checked = (.state == menuBarState);
+		}
+		if (menuBarHideMenuItem !== void) with (menuBarHideMenuItem) {
+			if (fullScreen) .visible = false;
+			else {
+				.caption = (menuBarState > 0) ? "x" : "+";
+				.visible = true;
+//				.bmpItem = MenuItem[(menuBarState > 0) ? "biPopupClose" : "biPopupRestore"];
+				.rightJustify = true;
+			}
+		}
+	}
+	function getMenuBarPseudoShortcut() {
+		return (menuBarHideModeEnable && menuBarState <= 0) ? menuBarHidePseudoShortcut : void;
+	}
+	function changeMenuBarState(stat) {
+		if (!menuBarHideModeEnable) return;
+		menuBarState = stat;
+		menuBarHidePseudoShortcut = makePseudoMenuTable(menu) if (menuBarState <= 0 && menuBarHidePseudoShortcut === void);
+		updateMenuBarState();
+		onResize();
+	}
+	function toggleMenuBarState(sender) {
+		if (!menuBarHideModeEnable) return;
+		var state = (menuBarState <= 0) ? 1 : (menuBarHideAutoVisible ? -1 : 0);
+		state = sender.state if (sender !== void && typeof sender.state == "Integer");
+		changeMenuBarState(state);
+	}
+	function createMenuBarHideMenu() {
+		if (!menuBarHideModeEnable) return;
+		if (menuBarHideAutoVisible) {
+			menuBarHidePopupMenu = [
+				%[  caption:"常に表示",   group:1, state: 1 ],
+				%[  caption:"常に非表示", group:1, state: 0 ],
+				%[  caption:"動的に表示", group:1, state:-1 ] ];
+			menuBarHideSysMenu = [
+				%[  caption:"-" ],
+				%[  caption:"メニューバー", children:menuBarHidePopupMenu ] ];
+		} else {
+			menuBarHidePopupMenu = [
+				%[  caption:"表示",   group:1, state: 1 ],
+				%[  caption:"非表示", group:1, state: 0 ] ];
+			menuBarHideSysMenu = [
+				%[  caption:"-" ],
+				%[  caption:"メニューバーを表示",   group:1, state: 1 ],
+				%[  caption:"メニューバーを非表示", group:1, state: 0 ] ];
+		}
+		exSystemMenu = menuBarHideSysMenu;
+		if (menuBarHideButtonVisible) {
+			menu.add(menuBarHideMenuItem  = new KAGMenuItem(this, "x", 0, toggleMenuBarState, false));
+			/**/     menuBarHideMenuItem.visible = false;
+		}
+	}
+	function onExSystemMenuSelected(sel) {
+		if (sel && typeof sel == "Object") changeMenuBarState(sel.state);
+	}
+	var _ncCaptionClick;
+	function onNcMouseDown(x, y, btn, rg) {
+		_ncCaptionClick = (btn == mbRight && rg == global.Window.nchtMenu);
+		if (typeof this.toggleMenuBarState == "Object" && btn == mbMiddle && rg == global.Window.nchtCaption) {
+			toggleMenuBarState();
+			_ncCaptionMove = false;
+		}
+	}
+	function onNcMouseUp(x, y, btn, rg, cb) {
+		if (_ncCaptionClick && btn == mbRight && rg == global.Window.nchtMenu && menuBarRightClickEnabled) {
+			var pop = MenuItem.popupEx(tpmRightButton, void, void, this, void, menuBarHidePopupMenu);
+			if (pop !== void) {
+				changeMenuBarState(pop.state);
+				cb() if (cb !== void);
+			}
+		}
+		_ncCaptionClick = void;
+	}
+	function onMouseLeave  () { checkMenuBarHideTrackPseudoMenu(); }
+	function onNcMouseLeave() { checkMenuBarHideTrackPseudoMenu(); }
+	function checkMenuBarHideTrackPseudoMenu() {
+		if (_ncCaptionMove || trackTempMenuShowing > 0) {
+			var cur = System.getCursorPos();
+			if (trackTempMenuShowing > 0) {
+				trackTempMenu(false) if (ncHitTest(cur.x, cur.y) != global.Window.nchtMenu);
+			} else {
+				var rect = getClientRect();
+				if (cur.x >= rect.x        && cur.y >= rect.y &&
+					cur.x <  rect.x+rect.w && cur.y <  rect.y+System.getSystemMetrics("CYMENU")) {
+					trackMenuByMouse(true);
+				}
+			}
+		}
+		_ncCaptionMove = false;
+	}
+	var _ncCaptionMove;
+	function onNcMouseMove(x, y, rg) {
+		if (!menuBarHideModeEnable || menuBarState >= 0 || fullScreen) return;
+		with (global.Window) {
+			_ncCaptionMove = (rg == .nchtCaption || rg == .nchtSysMenu);
+			if (trackTempMenuShowing > 0 && rg != .nchtMenu) trackTempMenu(false);
+		}
+	}
+	function onMouseMove(x, y) {
+		if (pseudoFullScreened && y == 0 && menuBarEnable && menuBarState) trackPseudoMenu();
+		else if (trackTempMenuShowing) checkMenuBarHideTrackPseudoMenu();
+		return super.onMouseMove(...);
+	}
+
 	// MenuItem.shortcut からテーブルを作成
 	function makePseudoMenuTable(menu, table) {
 		var list = menu.children, first = (table === void);
@@ -1665,26 +1807,27 @@ class KAGWindow extends Window
 				table[key][sft] = item.onClick;
 			}
 		}
-		if (first) {
+		if (first && !exEventEnabled) {
 			var f10 = table[VK_F10];
 			f10 = table[VK_F10] = %[] if (f10 === void);
-			f10[0] = trackPseudoMenu;
+			f10[0] = trackMenuByKey;
 		}
 		return table;
 	}
 	// shortcut ⇒ VK_* 例外変換用テーブル
 	var shortcutTextToVirtualKeyString = (const)%[
+		"DEL"=>"DELETE",
 		"ENTER"=>"RETURN",
 		"PAGEUP"=>"PRIOR",
 		"PAGEDOWN"=>"NEXT"//,
 		];
 	// 擬似フルスクリーン時ショートカットキー処理
 	function pseudoMenuShortcut(key, shift) {
-		if (pseudoFullScreened) {
+		var table = pseudoFullScreened ? _pseudoFullScreen.shortcut : getMenuBarPseudoShortcut();
+		if (table !== void) {
 			shift &= ~ssRepeat if (shift & ssAlt); // [XXX] ALTでリピートフラグが正しく立たない
-			var table, info, func;
-			if ((table = _pseudoFullScreen.shortcut) !== void &&
-				(info  = table[key])  !== void &&
+			var info = table[key], func;
+			if ((info !== void) &&
 				(func  = info[+shift]) !== void &&
 				!(shift & ssRepeat))
 			{
@@ -1694,11 +1837,74 @@ class KAGWindow extends Window
 		}
 		return false;
 	}
-	var ignoreTrackPseudoMenu = false;
-	function trackPseudoMenu(bykey = true) {
-		if (ignoreTrackPseudoMenu) return;
-		var popup = new PopupMenuWindow(this, bykey ? 1: -1);
+	function onAccelKeyMenu(key, f) {
+		var info, table = pseudoFullScreened ? _pseudoFullScreen.shortcut : getMenuBarPseudoShortcut();
+		return  table !== void && (info = table[key]) !== void && info[+ssAlt] !== void;
+	}
+	function onStartKeyMenu(key) {
+		if (key || menu.visible) return;
+		return (trackMenuByKey(true) <= 0);
+	}
+
+	var ignoreTrackPseudoMenu = false, trackTempMenuShowing = 0;
+	function trackPseudoMenu(bykey, rclick) {
+		if ((!bykey && ignoreTrackPseudoMenu) || trackTempMenuShowing) return;
+		rclick &= exEventEnabled;
+		var popup = new PopupMenuWindow(this, bykey ? 1: -1,/*x*/,/*y*/,/*w*/, !rclick);
+		if (rclick) with (popup) {
+			._ncCaptionClick = void;
+			.menuBarHidePopupMenu = menuBarHidePopupMenu;
+			.menuBarRightClickEnabled = menuBarRightClickEnabled;
+			.changeMenuBarState   = changeMenuBarState;
+			.onNcMouseDown = (onNcMouseDown incontextof popup);
+			.onNcMouseUp__ = (onNcMouseUp   incontextof popup);
+			.onNcMouseUp   = function(x, y, btn, rg) { onNcMouseUp__(x, y, btn, rg, close); } incontextof popup;
+			.showModal();
+		}
 		invalidate popup;
+	}
+	function closeTempMenu() { trackTempMenu(false,, true); }
+	function trackTempMenu(vis, bykey, force) {
+		if (vis && !bykey && ignoreTrackPseudoMenu) return;
+		var old = trackTempMenuShowing;
+		trackTempMenuShowing = !vis ? 0 : bykey ? -1 : 1;
+		if (force || !old != !vis) {
+			if  (vis) menu.visible = true;
+			else {
+				menu.visible = false if (pseudoFullScreened);
+				updateMenuBarState();
+			}
+		}
+	}
+	function onExitMenuLoop() {
+		if (trackTempMenuShowing) {
+			trackTempMenuShowing = false;
+			var trig;
+			if (typeof this.closeTempMenuTrigger == "Object") {
+				trig = this.closeTempMenuTrigger;
+			} else {
+				trig = this.closeTempMenuTrigger = new AsyncTrigger(closeTempMenu, "");
+				trig.mode = atmAtIdle;
+				trig.cached = true;
+				add(trig);
+			}
+			trig.trigger();
+		}
+	}
+	function trackMenuByMouse() {
+		if (menuBarTempMenuEnabled) trackTempMenu(true);
+		else trackPseudoMenu(false, menuBarRightClickEnabled);
+	}
+	function trackMenuByKey(delay) {
+		var  fs = super.fullScreen;
+		if (!fs && menuBarEnable && (menuBarState/* || pseudoFullScreened*/)) {
+			if (menuBarTempMenuEnabled && !pseudoFullScreened) trackTempMenu(true, true);
+			else {
+				trackPseudoMenu(true);
+				return -1;
+			}
+		} else return fs;
+		return true;
 	}
 
 	// スクリーンセーバー抑制
@@ -1720,10 +1926,6 @@ class KAGWindow extends Window
 		onFullScreenMenuItemClick();
 		return true;
 	}
-	function onMouseMove(x, y) {
-		if (pseudoFullScreened && y == 0) trackPseudoMenu(false);
-		return super.onMouseMove(...);
-	}
 	var _minimized;
 	function onMinimize() { _minimized = true;  }
 	function onHide()     { _minimized = true;  }
@@ -1731,6 +1933,7 @@ class KAGWindow extends Window
 
 	var _onResizeProcess = true;
 	function onResize() {
+		if (trackTempMenuShowing) return super.onResize();
 //		dm("onResize", innerWidth, innerHeight);
 		if (!_minimized && _onResizeProcess && _resizeSnapshot === void) {
 			_onResizeProcess = false;
@@ -2072,6 +2275,7 @@ class KAGWindow extends Window
         if (typeof sender != "undefined") {
             sender.checked = logMode;
         }
+		callHook("onChDebugLogMenuItemChanged", logMode);
         initLog();
     }
 
@@ -2188,6 +2392,7 @@ class KAGWindow extends Window
 		if (this == global.Window.mainWindow && typeof global.onModeChange !== "undefined") {
 			global.onModeChange(this, autoMode, skipMode, canAuto, canSkip, selShow, modal, canRun);
 		}
+		callHook("onModeChangeHook", autoMode, skipMode, canAuto, canSkip, selShow, modal, canRun);
     }
 
 	//----------------------------------------------- マウスキーを有効にする --
@@ -2463,6 +2668,7 @@ class KAGWindow extends Window
         }
 
 		updateResizeMenuItems();
+		changeMenuBarState(scflags.menuBarState !== void ? scflags.menuBarState : defaultMenuBarState);
     }
 
 	function clearSystemVariables()
@@ -2484,6 +2690,8 @@ class KAGWindow extends Window
 		scflags.fullScreen = fullScreened;
 		scflags.zoomNumer = origZoomNumer;
 		scflags.zoomDenom = origZoomDenom;
+
+		scflags.menuBarState = menuBarState;
 
 		scflags.windowResizeable = windowResizeable;
 		scflags.windowMaximized  = false;
@@ -3050,7 +3258,9 @@ class KAGWindow extends Window
 		}
 		// autoLabelStoreに保存（デバッグ用）
 		if (autoLabelStore !== void && stablePosibility && skipMode < SKIP_STOP) {
-			autoLabelStore.unshift(copyHistoryOfStore());
+			var dic = copyHistoryOfStore();
+			callHook("onAutoLabelStoreHook", dic);
+			autoLabelStore.unshift(dic);
 		}
 	}
 
@@ -3080,7 +3290,11 @@ class KAGWindow extends Window
 		(Dictionary.assignStruct incontextof pflags )(dic.user);
 		(Dictionary.assignStruct incontextof pcflags)(dic.core);
 
-		historyLayer.clearAction() if (historyWriteEnabled);
+		if (historyWriteEnabled) {
+			historyLayer.reline();
+			historyLayer.repage();
+			historyLayer.clearAction();
+		}
 
 		// データを元に、栞をたどる動作をする
 		restoreFlags();
@@ -6325,6 +6539,119 @@ class KAGWindow extends Window
 			(elm.canskip === void || +elm.canskip) && clickSkipEnabled);
 	}
 
+	//--------------------------------------------------------- delay 関連 --
+
+	var delayLabels = %[];
+
+	// delay情報更新
+	function updateDelay(tick) {
+		var names = [];
+		names.assign(delayLabels);
+		var n = 0;
+		for (var i=0;i<names.count;i+=2) {
+			var name = names[i];
+			var time = names[i+1];
+			//dm("delay更新:%s:%d/%d", name, time, tick);
+			if (typeof time == "Integer" && tick - time >= 0) {
+				extractDelay(name);
+			}
+		}
+		var ret = extractDelay(tick);
+		names.assign(delayLabels);
+		return ret || names.count > 0;
+	}
+
+	// delayコマンド登録
+	function entryDelayCmd(elm) {
+		var entry = false;
+		var names = [];
+		names.assign(elm);
+		for (var i=0;i<names.count;i+=2) {
+			var name = names[i];
+			var time = names[i+1];
+			if (name != "tagname") {
+				entry = true;
+				delayLabels[name] = System.getTickCount() + +time;
+			}
+		}
+		if (entry) {
+			flipStart();
+		}
+	}
+	
+	// 待ちラベル情報登録
+	function entryDelay(labels) {
+		if (typeof labels == "Object") {
+			if (labels instanceof "Dictionary") {
+				var names = [];
+				names.assign(labels);
+				for (var i=0;i<names.count; i+=2) {
+					delayLabels[names[i]] = null;
+				}
+			} else if (labels instanceof "Array") {
+				for (var i=0;i<labels.count; i++) {
+					delayLabels[labels[i]] = null;
+				}
+			}
+		} else if (typeof labels == "String") {
+			delayLabels[labels] = null;
+		}
+	}
+
+	function clearDelay() {
+		(Dictionary.clear incontextof delayLabels)();
+	}
+
+	// 待ちラベル破棄
+	function cancelDelay() {
+		conductor.cancelDelay();
+		clearDelay();
+	}
+	
+	// 待ちラベル解放
+	function extractDelay(name) {
+		if (name === void || name === "*") {
+			trigger("delay_*");
+			clearDelay();
+		} else if (typeof name == "String") {
+			if (delayLabels[name] !== void) {
+				delete delayLabels[name];
+			}
+			trigger("delay_" + name);
+		}
+		return conductor.extractDelay(name);
+	}
+
+	function waitDelay(name, canskip=true)
+	{
+		//dm("delay待ち:" + name + ":" +delayLabels[name]);
+		if (name === void || delayLabels[name] === void) return 0;
+		if(canskip !== void && +canskip && clickSkipEnabled)
+		{
+			// スキップできる場合
+			if(skipMode)
+			{
+				// スキップ中の場合
+				return 0; // スキップ中の場合はなにもせずに返る
+			}
+
+			conductor.wait(%[
+				click : function() { clearDelay(); } incontextof this,
+				"delay_" + name => function(){} incontextof this,
+				"delay_*" => function(){} incontextof this,
+				]);
+		}
+		else
+		{
+			// スキップできない場合
+            conductor.wait(%[
+				"delay_" + name => function(){} incontextof this,
+				"delay_*" => function(){} incontextof this,
+				]);
+		}
+		return -2; // break
+	}
+	
 	//------------------------------------------------------------ quake関連 --
 
 	function doQuake(elm)
@@ -6563,7 +6890,9 @@ class KAGWindow extends Window
 
 	function processKeys(key, shift)
 	{
-		if (key == VK_BACK && (shift == ssShift) && typeof this.backToAutoLabelStoreMenuItem == "Object") {
+		if (key == VK_BACK && (shift == ssShift) && autoLabelStore !== void
+			&& typeof this.backToAutoLabelStoreMenuItem == "Object")
+		{
 			backToAutoLabelStoreMenuItem.click();
 		}
 
@@ -6868,13 +7197,6 @@ class KAGWindow extends Window
 				return (skipMode==SKIP_STOP || skipMode==SKIP_FAST) ? 0 : -4;
 		}
 
-		if(nowaitMode) {
-			return waitAuto(calcNowaitModeWait());
-		} else if(autoMode) {
-			current.showLineBreakGlyph(lineBreak);
-			storeClickGlyphState("line");
-			return waitAuto(elm.voicewait ? calcAutoModeLineWait() : autoModeLineWait, "l");
-		}
 		if(skipMode == SKIP_CLICK) cancelSkip();
 		if(skipMode == SKIP_FAST && !skipKeyPressing()) cancelSkip();
 		if(skipMode >= SKIP_FAST) return -4;
@@ -6882,9 +7204,15 @@ class KAGWindow extends Window
 			// スキップ中(スキップをキャンセルするようなキーがあればスキップ解除
 			// のためのイベント処理の機会を与える)
 
-        current.showLineBreakGlyph(lineBreak);
-        storeClickGlyphState("line");
-        
+		if(nowaitMode) return waitAuto(calcNowaitModeWait());
+
+		current.showLineBreakGlyph(lineBreak);
+		storeClickGlyphState("line");
+
+		if(autoMode) {
+			return waitAuto(elm.voicewait ? calcAutoModeLineWait() : autoModeLineWait, "l");
+		}
+
 		if(!current.nodeVisible && textWriteEnabled)
 		{
 			dm("警告 : 非表示になっている" +
@@ -6916,12 +7244,13 @@ class KAGWindow extends Window
 		if(skipMode == SKIP_FAST && !skipKeyPressing()) cancelSkip();
 		if(skipMode) return -4; // いったんイベントを処理
 
-        current.showPageBreakGlyph(pageBreak);
+		if(nowaitMode) return waitAuto(calcNowaitModeWait());
+
+		current.showPageBreakGlyph(pageBreak);
 		storeClickGlyphState("page");
         
-		if(nowaitMode) {
-			return waitAuto(calcNowaitModeWait());
-		} else if(autoMode) {
+		
+		if(autoMode) {
 			return waitAuto(calcAutoModePageWait(), "p2");
 		}
 
@@ -7058,7 +7387,12 @@ class KAGWindow extends Window
     
     // BGM 停止時拡張ハンドラ
     var bgmStopHandler;
-    
+
+	function onBGMStart(labels)
+	{
+		entryDelay(labels);
+	}
+	
 	function onBGMStop()
 	{
         // BGM が停止した
@@ -7094,7 +7428,7 @@ class KAGWindow extends Window
 
     function onBGMLabel(label) {
 		// ディレイ実行展開
-		kag.conductor.extractDelay(label);
+		extractDelay(label);
         // BGM のラベル通過処理
         conductor.trigger('bgmlabel_' + label);
         if (bgmLabelHandler !== void) {
@@ -7238,9 +7572,13 @@ class KAGWindow extends Window
 	
 	//----------------------------------------------------------- 効果音処理 --
 
+	function onSEStart(labels) {
+		entryDelay(labels);
+	}
+	
     function onSELabel(label) {
 		// ディレイ実行展開
-		kag.conductor.extractDelay(label);
+		extractDelay(label);
 	}
 	
 	function onSESoundBufferFadeCompleted(id)
@@ -7375,62 +7713,24 @@ class KAGWindow extends Window
 	}
 
 	//--------------------------------------------------------- ムービー関連 --
-
-	// 保持してるムービーレイヤ
-	var movieLayers = [];
-
-	// ムービーレイヤの取得
-	function getLayerMovie() {
-		var movie = new MovieControlLayer(this);
-		movieLayers.add(movie);
-		flipStart();
-		return movie;
-	}
-
-	/**
-	 * ムービーレイヤ情報の更新
-	 */
-	function updateLayerMovies() {
-		if (movieLayers.count > 0) {
-			for (var i=movieLayers.count-1;i>=0;i--) {
-				var movie = movieLayers[i];
-				if (!movie.isPlayingMovie) {
-					// 特定ムービーの停止
-					conductor.trigger("lmstop" + movie);
-					invalidate movie;
-					movieLayers.erase(i);
-				}
-			}
-			if (movieLayers.count == 0) {
-				conductor.trigger("lmstop");
-			}
-		}
-	}
-
 	/**
 	 * 全レイヤムービーの停止
 	 */
 	function stopAllLayerMovies() {
-		for (var i=movieLayers.count-1;i>=0;i--) {
-			var movie = movieLayers[i];
-			movie.stop();
-		}
+		stopAllGenericFlipsOneClass("movie");
+	}
+
+	function getLayerMovieController(target) {
+		if (target === void || !target instanceof "GraphicLayerEx") return void;
+		return target.flipType == "movie" ? target.flip : void;
 	}
 
 	/**
 	 * レイヤムービーを待ってみる
 	 */
 	function waitLayerMovie(target, canskip) {
-
-		if (target === void ||
-			!target instanceof "GraphicLayerEx" ||
-			target.movie === void) {
-			return 0;
-		}
-
-		var movie = target.movie;
-		
-		if (!movie.isPlayingMovie) return 0;
+		var movie = getLayerMovieController(target);
+		if (movie === void || !movie.isPlayingMovie) return 0;
 		if((canskip === void || +canskip) && clickSkipEnabled)
 		{
 			// スキップできる場合
@@ -7469,7 +7769,7 @@ class KAGWindow extends Window
 
 	function waitAllLayerMovies(canskip)	{
 		// アクションを待つ
-		if (movieLayers.count == 0) return 0; // アクションを待てない
+		if (!getGenericFlipsInstanceCount("movie")) return 0;
 		if((canskip === void || +canskip) && clickSkipEnabled)
 		{
 			// スキップできる場合
@@ -7728,50 +8028,109 @@ class KAGWindow extends Window
 
 	//--------------------------------------------------------- FireEffect関連 --
 
-	// 保持してる炎効果レイヤ
-	var fireLayers = [];
-
-	// ムービーレイヤの取得
-	function getLayerFire() {
-		var fire = new FireController(this);
-		fireLayers.add(fire);
-		flipStart();
-		return fire;
-	}
-
-	/**
-	 * 炎効果レイヤ情報の更新
-	 */
-	function updateLayerFires(now) {
-		if (fireLayers.count > 0) {
-			for (var i=fireLayers.count-1;i>=0;i--) {
-				var fire = fireLayers[i];
-				if (fire.isPlaying) {
-					fire.update(now);
-				} else {
-					// 特定ムービーの停止
-					conductor.trigger("lfstop" + fire);
-					invalidate fire;
-					fireLayers.erase(i);
-				}
-			}
-			if (fireLayers.count == 0) {
-				conductor.trigger("lfstop");
-			}
-		}
-	}
-
 	/**
 	 * 全レイヤムービーの停止
 	 */
 	function stopAllLayerFires() {
-		for (var i=fireLayers.count-1;i>=0;i--) {
-			var fire = fireLayers[i];
-			fire.stop();
+		stopAllGenericFlipsOneClass("fire");
+	}
+
+	//--------------------------------------------------------- 汎用Flip関連 --
+
+	var genericFlipsInstances = %[];
+	var activeGenericFlips = [];
+	function createGenericFlip(type, id) {
+		var cls = GenericFlip.GetClass(type), obj;
+		if (cls === void) return;
+		try { obj = new cls(this); } catch { return; }
+		obj.flipType = type;
+		obj.flipID = (id != "") ? id : System.createUUID();
+		var list = genericFlipsInstances[type];
+		/**/list = genericFlipsInstances[type] = [] if (list === void);
+		list.add(obj);
+		activeGenericFlips.add(type) if (activeGenericFlips.find(type) < 0);
+		flipStart();
+		return obj;
+	}
+	function updateGenericFlips(now) {
+		var  cnt = activeGenericFlips.count;
+		if (!cnt) return false;
+		var remove = false;
+		for (var i = 0; i < cnt; i++) {
+			var gft = activeGenericFlips[i], list, del = false;
+			/**/list = genericFlipsInstances[gft] if (gft != "");
+			if (list === void) del = true;
+			else {
+				del = !updateGenericFlipsOneClass(now, list, gft);
+			}
+			if (del) {
+				activeGenericFlips[i] = void;
+				remove = true;
+			}
+		}
+		if (remove) activeGenericFlips.remove(void, true);
+		return      activeGenericFlips.count > 0;
+	}
+	function updateGenericFlipsOneClass(now, list, gft) {
+		var  cnt = list.count;
+		if (!cnt) return false;
+		var trig = GenericFlip.GetTrigger(gft);
+		for (var i  = cnt-1; i >= 0; i--) {
+			var obj = list[i];
+			if (obj === void || !obj.flipFrame(now)) {
+				if (obj) {
+					conductor.trigger(trig + obj) if (trig != "");
+					invalidate obj;
+				}
+				list.erase(i);
+			}
+		}
+		cnt = list.count;
+		conductor.trigger(trig) if (!cnt && trig != "");
+		return cnt > 0;
+	}
+	function stopAllGenericFlips() {
+		for (var i  = activeGenericFlips.count-1; i >= 0; i--)
+			stopAllGenericFlipsOneClass(activeGenericFlips[i]);
+	}
+	function stopAllGenericFlipsOneClass(gft) {
+		if (gft == "") return;
+		var list = genericFlipsInstances[gft];
+		if (list === void) return;
+		for (var i  = list.count-1; i >= 0; i--) {
+			var obj = list[i];
+			/**/obj.stop() if (obj !== void);
 		}
 	}
-	
-    // ------------------------------------------------------ レイヤ全消去
+	function getGenericFlipsInstanceCount(gft) {
+		if (gft != "") {
+			var list = genericFlipsInstances[gft];
+			return (list !== void) ? list.count : 0;
+		} else {
+			var ret = 0;
+			for (var i = activeGenericFlips.count-1; i >= 0; i--)
+				try { ret += genericFlipsInstances[activeGenericFlips[i]].count; } catch {}
+			return ret;
+		}
+	}
+	function findGenericFlipsInstance(gft, id) {
+		if (gft == "") {
+			for (var tag, i = activeGenericFlips.count-1; i >= 0; i--) {
+				gft = activeGenericFlips[i];
+				if (gft == "") continue;
+				var r = findGenericFlipsInstance(gft);
+				if (r !== void) return r;
+			}
+		} else {
+			var list = genericFlipsInstances[gft];
+			if (list === void) return;
+			for (var i = list.count-1; i >= 0; i--) {
+				if (list[i] !== void && list[i].flipID == id) return list[i];
+			}
+		}
+	}
+
+	// ------------------------------------------------------ レイヤ全消去
 
 	/**
 	 * レイヤの全消去
@@ -9148,6 +9507,19 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 				  
+	td : function(elm)
+	{
+		// delay登録
+		entryDelayCmd(elm);
+		return 0;
+	} incontextof this,
+
+	wd : function(elm)
+	{
+		// delay待ち
+		return waitDelay(elm.name, elm.canskip);
+	} incontextof this,
+
 	wc : function(elm)
 	{
 		// 指定文字分のウェイト
@@ -10030,6 +10402,34 @@ class KAGWindow extends Window
 		return 0;
 	} incontextof this,
 
+	set : function (elm) {
+		// 変数の設定 ※文字列しか設定できないのに注意
+		if (elm.name !== void && elm.value !== void) {
+			var name  = elm.name;
+			var value = elm.value;
+			var l = name.length;
+			if (l > 3 && name.substr(0,3) == "tf.") {
+				tf[name.substr(3)] = value;
+			} else if (l > 3 && name.substr(0,3) == "sf.") {
+				sf[name.substr(3)] = value;
+			} else if (l > 2 && name.substr(0,2) == "f.") {
+				f[name.substr(2)] = value;
+			}
+		}
+		return 0;
+	} incontextof this,
+
+	func : function (elm) {
+		// 関数の呼び出し ※パラメータは全て文字列になるので注意
+		if (elm.name !== void) {
+			var func = Scripts.eval(elm.name);
+			if (typeof func == "Object" && func instanceof "Function") {
+				func(elm);
+			}
+		}
+		return 0;
+	} incontextof this,
+				  
 	trace : function(elm)
 	{
 		// 式のトレース表示
@@ -10092,6 +10492,13 @@ class KAGWindow extends Window
 	{
 		// トリガを待つ
 		return waitTrigger(elm);
+	} incontextof this,
+
+	clearallmacro : function(elm)
+	{
+		// 全マクロのクリア
+		(Dictionary.clear incontextof conductor.macros)();
+		return 0;
 	} incontextof this,
 
 	//----------------------------------------- タグハンドラ群(選択肢) --
@@ -10930,18 +11337,25 @@ class KAGWindow extends Window
     
 	function errorLine(target, msg) {
 		var filename = conductor.curStorage;
-		var exename  = System.exePath;
-		if (filename.substring(0,exename.length) == exename) {
-			filename = filename.substring(exename.length);
+		var line     = conductor.curLine+1;
+		var shortfn  = Storages.extractStorageName(filename);
+		var fullfn   = Storages.getPlacedPath(filename);
+		if (fullfn != "") {
+			var exename  = System.exePath.toLowerCase();
+			if (fullfn.substring(0,exename.length).toLowerCase() == exename) {
+				fullfn = fullfn.substring(exename.length);
+			}
 		}
-		msg = "%s:%d: %s".sprintf(filename, conductor.curLine+1, msg);
-		if (debugLevel >= tkdlSimple) dm(msg);
+		callHook("onErrorLineHook", target, msg, filename, line);
+		var shortmsg = "%s:%d: %s".sprintf(shortfn, line, msg);
+		if (debugLevel >= tkdlSimple) dm(shortmsg);
 		if (logMode && target !== void) {
-			target.add(msg);
+			var fullmsg  = "%s:%d: %s".sprintf(fullfn, line, msg);
+			target.add(fullmsg);
 			if (logPad !== void) with (logPad) {
 				var stat = "上が最新ログ";
 				.text = "" if (.statusText != stat);
-				.text = msg + "\n" +.text;
+				.text = shortmsg + "\n" +.text;
 				.statusText = stat;
 				.visible = true;
 			}
@@ -10986,32 +11400,40 @@ class KAGWindow extends Window
         soundLog.clear();
         voiceLog.clear();
     }
-	function initLogPad(pos = false) {
+	function initLogPad(pos = false, noclear = false) {
 		if (logPad === void) {
 			logPad = new Pad();
 			with (logPad) {
 				.borderStyle = bsSizeToolWin;
 				.color = 0;
 				.fontColor = 0xFFFFFF;
-				.fontFace = chDefaultFace;
+				.fontFace = "ＭＳ ゴシック"; //chDefaultFace;
 				.readOnly = false;
 				.wordWrap = true;
 				.showScrollBars = ssVertical;
 				.height = 10;
 				.title = "KAGEXログ";
+				if (typeof .registerExEvent == "Object" &&
+					typeof this.chDebugLogMenuItem == "Object") {
+					.onClose = function {
+						if (!isvalid this) return;
+						onChDebugLogMenuItemClick(chDebugLogMenuItem) if (logMode);
+					} incontextof this;
+					.registerExEvent();
+				}
 			}
 		}
 		with (logPad) {
 			if (pos) {
 				.width  = width;
-				.height = height\2;
+				.height = scHeight\2;
 				.left   = left;
 				.top    = top + height;
 			} else {
 				.width = scWidth;
 				.height = scHeight\2;
 			}
-			.text = "";
+			.text = "" if (!noclear);
 			.statusText = "上が最新ログ";
 			.visible = true;
 		}

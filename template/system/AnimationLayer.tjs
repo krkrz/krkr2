@@ -1219,7 +1219,11 @@ class AnimationLayer extends AffineLayer
 		return 0;
 	}
 
-
+	/*タグハンドラ*/function option(elm)
+	{
+		setOptions(elm);
+		return 0;
+	}
 }
 
 

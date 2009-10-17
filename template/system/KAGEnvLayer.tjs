@@ -16,15 +16,12 @@ class KAGEnvLayer extends KAGEnvImage {
 	/// 色指定塗りつぶし
 	var imageColor;
 
-	// 描画中ムービー
-	var movieFile;
-	var movieLoop;
-	var movieAlpha;
-	var movieLayer;
-
-	// 炎エフェクト
-	var fireFile;
-	var fireInfo;
+	// 汎用フリップエフェクト
+	var flipType;
+	var flipFile;
+	var flipInfo;
+	var flipRestore;
+	var flipUpdateFlag;
 
 	// タイル描画処理
 	var tileFile;
@@ -72,24 +69,54 @@ class KAGEnvLayer extends KAGEnvImage {
 			reposition = true;
 		}
 	}
-	
+
+	var _genericFlipGetEntry;
+	var _genericFlipGetType;
+
 	function KAGEnvLayer(env, name) {
 		super.KAGEnvImage(env, name);
 		redraw = false;
+
+		// 動的にレイヤコマンドを増やす
+		if (typeof global.GenericFlip == "Object") with (global.GenericFlip) {
+			_genericFlipGetEntry = .GetEntry;
+			_genericFlipGetType  = .GetType;
+			var lc = _layerCommands;
+			for (var i = .Types.count-1; i >= 0; i--) {
+				var type = .Types[i];
+				if (type == "") continue;
+				if (lc[type] === void) {
+					lc[type] = (@"function (param, elm) { setFlipFile(param, elm, '${type}');  }")! incontextof this;
+				}
+				var opt = .GetEntry(type, "options");
+				if (typeof opt == "Object") {
+					for (var j = opt.count-1; j >= 0; j--) {
+						lc[opt[j]] = null if (opt[j] != "" && lc[opt[j]] === void);
+					}
+				}
+			}
+		} else {
+			var dummy = function {};
+			_genericFlipGetEntry = dummy;
+			_genericFlipGetType  = dummy;
+		}
 	}
 
     function onStore(f) {
         super.onStore(f);
 		f.imageFile = imageFile;
 		f.imageColor = imageColor;
-		f.movieFile = movieFile;
-		f.movieLoop = movieLoop;
-		f.movieAlpha = movieAlpha;
-		f.fireFile = fireFile;
-		if (fireFile !== void) {
-			f.fireInfo = %[];
-			(Dictionary.assign incontextof f.fireInfo)(fireInfo);
+
+		f.flipFile = flipFile;
+		if (flipFile != "") {
+			f.flipType = flipType;
+			f.flipInfo = %[];
+			(Dictionary.assign incontextof f.flipInfo)(flipInfo);
+			if (targetLayer !== void && _genericFlipGetEntry(flipType, "dtstore")) {
+				targetLayer.storeFlip(f.flipRestore = %[]);
+			}
 		}
+
 		f.tileFile = tileFile;
 		f.tilex = tilex;
 		f.tiley = tiley;
@@ -100,16 +127,18 @@ class KAGEnvLayer extends KAGEnvImage {
     function onRestore(f) {
 		imageFile = f.imageFile;
 		imageColor = f.imageColor;
-		movieFile = f.movieFile;
-		movieLoop = f.movieLoop;
-		movieAlpha = f.movieAlpha;
-		fireFile = f.fireFile;
-		if (fireFile !== void) {
-			fireInfo = %[];
-			(Dictionary.assign incontextof fireInfo)(f.fireInfo);
+
+		flipUpdateFlag = void;
+		flipFile = f.flipFile;
+		if (flipFile != "") {
+			flipType = f.flipType;
+			(Dictionary.assign incontextof (flipInfo = %[]))(f.flipInfo);
+			if (f.flipRestore === void) flipRestore = void;
+			else (Dictionary.assign incontextof (flipRestore = %[]))(f.flipRestore);
 		} else {
-			fireInfo = void;
+			flipType = flipFile = flipInfo = flipRestore = void;
 		}
+
 		tileFile = f.tileFile;
 		tilex = f.tilex;
 		tiley = f.tiley;
@@ -122,16 +151,16 @@ class KAGEnvLayer extends KAGEnvImage {
 		if (orig instanceof "KAGEnvLayer") {
 			imageFile = orig.imageFile;
 			imageColor = orig.imageColor;
-			movieFile = orig.movieFile;
-			movieLoop = orig.movieLoop;
-			movieAlpha = orig.movieAlpha;
-			fireFile = orig.fireFile;
-			if (fireFile) {
-				fireInfo = %[];
-				(Dictionary.assign incontextof fireInfo)(orig.fireInfo);
+
+			flipFile = orig.flipFile;
+			if (flipFile != "") {
+				flipType = orig.flipType;
+				(Dictionary.assign incontextof (flipInfo = %[]))(orig.flipInfo);
+				flipRestore = void;
 			} else {
-				fireInfo = void;
+				flipType = flipFile = flipInfo = flipRestore = void;
 			}
+
 			tileFile = orig.tileFile;
 			tilex = orig.tilex;
 			tiley = orig.tiley;
@@ -140,31 +169,33 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 		super.copy(orig);
 	}
-	
-	// 画像ファイルを指定
-	function setImageFile(file, elm) {
 
-		initFile(elm);
-		
-		movieFile = void;
-		fireFile = void;
-		tileFile  = void;
-		imageFile = file;
+	function clearFileState() {
+		imageFile  = void;
 		imageColor = void;
+		tileFile   = void;
+		flipType = flipFile = flipInfo = flipRestore = void;
+	}
 
-        // 背景指定時に座標指定がなければ場所情報を初期化する
-        if (elm.xpos === void) {
-            xpos = void;
-        }
-        if (elm.ypos === void) {
-            ypos = void;
-        }
+	function initPosAndShow(elm) {
+		// 背景指定時に座標指定がなければ場所情報を初期化する
+		xpos = void if (elm.xpos === void);
+		ypos = void if (elm.ypos === void);
 
 		if (elm.hide === void) {
 			disp = SHOW;
 			redraw = true;
 		}
+	}
 
+	// 画像ファイルを指定
+	function setImageFile(file, elm) {
+
+		initFile(elm);
+		clearFileState();
+		imageFile  = file;
+
+		initPosAndShow(elm);
 		if (elm.noflag === void && file !== void) {
 			// 記録
 			kag.sflags["cg_" + (file.toUpperCase())] = true;
@@ -177,117 +208,47 @@ class KAGEnvLayer extends KAGEnvImage {
 	function setImageColor(color, elm) {
 
 		initFile(elm);
-
-		imageFile = void;
+		clearFileState();
 		imageColor = +color;
-		tileFile  = void;
-		movieFile = void;
-		fireFile = void;
-		
-		// 背景指定時に座標指定がなければ場所情報を初期化する
-		if (elm.xpos === void) {
-			xpos = void;
-        }
-		if (elm.ypos === void) {
-			ypos = void;
-        }
 
-		if (elm.hide === void) {
-			disp = SHOW;
-			redraw = true;
-		}
+		initPosAndShow(elm);
 		return true;
     }
-	
-	// ムービーファイルを指定
-	function setMovieFile(file, elm) {
 
+	function setFlipFile(file, elm, forcetype = void) {
 		initFile(elm);
+		clearFileState();
 
-		imageFile = void;
-		imageColor = void;
-		tileFile  = void;
-		fireFile = void;
-		movieFile = file;
-		movieAlpha = elm.alpha !== void ? elm.alpha : false;
-		movieLoop  = elm.loop !== void ? +elm.loop : false;
-		
-		// 背景指定時に座標指定がなければ場所情報を初期化する
-		if (elm.xpos === void) {
-			xpos = void;
-        }
-		if (elm.ypos === void) {
-			ypos = void;
-        }
+		flipType = (forcetype != "") ? forcetype : _genericFlipGetType(file, elm);
+		flipFile = file;
+		flipInfo = %[];
+		(Dictionary.assign incontextof flipInfo)(elm);
 
-		if (elm.hide === void) {
-			disp = SHOW;
-			redraw = true;
-		}
-
-		if (elm.noflag === void) {
+		initPosAndShow(elm);
+		var autoflag;
+		if (!elm.noflag && (autoflag = _genericFlipGetEntry(flipType, "autoflag")) != "") {
 			// 記録
-			kag.sflags["movie_" + (file.toUpperCase())] = true;
+			kag.sflags[autoflag + "_" + (file.toUpperCase())] = true;
 		}
 
 		return true;
-    }
+	}
+	function updateFlipFile(elm) {
+		(Dictionary.assign incontextof flipInfo)(elm,  false);
+		flipUpdateFlag = updateFlag = true;
+	}
 
-	// ムービーファイルを指定
-	function setFireFile(file, elm) {
-		
-		initFile(elm);
-
-		imageFile = void;
-		imageColor = void;
-		tileFile  = void;
-		movieFile = void;
-		fireFile = file;
-		fireInfo = %[];
-		(Dictionary.assign incontextof fireInfo)(elm);
-		
-		// 背景指定時に座標指定がなければ場所情報を初期化する
-		if (elm.xpos === void) {
-			xpos = void;
-        }
-		if (elm.ypos === void) {
-			ypos = void;
-        }
-
-		if (elm.hide === void) {
-			disp = SHOW;
-			redraw = true;
-		}
-
-		return true;
-    }
-	
 	// 塗りつぶしイメージファイルを指定
 	function setTileFile(file, elm) {
 
 		initFile(elm);
-		
-		movieFile = void;
-		fireFile = void;
-		imageFile = void;
-		imageColor = void;
+		clearFileState();
 		tileFile = file;
 
-		if (elm.tilex !== void) { tilex = +elm.tilex; }
-		if (elm.tiley !== void) { tiley = +elm.tiley; }
-		
-		// 背景指定時に座標指定がなければ場所情報を初期化する
-		if (elm.xpos === void) {
-			xpos = void;
-		}
-        if (elm.ypos === void) {
-            ypos = void;
-		}
+		tilex = +elm.tilex if (elm.tilex !== void);
+		tiley = +elm.tiley if (elm.tiley !== void);
 
-		if (elm.hide === void) {
-			disp = SHOW;
-			redraw = true;
-		}
+		initPosAndShow(elm);
 
 		if (elm.noflag === void) {
 			// 記録
@@ -309,42 +270,22 @@ class KAGEnvLayer extends KAGEnvImage {
 	color : function(param, elm) {
 		setImageColor(param, elm);
 	} incontextof this,
-	movie : function(param, elm) {
-		setMovieFile(param, elm);
-	} incontextof this,
 	tile : function(param, elm) {
 		setTileFile(param, elm);
 	} incontextof this,
 	tilex : null,
 	tiley : null,
-	loop : null,
-	alpha : null,
 	noflag : null,
 	width : function(param, elm) { width = param; } incontextof this,
 	height : function(param, elm) { height = param; } incontextof this,
-	fire: function(param, elm) {
-		setFireFile(param, elm);
+
+	flip : function(param, elm) {
+		setFlipFile(param, elm);
 	} incontextof this,
-	scalingcoeff : null,
-	texturefiltertype: null,
-	forceh : null,
-	forceb : null,
-	boundrangeh : null,
-	boundrangeb : null,
-	numofblurforcoolmap : null,
-	texturefiltertype : null,
-	coolrange : null,
-	coolstrength : null,
-	coolparticledensitydenominator : null,
-	coolparticledensitynumerator : null,
-	edgesmoothing : null,
-	firewidth : null,
-	fireheight: null,
-	fireleft : null,
-	firetop : null,
-	firemargin : null,
-	firecolor : null,
-	firegamma: null
+	flipupdate : function(param, elm) {
+		updateFlipFile(elm);
+	} incontextof this,
+	fliptype : null,
 		];
 
     /**
@@ -402,10 +343,22 @@ class KAGEnvLayer extends KAGEnvImage {
 		layer.drawText(0,0,text,0xffffff);
 	}
 
+	/**
+	 * 更新処理(FlipUpdate用)
+	 */
+	function _update() {
+		var uf = updateFlag;
+		var ret = super._update(...);
+		if (uf && flipUpdateFlag) {
+			targetLayer.setFlipOptions(flipInfo) if (isShowBU() && targetLayer !== void);
+			flipUpdateFlag = void;
+		}
+		return ret;
+	}
+
 	function drawLayer(layer) {
-		layer.stopMovie();
 		layer.clearTile();
-		layer.stopFire();
+		layer.stopFlip();
 		if (isShowBU()) {
 			if (tileFile !== void) {
 				// タイル画像ロード
@@ -432,26 +385,21 @@ class KAGEnvLayer extends KAGEnvImage {
 				} catch (e) {
 					errorLayer(layer, imageFile + ":画像がロードできません:" + e.message);
 				}
-			} else if (movieFile !== void) {
-				// ムービーのロード
-				try {
-					layer.startMovie(movieFile, movieLoop, movieAlpha);
-					_width  = layer.width;
-					_height = layer.height;
-				} catch(e) {
-					errorLayer(layer, movieFile + ":ムービーがロードできません:" + e.message);
-				}
 			} else if (imageColor !== void) {
 				// 塗りつぶし
 				layer.setSize(_width, _height);
 				layer.fillRect(0, 0, layer.width, layer.height, imageColor);
-			} else if (fireFile !== void) {
-				// 炎エフェクト
+			} else if (flipFile !== void) {
 				try {
-					layer.startFire(fireFile, fireInfo);
+					if (flipRestore !== void) {
+						layer.restoreFlip(flipRestore);
+					} else {
+						layer.startFlip(flipFile, flipInfo, flipType);
+					}
 				} catch(e) {
-					errorLayer(layer, fireFile + ":炎エフェクトがロードできません:" + e.message);
+					errorLayer(layer, @"${flipFile}:エフェクトがロードできません:" + e.message);
 				}
+				flipUpdateFlag = flipRestore = void;
 			}
 		}
 	}

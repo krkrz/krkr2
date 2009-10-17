@@ -226,6 +226,17 @@ function KAGLoadScriptOnce(name)
 	global.loaded_scripts[name] = true;
 }
 
+function KAGConfigEnabled(name, dflt) {
+	// global変数参照
+	return (typeof global[name] == "undefined") ? dflt : global[name];
+}
+function CanLoadPlugin(name) {
+	var exepath = System.exePath, exist = Storages.isExistentStorage;
+	if (exist(exepath+name) || exist(exepath+"plugin/"+name) || exist(exepath+"system/"+name)) return true;
+	var placed = Storages.getPlacedPath(name);
+	return placed != "" && exist(placed);
+}
+
 /*
 	AppConfig.tjs 読み込み
 */
@@ -270,7 +281,7 @@ if(typeof global.config_version == "undefined" || config_version != kagVersion)
 */
 
 // 実行可能ファイルのパスをキーにしてロックを行う
-if(!System.createAppLock((System.exePath + lockKey).replace(/[^A-Za-z]/g, '_')) && typeof global.restart == "undefined")
+if(!System.createAppLock(System.appLockKey=(System.exePath + lockKey).replace(/[^A-Za-z]/g, '_')) && typeof global.restart == "undefined")
 {
 	// すでに起動している
 	if (debugWindowEnabled && typeof Window.sendMessage == "Object" &&   System.getArgument("-sendmessage") != "") {
@@ -331,6 +342,10 @@ KAGLoadScript("UpdateRegion.tjs");
 KAGLoadScript("AffineLayer.tjs");
 KAGLoadScript("AnimationLayer.tjs");
 KAGLoadScript("GraphicLayer.tjs");
+KAGLoadScript("GFX_Fire.tjs")     if (KAGConfigEnabled("gfxFireEnabled",     true) && CanLoadPlugin("gfxEffect.dll"));
+KAGLoadScript("GFX_Movie.tjs")    if (KAGConfigEnabled("gfxMovieEnabled",    true));
+KAGLoadScript("GFX_Flash.tjs")    if (KAGConfigEnabled("gfxFlashEnabled",    true) && CanLoadPlugin("flashPlayer.dll"));
+KAGLoadScript("GFX_Particle.tjs") if (KAGConfigEnabled("gfxParticleEnabled", true));
 KAGLoadScript("MessageLayer.tjs");
 KAGLoadScript("Menus.tjs");
 KAGLoadScript("DefaultMover.tjs");

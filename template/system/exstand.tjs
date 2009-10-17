@@ -153,6 +153,15 @@ class ExStandInfoParser extends CSVParser
 							case "face":
 								{
 									var faceName = line[1];
+									var faceTarget;
+									var l;
+									if ((l = faceName.indexOf("#")) > 0) {
+										faceTarget  = faceName.substr(l);
+										faceName    = faceName.substr(0,l);
+									} else if ((l = faceName.indexOf("@")) > 0) {
+										faceTarget  = faceName.substr(l);
+										faceName    = faceName.substr(0,l);
+									}
 									var face = faceMap[faceName];
 									if (face === void) {
 										// 新規表情
@@ -164,7 +173,11 @@ class ExStandInfoParser extends CSVParser
 									case "base": // ベース画像追加
 										{
 											var baseName = line[3];
-											face.baseList.add(baseName);
+											var fdata = %[name:baseName];
+											if (faceTarget !== void) {
+												fdata.target = faceTarget;
+											}
+											face.baseList.add(fdata);
 											if (face.eyebase !== void) {
 												face.eyebase = baseName + "・目";
 											}
@@ -505,7 +518,7 @@ function getFixedFaceName(info, currentFaceName, faceName)
 function checkStandLayerLevel(level, levelMax, standInfo, levels, searchSmallLevel=true)
 {
 	var currentImageLevel = void;
-	for (var l=level;l<levelMax;l++) {
+	for (var l=(int)level;l<levelMax;l++) {
 		var levelInfo;
 		var levelName;
 		if (levels !== void && (levelInfo = levels[l]) !== void && (levelName = levelInfo.name) !== void) {
@@ -858,6 +871,25 @@ class StandLayer extends PSDLayer {
 		faceNames.add(name);
 	}
 
+	function foreMatch(target, name) {
+		var not = false;
+		var ret;
+		if (target.charAt(0) == "!") {
+			not = true;
+			target = target.substr(1);
+		}
+		var l = target.length-1;
+		if (target.charAt(l) == "*") {
+			//末尾に*なら前方一致
+			ret =  target.substr(0,l) == name.substr(0,l);
+		} else {
+			//完全一致
+			ret =  target == name;
+		}
+		return not ? !ret : ret;
+	}
+	
+
 	// 表情指定
 	function setFace(faceName) {
 		if (faceName != currentFaceName || lipLevel !== currentLipLevel || eyeLevel !== currentEyeLevel) {
@@ -870,38 +902,36 @@ class StandLayer extends PSDLayer {
 			if (faceName !== void) {
 				var faceInfo = getFaceInfo(faceName);
 				if (faceInfo !== void) {
-
 					// 新規表情の表示
 					var base = faceInfo.baseList;
 					for (var i=0;i<base.count;i++) {
-						var n = base[i];
-						var a = n.indexOf("@"); // 服装限定指定
-						if (a >= 0) {
-							var d = n.substring(a+1);
-							n = n.substring(0,a);
-							if (d == currentDressName) {
-								a = n.indexOf("#"); // 差分限定指定
+						var n = base[i].name;
+						var t = base[i].target;
+						//dm("target:" + t);
+						if (t !== void) {
+							if (t.charAt(0) == "#") { // 差分限定
+								var a = t.indexOf("@"); // 服装限定指定
 								if (a >= 0) {
-									var d = n.substring(a+1);
-									n = n.substring(0,a);
-									if (d == currentDiffName) {
+									var dress = t.substring(a+1);
+									var diff  = t.substring(1,a-1);
+									if (foreMatch(dress, currentDressName) &&
+										foreMatch(diff, currentDiffName)) {
 										setFaceVisible(n, true);
 									}
 								} else {
+									var diff  = t.substring(1);
+									if (foreMatch(diff, currentDiffName)) {
+										setFaceVisible(n, true);
+									}
+								}
+							} else if (t.charAt(0) == "@") {
+								var dress = t.substring(1);
+								if (foreMatch(dress, currentDressName)) {
 									setFaceVisible(n, true);
 								}
 							}
 						} else {
-							a = n.indexOf("#");
-							if (a >= 0) {
-								var d = n.substring(a+1);
-								n = n.substring(0,a);
-								if (d == currentDiffName) {
-									setFaceVisible(n, true);
-								}
-							} else {
-								setFaceVisible(n, true);
-							}
+							setFaceVisible(n, true);
 						}
 					}
 					if (faceInfo.lipimage !== void) {

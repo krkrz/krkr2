@@ -697,7 +697,10 @@ class KAGEnvironment extends KAGEnvImage {
      * @param elm コマンドのほかの要素
      */
 	function setStage(stageName, elm) {
-		
+		if (stages[stageName] === void) {
+			kag.errorCmd("舞台指定が不明です: " + stageName);
+			return;
+		}
 		if (stageName != stage || isClear() || event.isShow()) {
 
 			initFile(elm);
@@ -765,7 +768,7 @@ class KAGEnvironment extends KAGEnvImage {
     function setTime(timeName, elm) {
 		if (timeName == "" || timeName === true) return; // 空指定なら何もしない
 		if (times[timeName] === void) {
-			kag.error("時間指定が不明です: "+timeName);
+			kag.errorCmd("時間指定が不明です: "+timeName);
 			return;
 		}
 
@@ -889,7 +892,7 @@ class KAGEnvironment extends KAGEnvImage {
 				}
 			}
 		} else {
-			kag.error("レイヤ名が指定されていません");
+			kag.errorCmd("レイヤ名が指定されていません");
 		}
 		return 0;
     }
@@ -923,7 +926,7 @@ class KAGEnvironment extends KAGEnvImage {
 				throw new Exception(elm.initName + ":指定されたキャラクタ初期化指定の定義がありません。envinit.tjs を確認してください。");
 			}
 		} else {
-			kag.error("キャラクタ名または初期化名が指定されていません");
+			kag.errorCmd("キャラクタ名または初期化名が指定されていません");
 		}
         return 0;
     }        
@@ -943,8 +946,13 @@ class KAGEnvironment extends KAGEnvImage {
     /**
      * メッセージ窓のトランジション処理をくみこんだ ON/OFF
      */
-    function msgonoff(elm, v) {
-        ret = void;
+	function msgonoff(elm, v) {
+
+		if (kag.skipNoDisp) {
+			return 0;
+		}
+
+		ret = void;
 		trans = void;
         if (!transMode && !isSkip() && elm.nofade === void) {
             foreach(elm, checkTrans);
@@ -1600,10 +1608,12 @@ class KAGEnvironment extends KAGEnvImage {
      * 名前表示処理ハンドラ
      */
     function dispname(elm) {
-		
+
 		// 表示処理
-		if (kag.textWriteEnabled && kag.setCurrentMessageLayerVisible(true)) {
-			return -3;
+		if (!kag.skipNoDisp) {
+			if (kag.textWriteEnabled && kag.setCurrentMessageLayerVisible(true)) {
+				return -3;
+			}
 		}
 		
 		ret = void;
@@ -1770,7 +1780,8 @@ class KAGEnvironment extends KAGEnvImage {
 			ret = playNextVoice();
 		}
         kag.addAutoWait(ret);
-		talkTimeOrigin = System.getTickCount();
+		talkWaitOrigin = System.getTickCount();
+		talkWaitCount = 0;
 
 		return 0;
     }
@@ -1823,8 +1834,11 @@ class KAGEnvironment extends KAGEnvImage {
      * 一番古いSEがわかるようにカウント処理をしている
      */
     function getSe(id) {
-        ses[id].count = seCount++;
-        return ses[id];
+		ses[id].count = seCount++;
+		if (ses[id].name === void) {
+			ses[id].name = (string)id;
+		}
+		return ses[id];
     }
 
     /**
@@ -2035,18 +2049,26 @@ class KAGEnvironment extends KAGEnvImage {
 		return 0;
 	}
 
-	var talkTimeOrigin;
+	var talkWaitOrigin;
+	var talkWaitCount;
 	
 	/**
 	 * 会話タイミング待ち
 	 */
 	function doTalkWait(elm) {
+		talkWaitCount++;
 		if (kag.skipMode == 0) {
-			var waittime = talkTimeOrigin + +elm.time - System.getTickCount();
-			if (waittime < 6) {
-				return 0;
+			if (elm.name !== void) {
+				return kag.waitDelay(elm.name, true);
+			} else if (elm.time !== void) {
+				var waittime = talkWaitOrigin + +elm.time - System.getTickCount();
+				if (waittime < 6) {
+					return 0;
+				}
+				return kag.waitTime(waittime, true);
+			} else {
+				return kag.waitDelay("vl" + talkWaitCount, true);
 			}
-			return kag.waitTime(waittime, true);
 		}
 		return 0;
 	}
@@ -2055,7 +2077,7 @@ class KAGEnvironment extends KAGEnvImage {
 	 * 会話タイミング待ち
 	 */
 	function showTalkWait(elm) {
-		dm("showtwait:" + (System.getTickCount() - talkTimeOrigin));
+		dm("showtwait:" + (System.getTickCount() - talkWaitOrigin));
 		return 0;
 	}
 	

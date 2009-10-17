@@ -307,8 +307,9 @@ class BGM
                     (start = start.samplePosition) !== void) {
                     buf.samplePosition = start;
                 }
-                buf.paused = paused;
-                buf.play();
+				owner.onBGMStart(buf.labels);
+				buf.paused = paused;
+				buf.play();
 			}
 			catch(e)
 			{

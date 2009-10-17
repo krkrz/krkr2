@@ -35,8 +35,10 @@ class UIListParser extends CSVParser {
 		var name = columns[1];
 		if (type == "eval") {
 			check = true;
-			doEvals(name, columns, _columns);
-			return;
+			return doEvals(name, columns, _columns);
+		} else if (type == "rgrp") {
+			check = true;
+			return doRGrp(name, columns);
 		}
 		var info = result[name];
 		if (info === void) {
@@ -54,6 +56,7 @@ class UIListParser extends CSVParser {
 		case "func": doFunc(info, columns); break;
 		case "part": doPart(info, columns); break;
 		case "copy": doCopy(info, columns); break;
+		case "cref": doCRef(info, columns); break;
 		case "ordr": doOrdr(info, columns); break;
 		default: knownType = false; break;
 		}
@@ -80,6 +83,44 @@ class UIListParser extends CSVParser {
 		info.class  = "copy";
 		info.copy   = columns[2];
 		info.subref = columns[3];
+	}
+
+	// rgrp
+	function doRGrp(key, columns) {
+		for (var i = 2; i < columns.count; i++) {
+			var target = columns[i];
+			if (target == "" || result[target] === void) {
+				dm("指定されたrgrpは存在しません:" + target) if (target != "");
+				continue;
+			}
+			result[target].groupName = key;
+		}
+	}
+
+	// cref参照
+	function doCRef(info, columns) {
+		var uis = [];
+		uis.assign(info.uistates);
+		for (var i = 2; i < columns.count; i++) {
+			var target = columns[i];
+			if (target == "" || result[target] === void) {
+				dm("指定されたcrefは存在しません:" + target) if (target != "");
+				continue;
+			}
+			target = result[target];
+			var  x, y, w, h;
+			with (target) x =.x, y =.y, w=.width, h=.height;
+			with (info)   x-=.x, y-=.y;
+			target.cref = true;
+			for (var j = 0; j < uis.count; j+=2) {
+				var name = uis[j], state = uis[j+1];
+				if (name == "" ||  state === void) continue;
+				target.uistates[name] =
+					%[  storage: state.storage,
+					ox: 0, oy: 0, w:w, h:h, cw:w, ch:h,
+					cx:x-state.ox, cy:y-state.oy ];
+			}
+		}
 	}
 
 	// ordr 順序指定(.func用)
@@ -122,20 +163,19 @@ class UIListParser extends CSVParser {
 			info.storage  = columns[2] if (!setState(columns[7], info, columns));
 			break;
 		default:
-			var stateName = columns[7];
+			var stateName = columns[7], isrect = (stateName == "rect");
 			for (var i=8;i<columns.count;i++) {
 				var state = columns[i];
+				if (state == "") continue;
 				if (buttonStateNames[state] !== void) {
 					stateName += "_";
 					stateName += state;
-				} else {
-					if (info.class == "radio") {
-						if (state != "") {
-							info.groupName = state;
-						}
-					}
+				} else if (info.class == "radio") {
+					info.groupName = state;
 				}
+				isrect |= (state == "rect");
 			}
+			if (isrect) columns[2] = "";
 			setState(stateName, info, columns);
 			break;
 		}
@@ -345,13 +385,7 @@ function uiloadEntry(layer, names, dic, elm, table, evals, order)
 	// 背景がなかったときの処理
 	if (base === void) {
 		uiloadEvals(elm, evals.elm, dic, base);
-		var tmp = %[];
-		(global.Dictionary.assign incontextof tmp)(elm,false);
-		with (tmp) {
-			.opacity = 0 if (.opacity === void);
-			.color   = 0 if (.color   === void);
-		}
-		table.base(layer, base, %[ x:0, y:0, width:layer.parent.width, height:layer.parent.height, storage:"" ], tmp);
+		table.base(layer, base, %[ x:0, y:0, width:layer.parent.width, height:layer.parent.height, storage:"" ], elm);
 	}
 
 	var links = table._preorder(layer);
@@ -364,6 +398,7 @@ function uiloadEntry(layer, names, dic, elm, table, evals, order)
 		case void:
 			kag.error("クラスが指定されていません:" + name);
 			break;
+		case "cref":
 		case "base":
 		case "part":
 			break;
@@ -386,7 +421,7 @@ function uiloadEntry(layer, names, dic, elm, table, evals, order)
 			/**/
 			temp.class = target.class;
 			temp.groupName = value.subref if (temp.class == "radio" && value.subref !== void);
-			temp.uistates = target.uistates;
+			temp.uistates = target.uistates if (!value.cref);
 			value = temp;
 			/* not break */
 		default:
@@ -515,6 +550,10 @@ class uiEntryNormal {
 		e.width  = value.width;
 		e.height = value.height;
 		e.frame  = value.storage if e.frame === void;
+		if (e.frame == "") {
+			e.opacity = 0 if e.opacity === void;
+			e.color   = 0 if e.color   === void;
+		}
 		e.margint = 0 if e.margint === void;
 		e.marginl = 0 if e.marginl === void;
 		e.marginr = 0 if e.marginr === void;

@@ -414,6 +414,21 @@ KAGLoadScript('KAGEnvCharacter.tjs');
 KAGLoadScript('KAGEnvBGM.tjs');
 KAGLoadScript('KAGEnvSE.tjs');
 KAGLoadScript('KAGEnvironment.tjs');
+/*
+ クラス継承関係
+  クラス名                親クラス                       使用用途
+ ----------------------------------------------------------------
+ EmotionLayer             EnvGraphicLayer               エモレイヤ
+ EnvBaseGraphicLayer      EnvGraphicLayer               KAGEnvBaseLayer用createLayerターゲット
+ EnvCharacterGraphicLayer EnvGraphicLayer               KAGEnvCharacter用createLayerターゲット
+ KAGEnvImage                                            環境画像の基底クラス(レイヤの実体はtargetLayerに持つ)
+ KAGEnvLevelLayer                                       前景レイヤのレベル制御用(レイヤの実体は持たない)
+ KAGEnvironment           KAGEnvImage                   ステージ
+ KAGEnvLayer              KAGEnvImage                   中間クラス(Character/SimpleLayer親)
+ KAGEnvCharacter          KAGEnvImage, KAGEnvLevelLayer キャラ
+ KAGEnvSimpleLayer        KAGEnvLayer, KAGEnvLevelLayer 汎用layer
+ KAGEnvBaseLayer          KAGEnvLayer                   イベント
+*/
 
 /**
  * KAG 用ワールド拡張プラグイン
@@ -452,8 +467,9 @@ class KAGWorldPlugin extends KAGPlugin
         kag.tagHandlers["afterline"]       = env.afterline;
 
 		kag.tagHandlers["showvoiceinfo"]   = env.showVoiceInfo;
-		kag.tagHandlers["twait"]   = env.doTalkWait;
-		kag.tagHandlers["showtwait"]   = env.showTalkWait;
+		kag.tagHandlers["twait"]           = env.doTalkWait;
+		kag.tagHandlers["showtwait"]       = env.showTalkWait;
+		kag.tagHandlers["*"]               = env.doTalkWait;
 
 		kag.tagHandlers["laytrans"]  = env.laytrans;
 		

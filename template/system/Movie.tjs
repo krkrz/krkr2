@@ -209,18 +209,23 @@ class Movie extends VideoOverlay
 			}
 		} while (looped);
 		if (!opened) {
-			dm("ムービー " + storage + " を再生できません : " + errmes);
+			dm("ムービー " + storage + " を開けません : " + errmes);
 		}
+		return errmes;
 	}
 
 	function play(storage)
 	{
 		// play オーバーライド
+		storage = this.storageName if (storage == "");
 		try
 		{
 			if (!opened) {
-				open(storage != "" ? storage : this.storageName);
-				if (!opened) return;
+				var err = open(storage);
+				if (!opened) {
+					if (err != "") throw new Exception(err);
+					return;
+				}
 			}
 			super.play();
 			opened = false;
@@ -228,7 +233,7 @@ class Movie extends VideoOverlay
 		catch(e)
 		{
 			if(e.message.indexOf(".dll") != -1) throw e;
-			dm("ムービー " + storage + " を再生できません : " +
+			error("ムービー " + storage + " を再生できません : " +
 				e.message);
 			return;
 		}
@@ -242,9 +247,14 @@ class Movie extends VideoOverlay
 		catch(e)
 		{
 			if(e.message.indexOf(".dll") != -1) throw e;
-			dm("ムービーを再生できません : " + e.message);
+			error("ムービーを再生できません : " + e.message);
 			return;
 		}
+	}
+
+	function error() {
+		//dm(...);
+		kag.errorImage(...);
 	}
 
 	function stop()

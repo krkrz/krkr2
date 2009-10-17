@@ -131,6 +131,11 @@ class BaseConductor extends global.BaseConductorExtendClass
         return false;
     }
 
+	// 遅延タグの全キャンセル
+	function cancelDelay() {
+		delaytags.clear();
+	}
+	
 	/**
 	 * 遅延タグの展開
 	 * @param value 数値ならtick 文字列ならラベル
@@ -175,7 +180,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 				}
 			}
 		}
-		return delaytags.count > 0;
+		return delaytags.count > 0 || waitUntil["delay_*"] !== void;
 	}
 
     function timerCallback()
@@ -319,7 +324,10 @@ class BaseConductor extends global.BaseConductorExtendClass
 
 					// 遅延実行のキャンセル
 					if (obj.tagname == "delaydone") {
-						extractDelay(void, obj.all);
+						owner.extractDelay(void, obj.all);
+						continue;
+					} else if (obj.tagname == "delaycancel") {
+						owner.cancelDelay();
 						continue;
 					}
 					

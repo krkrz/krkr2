@@ -720,6 +720,7 @@ class KAGEnvImage {
 		_luminance = void;
 		_noise = void;
 		_filter = void;
+		_script = void;
 		if (!env.colorall) {
 			redraw = true;
 		}
@@ -800,6 +801,7 @@ class KAGEnvImage {
 		_noise = void;
 		
 		_filter = void;
+		_script = void;
         
 		actionList.clear();
 		currentActionList.clear();
