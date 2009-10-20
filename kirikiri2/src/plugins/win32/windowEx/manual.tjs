@@ -340,6 +340,7 @@ class MenuItem {
 class Console {
 	function restoreMaxmimize(); //< ウィンドウ最大化の復帰（最大化のまま終了すると次回サイズが狂う問題解決用）
 	function maxmimize();        //< ウィンドウを最大化
+	function getRect();          //< 座標・サイズの取得
 	function setPos(x, y, w, h); //< 座標・サイズの設定
 	function getPlacement();     //< WindowPlacementの取得
 	function setPlacement(dict); //< WindowPlacementの設定

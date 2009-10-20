@@ -1380,6 +1380,17 @@ struct ConsoleEx
 		} else if (r) *r = false;
 		return TJS_S_OK;
 	}
+	// getRect
+	static tjs_error TJS_INTF_METHOD getRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		RECT rect;
+		HWND hwnd = GetHWND();
+		if (r) r->Clear();
+		if (hwnd != NULL && ::GetWindowRect(hwnd, &rect)) {
+			ncbDictionaryAccessor dict;
+			if (WindowEx::SetRect(dict, &rect) && r) *r = tTJSVariant(dict, dict);
+		}
+		return TJS_S_OK;
+	}
 	// setPos
 	static tjs_error TJS_INTF_METHOD setPos(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		if (n < 2) return TJS_E_BADPARAMCOUNT;
@@ -1418,6 +1429,7 @@ struct ConsoleEx
 };
 NCB_ATTACH_FUNCTION_WITHTAG(restoreMaximize, Debug_console, Debug.console, ConsoleEx::restoreMaximize);
 NCB_ATTACH_FUNCTION_WITHTAG(maximize,        Debug_console, Debug.console, ConsoleEx::maximize);
+NCB_ATTACH_FUNCTION_WITHTAG(getRect,         Debug_console, Debug.console, ConsoleEx::getRect);
 NCB_ATTACH_FUNCTION_WITHTAG(setPos,          Debug_console, Debug.console, ConsoleEx::setPos);
 NCB_ATTACH_FUNCTION_WITHTAG(getPlacement,    Debug_console, Debug.console, ConsoleEx::getPlacement);
 NCB_ATTACH_FUNCTION_WITHTAG(setPlacement,    Debug_console, Debug.console, ConsoleEx::setPlacement);
