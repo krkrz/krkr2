@@ -79,3 +79,40 @@ void psd_fclose(void * file)
 	}
 }
 
+#include <stack>
+
+void *createStack()
+{
+	return (void*)new std::stack<psd_layer_record*>;
+}
+
+void destroyStack(void *stack)
+{
+	std::stack<psd_layer_record*> *s = (std::stack<psd_layer_record*>*)stack;
+	if (s) {
+		delete s;
+	}
+}
+
+void pushStack(void *stack, psd_layer_record *layer)
+{
+	std::stack<psd_layer_record*> *s = (std::stack<psd_layer_record*>*)stack;
+	if (s) {
+		s->push(layer);
+	}
+}
+
+void popStack(void *stack)
+{
+	std::stack<psd_layer_record*> *s = (std::stack<psd_layer_record*>*)stack;
+	if (s) {
+		s->pop();
+	}
+}
+
+psd_layer_record *getStackTop(void *stack)
+{
+	std::stack<psd_layer_record*> *s = (std::stack<psd_layer_record*>*)stack;
+	return s && s->size() > 0 ? s->top() : NULL;
+}
+

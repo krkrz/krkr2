@@ -28,6 +28,11 @@ psd_int psd_fread(psd_uchar * buffer, psd_int count, void * file);
 psd_int psd_fseek(void * file, psd_int length);
 void psd_fclose(void * file);
 
+void *createStack();
+void destroyStack(void *stack);
+void pushStack(void *stack, psd_layer_record *layer);
+void popStack(void *stack);
+psd_layer_record *getStackTop(void *stack);
 
 #ifdef __cplusplus
 }

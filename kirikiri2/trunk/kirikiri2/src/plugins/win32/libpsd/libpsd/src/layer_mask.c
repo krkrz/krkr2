@@ -305,11 +305,12 @@ static psd_status psd_get_layer_info(psd_context * context)
 	psd_int length, extra_length, i, j, size;
 	psd_int prev_stream_pos, prev_layer_stream_pos, extra_stream_pos;
 	psd_bool skip_first_alpha = psd_false;
-	psd_layer_record * layer, * group_layer;
+	psd_layer_record * layer;
 	psd_uchar flags;
 	psd_uint tag;
 	psd_status status = psd_status_done;
-
+	void *group_layer_stack;
+	
 	// Length of the layers info section. (**PSB** length is 8 bytes.)
 	length = psd_stream_get_int(context);
 	// rounded up to a multiple of 2
@@ -708,23 +709,28 @@ static psd_status psd_get_layer_info(psd_context * context)
 	// Filler: zeros
 	psd_stream_get_null(context, prev_layer_stream_pos + length - context->stream.current_pos);
 
+	// group layer stack
+	group_layer_stack = createStack();
+	
 	// group layer
-	for(i = context->layer_count - 1, group_layer = NULL; i >= 0; i --)
+	for(i = context->layer_count - 1; i >= 0; i --)
 	{
 		layer = &context->layer_records[i];
 		switch(layer->layer_type)
 		{
 			case psd_layer_type_normal:
-				layer->group_layer = group_layer;
+			    layer->group_layer = getStackTop(group_layer_stack);
 				break;
 			case psd_layer_type_folder:
-				group_layer = layer;
+			    layer->group_layer = getStackTop(group_layer_stack);
+			    pushStack(group_layer_stack, layer);
 				break;
 			case psd_layer_type_hidden:
-				group_layer = NULL;
+			    popStack(group_layer_stack);
 				break;
 		}
 	}
+	destroyStack(group_layer_stack);
 
 	return psd_status_done;
 }
