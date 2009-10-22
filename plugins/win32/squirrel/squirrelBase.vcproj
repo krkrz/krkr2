@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="squirrelBase"
+	Name="squirrel"
 	ProjectGUID="{99495428-58B1-484B-948A-B744811A4909}"
 	RootNamespace="squirrelBase"
 	TargetFrameworkVersion="131072"
@@ -76,15 +76,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=""
-				OutputFile=".\..\..\..\..\bin\win32\plugin/squirrel.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\..\..\..\..\bin\win32\plugin/squirrel.pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\..\..\..\..\bin\win32\plugin/squirrel.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -165,16 +162,13 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=""
-				OutputFile=".\..\..\..\..\bin\win32\plugin/squirrel.dll"
 				LinkIncremental="1"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\..\..\..\..\bin\win32\plugin/squirrel.pdb"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\..\..\..\..\bin\win32\plugin/squirrel.lib"
 				TargetMachine="1"
 			/>
 			<Tool
