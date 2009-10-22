@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="squirrel"
+	Name="squirrellib"
 	ProjectGUID="{E42515D2-100D-4BF4-A726-3C1B8D18E271}"
 	RootNamespace="squirrel"
 	Keyword="Win32Proj"
@@ -324,11 +324,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\squirrel\sqobject.h"
+				RelativePath=".\sqobject\sqobject.h"
 				>
 			</File>
 			<File
-				RelativePath=".\sqobject\sqobject.h"
+				RelativePath=".\squirrel\sqobject.h"
 				>
 			</File>
 			<File
