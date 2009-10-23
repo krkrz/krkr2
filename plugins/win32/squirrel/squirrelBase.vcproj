@@ -96,7 +96,6 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\..\..\..\..\bin\win32\plugin/squirrel.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -183,7 +182,6 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\..\..\..\..\bin\win32\plugin/squirrel.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
