@@ -7,7 +7,7 @@
 
 // XXX support for kirikiri
 #include <windows.h>
-#include "../../../tp_stub.h"
+#include "tp_stub.h"
 
 #define SQSTD_FILE_TYPE_TAG (SQSTD_STREAM_TYPE_TAG | 0x00000001)
 //basic API
