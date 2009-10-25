@@ -81,17 +81,19 @@ class Scripts {
 	 * Squirrel スクリプトのコンパイル処理
 	 * @param text スクリプトが格納された文字列
 	 * @param store バイナリクロージャ格納先ファイル
+	 * @param endian エンディアン指定 0:デフォルト 1:little 2:big
 	 * @return エラー文字列または void
 	 */
-	function compileSQ(text, store)
+	function compileSQ(text, store, endian=0)
 
 	/**
 	 * Squirrel スクリプトのファイルからのコンパイル処理
 	 * @param filename コンパイル元ファイル
 	 * @param store バイナリクロージャ格納先ファイル
+	 * @param endian エンディアン指定 0:デフォルト 1:little 2:big
 	 * @return エラー文字列または void
 	 */
-	function compileStorageSQ(filename, store)
+	function compileStorageSQ(filename, store, endian=0)
 	
 	/**
 	 * データを Squirrel 形式で保存する。このファイルは "return" を先頭にもつので

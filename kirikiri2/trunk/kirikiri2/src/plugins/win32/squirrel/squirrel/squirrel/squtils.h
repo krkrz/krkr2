@@ -101,4 +101,18 @@ private:
 	SQUnsignedInteger _allocated;
 };
 
+// byte reverser
+template< typename T >
+void ByteReverse(T* data)
+{
+	char* low = (char*)data;
+	char* high = low + sizeof( T );
+	char temp;
+	while( --high > low ) {
+		temp = *low;
+		*low++ = *high;
+		*high = temp;
+	}
+}
+
 #endif //_SQUTILS_H_

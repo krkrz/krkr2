@@ -665,8 +665,9 @@ public:
 											 tTJSVariant **param,
 											 iTJSDispatch2 *objthis) {
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		SQInteger endian = numparams >= 3 ? (int)*param[3] : 0;
 		if (SQ_SUCCEEDED(sq_compilebuffer(vm, param[0]->GetString(), param[0]->AsString()->GetLength(), L"TEXT", SQTrue))) {
-			if (SQ_SUCCEEDED(sqstd_writeclosuretofile(vm, param[1]->GetString()))) {
+			if (SQ_SUCCEEDED(sqstd_writeclosuretofile(vm, param[1]->GetString(), endian))) {
 				sq_pop(vm, 1);
 			} else {
 				sq_pop(vm, 1);
@@ -689,8 +690,9 @@ public:
 													tTJSVariant **param,
 													iTJSDispatch2 *objthis) {
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		SQInteger endian = numparams >= 3 ? (int)*param[3] : 0;
 		if (SQ_SUCCEEDED(sqstd_loadfile(vm, param[0]->GetString(), SQTrue))) {
-			if (SQ_SUCCEEDED(sqstd_writeclosuretofile(vm, param[1]->GetString()))) {
+			if (SQ_SUCCEEDED(sqstd_writeclosuretofile(vm, param[1]->GetString(), endian))) {
 				sq_pop(vm, 1);
 			} else {
 				sq_pop(vm, 1);

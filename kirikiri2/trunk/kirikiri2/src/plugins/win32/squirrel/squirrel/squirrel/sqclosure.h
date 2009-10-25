@@ -29,7 +29,7 @@ public:
 	{
 		REMOVE_FROM_CHAIN(&_ss(this)->_gc_chain,this);
 	}
-	bool Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write);
+	bool Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write,bool reverseByte=false);
 	static bool Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &ret);
 #ifndef NO_GARBAGE_COLLECTOR
 	void Mark(SQCollectable **chain);

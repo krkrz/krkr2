@@ -1010,14 +1010,19 @@ void sq_setcompilererrorhandler(HSQUIRRELVM v,SQCOMPILERERROR f)
 	_ss(v)->_compilererrorhandler = f;
 }
 
-SQRESULT sq_writeclosure(HSQUIRRELVM v,SQWRITEFUNC w,SQUserPointer up)
+SQRESULT sq_writeclosure(HSQUIRRELVM v,SQWRITEFUNC w,SQUserPointer up, SQInteger endian)
 {
+#ifdef __BIG_ENDIAN__
+	bool reverseByte = (endian == SQ_LITTLE_ENDIAN);
+#else
+	bool reverseByte = (endian == SQ_BIG_ENDIAN);
+#endif
 	SQObjectPtr *o = NULL;
 	_GETSAFE_OBJ(v, -1, OT_CLOSURE,o);
 	unsigned short tag = SQ_BYTECODE_STREAM_TAG;
 	if(w(up,&tag,2) != 2)
 		return sq_throwerror(v,_SC("io error"));
-	if(!_closure(*o)->Save(v,up,w))
+	if(!_closure(*o)->Save(v,up,w,reverseByte))
 		return SQ_ERROR;
 	return SQ_OK;
 }
