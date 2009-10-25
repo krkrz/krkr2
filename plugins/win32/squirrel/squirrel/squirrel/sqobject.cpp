@@ -247,9 +247,14 @@ bool SafeRead(HSQUIRRELVM v,SQWRITEFUNC read,SQUserPointer up,SQUserPointer dest
 	return true;
 }
 
-bool WriteTag(HSQUIRRELVM v,SQWRITEFUNC write,SQUserPointer up,SQInteger tag)
+bool WriteTag(HSQUIRRELVM v,SQWRITEFUNC write,SQUserPointer up,SQInteger tag,bool reverseByte)
 {
-	return SafeWrite(v,write,up,&tag,sizeof(tag));
+	if (reverseByte) {
+		ByteReverse(&tag);
+		return SafeWrite(v,write,up,&tag,sizeof(tag));
+	} else {
+		return SafeWrite(v,write,up,&tag,sizeof(tag));
+	}
 }
 
 bool CheckTag(HSQUIRRELVM v,SQWRITEFUNC read,SQUserPointer up,SQInteger tag)
@@ -263,18 +268,44 @@ bool CheckTag(HSQUIRRELVM v,SQWRITEFUNC read,SQUserPointer up,SQInteger tag)
 	return true;
 }
 
-bool WriteObject(HSQUIRRELVM v,SQUserPointer up,SQWRITEFUNC write,SQObjectPtr &o)
+bool WriteObject(HSQUIRRELVM v,SQUserPointer up,SQWRITEFUNC write,SQObjectPtr &o,bool reverseByte)
 {
-	_CHECK_IO(SafeWrite(v,write,up,&type(o),sizeof(SQObjectType)));
+	if (reverseByte) {
+		SQObjectType t = type(o);
+		ByteReverse(&t);
+		_CHECK_IO(SafeWrite(v,write,up,&t,sizeof(SQObjectType)));
+	} else {
+		_CHECK_IO(SafeWrite(v,write,up,&type(o),sizeof(SQObjectType)));
+	}
 	switch(type(o)){
 	case OT_STRING:
-		_CHECK_IO(SafeWrite(v,write,up,&_string(o)->_len,sizeof(SQInteger)));
+		if (reverseByte) {
+			SQInteger len = _string(o)->_len;
+			ByteReverse(&len);
+			_CHECK_IO(SafeWrite(v,write,up,&len,sizeof(SQInteger)));
+		} else {
+			_CHECK_IO(SafeWrite(v,write,up,&_string(o)->_len,sizeof(SQInteger)));
+		}
 		_CHECK_IO(SafeWrite(v,write,up,_stringval(o),rsl(_string(o)->_len)));
 		break;
 	case OT_INTEGER:
-		_CHECK_IO(SafeWrite(v,write,up,&_integer(o),sizeof(SQInteger)));break;
+		if (reverseByte) {
+			SQInteger val = _integer(o);
+			ByteReverse(&val);
+			_CHECK_IO(SafeWrite(v,write,up,&val,sizeof(SQInteger)));
+		} else {
+			_CHECK_IO(SafeWrite(v,write,up,&_integer(o),sizeof(SQInteger)));
+		}
+		break;
 	case OT_FLOAT:
-		_CHECK_IO(SafeWrite(v,write,up,&_float(o),sizeof(SQFloat)));break;
+		if (reverseByte) {
+			SQFloat f = _float(o);
+			ByteReverse(&f);
+			_CHECK_IO(SafeWrite(v,write,up,&f,sizeof(SQFloat)));
+		} else {
+			_CHECK_IO(SafeWrite(v,write,up,&_float(o),sizeof(SQFloat)));
+		}
+		break;
 	case OT_NULL:
 		break;
 	default:
@@ -314,18 +345,28 @@ bool ReadObject(HSQUIRRELVM v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &o)
 	return true;
 }
 
-bool SQClosure::Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write)
+bool SQClosure::Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write,bool reverseByte)
 {
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_HEAD));
-	_CHECK_IO(WriteTag(v,write,up,sizeof(SQChar)));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_HEAD, reverseByte));
+	_CHECK_IO(WriteTag(v,write,up,sizeof(SQChar), reverseByte));
 	_CHECK_IO(_funcproto(_function)->Save(v,up,write));
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_TAIL));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_TAIL, reverseByte));
 	return true;
 }
 
 bool SQClosure::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &ret)
 {
-	_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_HEAD));
+	SQInteger t;
+	_CHECK_IO(SafeRead(v,read,up,&t,sizeof(t)));
+	if(t == SQ_CLOSURESTREAM_HEAD_REVERSE) {
+		v->Raise_Error(_SC("invalid endian closure stream"));
+		return false;
+	}
+	if(t != SQ_CLOSURESTREAM_HEAD){
+		v->Raise_Error(_SC("invalid or corrupted closure stream"));
+		return false;
+	}
+	//_CHECK_IO(CheckTag(v,read,up,SQ_CLOSURESTREAM_HEAD));
 	_CHECK_IO(CheckTag(v,read,up,sizeof(SQChar)));
 	SQObjectPtr func;
 	_CHECK_IO(SQFunctionProto::Load(v,up,read,func));
@@ -334,66 +375,138 @@ bool SQClosure::Load(SQVM *v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &ret)
 	return true;
 }
 
-bool SQFunctionProto::Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write)
+bool SQFunctionProto::Save(SQVM *v,SQUserPointer up,SQWRITEFUNC write,bool reverseByte)
 {
 	SQInteger i,nliterals = _nliterals,nparameters = _nparameters;
 	SQInteger noutervalues = _noutervalues,nlocalvarinfos = _nlocalvarinfos;
 	SQInteger nlineinfos=_nlineinfos,ninstructions = _ninstructions,nfunctions=_nfunctions;
 	SQInteger ndefaultparams = _ndefaultparams;
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
-	_CHECK_IO(WriteObject(v,up,write,_sourcename));
-	_CHECK_IO(WriteObject(v,up,write,_name));
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
-	_CHECK_IO(SafeWrite(v,write,up,&nliterals,sizeof(nliterals)));
-	_CHECK_IO(SafeWrite(v,write,up,&nparameters,sizeof(nparameters)));
-	_CHECK_IO(SafeWrite(v,write,up,&noutervalues,sizeof(noutervalues)));
-	_CHECK_IO(SafeWrite(v,write,up,&nlocalvarinfos,sizeof(nlocalvarinfos)));
-	_CHECK_IO(SafeWrite(v,write,up,&nlineinfos,sizeof(nlineinfos)));
-	_CHECK_IO(SafeWrite(v,write,up,&ndefaultparams,sizeof(ndefaultparams)));
-	_CHECK_IO(SafeWrite(v,write,up,&ninstructions,sizeof(ninstructions)));
-	_CHECK_IO(SafeWrite(v,write,up,&nfunctions,sizeof(nfunctions)));
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART, reverseByte));
+	_CHECK_IO(WriteObject(v,up,write,_sourcename, reverseByte));
+	_CHECK_IO(WriteObject(v,up,write,_name, reverseByte));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART, reverseByte));
+	if (reverseByte) {
+		SQInteger tmp;
+		tmp = nliterals;		ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(nliterals)));
+		tmp = nparameters;		ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(nparameters)));
+		tmp = noutervalues;		ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(noutervalues)));
+		tmp = nlocalvarinfos;	ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(nlocalvarinfos)));
+		tmp = nlineinfos;		ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(nlineinfos)));
+		tmp = ndefaultparams;	ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(ndefaultparams)));
+		tmp = ninstructions;	ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(ninstructions)));
+		tmp = nfunctions;		ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(nfunctions)));
+	} else {
+		_CHECK_IO(SafeWrite(v,write,up,&nliterals,sizeof(nliterals)));
+		_CHECK_IO(SafeWrite(v,write,up,&nparameters,sizeof(nparameters)));
+		_CHECK_IO(SafeWrite(v,write,up,&noutervalues,sizeof(noutervalues)));
+		_CHECK_IO(SafeWrite(v,write,up,&nlocalvarinfos,sizeof(nlocalvarinfos)));
+		_CHECK_IO(SafeWrite(v,write,up,&nlineinfos,sizeof(nlineinfos)));
+		_CHECK_IO(SafeWrite(v,write,up,&ndefaultparams,sizeof(ndefaultparams)));
+		_CHECK_IO(SafeWrite(v,write,up,&ninstructions,sizeof(ninstructions)));
+		_CHECK_IO(SafeWrite(v,write,up,&nfunctions,sizeof(nfunctions)));
+	}
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART, reverseByte));
 	for(i=0;i<nliterals;i++){
-		_CHECK_IO(WriteObject(v,up,write,_literals[i]));
+		_CHECK_IO(WriteObject(v,up,write,_literals[i], reverseByte));
 	}
 
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART, reverseByte));
 	for(i=0;i<nparameters;i++){
-		_CHECK_IO(WriteObject(v,up,write,_parameters[i]));
+		_CHECK_IO(WriteObject(v,up,write,_parameters[i], reverseByte));
 	}
 
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART, reverseByte));
 	for(i=0;i<noutervalues;i++){
-		_CHECK_IO(SafeWrite(v,write,up,&_outervalues[i]._type,sizeof(SQUnsignedInteger)));
-		_CHECK_IO(WriteObject(v,up,write,_outervalues[i]._src));
-		_CHECK_IO(WriteObject(v,up,write,_outervalues[i]._name));
+		if (reverseByte) {
+			SQUnsignedInteger ui = _outervalues[i]._type;
+			ByteReverse(&ui);
+			_CHECK_IO(SafeWrite(v,write,up,&ui,sizeof(SQUnsignedInteger)));
+		} else {
+			_CHECK_IO(SafeWrite(v,write,up,&_outervalues[i]._type,sizeof(SQUnsignedInteger)));
+		}
+		_CHECK_IO(WriteObject(v,up,write,_outervalues[i]._src, reverseByte));
+		_CHECK_IO(WriteObject(v,up,write,_outervalues[i]._name, reverseByte));
 	}
 
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
 	for(i=0;i<nlocalvarinfos;i++){
 		SQLocalVarInfo &lvi=_localvarinfos[i];
-		_CHECK_IO(WriteObject(v,up,write,lvi._name));
-		_CHECK_IO(SafeWrite(v,write,up,&lvi._pos,sizeof(SQUnsignedInteger)));
-		_CHECK_IO(SafeWrite(v,write,up,&lvi._start_op,sizeof(SQUnsignedInteger)));
-		_CHECK_IO(SafeWrite(v,write,up,&lvi._end_op,sizeof(SQUnsignedInteger)));
+		_CHECK_IO(WriteObject(v,up,write,lvi._name, reverseByte));
+		if (reverseByte) {
+			SQUnsignedInteger ui;
+			ui = lvi._pos; ByteReverse(&ui);
+			_CHECK_IO(SafeWrite(v,write,up,&ui,sizeof(SQUnsignedInteger)));
+			ui = lvi._start_op; ByteReverse(&ui);
+			_CHECK_IO(SafeWrite(v,write,up,&ui,sizeof(SQUnsignedInteger)));
+			ui = lvi._end_op; ByteReverse(&ui);
+			_CHECK_IO(SafeWrite(v,write,up,&ui,sizeof(SQUnsignedInteger)));
+		} else {
+			_CHECK_IO(SafeWrite(v,write,up,&lvi._pos,sizeof(SQUnsignedInteger)));
+			_CHECK_IO(SafeWrite(v,write,up,&lvi._start_op,sizeof(SQUnsignedInteger)));
+			_CHECK_IO(SafeWrite(v,write,up,&lvi._end_op,sizeof(SQUnsignedInteger)));
+		}
 	}
 
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
-	_CHECK_IO(SafeWrite(v,write,up,_lineinfos,sizeof(SQLineInfo)*nlineinfos));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+	if (reverseByte) {
+		for( int i = 0; i < nlineinfos; i++ ) {
+			SQLineInfo tmp = _lineinfos[ i ];
+			ByteReverse(&tmp._line);
+			ByteReverse(&tmp._op);
+			_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(SQLineInfo)));
+		}
+	} else {
+		_CHECK_IO(SafeWrite(v,write,up,_lineinfos,sizeof(SQLineInfo)*nlineinfos));
+	}
 
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
-	_CHECK_IO(SafeWrite(v,write,up,_defaultparams,sizeof(SQInteger)*ndefaultparams));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+	if (reverseByte) {
+		for( int i = 0; i < ndefaultparams; i++ ) {
+			SQInteger tmp = _defaultparams[ i ];
+			ByteReverse(&tmp);
+			_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(SQInteger)));
+		}
+	} else {
+		_CHECK_IO(SafeWrite(v,write,up,_defaultparams,sizeof(SQInteger)*ndefaultparams));
+	}
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
+	if (reverseByte) {
+		for( int i = 0; i < ninstructions; i++ ) {
+			SQInstruction tmp = _instructions[ i ];
+			ByteReverse(&tmp._arg1);
+			_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(SQInstruction)));
+		}
+	} else {
+		_CHECK_IO(SafeWrite(v,write,up,_instructions,sizeof(SQInstruction)*ninstructions));
+	}
 
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
-	_CHECK_IO(SafeWrite(v,write,up,_instructions,sizeof(SQInstruction)*ninstructions));
-
-	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART));
+	_CHECK_IO(WriteTag(v,write,up,SQ_CLOSURESTREAM_PART,reverseByte));
 	for(i=0;i<nfunctions;i++){
 		_CHECK_IO(_funcproto(_functions[i])->Save(v,up,write));
 	}
-	_CHECK_IO(SafeWrite(v,write,up,&_stacksize,sizeof(_stacksize)));
-	_CHECK_IO(SafeWrite(v,write,up,&_bgenerator,sizeof(_bgenerator)));
-	_CHECK_IO(SafeWrite(v,write,up,&_varparams,sizeof(_varparams)));
+	if (reverseByte) {
+		SQInteger tmp = _stacksize;
+		ByteReverse(&tmp);
+		_CHECK_IO(SafeWrite(v,write,up,&tmp,sizeof(_stacksize)));
+		bool btmp = _bgenerator;
+		ByteReverse(&btmp);
+		_CHECK_IO(SafeWrite(v,write,up,&btmp,sizeof(_bgenerator)));
+		btmp = _varparams;
+		ByteReverse(&btmp);
+		_CHECK_IO(SafeWrite(v,write,up,&btmp,sizeof(_varparams)));
+	} else {
+		_CHECK_IO(SafeWrite(v,write,up,&_stacksize,sizeof(_stacksize)));
+		_CHECK_IO(SafeWrite(v,write,up,&_bgenerator,sizeof(_bgenerator)));
+		_CHECK_IO(SafeWrite(v,write,up,&_varparams,sizeof(_varparams)));
+	}
 	return true;
 }
 
