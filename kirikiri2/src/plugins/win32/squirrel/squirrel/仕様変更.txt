@@ -58,6 +58,26 @@ if (sarg1 == tojump) { // XXX stack clear code
 　作業スタックをクリアするバイトコードを挿入するようにするのが妥当です。
 　現在は関数からの Return 時にしかクリア処理が行われません
 
+・sq_writeclosure にエンディアン指定を追加
+
+引数 endian に SQ_DEFUALT_ENDIAN, SQ_LITTLE_ENDIAN, SQ_BIG_ENDIAN
+が指定可能です。指定されたエンディアンのバイナリを出力します。
+squirrel グローバル関数 writeclosuretofile() も最後に endian 引数が追加されます。
+指定されたエンディアンでの出力を行わせることができます。
+※別環境用のバイナリを出力させる場合に使います
+
+・sq.exe に出力エンディアン指定の -e オプションを追加
+
+ 0: 環境標準
+ 1: little endian
+ 2: bigendian
+
+・sq_loadclosure でエンディアン判定を追加
+
+エンディアンが違うストリームを読み込ませようとすると 
+"invalid endian closure stream" エラーになります。
+※読み込めるエンディアンは実行環境に合致したものに限ります。
+
 ●SQPLUS仕様変更
 
 オリジナルの SQPLUS では、エラー処理に例外を使っていたため、

@@ -71,6 +71,8 @@ void PrintUsage()
 		_SC("Available options are:\n")
 		_SC("   -c              compiles the file to bytecode(default output 'out.cnut')\n")
 		_SC("   -o              specifies output file for the -c option\n")
+		_SC("   -e              specifies output file endian for the -c option\n")
+		_SC("                   0:default 1:little 2:big\n")
 		_SC("   -c              compiles only\n")
 		_SC("   -d              generates debug infos\n")
 		_SC("   -v              displays version infos\n")
@@ -88,6 +90,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[])
 	const SQChar *ret=NULL;
 	char * output = NULL;
 	int lineinfo=0;
+	int endian=0;
 	if(argc>1)
 	{
 		int arg=1,exitloop=0;
@@ -108,6 +111,12 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[])
 					if(arg < argc) {
 						arg++;
 						output = argv[arg];
+					}
+					break;
+				case 'e':
+					if(arg < argc) {
+						arg++;
+						endian = atoi(argv[arg]);
 					}
 					break;
 				case 'v':
@@ -172,7 +181,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[])
 						outfile = output;
 #endif
 					}
-					if(SQ_SUCCEEDED(sqstd_writeclosuretofile(v,outfile)))
+					if(SQ_SUCCEEDED(sqstd_writeclosuretofile(v,outfile,endian)))
 						return _DONE;
 				}
 			}

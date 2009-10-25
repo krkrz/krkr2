@@ -320,11 +320,11 @@ SQRESULT sqstd_dofile(HSQUIRRELVM v,const SQChar *filename,SQBool retval,SQBool 
 	return SQ_ERROR;
 }
 
-SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM v,const SQChar *filename)
+SQRESULT sqstd_writeclosuretofile(HSQUIRRELVM v,const SQChar *filename,SQInteger endian)
 {
 	IStream *is = TVPCreateIStream(filename, TJS_BS_WRITE);
 	if(!is) return sq_throwerror(v,_SC("cannot open the file"));
-	if(SQ_SUCCEEDED(sq_writeclosure(v,file_write,is))) {
+	if(SQ_SUCCEEDED(sq_writeclosure(v,file_write,is,endian))) {
 		is->Release();
 		return SQ_OK;
 	}
@@ -349,7 +349,11 @@ SQInteger _g_io_writeclosuretofile(HSQUIRRELVM v)
 {
 	const SQChar *filename;
 	sq_getstring(v,2,&filename);
-	if(SQ_SUCCEEDED(sqstd_writeclosuretofile(v,filename)))
+	int endian = 0;
+	if (sq_gettop(v) >= 3) {
+		sq_getinteger(v,3,&endian);
+	}
+	if(SQ_SUCCEEDED(sqstd_writeclosuretofile(v,filename,endian)))
 		return 1;
 	return SQ_ERROR; //propagates the error
 }
@@ -372,7 +376,7 @@ SQInteger _g_io_dofile(HSQUIRRELVM v)
 static SQRegFunction iolib_funcs[]={
 	_DECL_GLOBALIO_FUNC(loadfile,-2,_SC(".sb")),
 	_DECL_GLOBALIO_FUNC(dofile,-2,_SC(".sb")),
-	_DECL_GLOBALIO_FUNC(writeclosuretofile,3,_SC(".sc")),
+	_DECL_GLOBALIO_FUNC(writeclosuretofile,-3,_SC(".sc")),
 	{0,0}
 };
 
