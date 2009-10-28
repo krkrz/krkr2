@@ -272,6 +272,8 @@ void TVPBeginContinuousEvent()
 		}
 	}
 
+
+	TVPEnsureVSyncTimingThread();
 	// if we wait vsync, the continuous handler will be executed at the every timing of
 	// vsync.
 }
