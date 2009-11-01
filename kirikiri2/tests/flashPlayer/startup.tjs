@@ -16,6 +16,10 @@ class FlashLayer extends Layer, FlashPlayer {
 		hitThreshold = 0;
 	}
 
+	function dm() {
+		global.Debug.message(...);
+	}
+	
 	// -------------------------------------
 	// サイズ変更差し替え
 	// -------------------------------------
@@ -85,6 +89,19 @@ class FlashLayer extends Layer, FlashPlayer {
 	function onFSCommand(cmd, args) {
 		dm("fscommand:%s %s".sprintf(cmd, args));
 	}
+
+	// -------------------------------------
+	// 呼び出しテスト
+	// -------------------------------------
+
+	function tjsFunction(a, b) {
+		dm("call back tjsFunction:%s:%s".sprintf(a, b));
+		return "%s:%s".sprintf(a,b);
+	}
+
+	function trace(msg) {
+		dm("call back trace:" + msg);
+	}
 }
 
 class MyWindow extends Window
@@ -93,10 +110,12 @@ class MyWindow extends Window
 	var layer;
 	var layer2;
 	var exit;
+	var call;
 	
 	function MyWindow() {
 		super.Window();
 		menu.add(exit = new MenuItem(this, "終了"));
+		menu.add(call = new MenuItem(this, "呼び出し"));
 		setInnerSize(WIDTH, HEIGHT);
 
 		// プライマリレイヤ
@@ -111,8 +130,11 @@ class MyWindow extends Window
 			.setPos(0, 0);
 			.visible = true;
 			.initMovie("test.swf");
+			//.initMovie("HelloWorld.swf");
 		}
 		add(layer);
+		layer.disableLocalSecurity();
+		layer.allowScriptAccess = "always";
 		
 		layer2 = new Layer(this, base);
 		with (layer2) {
@@ -129,6 +151,8 @@ class MyWindow extends Window
 		if(ev.type == "onClick") {
 			if (ev.target == exit) {
 				System.terminate();
+			} else if (ev.target == call) {
+				layer.callFunction("callFromTJS", "test");
 			}
 		}
 	}
