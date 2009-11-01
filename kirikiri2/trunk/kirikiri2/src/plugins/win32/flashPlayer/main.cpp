@@ -870,6 +870,16 @@ public:
 		return TJS_S_OK;
 	}
 
+	/**
+	 * TJS呼び出し結果取得
+	 */
+	static tjs_error getLastTJSError(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, FlashPlayer *self) {
+		if (result) {
+			*result = self->lastTJSErrorMsg;
+		}
+		return TJS_S_OK;
+	}
+	
 	// --------------------------------------------------
 	// プレイヤー制御
 	// --------------------------------------------------
@@ -1391,10 +1401,9 @@ public:
 				ttstr xml = param;
 				if (invokeXML(result, objthis, (tjs_char*)xml.c_str())) {
 					control->SetReturnValue(result.c_str());
+					lastTJSErrorMsg = "";
 				} else {
-					ttstr msg = L"tjs call error:";
-					msg += result.c_str();
-					TVPAddLog(msg);
+					lastTJSErrorMsg = result.c_str();
 				}
 				return S_OK;
 			}
@@ -1484,7 +1493,7 @@ private:
 	BYTE *pixels;
 
 	WORD mousemap; //< マウス入力状態
-
+	ttstr lastTJSErrorMsg;; //< 最後の吉里吉里呼び出しエラー
 };
 
 NCB_REGISTER_CLASS(FlashPlayer) {
@@ -1573,6 +1582,7 @@ NCB_REGISTER_CLASS(FlashPlayer) {
 	NCB_METHOD(disableLocalSecurity);
 
 	RawCallback("callFunction", &ClassT::callFunction, 0);
+	RawCallback("getLastTJSError", &ClassT::getLastTJSError, 0);
 };
 
 //---------------------------------------------------------------------------
