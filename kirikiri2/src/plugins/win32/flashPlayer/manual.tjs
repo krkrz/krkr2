@@ -15,8 +15,9 @@
  * trace(ExternalInterface.call("tjsFunction", 10, "test"));
  * -----------------------------------------------------------
  * </pre>
- * 呼び出しに失敗しても ActionScript 側では例外になりませんので注意してください。
- * ※吉里吉里側でのエラーはログ出力されます。
+ * 吉里吉里側で例外が発生して呼び出しに失敗しても ActionScript 側では
+ * 例外になりませんので注意してください。
+ * 例外情報は getLastTJSError() で取得可能です。
  *
  * <h3>◇ActionScriptメソッドのTJSからの呼び出し</h3>
  *
@@ -282,28 +283,38 @@ class FlashPlayer {
 	
 	/**
 	 * ReadyStateChangeイベントの通知
+	 * @param newState 新しいステート
 	 */
 	function onReadyStateChange(newState);
 
 	/**
 	 * Progressイベントの通知
+	 * @param percentDone 読み込んだドキュメントのパーセンテージ
 	 */
 	function onProgress(percentDone);
 
 	/**
 	 * FSCommandイベントの通知
+	 * @param command コマンド名パラメータ
+	 * @param arg 引数パラメータ
 	 */
-	function onFSCommand(command, args);
+	function onFSCommand(command, arg);
 
 	// -------------------------------------------------
-	// Flash 呼び出し
+	// ExternalInterface機能
 	// -------------------------------------------------
 
 	/**
-	 * 読み込んである Flash の ExternalInterface
-	 * 登録されたメソッドを呼び出します。
+	 * Flash の ExternalInterface 登録されたメソッドを呼び出します。
 	 * @param methodName メソッド名
 	 * @param ... 引数
+	 * @throw "flash com error:*" COM実行時例外
 	 */
 	function callFunction(methodName, ...);
+
+	/**
+	 * TJS呼び出しエラーの取得。
+	 * @return 最後のActionScriptからTJS呼び出し時のエラー文字列。エラーでない場合は空文字列
+	 */
+	function getLastTJSError();
 };
