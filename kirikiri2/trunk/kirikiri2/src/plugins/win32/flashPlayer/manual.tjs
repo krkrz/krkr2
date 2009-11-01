@@ -1,7 +1,49 @@
 /**
  * 擬似記述マニュアル
- */
+ *
+ * FlashPlayerクラス
+ * FlashPlayerをレイヤ上で再生制御するオブジェクトです。
 
+ * <h2>ExternalInterface機能</h2>
+ *　
+ * <h3>◇TJSメソッドのActionScriptからの呼び出し</h3>
+ *
+ * オブジェクトの任意のメソッドが、再生中の swfの ActionScriptから ExternalInterface で呼び出し可能です
+ * <pre>
+ * -----------------------------------------------------------
+ * import flash.external.ExternalInterface;
+ * trace(ExternalInterface.call("tjsFunction", 10, "test"));
+ * -----------------------------------------------------------
+ * </pre>
+ * 呼び出しに失敗しても ActionScript 側では例外になりませんので注意してください。
+ * ※吉里吉里側でのエラーはログ出力されます。
+ *
+ * <h3>◇ActionScriptメソッドのTJSからの呼び出し</h3>
+ *
+ * callFunction() で､ExternalInterface で公開されている
+ * ActionScript メソッドを呼び出しできます。
+ * <pre>
+ * ActionScriptでの関数の準備
+ * -----------------------------------------------------------
+ * import flash.external.ExternalInterface;
+ * // 呼び出しメソッド
+ * function flashFunction(a:Number, b:String):String {
+ * 	return StringUtil.substitute("{0}:{1}", a, b);
+ * }
+ * // 登録
+ * ExternalInterface.addCallback("flashFunction", flashFunction);
+ * -----------------------------------------------------------
+ *
+ * TJSからの呼び出し
+ * -----------------------------------------------------------
+ * var flash = new FlashPlayer(100,100);
+ * flash.initMovie("sample.swf");
+ * Debug.message(flash.callFunction("flashFunction", 1, "test"));
+ * -----------------------------------------------------------
+ * </pre>
+ * 呼び出しに失敗すると例外になります。
+ *
+ */
 class FlashPlayer {
 
     /**
@@ -162,13 +204,11 @@ class FlashPlayer {
 	 * @param top
 	 * @param right
 	 * @param bottom
-	 * @return 成功したらtrue
 	 */
 	function setZoomRect(left, top, right, bottom);
 
 	/**
 	 * @param factor
-	 * @return 成功したらtrue
 	 */
 	function zoom(factor);
 
@@ -176,43 +216,35 @@ class FlashPlayer {
 	 * @param x
 	 * @param y
 	 * @param mode
-	 * @return 成功したらtrue
 	 */
 	function pan(x, y, mode);
 
 	/**
-	 * @return 成功したらtrue
 	 */
 	function play();
 	
 	/**
-	 * @return 成功したらtrue
 	 */
 	function stop();
 
 	/**
-	 * @return 成功したらtrue
 	 */
 	function back();
 
 	/**
-	 * @return 成功したらtrue
 	 */
 	function forward();
 
 	/**
-	 * @return 成功したらtrue
 	 */
 	function rewind();
 
 	/**
-	 * @return 成功したらtrue
 	 */
 	function stopPlay();
 
 	/**
 	 * @param frameNum
-	 * @return 成功したらtrue
 	 */
 	function gotoFrame(frameNum);
 
@@ -249,17 +281,29 @@ class FlashPlayer {
 	// -------------------------------------------------
 	
 	/**
-	 *
+	 * ReadyStateChangeイベントの通知
 	 */
 	function onReadyStateChange(newState);
 
 	/**
-	 *
+	 * Progressイベントの通知
 	 */
 	function onProgress(percentDone);
 
 	/**
-	 *
+	 * FSCommandイベントの通知
 	 */
 	function onFSCommand(command, args);
+
+	// -------------------------------------------------
+	// Flash 呼び出し
+	// -------------------------------------------------
+
+	/**
+	 * 読み込んである Flash の ExternalInterface
+	 * 登録されたメソッドを呼び出します。
+	 * @param methodName メソッド名
+	 * @param ... 引数
+	 */
+	function callFunction(methodName, ...);
 };

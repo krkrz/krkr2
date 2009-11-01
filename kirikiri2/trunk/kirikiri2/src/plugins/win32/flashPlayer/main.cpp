@@ -1,8 +1,10 @@
 #include <windows.h>
 #include <stdio.h>
+#include <string>
 #include "ncbind/ncbind.hpp"
 
 // ログ出力用
+#if 0
 static void log(const tjs_char *format, ...)
 {
 	va_list args;
@@ -12,103 +14,20 @@ static void log(const tjs_char *format, ...)
 	TVPAddLog(msg);
 	va_end(args);
 }
+#endif
+
+// xml.c
+extern void showXMLCopyright();
+extern bool createInvokeXML(std::wstring &xml, tjs_int numparams, tTJSVariant **params);
+extern bool getVariantFromXML(tTJSVariant &var, tjs_char *xml);
+extern bool invokeXML(std::wstring &result, iTJSDispatch2 *target, tjs_char *xml);
+
+// variant.c
+extern void storeVariant(tTJSVariant &result, VARIANT &variant);
 
 //---------------------------------------------------------------------------
 
 #import "c:\\windows\\system32\\macromed\\flash\\flash8g.ocx" named_guids
-
-static void
-storeVariant(tTJSVariant &result, VARIANT &variant)
-{
-	result.Clear();
-	switch (variant.vt) {
-	case VT_NULL:
-		result = (iTJSDispatch2*)NULL;
-		break;
-	case VT_I8:
-		result = variant.llVal;
-		break;
-	case VT_I4:
-		result = (tjs_int32)variant.lVal;
-		break;
-	case VT_UI1:
-		result = (tjs_int32)variant.bVal;
-		break;
-	case VT_I2:
-		result = (tjs_int32)variant.iVal;
-		break;
-	case VT_R4:
-		result = (double)variant.fltVal;
-		break;
-	case VT_R8:
-		result = variant.dblVal;
-		break;
-	case VT_BOOL:
-		result = (variant.boolVal == VARIANT_TRUE);
-		break;
-	case VT_BSTR:
-		result = variant.bstrVal;
-		break;
-	case VT_ARRAY | VT_UI1:
-		{
-			SAFEARRAY *psa = variant.parray;
-			unsigned char *p;
-			if (SUCCEEDED(SafeArrayAccessData(psa, (LPVOID*)&p))) {
-				// p;
-				//psa->rgsabound->cElements;
-				// XXX variant にどう入れよう？
-				SafeArrayUnaccessData(psa);
-			}
-		}
-		break;
-	case VT_UNKNOWN:
-	case VT_DISPATCH:
-		result = (iTJSDispatch2*)NULL;
-		break;
-	case VT_BYREF | VT_I8:
-		result = *variant.pllVal;
-		break;
-	case VT_BYREF | VT_I4:
-		result = (tjs_int32)*variant.plVal;
-		break;
-	case VT_BYREF | VT_UI1:
-		result = (tjs_int32)*variant.pbVal;
-		break;
-	case VT_BYREF | VT_I2:
-		result = (tjs_int32)*variant.piVal;
-		break;
-	case VT_BYREF | VT_R4:
-		result = *variant.pfltVal;
-		break;
-	case VT_BYREF | VT_R8:
-		result = *variant.pdblVal;
-		break;
-	case VT_BYREF | VT_BOOL:
-		result = (*variant.pboolVal == VARIANT_TRUE);
-		break;
-	case VT_BYREF | VT_BSTR:
-		result = *variant.pbstrVal;
-		break;
-	case VT_BYREF | VT_ARRAY | VT_UI1:
-		{
-			SAFEARRAY *psa = *(variant.pparray);
-			const tjs_uint8 *p;
-			if (SUCCEEDED(SafeArrayAccessData(psa, (LPVOID*)&p))) {
-				result = tTJSVariant(p, psa->rgsabound->cElements);
-				SafeArrayUnaccessData(psa);
-			}
-		}
-		break;
-	case VT_BYREF | VT_UNKNOWN:
-	case VT_BYREF | VT_DISPATCH:
-		result = (iTJSDispatch2*)NULL;
-		break;
-	case (VT_BYREF | VT_VARIANT):
-		storeVariant(result, *variant.pvarVal);
-	default:
-		;//log(L"unkown result type");
-	}
-}
 
 class FlashPlayer : public IOleClientSite,
 					public IOleInPlaceSiteWindowless,
@@ -185,381 +104,770 @@ public:
 public:
 
 #define CHECK if(!control){TVPThrowExceptionMessage(L"not initialized");}
+#define COMERROR TVPThrowExceptionMessage(L"flash com error:%1", ttstr((const wchar_t*)e.ErrorMessage()))
 	
 	long getReadyState() {
 		CHECK;
-		return control->GetReadyState();
+		try {
+			return control->GetReadyState();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 
 	long getTotalFrames() {
 		CHECK;
-		return control->GetTotalFrames();
+		try {
+			return control->GetTotalFrames();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 	
 	bool getPlaying (){
 		CHECK;
-		return control->GetPlaying() != VARIANT_FALSE;
+		try {
+			return control->GetPlaying() != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return false;
 	}
 
 	void setPlaying (bool val) {
 		CHECK;
-		control->PutPlaying(val ? VARIANT_TRUE : VARIANT_FALSE);
+		try {
+			control->PutPlaying(val ? VARIANT_TRUE : VARIANT_FALSE);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	int getQuality () {
 		CHECK;
-		return control->GetQuality();
+		try {
+			return control->GetQuality();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 	void setQuality (int val) {
 		CHECK;
-		control->PutQuality(val);
+		try {
+			control->PutQuality(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	int getScaleMode() {
 		CHECK;
-		return control->GetScaleMode();
+		try {
+			return control->GetScaleMode();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 	void setScaleMode(int val) {
 		CHECK;
-		control->PutScaleMode(val);
+		try {
+			control->PutScaleMode(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	int getAlignMode() {
 		CHECK;
-		return control->GetAlignMode();
+		try {
+			return control->GetAlignMode();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
+
 	void setAlignMode(int val) {
 		CHECK;
-		control->PutAlignMode(val);
+		try {
+			control->PutAlignMode(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	long getBackgroundColor() {
 		CHECK;
-		return control->GetBackgroundColor();
+		try {
+			return control->GetBackgroundColor();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
+
 	void setBackgroundColor (int val) {
 		CHECK;
-		control->PutBackgroundColor(val);
+		try {
+			control->PutBackgroundColor(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	bool getLoop() {
 		CHECK;
-		return control->GetLoop() != VARIANT_FALSE;
+		try {
+			return control->GetLoop() != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return false;
 	}
 	void setLoop(bool val) {
 		CHECK;
-		control->PutLoop (val ? VARIANT_TRUE : VARIANT_FALSE);
+		try {
+			control->PutLoop (val ? VARIANT_TRUE : VARIANT_FALSE);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	ttstr getMovie() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetMovie());
+		try {
+			return ttstr((const wchar_t*)control->GetMovie());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setMovie(const tjs_char *val) {
 		CHECK;
-		control->PutMovie(val);
+		try {
+			control->PutMovie(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	int getFrameNum() {
 		CHECK;
-		return control->GetFrameNum();
+		try {
+			return control->GetFrameNum();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 	void setFrameNum (int val) {
 		CHECK;
-		control->PutFrameNum(val);
+		try {
+			control->PutFrameNum(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool setZoomRect(int left, int top, int right, int bottom) {
+	void setZoomRect(int left, int top, int right, int bottom) {
 		CHECK;
-		return SUCCEEDED(control->SetZoomRect(left, top, right, bottom));
+		try {
+			control->SetZoomRect(left, top, right, bottom);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool zoom(int factor) {
+	void zoom(int factor) {
 		CHECK;
-		return SUCCEEDED(control->Zoom(factor));
+		try {
+			control->Zoom(factor);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
-	bool pan(int x, int y, int mode ) {
+	void pan(int x, int y, int mode ) {
 		CHECK;
-		return SUCCEEDED(control->Pan(x,y,mode));
-	}
-
-	bool play() {
-		CHECK;
-		return SUCCEEDED(control->Play());
-	}
-
-	bool stop() {
-		CHECK;
-		return SUCCEEDED(control->Stop());
+		try {
+			control->Pan(x,y,mode);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool back() {
+	void play() {
 		CHECK;
-		return SUCCEEDED(control->Back());
+		try {
+			control->Play();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool forward() {
+	void stop() {
 		CHECK;
-		return SUCCEEDED(control->Forward());
+		try {
+			control->Stop();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
-	bool rewind() {
+
+	void back() {
 		CHECK;
-		return SUCCEEDED(control->Rewind());
+		try {
+			control->Back();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
-	bool stopPlay() {
+
+	void forward() {
 		CHECK;
-		return SUCCEEDED(control->StopPlay());
+		try {
+			control->Forward();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
-	bool gotoFrame(int frameNum) {
+	void rewind() {
 		CHECK;
-		return SUCCEEDED(control->GotoFrame(frameNum));
+		try {
+			control->Rewind();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+	}
+	void stopPlay() {
+		CHECK;
+		try {
+			control->StopPlay();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+	}
+	void gotoFrame(int frameNum) {
+		CHECK;
+		try {
+			control->GotoFrame(frameNum);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	long getCurrentFrame() {
 		CHECK;
-		return control->CurrentFrame();
+		try {
+			return control->CurrentFrame();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 
 	bool isPlaying() {
 		CHECK;
-		return control->IsPlaying() != VARIANT_FALSE;
+		try {
+			return control->IsPlaying() != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return false;
 	}
 
 	long getPercentLoaded() {
 		CHECK;
-		return control->PercentLoaded();
+		try {
+			return control->PercentLoaded();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 	
 	bool getFrameLoaded(long frameNum) {
 		CHECK;
-		return control->FrameLoaded(frameNum) != VARIANT_FALSE;
+		try {
+			return control->FrameLoaded(frameNum) != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 
 	long getFlashVersion() {
 		CHECK;
-		return control->FlashVersion();
+		try {
+			return control->FlashVersion();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 	
 	ttstr getSAlign() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetSAlign());
+		try {
+			return ttstr((const wchar_t*)control->GetSAlign());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setSAlign(const tjs_char *val) {
 		CHECK;
-		control->PutSAlign(val);
+		try {
+			control->PutSAlign(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	bool getMenu() {
 		CHECK;
-		return control->GetMenu() != VARIANT_FALSE;
+		try {
+			return control->GetMenu() != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return false;
 	}
 	void setMenu(bool val) {
 		CHECK;
-		control->PutMenu(val);
+		try {
+			control->PutMenu(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 	
 	ttstr getBase() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetBase());
+		try {
+			return ttstr((const wchar_t*)control->GetBase());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setBase(const tjs_char *val) {
 		CHECK;
-		control->PutBase(val);
+		try {
+			control->PutBase(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	ttstr getScale() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetScale());
+		try {
+			return ttstr((const wchar_t*)control->GetScale());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setScale(const tjs_char *val) {
 		CHECK;
-		control->PutScale(val);
+		try {
+			control->PutScale(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	bool getDeviceFont() {
 		CHECK;
-		return control->GetDeviceFont() != VARIANT_FALSE;
+		try {
+			return control->GetDeviceFont() != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return false;
 	}
 	void setDeviceFont(bool val) {
 		CHECK;
-		control->PutDeviceFont(val);
+		try {
+			control->PutDeviceFont(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	bool getEmbedMovie() {
 		CHECK;
-		return control->GetEmbedMovie() != VARIANT_FALSE;
+		try {
+			return control->GetEmbedMovie() != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return false;
 	}
 	void setEmbedMovie(bool val) {
 		CHECK;
-		control->PutEmbedMovie(val);
+		try {
+			control->PutEmbedMovie(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	ttstr getBgColor() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetBGColor());
+		try {
+			return ttstr((const wchar_t*)control->GetBGColor());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setBgColor(const tjs_char *val) {
 		CHECK;
-		control->PutBGColor(val);
+		try {
+			control->PutBGColor(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	ttstr getQuality2() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetQuality2());
+		try {
+			return ttstr((const wchar_t*)control->GetQuality2());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setQuality2(const tjs_char *val) {
 		CHECK;
-		control->PutQuality2(val);
+		try {
+			control->PutQuality2(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 	
-	bool loadMovie(int layer, const tjs_char *url) {
+	void loadMovie(int layer, const tjs_char *url) {
 		CHECK;
-		return SUCCEEDED(control->LoadMovie(layer, url));
+		try {
+			control->LoadMovie(layer, url);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool tGotoFrame(const tjs_char *target, long frameNum) {
+	void tGotoFrame(const tjs_char *target, long frameNum) {
 		CHECK;
-		return SUCCEEDED(control->TGotoFrame(target, frameNum));
+		try {
+			control->TGotoFrame(target, frameNum);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
-	bool tGotoLabel(const tjs_char *target, const tjs_char *label) {
+	void tGotoLabel(const tjs_char *target, const tjs_char *label) {
 		CHECK;
-		return SUCCEEDED(control->TGotoLabel(target, label));
+		try {
+			control->TGotoLabel(target, label);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 	long tCurrentFrame(const tjs_char *target) {
 		CHECK;
-		return control->TCurrentFrame(target);
+		try {
+			return control->TCurrentFrame(target);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 
 	ttstr tCurrentLabel(const tjs_char *target) {
 		CHECK;
-		return ttstr((const wchar_t*)control->TCurrentLabel(target));
+		try {
+			return ttstr((const wchar_t*)control->TCurrentLabel(target));
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 
-	bool tPlay(const tjs_char *target) {
+	void tPlay(const tjs_char *target) {
 		CHECK;
-		return SUCCEEDED(control->TPlay(target));
+		try {
+			control->TPlay(target);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
-	bool tStopPlay(const tjs_char *target) {
+	void tStopPlay(const tjs_char *target) {
 		CHECK;
-		return SUCCEEDED(control->TStopPlay(target));
+		try {
+			control->TStopPlay(target);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool setVariable(const tjs_char *name, const tjs_char *value) {
+	void setVariable(const tjs_char *name, const tjs_char *value) {
 		CHECK;
-		return SUCCEEDED(control->SetVariable(name, value));
+		try {
+			control->SetVariable(name, value);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 	ttstr getVariable(const tjs_char *name) {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetVariable(name));
+		try {
+			return ttstr((const wchar_t*)control->GetVariable(name));
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 
-	bool tSetProperty(const tjs_char *target, int property, const tjs_char *value) {
+	void tSetProperty(const tjs_char *target, int property, const tjs_char *value) {
 		CHECK;
-		return SUCCEEDED(control->TSetProperty (target, property, value));
+		try {
+			control->TSetProperty (target, property, value);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 	ttstr tGetProperty(const tjs_char *target, int property) {
 		CHECK;
-		return ttstr((const wchar_t*)control->TGetProperty(target, property));
+		try {
+			return ttstr((const wchar_t*)control->TGetProperty(target, property));
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 
-	bool tCallFrame(const tjs_char *target, int frameNum) {
+	void tCallFrame(const tjs_char *target, int frameNum) {
 		CHECK;
-		return SUCCEEDED(control->TCallFrame(target, frameNum));
+		try {
+			control->TCallFrame(target, frameNum);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
-	bool tCallLabel(const tjs_char *target, const tjs_char *label) {
+	void tCallLabel(const tjs_char *target, const tjs_char *label) {
 		CHECK;
-		return SUCCEEDED(control->TCallLabel(target, label));
+		try {
+			control->TCallLabel(target, label);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool tSetPropertyNum(const tjs_char *target, int property, double num) {
+	void tSetPropertyNum(const tjs_char *target, int property, double num) {
 		CHECK;
-		return SUCCEEDED(control->TSetPropertyNum (target, property, num));
+		try {
+			control->TSetPropertyNum (target, property, num);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 	double tGetPropertyNum(const tjs_char *target, int property) {
 		CHECK;
-		return control->TGetPropertyNum(target, property);
+		try {
+			return control->TGetPropertyNum(target, property);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 	
 	ttstr getSWRemote() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetSWRemote());
+		try {
+			return ttstr((const wchar_t*)control->GetSWRemote());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setSWRemote(const tjs_char *val) {
 		CHECK;
-		control->PutSWRemote(val);
+		try {
+			control->PutSWRemote(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	ttstr getFlashVars() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetFlashVars());
+		try {
+			return ttstr((const wchar_t*)control->GetFlashVars());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setFlashVars(const tjs_char *val) {
 		CHECK;
-		control->PutFlashVars(val);
+		try {
+			control->PutFlashVars(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	ttstr getAllowScriptAccess() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetAllowScriptAccess());
+		try {
+			return ttstr((const wchar_t*)control->GetAllowScriptAccess());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setAllowScriptAccess(const tjs_char *val) {
 		CHECK;
-		control->PutAllowScriptAccess(val);
+		try {
+			control->PutAllowScriptAccess(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	ttstr getMovieData() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetMovieData());
+		try {
+			return ttstr((const wchar_t*)control->GetMovieData());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setMovieData(const tjs_char *val) {
 		CHECK;
-		control->PutMovieData(val);
+		try {
+			control->PutMovieData(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	bool getSeamlessTabbing() {
 		CHECK;
-		return control->GetSeamlessTabbing() != VARIANT_FALSE;
+		try {
+			return control->GetSeamlessTabbing() != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return false;
 	}
 	void setSeamlessTabbing(bool val) {
 		CHECK;
-		control->PutSeamlessTabbing(val ? VARIANT_TRUE : VARIANT_FALSE);
+		try {
+			control->PutSeamlessTabbing(val ? VARIANT_TRUE : VARIANT_FALSE);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool enforceLocalSecurity() {
+	void enforceLocalSecurity() {
 		CHECK;
-		return SUCCEEDED(control->EnforceLocalSecurity());
+		try {
+			control->EnforceLocalSecurity();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	bool getProfile() {
 		CHECK;
-		return control->GetProfile() != VARIANT_FALSE;
+		try {
+			return control->GetProfile() != VARIANT_FALSE;
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return false;
 	}
 	void setProfile(bool val) {
 		CHECK;
-		control->PutProfile(val ? VARIANT_TRUE : VARIANT_FALSE);
+		try {
+			control->PutProfile(val ? VARIANT_TRUE : VARIANT_FALSE);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	ttstr getProfileAddress() {
 		CHECK;
-		return ttstr((const wchar_t*)control->GetProfileAddress());
+		try {
+			return ttstr((const wchar_t*)control->GetProfileAddress());
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return L"";
 	}
 	void setProfileAddress(const tjs_char *val) {
 		CHECK;
-		control->PutProfileAddress(val);
+		try {
+			control->PutProfileAddress(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
 	int getProfilePort() {
 		CHECK;
-		return control->GetProfilePort();
+		try {
+			return control->GetProfilePort();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return 0;
 	}
 	void setProfilePort(int val) {
 		CHECK;
-		control->PutProfilePort(val);
+		try {
+			control->PutProfilePort(val);
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+	}
+	
+	void disableLocalSecurity() {
+		CHECK;
+		try {
+			control->DisableLocalSecurity();
+		} catch(_com_error &e) {
+			COMERROR;
+		}
 	}
 
-	bool disableLocalSecurity() {
-		CHECK;
-		return SUCCEEDED(control->DisableLocalSecurity());
+	/**
+	 * メソッド呼び出し
+	 */
+	static tjs_error callFunction(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, FlashPlayer *self) {
+		if (numparams < 1) {
+			return TJS_E_BADPARAMCOUNT;
+		}
+		std::wstring xml;
+		if (!createInvokeXML(xml, numparams, params)) {
+			TVPThrowExceptionMessage(L"failed to create invoke xml");
+		}
+		try {
+			ttstr resultXML = (const tjs_char*)self->control->CallFunction(xml.c_str());
+			if (result) {
+				getVariantFromXML(*result, (tjs_char*)resultXML.c_str());
+			}
+		} catch(_com_error &e) {
+			COMERROR;
+		}
+		return TJS_S_OK;
 	}
 
 	// --------------------------------------------------
@@ -1075,13 +1383,19 @@ public:
 			}
 			break;
 		case 0xc5:
+			// External API
 			if (argc >= 1) {
-				// External API XXX
 				tTJSVariant param;
 				storeVariant(param, rargv[argc-1]);
-				//static ttstr eventName(TJS_W("onFlashCall"));
-				//TVPPostEvent(objthis, objthis, eventName, 0, TVP_EPT_POST, 1, &param);
-				//control->SetReturnValue(ret));
+				std::wstring result;
+				ttstr xml = param;
+				if (invokeXML(result, objthis, (tjs_char*)xml.c_str())) {
+					control->SetReturnValue(result.c_str());
+				} else {
+					ttstr msg = L"tjs call error:";
+					msg += result.c_str();
+					TVPAddLog(msg);
+				}
 				return S_OK;
 			}
 			break;
@@ -1257,6 +1571,8 @@ NCB_REGISTER_CLASS(FlashPlayer) {
 	NCB_PROPERTY(profilePort, getProfilePort, setProfilePort);
 
 	NCB_METHOD(disableLocalSecurity);
+
+	RawCallback("callFunction", &ClassT::callFunction, 0);
 };
 
 //---------------------------------------------------------------------------
@@ -1268,11 +1584,13 @@ static BOOL gOLEInitialized = false;
  */
 static void PreRegistCallback()
 {
+	showXMLCopyright();
+
 	if (!gOLEInitialized) {
 		if (SUCCEEDED(OleInitialize(NULL))) {
 			gOLEInitialized = true;
 		} else {
-			log(L"OLE 初期化失敗");
+			TVPAddLog(L"OLE 初期化失敗");
 		}
 	}
 }
