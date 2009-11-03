@@ -15,11 +15,15 @@ class MyWindow extends Window
 	var layer;
 	var savemenu1;
 	var savemenu2;
+	var savemenu3;
+	var savemenu4;
 	
 	function MyWindow() {
 		super.Window();
-		menu.add(savemenu1 = new MenuItem(this, "保存1(&S)"));
-		menu.add(savemenu2 = new MenuItem(this, "保存2(&S)"));
+		menu.add(savemenu1 = new MenuItem(this, "TLG保存1(blk)"));
+		menu.add(savemenu2 = new MenuItem(this, "TLG保存2(bg)"));
+		menu.add(savemenu3 = new MenuItem(this, "PNG保存1(blk)"));
+		menu.add(savemenu4 = new MenuItem(this, "PNG保存2(bg)"));
 		setInnerSize(WIDTH, HEIGHT);
 
 		// プライマリレイヤ
@@ -35,18 +39,33 @@ class MyWindow extends Window
 		layer.visible = true;
 		add(layer);
 
-		layer.fillRect(0,0,200,20,0xffff00ff);
+		layer.fillRect(0,0,200,20,0xff8040FF);
 		layer.drawText(10, 30, "テストのテキスト", 0xffffff);
 	}
 
 	// 実行部
 	function action(ev)	{
 		if(ev.type == "onClick") {
-			if (ev.target == savemenu1) {
+			switch (ev.target) {
+			case savemenu1:
 				layer.saveLayerImageTlg5("test.tlg");
 				layer.saveLayerImageTlg5("test2.tlg", %[xoff:layer.left, yoff:layer.top]);
-			} else if (ev.target == savemenu2) {
+				System.inform("saved");
+				break;
+			case savemenu2:
+				Debug.console.visible = true;
 				startSaveLayerImage(layer, "test3.tlg", %[xoff:layer.left, yoff:layer.top]);
+				break;
+			case savemenu3:
+				dm(layer.saveLayerImagePngBase64());
+				layer.saveLayerImagePng("test.png");
+				layer.saveLayerImagePng("test2.png", %[xoff:layer.left, yoff:layer.top]);
+				System.inform("saved");
+				break;
+			case savemenu4:
+				Debug.console.visible = true;
+				startSaveLayerImage(layer, "test3.png", %[xoff:layer.left, yoff:layer.top, comp_lv:0 ]);
+				break;
 			}
 		}
 	}
