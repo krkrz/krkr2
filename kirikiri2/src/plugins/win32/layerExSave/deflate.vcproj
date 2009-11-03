@@ -2,11 +2,11 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="layerExSave"
-	ProjectGUID="{D50A12A3-531E-46E0-A08F-6AEC1BC0338B}"
-	RootNamespace="layerExSave"
+	Name="deflate"
+	ProjectGUID="{21264775-7054-4552-B3CC-392398F438A5}"
+	RootNamespace="deflate"
 	Keyword="Win32Proj"
-	TargetFrameworkVersion="131072"
+	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
 		<Platform
@@ -18,9 +18,9 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\bin\win32\plugin"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="2"
+			ConfigurationType="4"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,14 +41,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\tools\win32\krdevui\tpc;.."
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LAYEREXSAVE_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -61,19 +59,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="2"
-				GenerateDebugInformation="true"
-				SubSystem="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -85,17 +74,14 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\bin\win32\plugin"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="2"
+			ConfigurationType="4"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -116,12 +102,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\tools\win32\krdevui\tpc;.."
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LAYEREXSAVE_EXPORTS"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -134,21 +121,10 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLinkerTool"
-				LinkIncremental="1"
-				GenerateDebugInformation="false"
-				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="1"
+				Name="VCLibrarianTool"
 			/>
 			<Tool
 				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -158,9 +134,6 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -176,31 +149,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Main.cpp"
+				RelativePath="..\zlib\adler32.c"
 				>
 			</File>
 			<File
-				RelativePath="..\ncbind\ncbind.cpp"
+				RelativePath="..\zlib\compress.c"
 				>
 			</File>
 			<File
-				RelativePath=".\savepng.cpp"
+				RelativePath="..\zlib\crc32.c"
 				>
 			</File>
 			<File
-				RelativePath=".\savetlg5.cpp"
+				RelativePath="..\zlib\deflate.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\tools\win32\krdevui\tpc\tlg5\slide.cpp"
+				RelativePath="..\zlib\trees.c"
 				>
 			</File>
 			<File
-				RelativePath="..\tp_stub.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\utils.cpp"
+				RelativePath="..\zlib\zutil.c"
 				>
 			</File>
 		</Filter>
@@ -210,39 +179,27 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\compress.hpp"
+				RelativePath="..\zlib\crc32.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ncbind\ncb_foreach.h"
+				RelativePath="..\zlib\deflate.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ncbind\ncb_invoke.hpp"
+				RelativePath="..\zlib\trees.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ncbind\ncbind.hpp"
+				RelativePath="..\zlib\zconf.h"
 				>
 			</File>
 			<File
-				RelativePath=".\savepng.hpp"
+				RelativePath="..\zlib\zconf.in.h"
 				>
 			</File>
 			<File
-				RelativePath=".\savetlg5.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\tools\win32\krdevui\tpc\tlg5\slide.h"
-				>
-			</File>
-			<File
-				RelativePath="..\tp_stub.h"
-				>
-			</File>
-			<File
-				RelativePath=".\utils.hpp"
+				RelativePath="..\zlib\zutil.h"
 				>
 			</File>
 		</Filter>
