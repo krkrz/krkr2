@@ -8,9 +8,9 @@
 class Window {
 
 	/**
-	 * TLG5 形式での画像の保存の開始
+	 * TLG5/PNG 形式での画像の保存の開始
 	 * @param layer 保存対象レイヤ
-	 * @param filename ファイル名
+	 * @param filename ファイル名（拡張子が.pngの時のみPNG形式保存，それ以外はTLG5）
 	 * @param tags タグ情報
 	 * @return ハンドラ
 	 */
@@ -57,6 +57,19 @@ class Layer {
 	 * @param tags タグ情報
 	 */
 	function saveLayerImageTlg5(filename, tags=void);
+
+	/**
+	 * PNG 形式での画像の保存。注意点:データの保存が終わるまで処理が帰りません。
+	 * @param filename ファイル名
+	 * @param tags タグ情報と圧縮レベル(comp_lv)を記述した辞書
+	 */
+	function saveLayerImagePng(filename, tags=void);
+
+	/**
+	 * PNG 形式画像をbase64エンコードで返す。注意点:データの保存が終わるまで処理が帰りません。
+	 * @param compression_level 圧縮率(省略時1)
+	 */
+	function saveLayerImagePngBase64(compression_level);
 
 	/**
 	 * レイヤイメージをクロップ（上下左右の余白透明部分を切り取る）したときの
