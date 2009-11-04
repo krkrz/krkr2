@@ -7,6 +7,7 @@ class TestApp extends Window
   var timer;
   var result = [];
   var benchWidth, benchHeight;
+  var request = [], requestCount;
 
   function TestApp {
     super.Window();
@@ -91,22 +92,35 @@ class TestApp extends Window
     }
     combinationBench(AffineBltBench);
 
-    result.save(System.dataPath + "result.csv");
+    requestCount = 0;
 
-    System.exit();
+    System.addContinuousHandler(doBench);
+  }
+
+  function doBench {
+    var req = request[requestCount];
+    System.drawThreadNum = req[2];
+    benchWidth = req[3];
+    benchHeight = req[4];
+    req[0](req[1]);
+
+    if (++requestCount >= request.count) {
+      result.save(System.dataPath + "result.csv");
+      System.removeContinuousHandler(doBench);
+      System.exit();
+    } 
   }
 
   function combinationBench(func, arg) {
     benchWidth = 640;
-    for (benchHeight = 10; benchHeight <= 640; benchHeight *= 2)
-      for (var i = 1; i <= 8; i++) {
-        System.drawThreadNum = i;
-        func(arg);
-      }
+    for (benchHeight = 20; benchHeight <= 640; benchHeight += 20) {
+      request.add([ func, arg, 1, benchWidth, benchHeight ]);
+      request.add([ func, arg, System.processorNum, benchWidth, benchHeight ]);
+    }
   }
 
   function BltBench(om) {
-    caption = "testing Blt%d %dx%d pixel %d threads.".sprintf(om, benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing Blt%d %dx%d pixel %d threads (%d/%d).".sprintf(om, benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
       testLayer.operateRect(0, 0, blackLayer, 0, 0, benchWidth, benchHeight, om);
@@ -117,7 +131,7 @@ class TestApp extends Window
   }
 
   function CopyRectBench {
-    caption = "testing CopyRect %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing CopyRect %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
       testLayer.copyRect(0, 0, blackLayer, 0, 0, benchWidth, benchHeight);
@@ -128,7 +142,7 @@ class TestApp extends Window
   }
 
   function FillBench {
-    caption = "testing Fill %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing Fill %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
       testLayer.fillRect(0, 0, benchWidth, benchHeight, 0xFF000000);
@@ -139,7 +153,7 @@ class TestApp extends Window
   }
 
   function FillColorBench1 {
-    caption = "testing FillColor1 %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing FillColor1 %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     testLayer.face = dfOpaque;
     testLayer.holdAlpha = true;
     var beginTick = System.getTickCount();
@@ -154,7 +168,7 @@ class TestApp extends Window
   }
 
   function FillColorBench2 {
-    caption = "testing FillColor2 %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing FillColor2 %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     testLayer.face = dfOpaque;
     testLayer.holdAlpha = true;
     var beginTick = System.getTickCount();
@@ -169,7 +183,7 @@ class TestApp extends Window
   }
 
   function BlendColorBench1 {
-    caption = "testing BlendColor1 %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing BlendColor1 %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
       testLayer.colorRect(0, 0, benchWidth, benchHeight, 0xFF000000, 255);
@@ -180,7 +194,7 @@ class TestApp extends Window
   }
 
   function BlendColorBench2 {
-    caption = "testing BlendColor2 %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing BlendColor2 %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
       testLayer.colorRect(0, 0, benchWidth, benchHeight, 0xFF000000, 128);
@@ -191,7 +205,7 @@ class TestApp extends Window
   }
 
   function BlendColorBench3 {
-    caption = "testing BlendColor3 %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing BlendColor3 %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     testLayer.face = dfAddAlpha;
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
@@ -204,7 +218,7 @@ class TestApp extends Window
   }
 
   function RemoveConstOpacityBench1 {
-    caption = "testing RemoveConstOpacity1 %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing RemoveConstOpacity1 %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
       testLayer.colorRect(0, 0, benchWidth, benchHeight, 0xFF000000, -255);
@@ -215,7 +229,7 @@ class TestApp extends Window
   }
 
   function RemoveConstOpacityBench2 {
-    caption = "testing RemoveConstOpacity2 %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing RemoveConstOpacity2 %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
       testLayer.colorRect(0, 0, benchWidth, benchHeight, 0xFF000000, -128);
@@ -226,7 +240,7 @@ class TestApp extends Window
   }
 
   function FillMaskBench {
-    caption = "testing FillMask %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing FillMask %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     testLayer.face = dfMask;
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
@@ -239,14 +253,14 @@ class TestApp extends Window
   }
 
   function AffineBltBench {
-    caption = "testing AffineBlt %dx%d pixel %d threads.".sprintf(benchWidth, benchHeight, System.drawThreadNum);
+    caption = "testing AffineBlt %dx%d pixel %d threads (%d/%d).".sprintf(benchWidth, benchHeight, System.drawThreadNum, requestCount, request.count);
     testLayer.setClip(0, 0, benchWidth, benchHeight);
     var beginTick = System.getTickCount();
     for (var i = 0; i < 1000; i++) {
       var angle = i * Math.PI * 2 / 1000;
-      var s = Math.sin(angle), c = Math.cos(angle);
+      var si = Math.sin(angle), cs = Math.cos(angle);
       var cx = benchWidth / 2, cy = benchHeight / 2;
-      var a = c, b = -s, c = s, d = c;
+      var a = cs, b = -si, c = si, d = cs;
       var e = -a * cx - c * cy + cx, f = -b * cx - d * cy + cy;
       testLayer.affineCopy(blackLayer, 0, 0, benchWidth, benchHeight, true, a, b, c, d, e, f, stNearest, true);
       testLayer.affineCopy(whiteLayer, 0, 0, benchWidth, benchHeight, true, a, b, c, d, e, f, stNearest, true);
@@ -256,6 +270,7 @@ class TestApp extends Window
     result.add('AffineBlt, %d, %d, %d'.sprintf(System.drawThreadNum, benchWidth * benchHeight, diffTick));
   }
 };
+
 
 Debug.startLogToFile(true);
 

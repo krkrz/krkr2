@@ -414,6 +414,19 @@ TJS_BEGIN_NATIVE_PROP_DECL(drawThreadNum)
 }
 TJS_END_NATIVE_PROP_DECL(drawThreadNum)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(processorNum)
+{
+        TJS_BEGIN_NATIVE_PROP_GETTER
+          {
+            *result = TVPGetProcessorNum();
+            return TJS_S_OK;
+          }
+        TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(processorNum)
+//----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
