@@ -118,6 +118,7 @@ struct t2DAffineMatrix
 //---------------------------------------------------------------------------
 extern tTVPGLGammaAdjustData TVPIntactGammaAdjustData;
 extern tjs_int TVPDrawThreadNum;
+extern tjs_int TVPGetProcessorNum(void);
 //---------------------------------------------------------------------------
 
 

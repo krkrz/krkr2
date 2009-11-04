@@ -48,6 +48,7 @@ tjs_int TVPDrawThreadNum = 0;
 typedef void (*TVP_THREAD_TASK_FUNC)(void *);
 typedef void * TVP_THREAD_PARAM;
 struct ThreadInfo {
+  bool readyToExit;
   HANDLE thread;
   HANDLE pingEvent;
   HANDLE pongEvent;
@@ -71,6 +72,12 @@ static tjs_int GetProcesserNum(void)
   }
   return processor_num;
 }
+
+tjs_int TVPGetProcessorNum(void)
+{
+  return GetProcesserNum();
+}
+
 //---------------------------------------------------------------------------
 static tjs_int GetThreadNum(void)
 {
@@ -84,8 +91,16 @@ static DWORD WINAPI ThreadLoop(LPVOID p)
   ThreadInfo *threadInfo = (ThreadInfo*)p;
   for(;;) {
     SignalObjectAndWait(threadInfo->pongEvent, threadInfo->pingEvent, INFINITE, FALSE);
+    if (threadInfo->readyToExit)
+      break;
     (threadInfo->lpStartAddress)(threadInfo->lpParameter);
   }
+
+  DeleteObject(threadInfo->pongEvent);
+  DeleteObject(threadInfo->pingEvent);
+  delete threadInfo;
+  ExitThread(0);
+
   return TRUE;
 }
 //---------------------------------------------------------------------------
@@ -109,6 +124,7 @@ static void BeginThreadTask(tjs_int taskNum)
   }
   while (TVPThreadList.size() < threadNum) {
     ThreadInfo *threadInfo = new ThreadInfo();
+    threadInfo->readyToExit = false;
     threadInfo->pingEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     threadInfo->pongEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     threadInfo->thread = CreateThread(NULL, 0, ThreadLoop, threadInfo, CREATE_SUSPENDED, NULL);
@@ -120,10 +136,8 @@ static void BeginThreadTask(tjs_int taskNum)
   }
   while (TVPThreadList.size() > threadNum) {
     ThreadInfo *threadInfo = TVPThreadList.back();
-    TerminateThread(threadInfo->thread, TRUE);
-    DeleteObject(threadInfo->pongEvent);
-    DeleteObject(threadInfo->pingEvent);
-    delete threadInfo;
+    threadInfo->readyToExit = true;
+    SetEvent(threadInfo->pingEvent);
     TVPThreadList.pop_back();
     TVPPongEventList.pop_back();
   }
