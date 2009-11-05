@@ -1,0 +1,24 @@
+POCO C++ Libraries を http://pocoproject.org/ からダウンロードして、
+アーカイブ内の
+
+	Foundation/include
+	Net/include
+
+を include/ に置いてください。具体的には以下のような構成になります。
+
+	include/Poco/Net/*.h	(Net/include のファイル)
+	include/Poco/*.h	(Foundation/include のファイル)
+
+また、VCでstatic_debug/release でコンパイルして
+ライブラリファイルを lib/ に置いて下さい。
+（付属プロジェクトはコード生成が「マルチスレッドDLL」になっているので、
+　DLLを使用しないようにオプションを変更してからコンパイルしてください。
+　そうしないとリンク時にエラーが出ます）
+
+ライブラリは以下のような構成になります。
+
+	lib/PocoFoundationmt.lib	(Foundationmtのstatic_release)
+	lib/PocoFoundationmtd.lib	(Foundationmtのstatic_debug)
+	lib/PocoNetmt.lib		(Netのstatic_release)
+	lib/PocoNetmtd.lib		(Netのstatic_debug)
+
