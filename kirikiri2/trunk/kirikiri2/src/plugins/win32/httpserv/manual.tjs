@@ -1,0 +1,44 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+
+class SimpleHTTPServer {
+	/**
+	 * コンストラクタ
+	 * @param port 使用するポート番号（0で自動割り当て）
+	 */
+	function SimpleHTTPServer(port = 0);
+
+	/**
+	 * サービス開始
+	 * @return ポート番号
+	 */
+	function start();
+
+	/**
+	 * サービス停止
+	 */
+	function start();
+
+	/**
+	 * リクエスト処理（イベント）
+	 * @param request = %[
+	 *     method:メソッドの種類（GET/POST/...t）
+	 *     request:リクエストパス
+	 *     header: %[ リクエストヘッダ（ブラウザの情報等） ]
+	 *     form:   %[ フォームデータ ] または void（無い場合）
+	 *         ];
+	 * @return response = %[
+	 *     status:ステータスコード（省略可能，エラーが無ければ自動で200）
+	 *     content_type: Content-Type名
+	 *     redirect: リダイレクトする場合のURI（省略可能）
+	 *
+	 *   以下は排他（どれかひとつ，上から優先）
+	 *     text:返すテキスト
+	 *     file:返すファイル
+	 *     layer:返す画像（現在未実装：渡しても常にエラーになります）
+	 *     binary:返すバイナリ（ArrayまたはOctet）
+	 *         ];
+	 */
+	function onRequest();
+}
