@@ -5,9 +5,10 @@
 class SimpleHTTPServer {
 	/**
 	 * コンストラクタ
-	 * @param port 使用するポート番号（0で自動割り当て）
+	 * @param window スレッド処理用親ウインドウ
+	 * @param port   使用するポート番号（0で自動割り当て）
 	 */
-	function SimpleHTTPServer(port = 0);
+	function SimpleHTTPServer(window, port = 0);
 
 	/**
 	 * サービス開始
