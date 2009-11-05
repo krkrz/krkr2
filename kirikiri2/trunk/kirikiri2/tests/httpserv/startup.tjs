@@ -1,0 +1,109 @@
+Plugins.link("httpserv.dll");
+
+class MyHTTPServer extends SimpleHTTPServer {
+	var url, delayexec;
+	function MyHTTPServer() {
+		super.SimpleHTTPServer(...);
+		delayexec =new Timer(this, "openURL");
+		with (delayexec) {
+			.capacity = 1;
+			.interval = 300;
+		}
+	}
+	function finalize() {
+		invalidate delayexec if (delayexec);
+		super.finalize(...);
+	}
+	function start() {
+		var port = super.start();
+		url = @"http://127.0.0.1:${port}/";
+		delayexec.enabled = true;
+		return port;
+	}
+	function openURL() {
+		System.shellExecute(url);
+		delayexec.enabled = false;
+	}
+	var ext2mime = %[
+		".jpeg" => "image/jpeg",
+		".jpg"  => "image/jpeg",
+		".png"  => "image/png",
+		".html" => "text/html",
+		".txt"  => "text/plain",
+		".tjs"  => "text/plain",
+		];
+	function showDictionary(tag, dic) {
+		var text, list = [];
+		list.assign(dic);
+		for (var i = 0; i < list.count; i+=2) {
+			text += @"<li>${tag}['${list[i]}'] = '${list[i+1]}'</li>";
+		}
+		return text;
+	}
+	function onRequest(elm) {
+		var ret = %[
+			"content_type" => "text/html; charset=utf-8",
+			];
+		var path = elm.request, ques = path.indexOf("?"), param;
+		if (ques >= 0) {
+			param = path.substr(ques+1);
+			path  = path.substr(0, ques);
+		}
+		var title = "SimpleHTTPServer test";
+		switch (path) {
+		case "/encode":
+			var type = "text/html";
+			if (param != "") type +="; charset="+param;
+			ret.content_type = type;
+			title = "エンコードのテスト";
+			//break;
+		case "/":
+			var textform = "action=.><input type=text name=text><input type=submit value=";
+			var form = showDictionary("form",   elm.form);
+			var head = showDictionary("header", elm.header);
+			var text = "<html><head><title>${title}</title></head>\n";
+			text += @"<body><h1>${title}</h1>\n";
+			text +=  "<h2>Test</h2>";
+			text +=  "<ul>\n";
+			text +=  "<li><a href=encode?utf-8>encode utf-8</a></li>\n";
+			text +=  "<li><a href=encode?iso-2022-jp>encode iso-2022-jp</a></li>\n";
+			text +=  "<li><a href=encode?euc-jp>encode euc-jp</a></li>\n";
+			text +=  "<li><a href=encode?sjis>encode sjis</a></li>\n";
+			text +=  "<li><a href=file.html>file</a></li>\n";
+			text +=  "<li><a href=archive.html>in archive</a></li>\n";
+			text +=  "</ul>\n";
+			text += @"<h2>GET Form</h2 ><form method=GET  ${textform}GET ></form>\n";
+			text += @"<h2>POST Form</h2><form method=POST ${textform}POST></form>\n";
+			text +=  "<ul>\n";
+			text += @"<li>method: ${elm.method}</li>";
+			text +=  "<hr width=30% align=left>\n"+form if (form != "");
+			text +=  "<hr width=30% align=left>\n"+head if (head != "");
+			text +=  "</ul></body></html>\n";
+			ret.text = text;
+			break;
+		default:
+			Debug.message(path);
+			if (path.charAt(0) == "/") path = path.substr(1);
+			if (Storages.isExistentStorage(path)) {
+				ret.file = path;
+				var type, ext = Storages.extractStorageExt(ret.file);
+				/**/type = ext2mime[ext] if (ext != "");
+				ret.content_type = (type != "") ? type : "application/octet-stream";
+			} else {
+				ret.status = 404;
+				ret.text = "";
+			}
+		}
+		return ret;
+	}
+}
+
+var serv = new MyHTTPServer();
+serv.start();
+//Debug.controller.visible = true;
+Debug.console.visible = true;
+
+System.inform("wait");
+
+serv.stop();
+invalidate serv;
