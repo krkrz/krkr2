@@ -5,10 +5,10 @@
 class SimpleHTTPServer {
 	/**
 	 * コンストラクタ
-	 * @param window スレッド処理用親ウインドウ
-	 * @param port   使用するポート番号（0で自動割り当て）
+	 * @param port    使用するポート番号（0で自動割り当て）
+	 * @param timeout onRequestコールバックのタイムアウト時間(sec)
 	 */
-	function SimpleHTTPServer(window, port = 0);
+	function SimpleHTTPServer(port = 0, timeout = 10);
 
 	/**
 	 * サービス開始
@@ -37,7 +37,6 @@ class SimpleHTTPServer {
 	 *   以下は排他（どれかひとつ，上から優先）
 	 *     text:返すテキスト
 	 *     file:返すファイル
-	 *     layer:返す画像（現在未実装：渡しても常にエラーになります）
 	 *     binary:返すバイナリ（ArrayまたはOctet）
 	 *         ];
 	 */
