@@ -12,7 +12,7 @@ public:
 
 	virtual bool compress(long width, long height, BufRefT buffer, long pitch, iTJSDispatch2 *tagsDict);
 
-	void encodeBase64(iTJSDispatch2 *layer, int comp_lv, ttstr&);
+	void encodeToOctet(iTJSDispatch2 *layer, int comp_lv, tTJSVariant&);
 
 protected:
 	void compress_first (PngChunk&, long width, long height, long flag);

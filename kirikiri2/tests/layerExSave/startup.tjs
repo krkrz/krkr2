@@ -57,9 +57,10 @@ class MyWindow extends Window
 				startSaveLayerImage(layer, "test3.tlg", %[xoff:layer.left, yoff:layer.top]);
 				break;
 			case savemenu3:
-				dm(layer.saveLayerImagePngBase64());
+				var oct = layer.saveLayerImagePngOctet(9);
+				dm(typeof oct, oct.length);
 				layer.saveLayerImagePng("test.png");
-				layer.saveLayerImagePng("test2.png", %[xoff:layer.left, yoff:layer.top]);
+				layer.saveLayerImagePng("test2.png", %[xoff:layer.left, yoff:layer.top, comp_lv:9]);
 				System.inform("saved");
 				break;
 			case savemenu4:
