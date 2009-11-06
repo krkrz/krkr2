@@ -16,6 +16,9 @@
 #include "Poco/NullStream.h"
 #include "Poco/StreamCopier.h"
 #include "Poco/Exception.h"
+#include "Poco/Event.h"
+#include "Poco/Mutex.h"
+#include "Poco/Thread.h"
 #include <iostream>
 
 using Poco::Net::SocketAddress;
@@ -31,12 +34,15 @@ using Poco::Net::MessageHeader;
 using Poco::Net::MediaType;
 using Poco::Net::HTMLForm;
 using Poco::Net::NameValueCollection;
+using Poco::Event;
+using Poco::FastMutex;
+using Poco::Thread;
 
 struct PwRequestCallback {
 	typedef PwHTTPServer::RequestCallback Callback;
 	PwRequestCallback(Callback _cb, void *_param)   : cb(   _cb), param(   _param) {}
 	PwRequestCallback(const PwRequestCallback &src) : cb(src.cb), param(src.param) {}
-	void invoke(PwRequestResponse *rr) const { cb(rr, param); }
+	void invoke(PwRequestResponse *rr, int reason) const { cb(rr, param, reason); }
 private:
 	Callback cb;
 	void *param;
@@ -45,9 +51,10 @@ private:
 struct PwRequestResponseImpl : public PwRequestResponse
 {
 	PwRequestResponseImpl(HTTPServerRequest &_request, HTTPServerResponse& _response)
-		: request(_request), response(_response)
+		: available(true), event(false), request(_request), response(_response)
 	{
 //		response.setChunkedTransferEncoding(true);
+		response.setKeepAlive(false);
 		method = request.getMethod();
 		uri    = request.getURI();
 		try {
@@ -84,11 +91,11 @@ struct PwRequestResponseImpl : public PwRequestResponse
 		stat.setStatus(status);
 		return stat.getStatus();
 	}
-	void setStatus(char const *status)            { response.setStatusAndReason(strToStatus(status)); }
-	void setContentType(char const *type)         { response.setContentType(type); this->type = type; }
-	void setRedirect(char const *target)          { response.redirect(target);                        }
-	void sendBuffer(void const *buf, Size length) { response.sendBuffer(buf, length);                 }
-	void sendFile(char const *path)               { response.sendFile(path, type);                    }
+	void setStatus(char const *status)            { if (avail()) response.setStatusAndReason(strToStatus(status)); }
+	void setContentType(char const *type)         { if (avail()) response.setContentType(type); this->type = type; }
+	void setRedirect(char const *target)          { if (avail()) response.redirect(target);                        }
+	void sendBuffer(void const *buf, Size length) { if (avail()) response.sendBuffer(buf, length);                 }
+	void sendFile(char const *path)               { if (avail()) response.sendFile(path, type);                    }
 	const String getCharset(char const *mediatype) {
 		MediaType mt(mediatype);
 		String ret;
@@ -104,43 +111,75 @@ struct PwRequestResponseImpl : public PwRequestResponse
 		HTTPResponse reason(strToStatus(status));
 		return reason.getReason();
 	}
+	void done() {
+		event.set();
+		if (!avail()) delete this;
+	}
+	bool wait(int timeoutsec) {
+		if (timeoutsec <= 0) event.wait();
+		else if (!event.tryWait(timeoutsec * 1000)) {
+			resetAvail();
+			return true;
+		}
+		delete this;
+		return false;
+	}
 private:
+	bool available;
+	Event event;
 	HTTPServerRequest  &request;
 	HTTPServerResponse &response;
 	String type, method, uri, host, client;
+
+	FastMutex lockAvail;
+	bool avail() {
+		FastMutex::ScopedLock lock(lockAvail);
+		return available;
+	}
+	void resetAvail() {
+		FastMutex::ScopedLock lock(lockAvail);
+		available = false;
+	}
 };
 
 struct PwRequestHandler : public HTTPRequestHandler
 {
-	PwRequestHandler(PwRequestCallback const &_cb) : cb(_cb) {}
+	PwRequestHandler(PwRequestCallback const &_cb, int to) : timeout(to), cb(_cb) {}
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) {
-		PwRequestResponseImpl rr(request, response);
-		cb.invoke(&rr);
+		PwRequestResponseImpl *rr = new PwRequestResponseImpl(request, response);
+		cb.invoke(rr, 1);
+		// 完了するまで待つ
+		if (rr->wait(timeout)) {
+			// タイムアウトした
+			cb.invoke(rr, 0);
+		}
 	}
 private:
+	int timeout;
 	PwRequestCallback const cb;
 };
 
 struct PwRequestFactory : public HTTPRequestHandlerFactory
 {
-	PwRequestFactory(PwRequestCallback const &_cb) : cb(_cb) {}
+	PwRequestFactory(PwRequestCallback const &_cb, int to) : timeout(to), cb(_cb) {}
 	HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request) {
-		return new PwRequestHandler(cb);
+		return new PwRequestHandler(cb, timeout);
 	}
 private:
+	int timeout;
 	PwRequestCallback const cb;
 };
 
 struct PwHTTPServerImpl : public PwHTTPServer
 {
-	PwHTTPServerImpl(PwRequestCallback const &_cb) : cb(_cb), socket(0), server(0) {}
+	PwHTTPServerImpl(PwRequestCallback const &_cb, int to) : timeout(to), cb(_cb), socket(0), server(0) {}
 	~PwHTTPServerImpl() { stop(); }
 
 	int start(int port) {
 		stop();
 		SocketAddress sock("127.0.0.1", port);
 		socket = new ServerSocket(sock);
-		server = new HTTPServer(new PwRequestFactory(cb), *socket, new HTTPServerParams());
+		server = new HTTPServer(new PwRequestFactory(cb, timeout), *socket, new HTTPServerParams());
 		server->start();
 		return (int)socket->address().port();
 	}
@@ -153,14 +192,15 @@ struct PwHTTPServerImpl : public PwHTTPServer
 		socket = NULL;
 	}
 private:
+	int timeout;
 	PwRequestCallback const cb;
 	ServerSocket *socket;
 	HTTPServer   *server;
 };
 
 PwHTTPServer*
-PwHTTPServer::Factory(PwHTTPServer::RequestCallback callback, void *param) {
+PwHTTPServer::Factory(PwHTTPServer::RequestCallback callback, void *param, int tout) {
 	PwRequestCallback cb(callback, param);
-	return new PwHTTPServerImpl(cb);
+	return new PwHTTPServerImpl(cb, tout);
 }
 
