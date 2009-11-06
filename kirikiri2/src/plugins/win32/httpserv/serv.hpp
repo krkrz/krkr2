@@ -14,18 +14,25 @@ struct PwRequestResponse
 	typedef unsigned long Size;
 	typedef void (*NameValueCallback)(const String&, const String&, void *param);
 
+	// スレッド対応用
+	virtual void done() = 0;
+
+	// 各種データを取得
 	virtual int  getHeader  (NameValueCallback, void *param) const = 0;
 	virtual int  getFormData(NameValueCallback, void *param) const = 0;
 	virtual char const *getMethod() const = 0;
 	virtual char const *getURI()    const = 0;
 	virtual char const *getHost()   const = 0;
 	virtual char const *getClient() const = 0;
-	virtual void setStatus(char const *status) = 0;
-	virtual void setContentType(char const *type) = 0;
-	virtual void setRedirect(char const *type) = 0;
+
+	// 変換ユーティリティ
 	virtual const String getCharset(char const *mediatype) = 0;
 	virtual const String getReason(char const *status) = 0;
 
+	// レスポンスを返す
+	virtual void setStatus(char const *status) = 0;
+	virtual void setContentType(char const *type) = 0;
+	virtual void setRedirect(char const *type) = 0;
 	// 以下は最後にどちらか１回のみしか呼べない（Content-lengthを送信してしまうため分割送信は不可）
 	virtual void sendBuffer(void const*, Size length) = 0;
 	virtual void sendFile(char const *path) = 0;
@@ -34,13 +41,13 @@ struct PwRequestResponse
 // サーバ用
 struct PwHTTPServer
 {
-	typedef void (*RequestCallback)(PwRequestResponse *rr, void *param);
+	typedef void (*RequestCallback)(PwRequestResponse *rr, void *param, int reason);
 
 	virtual ~PwHTTPServer() {}
 	virtual int  start(int port) = 0;
 	virtual void stop()          = 0;
 
-	static PwHTTPServer* Factory(RequestCallback, void *param);
+	static PwHTTPServer* Factory(RequestCallback, void *param, int timeoutsec);
 };
 
 #endif

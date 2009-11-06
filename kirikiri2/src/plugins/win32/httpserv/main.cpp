@@ -1,6 +1,9 @@
 #include "ncbind.hpp"
 #include "serv.hpp"
 
+// メッセージコード
+#define	WM_HTTP_REQUEST	(WM_APP+8)	// リクエストされた
+
 class SimpleHTTPServerResponse
 {
 public:
@@ -186,11 +189,13 @@ public:
 		transfer_file = file;
 		if (status < 0) status = 200;
 	}
+	/*
 	// Layerデータ
 	void setTransferLayer(tTJSVariant var, const tjs_char* method) {
 		// まだ未実装
 		setError(501, TJS_W("not implemented"), TJS_W("layer transfer returned from"), method);
 	}
+	 */
 	// Arrayデータ
 	void setTransferObject(iTJSDispatch2 *obj, const tjs_char* method) {
 		if (!obj->IsInstanceOf(0, NULL, NULL, TJS_W("Array"), obj)) 
@@ -223,7 +228,7 @@ public:
 		ncbTypedefs::Tag<tTJSVariant> tag;
 		if      (dic.HasValue(TJS_W("text")))  setTransferText (dic.getStrValue(TJS_W("text")));
 		else if (dic.HasValue(TJS_W("file")))  setTransferFile (dic.getStrValue(TJS_W("file")));
-		else if (dic.HasValue(TJS_W("layer"))) setTransferLayer(dic.GetValue(TJS_W("layer"), tag), method);
+//		else if (dic.HasValue(TJS_W("layer"))) setTransferLayer(dic.GetValue(TJS_W("layer"), tag), method);
 		else if (dic.HasValue(TJS_W("binary"))) {
 			tTJSVariant v(dic.GetValue(TJS_W("binary"), tag));
 			switch (v.Type()) {
@@ -285,16 +290,55 @@ public:
 
 class SimpleHTTPServer
 {
+public:
+	typedef SimpleHTTPServer SelfClass;
 private:
 	iTJSDispatch2 *self;
 	PwHTTPServer *instance;
-	int port;
+	HWND message;
+	int port, timeout;
+
+	static ATOM WindowClass;
+	void createMessageWindow() {
+		HINSTANCE hinst = ::GetModuleHandle(NULL);
+		if (!WindowClass) {
+			WNDCLASSEXW wcex = {
+				/*size*/sizeof(WNDCLASSEX), /*style*/0, /*proc*/WndProc, /*extra*/0L,0L, /*hinst*/hinst,
+				/*icon*/NULL, /*cursor*/NULL, /*brush*/NULL, /*menu*/NULL,
+				/*class*/TJS_W("SimpleHTTPServer Message Window Class"), /*smicon*/NULL };
+			WindowClass = ::RegisterClassExW(&wcex);
+			if (!WindowClass)
+				TVPThrowExceptionMessage(TJS_W("register window class failed."));
+		}
+		if (!message) {
+			message = ::CreateWindowExW(0, (LPCWSTR)MAKELONG(WindowClass, 0), TJS_W("SimpleHHTPServer Message"),
+										0, 0, 0, 1, 1, HWND_MESSAGE, NULL, hinst, NULL);
+			if (!message)
+				TVPThrowExceptionMessage(TJS_W("create message window failed."));
+			::SetWindowLong(message, GWL_USERDATA, (LONG)this);
+		}
+	}
+	static LRESULT WINAPI WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+		if (msg == WM_HTTP_REQUEST) {
+			SelfClass *self = (SelfClass*)(::GetWindowLong(hwnd, GWL_USERDATA));
+			PwRequestResponse *rr = (PwRequestResponse*)lp;
+			if (self && rr) self->onRequest(rr);
+			if (rr) rr->done();
+			return 0;
+		}
+		return DefWindowProc(hwnd, msg, wp, lp);
+	}
+
 public:
-	SimpleHTTPServer(iTJSDispatch2 *obj, tjs_int n, tTJSVariant **p) : self(obj), instance(0), port(0) {
-		if (n > 0 && p[0]->Type() == tvtInteger) port = (int)p[0]->AsInteger();
-		instance = PwHTTPServer::Factory(&RequestCallback, self);
+	SimpleHTTPServer(iTJSDispatch2 *obj, tjs_int n, tTJSVariant **p) : self(obj), instance(0), message(0), port(0), timeout(10) {
+		if (n > 0 && p[0]->Type() == tvtInteger) port    = (int)p[0]->AsInteger();
+		if (n > 1 && p[0]->Type() == tvtInteger) timeout = (int)p[1]->AsInteger();
+		instance = PwHTTPServer::Factory(&RequestCallback, (void*)this, timeout);
+		createMessageWindow();
 	}
 	~SimpleHTTPServer() {
+		if (message) ::DestroyWindow(message);
+		message = NULL;
 		stop();
 		if (instance) delete instance;
 	}
@@ -302,23 +346,43 @@ public:
 		*instance = new SimpleHTTPServer(self, n, p);
 		return TJS_S_OK;
 	}
-	static void RequestCallback(PwRequestResponse *rr, void *param) {
-		iTJSDispatch2 *obj = (iTJSDispatch2*)param;
-		SimpleHTTPServerResponse res(obj, rr);
+
+	// 別スレッドから呼ばれるのでメッセージウィンドウにメッセージを投げてメインスレッド側で実行する
+	static void RequestCallback(PwRequestResponse *rr, void *param, int reason) {
+		SelfClass *self = (SelfClass*)param;
+		if (!self) return;
+		if (reason) {
+			HWND hwnd = self->message; // 読み込みのみなのでロックは不要…だと思う
+			if (hwnd) ::PostMessage(hwnd, WM_HTTP_REQUEST, 0, (LPARAM)rr);
+		} else {
+			// タイムアウト時処理（キャンセルをかける？）
+			// 現状では何もしない
+		}
+	}
+
+	// メッセージウィンドウからの呼び返しによってリクエストに対応
+	void onRequest(PwRequestResponse *rr) {
+		SimpleHTTPServerResponse res(self, rr);
 		res.request();
 		res.response();
 	}
 
-	int  getPort() const { return port; }
+	int  getPort()    const { return port; }
+	int  getTimeout() const { return timeout; }
 	int  start() { if (instance) port = instance->start(port); return port; }
 	void stop()  { if (instance)        instance->stop(); }
 
 };
 
+ATOM SimpleHTTPServer::WindowClass = 0;
+
+
 NCB_REGISTER_CLASS(SimpleHTTPServer)
 {
 	Factory(&Class::Factory);
-	Method(TJS_W("start"),     &Class::start);
-	Method(TJS_W("stop"),      &Class::stop);
+	Property(TJS_W("port"   ), &Class::getPort,    0);
+	Property(TJS_W("timeout"), &Class::getTimeout, 0);
+	Method(  TJS_W("start"), &Class::start);
+	Method(  TJS_W("stop" ), &Class::stop);
 }
 
