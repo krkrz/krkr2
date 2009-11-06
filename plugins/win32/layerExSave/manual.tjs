@@ -66,10 +66,10 @@ class Layer {
 	function saveLayerImagePng(filename, tags=void);
 
 	/**
-	 * PNG 形式画像をbase64エンコードで返す。注意点:データの保存が終わるまで処理が帰りません。
+	 * PNG 形式画像をoctetで返す。注意点:データの保存が終わるまで処理が帰りません。
 	 * @param compression_level 圧縮率(省略時1)
 	 */
-	function saveLayerImagePngBase64(compression_level);
+	function saveLayerImagePngOctet(compression_level = 1);
 
 	/**
 	 * レイヤイメージをクロップ（上下左右の余白透明部分を切り取る）したときの

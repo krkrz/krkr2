@@ -213,7 +213,7 @@ static void b64e(tjs_char *p, unsigned char const *r, long len) {
 	}
 }
 
-void CompressPNG::encodeBase64(iTJSDispatch2 *layer, int comp_lv, ttstr &ret)
+void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, int comp_lv, tTJSVariant &ret)
 {
 	BufRefT buffer;
 	long width, height, pitch;
@@ -226,19 +226,11 @@ void CompressPNG::encodeBase64(iTJSDispatch2 *layer, int comp_lv, ttstr &ret)
 		compress_first (chunk, width, height, PNGTYPE_RGBA8888);
 		compress_third (chunk, width, height, buffer, pitch);
 
-		tjs_char buf[1024*16+5];
-		unsigned char const * in   = &data[0];
-		long rest = size, step = 1024*16/4*3, len = 0;
-		while (rest > 0) {
-			len = rest > step ? step : rest;
-			b64e(buf, in, len);
-			ret  += buf;
-			in   += len;
-			rest -= len;
-		}
+		tTJSVariantOctet *oct = TJSAllocVariantOctet(&data[0], size);
+		ret = oct;
+		oct->Release();
 	}
 }
-
 
 //---------------------------------------------------------------------------
 // レイヤ拡張
@@ -265,20 +257,20 @@ static tjs_error TJS_INTF_METHOD saveLayerImagePngFunc(tTJSVariant *result,
 NCB_ATTACH_FUNCTION(saveLayerImagePng,       Layer, saveLayerImagePngFunc);
 
 /**
- * PNG 形式画像をbase64エンコードで返す。注意点:データの保存が終わるまで処理が帰りません。
+ * PNG 形式画像をoctetで返す。注意点:データの保存が終わるまで処理が帰りません。
  * @param compression_level 圧縮率
  */
-static tjs_error TJS_INTF_METHOD saveLayerImagePngBase64(tTJSVariant *result,
-														 tjs_int numparams,
-														 tTJSVariant **param,
-														 iTJSDispatch2 *objthis)
+static tjs_error TJS_INTF_METHOD saveLayerImagePngOctet(tTJSVariant *result,
+														tjs_int numparams,
+														tTJSVariant **param,
+														iTJSDispatch2 *objthis)
 {
 	int comp_lv = (numparams >= 1) ? (int)param[0]->AsInteger() : 1;
-	CompressPNG png;
-	ttstr enc;
-	png.encodeBase64(objthis, comp_lv, enc);
-	if (result) *result = enc;
+	if (result) {
+		CompressPNG png;
+		png.encodeToOctet(objthis, comp_lv, *result);
+	}
 	return TJS_S_OK;
 }
-NCB_ATTACH_FUNCTION(saveLayerImagePngBase64, Layer, saveLayerImagePngBase64);
+NCB_ATTACH_FUNCTION(saveLayerImagePngOctet, Layer, saveLayerImagePngOctet);
 
