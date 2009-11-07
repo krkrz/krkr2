@@ -1,4 +1,5 @@
 Plugins.link("httpserv.dll");
+Storages.addAutoPath("archive.xp3>");
 
 class MyHTTPServer extends SimpleHTTPServer {
 	var url, charset;
@@ -67,6 +68,7 @@ class MyHTTPServer extends SimpleHTTPServer {
 			text += @"<h2>GET Form</h2 ><form method=GET  ${textform}GET ></form>\n";
 			text += @"<h2>POST Form</h2><form method=POST ${textform}POST></form>\n";
 			text +=  "<ul>\n";
+			text += @"<li>request: ${elm.request}</li>";
 			text += @"<li>method: ${elm.method}</li>";
 			text +=  "<hr width=30% align=left>\n"+form if (form != "");
 			text +=  "<hr width=30% align=left>\n"+head if (head != "");
