@@ -97,6 +97,7 @@ public:
 		}
 		arg.SetValue(TJS_W("method"),  ConvertInputText(rr->getMethod(), CP_ACP));
 		arg.SetValue(TJS_W("request"), ConvertInputText(rr->getURI(),    CP_ACP));
+		arg.SetValue(TJS_W("path"),    ConvertInputText(rr->getPath(),   codepage));
 		arg.SetValue(TJS_W("host"),    ConvertInputText(rr->getHost(),   CP_ACP));
 		arg.SetValue(TJS_W("client"),  ConvertInputText(rr->getClient(), CP_ACP));
 		arg.SetValue(TJS_W("header"),  tTJSVariant(head, head));
@@ -315,7 +316,7 @@ private:
 	int port, timeout, codepage;
 
 	static ATOM WindowClass;
-	void createMessageWindow() {
+	HWND createMessageWindow() {
 		HINSTANCE hinst = ::GetModuleHandle(NULL);
 		if (!WindowClass) {
 			WNDCLASSEXW wcex = {
@@ -326,13 +327,11 @@ private:
 			if (!WindowClass)
 				TVPThrowExceptionMessage(TJS_W("register window class failed."));
 		}
-		if (!message) {
-			message = ::CreateWindowExW(0, (LPCWSTR)MAKELONG(WindowClass, 0), TJS_W("SimpleHHTPServer Message"),
-										0, 0, 0, 1, 1, HWND_MESSAGE, NULL, hinst, NULL);
-			if (!message)
-				TVPThrowExceptionMessage(TJS_W("create message window failed."));
-			::SetWindowLong(message, GWL_USERDATA, (LONG)this);
-		}
+		HWND hwnd = ::CreateWindowExW(0, (LPCWSTR)MAKELONG(WindowClass, 0), TJS_W("SimpleHHTPServer Message"),
+									  0, 0, 0, 1, 1, HWND_MESSAGE, NULL, hinst, NULL);
+		if (!hwnd) TVPThrowExceptionMessage(TJS_W("create message window failed."));
+		::SetWindowLong(hwnd, GWL_USERDATA, (LONG)this);
+		return hwnd;
 	}
 	static LRESULT WINAPI WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 		if (msg == WM_HTTP_REQUEST) {
@@ -351,11 +350,14 @@ public:
 		if (n > 0 && p[0]->Type() == tvtInteger) port     = (int)p[0]->AsInteger();
 		if (n > 1 && p[1]->Type() == tvtInteger) timeout  = (int)p[1]->AsInteger();
 		if (n > 2 && p[2]->Type() == tvtInteger) codepage = (int)p[2]->AsInteger();
-		instance = PwHTTPServer::Factory(&RequestCallback, (void*)this, timeout);
-		createMessageWindow();
+		message = createMessageWindow();
+		instance = PwHTTPServer::Factory(&RequestCallback, (void*)message, timeout);
 	}
 	~SimpleHTTPServer() {
-		if (message) ::DestroyWindow(message);
+		if (message) {
+			::SetWindowLong(message, GWL_USERDATA, 0);
+			::DestroyWindow(message);
+		}
 		message = NULL;
 		stop();
 		if (instance) delete instance;
@@ -366,16 +368,9 @@ public:
 	}
 
 	// 別スレッドから呼ばれるのでメッセージウィンドウにメッセージを投げてメインスレッド側で実行する
-	static void RequestCallback(PwRequestResponse *rr, void *param, int reason) {
-		SelfClass *self = (SelfClass*)param;
-		if (!self) return;
-		if (reason) {
-			HWND hwnd = self->message; // 読み込みのみなのでロックは不要…だと思う
-			if (hwnd) ::PostMessage(hwnd, WM_HTTP_REQUEST, 0, (LPARAM)rr);
-		} else {
-			// タイムアウト時処理（キャンセルをかける？）
-			// 現状では何もしない
-		}
+	static void RequestCallback(PwRequestResponse *rr, void *param) {
+		HWND hwnd = (HWND)param;
+		if (hwnd) ::PostMessage(hwnd, WM_HTTP_REQUEST, 0, (LPARAM)rr);
 	}
 
 	// メッセージウィンドウからの呼び返しによってリクエストに対応
