@@ -66,10 +66,10 @@ struct PwRequestResponseImpl : public PwRequestResponse
 		SocketAddress address(request.clientAddress());
 		client = address.toString();
 	}
-	char const *getMethod() const { return method.c_str(); }
-	char const *getURI()    const { return uri.c_str(); }
-	char const *getHost()   const { return host.c_str(); }
-	char const *getClient() const { return client.c_str(); }
+	const String& getMethod() const { return method; }
+	const String& getURI()    const { return uri;    }
+	const String& getHost()   const { return host;   }
+	const String& getClient() const { return client; }
 
 	int  getHeader(NameValueCallback cb, void *param) const {
 		NameValueCollection::ConstIterator it = request.begin();

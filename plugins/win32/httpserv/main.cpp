@@ -57,7 +57,7 @@ private:
 		if (wk != NULL && wk->dic->IsValid()) {
 			int cp = wk->codepage;
 			ttstr vkey(ConvertInputText(key, cp)), vval(ConvertInputText(value, cp));
-			wk->dic->SetValue(vkey.c_str(), vval);
+			if (vkey.length() > 0) wk->dic->SetValue(vkey.c_str(), vval);
 		}
 	}
 
@@ -95,10 +95,10 @@ public:
 			nvcbwk.dic = &form;
 			rr->getFormData(NameValueCallback, (void*)&nvcbwk);
 		}
-		arg.SetValue(TJS_W("method"),  rr->getMethod());
-		arg.SetValue(TJS_W("request"), rr->getURI());
-		arg.SetValue(TJS_W("host"),    rr->getHost());
-		arg.SetValue(TJS_W("client"),  rr->getClient());
+		arg.SetValue(TJS_W("method"),  ConvertInputText(rr->getMethod(), CP_ACP));
+		arg.SetValue(TJS_W("request"), ConvertInputText(rr->getURI(),    CP_ACP));
+		arg.SetValue(TJS_W("host"),    ConvertInputText(rr->getHost(),   CP_ACP));
+		arg.SetValue(TJS_W("client"),  ConvertInputText(rr->getClient(), CP_ACP));
 		arg.SetValue(TJS_W("header"),  tTJSVariant(head, head));
 		arg.SetValue(TJS_W("form"),    tTJSVariant(form, form));
 	}
@@ -113,6 +113,10 @@ public:
 			ttstr fname = TVPGetPlacedPath(transfer_file);
 			if (fname.length() > 0 && TVPIsExistentStorage(fname)) {
 				if (fname.length() > 0 && !wcschr(fname.c_str(), '>')) {
+					// 通常のファイルはローカルパスで直接渡す
+					TVPGetLocalName(fname);
+					transfer_file = fname;
+				} else {
 					// アーカイブ内の場合はオンメモリでバイナリ転送に変更する
 					IStream *file = TVPCreateIStream(fname, TJS_BS_READ);
 					if (!file) setError(404, TJS_W("file not found"), transfer_file.c_str());
@@ -134,10 +138,6 @@ public:
 						}
 						if (file) file->Release();
 					}
-				} else {
-					// 通常のファイルはローカルパスで直接渡す
-					TVPGetLocalName(fname);
-					transfer_file = fname;
 				}
 			} else {
 				setError(404, TJS_W("file not found"), transfer_file.c_str());
