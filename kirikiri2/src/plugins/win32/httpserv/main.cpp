@@ -4,6 +4,10 @@
 // メッセージコード
 #define	WM_HTTP_REQUEST	(WM_APP+8)	// リクエストされた
 
+#define CP_SJIS 932
+#define CP_EUC  20932 //51932
+#define CP_JIS  50220
+
 class SimpleHTTPServerResponse
 {
 public:
@@ -18,7 +22,7 @@ private:
 	int   status, transfer_type, codepage;
 	PwSize           transfer_binsize;
 	tjs_uint8 const *transfer_binptr;
-	tjs_uint8       *transfer_binptralloced;
+	tjs_uint8       *transfer_allocated;
 	ttstr content_type, transfer_text, transfer_file;
 
 	ncbDictionaryAccessor arg;
@@ -44,27 +48,53 @@ private:
 		return false;
 	}
 
+	struct NameValueCBWork {
+		int codepage;
+		ncbPropAccessor *dic;
+	};
 	static void NameValueCallback(const PwStr &key, const PwStr &value, void *data) {
-		ncbPropAccessor *dic = (ncbPropAccessor*)data;
-		if (dic != NULL && dic->IsValid()) {
-			ttstr vkey(key.c_str()), vval(value.c_str());
-			dic->SetValue(vkey.c_str(), vval);
+		NameValueCBWork *wk = (NameValueCBWork*)data;
+		if (wk != NULL && wk->dic->IsValid()) {
+			int cp = wk->codepage;
+			ttstr vkey(ConvertInputText(key, cp)), vval(ConvertInputText(value, cp));
+			wk->dic->SetValue(vkey.c_str(), vval);
 		}
+	}
+
+	static PwSize ConvertOutputText(ttstr const &text, int cp, tjs_uint8* &mem) {
+		int rlen = text.length();
+		PwSize wlen = ::WideCharToMultiByte(cp, 0, text.c_str(), rlen, NULL,       0,    NULL, NULL);
+		/**/   mem  = new tjs_uint8[wlen + 1];
+		/**/   wlen = ::WideCharToMultiByte(cp, 0, text.c_str(), rlen, (LPSTR)mem, wlen, NULL, NULL);
+		mem[wlen] = 0;
+		return wlen;
+	}
+	static ttstr ConvertInputText(PwStr const &text, int cp) {
+		int rlen = text.length();
+		PwSize wlen = ::MultiByteToWideChar(cp, 0, text.c_str(), rlen, NULL,      0);
+		tjs_char* p = new tjs_char[wlen + 1];
+		/**/   wlen = ::MultiByteToWideChar(cp, 0, text.c_str(), rlen, (LPWSTR)p, wlen);
+		p[wlen] = 0;
+		ttstr ret(p);
+		delete [] p;
+		return ret;
 	}
 
 public:
 	~SimpleHTTPServerResponse() {
-		if (transfer_binptralloced) delete [] transfer_binptralloced;
+		if (transfer_allocated) delete [] transfer_allocated;
 	}
-	SimpleHTTPServerResponse(iTJSDispatch2 *obj, PwRequestResponse *_rr) :
-	owner(obj), rr(_rr), status(0), transfer_type(UNKNOWN), codepage(CP_UTF8),
-	transfer_binsize(0), transfer_binptr(0), transfer_binptralloced(0) {
+	SimpleHTTPServerResponse(iTJSDispatch2 *obj, PwRequestResponse *_rr, int cp) :
+	owner(obj), rr(_rr), status(0), transfer_type(UNKNOWN), codepage(cp),
+	transfer_binsize(0), transfer_binptr(0), transfer_allocated(0) {
 		ncbDictionaryAccessor head;
 		ncbDictionaryAccessor form;
-
-		rr->getHeader  (NameValueCallback, (void*)&head);
-		rr->getFormData(NameValueCallback, (void*)&form);
-
+		{
+			NameValueCBWork nvcbwk = { codepage, &head };
+			rr->getHeader  (NameValueCallback, (void*)&nvcbwk);
+			nvcbwk.dic = &form;
+			rr->getFormData(NameValueCallback, (void*)&nvcbwk);
+		}
 		arg.SetValue(TJS_W("method"),  rr->getMethod());
 		arg.SetValue(TJS_W("request"), rr->getURI());
 		arg.SetValue(TJS_W("host"),    rr->getHost());
@@ -87,19 +117,19 @@ public:
 					IStream *file = TVPCreateIStream(fname, TJS_BS_READ);
 					if (!file) setError(404, TJS_W("file not found"), transfer_file.c_str());
 					else {
-						transfer_binptralloced = 0;
+						transfer_allocated = 0;
 						try {
 							STATSTG stat;
 							file->Stat(&stat, STATFLAG_NONAME);
 							PwSize size = (PwSize)stat.cbSize.QuadPart; // XXX 巨大ファイルは無理
 							tjs_uint8 *p = new tjs_uint8[size];
 							file->Read(p, size, &transfer_binsize);
-							transfer_binptr = transfer_binptralloced = p;
+							transfer_binptr = transfer_allocated = p;
 							transfer_type = BINARY;
 						} catch (...) {
 							if (file) file->Release();
-							if (transfer_binptralloced) delete [] transfer_binptralloced;
-							transfer_binptralloced = 0;
+							if (transfer_allocated) delete [] transfer_allocated;
+							transfer_allocated = 0;
 							throw;
 						}
 						if (file) file->Release();
@@ -129,13 +159,13 @@ public:
 				cset.ToLowerCase();
 				// 投げやりな charset -> codepage 判定
 				if      (cset.StartsWith(TJS_W("utf-8"      ))) codepage = CP_UTF8;
-				else if (cset.StartsWith(TJS_W("shift"      ))) codepage = 932;
-				else if (cset.StartsWith(TJS_W("sjis"       ))) codepage = 932;
-				else if (cset.StartsWith(TJS_W("x-sjis"     ))) codepage = 932;
-				else if (cset.StartsWith(TJS_W("windows-31j"))) codepage = 932;
-				else if (cset.StartsWith(TJS_W("euc"        ))) codepage = 51932;
-				else if (cset.StartsWith(TJS_W("iso-2022-jp"))) codepage = 50220;
-				else if (cset.StartsWith(TJS_W("jis"        ))) codepage = 50220;
+				else if (cset.StartsWith(TJS_W("shift"      ))) codepage = CP_SJIS;
+				else if (cset.StartsWith(TJS_W("sjis"       ))) codepage = CP_SJIS;
+				else if (cset.StartsWith(TJS_W("x-sjis"     ))) codepage = CP_SJIS;
+				else if (cset.StartsWith(TJS_W("windows-31j"))) codepage = CP_SJIS;
+				else if (cset.StartsWith(TJS_W("euc"        ))) codepage = CP_EUC;
+				else if (cset.StartsWith(TJS_W("iso-2022-jp"))) codepage = CP_JIS;
+				else if (cset.StartsWith(TJS_W("jis"        ))) codepage = CP_JIS;
 			}
 		}
 		// 転送処理
@@ -149,14 +179,8 @@ public:
 			}
 			break;
 		case TEXT:
-			{
-				int rlen = transfer_text.length();
-				transfer_binsize = ::WideCharToMultiByte(codepage, 0, transfer_text.c_str(), rlen, NULL, 0, NULL, NULL);
-				transfer_binptralloced  = new tjs_uint8[transfer_binsize + 1];
-				transfer_binsize = ::WideCharToMultiByte(codepage, 0, transfer_text.c_str(), rlen, (LPSTR)transfer_binptralloced, transfer_binsize, NULL, NULL);
-				transfer_binptralloced[transfer_binsize] = 0;
-				transfer_binptr = transfer_binptralloced;
-			}
+			transfer_binsize = ConvertOutputText(transfer_text, codepage, transfer_allocated);
+			transfer_binptr = transfer_allocated;
 			/* NOT BREAK */
 		case BINARY:
 			rr->sendBuffer(transfer_binptr, transfer_binsize);
@@ -189,13 +213,6 @@ public:
 		transfer_file = file;
 		if (status < 0) status = 200;
 	}
-	/*
-	// Layerデータ
-	void setTransferLayer(tTJSVariant var, const tjs_char* method) {
-		// まだ未実装
-		setError(501, TJS_W("not implemented"), TJS_W("layer transfer returned from"), method);
-	}
-	 */
 	// Arrayデータ
 	void setTransferObject(iTJSDispatch2 *obj, const tjs_char* method) {
 		if (!obj->IsInstanceOf(0, NULL, NULL, TJS_W("Array"), obj)) 
@@ -204,7 +221,7 @@ public:
 			ncbPropAccessor arr(obj);
 			transfer_binsize = arr.GetArrayCount();
 			tjs_uint8 *p  = new tjs_uint8[transfer_binsize];
-			transfer_binptr = transfer_binptralloced = p;
+			transfer_binptr = transfer_allocated = p;
 			for (PwSize i = 0; i < transfer_binsize; i++) {
 				p[i] = arr.getIntValue(i) & 0xFF;
 			}
@@ -228,7 +245,6 @@ public:
 		ncbTypedefs::Tag<tTJSVariant> tag;
 		if      (dic.HasValue(TJS_W("text")))  setTransferText (dic.getStrValue(TJS_W("text")));
 		else if (dic.HasValue(TJS_W("file")))  setTransferFile (dic.getStrValue(TJS_W("file")));
-//		else if (dic.HasValue(TJS_W("layer"))) setTransferLayer(dic.GetValue(TJS_W("layer"), tag), method);
 		else if (dic.HasValue(TJS_W("binary"))) {
 			tTJSVariant v(dic.GetValue(TJS_W("binary"), tag));
 			switch (v.Type()) {
@@ -296,7 +312,7 @@ private:
 	iTJSDispatch2 *self;
 	PwHTTPServer *instance;
 	HWND message;
-	int port, timeout;
+	int port, timeout, codepage;
 
 	static ATOM WindowClass;
 	void createMessageWindow() {
@@ -330,9 +346,11 @@ private:
 	}
 
 public:
-	SimpleHTTPServer(iTJSDispatch2 *obj, tjs_int n, tTJSVariant **p) : self(obj), instance(0), message(0), port(0), timeout(10) {
-		if (n > 0 && p[0]->Type() == tvtInteger) port    = (int)p[0]->AsInteger();
-		if (n > 1 && p[0]->Type() == tvtInteger) timeout = (int)p[1]->AsInteger();
+	SimpleHTTPServer(iTJSDispatch2 *obj, tjs_int n, tTJSVariant **p) :
+	self(obj), instance(0), message(0), port(0), timeout(10), codepage(CP_UTF8) {
+		if (n > 0 && p[0]->Type() == tvtInteger) port     = (int)p[0]->AsInteger();
+		if (n > 1 && p[1]->Type() == tvtInteger) timeout  = (int)p[1]->AsInteger();
+		if (n > 2 && p[2]->Type() == tvtInteger) codepage = (int)p[2]->AsInteger();
 		instance = PwHTTPServer::Factory(&RequestCallback, (void*)this, timeout);
 		createMessageWindow();
 	}
@@ -362,7 +380,7 @@ public:
 
 	// メッセージウィンドウからの呼び返しによってリクエストに対応
 	void onRequest(PwRequestResponse *rr) {
-		SimpleHTTPServerResponse res(self, rr);
+		SimpleHTTPServerResponse res(self, rr, codepage);
 		res.request();
 		res.response();
 	}
@@ -372,6 +390,8 @@ public:
 	int  start() { if (instance) port = instance->start(port); return port; }
 	void stop()  { if (instance)        instance->stop(); }
 
+	int  getCodePage() const { return codepage;      }
+	void setCodePage(int cp) {        codepage = cp; }
 };
 
 ATOM SimpleHTTPServer::WindowClass = 0;
@@ -380,9 +400,17 @@ ATOM SimpleHTTPServer::WindowClass = 0;
 NCB_REGISTER_CLASS(SimpleHTTPServer)
 {
 	Factory(&Class::Factory);
-	Property(TJS_W("port"   ), &Class::getPort,    0);
-	Property(TJS_W("timeout"), &Class::getTimeout, 0);
+	Property(TJS_W("port"   ),  &Class::getPort,     0);
+	Property(TJS_W("timeout"),  &Class::getTimeout,  0);
+	Property(TJS_W("codepage"), &Class::getCodePage, &Class::setCodePage);
 	Method(  TJS_W("start"), &Class::start);
 	Method(  TJS_W("stop" ), &Class::stop);
+
+	Variant(TJS_W("cpACP"),  (tjs_int)CP_ACP);
+	Variant(TJS_W("cpOEM"),  (tjs_int)CP_OEMCP);
+	Variant(TJS_W("cpUTF8"), (tjs_int)CP_UTF8);
+	Variant(TJS_W("cpSJIS"), (tjs_int)CP_SJIS);
+	Variant(TJS_W("cpEUC"),  (tjs_int)CP_EUC );
+	Variant(TJS_W("cpJIS"),  (tjs_int)CP_JIS );
 }
 

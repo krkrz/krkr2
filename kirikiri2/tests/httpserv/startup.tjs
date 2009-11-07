@@ -1,28 +1,30 @@
 Plugins.link("httpserv.dll");
 
 class MyHTTPServer extends SimpleHTTPServer {
-	var url, delayexec;
-	function MyHTTPServer() {
-		super.SimpleHTTPServer(...);
-		delayexec =new Timer(this, "openURL");
-		with (delayexec) {
-			.capacity = 1;
-			.interval = 300;
+	var url, charset;
+	function MyHTTPServer(cset) {
+		charset = cset;
+		var cp;
+		with (global.SimpleHTTPServer) switch (cset) {
+		case "utf-8":       cp = .cpUTF8; break;
+		case "Shift_JIS":   cp = .cpSJIS; break;
+		case "euc-jp":      cp = .cpEUC;  break;
+		case "iso-2022-jp": cp = .cpJIS;  break;
+		default: throw new Exception("unknown codepage:" + cset);
 		}
+		super.SimpleHTTPServer();
+		codepage = cp;
 	}
 	function finalize() {
-		invalidate delayexec if (delayexec);
 		super.finalize(...);
 	}
 	function start() {
 		var port = super.start();
 		url = @"http://127.0.0.1:${port}/";
-		delayexec.enabled = true;
 		return port;
 	}
 	function openURL() {
 		System.shellExecute(url);
-		delayexec.enabled = false;
 	}
 	var ext2mime = %[
 		".jpeg" => "image/jpeg",
@@ -42,33 +44,23 @@ class MyHTTPServer extends SimpleHTTPServer {
 	}
 	function onRequest(elm) {
 		var ret = %[
-			"content_type" => "text/html; charset=utf-8",
+			"content_type" => "text/html; charset="+charset,
 			];
 		var path = elm.request, ques = path.indexOf("?"), param;
 		if (ques >= 0) {
 			param = path.substr(ques+1);
 			path  = path.substr(0, ques);
 		}
-		var title = "SimpleHTTPServer test";
+		var title = @"SimpleHTTPServer test [${charset}]";
 		switch (path) {
-		case "/encode":
-			var type = "text/html";
-			if (param != "") type +="; charset="+param;
-			ret.content_type = type;
-			title = "エンコードのテスト";
-			//break;
 		case "/":
-			var textform = "action=.><input type=text name=text><input type=submit value=";
+			var textform = @"action=${path}><input type=text name=text><input type=submit value=";
 			var form = showDictionary("form",   elm.form);
 			var head = showDictionary("header", elm.header);
 			var text = @"<html><head><title>${title}</title></head>\n";
 			text += @"<body><h1>${title}</h1>\n";
 			text +=  "<h2>Test</h2>";
 			text +=  "<ul>\n";
-			text +=  "<li><a href=encode?utf-8>encode utf-8</a></li>\n";
-			text +=  "<li><a href=encode?iso-2022-jp>encode iso-2022-jp</a></li>\n";
-			text +=  "<li><a href=encode?euc-jp>encode euc-jp</a></li>\n";
-			text +=  "<li><a href=encode?sjis>encode sjis</a></li>\n";
 			text +=  "<li><a href=file.html>file</a></li>\n";
 			text +=  "<li><a href=archive.html>in archive</a></li>\n";
 			text +=  "</ul>\n";
@@ -82,7 +74,7 @@ class MyHTTPServer extends SimpleHTTPServer {
 			ret.text = text;
 			break;
 		default:
-			Debug.message(path);
+			dm(path);
 			if (path.charAt(0) == "/") path = path.substr(1);
 			if (Storages.isExistentStorage(path)) {
 				ret.file = path;
@@ -96,14 +88,42 @@ class MyHTTPServer extends SimpleHTTPServer {
 		}
 		return ret;
 	}
+	function dm(*) {
+		Debug.message(charset, *);
+	}
 }
 
-var serv = new MyHTTPServer();
-serv.start();
-//Debug.controller.visible = true;
+class DummyWindow extends Window {
+	var csets = [ "utf-8", "Shift_JIS", "euc-jp", "iso-2022-jp" ];
+	var servs = [];
+	var delayexec, timercnt;
+	function DummyWindow() {
+		super.Window();
+		for (var i = 0; i < csets.count; i++) {
+			var serv = new MyHTTPServer(csets[i]);
+			serv.start();
+			servs.add(serv);
+			add(serv);
+			var mi = new MenuItem(this, csets[i]);
+			mi.onClick = serv.openURL;
+			add(mi);
+			menu.add(mi);
+		}
+		caption = "Simple HTTP Servers";
+		innerSunken = false;
+		innerHeight = 0;
+		visible = true;
+	}
+	function onCloseQuery() { visible = false; super.onCloseQuery(true); }
+	function finalize() {
+		invalidate delayexec if (delayexec);
+		for (var i = 0; i < servs.count; i++) {
+			var serv = servs[i];
+			serv.stop();
+		}
+		super.finalize(...);
+	}
+}
 Debug.console.visible = true;
-
-System.inform("wait");
-
-serv.stop();
-invalidate serv;
+//Debug.controller.visible = true;
+var win = new DummyWindow();
