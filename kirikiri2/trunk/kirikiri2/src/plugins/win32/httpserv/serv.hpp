@@ -20,10 +20,10 @@ struct PwRequestResponse
 	// 各種データを取得
 	virtual int  getHeader  (NameValueCallback, void *param) const = 0;
 	virtual int  getFormData(NameValueCallback, void *param) const = 0;
-	virtual char const *getMethod() const = 0;
-	virtual char const *getURI()    const = 0;
-	virtual char const *getHost()   const = 0;
-	virtual char const *getClient() const = 0;
+	virtual const String& getMethod() const = 0;
+	virtual const String& getURI()    const = 0;
+	virtual const String& getHost()   const = 0;
+	virtual const String& getClient() const = 0;
 
 	// 変換ユーティリティ
 	virtual const String getCharset(char const *mediatype) = 0;
