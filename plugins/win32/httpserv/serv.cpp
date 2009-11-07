@@ -12,10 +12,8 @@
 #include "Poco/Net/MediaType.h"
 #include "Poco/Net/MessageHeader.h"
 #include "Poco/Net/ServerSocket.h"
-#include "Poco/CountingStream.h"
-#include "Poco/NullStream.h"
-#include "Poco/StreamCopier.h"
 #include "Poco/Exception.h"
+#include "Poco/URI.h"
 #include "Poco/Event.h"
 #include "Poco/Mutex.h"
 #include "Poco/Thread.h"
@@ -34,6 +32,7 @@ using Poco::Net::MessageHeader;
 using Poco::Net::MediaType;
 using Poco::Net::HTMLForm;
 using Poco::Net::NameValueCollection;
+using Poco::URI;
 using Poco::Event;
 using Poco::FastMutex;
 using Poco::Thread;
@@ -42,7 +41,7 @@ struct PwRequestCallback {
 	typedef PwHTTPServer::RequestCallback Callback;
 	PwRequestCallback(Callback _cb, void *_param)   : cb(   _cb), param(   _param) {}
 	PwRequestCallback(const PwRequestCallback &src) : cb(src.cb), param(src.param) {}
-	void invoke(PwRequestResponse *rr, int reason) const { cb(rr, param, reason); }
+	void invoke(PwRequestResponse *rr) const { cb(rr, param); }
 private:
 	Callback cb;
 	void *param;
@@ -57,6 +56,9 @@ struct PwRequestResponseImpl : public PwRequestResponse
 		response.setKeepAlive(false);
 		method = request.getMethod();
 		uri    = request.getURI();
+
+		URI      uridec(uri);
+		path   = uridec.getPath();
 		try {
 			host = request.getHost();
 		} catch (Poco::Exception) {
@@ -68,6 +70,7 @@ struct PwRequestResponseImpl : public PwRequestResponse
 	}
 	const String& getMethod() const { return method; }
 	const String& getURI()    const { return uri;    }
+	const String& getPath()   const { return path;   }
 	const String& getHost()   const { return host;   }
 	const String& getClient() const { return client; }
 
@@ -129,7 +132,7 @@ private:
 	Event event;
 	HTTPServerRequest  &request;
 	HTTPServerResponse &response;
-	String type, method, uri, host, client;
+	String type, method, uri, path, host, client;
 
 	FastMutex lockAvail;
 	bool avail() {
@@ -147,11 +150,11 @@ struct PwRequestHandler : public HTTPRequestHandler
 	PwRequestHandler(PwRequestCallback const &_cb, int to) : timeout(to), cb(_cb) {}
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) {
 		PwRequestResponseImpl *rr = new PwRequestResponseImpl(request, response);
-		cb.invoke(rr, 1);
+		cb.invoke(rr);
 		// 完了するまで待つ
 		if (rr->wait(timeout)) {
 			// タイムアウトした
-			cb.invoke(rr, 0);
+			(void)0; // とりあえず何もしない
 		}
 	}
 private:

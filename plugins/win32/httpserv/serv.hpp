@@ -22,6 +22,7 @@ struct PwRequestResponse
 	virtual int  getFormData(NameValueCallback, void *param) const = 0;
 	virtual const String& getMethod() const = 0;
 	virtual const String& getURI()    const = 0;
+	virtual const String& getPath()   const = 0;
 	virtual const String& getHost()   const = 0;
 	virtual const String& getClient() const = 0;
 
@@ -41,7 +42,7 @@ struct PwRequestResponse
 // サーバ用
 struct PwHTTPServer
 {
-	typedef void (*RequestCallback)(PwRequestResponse *rr, void *param, int reason);
+	typedef void (*RequestCallback)(PwRequestResponse *rr, void *param);
 
 	virtual ~PwHTTPServer() {}
 	virtual int  start(int port) = 0;
