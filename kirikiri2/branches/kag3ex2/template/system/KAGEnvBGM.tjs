@@ -75,6 +75,7 @@ class KAGEnvBgm {
 			if (elm.noflag === void) {
 				kag.sflags["bgm_" + (param.toUpperCase())] = true;
 			}
+			doflag = true;
         }
     }
 
@@ -96,6 +97,7 @@ class KAGEnvBgm {
 			time = +param;
 		}
 		stop = time;
+		doflag = true;
     }
 
     /**
@@ -107,6 +109,7 @@ class KAGEnvBgm {
 			resume = void;
 			pause = +param;
 			paused = true;
+			doflag = true;
 		}
     }
 
@@ -118,6 +121,7 @@ class KAGEnvBgm {
 			pause = void;
 			resume = true;
 			paused = false;
+			doflag = true;
 		}
     }
 
@@ -192,13 +196,11 @@ class KAGEnvBgm {
         if ((func = bgmcommands[cmd]) !== void) {
             if (func != null) {
                 func(param, elm);
-                doflag = true;
             }
             return true;
         }
         // 再生コマンドとみなす
 		setPlay(cmd, elm);
-        doflag = true;
         return true;
     }
 
@@ -208,12 +210,12 @@ class KAGEnvBgm {
      */
     function tagfunc(elm) {
         //dm("BGM 用ファンクション呼び出し!");
-        doflag = false;
+		doflag = false;
         wait = void;
         waitFade = void;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
-        if (!doflag && elm.tagname != "bgm") {
+		if (!doflag && elm.tagname != "bgm") {
 			setPlay(elm.tagname, elm);
         }
 		sync();

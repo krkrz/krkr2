@@ -84,7 +84,10 @@ class LinkButtonLayer extends ButtonLayer
 		onenter = src.onenter;
 		onleave = src.onleave;
 		hint = src.hint;
-        eventTransparent = src.eventTransparent;
+		_enabled          = src._enabled;
+		_focusable        = src._focusable;
+		_eventTransparent = src._eventTransparent;
+		internalUpdateProperty();
 	}
 
 	function internalUpdateProperty() {

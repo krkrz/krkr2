@@ -382,9 +382,9 @@ class ButtonLayer extends AnimKAGLayer
 
 	function onMouseUp()
 	{
-        if (!isvalid this) return;
 		// onMouseUp イベントハンドラ
-		if(Butt_mouseDown) onExecute(...);
+		if ( isvalid this && Butt_mouseDown) onExecute(...);
+		if (!isvalid this) return;
 		Butt_mouseDown = false;
 		update();
 		super.onMouseUp(...);
@@ -610,5 +610,4 @@ class ButtonLayer extends AnimKAGLayer
 		getter { return Butt_showFocusImage; }
 	}
 }
-
 

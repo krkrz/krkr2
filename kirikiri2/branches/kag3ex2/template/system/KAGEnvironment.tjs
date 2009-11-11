@@ -503,7 +503,6 @@ class KAGEnvironment extends KAGEnvImage {
 					ses[i].setStop();
 					ses[i].sync();
 				}
-				ses[i].name  = void;
 				ses[i].count = 0;
 			}
         }
@@ -1835,9 +1834,6 @@ class KAGEnvironment extends KAGEnvImage {
      */
     function getSe(id) {
 		ses[id].count = seCount++;
-		if (ses[id].name === void) {
-			ses[id].name = (string)id;
-		}
 		return ses[id];
     }
 
@@ -1888,7 +1884,6 @@ class KAGEnvironment extends KAGEnvImage {
         }
         // ‚İ‚Â‚©‚ç‚È‚¢‚Ì‚Å‚ ‚¢‚Ä‚¢‚é”Ô†‚ğ•Ô‚·
 		var ret = getSeId();
-		ses[ret].name = name;
 		return ret;
     }
     

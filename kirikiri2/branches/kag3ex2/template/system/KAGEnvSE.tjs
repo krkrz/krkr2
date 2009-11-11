@@ -71,6 +71,7 @@ class KAGEnvSE {
 				name = void;
 				loop = void;
 			}
+			doflag = true;
 		}
     }
 
@@ -90,6 +91,7 @@ class KAGEnvSE {
 			time = +param;
 		}
 		stop = time;
+		doflag = true;
     }
 
     /**
@@ -157,13 +159,11 @@ class KAGEnvSE {
         if ((func = secommands[cmd]) !== void) {
             if (func != null) {
                 func(param, elm);
-                doflag = true;
             }
             return true;
         }
         // çƒê∂ÉRÉ}ÉìÉhÇ∆Ç›Ç»Ç∑
 		setPlay(cmd, elm);
-        doflag = true;
         return true;
     }
 
@@ -177,7 +177,7 @@ class KAGEnvSE {
         waitFade = void;
 		doflag = false;
 		foreach(elm, doCommand);
-        if (!doflag && elm.tagname != "se") {
+		if (!doflag && elm.tagname != "se" && elm.tagname != "allse") {
 			setPlay(elm.tagname, elm);
         }
 		sync();

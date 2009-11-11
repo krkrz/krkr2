@@ -3,7 +3,7 @@ class ParticleController extends GenericFlip, Layer {
 	var FLIP  = global.GenericFlip;
 	var SUPER = global.Layer;
 
-	var file, config, index, units, stamp, rand;
+	var file, config, index, units, stamp, rand, once;
 
 	function ParticleController(win) {
 		FLIP.GenericFlip(win);
@@ -64,6 +64,7 @@ class ParticleController extends GenericFlip, Layer {
 
 			term  = typeof .term == "Object" ? .term : (function { return false; });
 		}
+		once = false;
 		resetTime();
 	}
 
@@ -81,6 +82,8 @@ class ParticleController extends GenericFlip, Layer {
 		}
 		switch (typeof prm) {
 		case "Object":
+			if (prm instanceof "Function") return (prm incontextof this);
+			throw new Exception("不正なGenerator");
 		case "String":
 			if (prm.indexOf("/") >= 0) {
 				var div = prm.split("/");
@@ -102,6 +105,11 @@ class ParticleController extends GenericFlip, Layer {
 	}
 	var lastGenTime, underGenCount;
 	function getCreateCount(time) {
+		if (genratio < 0) {
+			var gen = once;
+			once = true;
+			return !gen ? -genratio : 0;
+		}
 		var diff = time - lastGenTime;
 		lastGenTime = time;
 		if (diff < 0 || !genratio) return 0;
@@ -119,8 +127,9 @@ class ParticleController extends GenericFlip, Layer {
 			var now = tick - basetime;
 			var cc = getCreateCount(now);
 			if (cc > 0) {
+				var step = (genratio > 0) ? 1000.0 / genratio : 0;
 				for (var i = 0; i < cc; i++)
-					createUnit(now - (int)(i * 1000 / genratio));
+					createUnit(now - (int)(i * step));
 			}
 			var reset = false;
 			var sw = stamp.width, sh = stamp.height;
@@ -145,7 +154,7 @@ class ParticleController extends GenericFlip, Layer {
 	}
 	function createUnit(time) {
 		var pos = genpos();
-		var sp  = speed() / 1000;
+		var sp  = speed(pos) / 1000;
 		var vib = vibsz();
 		var rad = (Math.PI * angle()) / 180.0;
 		/**/rad += Math.atan2(pos.y - cty, pos.x - ctx) if (ctx !== void && cty !== void);
@@ -211,7 +220,7 @@ class ParticleController extends GenericFlip, Layer {
 			(Dictionary.assign incontextof config)(all[0], true);
 			(Dictionary.assign incontextof config)(all[index],  false) if (index > 0);
 		} catch(e) {
-			throw new Exception("定義ファイル${file}の読み込みに失敗しました:"+e.message);
+			throw new Exception(@"定義ファイル${file}の読み込みに失敗しました:"+e.message);
 		}
 		init();
 		flipSetOptions(elm);
@@ -224,11 +233,13 @@ class ParticleController extends GenericFlip, Layer {
 			.genratio = genratio;
 			.units = [];
 			.units.assignStruct(units);
+			.once = once;
 		}
 	}
 	function flipRestore(dic) {
 		if (dic.file != "") {
 			flipStart(dic.file, %[ ptidx:dic.index ]);
+			once     = dic.once     if (dic.once     !== void);
 			genratio = dic.genratio if (dic.genratio !== void);
 			basetime -= dic.tick;
 			units.assignStruct(dic.units);
@@ -236,6 +247,7 @@ class ParticleController extends GenericFlip, Layer {
 	}
 	function flipSetOptions(elm) {
 		genratio = +elm.genratio if (elm.genratio !== void);
+		once = false;
 	}
 }
 

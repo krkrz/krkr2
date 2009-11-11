@@ -3,7 +3,6 @@
 ; ワールド拡張の特殊環境は解除しておく
 [linemode]
 [csysbutton]
-[autolabelmode mode=false]
 
 [layopt layer=message0 visible]
 KAGEX のレイヤ拡張機能のサンプルです。レイヤに対して回転・拡大縮小の制御ができます。

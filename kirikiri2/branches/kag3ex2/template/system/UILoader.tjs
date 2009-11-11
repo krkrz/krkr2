@@ -310,22 +310,17 @@ function uiloadPartExtract(dic, part)
 	var result = [], append = [];
 	for (var i = 0; i < part.count; i++) {
 		var name = part[i];
-		result.add(name.trim()) if (typeof name == "String" && name != "");
-	}
-	part.assign(result);
-	for (var i = 0; i < part.count; i++) {
-		var item = (part[i] != "") ? dic[part[i]] : void;
-		if (item === void) {
-			result.remove(part[i], true);
-		} else if (item !== void && item.class == "part") {
-			result.remove(part[i], true);
-			append.add(uiloadPartExtract(dic, item.part));
+		if (typeof name == "String" && name != "") {
+			name = name.trim();
+			var item = (part[i] != "") ? dic[part[i]] : void;
+			if (item !== void) {
+				if (item.class != "part") result.push(name);
+				else {
+					var subpart = uiloadPartExtract(dic, item.part);
+					result.push(subpart*) if (typeof subpart == "Object");
+				}
+			}
 		}
-	}
-	for (var i = 0; i < append.count; i++) {
-		var subpart = append[i];
-		for (var j = 0; j < subpart.count; j++)
-			result.add(subpart[j]);
 	}
 	return result;
 }
@@ -354,10 +349,10 @@ function uiloadEntry(layer, names, dic, elm, table, evals, order)
 
 	// ordr ‡˜Žw’è
 	if (typeof order == "Object" && order instanceof "Array") {
-		for (var i = order.count-1; i >= 0; i--) {
-			var name = order[i];
-			if (name == "" || dic[name] === void) continue;
-			with (names) .remove(name, true), .insert(0, name);
+		var parts = uiloadPartExtract(dic, order);
+		for (var i = parts.count-1; i >= 0 ; i--) {
+			var name = parts[i];
+			if (names.find(name) >= 0) with (names) .remove(name, true), .insert(0, name);
 		}
 	}
 
