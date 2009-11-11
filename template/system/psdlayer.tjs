@@ -4,12 +4,14 @@
 class NotifyParentLayer extends Layer {
 
 	var groupName; // グループ名
+	var repaintLayer; // 更新対象通知先
 	
 	/**
 	 * コンストラクタ
 	 */
-	function NotifyParentLayer() {
-		super.Layer(...);
+	function NotifyParentLayer(window, repaintLayer) {
+		this.repaintLayer = repaintLayer;
+		super.Layer(window, repaintLayer._baseLayer);
 	}
 
 	// 更新通知処理用
@@ -18,7 +20,7 @@ class NotifyParentLayer extends Layer {
 			width  = this.width if width === void;
 			height = this.height if height === void;
 			//dm("親領域更新:"+name + " pos:" + left + "," + top + "," + width + "," + height);
-			parent.update(this.left + left, this.top + top, width, height);
+			repaintLayer.update(this.left + left, this.top + top, width, height);
 		}
 	}
 
@@ -290,6 +292,7 @@ class NotifyParentLayer extends Layer {
 class RepaintLayer extends Layer {
 
 	var _region; // 更新領域保持用
+	var _baseLayer; // 合成処理ベース用
 
 	/**
 	 * コンストラクタ
@@ -299,6 +302,7 @@ class RepaintLayer extends Layer {
 	function RepaintLayer(window, layer) {
 		super.Layer(...);
 		type = ltAlpha;
+		_baseLayer = new global.Layer(window, this);
 	}
 
 	/**
@@ -332,6 +336,38 @@ class RepaintLayer extends Layer {
 	function update() {
 		super.update(...);
 		updateRegion(...);
+	}
+
+	function updateBase() {
+		with (_baseLayer) {
+			.setSize(width, height);
+			.fillRect(0,0,width,height,0x00ffffff);
+		}
+	}
+	
+	function setSize(width, height) {
+		super.setSize(width, height);
+		updateBase();
+	}
+
+	property width {
+		getter() {
+			return super.width;
+		}
+		setter(v) {
+			super.width = v;
+			updateBase();
+		}
+	}
+
+	property height {
+		getter() {
+			return super.height;
+		}
+		setter(v) {
+			super.height = v;
+			updateBase();
+		}
 	}
 }
 
@@ -500,12 +536,12 @@ class PSDLayer extends RepaintLayer {
 	 * @param propname プロパティ名
 	 * @param value プロパティ値
 	 */
-	function setProp(info, propname, value) {
-//		if (info.layers !== void) {
-//			for (var i=info.layers.count-1;i>=0;i--) {
-//				setProp(info.layers[i], propname, value);
-//			}
-//		}
+	function setProp(info, propname, value, recursive=false) {
+		if (recursive && info.layers !== void) {
+			for (var i=info.layers.count-1;i>=0;i--) {
+				setProp(info.layers[i], propname, value);
+			}
+		}
 		if (info[propname] !== void) {
 			info[propname] = value;
 			if (info.layer !== void && typeof info.layer[propname] !== "undefined") {
@@ -559,10 +595,10 @@ class PSDLayer extends RepaintLayer {
 	 * @param propname プロパティ名
 	 * @param value プロパティ値
 	 */
-	function setPropName(name, propname, value) {
+	function setPropName(name, propname, value, recursive=false) {
 		var info = getPropInfo(name);
 		if (info !== void) {
-			setProp(info, propname, value);
+			setProp(info, propname, value, recursive);
 		}
 	}
 	
@@ -581,7 +617,7 @@ class PSDLayer extends RepaintLayer {
 	 * @param visible 表示状態
 	 */
 	function setVisible(name, visible) {
-		setPropName(name, "visible", visible);
+		setPropName(name, "visible", visible, true);
 	}
 
 	/**
@@ -627,6 +663,7 @@ class PSDLayer extends RepaintLayer {
 		layer.opacity = info.opacity;
 		layer.visible = info.visible;
 		layer.name    = info.name;
+		layer.absolute = info.absolute;
 	}
 
 	
@@ -656,6 +693,7 @@ class PSDLayer extends RepaintLayer {
 	 * 再描画処理
 	 */
 	function onPaint() {
+		//dm("onPaint開始:" + Scripts.getTraceString());
 		// 更新レイヤ一覧取得
 		// ※この中で副作用で画像レイヤが読み込まれて
 		// 更新領域がかわることがあるのでここに必要
@@ -664,39 +702,23 @@ class PSDLayer extends RepaintLayer {
 			var info = layers[i];
 			if (isShowLayer(info)) {
 				getDispLayer(info);
+				info.layer.visible = true;
+				//dm("描画対象レイヤ:%s:%d:%d".sprintf(info.name, info.absolute, info.layer.absolute));
+			} else {
+				if (info.layer !== void) {
+					info.layer.visible = false;
+				}
 			}
 		}
 		if (_region !== void) {
 			//dm("レイヤ描画更新:%d,%d,%d,%d".sprintf(_region.left, _region.top, _region.width, _region.height));
-			fillRect(_region.left, _region.top, _region.width, _region.height, 0x00000000);
-			var first = true;
-			for (var i=layers.count-1;i>=0;i--) {
-				var info = layers[i];
-				if (isShowLayer(info) && info.layer) {
-					if (first) {
-						holdAlpha = false;
-						copyRect(_region.left, _region.top,
-								 info.layer,
-								 _region.left - info.left,
-								 _region.top  - info.top,
-								 _region.width, _region.height);
-						first = false;
-						holdAlpha = true;
-					} else {
-						operateRect(_region.left,
-									_region.top,
-									info.layer,
-									_region.left - info.left,
-									_region.top  - info.top,
-									_region.width, _region.height, omAuto, info.opacity);
-					}
-				}
-			}
+			piledCopy(_region.left, _region.top, _baseLayer, _region.left, _region.top, _region.width, _region.height);
 			_region = void;
 		} else {
 			//dm("レイヤが更新されてません");
 		}
 		super.onPaint(...);
+		//dm("onPaint終了");
 	}
 
 	/**
@@ -740,8 +762,10 @@ class PSDLayer extends RepaintLayer {
 			info.layers = [];
 			info.layerMap = %[];
 		}
-		for (var i=0;i<layers.count;i++) {
+		var count = layers.count;
+		for (var i=0;i<count;i++) {
 			var info = layers[i];
+			info.absolute = count-i;
 			layerIds[info.layer_id] = info;
 			layerNames[info.name] = info;
 			if (info.group_layer_id !==void) {
@@ -767,8 +791,15 @@ class PSDLayer extends RepaintLayer {
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
 			var name = getFullname(info);
+			info.fullname = name;
 			layerFullnames[name] = info;
 //			dm("レイヤフルネーム:" + name);
+		}
+		for (var i=0;i<groups.count;i++) {
+			var info = groups[i];
+			var name = getFullname(info);
+			info.fullname = name;
+			layerFullnames[name] = info;
 		}
 	}
 	
@@ -790,10 +821,11 @@ class PSDLayer extends RepaintLayer {
 		if (!psd.load(storage)) {
 			throw new Exception("PSD画像の読み込みに失敗しました:"+ storage);
 		}
-		
-		for (var i=psd.layer_count-1;i>=0;i--) {
+		var count = psd.layer_count-1 ;
+		for (var i=count;i>=0;i--) {
 			var info = psd.getLayerInfo(i);
 			//dm(@'■レイヤ${i}: "${psd.getLayerName(i)}"\n' + dictToString(info));
+			info.name = info.name.replace(/\//g, "_");
 			switch (info.layer_type) {
 			case PSD.layer_type_normal:
 				{
@@ -1227,7 +1259,7 @@ class PSDLayer extends RepaintLayer {
 			with (info.layer) {
 				layer.type = ltOpaque;
 				layer.copyRect(.left - x, .top - y, info.layer, 0, 0, .width, .height);
-				layer.holdAlpha = true;
+				//layer.holdAlpha = true;
 				layer.copyRect(0, 0, work, 0, 0, work.width, work.height);
 				layer.type = ltAlpha;
 			}

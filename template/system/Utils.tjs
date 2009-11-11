@@ -244,6 +244,7 @@ function getExistImageName(storage)
  *           conttext, // 続き表記文字(省略時:"…")
  *           nodraw, //trueなら描画しない（配列のみ返す）
  *           drawtext, // 描画メソッド上書き
+ *           gettextwidth, // サイズ取得メソッド上書き
  *           chsep, // １文字ずつ描画
  *           ];
  * @return 分割したテキストのArray([ line1, line2, ... ])
@@ -258,6 +259,9 @@ function drawTextKinsokuRect(layer, text, elm) {
 	var step, gtw = font.getTextWidth;
 	var w, h, cont = "…", maxline = 0;
 	with (elm) {
+		// 上書き
+		gtw = .gettextwidth if (typeof .gettextwidth == "Object");
+
 		// 禁則文字
 		wwFollowing = .wwfollowing if (.wwfollowing !== void);
 		wwLeading   = .wwleading   if (.wwleading   !== void);

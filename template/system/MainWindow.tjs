@@ -500,10 +500,10 @@ class KAGWindow extends Window
 	var inSleepBeforeExtraConductor; // extraConductor を使用する直前が inSleep だったか
 
 	// 通常のマウスカーソル
-	/*C*/var cursorDefault = crArrow;  // 通常のマウスカーソル
-	/*C*/var cursorPointed = crHandPoint;  // ボタン、リンク等をポイントした時のマウスカーソル
-	/*C*/var cursorWaitingClick = crArrow;  // クリック待ちのマウスカーソル
-	/*C*/var cursorDraggable = crSizeAll; // ドラッグ可能な場所用のマウスカーソル
+	var cursorDefault = crArrow;  // 通常のマウスカーソル
+	var cursorPointed = crHandPoint;  // ボタン、リンク等をポイントした時のマウスカーソル
+	var cursorWaitingClick = crArrow;  // クリック待ちのマウスカーソル
+	var cursorDraggable = crSizeAll; // ドラッグ可能な場所用のマウスカーソル
 
 	/*C*/var startAnchorEnabled = false; // 「最初に戻る」が使用可能かどうか
 
@@ -2061,6 +2061,7 @@ class KAGWindow extends Window
 	function onMoveSizeEnd() {
 		setZoom(innerWidth, pxWidth);
 //		dm("onResizeEnd/zoomed", innerWidth, innerHeight);
+		callHook("onMoveSizeEndHook", this, _resizeSnapshot);
 		_resizeSnapshot = void;
 		callResizeHook();
 	}
@@ -2417,6 +2418,20 @@ class KAGWindow extends Window
 
 	//----------------------------------------------------- システム変数関連 --
 
+	/**
+	 * 安全なevalStorage（外部からのevalによるhackを防ぐ）
+	 */
+	var disableSafeEvalStorage = false; // Config.tjsで抑制できるようにする
+	function safeEvalStorage(fn, *) {
+		if (!disableSafeEvalStorage) {
+			var tmp = [].load(fn, *);
+			// 冒頭に(const)があるかどうかで判断
+			if (tmp[0] == "" || tmp[0].indexOf("(const)") != 0)
+				throw new Exception("不正なデータです:"+Storages.extractStorageName(fn));
+		}
+		return Scripts.evalStorage(fn, *);
+	}
+
     /**
      * 書き込みテストを行う
      */
@@ -2445,8 +2460,10 @@ class KAGWindow extends Window
 			// 書き込み権限テスト
 			var dummy = ["test"];
 			var fn = saveDataLocation + "/" + "savecheck";
+			var saved = false;
 			try {
 				(Array.saveStruct incontextof dummy)(fn);
+				saved = true;
 			} catch(e) {
 				Debug.notice("checkSave失敗 : " + e.message);
 				if (System.personalPath != System.exePath) {
@@ -2456,6 +2473,16 @@ class KAGWindow extends Window
 					readOnlyMode = true;
 					errorInform("readonly");
 				}
+			}
+			if (saved) try {
+				var tmp = [].load(fn);
+				// 冒頭に(const)がない場合はsafeEvalStorageチェックが使えない
+				if (tmp[0] == "" || tmp[0].indexOf("(const)") != 0) {
+					disableSafeEvalStorage = true;
+					Debug.notice("saveStructによる(const)無効 : " + System.versionString);
+				}
+			} catch(e) {
+				Debug.message("(const)check失敗 : " + e.message);
 			}
 
 			dm("セーブデータ保存場所:" + saveDataLocation );
@@ -2471,7 +2498,7 @@ class KAGWindow extends Window
 				"sc.ksd";
 			if(Storages.isExistentStorage(fn))
 			{
-				scflags = Scripts.evalStorage(fn);
+				scflags = safeEvalStorage(fn);
 				scflags = %[] if scflags === void;
 			}
 			else
@@ -2483,7 +2510,7 @@ class KAGWindow extends Window
 				"su.ksd";
 			if(Storages.isExistentStorage(fn))
 			{
-				sflags = Scripts.evalStorage(fn);
+				sflags = safeEvalStorage(fn);
 				sflags = %[] if sflags === void;
 			}
 			else
@@ -2833,10 +2860,6 @@ class KAGWindow extends Window
 		f.rightClickName = rightClickName;
 		f.rightClickCurrentMenuName = rightClickCurrentMenuName;
 		f.lastClickGlyphVisible = lastClickGlyphVisible;
-		f.cursorDefault = cursorDefault;
-		f.cursorPointed = cursorPointed;
-		f.cursorWaitingClick = cursorWaitingClick;
-		f.cursorDraggable = cursorDraggable;
 		f.startAnchorEnabled = startAnchorEnabled;
 		f.storeEnabled = storeEnabled;
 		f.restoreEnabled = restoreEnabled;
@@ -2846,6 +2869,13 @@ class KAGWindow extends Window
 		// [end_store_vars]
 
 		// perl スクリプトによって自動的に処理されないもの、いくつか。
+
+		// マウスカーソル
+		f.cursorDefault      = getSafeCursor(cursorDefault);
+		f.cursorPointed      = getSafeCursor(cursorPointed);
+		f.cursorWaitingClick = getSafeCursor(cursorWaitingClick);
+		f.cursorDraggable    = getSafeCursor(cursorDraggable);
+
 		// 自動ウェイト
 		f.autoWCWaits = [];
 		f.autoWCWaits.assign(autoWCWaits); // 自動ウェイトのウェイト
@@ -2977,10 +3007,6 @@ class KAGWindow extends Window
 		rightClickName = f.rightClickName if f.rightClickName !== void;
 		rightClickCurrentMenuName = f.rightClickCurrentMenuName if f.rightClickCurrentMenuName !== void;
 		lastClickGlyphVisible = f.lastClickGlyphVisible if f.lastClickGlyphVisible !== void;
-		cursorDefault = f.cursorDefault if f.cursorDefault !== void;
-		cursorPointed = f.cursorPointed if f.cursorPointed !== void;
-		cursorWaitingClick = f.cursorWaitingClick if f.cursorWaitingClick !== void;
-		cursorDraggable = f.cursorDraggable if f.cursorDraggable !== void;
 		startAnchorEnabled = f.startAnchorEnabled if f.startAnchorEnabled !== void;
 		storeEnabled = f.storeEnabled if f.storeEnabled !== void;
 		restoreEnabled = f.restoreEnabled if f.restoreEnabled !== void;
@@ -2990,6 +3016,15 @@ class KAGWindow extends Window
 		// [end_restore_vars]
 
 		// perl スクリプトによって自動的に処理されないもの、いくつか。
+
+		// マウスカーソル
+		var cur;
+		if ((cur = getSafeCursor(f.cursorDefault))      !== void) cursorDefault      = cur;
+		if ((cur = getSafeCursor(f.cursorPointed))      !== void) cursorPointed      = cur;
+		if ((cur = getSafeCursor(f.cursorWaitingClick)) !== void) cursorWaitingClick = cur;
+		if ((cur = getSafeCursor(f.cursorDraggable))    !== void) cursorDraggable    = cur;
+		fore.base.setDefaultCursor(cursorDefault);
+		back.base.setDefaultCursor(cursorDefault);
 
 		// 自動ウェイト
 		autoWCWaits.assign(f.autoWCWaits) if f.autoWCWaits !== void;
@@ -3261,6 +3296,7 @@ class KAGWindow extends Window
 			var dic = copyHistoryOfStore();
 			callHook("onAutoLabelStoreHook", dic);
 			autoLabelStore.unshift(dic);
+			if (autoLabelStore.count > 100) autoLabelStore.pop(); // 上限で切る
 		}
 	}
 
@@ -3711,6 +3747,24 @@ class KAGWindow extends Window
 		}
 	}
 
+	function rewriteBookMarkToFile(fn, data, thumbfile) {
+		thumbfile = fn if (thumbfile == "");
+		var tmp = new Layer(this, primaryLayer);
+		try {
+			var mode = saveDataMode;
+			if (saveThumbnail) {
+				mode += "o" + calcThumbnailSize().size;
+				tmp.loadImages(thumbfile);
+				tmp.saveLayerImage(fn, "bmp" + thumbnailDepth);
+			}
+			(Dictionary.saveStruct incontextof data)(fn, mode);
+		} catch (e) {
+			invalidate tmp;
+			throw e;
+		}
+		invalidate tmp;
+	}
+
 	// 実データと共に bookMarkInfo を上書きする
 	function writeBookMarkInfo(num, ovInfo)
 	{
@@ -3723,38 +3777,21 @@ class KAGWindow extends Window
 			/**/info = data.core.bookMarkInfo = %[] if (typeof info != "Object");
 			(Dictionary.assignStruct incontextof info)(ovInfo, false);
 			getBookMarkInfoFromData(data.core, num);
-
-			var tmp = new Layer(this, primaryLayer);
-			try {
-				var mode = saveDataMode;
-				if (saveThumbnail) {
-					mode += "o" + calcThumbnailSize().size;
-					tmp.loadImages(fn);
-					tmp.saveLayerImage(fn, "bmp" + thumbnailDepth);
-				}
-				(Dictionary.saveStruct incontextof data)(fn, mode);
-			} catch (e) {
-				invalidate tmp;
-				throw e;
-			}
-			invalidate tmp;
+			rewriteBookMarkToFile(fn, data);
 		}
 	}
-	
+
+	function evalBookMarkFromFile(fn) {
+		var modestr = saveThumbnail ? ("o" + calcThumbnailSize().size) : void;
+		return safeEvalStorage(fn, modestr);
+	}
 
     function readBookMarkFromFile(fn)
     {
         try {
             if (Storages.isExistentStorage(fn)) {
-                var modestr;
-                if(saveThumbnail) {
-                    // 指定オフセットからデータを読み込む
-                    modestr += "o" + calcThumbnailSize().size;
-                }
-                var data = Scripts.evalStorage(fn, modestr);
-                if (data.id == saveDataID) {
-                    return data;
-                }
+				var data = evalBookMarkFromFile(fn);
+				if (data.id == saveDataID) return data;
             }
         } catch(e) {
         }
@@ -3776,18 +3813,7 @@ class KAGWindow extends Window
 		{
 			if(!Storages.isExistentStorage(fn)) return false; //ファイルがない
 
-			var data;
-
-			var modestr;
-
-			if(saveThumbnail)
-			{
-				// 指定オフセットからデータを読み込む
-				modestr += "o" + calcThumbnailSize().size;
-			}
-
-			data = Scripts.evalStorage(fn, modestr);
-
+			var data = evalBookMarkFromFile(fn);
 			if(data.id != saveDataID && !loadOtherDataID(data)) return false;
 
 			pcflags = data.core;
@@ -3960,12 +3986,10 @@ class KAGWindow extends Window
 
 		if(!Storages.isExistentStorage(fn)) return; //ファイルがない
 
-		var data = Scripts.evalStorage(fn);
+		var data = evalBookMarkFromFile(fn);
 
-		fn = getBookMarkFileNameAtNum(to);
-
-        (Dictionary.saveStruct incontextof data)(fn, saveDataMode);
-        getBookMarkInfoFromData(data.core, to);
+		rewriteBookMarkToFile(getBookMarkFileNameAtNum(to), data, fn);
+		getBookMarkInfoFromData(data.core, to);
 	}
 
 	function eraseBookMark(num)
@@ -4126,15 +4150,10 @@ class KAGWindow extends Window
 	function setCursor(elm)
 	{
 		// マウスカーソルの設定
-		var conv = function(variable, value)
+		var conv = function(variable, v)
 		{
-			if(value !== void)
-			{
-				if(!(typeof value == "String" &&
-					(value.indexOf('.cur')!=-1 || value.indexOf('.ani')!=-1) ))
-						value = +value;
-				this[variable] = value;
-			}
+			var value = getSafeCursor(v);
+			this[variable] = value if(value !== void);
 		} incontextof this;
 
 		conv('cursorDefault', elm['default']); 
@@ -4143,6 +4162,29 @@ class KAGWindow extends Window
 		conv('cursorDraggable', elm.draggable);
 		fore.base.setDefaultCursor(cursorDefault);
 		back.base.setDefaultCursor(cursorDefault);
+	}
+	var _cursorConstants = [
+		"crDefault",    "crNone",       "crArrow",      "crCross",      "crIBeam",
+		"crHBeam",      "crSizeNESW",   "crSizeNS",     "crSizeNWSE",   "crSizeWE",
+		"crUpArrow",    "crHourGlass",  "crDrag",       "crNoDrop",     "crHSplit",
+		"crVSplit",     "crMultiDrag",  "crSQLWait",    "crNo",         "crAppStart",
+		"crHelp",       "crHandPoint",  "crSizeAll" ];
+	function getSafeCursor(cur) {
+		switch (typeof cur) {
+		case "Integer": return cur;
+		case "String":
+			try {
+				if (_cursorConstants.find(cur) >= 0) return global[cur];
+				var ext = Storages.extractStorageExt(cur).toLowerCase();
+				if (ext != '.cur' && ext != '.ani') return (int)cur;
+				else if (Storages.isExistentStorage(cur)) {
+					var exe = System.exePath.toLowerCase();
+					var path = Storages.getPlacedPath(cur).toLowerCase();
+					if (path.substr(0, exe.length) == exe) return cur;
+				}
+			} catch {}
+		}
+		return void;
 	}
 
 	//---------------------------------------------------- トリガ管理(TJS用) --
@@ -5171,8 +5213,9 @@ class KAGWindow extends Window
 			messages[i].defaultAntialiased = chDefaultAntialiased,
 			messages[i].userFace = chDefaultFace,
 			messages[i].resetNameLayerFont();
-		if (typeof historyLayer.fontUpdate != "undefined")
-			/**/   historyLayer.fontUpdate();
+		if (typeof historyLayer.fontUpdate == "Object") {
+			/**/   historyLayer.fontUpdate(historyShowing);
+		}
 		if (chBitmapFont != "") {
 			if (bitmapFont == null ||  bitmapFont.name != chBitmapFont) {
 				try {

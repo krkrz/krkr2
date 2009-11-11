@@ -539,7 +539,7 @@ function checkStandLayerLevel(level, levelMax, standInfo, levels, searchSmallLev
 			var levelInfo;
 			var levelName;
 			if (levels !== void && (levelInfo = levels[l]) !== void && (levelName = levelInfo.name) !== void) {
-				var file = standInfo.filename + "_" + (levelInfo[l].name) + ".txt";
+				var file = standInfo.filename + "_" + (levelInfo.name) + ".txt";
 				if (Storages.isExistentStorage(file)) {
 					currentImageLevel = l;
 					break;
@@ -1772,7 +1772,6 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			standlayer.setLipLevel(lipLevel);
 			standlayer.setEyeLevel(eyeLevel);
 			standlayer.setFace(face);
-			standlayer.onPaint();
 
 			var levelInfo = env.levels[level];
 			var imgzoom = levelInfo.imgzoom !== void ? levelInfo.imgzoom : 100;
@@ -1796,6 +1795,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			}
 			if (standlayer.callOnPaint) {
 				standlayer.onPaint(); // XXX
+				standlayer.callOnPaint = false;
 			}
 			layer.type = ltAlpha;
 			var z; // 画像拡大縮小処理
@@ -1832,13 +1832,17 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
     }
 
-	function tagfunc(elm) {
-		var ret = super.tagfunc(elm);
-		if (!isShowBU()) {
-			// レイヤを破棄
-			clearStandLayers(); // clearListMap(standlayerList, standlayerMap);
+	// 初期表示時にレベル初期化
+	property disp {
+		getter() {
+			return *(&global.KAGEnvCharacter.disp incontextof this);
 		}
-		return ret;
+		setter(v) {
+			*(&global.KAGEnvCharacter.disp incontextof this) = v;
+			if (!isShowBU()) {
+				clearStandLayers(); // clearListMap(standlayerList, standlayerMap);
+			}
+		}
 	}
 
 	// -----------------------------------------------------------------
@@ -1849,6 +1853,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
      * 表情を描画する
      */
     function drawFace(layer, faceLevelName) {
+		// faecLevelName上書き
+		if (init.faceLevelName !== void) faceLevelName = init.faceLevelName;
 		//dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
 		if (pose !== void && dress !== void && diff !== void && face !== void) {
 			var standInfo = getStandInfo(pose);
@@ -1857,19 +1863,39 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			if (info === void) {
 				info = standlayer.getPropInfo("顔領域");
 				//dm("通常顔領域");
-			} else {
-				//dm(dress + "顔領域 発見");
+			}
+			if (info === void && (init.faceArea !== void || env.envinfo.faceArea !== void)) {
+				var point = standlayer.getPropInfo("顔原点");
+				if (point !== void) {
+					var area = init.faceArea !== void ? init.faceArea : env.envinfo.faceArea;
+					var w = area.width;
+					var h = area.height;
+					info = %[left:point.left-w/2, top:point.top-h/2, width:w, height:h];
+				}
 			}
 			if (info !== void) {
 				//dm("顔領域:%d %d %d %d".sprintf(info.left, info.top, info.width, info.height));
+				var d;
+				var diffMap;
+				if (init.faceDiffMap !== void &&
+					(diffMap = init.faceDiffMap[pose]) !== void &&
+					diffMap[diff] !== void) { 
+					d = diffMap[diff];
+				} else {
+					d = diff;
+				}
+				dm("差分指定 %s -> %s".sprintf(diff, d));
 				standlayer.setDress(dress);
-				standlayer.setDiff(diff);
+				standlayer.setDiff(d);
 				standlayer.setAdd(addimage, true);
 				standlayer.setAddFace(addface, true);
 				standlayer.setLipLevel(lipLevel);
 				standlayer.setEyeLevel(eyeLevel);
 				standlayer.setFace(face);
-				standlayer.onPaint();
+				if (standlayer.callOnPaint) {
+					standlayer.onPaint(); // XXX
+					standlayer.callOnPaint = false;
+				}
 				//layer.fillRect(0,0,layer.width,layer.height,0);
 				if (0) {
 					if (layer.width > info.width && layer.height < info.height) { // おさまる
@@ -1895,7 +1921,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					}
 				} else {
 					// faceLayerがRelativeLayer前提
-					//dm("%s:表情表示 %d %d %d\n".sprintf(name, standInfo.facexoff, standInfo.faceyoff, standInfo.facezoom));
+					//dm("%s:表情表示 %d %d %d".sprintf(name, standInfo.facexoff, standInfo.faceyoff, standInfo.facezoom));
 
 					var left  = info.left + standInfo.facexoff;
 					var top   = info.top;
@@ -1919,7 +1945,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 
 					var dwidth = width * standInfo.facezoom / 100.0;
 					var dheight = height * standInfo.facezoom / 100.0;
-					
+					var envfz = init.faceZoom !== void ? init.faceZoom : env.envinfo.faceZoom;
+					if (envfz !== void) {
+						dwidth  *= envfz / 100.0;
+						dheight *= envfz / 100.0;
+					}
 					//dm("%s:表情表示 %d %d %d %d  %d %d\n".sprintf(name,left,top,width,height, standlayer.width, standlayer.height));
 
 					with (layer) {
@@ -1927,7 +1957,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 						.setSizeToImageSize();
 						.repos() if (typeof .repos == "Object");
 						.fillRect(0,0,.width,.height,0);
-						.stretchCopy(0, 0, dwidth, dheight, standlayer, left, top, width, height, stCubic);
+						if (envfz < 50) {
+							.shrinkCopy(0, 0, dwidth, dheight, standlayer, left, top, width, height);
+						} else {
+							.stretchCopy(0, 0, dwidth, dheight, standlayer, left, top, width, height, stCubic);
+						}
 					}
 				}
 				layer.visible = true;

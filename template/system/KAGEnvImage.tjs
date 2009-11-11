@@ -222,6 +222,8 @@ class KAGEnvImage {
 			//dm(name + ":redraw:" + Scripts.getTraceString());
 		}
 	}
+	// アクション初期化指定
+	var initFlag;
 	
     /**
      * 時間用最初期化処理
@@ -826,6 +828,7 @@ class KAGEnvImage {
 		if (elm.afy === void && elm.origin === void) afy = defaultAfy;
 		if (elm.orx === void && elm.vorigin === void) orx = defaultOrx;
 		if (elm.ory === void && elm.vorigin === void) ory = defaultOry;
+		initFlag = true;
 		clearAction(true);
 	}
 	
@@ -1410,6 +1413,9 @@ class KAGEnvImage {
     } incontextof this,
 	resetpos : this.resetPos incontextof this,
 	resetcolor : this.resetColor incontextof this,
+	forceredraw : function(param, elm) {
+		redraw = true;
+    } incontextof this,
 	grayscale : function(param, elm) {
 		grayscale = param;
     } incontextof this,
@@ -1466,6 +1472,7 @@ class KAGEnvImage {
 	stoptrans : function(param) { stopTransition(true); } incontextof this,
 	show : function(param) { disp = SHOW; },
 	hide : function(param) { disp = CLEAR; },
+	name : null, // 無視
 	accel : null, // 無視
 	fade : null, // 無視
 	sync : null, // 無視
@@ -1982,7 +1989,10 @@ class KAGEnvImage {
 			}
 			// 変更されてることがあるので常に反映
 			targetLayer.absolute = +absolute if (absolute !== void);
-
+			if (initFlag) {
+				targetLayer.stopAction();
+				initFlag = false;
+			}
 			if (redraw) {
 				drawLayer(targetLayer);
 				if (script !== void) {
@@ -2169,7 +2179,10 @@ class KAGEnvImage {
 					} else {
 						// 非表示のまま変更無しなので
 						// ターゲットレイヤを破棄しておく
-						targetLayer = void;
+						if (targetLayer !== void) {
+							invalidate targetLayer;
+							targetLayer = void;
+						}
 						_update(kag.fore);
 					}
 				} else {
@@ -2183,7 +2196,10 @@ class KAGEnvImage {
 					} else {
 						// 非表示のまま変更無しなので
 						// ターゲットレイヤを破棄しておく
-						targetLayer = void;
+						if (targetLayer !== void) {
+							invalidate targetLayer;
+							targetLayer = void;
+						}
 						_update(kag.fore);
 					}
 				}

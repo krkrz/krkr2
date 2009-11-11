@@ -1110,3 +1110,12 @@ function LayerBlinkModeModule(info, elm) {
 function LayerFadeModeModule(info, elm) {
     info.addAction("opacity", TriangleAction, %[vibration:"@", offset:"-@", ontime:elm.intime, offtime:elm.outtime, time:elm.time, delay:elm.delay]);
 }
+
+function LayerQuakeActionModule(info, elm) {
+	var xvib, yvib;
+	xvib = yvib = elm.vibration;
+	xvib = elm.xvibration if (elm.xvibration !== void);
+	yvib = elm.yvibration if (elm.yvibration !== void);
+	info.addAction("camerax",  RandomAction, %[vibration:xvib/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]) if (xvib != 0);
+	info.addAction("cameray",  RandomAction, %[vibration:yvib/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]) if (yvib != 0);
+}

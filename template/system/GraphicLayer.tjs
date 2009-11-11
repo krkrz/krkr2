@@ -532,8 +532,8 @@ with (GenericFlip) {
 	;.Types   =  [];
 	;.Entries = %[];
 	var self = GenericFlip;
-	;.GetEntry = function(type, tag) { 
-		var e = Entries[type];
+	;.GetEntry = function(type, tag) {
+		var e = type != "" ? Entries[type] : void;
 		return (e !== void) ? e[tag] : void;
 	} incontextof self;
 	;.GetClass   = function(type) { return GetEntry(type, "class");   } incontextof self;
@@ -815,11 +815,14 @@ class GraphicLayerEx extends GraphicLayer {
 	}
 	function restoreFlip(dic) {
 		stopFlip() if (flip !== void);
-		flip = window.findGenericFlipsInstance(dic.flipType, dic.flipID);
+		flipType = dic.flipType;
+		flip = window.findGenericFlipsInstance(flipType, dic.flipID);
 		var found = (flip !== void);
-		flip = window.createGenericFlip(dic.flipType, dic.flipID) if (!found);
-		flip.flipEntry(this);
-		flip.flipRestore(dic.flipInfo) if (!found);
+		flip = window.createGenericFlip(flipType, dic.flipID) if (!found);
+		if (flip !== void) {
+			flip.flipEntry(this);
+			flip.flipRestore(dic.flipInfo) if (!found);
+		} else flipType = void;
 	}
 
 	// -------------------------------------------------
@@ -1016,7 +1019,6 @@ class GraphicLayerEx extends GraphicLayer {
 			beginAction(%[left:%[handler:MoveAction, value:x, time:time, accel:accel],
 					  top:%[handler:MoveAction, value:y, time:time, accel:accel], nowait:nowait]);
         } else {
-			stopAction();
 			setPos(x, y);
         }
     }
