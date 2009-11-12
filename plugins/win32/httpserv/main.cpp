@@ -275,8 +275,16 @@ public:
 		}
 
 		// ‰½‚à“]‘—‚·‚é‚à‚Ì‚ª–³‚¢
-		if (transfer_type == UNKNOWN || status < 0)
-			setError(500, TJS_W("no data"), TJS_W("no transfer data returned from"), method);
+		if (transfer_type == UNKNOWN || status < 0) {
+			int st = (status < 0) ? 500 : status;
+			ttstr type = dic.getStrValue(TJS_W("error_type"));
+			ttstr desc = dic.getStrValue(TJS_W("error_desc"));
+			if (type.length() > 0 && type.length() > 0) {
+				setError(st, type, desc);
+			} else {
+				setError(st, TJS_W("no data"), TJS_W("no transfer data returned from"), method);
+			}
+		}
 	}
 
 	void setError(int st, ttstr type, ttstr desc) {
