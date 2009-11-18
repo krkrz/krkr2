@@ -27,7 +27,22 @@ class Window {
 	 * @param endCode 終了コード
 	 */
 	function onShellExecuted(process, endCode);
-	
+
+	/**
+	 * コンソール出力取得つきコマンドラインプログラムの実行
+	 * @param target プログラム
+	 * @param param 引数
+	 * @return プロセスハンドル（失敗した場合は-1)。terminateProcess に渡すことができます。
+	 * コンソールの行単位出力で onCommandLineOutput イベントが発生します。
+	 * 処理がおわったら onShellExecuted イベントが発生します。
+	 */
+	function commandExecute(target, param);
+	/**
+	 * イベント:コンソール出力
+	 * @param process プロセスハンドル
+	 * @param text    出力テキスト（１行単位）
+	 */
+	function onCommandLineOutput(process, text);
 };
 
 
