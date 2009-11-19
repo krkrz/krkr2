@@ -40,7 +40,41 @@
 tTVPGLGammaAdjustData TVPIntactGammaAdjustData =
 { 1.0, 0, 255, 1.0, 0, 255, 1.0, 0, 255 };
 //---------------------------------------------------------------------------
-
+static float sBmFactor[] =
+{
+  59, // bmCopy,
+  59, // bmCopyOnAlpha,
+  52, // bmAlpha,
+  52, // bmAlphaOnAlpha,
+  61, // bmAdd,
+  59, // bmSub,
+  45, // bmMul,
+  10, // bmDodge,
+  58, // bmDarken,
+  56, // bmLighten,
+  42, // bmScreen,
+  52, // bmAddAlpha,
+  52, // bmAddAlphaOnAddAlpha,
+  52, // bmAddAlphaOnAlpha,
+  52, // bmAlphaOnAddAlpha,
+  52, // bmCopyOnAddAlpha,
+  32, // bmPsNormal,
+  30, // bmPsAdditive,
+  29, // bmPsSubtractive,
+  27, // bmPsMultiplicative,
+  27, // bmPsScreen,
+  15, // bmPsOverlay,
+  15, // bmPsHardLight,
+  10, // bmPsSoftLight,
+  10, // bmPsColorDodge,
+  10, // bmPsColorDodge5,
+  10, // bmPsColorBurn,
+  29, // bmPsLighten,
+  29, // bmPsDarken,
+  29, // bmPsDifference,
+  26, // bmPsDifference5,
+  66, // bmPsExclusion
+};
 
 //---------------------------------------------------------------------------
 static const tjs_int TVPMaxThreadNum = 8;
@@ -84,6 +118,14 @@ static tjs_int GetThreadNum(void)
   tjs_int threadNum = TVPDrawThreadNum ? TVPDrawThreadNum : GetProcesserNum();
   threadNum = std::min(threadNum, TVPMaxThreadNum);
   return threadNum;
+}
+//---------------------------------------------------------------------------
+static tjs_int GetAdaptiveThreadNum(tjs_int pixelNum, float factor)
+{
+  if (pixelNum >= factor * 1000)
+    return GetThreadNum();
+  else
+    return 1;
 }
 //---------------------------------------------------------------------------
 static DWORD WINAPI ThreadLoop(LPVOID p)
@@ -329,7 +371,7 @@ bool tTVPBaseBitmap::Fill(tTVPRect rect, tjs_uint32 value)
         tjs_int w = rect.right - rect.left;
         bool is32bpp = Is32BPP();
 
-        tjs_int taskNum = GetThreadNum();
+        tjs_int taskNum = GetAdaptiveThreadNum(w * h, 150);
         BeginThreadTask(taskNum);
         PartialFillParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
@@ -434,7 +476,7 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
         tjs_int h = rect.bottom - rect.top;
         tjs_int w = rect.right - rect.left;
 
-        tjs_int taskNum = GetThreadNum();
+        tjs_int taskNum = GetAdaptiveThreadNum(w * h, opa == 255 ? 115 : 55);
         BeginThreadTask(taskNum);
         PartialFillColorParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
@@ -525,7 +567,14 @@ bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
         tjs_int h = rect.bottom - rect.top;
         tjs_int w = rect.right - rect.left;
 
-        tjs_int taskNum = GetThreadNum();
+        tjs_int factor;
+        if (opa == 255)
+          factor = 148;
+        else if (! additive)
+          factor = 25;
+        else
+          factor = 147;
+        tjs_int taskNum = GetAdaptiveThreadNum(w * h, factor);
         BeginThreadTask(taskNum);
         PartialBlendColorParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
@@ -629,7 +678,7 @@ bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
         tjs_int h = rect.bottom - rect.top;
         tjs_int w = rect.right - rect.left;
 
-        tjs_int taskNum = GetThreadNum();
+        tjs_int taskNum = GetAdaptiveThreadNum(w * h, level == 255 ? 83 : 50);
         BeginThreadTask(taskNum);
         PartialRemoveConstOpacityParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
@@ -701,7 +750,7 @@ bool tTVPBaseBitmap::FillMask(tTVPRect rect, tjs_int value)
         tjs_int h = rect.bottom - rect.top;
         tjs_int w = rect.right - rect.left;
 
-        tjs_int taskNum = GetThreadNum();
+        tjs_int taskNum = GetAdaptiveThreadNum(w * h, 84);
         BeginThreadTask(taskNum);
         PartialFillMaskParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
@@ -838,7 +887,7 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	tjs_int pixelsize = (Is32BPP()?sizeof(tjs_uint32):sizeof(tjs_uint8));
         bool backwardCopy = (ref == this && rect.top > refrect.top);
 
-        tjs_int taskNum = GetThreadNum();
+        tjs_int taskNum = GetAdaptiveThreadNum(w * h, 66);
         BeginThreadTask(taskNum);
         PartialCopyRectParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
@@ -1053,7 +1102,7 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	tjs_int w = refrect.get_width();
 	tjs_int h = refrect.get_height();
 
-        tjs_int taskNum = GetThreadNum();
+        tjs_int taskNum = GetAdaptiveThreadNum(w * h, sBmFactor[method]);
         BeginThreadTask(taskNum);
         PartialBltParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
@@ -2708,8 +2757,10 @@ int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *r
 	bool firstline = true;
 
         tjs_int ych = yclim - yc;
+        tjs_int w = destrect.right - destrect.left;
+        tjs_int h = destrect.bottom - destrect.top;
 
-        tjs_int taskNum = GetThreadNum();
+        tjs_int taskNum = GetAdaptiveThreadNum(w * h, sBmFactor[method] * 13 / 59);
         BeginThreadTask(taskNum);
         PartialAffineBltParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
