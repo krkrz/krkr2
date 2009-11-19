@@ -177,6 +177,8 @@ class WIN32Dialog {
 	 * ダイアログサイズの取得
 	 * 読み取り専用。サイズの変更はできないので注意
 	 */
+	property left   { getter; }
+	property top    { getter; }
 	property width  { getter; }
 	property height { getter; }
 
