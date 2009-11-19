@@ -253,18 +253,17 @@ public:
 
 	void SetPos(int x,  int y) { if (dialogHWnd) SetWindowPos(dialogHWnd, 0, x, y, 0, 0, SWP_NOSIZE|SWP_NOZORDER); }
 	void SetSize(int w, int h) { if (dialogHWnd) SetWindowPos(dialogHWnd, 0, 0, 0, w, h, SWP_NOMOVE|SWP_NOZORDER); }
-	long GetWidth() const {
-		if (!dialogHWnd) return 0;
-		RECT r;
-		GetWindowRect(dialogHWnd, &r);
-		return r.right - r.left;
-	}
-	long GetHeight() const {
-		if (!dialogHWnd) return 0;
-		RECT r;
-		GetWindowRect(dialogHWnd, &r);
-		return r.bottom - r.top;
-	}
+
+#define GetDialogSize(rect, result) \
+	if (!dialogHWnd) return 0; \
+	RECT rect; \
+	GetWindowRect(dialogHWnd, &(rect)); \
+	return (result)
+
+	long GetLeft  () const { GetDialogSize(r, r.left); }
+	long GetTop   () const { GetDialogSize(r, r.top);  }
+	long GetWidth () const { GetDialogSize(r, r.right - r.left); }
+	long GetHeight() const { GetDialogSize(r, r.bottom - r.top); }
 
 	static tjs_error TJS_INTF_METHOD sendItemMessage(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self) {
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
@@ -709,6 +708,8 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 
 	Method(TJS_W("setPos"),          &Class::SetPos);
 	Method(TJS_W("setSize"),         &Class::SetSize);
+	Property(TJS_W("left"),          &Class::GetLeft,   (int)0);
+	Property(TJS_W("top"),           &Class::GetTop,    (int)0);
 	Property(TJS_W("width"),         &Class::GetWidth,  (int)0);
 	Property(TJS_W("height"),        &Class::GetHeight, (int)0);
 
