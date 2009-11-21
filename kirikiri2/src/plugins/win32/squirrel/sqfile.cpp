@@ -10,11 +10,14 @@ class SQFileInfo {
 public:
 	/// コンストラクタ
 	SQFileInfo(const SQChar *filename, bool binary) : is(NULL), buffer(NULL), size(0), readed(0), binary(binary) {
-		if (binary) {
-			is = TVPCreateIStream(filename, TJS_BS_READ);
-		} else {
-			is = TVPCreateIStream(filename, TJS_BS_READ);
-			if (is) {
+		is = TVPCreateIStream(filename, TJS_BS_READ);
+		if (is) {
+			if (binary) {
+				STATSTG stat;
+				is->Stat(&stat, STATFLAG_NONAME);
+				size = (ULONG)stat.cbSize.QuadPart;
+				buffer = new char[size];
+			} else {
 				DWORD len;
 				unsigned short us = 0;
 				is->Read(&us, 2, &len);
