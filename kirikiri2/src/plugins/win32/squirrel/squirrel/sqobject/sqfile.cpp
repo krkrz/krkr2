@@ -10,8 +10,8 @@ class SQFileInfo {
 
 public:
 	/// コンストラクタ
-	SQFileInfo(const SQChar *filename) : file(NULL), buffer(NULL), size(0) {
-		file = sqstd_fopen(filename, _SC("rb"));
+	SQFileInfo(const SQChar *filename, bool binary) : file(NULL), buffer(NULL), size(0), binary(binary) {
+		file = sqstd_fopen(filename, binary ? _SC("rb") : _SC("r"));
 		if (file) {
 			size = sqstd_fseek(file, 0, SQ_SEEK_END);
 			if (size > 0) {
@@ -54,6 +54,7 @@ private:
 	SQFILE file;  ///< 入力ストリーム
 	void *buffer; ///< 入力データのバッファ
 	SQInteger size;   ///< 読み込みサイズ
+	bool binary;
 };
 
 /**
@@ -61,9 +62,9 @@ private:
  * @param filename スクリプトファイル名
  * @return ファイルハンドラ
  */
-void *sqobjOpenFile(const SQChar *filename)
+void *sqobjOpenFile(const SQChar *filename, bool binary)
 {
-	return (void*) new SQFileInfo(filename);
+	return (void*) new SQFileInfo(filename, binary);
 }
 
 /**

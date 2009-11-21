@@ -147,6 +147,10 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\sqobject\sqfunc.cpp"
+				>
+			</File>
 			<Filter
 				Name="sqstdlib"
 				>
@@ -247,10 +251,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\sqobject\sqfunc.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\sqobject\sqmemfile.cpp"
 					>
 				</File>
@@ -324,11 +324,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\sqobject\sqobject.h"
+				RelativePath=".\squirrel\sqobject.h"
 				>
 			</File>
 			<File
-				RelativePath=".\squirrel\sqobject.h"
+				RelativePath=".\sqobject\sqobject.h"
 				>
 			</File>
 			<File

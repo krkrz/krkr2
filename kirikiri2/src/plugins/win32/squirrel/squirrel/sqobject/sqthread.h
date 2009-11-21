@@ -18,7 +18,7 @@
  * @param filename スクリプトファイル名
  * @return ファイルハンドラ
  */
-extern void *sqobjOpenFile(const SQChar *filename);
+extern void *sqobjOpenFile(const SQChar *filename, bool binary=false);
 
 /**
  * ファイルが開かれたかどうかのチェック
