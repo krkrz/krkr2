@@ -200,7 +200,7 @@ public:
 
 	/// 配列/辞書の値を取得。みつからなければnull
 	template<typename K, typename T>
-	SQRESULT get(K key, T **value) {
+	SQRESULT get(K key, T *value) {
 		HSQUIRRELVM gv = getGlobalVM();
 		pushData(gv, key);
 		SQRESULT ret = getValue(gv, value);
@@ -436,6 +436,7 @@ protected:
 	// 値の push
 	static void pushValue(HSQUIRRELVM v) {}
 	static void pushValue(HSQUIRRELVM v, SQInteger value) { sq_pushinteger(v,value); }
+	static void pushValue(HSQUIRRELVM v, SQFloat value) { sq_pushfloat(v,value); }
 	static void pushValue(HSQUIRRELVM v, const SQChar *value) { sq_pushstring(v,value,-1); }
 	static void pushValue(HSQUIRRELVM v, SQUserPointer value) { sq_pushuserpointer(v,value); }
 	static void pushValue(HSQUIRRELVM v, ObjectInfo &obj) { obj.push(v); }
@@ -443,6 +444,7 @@ protected:
 	// 値の取得
 	static SQRESULT getValue(HSQUIRRELVM v, void *value) { return SQ_OK; }
 	static SQRESULT getValue(HSQUIRRELVM v, SQInteger *value) { return sq_getinteger(v, -1, value); }
+	static SQRESULT getValue(HSQUIRRELVM v, SQFloat *value) { return sq_getfloat(v, -1, value); }
 	static SQRESULT getValue(HSQUIRRELVM v, const SQChar **value) { return sq_getstring(v, -1, value); }
 	static SQRESULT getValue(HSQUIRRELVM v, SQUserPointer *value) { return sq_getuserpointer(v, -1, value); }
 	
