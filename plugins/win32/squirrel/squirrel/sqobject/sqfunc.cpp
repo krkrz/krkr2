@@ -4,10 +4,7 @@
  * Object, Thread の登録処理の実装例です。
  * 継承情報は単純リスト管理してます
  */
-#include <new>
-#include "sqobjectinfo.h"
-#include "sqobject.h"
-#include "sqthread.h"
+#include "sqfunc.h"
 
 #include <string.h>
 #include <sqstdstring.h>
@@ -25,16 +22,6 @@ SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v) {
 SQRESULT ERROR_BADMETHOD(HSQUIRRELVM v) {
 	return sq_throwerror(v, _SC("bad method"));
 }
-
-// 基底クラスダミー用
-struct BaseClass {};
-inline const SQChar *GetTypeName(const BaseClass *t) { return NULL; }
-
-// クラス名登録用
-#define DECLARE_CLASSNAME0(TYPE,NAME) \
-inline const SQChar * GetTypeName(const TYPE *t) { return _SC(#NAME); }
-#define DECLARE_CLASSNAME(TYPE,NAME) DECLARE_CLASSNAME0(TYPE,NAME)
-#define DECLARE_CLASS(TYPE) DECLARE_CLASSNAME(TYPE,TYPE)
 
 sqobject::ObjectInfo typeTagListMap;
 sqobject::ObjectInfo typeMap;
@@ -111,214 +98,6 @@ getInstance(HSQUIRRELVM v, SQInteger idx, const SQChar *typeName)
 	return NULL;
 }
 
-/**
- * クラス登録用テンプレート
- * @param T 登録対象型
- * @param P 親の型
- */
-template <typename T, typename P>
-class SQTemplate {
-
-private:
-	HSQUIRRELVM v;
-	
-public:
-	/**
-	 * クラスを定義する
-	 * @param v squirrelVM
-	 * @param typetag 型識別タグ
-	 */
-	SQTemplate(HSQUIRRELVM v, SQUserPointer typetag) : v(v) {
-
-		// 型名を DECLARE_CLASSNAME の登録をつかって参照
-		T* typeDummy = NULL;
-		P* parentDummy = NULL;
-		const SQChar *typeName = GetTypeName(typeDummy);
-		const SQChar *parentName = GetTypeName(parentDummy);
-
-		sq_pushstring(v, typeName, -1);
-		if (parentName) {
-			// 親クラスが指定されてる場合は継承処理
-			::registerInherit(typeName, parentName);
-			sq_pushstring(v, parentName, -1);
-			if (SQ_SUCCEEDED(sq_get(v,-3))) {
-				sq_newclass(v, true);
-			} else {
-				sq_newclass(v, false);
-			}
-		} else {
-			// 継承なしでクラス生成
-			sq_newclass(v, false);
-		}
-		// タグを登録
-		sq_settypetag(v, -1, typetag);
-		::registerTypeTag(typeName, typetag);
-		
-		// コンストラクタ・デストラクタを登録
-		Register(constructor, _SC("constructor"));
-		Register(destructor, _SC("destructor"));
-	}
-	
-	/*
-	 * ネイティブオブジェクトのリリーサ。
-	 */
-	static SQRESULT release(SQUserPointer up, SQInteger size) {
-		if (up) {
-			T* self = (T*)up;
-			if (self) {
-				self->destructor();
-				self->~T();
-				sq_free(up, size);
-			}
-		}
-		return SQ_OK;
-	}
-	
-	/**
-	 * コンストラクタ
-	 * ネイティブオブジェクトのコンストラクタに引数として HSQUIRRELVM を渡す。
-	 */
-	static SQRESULT constructor(HSQUIRRELVM v) {
-		T *self = (T*)sq_malloc(sizeof *self);
-		new (self) T(v);
-		if (self) {
-			SQRESULT result;
-			if (SQ_SUCCEEDED(result = sq_setinstanceup(v, 1, self))) {;
-				sq_setreleasehook(v, 1, release);
-			} else {
-				self->~T();
-				sq_free(self, sizeof *self);
-			}
-			return result;
-		} else {
-			return ERROR_CREATE(v);
-		}
-	}
-	
-	/**
-	 * デストラクタ
-	 * なにもしない。Object が解放時に呼び出すのでエラーがでないように対策
-	 */
-	static SQRESULT destructor(HSQUIRRELVM v) {
-		return SQ_OK;
-	}
-	
-	// -------------------------------------------------
-	// スタティック関数の登録
-	// -------------------------------------------------
-
-	// SQFUNCTION 登録
-	void Register(SQFUNCTION func, const SQChar *name) {
-		sq_pushstring(v, name, -1);
-		sq_newclosure(v, func, 0);
-		sq_createslot(v, -3);
-	}
-
-	// -------------------------------------------------
-	// メンバ関数の登録用
-	// -------------------------------------------------
-
-	// インスタンス取得
-	static T *getInstance(HSQUIRRELVM v, int idx=1) {
-		const T *dummy = NULL;
-		return static_cast<T*>(::getInstance(v,idx,GetTypeName(dummy)));
-	}
-	
-	// 関数ポインタ取得
-	template <typename Func>
-	static void getFunc(HSQUIRRELVM v, Func **func) {
-		SQUserPointer x = NULL;
-		sq_getuserdata(v,sq_gettop(v),&x,NULL);
-		*func = (Func*)x;
-	}
-
-	// -------------------------------------------------
-
-	// 帰り値 int で引数無しの関数
-	typedef void (T::*VoidFunc)();
-
-	// IntFunc 呼び出し
-	static SQRESULT VoidFuncCaller(HSQUIRRELVM v) {
-		T *instance = getInstance(v);
-		if (instance) {
-			VoidFunc *func;
-			getFunc(v, &func);
-			if (func) {
-				(instance->*(*func))();
-				return 0;
-			}
-			return ERROR_BADMETHOD(v);
-		}
-		return ERROR_BADINSTANCE(v);
-	}
-
-	// VoidFunc 登録
-	void Register(VoidFunc func, const SQChar *name) {
-		sq_pushstring(v, name, -1);
-		SQUserPointer up = sq_newuserdata(v,sizeof(func));
-		memcpy(up,&func,sizeof(func));
-		sq_newclosure(v,VoidFuncCaller,1);
-		sq_createslot(v, -3);
-	}
-
-	// -------------------------------------------------
-	
-	// 帰り値 int で引数無しの関数
-	typedef int (T::*IntFunc)();
-
-	// IntFunc 呼び出し
-	static SQRESULT IntFuncCaller(HSQUIRRELVM v) {
-		T *instance = getInstance(v);
-		if (instance) {
-			IntFunc *func;
-			getFunc(v, &func);
-			if (func) {
-				sq_pushinteger(v, (instance->*(*func))());
-				return 1;
-			}
-			return ERROR_BADMETHOD(v);
-		}
-		return ERROR_BADINSTANCE(v);
-	}
-
-	// IntFunc 登録
-	void Register(IntFunc func, const SQChar *name) {
-		sq_pushstring(v, name, -1);
-		SQUserPointer up = sq_newuserdata(v,sizeof(func));
-		memcpy(up,&func,sizeof(func));
-		sq_newclosure(v,IntFuncCaller,1);
-		sq_createslot(v, -3);
-	}
-
-	// -------------------------------------------------
-
-	// SQFUNCTION スタイルの関数
-	typedef SQRESULT (T::*VFunc)(HSQUIRRELVM v);
-
-	// VFunc 呼び出し
-	static SQRESULT VFuncCaller(HSQUIRRELVM v) {
-		T *instance = getInstance(v);
-		if (instance) {
-			VFunc *func = NULL;
-			getFunc(v, &func);
-			if (func) {
-				return (instance->*(*func))(v);
-			}
-			return ERROR_BADMETHOD(v);
-		}
-		return ERROR_BADINSTANCE(v);
-	}
-
-	// VFunc 登録
-	void RegisterV(VFunc func, const SQChar *name) {
-		sq_pushstring(v, name, -1);
-		SQUserPointer up = sq_newuserdata(v,sizeof(func));
-		memcpy(up,&func,sizeof(func));
-		sq_newclosure(v,VFuncCaller,1);
-		sq_createslot(v, -3);
-	}
-};
-
 namespace sqobject {
 
 // typetag 全ソースでユニークなアドレスにする必要がある
@@ -393,11 +172,6 @@ ObjectInfo::getObject()
 // ------------------------------------------------------------------
 // クラス登録用マクロ
 // ------------------------------------------------------------------
-
-#define SQCLASS(Class,Parent,typetag) SQTemplate<Class,Parent> cls(v,typetag)
-#define SQFUNC(Class, Name)   cls.Register(&Class::Name, _SC(#Name))
-#define SQVFUNC(Class, Name)  cls.RegisterV(&Class::Name, _SC(#Name))
-#define SQNFUNC(Class, Name) cls.Register(Class ## _ ## Name, _SC(#Name))
 
 #ifndef USE_SQOBJECT_TEMPLATE
 
@@ -479,7 +253,8 @@ Object::registerClass()
 	sq_pushroottable(v); // root
 
 	SQCLASS(Object,BaseClass,OBJECTTYPETAG);
-
+	SQVCONSTRUCTOR();
+	
 #ifdef USE_SQOBJECT_TEMPLATE
 	SQFUNC(Object,notify);
 	SQFUNC(Object,notifyAll);
@@ -606,6 +381,7 @@ Thread::registerClass()
 	sq_pushroottable(v); // root
 
 	SQCLASS(Thread, Object, THREADTYPETAG);
+	SQVCONSTRUCTOR();
 
 #ifdef USE_SQOBJECT_TEMPLATE
 	SQVFUNC(Thread,exec);
