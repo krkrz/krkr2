@@ -33,7 +33,7 @@ struct layerExAreaAverage
 		dImageHeight = (tjs_int)val;
 		objthis->PropGet(0, L"mainImageBufferPitch", NULL, &val, objthis);
 		dPitch = (tjs_int)val;
-		objthis->PropGet(0, L"mainImageBuffer", NULL, &val, objthis);
+		objthis->PropGet(0, L"mainImageBufferForWrite", NULL, &val, objthis);
 		dBuffer = (tjs_uint8*)(tjs_int)val;
 
 		//	転送先の位置、サイズを取得
