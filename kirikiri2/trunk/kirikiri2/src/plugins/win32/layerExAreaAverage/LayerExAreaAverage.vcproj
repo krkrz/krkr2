@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\;..\ncbind\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LAYEREXAREAAVERAGE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -115,6 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\;..\ncbind\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LAYEREXAREAAVERAGE_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
