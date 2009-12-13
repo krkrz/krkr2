@@ -673,6 +673,24 @@ public:
          }
            
 
+	/*----------------------------------------------------------------------
+	 * カレントディレクトリを返す
+   ----------------------------------------------------------------------*/
+	ttstr getCurrentDirectory(void) {
+		TCHAR crDir[MAX_PATH + 1];
+		::GetCurrentDirectory(MAX_PATH + 1 , crDir);
+		ttstr result(crDir);
+		return TVPNormalizeStorageName(result + L"\\");
+	}
+	
+	/*----------------------------------------------------------------------
+	 * カレントディレクトリを設定する
+   ----------------------------------------------------------------------*/
+	bool setCurrentDirectory(ttstr str) {
+		TVPGetLocalName(str);
+		return ::SetCurrentDirectory(str.c_str()) != FALSE;
+	}
+	
 private:
 	//	指定のパスからITEMIDLISTを取得
 	static ITEMIDLIST*	Path2ITEMIDLIST(const tjs_char* path)
@@ -738,7 +756,8 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("selectDirectory",     &Class::selectDirectory,     TJS_STATICMEMBER);
 	NCB_METHOD(isExistentDirectory);
 	NCB_METHOD(copyFile);
-        NCB_METHOD(isExistentStorageNoSearchNoNormalize);
+	NCB_METHOD(isExistentStorageNoSearchNoNormalize);
+	NCB_PROPERTY(currentPath, getCurrentDirectory, setCurrentDirectory);
 };
 
 /**
