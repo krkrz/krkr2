@@ -24,6 +24,19 @@ quoteString(const tjs_char *str, IWriter *writer)
 	}
 }
 
+static void quoteOctet(tTJSVariantOctet *octet, IWriter *writer)
+{
+  const tjs_uint8 *data = octet->GetData();
+  tjs_uint length = octet->GetLength();
+  writer->write(L"<% ");
+  for (tjs_uint i = 0; i < length; i++) {
+    wchar_t buf[256];
+    wsprintf(buf, L"%02x ", data[i]);
+    writer->write(buf);
+  }
+  writer->write(L"%>");
+}
+
 static void getVariantString(tTJSVariant &var, IWriter *writer);
 
 /**
@@ -130,6 +143,10 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 	case tvtString:
 		quoteString(var.GetString(), writer);
 		break;
+
+        case tvtOctet:
+               quoteOctet(var.AsOctetNoAddRef(), writer);
+               break;
 
 	case tvtInteger:
 		writer->write(L"int ");
