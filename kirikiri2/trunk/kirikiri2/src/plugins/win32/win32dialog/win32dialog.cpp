@@ -344,6 +344,8 @@ public:
 		dialogHWnd = 0;
 	}
 
+	tjs_int64 getHWND() const { return (tjs_int64)dialogHWnd; }
+
 	bool getModeless() const { return modeless; }
 	void setModeless(bool b) {
 		if (IsValid()) TVPThrowExceptionMessage(TJS_W("Dialog is opened."));
@@ -722,6 +724,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 
 	Method(TJS_W("show"),            &Class::show);
 	Property(TJS_W("modeless"),      &Class::getModeless, &Class::setModeless);
+	Property(TJS_W("HWND"),          &Class::getModeless, (int)0);
 
 	// íËêîíËã`
 

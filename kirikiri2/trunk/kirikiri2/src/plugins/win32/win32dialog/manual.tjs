@@ -246,6 +246,11 @@ class WIN32Dialog {
 	property modeless { getter; setter; }
 
 	/**
+	 * ダイアログのウィンドウハンドル
+	 */
+	property HWND { getter; }
+
+	/**
 	 * ShowWindow のラッパー
 	 * @param nCmdShow SW_*フラグ
 	 * 主にモードレスダイアログ用です。
