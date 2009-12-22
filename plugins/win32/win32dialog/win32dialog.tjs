@@ -19,6 +19,7 @@ class WIN32DialogEX extends WIN32Dialog {
 
 	var itemMap   = %[];
 	var itemNames = [];
+	var itemAlias = %[];
 
 	// 各コントロールの結果保持用
 	var itemResults;
@@ -56,6 +57,7 @@ class WIN32DialogEX extends WIN32Dialog {
 				if (tmp.id != "") {
 					origID = tmp.id;
 					tmp.id = namedIDnumber++; // 文字列のIDは数値に置き換える
+					itemAlias[tmp.id] = origID;
 				}
 				break;
 			case "Integer":
@@ -72,6 +74,7 @@ class WIN32DialogEX extends WIN32Dialog {
 				if (typeof itemMap[origID] == "undefined") itemNames.add(origID);
 				else if (!tmp.multipleid) throw new Exception(@"IDが重複しています: ${i}, ${origID}, ${tmp.id}");
 				itemMap[origID] = tmp;
+				itemMap[tmp.id] = tmp if (origID != tmp.id);
 			}
 
 			var item = new Items();
@@ -100,6 +103,9 @@ class WIN32DialogEX extends WIN32Dialog {
 	function getNumberdId(id) {
 		var item = itemMap[id];
 		return (typeof item == "Object" && typeof item.id != "undefined") ? item.id : id;
+	}
+	function getNamedId(id) {
+		return (id != "" && itemAlias[id] != "") ? itemAlias[id] : id;
 	}
 	function getItem(id)               { return super.getItem(        getNumberdId(id)); }
 	function setItemInt(id, value)     { return super.setItemInt(     getNumberdId(id), value); }
@@ -379,4 +385,273 @@ class WIN32DialogEX extends WIN32Dialog {
 	// スクロールバー系列
 }
 
+// もう少し使いやすくしたバージョン
+class WIN32GenericDialogEX extends WIN32DialogEX
+{
+	var _templ, _padding, _ptSz, _cx, _cury, _curh, _maxy, _curband, _id2text;
+	function WIN32GenericDialogEX(elm) {
+		super.WIN32DialogEX();
+		elm = %[] if (typeof elm != "Object");
+		with (elm) {
+			_padding = .padding !== void ? (int).padding : 4;
 
+			var style = .style !== void ? .style : DS_MODALFRAME|DS_CENTER|WS_POPUP|WS_CAPTION|WS_SYSMENU|DS_SETFONT;
+			/**/style = style! if (typeof style == "String");
+
+			var fw = .fontWeight != "" ? .fontWeight : FW_NORMAL;
+			/**/fw = fw! if (typeof fw == "String");
+
+			var cx = _cx = .width !== void ? +.width : 100;
+			var pt = _ptSz = .fontSize !== void ? (int).fontSize : 9;
+			_templ = %[
+				/**/style:style, x:0, y:0, cx:cx, cy:0,
+				/**/title:.title != "" ? .title : "GenericDialog",
+				/**/pointSize:pt, typeFace:.fontFace != "" ? .fontFace : "ＭＳ Ｐゴシック",
+				/**/weight:fw, items:[]
+				];
+			_id2text = .itemtexts !== void ? .itemtexts : %[];
+		}
+		_curband = %[ x:_padding, w:_cx - _padding*2 ];
+		_maxy = _cury = _padding;
+		_curh = 0;
+	}
+	function finalize() {
+		super.finalize(...);
+	}
+	function throwError() {
+		throw new Exception(...);
+	}
+
+	function addItem(item) { _templ.items.add(item); }
+	function getLastItem() { with (_templ) return .items[.items.count-1]; }
+	function nextLine(ofs = _padding) {
+		_cury += _curh + ofs;
+		_curh = 0;
+		_maxy = _cury if (_maxy < _cury);
+	}
+
+	function divRectPos(rect, pos, align = 1) {
+		with (rect) {
+			var ofs = (!align ? .w\2 : align > 0 ? 0 : .w) + pos;
+			return %[
+			left:  %[ x:.x,     y:.y, w:ofs,    h:.h ],
+			right: %[ x:.x+ofs, y:.y, w:.w-ofs, h:.h ] ];
+		}
+	}
+	function divRectPer(rect, div, pad = _padding) {
+		if (div <= 1) return rect;
+		var ret = [], w = (rect.w - (pad * (div-1))) / div, step = w + pad;
+		for (var i = 0; i < div; i++) {
+			with (rect) ret[i] = %[ x:.x + (int)(step*i), w:(int)w, y:.y, h:.h ];
+		}
+		return ret;
+	}
+	function makeDiv(pos, per, pad) {
+		if (per < 1 || pos < 0 || pos >= per) throwError("makeDiv: invalid divisions");
+		return %[ type:"per", per:per, pos:pos, padding:pad ];
+	}
+	function makeSpan(pos, span, per, pad) {
+		if (pos === void) throwError("makeSpan: invalid pos");
+		var r = makeDiv(pos, per, pad);
+		if (span <= 0 || pos+span > per) throwError("makeSpan: invalid span");
+		if (span == 1) return r;
+		r.type = "span";
+		r.span = span;
+		return r;
+	}
+	function makeStep(align,  index, step, width, pad) {
+		return %[ type:"step", align:align, step:step, index:index, width:width, padding:pad ];
+	}
+	function makeStepLeft (*) { return makeStep("left",  *); }
+	function makeStepRight(*) { return makeStep("right", *); }
+
+	function makeCut(sel, pos, align) {
+		return %[ type:sel, align:align, sel => pos ];
+	}
+	function makeCutLeft  (*) { return makeCut ("left",  *); }
+	function makeCutRight (*) { return makeCut ("right", *); }
+
+	function getCurrentRect(div, height) {
+		_curh = height if (_curh < height);
+		var rect = %[ x:_curband.x, y:_cury, w:_curband.w, h:height ];
+		if (typeof div != "Object" || !div) return rect;
+		switch (div.type) {
+		case "per":
+			var per = divRectPer(rect, div.per, div.padding);
+			rect = per[div.pos] if (div.pos !== void && per[(int)div.pos] !== void);
+			break;
+		case "span":
+			var per = divRectPer(rect, div.per, div.padding), x2;
+			rect = per[div.pos];
+			with ( per[div.pos + div.span-1]) x2 = .x+.w;
+			with ( rect) .w = x2-.x;
+			break;
+		case "left":  rect = divRectPos(rect, div.left,  div.align).left;  break;
+		case "right": rect = divRectPos(rect, div.right, div.align).right; break;
+		case "step":
+			var pad = div.padding !== void ? div.padding : _padding;
+			switch (div.align) {
+			case "right": rect.x = rect.w - (div.step + pad) * (div.index+1); break;
+			default: case "left": rect.x += (div.step + pad) * div.index; break;
+			}
+			rect.w = (div.width !== void) ? div.width : div.step;
+			break;
+		case "fixed":
+			rect.x = div.x;
+			rect.w = div.width;
+			break;
+		}
+		return rect;
+	}
+
+	function getNameInfo(name, initMethod, initValue) {
+		var ret;
+		switch (typeof name) {
+		case "Integer": ret = %[ id:name, text:"ID"+name ]; break;
+		case "String":  ret = %[ id:name, text:name ]; break;
+		case "Object":  ret = name; break;
+		default: throwError("getNameInfo: unkonw name type "+name);
+		}
+		with (ret) {
+			if (.id == "" || .text == "") throwError("getNameInfo: invalid name value");
+			if (_id2text[.id] != "") .text = _id2text[.id];
+			addInit(.id, initMethod, initValue) if (initMethod != "" && initValue !== void);
+		}
+		return ret;
+	}
+
+	var _inits = %[];
+	function addInit(id, method, value) {
+		if (id == "" || method == "") throwError("addInit: invalid ID/method");
+		_inits[id] = [] if (_inits[id] === void);
+		_inits[id].add(%[ method => value ]);
+	}
+
+	function addLText(text, div, height = _ptSz, id = -1)  {
+		var rect = getCurrentRect(div, height);
+		with (rect) addItem(LText(text, id, .x, .y, .w, .h));
+	}
+	function addIcon(id, height, div, style = SS_BITMAP|SS_CENTERIMAGE|SS_SUNKEN)  {
+		var rect = getCurrentRect(div, height);
+		with (rect) addItem(Control("", id, STATIC, style, .x, .y, .w, .h, 0));
+	}
+
+	function _addLineEditDrop(method, info, div, style) {
+		var ofs  = _ptSz <= 9 ? 2 : 0;
+		var p    = 2; //_ptSz > 9 ? 2 : 2;
+		var rect = getCurrentRect(div, _ptSz + ofs*2);
+		var div  = divRectPos(rect, info.text.length * _ptSz);
+		with (div.left)  addItem(LText(info.text, -1, .x, .y+p, .w, .h-p));
+		with (div.right) addItem(this[method](info.id,    .x, .y, .w, .h, style));
+	}
+	function addLineInput(name, div, initial)  {
+		var info = getNameInfo(name, "setItemText", initial);
+		_addLineEditDrop("EditText", info, div, ES_LEFT|ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP);
+	}
+	function addDropSelect(name, height, div, initial, list)  {
+		var info = getNameInfo(name, "setComboBoxTexts", list);
+		if (typeof initial == "String") initial = list.find(initial);
+		addInit(info.id, "selectComboBox", initial);
+		_addLineEditDrop("ComboBox", info, div, CBS_DROPDOWNLIST);
+		getLastItem().cy = height;
+	}
+	function addDropInput(name, height, div, initial, list)  {
+		var info = getNameInfo(name, "setComboBoxTexts", list);
+		if (typeof initial == "Integer") initial = list[i];
+		addInit(info.id, "setItemText", initial);
+		_addLineEditDrop("ComboBox", info, div);
+		getLastItem().cy = height;
+	}
+	function addListSelect(name, height, div, initial, list) {
+		var info = getNameInfo(name, "setListBoxTexts", list);
+		if (typeof initial == "String") initial = list.find(initial);
+		var   rect = getCurrentRect(div, height);
+		with (rect) addItem(ListBox(info.id, .x, .y, .w, .h));
+	}
+/*
+	function addFileSelect  (name, div, initial) {}
+	function addFolderSelect(name, div, initial) {}
+	function addListInput (name, div, initial, list) {}
+*/
+	function addTextInput(name, height, div, initial) {
+		var info = getNameInfo(name, "setItemText", initial);
+		var rect = getCurrentRect(div, _ptSz);
+		with (rect) addItem(LText(info.text, -1, .x, .y, .w, .h));
+		nextLine(0);
+		/**/  rect = getCurrentRect(div, height);
+		with (rect) addItem(EditText(info.id, .x, .y, .w, .h,
+									 ES_LEFT|ES_MULTILINE|ES_WANTRETURN|
+									 ES_AUTOVSCROLL|ES_AUTOHSCROLL|
+									 WS_VSCROLL|WS_HSCROLL|
+									 WS_BORDER|WS_TABSTOP));
+	}
+	function _addAnyTypeButton(type, pad, name, div, pad2) {
+		var info = getNameInfo(name);
+		var rect = getCurrentRect(div, _ptSz + (pad2 !== void ? pad2 : pad));
+		with (rect) addItem(this[type](info.text, info.id, .x, .y, .w, .h));
+	}
+	function addDefPush(*) { _addAnyTypeButton("DefPushButton", _padding, *); }
+	function addButton(*)  { _addAnyTypeButton("PushButton", _padding, *); }
+	function addToggle(*)  { _addAnyTypeButton("AutoCheckBox", 0, *); }
+	function addRadio (*)  { _addAnyTypeButton("AutoRadioButton", 0, *); }
+
+	var _groupStack = [];
+	function beginGroup(grp) {
+		var rect = getCurrentRect(void, _ptSz), item;
+		with (rect) item = GroupBox(grp,, .x, .y, .w, .h);
+		var stack = %[ band:%[], y:_cury, item:item ];
+		(Dictionary.assign incontextof stack.band)(_curband, true);
+		_groupStack.push(stack);
+		addItem(item);
+		_curband.x += _padding*2;
+		_curband.w -= _padding*4;
+		nextLine(0);
+	}
+	function endGroup() {
+		var stack = _groupStack.pop();
+		if (stack === void) return;
+		(Dictionary.assign incontextof _curband)(stack.band, true);
+		stack.item.cy = _cury - stack.y + _padding\2;
+		nextLine();
+	}
+	var _frameStack = [];
+	function beginFrame(div) {
+		var band = %[];
+		(Dictionary.assign incontextof band)(_curband, true);
+		_frameStack.unshift(%[ band:band, y1:_cury, y2:_cury ]);
+		setFrame(div) if (div !== void);
+	}
+	function _resetFrame(pop) {
+		var info = pop ? _frameStack.shift() : _frameStack[0];
+		(Dictionary.assign incontextof _curband)(info.band, true);
+		_curh = 0;
+		return info;
+	}
+	function setFrame(div) {
+		var info = _resetFrame(false);
+		info.y2 = _cury if (info.y2 < _cury);
+		_cury = info.y1;
+		var rect = getCurrentRect(div, 0);
+		_curband.x = rect.x;
+		_curband.w = rect.w;
+	}
+	function endFrame() {
+		_cury = _resetFrame(true).y2;
+	}
+
+	var _heightStack = [];
+	function pushCurrentHeight() { _heightStack.push(_curh);  }
+	function popCurrentHeight() { _curh = _heightStack.pop(); }
+
+	var _stored;
+	function open() {
+		if (!_stored) {
+			nextLine();
+			_templ.cy = _maxy;
+			_stored = true;
+			store(_templ);
+			setInitParams(_inits);
+		}
+		return super.open(...);
+	}
+}
