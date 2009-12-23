@@ -210,7 +210,7 @@ public:
 			} 
 		} else if (overwrite == 0) {
 			ttstr path = TVPGetPlacedPath(filename);
-			if (!path.length()) {
+			if (path.length()) {
 				// Šù‚É‘¶İ‚µ‚Ä‚¢‚é
 				ttstr msg = filename + " exists.";
 				TVPThrowExceptionMessage(msg.c_str());
