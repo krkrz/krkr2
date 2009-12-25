@@ -250,6 +250,49 @@ struct WindowEx
 		return TJS_S_OK;
 	}
 
+	// bringTo
+	static tjs_error TJS_INTF_METHOD bringTo(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND(obj);
+		if (hwnd != NULL) {
+			HWND ins = NULL;
+			if (n >= 1) {
+				switch (p[0]->Type()) {
+				case tvtInteger:
+					ins = (HWND)(tTVInteger)p[0];
+					break;
+				case tvtString:
+					{
+						ttstr str(*p[0]);
+						str.ToLowerCase();
+						if      (str == TJS_W("bottom"   )) ins = HWND_BOTTOM;
+						else if (str == TJS_W("notopmost")) ins = HWND_NOTOPMOST;
+						else if (str == TJS_W("top"      )) ins = HWND_TOP;
+						else if (str == TJS_W("topmost"  )) ins = HWND_TOPMOST;
+					}
+					break;
+				case tvtObject:
+					{
+						iTJSDispatch2 *win = p[0]->AsObjectNoAddRef();
+						if (win && win->IsInstanceOf(0, 0, 0, TJS_W("Window"), win))
+							ins = GetHWND(win);
+					}
+					break;
+				}
+			}
+			::SetWindowPos(hwnd, ins, 0, 0, 0, 0,
+						   SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER);
+		}
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD sendToBack(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND(obj);
+		if (hwnd != NULL) {
+			::SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0,
+						   SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER);
+		}
+		return TJS_S_OK;
+	}
+
 	//--------------------------------------------------------------
 	// 拡張イベント用
 
@@ -850,6 +893,8 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 	RawCallback(TJS_W("ncHitTest"),           &Class::nonClientHitTest,  0);
 	RawCallback(TJS_W("focusMenuByKey"),      &Class::focusMenuByKey,    0);
 	RawCallback(TJS_W("setMessageHook"),      &Class::setMessageHook,    0);
+	RawCallback(TJS_W("bringTo"),             &Class::bringTo,           0);
+	RawCallback(TJS_W("sendToBack"),          &Class::sendToBack,        0);
 
 	Method(     TJS_W("registerExEvent"),     &Class::checkExEvents);
 	Method(     TJS_W("getNotificationNum"),  &Class::getWindowNotificationNum);

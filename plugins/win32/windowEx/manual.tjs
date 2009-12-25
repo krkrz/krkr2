@@ -49,6 +49,24 @@ class Window {
 	function getNormalRect(nofix=false); //< 非最大化通常表示領域(@param nofix true:ワークエリア補正を行わない)
 
 	/**
+	 * ウィンドウの Zオーダーを変更する
+	 * @param win Windowオブジェクトまたは規定文字列または数値
+	 *            Windowオブジェクトなら，そのウィンドウの後ろに置かれる
+	 *            文字列の場合，"bottom" "notopmost" "top" "topmost" のいずれか（HWND_*相当）cf. SetWindowPos API
+	 *            数値の場合，ウィンドウハンドルと見なすか，HWND_* マクロの値を直指定する
+	 *						#define HWND_TOP        ((HWND)0)
+	 *						#define HWND_BOTTOM     ((HWND)1)
+	 *						#define HWND_TOPMOST    ((HWND)-1)
+	 *						#define HWND_NOTOPMOST  ((HWND)-2)
+	 * ※ bringToFront()と違い，アクティブ状態は変更されません。
+	 */
+	function bringTo(win = "top");
+
+	/// alias method
+	function sendToBack() { bringTo("bottom"); }
+
+
+	/**
 	 * 拡張イベントを有効にする
 	 * 拡張イベントとして以下が発生：
 	 *  onMaximizeQuery  最大化許可確認
