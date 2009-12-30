@@ -175,9 +175,10 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 			TVPExecuteExpression(tjsClassName, &tjsClassObj);
 			if (tjsClassObj.Type() == tvtObject &&
 				TJS_SUCCEEDED(tjsClassObj.AsObjectClosureNoAddRef().IsInstanceOf(0,NULL,NULL,L"Class",NULL))) {
-				MemberRegister r(v, tjsClassObj);
-				tTJSVariantClosure closure(&r);
+				MemberRegister *r = new MemberRegister(v, tjsClassObj);
+				tTJSVariantClosure closure(r);
 				tjsClassObj.AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
+				r->Release();
 			}
 		}
 	}

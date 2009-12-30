@@ -86,28 +86,39 @@ squirrelによる複数のスレッドの並列実行処理が実装されています。
 このために利用できる内部クラス Object / Thread が定義されています。
 詳細は squirrel/sqobject/manual.nut を参照してください。
 
-このスレッドの実行は、Continuous Handler によって実行されています。
-また、処理の強制中断はないため、個別のスレッドで定期的に wait() を
+このスレッド処理を稼働させる場合、continuous handler などから
+定期的に Scripts.driveSQ() を呼び出す必要があります。
+なお、処理の強制中断はないため、個別のスレッドで定期的に wait() を
 行わないかぎりフリーズ状態となるので注意する必要があります。
 ※TJS同様、容易に busy loop を引き起こします
 
 ◇起動時スクリプト実行
-
-プラグインを読み込んだ時に、 "startup.nut" ファイルが
-存在すれば、そのファイルを自動的にスレッド実行します。
-startup.nut 実行時には、-arg0, -arg1 ... の吉里吉里引数(文字列)が、
-_main() に対する引数として展開されて渡されます。
 
 完全に squirrel で吉里吉里を制御させる場合は、
 以下のような startup.tjs を準備します。
 startup.nut がスレッド起動され、それ以降 squirrel 
 スレッドが無くなるまで動作を継続します。
 
-----------------------------------------------------------------------------
-Plugins.link("squirrel.dll");
+-----------------------------------------------------------------------------
 System.exitOnNoWindowStartup = false; // 起動時ウインドウ無し終了の抑制
 System.exitOnWindowClose = false; // メインウインドウが閉じる時の終了の抑制
-System.exitOnSquirrelDone = true; // squirrelのスレッドが全部終わったら終了
+Plugins.link("squirrel.dll");
+var argc = 0;
+var args = [];
+while ((var arg = System.getArgument("-arg" + argc)) !== void) {
+  args.add(arg);
+  argc++;
+}
+Scripts.forkSQ("startup.nut", args*);
+var prevTick = System.getTickCount();
+function sqmain(tick) 
+{
+	if (Scripts.driveSQ(tick - prevTick) == 0) {
+		System.terminate();
+	}
+	prevTick = tick;
+}
+System.addContinuousHandler(sqmain);
 -----------------------------------------------------------------------------
 
 ※System.exitOnNoWindowStartup は リビジョン4577以降の吉里吉里でのみ使えます
