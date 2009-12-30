@@ -1,21 +1,4 @@
 /**
- * System クラスへの squirrel 機能拡張
- */
-class System {
-
-	/**
-	 * squirrel の実行スレッドが全て終了した場合に吉里吉里を終了するかどうかを表します。
-	 * デフォルトは偽です。
-	 * コンソールまたはコントローラが表示されている場合はスレッドが存在しなくても終了しません。
-	 * sqiurrel 実行スレッドが無限ループ実行中で、System.exitOnWindowCloseなどの
-	 * 他の終了機構が無効な場合は、吉里吉里は終了することなくシステムに残り、
-	 * 制御不能に陥る可能性があるので注意してください。
-	 * (タスクマネージャからプロセスを終了させるしか無くなる場合があります)
-	 */
-	property exitOnSquirrelDone;
-}
-
-/**
  * Scripts クラスへの squirrel 機能拡張
  */
 class Scripts {
@@ -52,22 +35,6 @@ class Scripts {
 	 */
 	function execStorageSQ(filename, ...);
 
-	/**
-	 * Squirrel スクリプトのスレッド実行。
-	 * @param text スクリプトが格納された文字列
-	 * @param ... 引数
-	 * @return Threadオブジェクト
-	 */
-	function forkSQ(text, ...);
-
-	/**
-	 * Squirrel スクリプトのファイルからのスレッド実行。
-	 * @param filename スクリプトが格納されたファイル
-	 * @param ... 引数
-	 * @return Threadオブジェクト
-	 */
-	function forkStorageSQ(filename, ...);
-	
 	/**
 	 * Squirrel グローバルメソッドの呼び出し。
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
@@ -126,15 +93,30 @@ class Scripts {
 	 */
 	function unregisterSQ(name);
 
-	/**
-	 * 疑似スレッド動作を停止する
-	 */
-	function stopSQ();
+	// -------------------------------------------------------
 
 	/**
-	 * 疑似スレッド動作を開始する
+	 * Squirrel スクリプトのスレッド実行。
+	 * @param text スクリプトが格納された文字列
+	 * @param ... 引数
+	 * @return Threadオブジェクト
 	 */
-	function startSQ();
+	function forkSQ(text, ...);
+
+	/**
+	 * Squirrel スクリプトのファイルからのスレッド実行。
+	 * @param filename スクリプトが格納されたファイル
+	 * @param ... 引数
+	 * @return Threadオブジェクト
+	 */
+	function forkStorageSQ(filename, ...);
+	
+	/**
+	 * Squirrel疑似スレッド処理の稼働
+	 * @param diff 経過tick
+	 * @return 動作しているスレッドの数
+	 */
+	function driveSQ(diff);
 }
 
 /**
@@ -180,17 +162,3 @@ class SQContinuous {
 	 */
     function stop();
 };
-
-/**
- * squirrelの疑似スレッド処理が実行される前に呼ばれるイベント
- * @param tick tick値 (squirrelのtick値なので注意。long値)
- * @param diff 前回呼び出しからの経過時間
- */
-function onSquirrelBegin(tick, diff);
-
-/**
- * squirrelの疑似スレッド処理が実行された後に呼ばれるイベント
- * @param tick tick値 (squirrelのtick値なので注意。long値)
- * @param diff 前回呼び出しからの経過時間
- */
-function onSquirrelEnd(tick, diff);
