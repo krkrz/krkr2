@@ -74,6 +74,7 @@ void PrintUsage()
 		_SC("   -e              specifies output file endian for the -c option\n")
 		_SC("                   0:default 1:little 2:big\n")
 		_SC("   -c              compiles only\n")
+	    _SC("   -p file         precompile file\n")
 		_SC("   -d              generates debug infos\n")
 		_SC("   -v              displays version infos\n")
 		_SC("   -h              prints help\n"));
@@ -81,6 +82,7 @@ void PrintUsage()
 
 #define _INTERACTIVE 0
 #define _DONE 2
+#define _ERROR 3
 //<<FIXME>> this func is a mess
 int getargs(HSQUIRRELVM v,int argc, char* argv[])
 {
@@ -91,6 +93,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[])
 	char * output = NULL;
 	int lineinfo=0;
 	int endian=0;
+	const char *precompile = NULL;
 	if(argc>1)
 	{
 		int arg=1,exitloop=0;
@@ -127,16 +130,43 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[])
 					PrintVersionInfos();
 					PrintUsage();
 					return _DONE;
+				case 'p':
+					if (arg < argc) {
+						arg++;
+						precompile = argv[arg];
+					}
+					break;
 				default:
 					PrintVersionInfos();
 					scprintf(_SC("unknown prameter '-%c'\n"),argv[arg][1]);
 					PrintUsage();
-					return _DONE;
+					return _ERROR;
 				}
 			}else break;
 			arg++;
 		}
 
+		// precompile header
+		if (precompile) {
+			const SQChar *a;
+#ifdef SQUNICODE
+			int alen=(int)strlen(precompile);
+			a=sq_getscratchpad(v,(int)(alen*sizeof(SQChar)));
+			mbstowcs(sq_getscratchpad(v,-1),precompile,alen);
+			sq_getscratchpad(v,-1)[alen] = _SC('\0');
+#else
+			a=precompile;
+#endif
+			if(SQ_FAILED(sqstd_dofile(v,a,SQFalse,SQTrue))) {
+				const SQChar *err;
+				sq_getlasterror(v);
+				if(SQ_SUCCEEDED(sq_getstring(v,-1,&err))) {
+					scprintf(_SC("Error [%s]\n"),err);
+					return _ERROR;
+				}
+			}
+		}
+		
 		// src file
 		
 		if(arg<argc) {
@@ -196,7 +226,7 @@ int getargs(HSQUIRRELVM v,int argc, char* argv[])
 				sq_getlasterror(v);
 				if(SQ_SUCCEEDED(sq_getstring(v,-1,&err))) {
 					scprintf(_SC("Error [%s]\n"),err);
-					return _DONE;
+					return _ERROR;
 				}
 			}
 			
@@ -316,7 +346,8 @@ int main(int argc, char* argv[])
 	sqobject::Object::registerClass();
 	
 	//gets arguments
-	switch(getargs(v,argc,argv))
+	int ret;
+	switch((ret = getargs(v,argc,argv)))
 	{
 	case _INTERACTIVE:
 		Interactive(v);
@@ -333,6 +364,7 @@ int main(int argc, char* argv[])
 	_getch();
 	_CrtMemDumpAllObjectsSince( NULL );
 #endif
-	return 0;
+	
+	return ret == _ERROR ? -1 : 0;
 }
 

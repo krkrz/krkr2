@@ -256,9 +256,10 @@ static void getDictString(iTJSDispatch2 *dict, IWriter *writer)
 {
 	writer->write((tjs_char)'{');
 	//writer->addIndent();
-	DictMemberDispCaller caller(writer);
-	tTJSVariantClosure closure(&caller);
+	DictMemberDispCaller *caller = new DictMemberDispCaller(writer);
+	tTJSVariantClosure closure(caller);
 	dict->EnumMembers(TJS_IGNOREPROP, &closure, dict);
+	caller->Release();
 	//writer->delIndent();
 	writer->write((tjs_char)'}');
 }
@@ -345,104 +346,7 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 
 //---------------------------------------------------------------------------
 
-/**
- * System クラスへの Squirrel 実行メソッドの追加
- */
-class SystemSquirrel {
-public:
-	SystemSquirrel() {};
 
-	// squirrel終了時にシステムを終了させる
-	static bool exitOnSquirrelDone;
-	
-	static void setExitOnSquirrelDone(bool value) {
-		exitOnSquirrelDone = value;
-	}
-
-	static bool getExitOnSquirrelDone() {
-		return exitOnSquirrelDone;
-	}
-};
-
-bool SystemSquirrel::exitOnSquirrelDone = false;
-
-NCB_ATTACH_CLASS(SystemSquirrel, System) {
-	NCB_PROPERTY(exitOnSquirrelDone, getExitOnSquirrelDone, setExitOnSquirrelDone);
-}
-
-//---------------------------------------------------------------------------
-// sqyurrel スレッド処理用インターフェース
-//---------------------------------------------------------------------------
-
-// Continuous Handelr 用
-class SQThreadContinuous : public tTVPContinuousEventCallbackIntf {
-public:
-	SQThreadContinuous() : working(false) {
-	}
-
-	~SQThreadContinuous() {
-		TVPRemoveContinuousEventHook(this);
-	}
-
-	tjs_uint64 prevTick;
-	
-	void start() {
-		if (!working) {
-			TVPAddContinuousEventHook(this);
-			prevTick = TVPGetTickCount();
-			working = true;
-		}
-	}
-
-	void stop() {
-		if (working) {
-			TVPRemoveContinuousEventHook(this);
-			working = false;
-		}
-	}
-	
-	virtual void TJS_INTF_METHOD OnContinuousCallback(tjs_uint64 tick) {
-		iTJSDispatch2 *global= TVPGetScriptDispatch();
-		sqobject::Thread::update((int)(tick - prevTick));
-		tTJSVariant params[2];
-		params[0] = sqobject::Thread::currentTick;
-		params[1] = sqobject::Thread::diffTick;
-		{
-			static ttstr begin(TJS_W("onSquirrelBegin"));
-			TVPPostEvent(global, global, begin, 0, TVP_EPT_IMMEDIATE, 2, params);
-		}
-		sqobject::beforeContinuous();
-		sqobject::Thread::main();
-		sqobject::afterContinuous();
-		{
-			static ttstr end(TJS_W("onSquirrelEnd"));
-			TVPPostEvent(global, global, end, 0, TVP_EPT_IMMEDIATE, 2, params);
-		}
-		prevTick = tick;
-
-		// 終了処理
-		if (SystemSquirrel::exitOnSquirrelDone && sqobject::Thread::getThreadCount() == 0) {
-			// スレッドが全部終了してコンソールとコントローラも出てなければ終了
-			tTJSVariant consoleVisible, controllerVisible;
-			TVPExecuteExpression("Debug.console.visible", &consoleVisible);
-			TVPExecuteExpression("Debug.controller.visible", &controllerVisible);
-			if (!consoleVisible.AsInteger() && !controllerVisible.AsInteger()) {
-				TVPExecuteScript("System.terminate();");
-			}
-		}
-	}
-
-	bool isWorking() {
-		return working;
-	}
-
-private:
-	bool working;
-};
-
-SQThreadContinuous sqthreadcont;
-
-//---------------------------------------------------------------------------
 
 /**
  * Scripts クラスへの Squirrel 実行メソッドの追加
@@ -617,6 +521,24 @@ public:
 		sq_pop(vm,1); // root
 		return TJS_S_OK;
 	}
+
+	/**
+	 * squirrelスレッドの実行
+	 */
+	static tjs_error TJS_INTF_METHOD driveSQ(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		sqobject::Thread::update((int)*param[0]);
+		sqobject::beforeContinuous();
+		int count = sqobject::Thread::main();
+		sqobject::afterContinuous();
+		if (result) {
+			*result = count;
+		}
+		return TJS_S_OK;
+	}
 	
 	/**
 	 * squirrel グローバルメソッドの呼び出し
@@ -778,29 +700,6 @@ public:
 		unregisterglobal(vm, param[0]->GetString());
 		return TJS_S_OK;
 	}
-
-
-	/**
-	 * スレッド動作を停止
-	 */
-	static tjs_error TJS_INTF_METHOD stopSQ(tTJSVariant *result,
-											tjs_int numparams,
-											tTJSVariant **param,
-											iTJSDispatch2 *objthis) {
-		sqthreadcont.stop();
-		return TJS_S_OK;
-	}
-
-	/**
-	 * スレッド動作を開始
-	 */
-	static tjs_error TJS_INTF_METHOD startSQ(tTJSVariant *result,
-											 tjs_int numparams,
-											 tTJSVariant **param,
-											 iTJSDispatch2 *objthis) {
-		sqthreadcont.start();
-		return TJS_S_OK;
-	}
 };
 
 NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
@@ -811,6 +710,7 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("execStorageSQ", &ScriptsSquirrel::execStorage, TJS_STATICMEMBER);
 	RawCallback("forkSQ",        &ScriptsSquirrel::fork,        TJS_STATICMEMBER);
 	RawCallback("forkStorageSQ", &ScriptsSquirrel::forkStorage, TJS_STATICMEMBER);
+	RawCallback("driveSQ",       &ScriptsSquirrel::driveSQ,     TJS_STATICMEMBER);
 	RawCallback("callSQ",        &ScriptsSquirrel::call,        TJS_STATICMEMBER);
 	RawCallback("saveSQ",        &ScriptsSquirrel::save,        TJS_STATICMEMBER);
 	RawCallback("toSQString",    &ScriptsSquirrel::toString,    TJS_STATICMEMBER);
@@ -818,8 +718,6 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("unregisterSQ",     &ScriptsSquirrel::unregisterSQ,    TJS_STATICMEMBER);
 	RawCallback("compileSQ",        &ScriptsSquirrel::compile,        TJS_STATICMEMBER);
 	RawCallback("compileStorageSQ", &ScriptsSquirrel::compileStorage, TJS_STATICMEMBER);
-	RawCallback("stopSQ", &ScriptsSquirrel::stopSQ, TJS_STATICMEMBER);
-	RawCallback("startSQ", &ScriptsSquirrel::startSQ, TJS_STATICMEMBER);
 };
 
 /**
@@ -1038,35 +936,6 @@ static void PostRegistCallback()
 
 	// スレッド機構初期化
 	sqobject::Thread::init();
-	sqthreadcont.start();
-
-	// 初期スクリプト実行
-	if (TVPIsExistentStorage(L"startup.nut")) {
-		// 引数リストを生成
-		std::vector<ttstr>args;
-		int argc = 0;
-		while (true) {
-			ttstr argname = ttstr("-arg") + ttstr(argc);
-			tTJSVariant arg;
-			if (TVPGetCommandLine(argname.c_str(), &arg)) {
-				args.push_back(arg.GetString());
-				argc++;
-			} else {
-				break;
-			}
-		}
-		const SQChar **argv = NULL;
-		if (argc > 0) {
-			argv = (const SQChar**)malloc(sizeof(SQChar*) * argc);
-			for (int i=0;i<argc;i++) {
-				argv[i] = args[i].c_str();
-			}
-		}
-		if (!sqobject::Thread::fork(L"startup.nut", argc, argv)) {
-			TVPAddLog(L"failed to fork startup.nut");
-		}
-		free(argv);
-	}
 }
 
 /**
@@ -1075,7 +944,6 @@ static void PostRegistCallback()
 static void PreUnregistCallback()
 {
 	// スレッド系停止
-	sqthreadcont.stop();
 	sqobject::doneContinuous();
 	sqobject::Thread::done();
 	TJSObject::done();
