@@ -60,6 +60,7 @@ private:
 /**
  * ファイルを非同期に開く
  * @param filename スクリプトファイル名
+ * @param binary バイナリ指定で開く
  * @return ファイルハンドラ
  */
 void *sqobjOpenFile(const SQChar *filename, bool binary)
@@ -70,7 +71,7 @@ void *sqobjOpenFile(const SQChar *filename, bool binary)
 /**
  * ファイルが開かれたかどうかのチェック
  * @param handler ファイルハンドラ
- * @param dataPtr データ格納先アドレス(出力)
+ * @param dataPtr データ格納先アドレス(出力) (エラー時はNULL)
  * @param dataSize データサイズ(出力)
  * @return ロード完了していたら true
  */
