@@ -23,7 +23,7 @@ const SQChar *getString(HSQUIRRELVM v, SQInteger idx);
 class Object {
 
 protected:
-	// 自己参照
+	// squirrelオブジェクトの自己参照
 	ObjectInfo self;
 	// このオブジェクトを待ってるスレッドの一覧
 	ObjectInfo _waitThreadList;
@@ -50,6 +50,8 @@ public:
 	
 	/**
 	 * コンストラクタ
+	 * @param v squirrelVM
+	 * @param delegateIdx デルゲートが格納されてる引数番号
 	 */
 	Object(HSQUIRRELVM v, int delegateIdx=2);
 
@@ -127,6 +129,7 @@ protected:
 
 	/**
 	 * 自己オブジェクトイベント呼び出し（引数無し)
+	 * C++から squirrel の指定メソッドをイベントとしてコールバックできます。
 	 * @param eventName イベント名
 	 */
 	SQRESULT callEvent(const SQChar *eventName) {
