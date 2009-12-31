@@ -542,6 +542,10 @@ Thread::init()
 	newThreadList.initArray();
 }
 
+/*
+ * ŠÔXV
+ * @param diff Œo‰ßŠÔ
+ */
 void
 Thread::update(long diff)
 {

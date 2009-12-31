@@ -28,14 +28,15 @@ squirrel で疑似スレッド処理を実現するライブラリです。
 /**
  * ファイルを非同期に開く
  * @param filename スクリプトファイル名
+ * @param binary バイナリ指定で開く
  * @return ファイルハンドラ
  */
-extern void *sqobjOpenFile(const SQChar *filename);
+extern void *sqobjOpenFile(const SQChar *filename, bool binary);
 
 /**
  * ファイルが開かれたかどうかのチェック
  * @param handler ファイルハンドラ
- * @param dataPtr データ格納先アドレス(出力)
+ * @param dataPtr データ格納先アドレス(出力) (エラー時はNULL)
  * @param dataSize データサイズ(出力)
  * @return ロード完了していたら true
  */
@@ -89,19 +90,34 @@ namespace sqobject{
 ◇独自オブジェクトの実装と登録
 
 sqobject::Object を単一継承する形でオブジェクトを作成してください。
-そうすることで、Object クラスに拡張されている、プロパティやデルゲートの
+
+Object の独自機能を使う場合は、コンストラクタ 
+Object(HSQUIRRELVM v, int delegateIdx=2) を呼び出すか、
+を呼び出すようにするか、あるいは、登録後に initSelf(HSQUIRRELVM v, int idx=1)
+を使って、自己オブジェクト参照を記録する必要があります。
+
+この処理が必要な機能
+・デストラクタ機能
+・デルゲート機能
+・プロパティ機能
+・wait機能 (wait/notify)
+・C++からのイベントコールバック
+
+Object クラスに拡張されている、プロパティやデルゲートの
 機能を使うことができるほか、疑似スレッドの wait 対象としてオブジェクト
 を扱うことができます。
 
-※オブジェクトの継承処理は独自に実装する必要があります
+※オブジェクトの継承処理自体は独自に実装する必要があります
 
 ◇実行処理の実装
 
 ■初期化
 
 1. sqobject::init() を呼び出す
-2. print関数登録他必要な処理
+2. print関数登録他必要な処理を行う
 3. クラス登録
+
+  組み込み機能は以下の処理でグローバルに読み込まれます
 
   Object::registerClass();
   Thread::registerClass();
@@ -111,21 +127,31 @@ sqobject::Object を単一継承する形でオブジェクトを作成してください。
 
 ■実行処理実装
 
-疑似スレッドを稼働させるにはメインループ中で以下の処理を呼び出してください。
+疑似スレッドを稼働させるにはアプリのメインループ中
+から以下の処理を呼び出してください。
 
 -----------------------------------------------
-/**
+/*
+ * 時間更新
  * @param diff 経過時間
+ */
+int Thread::update(long diff);
+
+/**
+ * 実行処理メインループ
  * @return 動作中のスレッドの数
  */	
-int Thread::main(int diff);
+int Thread::main();
 -----------------------------------------------
 
 基本構造は次のようにするのが妥当です。
 
 while(true) {
   イベント処理
-　Thread::main(時間差分)
+　Thread::update(時間差分)
+  beforeContinuous(); // 事前continuous処理:後述
+　Thread::main()
+  afterContinuous(); // 事後continuous処理:後述
 　画面更新処理
 };
 
@@ -139,12 +165,7 @@ wait() 命令に渡す数値パラメータの意味になります。
 2. roottable の情報を全クリア
 3. sqobject::done() 呼び出して VM を解放
 
-◇実装サンプルコード
-
- sqfunc.cpp     シンプルな継承/メンバ関数処理の実装例
- sqplusfunc.cpp	SQPlusを使う場合の実装例
-
-●continuous handler 機能
+■continuous handler 機能
 
 スレッド機構とは別に、単純にエンジン側から特定の squirrel 
 スクリプトを定期的に呼び出す機能です。
@@ -155,22 +176,23 @@ continuous handler: 制御が終わったあとの自律計算処理
 といった使い分けを想定しています。continuous handlerの
 呼び出しは、すべてのスレッド処理が一旦 suspend した後になります。
 
-※この呼び出しは、常に通常の sq_call によるものなので、
-  スクリプトを suspend() して復帰することはできません。
+※continuous handler の呼び出しは、常に通常の sq_call に
+  よるものなのでスクリプトを suspend() して復帰することはできません。
 
 ・sqobject::registerContinuous() を呼び出すことで機能登録されます
 
-・sqobject::Thread::main(diff) を呼び出す前に
-  sqobject::beforeContinuous(diff) を、呼び出した後に
-  sqobject::afterContinuous() を呼び出してください
+・sqobject::beforeContinuous() と sqobject::afterContinuous() を
+  それぞれ sqobject::Thread::main() の前後で呼び出してください。
 
-・全処理終了時には　sqoject::doneContinuous() を呼び出します
+・処理終了時には　sqoject::doneContinuous() を呼び出します
 
+・スクリプトからは addContinuous() / removeContinuous() で
+  関数を登録/解除できます。
 
-◇スクリプト側からの登録
+■実装サンプルコード
 
-addContinuous(func), removeContinuous(func) で関数を登録/解除できます。
-
+ sqfunc.cpp     シンプルな継承/メンバ関数処理の実装例
+ sqplusfunc.cpp	SQPlusを使う場合の実装例
 
 ●スクリプトの呼び出し
 
