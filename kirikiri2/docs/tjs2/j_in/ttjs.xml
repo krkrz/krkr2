@@ -144,8 +144,8 @@ void tTJS::OutputToConsoleWithCentering(const tjs_char *msg, tjs_uint width) con
 
 
 <para>
-<ptitle>OutputToConsoleWithCentering</ptitle>
-void tTJS::OutputToConsoleWithCentering(const tjs_char *text, tjs_uint count) const<r/>
+<ptitle>OutputToConsoleSeparator</ptitle>
+void tTJS::OutputToConsoleSeparator(const tjs_char *text, tjs_uint count) const<r/>
 <r/>
 　text で示された区切り記号を、count 個、コンソールに出力します。
 </para>
