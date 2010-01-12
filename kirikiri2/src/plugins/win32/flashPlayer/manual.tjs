@@ -56,6 +56,12 @@ class FlashPlayer {
 	function FlashPlayer(width, height);
 
 	/*
+	 * 動画情報を完全にクリアする
+	 * @return 成功したら true
+	 */
+	function clearMovie()
+	
+	/*
 	 * 指定した吉里吉里のファイルを動画として初期化する
 	 * @param storage 吉里吉里のファイル
 	 * @return 読み込みに成功したら true
