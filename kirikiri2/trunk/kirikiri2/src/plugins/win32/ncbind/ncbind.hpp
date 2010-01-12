@@ -1160,8 +1160,8 @@ public:
 			typedef traits<MethodT> TraitsT;
 			typedef typename TraitsT::ClassT ClassT;
 			typedef typename DefsT::TypeSelect<
-				(DefsT::TypeEqual<ClassT, void>::Result), noInstanceGetter, nativeInstanceGetter<ClassT> >::Result GetInstanceT;
-			// GetInstanceT=     (ClassT==void) ?         noInstanceGetter: nativeInstanceGetter<ClassT>;
+				(DefsT::TypeEqual<ClassT, void>::Result), noInstanceGetter, nativeInstanceGetter<RefClassT> >::Result GetInstanceT;
+			// GetInstanceT=     (ClassT==void) ?         noInstanceGetter: nativeInstanceGetter<RefClassT>;
 			typedef paramsFunctor<MethodT> FunctorT;
 			enum {
 				InvokeSelect = doInvokeBase::ivsMethod,
