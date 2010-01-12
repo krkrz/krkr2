@@ -1,14 +1,17 @@
 Plugins.link("flashPlayer.dll");
 
-var WIDTH=800;
-var HEIGHT=600;
+var WIDTH=400;
+var HEIGHT=200;
 
 function dm() {
 	Debug.message(...);
 }
 
-class FlashLayer extends Layer, FlashPlayer {
-
+/**
+ * Flash統合レイヤサンプル
+ */
+class FlashLayer extends Layer, FlashPlayer
+{
 	function FlashLayer(window, parent, width, height) {
 		global.Layer.Layer(window, parent);
 		global.Layer.setSize(width, height);
@@ -16,10 +19,6 @@ class FlashLayer extends Layer, FlashPlayer {
 		hitThreshold = 0;
 	}
 
-	function dm() {
-		global.Debug.message(...);
-	}
-	
 	// -------------------------------------
 	// サイズ変更差し替え
 	// -------------------------------------
@@ -34,10 +33,12 @@ class FlashLayer extends Layer, FlashPlayer {
 	// -------------------------------------
 
 	function onKeyDown(key) {
+		dm("キーがおされた:" + key);
 		doKeyDown(key);
 	}
 
 	function onKeyUp(key) {
+		dm("キーがはなされた:" + key);
 		doKeyUp(key);
 	}
 
@@ -54,7 +55,6 @@ class FlashLayer extends Layer, FlashPlayer {
 	}
 
 	function onMouseMove(x, y, shift) {
-		//dm("move:%d %d".sprintf(x, y));
 		doMouseMove(x, y, shift);
 	}
 
@@ -94,13 +94,9 @@ class FlashLayer extends Layer, FlashPlayer {
 	// 呼び出しテスト
 	// -------------------------------------
 
-	function tjsFunction(a, b) {
-		dm("call back tjsFunction:%s:%s".sprintf(a, b));
-		return "%s:%s".sprintf(a,b);
-	}
-
-	function trace(msg) {
-		dm("call back trace:" + msg);
+	// ActionScriptから呼ばれるメソッドを定義しておく
+	function drawMessage(msg) {
+		window.drawMessage(msg);
 	}
 }
 
@@ -109,13 +105,19 @@ class MyWindow extends Window
 	var base;
 	var layer;
 	var layer2;
+	var message;
 	var exit;
-	var call;
+	var red;
+	var blue;
+	var clear;
 	
 	function MyWindow() {
 		super.Window();
 		menu.add(exit = new MenuItem(this, "終了"));
-		menu.add(call = new MenuItem(this, "呼び出し"));
+		menu.add(red  = new MenuItem(this, "背景を赤に"));
+		menu.add(blue = new MenuItem(this, "背景を青に"));
+		menu.add(clear = new MenuItem(this, "clear"));
+
 		setInnerSize(WIDTH, HEIGHT);
 
 		// プライマリレイヤ
@@ -129,32 +131,69 @@ class MyWindow extends Window
 		with (layer) {
 			.setPos(0, 0);
 			.visible = true;
+			.type = ltOpaque;
 			.initMovie("test.swf");
-			//.initMovie("HelloWorld.swf");
 		}
 		add(layer);
 		layer.disableLocalSecurity();
 		layer.allowScriptAccess = "always";
+
+		// レイヤにフォーカスをあてる
+		layer.enabled = true;
+		layer.focusable = true;
+		layer.focus(true);
 		
 		layer2 = new Layer(this, base);
 		with (layer2) {
 			.setPos(0,0,WIDTH,HEIGHT);
-			.fillRect(WIDTH/4,HEIGHT/4,WIDTH/2,HEIGHT/2,0x80ffff00);
-			.drawText(20,20,"この文字と黄色の矩形は吉里吉里のレイヤに描画されています。フラッシュによるレイヤの上にも下にも配置できます",0x000000);
+			.fillRect(WIDTH/4,HEIGHT/4,WIDTH/4,HEIGHT/2,0x80ffff00);
 			.visible = true;
 		}
 		add(layer2);
+
+		message = new Layer(this, base);
+		with (message) {
+			.setPos(0,0,WIDTH,HEIGHT);
+			.fillRect(0,0,.width,.height,0);
+			.visible = true;
+		}
+		add(message);
+
+		drawMessage("この文字と黄色の矩形は吉里吉里のレイヤに描画されています");
 	}
 
 	// 実行部
 	function action(ev)	{
 		if(ev.type == "onClick") {
-			if (ev.target == exit) {
+			switch (ev.target) {
+			case exit:
 				System.terminate();
-			} else if (ev.target == call) {
-				layer.callFunction("callFromTJS", "test");
+				break;
+			case red:
+				// ActionScriptを直接呼び出し
+				layer.callFunction("setBaseColor", 0xff0000);
+				break;
+			case blue:
+				// ActionScriptを直接呼び出し
+				layer.callFunction("setBaseColor", 0x0000ff);
+				break;
+			case clear:
+				layer.clearMovie();
+				break;
 			}
 		}
+	}
+	
+	// メッセージ描画
+	function drawMessage(msg) {
+		with (message) {
+			.fillRect(0,0,.width,.height,0);
+			.drawText(10,10,msg,0x000000,255,true,2,0xffffff);
+		}
+	}
+
+	function onKeyDown(key) {
+		dm("Win:キーがおされた:" + key);
 	}
 };
 
