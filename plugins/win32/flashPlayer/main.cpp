@@ -884,6 +884,35 @@ public:
 	// プレイヤー制御
 	// --------------------------------------------------
 
+	bool clearMovie() {
+		bool ret = false;
+		if (oleobj) {
+			IPersistStreamInit * psStreamInit = 0;
+			if (SUCCEEDED(oleobj->QueryInterface(::IID_IPersistStreamInit,  (LPVOID*)&psStreamInit))) {
+				if (SUCCEEDED(psStreamInit->InitNew())) {
+					HGLOBAL hBuffer = ::GlobalAlloc(GMEM_MOVEABLE, 8);
+					if (hBuffer)	{
+						unsigned char* pBuffer = (unsigned char*)::GlobalLock(hBuffer);
+						if (pBuffer) {
+							memcpy(pBuffer, "fUfU", 4);
+							*(ULONG*)(pBuffer+4) = 0;
+							IStream* pStream = NULL;
+							if(::CreateStreamOnHGlobal(hBuffer, FALSE, &pStream) == S_OK) 	{
+								if (SUCCEEDED(psStreamInit->Load(pStream))) {
+									ret = true;
+								}
+								pStream->Release();
+							}
+							::GlobalUnlock(hBuffer);
+						}
+						::GlobalFree(hBuffer);
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
 	/**
 	 * 指定した吉里吉里のファイルを動画とみなして初期化する
 	 * @param storage 吉里吉里のファイル
@@ -1498,6 +1527,7 @@ private:
 
 NCB_REGISTER_CLASS(FlashPlayer) {
 	Factory(&ClassT::factory);
+	NCB_METHOD(clearMovie);
 	NCB_METHOD(initMovie);
 	NCB_METHOD(setSize);
 	NCB_METHOD(hitTest);
