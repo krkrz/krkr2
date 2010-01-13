@@ -10,6 +10,9 @@
 //---------------------------------------------------------------------------
 #include "tjsCommHead.h"
 
+#include <shellapi.h>
+#include <shlobj.h>
+
 #include "GraphicsLoaderImpl.h"
 
 #include "SystemImpl.h"
@@ -414,6 +417,29 @@ static void TVPReadRegValue(tTJSVariant &result, const ttstr & key)
 
 
 
+//---------------------------------------------------------------------------
+// Static function for retrieving special folder path
+//---------------------------------------------------------------------------
+static ttstr TVPGetSpecialFolderPath(int csidl)
+{
+	if(procSHGetSpecialFolderPathW)
+	{
+		WCHAR path[MAX_PATH+1];
+		if(!procSHGetSpecialFolderPathW(NULL, path, csidl, false))
+			return ttstr();
+		return ttstr(path);
+	}
+	else
+	{
+		char path[MAX_PATH+1];
+		if(!SHGetSpecialFolderPathA(NULL, path, csidl, false))
+			return ttstr();
+		return ttstr(path);
+	}
+}
+//---------------------------------------------------------------------------
+
+
 
 
 //---------------------------------------------------------------------------
@@ -422,22 +448,19 @@ static void TVPReadRegValue(tTJSVariant &result, const ttstr & key)
 ttstr TVPGetPersonalPath()
 {
 	// Retrieve personal directory;
-	// On Windows, this function first looks at
-	// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion
-	//  \Explorer\Shell Folders\Personal. This usually refers "My Documents".
-	// If this is not exist, returns application exe path.
-
-
-	tTJSVariant val;
-	TVPReadRegValue(val,
-		TJS_W("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\"
-			"CurrentVersion\\Explorer\\Shell Folders\\Personal"));
-
-	if(val.Type() == tvtString)
+	// This usually refers "My Documents".
+	// If this is not exist, returns application data path, then exe path.
+	// for windows vista, this refers application data path.
+	ttstr path;
+	path = TVPGetSpecialFolderPath(CSIDL_PERSONAL);
+	if(path.IsEmpty())
+		path = TVPGetSpecialFolderPath(CSIDL_APPDATA);
+	
+	if(!path.IsEmpty())
 	{
-		ttstr homepath(TVPNormalizeStorageName(val));
-		if(homepath.GetLastChar() != TJS_W('/')) homepath += TJS_W('/');
-		return homepath;
+		path = TVPNormalizeStorageName(path);
+		if(path.GetLastChar() != TJS_W('/')) path += TJS_W('/');
+		return path;
 	}
 
 	return TVPGetAppPath();
@@ -453,22 +476,15 @@ ttstr TVPGetPersonalPath()
 ttstr TVPGetAppDataPath()
 {
 	// Retrieve application data directory;
-	// On Windows, this function first looks at
-	// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion
-	//  \Explorer\Shell Folders\AppData
 	// If this is not exist, returns application exe path.
 
-
-	tTJSVariant val;
-	TVPReadRegValue(val,
-		TJS_W("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\"
-			"CurrentVersion\\Explorer\\Shell Folders\\AppData"));
-
-	if(val.Type() == tvtString)
+	ttstr path = TVPGetSpecialFolderPath(CSIDL_APPDATA);
+	
+	if(!path.IsEmpty())
 	{
-		ttstr homepath(TVPNormalizeStorageName(val));
-		if(homepath.GetLastChar() != TJS_W('/')) homepath += TJS_W('/');
-		return homepath;
+		path = TVPNormalizeStorageName(path);
+		if(path.GetLastChar() != TJS_W('/')) path += TJS_W('/');
+		return path;
 	}
 
 	return TVPGetAppPath();
