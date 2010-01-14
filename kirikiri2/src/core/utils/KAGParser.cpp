@@ -332,6 +332,8 @@ tTJSNI_KAGParser::tTJSNI_KAGParser()
 	DicClear = NULL;
 	DicAssign = NULL;
 	DicObj = NULL;
+	ArrClear = NULL;
+	ArrAdd = NULL;
 	Macros = NULL;
 	RecordingMacro = NULL;
 	DebugLevel = tkdlSimple;
@@ -343,6 +345,9 @@ tTJSNI_KAGParser::tTJSNI_KAGParser()
 	iTJSDispatch2 * dictclass;
 	DicObj = TJSCreateDictionaryObject(&dictclass);
 	Macros = TJSCreateDictionaryObject();
+	// retrieve ArrClear method and ArrAdd method
+	iTJSDispatch2 * arrayclass;
+	TJSCreateArrayObject(&arrayclass)->Release();
 	try
 	{
 		// retrieve clear method from dictclass
@@ -357,18 +362,30 @@ tTJSNI_KAGParser::tTJSNI_KAGParser()
 		if(TJS_FAILED(er)) TVPThrowInternalError;
 		DicAssign = val.AsObject();
 
+		// retrieve clear method from arrayclass
+		er = arrayclass->PropGet(0, TJS_W("clear"), NULL, &val, arrayclass);
+		if(TJS_FAILED(er)) TVPThrowInternalError;
+		ArrClear = val.AsObject();
+
+		er = arrayclass->PropGet(0, TJS_W("add"), NULL, &val, arrayclass);
+		if(TJS_FAILED(er)) TVPThrowInternalError;
+		ArrAdd = val.AsObject();
 	}
 	catch(...)
 	{
 		dictclass->Release();
+		arrayclass->Release();
 		DicObj->Release();
 		Macros->Release();
 		if(DicClear) DicClear->Release();
 		if(DicAssign) DicAssign->Release();
+		if(ArrClear) ArrClear->Release();
+		if(ArrAdd) ArrAdd->Release();
 		throw;
 	}
 
 	dictclass->Release();
+	arrayclass->Release();
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -391,6 +408,8 @@ void TJS_INTF_METHOD tTJSNI_KAGParser::Invalidate()
 	if(DicAssign) DicAssign->Release();
 	if(DicClear) DicClear->Release();
 	if(DicObj) DicObj->Release();
+	if(ArrClear) ArrClear->Release();
+	if(ArrAdd) ArrAdd->Release();
 	if(Macros) Macros->Release();
 
 	ClearMacroArgs();
@@ -1380,7 +1399,15 @@ void tTJSNI_KAGParser::ClearCallStack()
 	PopMacroArgsTo(MacroArgStackBase = 0); // macro arguments are also cleared
 }
 //---------------------------------------------------------------------------
-iTJSDispatch2 * tTJSNI_KAGParser::_GetNextTag()
+// 
+static void _ArrayAdd(iTJSDispatch2 *ArrAdd, iTJSDispatch2 *ArrObj, ttstr const &name)
+{
+	tTJSVariant append = name;
+	tTJSVariant *args = &append;
+	ArrAdd->FuncCall(0, NULL, NULL, NULL, 1, &args, ArrObj);
+}
+//---------------------------------------------------------------------------
+iTJSDispatch2 * tTJSNI_KAGParser::_GetNextTag(iTJSDispatch2 * ArrObj)
 {
 	// get next tag and return information dictionary object.
 	// return NULL if the tag not found.
@@ -1407,6 +1434,8 @@ parse_start:
 	{
 		DicClear->FuncCall(0, NULL, NULL, NULL, 0, NULL, DicObj);
 			// clear dictionary object
+		if (ArrObj) ArrClear->FuncCall(0, NULL, NULL, NULL, 0, NULL, ArrObj);
+			// clear array object
 
 		if(Interrupted)
 		{
@@ -1453,6 +1482,8 @@ parse_start:
 					__tag_name.AsVariantStringNoAddRef(), &r_val, DicObj);
 				DicObj->PropSetByVS(TJS_MEMBERENSURE,
 					__eol_name.AsVariantStringNoAddRef(), &true_val, DicObj);
+				if (ArrObj) _ArrayAdd(ArrAdd, ArrObj, __eol_name);
+
 				if(RecordingMacro) RecordingMacroStr += TJS_W("[r eol=true]");
 				CurLine++;
 				CurPos = 0;
@@ -1505,6 +1536,7 @@ parse_start:
 					static ttstr text_name(TJSMapGlobalStringMap(TJS_W("text")));
 					DicObj->PropSetByVS(TJS_MEMBERENSURE,
 						text_name.AsVariantStringNoAddRef(), &ch_val, DicObj);
+					if (ArrObj) _ArrayAdd(ArrAdd, ArrObj, text_name);
 
 					if(RecordingMacro)
 					{
@@ -2231,17 +2263,29 @@ parse_start:
 
 			// store value into the dictionary object
 			if(store)
+			{
 				DicObj->PropSetByVS(TJS_MEMBERENSURE,
 					attribname.AsVariantStringNoAddRef(), &ValueVariant, DicObj);
+				if (ArrObj) _ArrayAdd(ArrAdd, ArrObj, attribname);
+			}
 		}
 	}
 
 	return NULL;
 }
 //---------------------------------------------------------------------------
-iTJSDispatch2 * tTJSNI_KAGParser::GetNextTag()
+iTJSDispatch2 * tTJSNI_KAGParser::GetNextTag(tTJSVariant *arr)
 {
-	return _GetNextTag();
+	iTJSDispatch2 *arrayobj = 0;
+	if (arr && arr->Type() == tvtObject)
+	{
+		arrayobj = arr->AsObjectNoAddRef();
+		if (arrayobj->IsInstanceOf(0, NULL, NULL, TJS_W("Array"), arrayobj) != TJS_S_TRUE)
+		{
+			arrayobj = 0;
+		}
+	}
+	return _GetNextTag(arrayobj);
 }
 //---------------------------------------------------------------------------
 iTJSDispatch2 *tTJSNI_KAGParser::GetMacroTopNoAddRef() const
@@ -2308,7 +2352,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getNextTag)
 {
 	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_KAGParser);
 //	if(numparams < 0) return TJS_E_BADPARAMCOUNT;
-	iTJSDispatch2 *dsp = _this->GetNextTag();
+	iTJSDispatch2 *dsp = _this->GetNextTag((numparams >= 1) ? param[0] : NULL);
 	if(dsp == NULL)
 	{
 		if(result) result->Clear(); // return void ( not null )
