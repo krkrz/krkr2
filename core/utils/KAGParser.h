@@ -170,6 +170,9 @@ private:
 	iTJSDispatch2 * DicAssign; // Dictionary
 	iTJSDispatch2 * DicObj; // DictionaryObject
 
+	iTJSDispatch2 * ArrClear; // Array.Clear method pointer
+	iTJSDispatch2 * ArrAdd; // Array.Add method pointer
+
 	iTJSDispatch2 * Macros; // Macro Dictionary Object
 
 	std::vector<iTJSDispatch2 *> MacroArgs; // Macro arguments
@@ -286,10 +289,10 @@ public:
 	void ResetInterrupt() { Interrupted = false; };
 
 private:
-	iTJSDispatch2 * _GetNextTag();
+	iTJSDispatch2 * _GetNextTag(iTJSDispatch2 *);
 
 public:
-	iTJSDispatch2 * GetNextTag();
+	iTJSDispatch2 * GetNextTag(tTJSVariant *);
 
 	const ttstr & GetCurLabel() const { return CurLabel; }
 	tjs_int GetCurLine() const { return CurLine; }
