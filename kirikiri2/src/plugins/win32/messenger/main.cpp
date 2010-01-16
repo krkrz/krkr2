@@ -58,65 +58,49 @@ protected:
 	
 	// ユーザ定義レシーバ情報
 	struct ReceiverInfo {
-		NativeReceiver receiverNative;
-		iTJSDispatch2 *receiverFunc;
-		ttstr receiverStr;
 		tTJSVariant userData;
+		tTJSVariant receiver;
 		// デフォルトコンストラクタ
-		ReceiverInfo() : receiverNative(NULL), receiverFunc(NULL) {
-		};
+		ReceiverInfo() {};
 		// コンストラクタ
-		ReceiverInfo(tTJSVariant &receiver, tTJSVariant &userData)
-			: receiverNative(NULL), receiverFunc(NULL), userData(userData) {
-				switch (receiver.Type()) {
-				case tvtObject:
-					receiverFunc = receiver.AsObject();
-					receiverFunc->AddRef();
-					break;
-				case tvtString:
-					receiverStr = receiver.GetString();
-					break;
-				case tvtInteger:
-					receiverNative = (NativeReceiver)(tjs_int)receiver;
-					break;
-				}
-			}
-
+		ReceiverInfo(tTJSVariant &receiver, tTJSVariant &userData) : receiver(receiver), userData(userData) {}
 		// コピーコンストラクタ
 		ReceiverInfo(const ReceiverInfo &orig) {
-			receiverNative = orig.receiverNative;
-			receiverFunc   = orig.receiverFunc;
-			receiverStr    = orig.receiverStr;
-			if (receiverFunc) {
-				receiverFunc->AddRef();
-			}
+			userData = orig.userData;
+			receiver = orig.receiver;
 		}
-
 		// デストラクタ
-		~ReceiverInfo() {
-			if (receiverFunc) {
-				receiverFunc->Release();
-			}
-		}
+		~ReceiverInfo(){}
 
-		// 処理の実行
+		// 実行
 		bool exec(iTJSDispatch2 *obj, tTVPWindowMessage *message) {
-			if (receiverNative) {
-				return receiverNative(obj, (void*)(tjs_int)userData, message);
-			} else if (receiverFunc) {
-				tTJSVariant result;
-				tTJSVariant wparam = (tjs_int)message->WParam;
-				tTJSVariant lparam = (tjs_int)message->LParam;
-				tTJSVariant *p[] = {&userData, &wparam, &lparam};
-				receiverFunc->FuncCall(0, NULL, NULL, &result, 3, p, NULL);
-				return (int)result != 0;
-			} else if (receiverStr != "") {
-				tTJSVariant result;
-				tTJSVariant wparam = (tjs_int)message->WParam;
-				tTJSVariant lparam = (tjs_int)message->LParam;
-				tTJSVariant *p[] = {&userData, &wparam, &lparam};
-				obj->FuncCall(0, receiverStr.c_str(), NULL, &result, 3, p, obj);
-				return (int)result != 0;
+			switch (receiver.Type()) {
+			case tvtObject:
+				{
+					tTJSVariant result;
+					tTJSVariant wparam = (tjs_int)message->WParam;
+					tTJSVariant lparam = (tjs_int)message->LParam;
+					tTJSVariant *p[] = {&userData, &wparam, &lparam};
+					receiver.AsObjectClosureNoAddRef().FuncCall(0, NULL, NULL, &result, 3, p, NULL);
+					return (int)result != 0;
+				}
+				break;
+			case tvtString:
+				{
+					tTJSVariant result;
+					tTJSVariant wparam = (tjs_int)message->WParam;
+					tTJSVariant lparam = (tjs_int)message->LParam;
+					tTJSVariant *p[] = {&userData, &wparam, &lparam};
+					obj->FuncCall(0, receiver.GetString(), NULL, &result, 3, p, obj);
+					return (int)result != 0;
+				}
+				break;
+			case tvtInteger:
+				{
+					NativeReceiver receiverNative = (NativeReceiver)(tjs_int)receiver;
+					return receiverNative(obj, (void*)(tjs_int)userData, message);
+				}
+				break;
 			}
 			return false;
 		}

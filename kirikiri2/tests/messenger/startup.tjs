@@ -34,25 +34,29 @@ class MyWindow extends Window
 		registerUserMessageReceiver(0, 0x104, onMySysKeyDown, 0);
 		registerUserMessageReceiver(0, 0x106, onMySysCharDown, 0);
 	}
+
+	function dm(msg) {
+		Debug.message(msg);
+	}
 	
 	function onMyKeyDown(userdata, wparam, lparam) {
-		Debug.message("HOOKキーがおされた:" + wparam + ":" + lparam);
+		dm("HOOKキーがおされた:" + wparam + ":" + lparam);
 		// return true; にすると、onKeyDown にイベントが通らなくなる
 		return false;
 	}
 
 	function onMySysKeyDown(userdata, wparam, lparam) {
-		Debug.message("システムキーがおされた:" + wparam + ":" + lparam);
+		dm("システムキーがおされた:" + wparam + ":" + lparam);
 		return true;
 	}
 
 	function onMySysCharDown(userdata, wparam, lparam) {
-		Debug.message("WM_SYSCHAR:" + wparam + ":" + lparam);
+		dm("WM_SYSCHAR:" + wparam + ":" + lparam);
 		return true;
 	}
 	
 	function onKeyDown(key, shift, process) {
-		Debug.message("MAINキーがおされた:" + key + ":" + shift + ":" + process);
+		dm("MAINキーがおされた:" + key + ":" + shift + ":" + process);
 	}
 	
 	var ypos;
