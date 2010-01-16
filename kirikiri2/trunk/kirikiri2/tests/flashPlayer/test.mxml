@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application 
+ xmlns:mx="http://www.adobe.com/2006/mxml" 
+ width="400"
+ height="200"
+ creationComplete="complete();"
+>
+<mx:Panel id="panel" title="吉里吉里制御サンプル" layout="absolute" height="100" width="330">
+<mx:TextInput id="txt1" x="5" y="5" width="200" text="ボタンを押すと吉里吉里で表示されます"/>
+<mx:Button id="btn1" label="表示" x="220" y="5" click="drawMessage(txt1.text)" />
+<mx:TextInput id="txt2" x="5" y="35" width="200" text="別のテキスト"/>
+<mx:Button id="btn2" label="表示" x="220" y="35" click="drawMessage(txt2.text)" />
+</mx:Panel>
+<mx:Script>
+<![CDATA[
+	import flash.external.ExternalInterface;
+	// ページ構築後に呼ばれる処理
+	private function complete():void {
+		// 外部にメソッドを公開
+		ExternalInterface.addCallback("setBaseColor", setBaseColor);
+		setBaseColor(0xffffff);
+	}
+	// 外部処理の呼び出し
+	private function drawMessage(text:String):void {
+		ExternalInterface.call("drawMessage", text);
+	}
+	// 外部からの呼び出し用
+	private function setBaseColor(a:Number):void {
+		panel.opaqueBackground = a;
+	}
+]]>
+</mx:Script>
+</mx:Application>
