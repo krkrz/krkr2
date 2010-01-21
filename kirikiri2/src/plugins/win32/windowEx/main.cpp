@@ -304,7 +304,8 @@ struct WindowEx
 
 	// TJSメソッド呼び出し
 	tjs_error funcCall(tjs_char const *name, tTJSVariant *result, tjs_int numparams = 0, tTJSVariant **params = 0) const {
-		return self->FuncCall(0, name, 0, result, numparams, params, self);
+		return Try_iTJSDispatch2_FuncCall(self, 0, name, 0, result, numparams, params, self);
+//		return self->FuncCall(0, name, 0, result, numparams, params, self);
 	}
 
 	// 引数なしコールバック
@@ -1523,7 +1524,8 @@ struct PadEx
 
 	// TJSメソッド呼び出し
 	tjs_error funcCall(tjs_char const *name, tTJSVariant *result, tjs_int numparams = 0, tTJSVariant **params = 0) const {
-		return self->FuncCall(0, name, 0, result, numparams, params, self);
+		return Try_iTJSDispatch2_FuncCall(self, 0, name, 0, result, numparams, params, self);
+//		return self->FuncCall(0, name, 0, result, numparams, params, self);
 	}
 
 	// 引数なしコールバック
