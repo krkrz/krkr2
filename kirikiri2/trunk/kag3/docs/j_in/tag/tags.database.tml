@@ -1435,6 +1435,25 @@
 			</info>
 		</attrib>
 
+		<attrib name="lightcolor">
+			<shortinfo> 環境光色 </shortinfo>
+			<required> no </required>
+			<format> 0xAARRGGBB形式 </format>
+			<info>
+				　光ブレンドによる色調効果の、ブレンドする色を 0xAARRGGBB 形式で指定します。
+				α値を含むのに注意してください。<BR>
+				　省略すると光ブレンドによる色調効果は行われません。この処理は mcolor 処理の後で実行されます。
+			</info>
+		</attrib>
+
+		<attrib name="lighttype">
+			<shortinfo> 環境光濃度 </shortinfo>
+			<required> lightcolor を指定した場合 </required>
+			<format> mode と同じ </format>
+			<info>
+				　光ブレンドによる色調効果の、合成モードを指定します。
+			</info>
+		</attrib>
 
 		<attrib name="clipleft">
 			<shortinfo> クリップ矩形左端位置 </shortinfo>
