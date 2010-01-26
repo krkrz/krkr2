@@ -1447,7 +1447,7 @@
 		</attrib>
 
 		<attrib name="lighttype">
-			<shortinfo> 環境光濃度 </shortinfo>
+			<shortinfo> 環境光合成モード </shortinfo>
 			<required> lightcolor を指定した場合 </required>
 			<format> mode と同じ </format>
 			<info>
