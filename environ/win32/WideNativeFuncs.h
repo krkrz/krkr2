@@ -133,6 +133,10 @@ TVP_WIDE_NATIVE_FUNC_REG(
 		::PHKEY phkResult),
 	"ADVAPI32.DLL")
 
+TVP_WIDE_NATIVE_FUNC_REG(
+	BOOL WINAPI, SHGetSpecialFolderPathW,
+	(HWND hwnd, LPWSTR pszPath, int csidl, BOOL fCreate),
+	"shell32.dll")
 //---------------------------------------------------------------------------
 #if defined(TVP_WNF_B)
 };
