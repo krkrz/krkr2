@@ -615,36 +615,61 @@ static AnsiString GetRegistryValue(AnsiString key, AnsiString name)
 //---------------------------------------------------------------------------
 
 
+
+
 //---------------------------------------------------------------------------
-static AnsiString GetAppDataPath()
+// Static function for retrieving special folder path
+//---------------------------------------------------------------------------
+static AnsiString AnsiGetSpecialFolderPath(int csidl)
 {
-	try
-	{
-		return GetRegistryValue("Software\\Microsoft\\Windows\\"
-			"CurrentVersion\\Explorer\\Shell Folders", "AppData");
-	}
-	catch(...)
-	{
-		return "";
-	}
+	char path[MAX_PATH+1];
+	if(!SHGetSpecialFolderPathA(NULL, path, csidl, false))
+		return AnsiString();
+	return AnsiString(path);
 }
 //---------------------------------------------------------------------------
 
 
+
+
 //---------------------------------------------------------------------------
-static AnsiString GetPersonalPath()
+// AnsiGetPersonalPath
+//---------------------------------------------------------------------------
+static AnsiString AnsiGetPersonalPath()
 {
-	try
+	AnsiString path;
+	path = AnsiGetSpecialFolderPath(CSIDL_PERSONAL);
+	if(path.IsEmpty())
+		path = AnsiGetSpecialFolderPath(CSIDL_APPDATA);
+	
+	if(path != "")
 	{
-		return GetRegistryValue("Software\\Microsoft\\Windows\\"
-			"CurrentVersion\\Explorer\\Shell Folders", "Personal");
+		return path;
 	}
-	catch(...)
-	{
-		return GetAppDataPath();
-	}
+
+	return "";
 }
 //---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// AnsiGetAppDataPath
+//---------------------------------------------------------------------------
+static AnsiString AnsiGetAppDataPath()
+{
+	AnsiString path = AnsiGetSpecialFolderPath(CSIDL_APPDATA);
+
+	if(path != "")
+	{
+		return path;
+	}
+
+	return "";
+}
+//---------------------------------------------------------------------------
+
 
 
 
@@ -1515,8 +1540,8 @@ AnsiString TConfMainFrame::GetDataPathDirectory(AnsiString datapath, AnsiString 
 	if(datapath == "") datapath = "$(exepath)\\savedata";
 
 	AnsiString exepath = ExcludeTrailingBackslash(ExtractFileDir(exename));
-	AnsiString personalpath = ExcludeTrailingBackslash(GetPersonalPath());
-	AnsiString appdatapath = ExcludeTrailingBackslash(GetAppDataPath());
+	AnsiString personalpath = ExcludeTrailingBackslash(AnsiGetPersonalPath());
+	AnsiString appdatapath = ExcludeTrailingBackslash(AnsiGetAppDataPath());
 	if(personalpath == "") personalpath = exepath;
 	if(appdatapath == "") appdatapath = exepath;
 
