@@ -46,8 +46,12 @@ class videoEncoder {
 };
 
 // 使用例
-
-// プラグイン読込み
 Plugins.link("videoEncoder.dll");
-
+encoder = new videoEncoder;
+encoder.open("c:\test.wmv");
+for( var i = 0; i < 120; i++ ) {
+	kag.fore.layers[0].XXXX; // レイヤに何かする
+	encoder.encodeVideoSample( kag.fore.layers[0] );
+}
+encoder.close();
 
