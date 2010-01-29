@@ -165,6 +165,8 @@ protected:
 	HRESULT SetStreamBasics( IWMStreamConfig* pIWMStreamConfig, IWMProfile* pIWMProfile, LPWSTR pwszStreamName, LPWSTR pwszConnectionName, DWORD dwBitrate, WM_MEDIA_TYPE* pmt );
 	HRESULT CreateEmptyProfile( IWMProfile** ppIWMProfile );
 
+    HRESULT SaveProfile( LPCTSTR ptszFileName, IWMProfile* pIWMProfile );
+
 	void ReleaseAll();
 
 	CComPtr<IWMWriter>	m_WMWriter;
