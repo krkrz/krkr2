@@ -315,6 +315,8 @@ HRESULT CWMVEncoder::Initial( const WCHAR* pwszOutFile )
  	if( FAILED( hr = m_WMWriter->SetOutputFilename( pwszOutFile ) ) )
 		ThrowDShowException( TJS_W( "Failed to set output filename" ), hr );
 
+//	SaveProfile( L"c:\\test.prx", m_WMProfile );
+
 	return( hr );
 }
 
@@ -398,6 +400,7 @@ HRESULT CWMVEncoder::AddVideoStream( IWMProfile* pIWMProfile, WMVIDEOINFOHEADER*
 	IWMStreamConfig*	pStreamConfig = NULL;
 	IWMVideoMediaProps*	pMediaProps = NULL;
 	WM_MEDIA_TYPE*		pMediaType = NULL;
+	IWMPropertyVault*	pPropertyVault = NULL;
 
 	if( NULL == pIWMProfile || NULL == pInputVIH || NULL == pwStreamNum || NULL == pwszConnectionName ) {
 		return( E_INVALIDARG );
@@ -441,7 +444,11 @@ HRESULT CWMVEncoder::AddVideoStream( IWMProfile* pIWMProfile, WMVIDEOINFOHEADER*
 				}
                 WMVIDEOINFOHEADER* pVIH = (WMVIDEOINFOHEADER *)pMediaType->pbFormat;
 //				if( pVIH->bmiHeader.biBitCount >= pInputVIH->bmiHeader.biBitCount ) break;
-				if( pVIH->bmiHeader.biBitCount >= 24 ) break;
+				if( pVIH->bmiHeader.biBitCount >= 24 ) {
+					if( pMediaType->subtype == WMMEDIASUBTYPE_WMV3 ) {
+						break;
+					}
+				}
 				SAFE_RELEASE( pStreamConfig );
 			}
 			if( FAILED( hr ) || NULL != pStreamConfig ) break;
@@ -479,6 +486,11 @@ HRESULT CWMVEncoder::AddVideoStream( IWMProfile* pIWMProfile, WMVIDEOINFOHEADER*
 			SAFE_ARRAYDELETE( *pwszConnectionName );
 			break;
 		}
+		BOOL fIsVBR = TRUE;
+		if( SUCCEEDED( pStreamConfig->QueryInterface( IID_IWMPropertyVault, (void**)&pPropertyVault ) ) ) {
+			if( FAILED( hr = pPropertyVault->SetProperty( g_wszVBREnabled, WMT_TYPE_BOOL, (BYTE*) &fIsVBR, sizeof( fIsVBR ) ) ) ) break;
+			if( FAILED( hr = pPropertyVault->SetProperty( g_wszVBRQuality, WMT_TYPE_DWORD, (BYTE*) &dwQuality, sizeof( DWORD ) ) ) ) break;
+		}
 
 		// Each stream in the profile has to have a unique connection name.
 		// Let's use the stream number to create it.
@@ -497,6 +509,7 @@ HRESULT CWMVEncoder::AddVideoStream( IWMProfile* pIWMProfile, WMVIDEOINFOHEADER*
 		}
 	} while( FALSE );
 
+	SAFE_RELEASE( pPropertyVault );
 	SAFE_RELEASE( pCodecInfo );
 	SAFE_RELEASE( pStreamConfig );
 	SAFE_RELEASE( pMediaProps );
@@ -892,6 +905,65 @@ HRESULT CWMVEncoder::UpdateWriterInputs()
 	return( hr );
 }
 
+HRESULT CWMVEncoder::SaveProfile( LPCTSTR ptszFileName, IWMProfile* pIWMProfile )
+{
+    HRESULT             hr = S_OK;
+    IWMProfileManager   * pIWMProfileManager = NULL;
+    DWORD               dwLength = 0;
+    LPWSTR              pBuffer = NULL;
+    HANDLE              hFile = INVALID_HANDLE_VALUE;
+    DWORD               dwBytesWritten = 0;
+
+
+    if( ( NULL == ptszFileName ) || ( NULL == pIWMProfile ) ) {
+        return( E_INVALIDARG );
+    }
+
+    do {
+        // Create profile manager
+		if( FAILED( hr = WMCreateProfileManager( &pIWMProfileManager ) ) ) {
+            break;
+        }
+
+        // Save profile to a buffer
+		if( FAILED( hr = pIWMProfileManager->SaveProfile( pIWMProfile, NULL, &dwLength ) ) ) {
+            break;
+        }
+
+        pBuffer = new WCHAR[ dwLength ];
+        if( NULL == pBuffer ) {
+            hr = E_OUTOFMEMORY;
+            break;
+        }
+
+		if( FAILED( hr = pIWMProfileManager->SaveProfile( pIWMProfile, pBuffer, &dwLength ) ) ) {
+            break;
+        }
+
+        hFile = CreateFile( ptszFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+        if( INVALID_HANDLE_VALUE == hFile ) {
+            hr = HRESULT_FROM_WIN32( GetLastError() );
+            break;
+        }
+
+        if( FILE_TYPE_DISK != GetFileType( hFile ) ) {
+            hr = NS_E_INVALID_NAME;
+            break;
+        }
+
+        // Write profile buffer to file
+        if( !WriteFile( hFile, pBuffer, dwLength * sizeof(WCHAR), &dwBytesWritten, NULL) || dwLength*sizeof(WCHAR) != dwBytesWritten ) {
+            hr = HRESULT_FROM_WIN32( GetLastError() );
+            break;
+        }
+    } while( FALSE );
+
+    SAFE_CLOSEFILEHANDLE( hFile );
+    SAFE_ARRAYDELETE( pBuffer );
+    SAFE_RELEASE( pIWMProfileManager );
+
+    return( hr );
+}
 HRESULT CWMVEncoder::Start()
 {
 	if( NULL == m_WMWriter.p ) {
