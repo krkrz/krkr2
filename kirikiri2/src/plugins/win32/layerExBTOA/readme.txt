@@ -31,6 +31,19 @@ function fillAlpha();
  */
 function copyAlphaToProvince(threshold);
 
+/**
+ * レイヤの Alpha CHANNEL を src の Alpha CHANNEL で乗算する
+ * @param dleft   左端位置
+ * @param dtop    上端位置
+ * @param src     乗算用のαを持つソース画像
+ * @param sleft   ソースの左端位置
+ * @param stop    ソースの上端位置
+ * @param swidth  ソースの横幅
+ * @param sheight ソースの縦幅
+ * @param clear   演算範囲外領域をこの値（opacity）で塗りつぶす
+ *                省略時または0-255の値以外の場合は塗りつぶさない
+ */
+function clipAlphaRect(dleft, dtop, src, sleft, stop, swidth, sheight, clear);
 
 
 
