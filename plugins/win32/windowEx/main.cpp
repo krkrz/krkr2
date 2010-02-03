@@ -377,7 +377,7 @@ struct WindowEx
 		HWND hwnd = cachedHWND;
 		if (hwnd == NULL) return false;
 		if (enableWinMsgHook && mes->Msg < 0x400 && (bitHooks[mes->Msg>>5] & (1<<(mes->Msg&31)))) {
-			callback(EXEV_MSGHOOK, mes->Msg, mes->WParam, mes->LParam, 0);
+			if (callback(EXEV_MSGHOOK, mes->Msg, mes->WParam, mes->LParam, 0)) return true;
 		}
 		switch (mes->Msg) {
 		case WM_SETCURSOR:
