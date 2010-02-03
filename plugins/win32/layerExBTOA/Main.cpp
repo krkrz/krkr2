@@ -199,9 +199,112 @@ copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 	return TJS_S_OK;
 }
 
+static tjs_error TJS_INTF_METHOD
+clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *dst)
+{
+	ReadRefT sbuf = 0;
+	WrtRefT  dbuf = 0;
+	iTJSDispatch2 *src = 0;
+	tTJSVariant val;
+	long w, h;
+	long dx, dy, diw, dih, dpitch;
+	long sx, sy, siw, sih, spitch;
+	unsigned char clrval = 0;
+	bool clr = false;
+	if (numparams < 7) return TJS_E_BADPARAMCOUNT;
+	dx  = (long)param[0]->AsInteger();
+	dy  = (long)param[1]->AsInteger();
+	src =       param[2]->AsObjectNoAddRef();
+	sx  = (long)param[3]->AsInteger();
+	sy  = (long)param[4]->AsInteger();
+	w   = (long)param[5]->AsInteger();
+	h   = (long)param[6]->AsInteger();
+	if (numparams >= 8 && param[7]->Type() != tvtVoid) {
+		long n = (long)param[7]->AsInteger();
+		clr = (n >= 0 && n < 256);
+		clrval = (unsigned char)(n & 255);
+	}
+	if (w <= 0|| h <= 0) return TJS_E_INVALIDPARAM;
+
+	if (!GetLayerSize(dst, diw, dih, dpitch)) {
+		TVPThrowExceptionMessage(TJS_W("dest must be Layer."));
+	}
+	if (!GetLayerSize(src, siw, sih, spitch)) {
+		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
+	}
+
+	// クリッピング
+
+	// srcが範囲外
+	if (sx+w <= 0   || sy+h <= 0    ||
+		sx   >= siw || sy   >= sih) goto none;
+
+	// srcの負方向のカット
+	if (sx < 0) { w += sx; dx -= sx; sx = 0; }
+	if (sy < 0) { h += sy; dy -= sy; sy = 0; }
+
+	// srcの正方向のカット
+	long cut;
+	if ((cut = sx + w - siw) > 0) w -= cut;
+	if ((cut = sy + h - sih) > 0) h -= cut;
+
+	// dstが範囲外
+	if (dx+w <= 0   || dy+h <= 0    ||
+		dx   >= diw || dy   >= dih) goto none;
+
+	// dstの負方向のカット
+	if (dx < 0) { w += dx; sx -= dx; dx = 0; }
+	if (dy < 0) { h += dy; sy -= dy; dy = 0; }
+
+	// dstの正方向のカット
+	if ((cut = dx + w - diw) > 0) w -= cut;
+	if ((cut = dy + h - dih) > 0) h -= cut;
+
+	if (w <= 0 || h <= 0) goto none;
+
+	// バッファ取得
+	if (TJS_FAILED(src->PropGet(0, TJS_W("mainImageBuffer"), 0, &val, src))) return false;
+	sbuf = reinterpret_cast<ReadRefT>(val.AsInteger());
+
+	if (TJS_FAILED(dst->PropGet(0, TJS_W("mainImageBufferForWrite"), 0, &val, dst))) return false;
+	dbuf = reinterpret_cast<WrtRefT>(val.AsInteger());
+
+	if (!sbuf || !dbuf) TVPThrowExceptionMessage(TJS_W("Layer has no images."));
+
+	long x, y;
+	WrtRefT  p;
+	ReadRefT q;
+	if (clr) {
+		for (y = 0;    y < dy;  y++) for ((x=0, p=dbuf+y*dpitch+3); x < diw; x++, p+=4) *p = clrval;
+		for (y = dy+h; y < dih; y++) for ((x=0, p=dbuf+y*dpitch+3); x < diw; x++, p+=4) *p = clrval;
+	}
+	for (y = 0; y < h; y++) {
+		if (clr) for ((x=0, p=dbuf+(y+dy)*dpitch+3); x < dx; x++, p+=4) *p = clrval;
+
+		p = dbuf + (y + dy) * dpitch + 3 + (dx*4);
+		q = sbuf + (y + sy) * spitch + 3 + (sx*4);
+		for (x = 0; x < w; x++, p+=4, q+=4) {
+			unsigned long n = (unsigned long)(*p) * (unsigned long)(*q);
+			*p = (unsigned char)((n + (n >> 7)) >> 8);
+		}
+		if (clr) for (x = dx+w; x < diw; x++, p+=4) *p = clrval;
+	}
+	return TJS_S_OK;
+none:
+	// 領域範囲外で演算が行われない場合
+	if (clr) {
+		for (long y = 0; y < dih; y++) {
+			WrtRefT  p = dbuf + y * dpitch + 3;
+			for (long x = 0; x < diw; x++, p+=4) *p = clrval;
+		}
+	}
+	return TJS_S_OK;
+}
+
 
 NCB_ATTACH_FUNCTION(copyRightBlueToLeftAlpha, Layer, copyRightBlueToLeftAlpha);
 NCB_ATTACH_FUNCTION(copyBottomBlueToTopAlpha, Layer, copyBottomBlueToTopAlpha);
 NCB_ATTACH_FUNCTION(fillAlpha, Layer, fillAlpha);
 
 NCB_ATTACH_FUNCTION(copyAlphaToProvince, Layer, copyAlphaToProvince);
+NCB_ATTACH_FUNCTION(clipAlphaRect, Layer, clipAlphaRect);
