@@ -382,7 +382,7 @@ public:
 		if (!isNull()) {
 			ObjectInfo method = get(methodName);
 			if (method.isClosure()) {
-				return method.call(r, this);
+				return method.callResult(r, this);
 			}
 		}
 		return SQ_ERROR;
@@ -398,7 +398,7 @@ public:
 		if (!isNull()) {
 			ObjectInfo method = get(methodName);
 			if (method.isClosure()) {
-				return method.call(r, p1, this);
+				return method.callResult(r, p1, this);
 			}
 		}
 		return SQ_ERROR;
@@ -415,7 +415,7 @@ public:
 		if (!isNull()) {
 			ObjectInfo method = get(methodName);
 			if (method.isClosure()) {
-				return method.call(r, p1, p2, this);
+				return method.callResult(r, p1, p2, this);
 			}
 		}
 		return SQ_ERROR;
@@ -447,6 +447,7 @@ protected:
 	static SQRESULT getValue(HSQUIRRELVM v, SQFloat *value) { return sq_getfloat(v, -1, value); }
 	static SQRESULT getValue(HSQUIRRELVM v, const SQChar **value) { return sq_getstring(v, -1, value); }
 	static SQRESULT getValue(HSQUIRRELVM v, SQUserPointer *value) { return sq_getuserpointer(v, -1, value); }
+	static SQRESULT getValue(HSQUIRRELVM v, ObjectInfo *value) { value->getStack(v,-1); return SQ_OK; }
 	
 private:
 	HSQOBJECT obj; // オブジェクト参照情報
