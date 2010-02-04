@@ -194,6 +194,20 @@ quoteString(const tjs_char *str, IWriter *writer)
 				writer->write(L"\\\"");
 			} else if (ch == '\\') {
 				writer->write(L"\\\\");
+			} else if (ch == 0x08) {
+			  writer->write(L"\\b");
+			} else if (ch == 0x0c) {
+			  writer->write(L"\\f");
+			} else if (ch == 0x0a) {
+			  writer->write(L"\\n");
+			} else if (ch == 0x0d) {
+			  writer->write(L"\\r");
+			} else if (ch == 0x09) {
+			  writer->write(L"\\t");
+			} else if (ch < 0x20) {
+			  wchar_t buf[256];
+			  swprintf(buf, 255, L"\\u%04x", ch);
+			  writer->write(buf);
 			} else {
 				writer->write((tjs_char)ch);
 			}

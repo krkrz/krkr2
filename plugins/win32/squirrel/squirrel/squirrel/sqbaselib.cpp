@@ -862,7 +862,7 @@ static SQInteger string_split(HSQUIRRELVM v)
 	SQArray *ret = SQArray::Create(_ss(v),0);
 	const SQChar *p;
 	while ((p = scstrstr(strP, delimP)) != NULL) {
-		int sl = (p - strP) / sizeof(SQChar);
+		int sl = p - strP;
 		ret->Append(SQObjectPtr(SQString::Create(_ss(v),strP,sl)));
 		strP = p + delimLen;
 	}
