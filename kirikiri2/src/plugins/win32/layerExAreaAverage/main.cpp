@@ -96,6 +96,8 @@ struct layerExAreaAverage
 			sHeight	= sh;
 		}
 
+		fixdot	sl	= INT2FIXDOT(sLeft);
+		fixdot	st	= INT2FIXDOT(sTop);
 		fixdot	rw	= REAL2FIXDOT((tjs_real)sWidth / dWidth);
 		fixdot	rh	= REAL2FIXDOT((tjs_real)sHeight / dHeight);
 
@@ -106,8 +108,8 @@ struct layerExAreaAverage
 			for(tjs_int x=0; x<dWidth; x++)
 			{
 				//	k¬Œã‰æ‘œ‚Ì(x, y)À•W‚É‘Î‰ž‚·‚é—Ìˆæ
-				fixdot		x1	= (x + sLeft) * rw;	//	int * fixdot = fixdot
-				fixdot		y1	= (y + sTop) * rh;
+				fixdot		x1	= sl + x * rw;	//	int * fixdot = fixdot
+				fixdot		y1	= st + y * rh;
 				fixdot		x2	= x1 + rw;
 				fixdot		y2	= y1 + rh;
 
@@ -116,8 +118,8 @@ struct layerExAreaAverage
 				tjs_int		sy	= FIXDOT2INT(y1);
 				tjs_int		ex	= FIXDOT2INT(x2 + INT2FIXDOT(1) - 1);
 				tjs_int		ey	= FIXDOT2INT(y2 + INT2FIXDOT(1) - 1);
-				if(ex >= sWidth)	ex	= sWidth - 1;
-				if(ey >= sHeight)	ey	= sHeight - 1;
+				if(ex >= sImageWidth)	ex	= sImageWidth - 1;
+				if(ey >= sImageHeight)	ey	= sImageHeight - 1;
 
 				fixdot		totalarea_a = 0, a = 0;
 				fixdot		totalarea_rgb = 0, r = 0, g = 0, b = 0;
