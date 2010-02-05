@@ -290,8 +290,10 @@ public:
 		getLocalName(filename);
 		HANDLE hFile = _getFileHandle(filename, false);
 		FILETIME ft;
-		if (hFile == INVALID_HANDLE_VALUE ||
-			!GetFileTime(hFile, 0, 0, &ft)) return 0;
+		if (hFile == INVALID_HANDLE_VALUE) return 0;
+		bool rs = GetFileTime(hFile, 0, 0, &ft);
+		CloseHandle(hFile);
+		if (!rs) return 0;
 		tjs_uint64 ret = ft.dwHighDateTime;
 		ret <<= 32;
 		ret |= ft.dwLowDateTime;
@@ -301,10 +303,13 @@ public:
 		ttstr filename = TVPNormalizeStorageName(target);
 		getLocalName(filename);
 		HANDLE hFile = _getFileHandle(filename, true);
+		if (hFile == INVALID_HANDLE_VALUE) return false;
 		FILETIME ft;
 		ft.dwHighDateTime = (time >> 32) & 0xFFFFFFFF;
 		ft.dwLowDateTime  =  time        & 0xFFFFFFFF;
-		return (hFile != INVALID_HANDLE_VALUE && SetFileTime(hFile, 0, 0, &ft));
+		bool rs = SetFileTime(hFile, 0, 0, &ft);
+		CloseHandle(hFile);
+		return rs;
 	}
 
 	/**
