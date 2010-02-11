@@ -279,8 +279,8 @@ struct WindowEx
 					break;
 				}
 			}
-			::SetWindowPos(hwnd, ins, 0, 0, 0, 0,
-						   SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER);
+			::SetWindowPos(hwnd, ins, 0, 0, 0, 0, ((n >= 2 && !!p[1]->AsInteger()) ? 0 : SWP_NOACTIVATE) |
+						   SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER);
 		}
 		return TJS_S_OK;
 	}
