@@ -58,9 +58,10 @@ class Window {
 	 *						#define HWND_BOTTOM     ((HWND)1)
 	 *						#define HWND_TOPMOST    ((HWND)-1)
 	 *						#define HWND_NOTOPMOST  ((HWND)-2)
-	 * ※ bringToFront()と違い，アクティブ状態は変更されません。
+	 * @param activate アクティブ状態にするかどうかのフラグ
+	 *                 trueにしてもアプリケーション自体はアクティブになりません（タスクバーの点滅などおこりません）
 	 */
-	function bringTo(win = "top");
+	function bringTo(win = "top", activate = false);
 
 	/// alias method
 	function sendToBack() { bringTo("bottom"); }
