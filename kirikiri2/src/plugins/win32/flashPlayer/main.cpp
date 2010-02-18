@@ -27,7 +27,7 @@ extern void storeVariant(tTJSVariant &result, VARIANT &variant);
 
 //---------------------------------------------------------------------------
 
-#import "c:\\windows\\system32\\macromed\\flash\\flash8g.ocx" named_guids
+#import "c:\\windows\\system32\\macromed\\flash\\flash10a.ocx" named_guids
 
 class FlashPlayer : public IOleClientSite,
 					public IOleInPlaceSiteWindowless,
@@ -908,6 +908,7 @@ public:
 						::GlobalFree(hBuffer);
 					}
 				}
+				psStreamInit->Release();
 			}
 		}
 		return ret;
