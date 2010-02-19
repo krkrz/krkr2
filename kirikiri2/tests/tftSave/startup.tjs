@@ -1,0 +1,33 @@
+Plugins.link("prfontSave.dll");
+
+var path = Storages.extractStoragePath(Storages.getPlacedPath("startup.tjs"));
+
+var win = new Window();
+var pri = new Layer(win, null);
+var lay = new Layer(win, pri);
+
+var sz = 24;
+with (lay.font) {
+	.height = sz;
+	.face = "‚l‚r ƒSƒVƒbƒN";
+}
+
+System.savePreRenderedFont(path + "test.tft", [ # "‚ ", # "‚¢" ], function (ch) {
+	lay.drawGlyph(ch);
+	return lay;
+} incontextof global);
+
+win.visible = true;
+
+with (pri.font) {
+	.height = sz;
+	.face = "‚l‚r –¾’©";
+	.mapPrerenderedFont(path + "test.tft");
+}
+with (pri) {
+	.visible = true;
+	.setSize(win.innerWidth, win.innerHeight);
+	.fillRect(0, 0, .width, .height, 0);
+	.drawText(0, 0, "‚ñ‚ ‚¢‚¤", 0xFFFFFF, 255, true);
+}
+
