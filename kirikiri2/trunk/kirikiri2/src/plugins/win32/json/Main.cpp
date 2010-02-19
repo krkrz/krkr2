@@ -810,8 +810,9 @@ static void getDictString(iTJSDispatch2 *dict, IWriter *writer)
 {
 	writer->write((tjs_char)'{');
 	writer->addIndent();
-	DictMemberDispCaller caller(writer);
-	tTJSVariantClosure closure(&caller);
+	DictMemberDispCaller *caller = new DictMemberDispCaller(writer);
+	tTJSVariantClosure closure(caller);
+        caller->Release();
 	dict->EnumMembers(TJS_IGNOREPROP, &closure, dict);
 	writer->delIndent();
 	writer->write((tjs_char)'}');
@@ -979,6 +980,22 @@ extern "C" HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
 	return S_OK;
 }
 //---------------------------------------------------------------------------
+static void TJS_USERENTRY tryUnlinkScripts(void *data)
+{
+  tTJSVariant varScripts;
+  TVPExecuteExpression(TJS_W("Scripts"), &varScripts);
+  iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
+  if (dispatch) {
+    delMethod(dispatch, L"evalJSON");
+    delMethod(dispatch, L"evalJSONStorage");
+  }
+}
+
+static bool TJS_USERENTRY catchUnlinkScripts(void *data, const tTVPExceptionDesc & desc) {
+  return false;
+}
+
+
 extern "C" HRESULT _stdcall V2Unlink()
 {
 	// 吉里吉里側から、プラグインを解放しようとするときに呼ばれる関数。
@@ -991,13 +1008,7 @@ extern "C" HRESULT _stdcall V2Unlink()
 	// E_FAIL が帰ると、Plugins.unlink メソッドは偽を返す
 
 	{
-		tTJSVariant varScripts;
-		TVPExecuteExpression(TJS_W("Scripts"), &varScripts);
-		iTJSDispatch2 *dispatch = varScripts.AsObjectNoAddRef();
-		if (dispatch) {
-			delMethod(dispatch, L"evalJSON");
-			delMethod(dispatch, L"evalJSONStorage");
-		}
+          TVPDoTryBlock(&tryUnlinkScripts, &catchUnlinkScripts, NULL, NULL);
 	}
 	
 	if (ArrayCountProp) {
