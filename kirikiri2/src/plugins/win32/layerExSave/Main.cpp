@@ -6,9 +6,19 @@ using namespace std;
 #define WM_SAVE_TLG_PROGRESS (WM_APP+4)
 #define WM_SAVE_TLG_DONE     (WM_APP+5)
 
-// Layer クラスメンバ
-static iTJSDispatch2 *layerClass = NULL;         // Layer のクラスオブジェクト
-static iTJSDispatch2 *layerAssignImages = NULL;  // Layer.assignImages メソッド
+iTJSDispatch2 *getLayerClass(void)
+{
+  tTJSVariant var;
+  TVPExecuteExpression(TJS_W("Layer"), &var);
+  return  var.AsObjectNoAddRef();
+}
+
+iTJSDispatch2 *getLayerAssignImages(void)
+{
+  tTJSVariant var;
+  TVPExecuteExpression(TJS_W("Layer.assignImages"), &var);
+  return  var.AsObjectNoAddRef();
+}
 
 #include "compress.hpp"
 #include "savetlg5.hpp"
@@ -224,7 +234,7 @@ public:
 			objthis->PropGet(0, L"primaryLayer", NULL, &primaryLayer, objthis);
 			tTJSVariant *vars[] = {&window, &primaryLayer};
 			iTJSDispatch2 *obj;
-			if (TJS_SUCCEEDED(layerClass->CreateNew(0, NULL, NULL, &obj, 2, vars, objthis))) {
+			if (TJS_SUCCEEDED(getLayerClass()->CreateNew(0, NULL, NULL, &obj, 2, vars, objthis))) {
 
 				// 名前づけ
 				tTJSVariant name = "saveLayer:";
@@ -233,7 +243,7 @@ public:
 
 				// 元レイヤの画像を複製
 				tTJSVariant *param[] = {&layer};
-				if (TJS_SUCCEEDED(layerAssignImages->FuncCall(0, NULL, NULL, NULL, 1, param, obj))) {
+				if (TJS_SUCCEEDED(getLayerAssignImages()->FuncCall(0, NULL, NULL, NULL, 1, param, obj))) {
 					newLayer = tTJSVariant(obj, obj);
 					obj->Release();
 				} else {
@@ -335,28 +345,3 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowSaveImage, Window) {
 	NCB_METHOD(stopSaveLayerImage);
 };
 
-/**
- * 登録処理後
- */
-static void PostRegistCallback()
-{
-	tTJSVariant var;
-	TVPExecuteExpression(TJS_W("Layer"), &var);
-	layerClass = var.AsObject();
-	TVPExecuteExpression(TJS_W("Layer.assignImages"), &var);
-	layerAssignImages = var.AsObject();
-}
-
-#define RELEASE(name) name->Release();name= NULL
-
-/**
- * 開放処理前
- */
-static void PreUnregistCallback()
-{
-	RELEASE(layerClass);
-	RELEASE(layerAssignImages);
-}
-
-NCB_POST_REGIST_CALLBACK(PostRegistCallback);
-NCB_PRE_UNREGIST_CALLBACK(PreUnregistCallback);

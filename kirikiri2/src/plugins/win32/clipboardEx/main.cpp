@@ -763,12 +763,20 @@ NCB_PRE_REGIST_CALLBACK(RegistCallback);
 //----------------------------------------------------------------------
 // DLL解放時に呼び出すファンクション
 //----------------------------------------------------------------------
-static void UnregistCallback(void)
+static void TJS_USERENTRY tryDeleteConst(void *data)
 {
   // 定数を削除
-  TVPExecuteScript(L"delete global[\"cbfBitmap\"]");
-  TVPExecuteScript(L"delete global[\"cbfTJS\"]");
+  TVPExecuteScript(L"delete global[\"cbfBitmap\"];");
+  TVPExecuteScript(L"delete global[\"cbfTJS\"];");
+}
 
+static bool TJS_USERENTRY catchDeleteConst(void *data, const tTVPExceptionDesc & desc) {
+  return false;
+}
+
+static void UnregistCallback(void)
+{
+  TVPDoTryBlock(&tryDeleteConst, &catchDeleteConst, NULL, NULL);
   // Array.countを解放
   if (ArrayCountProp) {
     ArrayCountProp->Release();
