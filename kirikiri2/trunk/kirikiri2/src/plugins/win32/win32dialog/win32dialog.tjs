@@ -491,7 +491,7 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		case "step":
 			var pad = div.padding !== void ? div.padding : _padding;
 			switch (div.align) {
-			case "right": rect.x = rect.w - (div.step + pad) * (div.index+1); break;
+			case "right": rect.x = rect.w - (div.step + pad) * (div.index+1) + pad*2; break;
 			default: case "left": rect.x += (div.step + pad) * div.index; break;
 			}
 			rect.w = (div.width !== void) ? div.width : div.step;
@@ -542,11 +542,11 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		var rect = getCurrentRect(div, _ptSz + ofs*2);
 		var div  = divRectPos(rect, info.text.length * _ptSz);
 		with (div.left)  addItem(LText(info.text, -1, .x, .y+p, .w, .h-p));
-		with (div.right) addItem(this[method](info.id,    .x, .y, .w, .h, style));
+		with (div.right) addItem(this[method](info.id,    .x, .y, .w, .h, style|WS_TABSTOP));
 	}
 	function addLineInput(name, div, initial)  {
 		var info = getNameInfo(name, "setItemText", initial);
-		_addLineEditDrop("EditText", info, div, ES_LEFT|ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP);
+		_addLineEditDrop("EditText", info, div, ES_LEFT|ES_AUTOHSCROLL|WS_BORDER);
 	}
 	function addDropSelect(name, height, div, initial, list)  {
 		var info = getNameInfo(name, "setComboBoxTexts", list);
