@@ -552,7 +552,7 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		var info = getNameInfo(name, "setComboBoxTexts", list);
 		if (typeof initial == "String") initial = list.find(initial);
 		addInit(info.id, "selectComboBox", initial);
-		_addLineEditDrop("ComboBox", info, div, CBS_DROPDOWNLIST);
+		_addLineEditDrop("ComboBox", info, div, CBS_DROPDOWNLIST|WS_VSCROLL);
 		getLastItem().cy = height;
 	}
 	function addDropInput(name, height, div, initial, list)  {
