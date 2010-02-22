@@ -243,7 +243,7 @@ static void savePreRenderedFont(tjs_char const *storage, tTJSVariant characters,
 	PFontSaver saver(storage);
 
 	ncbPropAccessor charray(characters);
-	tTJSVariantClosure closure = callback.AsObjectNoAddRef();
+	tTJSVariantClosure closure = callback.AsObjectClosureNoAddRef();
 
 	// É\Å[ÉgÇ∑ÇÈ
 	charray.FuncCall(0, TJS_W("sort"), 0, NULL);
