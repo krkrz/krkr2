@@ -377,7 +377,7 @@ class WIN32DialogEX extends WIN32Dialog {
 	// エディット系列 EDITTEXT, BEDIT, HEDIT, or IEDIT. 
 	function EditText(             id,    x, y, w, h, style=ES_LEFT|WS_BORDER|WS_TABSTOP, ex=0) { return Control(, id, EDIT,      style, x, y, w, h, ex); } // ES_*,  WS_TABSTOP, WS_GROUP, WS_VSCROLL, WS_HSCROLL, WS_DISABLED
 	// リストボックス系列
-	function ListBox(              id,    x, y, w, h, style=LBS_NOTIFY|WS_BORDER,         ex=0) { return Control(, id, LISTBOX,   style, x, y, w, h, ex); } // LBS_*, WS_BORDER, WS_VSCROLL
+	function ListBox(              id,    x, y, w, h, style=LBS_NOTIFY|WS_BORDER|WS_TABSTOP,ex=0){return Control(, id, LISTBOX,   style, x, y, w, h, ex); } // LBS_*, WS_BORDER, WS_VSCROLL
 	// コンボボックス系列
 	function ComboBox(             id,    x, y, w, h, style=CBS_DROPDOWN|WS_TABSTOP,      ex=0) { return Control(, id, COMBOBOX,  style, x, y, w, h, ex); } // CBS_*, WS_TABSTOP, WS_GROUP, WS_VSCROLL, WS_DISABLED
 
@@ -513,7 +513,7 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		default: throwError("getNameInfo: unkonw name type "+name);
 		}
 		with (ret) {
-			if (.id == "" || .text == "") throwError("getNameInfo: invalid name value");
+			if (.id == "" || (.text == "" && !.nolabel)) throwError("getNameInfo: invalid name value");
 			if (_id2text[.id] != "") .text = _id2text[.id];
 			addInit(.id, initMethod, initValue) if (initMethod != "" && initValue !== void);
 		}
@@ -540,9 +540,13 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		var ofs  = _ptSz <= 9 ? 2 : 0;
 		var p    = 2; //_ptSz > 9 ? 2 : 2;
 		var rect = getCurrentRect(div, _ptSz + ofs*2);
-		var div  = divRectPos(rect, info.text.length * _ptSz);
-		with (div.left)  addItem(LText(info.text, -1, .x, .y+p, .w, .h-p));
-		with (div.right) addItem(this[method](info.id,    .x, .y, .w, .h, style|WS_TABSTOP));
+		if (info.nolabel) {
+			with (rect) addItem(this[method](info.id, .x, .y, .w, .h, style|WS_TABSTOP));
+		} else {
+			var div  = divRectPos(rect, info.text.length * _ptSz);
+			with (div.left)  addItem(LText(info.text, -1, .x, .y+p, .w, .h-p));
+			with (div.right) addItem(this[method](info.id,    .x, .y, .w, .h, style|WS_TABSTOP));
+		}
 	}
 	function addLineInput(name, div, initial)  {
 		var info = getNameInfo(name, "setItemText", initial);
@@ -574,10 +578,12 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 	function addListInput (name, div, initial, list) {}
 */
 	function addTextInput(name, height, div, initial) {
-		var info = getNameInfo(name, "setItemText", initial);
-		var rect = getCurrentRect(div, _ptSz);
-		with (rect) addItem(LText(info.text, -1, .x, .y, .w, .h));
-		nextLine(0);
+		var rect, info = getNameInfo(name, "setItemText", initial);
+		if (!info.nolabel) {
+			/**/  rect = getCurrentRect(div, _ptSz);
+			with (rect) addItem(LText(info.text, -1, .x, .y, .w, .h));
+			nextLine(0);
+		}
 		/**/  rect = getCurrentRect(div, height);
 		with (rect) addItem(EditText(info.id, .x, .y, .w, .h,
 									 ES_LEFT|ES_MULTILINE|ES_WANTRETURN|
@@ -597,6 +603,7 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 
 	var _groupStack = [];
 	function beginGroup(grp) {
+		nextLine(0);
 		var rect = getCurrentRect(void, _ptSz), item;
 		with (rect) item = GroupBox(grp,, .x, .y, .w, .h);
 		var stack = %[ band:%[], y:_cury, item:item ];
@@ -608,6 +615,7 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		nextLine(0);
 	}
 	function endGroup() {
+		nextLine(0);
 		var stack = _groupStack.pop();
 		if (stack === void) return;
 		(Dictionary.assign incontextof _curband)(stack.band, true);
@@ -616,6 +624,7 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 	}
 	var _frameStack = [];
 	function beginFrame(div) {
+		nextLine(0);
 		var band = %[];
 		(Dictionary.assign incontextof band)(_curband, true);
 		_frameStack.unshift(%[ band:band, y1:_cury, y2:_cury ]);
@@ -628,6 +637,7 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		return info;
 	}
 	function setFrame(div) {
+		nextLine(0);
 		var info = _resetFrame(false);
 		info.y2 = _cury if (info.y2 < _cury);
 		_cury = info.y1;
@@ -636,7 +646,9 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		_curband.w = rect.w;
 	}
 	function endFrame() {
-		_cury = _resetFrame(true).y2;
+		nextLine(0);
+		var info = _resetFrame(true);
+		_cury = info.y2 if (info.y2 > _cury);
 	}
 
 	var _heightStack = [];
