@@ -3,6 +3,38 @@ System.setArgument("-dbstyle", "gdi");
 
 Scripts.execStorage("win32dialog.tjs");
 
+class OwnerDrawTestDialog extends WIN32GenericDialogEX {
+	var tempLayer, bitmap;
+	function OwnerDrawTestDialog(lay) {
+		super.WIN32GenericDialogEX(%[ title:"OwnerDrawTest", width:200 ]);
+		var list = [];
+		for (var i = 0; i < 30; i++) list.add((string)i);
+		addListSelect("LIST", 150, void, 0, list);
+		addInit(      "LIST", "setItemHeight", 30);
+		getLastItem().style |= LBS_OWNERDRAWFIXED | WS_VSCROLL;
+		tempLayer = new Layer(lay.window, lay);
+		bitmap = new global.WIN32Dialog.Bitmap(tempLayer);
+	}
+	function setItemHeight(id, h) {
+		sendItemMessage(id, LB_SETITEMHEIGHT, 0, h);
+	}
+	function onDrawItem(id, info) {
+		try {
+			var x, y, w, h;
+			with (info.itemRect) x=.x, y=.y, w=.w, h=.h;
+			Debug.message("onDrawItem", info.itemID, info.itemAction & ODA_DRAWENTIRE, x, y, w, h);
+			tempLayer.setImageSize(w, h);
+			with (tempLayer) {
+				.setSizeToImageSize();
+				.fillRect(0, 0, .width, .height, 0xFF000000 | (info.itemState&ODS_SELECTED ? System.toActualColor(clHighlight) : (info.itemID<<4)));
+			}
+			info.draw(bitmap, x, y);
+		} catch {}
+		return true;
+	}
+}
+
+
 class MyDialog extends WIN32DialogEX {
 	// ids
 	var ID_BTN = 1000;
@@ -150,6 +182,11 @@ with (win) {
 	add(createMenuItem(win, "ModeLess::LoadRes",  function{ testModeless(win, 1); }));
 	add(createMenuItem(win, "MessageBoxTest",     function{
 		with (WIN32Dialog) dm(.messageBox(global.win, "テキスト", "キャプション", .MB_OKCANCEL|.MB_ICONEXCLAMATION|.MB_OWNER_CENTER) == .IDOK);
+	}));
+	add(createMenuItem(win, "OwnerDrawTest",      function{
+		var dlg = new OwnerDrawTestDialog(win.primaryLayer);
+		dlg.open(win);
+		invalidate dlg;
 	}));
 
 	.add(new global.Layer(win, null));
