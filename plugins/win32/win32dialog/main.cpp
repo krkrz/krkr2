@@ -15,7 +15,8 @@ struct Bitmap {
 	typedef unsigned char PIX;
 	iTJSDispatch2 *lay;
 	HBITMAP bitmap;
-	Bitmap(iTJSDispatch2 *layer) : lay(layer), bitmap(0) { lay->AddRef(); }
+	tjs_int bmpw, bmph;
+	Bitmap(iTJSDispatch2 *layer) : lay(layer), bitmap(0), bmpw(0), bmph(0) { lay->AddRef(); }
 	~Bitmap() {                          removeBitmap();   lay->Release(); }
 	void removeBitmap() {
 		if (bitmap) ::DeleteObject(bitmap);
@@ -23,8 +24,8 @@ struct Bitmap {
 	}
 	HBITMAP createBitmap(HWND hwnd) {
 		ncbPropAccessor obj(lay);
-		tjs_int bmpw = obj.getIntValue(TJS_W("imageWidth"));
-		tjs_int bmph = obj.getIntValue(TJS_W("imageHeight"));
+		bmpw = obj.getIntValue(TJS_W("imageWidth"));
+		bmph = obj.getIntValue(TJS_W("imageHeight"));
 		tjs_int ln = obj.getIntValue(TJS_W("mainImageBufferPitch"));
 		PIX *pw, *pr = reinterpret_cast<PIX*>(obj.getIntValue(TJS_W("mainImageBuffer")));
 
@@ -52,6 +53,44 @@ struct Bitmap {
 		ReleaseDC(hwnd, dc);
 		return bitmap;
 	}
+};
+
+// DRAWITEMアクセス用クラス
+struct DrawItem {
+	DrawItem() : ref(0) {}
+	DrawItem(DRAWITEMSTRUCT const *p) : ref(p) {}
+	UINT      GetCtlType()    const { return ref->CtlType;    }
+	UINT      GetCtlID()      const { return ref->CtlID;      }
+	UINT      GetItemID()     const { return ref->itemID;     }
+	UINT      GetItemAction() const { return ref->itemAction; }
+	UINT      GetItemState()  const { return ref->itemState;  }
+	DWORD     GetItemData()   const { return ref->itemData;   }
+	tjs_int64 GetHWndItem()   const { return (tjs_int64)ref->hwndItem; }
+	tTJSVariant GetItemRect() const {
+		ncbDictionaryAccessor dict;
+		if (dict.IsValid()) {
+			dict.SetValue(TJS_W("x"), ref->rcItem.left);
+			dict.SetValue(TJS_W("y"), ref->rcItem.top);
+			dict.SetValue(TJS_W("w"), ref->rcItem.right  - ref->rcItem.left);
+			dict.SetValue(TJS_W("h"), ref->rcItem.bottom - ref->rcItem.top );
+			return tTJSVariant(dict, dict);
+		}
+		return tTJSVariant();
+	}
+	void draw(Bitmap *bmp, tjs_int x, tjs_int y) {
+		if (!bmp) return;
+		HBITMAP bitmap = bmp->createBitmap(ref->hwndItem);
+		if (bitmap) {
+			HDC bmpdc = ::CreateCompatibleDC(ref->hDC);
+			if (bmpdc) {
+				::SelectObject(bmpdc, bitmap);
+				::BitBlt(ref->hDC, x, y, bmp->bmpw, bmp->bmph, bmpdc, 0, 0, SRCCOPY);
+				::DeleteDC(bmpdc);
+			}
+		}
+	}
+private:
+	DRAWITEMSTRUCT const *ref;
 };
 
 // NMHDR アクセス用クラス
@@ -139,7 +178,7 @@ public:
 
 		// 引数を渡してコールバックを呼ぶ
 		rslt.Clear();
-		obj->FuncCall(0, event, 0, &rslt, numparams, params, obj);
+		Try_iTJSDispatch2_FuncCall(obj, 0, event, 0, &rslt, numparams, params, obj);
 		return (rslt.AsInteger() != 0) ? TRUE : FALSE;
 	}
 	// 通常コールバック
@@ -157,6 +196,17 @@ public:
 		box.operator()<NotifyAccessor&> (vnm, acc, ncbTypedefs::Tag<NotifyAccessor&>());
 
 		tTJSVariant *params[] = { &vwp, &vnm };
+		return callback(event, 2, params);
+	}
+	// WM_DRAWITEM用コールバック
+	LRESULT callback(NameT event, WPARAM wparam, DRAWITEMSTRUCT const *drawitem) {
+		DrawItem diwrap(drawitem);
+		tTJSVariant vwp((tjs_int32)wparam), vdi;
+		// ボックス化
+		ncbNativeObjectBoxing::Boxing box;
+		box.operator()<DrawItem&> (vdi, diwrap, ncbTypedefs::Tag<DrawItem&>());
+
+		tTJSVariant *params[] = { &vwp, &vdi };
 		return callback(event, 2, params);
 	}
 
@@ -425,6 +475,10 @@ public:
 		case WM_HSCROLL: return NormalCallback(TJS_W("onHScroll"), hwnd, msg, wparam, lparam);
 		case WM_VSCROLL: return NormalCallback(TJS_W("onVScroll"), hwnd, msg, wparam, lparam);
 		case WM_COMMAND: return NormalCallback(TJS_W("onCommand"), hwnd, msg, wparam, lparam);
+		case WM_DRAWITEM:
+			if ((inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER)) != 0)
+				return inst->callback(TJS_W("onDrawItem"), wparam, (DRAWITEMSTRUCT*)lparam);
+			break;
 		case WM_NOTIFY:
 			if ((inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER)) != 0)
 				return inst->callback(TJS_W("onNotify"), wparam, (NMHDR*)lparam);
@@ -659,7 +713,7 @@ tjs_error TJS_INTF_METHOD WIN32Dialog::makeTemplate(VarT *result, tjs_int numpar
 	return TJS_S_OK;
 }
 
-
+#define ENUM(n) Variant(#n, (long)n, 0)
 
 NCB_REGISTER_SUBCLASS(Header) {
 	Constructor();
@@ -674,6 +728,19 @@ NCB_REGISTER_SUBCLASS(Bitmap) {
 	Constructor<iTJSDispatch2*>(0);
 }
 
+NCB_REGISTER_SUBCLASS(DrawItem) {
+	Constructor();
+	Property(TJS_W("ctrlType"),   &Class::GetCtlType,    (int)0);
+	Property(TJS_W("ctrlID"),     &Class::GetCtlID,      (int)0);
+	Property(TJS_W("itemID"),     &Class::GetItemID,     (int)0);
+	Property(TJS_W("itemAction"), &Class::GetItemAction, (int)0);
+	Property(TJS_W("itemState"),  &Class::GetItemState,  (int)0);
+	Property(TJS_W("itemData"),   &Class::GetItemData,   (int)0);
+	Property(TJS_W("itemRect"),   &Class::GetItemRect,   (int)0);
+	Property(TJS_W("hwndItem"),   &Class::GetHWndItem,   (int)0);
+	Method(  TJS_W("draw"),       &Class::draw);
+}
+
 NCB_REGISTER_SUBCLASS(NotifyAccessor) {
 	Constructor();
 	Property(TJS_W("hwndFrom"), &Class::GetHWndFrom, (int)0);
@@ -684,12 +751,11 @@ NCB_REGISTER_SUBCLASS(NotifyAccessor) {
 	Method(TJS_W("getDWord"), &Class::GetDWord);
 }
 
-#define ENUM(n) Variant(#n, (long)n, 0)
-
 NCB_REGISTER_CLASS(WIN32Dialog) {
 	NCB_SUBCLASS(Header, Header);
 	NCB_SUBCLASS(Items,  Items);
 	NCB_SUBCLASS(Bitmap, Bitmap);
+	NCB_SUBCLASS(DrawItem, DrawItem);
 	NCB_SUBCLASS(Notify, NotifyAccessor);
 
 	Constructor<iTJSDispatch2*>(0);
@@ -1759,6 +1825,27 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	//ENUM(LVN_INCREMENTALSEARCH);
 
 
+	////////////////
+	// OwnerDraw用
+	ENUM(ODT_BUTTON);
+	ENUM(ODT_COMBOBOX);
+	ENUM(ODT_LISTBOX);
+	ENUM(ODT_MENU);
+	ENUM(ODT_LISTVIEW);
+	ENUM(ODT_STATIC);
+	ENUM(ODT_TAB);
+
+	ENUM(ODA_DRAWENTIRE);
+	ENUM(ODA_FOCUS);
+	ENUM(ODA_SELECT);
+
+	ENUM(ODS_CHECKED);
+	ENUM(ODS_DISABLED);
+	ENUM(ODS_FOCUS);
+	ENUM(ODS_GRAYED);
+	ENUM(ODS_SELECTED);
+	ENUM(ODS_COMBOBOXEDIT);
+	ENUM(ODS_DEFAULT);
 
 	Method(TJS_W("initCommonControls"),   &Class::InitCommonControls);
 	Method(TJS_W("initCommonControlsEx"), &Class::InitCommonControlsEx);

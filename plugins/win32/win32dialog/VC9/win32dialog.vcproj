@@ -183,7 +183,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\win32dialog.cpp"
+				RelativePath="..\main.cpp"
 				>
 			</File>
 		</Filter>
