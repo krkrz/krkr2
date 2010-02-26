@@ -812,10 +812,10 @@ static void getDictString(iTJSDispatch2 *dict, IWriter *writer)
 	writer->addIndent();
 	DictMemberDispCaller *caller = new DictMemberDispCaller(writer);
 	tTJSVariantClosure closure(caller);
-        caller->Release();
 	dict->EnumMembers(TJS_IGNOREPROP, &closure, dict);
 	writer->delIndent();
 	writer->write((tjs_char)'}');
+        caller->Release();
 }
 
 static void getArrayString(iTJSDispatch2 *array, IWriter *writer)
