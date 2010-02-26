@@ -190,7 +190,7 @@ class TftSaveDialog extends WIN32GenericDialogEX
 			nextLine();
 			beginGroup("出力"); {
 				nextLine();
-				addLineInput(%[ id:"Output", text:"-", nolabel:true ], makeSpan(0,7,8), ini.Output);
+				addLineInput(%[ id:"Output", text:"-", nolabel:true ], makeSpan(0,7,8), getLocalPath(ini.Output));
 				addButton("OutputBtn", makeDiv(7, 8));
 				nextLine();
 			} nextLine(); endGroup();
@@ -239,7 +239,7 @@ class TftSaveDialog extends WIN32GenericDialogEX
 					nextLine();
 					addListSelect("Target", 147, void, void, []);
 					addInit(      "Target", "updateParseList");
-					setLastItemStyle("append", LBS_EXTENDEDSEL);
+					setLastItemStyle("append", LBS_EXTENDEDSEL | WS_VSCROLL);
 					nextLine(0);
 					addLineInput(%[ id:"Fullpath", nolabel:true ],  void, "");
 					setLastItemStyle("append", ES_READONLY);
@@ -308,6 +308,10 @@ class TftSaveDialog extends WIN32GenericDialogEX
 	function errorMessage(mes) {
 		Debug.console.visible = true;
 		Debug.message(mes);
+	}
+
+	function getLocalPath(path) {
+		return path == "" ? "" : Storages.getLocalName(path);
 	}
 
 	function open() {
@@ -482,7 +486,7 @@ class TftSaveDialog extends WIN32GenericDialogEX
 		updateSampleLayer();
 
 		// 出力
-		setItemText("Output", (string)ini.Output);
+		updateOutput();
 
 		// 一覧
 		updateChListString();
@@ -546,7 +550,7 @@ class TftSaveDialog extends WIN32GenericDialogEX
 		for (var i = 0; i < list.count; i++) {
 			if (sendItemMessage(id, LB_GETSEL, i, 0)) {
 				selected = true;
-				var npath = Storages.getLocalName(Storages.extractStoragePath(list[i]));
+				var npath = getLocalPath(Storages.extractStoragePath(list[i]));
 				if (path == "") path = npath;
 				else if (path != npath) {
 					path = "";
@@ -579,7 +583,7 @@ class TftSaveDialog extends WIN32GenericDialogEX
 
 	// 出力ファイル更新
 	function updateOutput(id = "Output") {
-		setItemText(id, Storages.getLocalName(ini.Output));
+		setItemText(id, getLocalPath(ini.Output));
 		updateOKButton();
 	}
 	function updateOKButton(id = "OK") {
