@@ -38,7 +38,7 @@ class Storages {
 	 * @return 実際に移動されたら true
 	 * 移動対象ファイルが実在し、移動先パスにファイルが無い場合のみ移動されます
 	 */
-        function moveFile(fromFile, toFile);
+	function moveFile(fromFile, toFile);
 
 	/**
 	 * 指定ディレクトリのファイル一覧を取得する
@@ -147,12 +147,19 @@ class Storages {
 	 */
 	function copyFile(from, to, failIfExist);	//	by Kiyobee
 
-        /**
-         * パスの正規化を行なわず、autoPathからの検索も行なわずに
-         * ファイルの存在確認を行う
-         * @param filename ファイル名
-         * @return ファイルが存在したらtrue
-         */
-  function isExistentStorageNoSearchNoNormalize(filename);  // by Yun
+	/**
+	 * パスの正規化を行なわず、autoPathからの検索も行なわずに
+	 * ファイルの存在確認を行う
+	 * @param filename ファイル名
+	 * @return ファイルが存在したらtrue
+	 */
+	function isExistentStorageNoSearchNoNormalize(filename);  // by Yun
 
+	/**
+	 * 表示名の取得
+	 * 実際にエクスプローラで表示されるファイル名を返す (SHGetFileInfoによる)
+	 * @param filename ファイル名（親ディレクトリ以上のパスは落とされるので注意)。
+	 * @return 表示名
+	 */
+	function getDisplayName(filename); // by go
 };
