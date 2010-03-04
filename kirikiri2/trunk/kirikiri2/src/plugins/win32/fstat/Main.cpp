@@ -4,6 +4,7 @@ using namespace std;
 #include <tchar.h>
 #include <shlobj.h>
 #include <ole2.h>
+#include <shellapi.h> // SHGetFileInfo
 
 // Date クラスメンバ
 static iTJSDispatch2 *dateClass   = NULL;  // Date のクラスオブジェクト
@@ -666,17 +667,35 @@ public:
 		return false;
 	}
 
-        /**
-         * パスの正規化を行なわず、autoPathからの検索も行なわずに
-         * ファイルの存在確認を行う
-         * @param fileame ファイルパス
-         * @return ファイルが存在したらtrue
-         */
-         static bool isExistentStorageNoSearchNoNormalize(ttstr filename) 
-         {
-           return TVPIsExistentStorageNoSearchNoNormalize(filename);
-         }
-           
+	/**
+	 * パスの正規化を行なわず、autoPathからの検索も行なわずに
+	 * ファイルの存在確認を行う
+	 * @param fileame ファイルパス
+	 * @return ファイルが存在したらtrue
+	 */
+	static bool isExistentStorageNoSearchNoNormalize(ttstr filename) 
+	{
+		return TVPIsExistentStorageNoSearchNoNormalize(filename);
+	}
+
+	/**
+	 * 表示名取得
+	 * @param fileame ファイルパス
+	 */
+	static ttstr getDisplayName(ttstr filename)
+	{
+		filename = TVPNormalizeStorageName(filename);
+		TVPGetLocalName(filename);
+		if (filename != "") {
+			SHFILEINFO finfo;
+			if (SHGetFileInfo(filename.c_str(), 0, &finfo, sizeof finfo, SHGFI_DISPLAYNAME)) {
+				filename = finfo.szDisplayName;
+			} else {
+				TVPThrowExceptionMessage(TJS_W("SHGetFileInfo failed"));
+			}
+		}
+		return filename;
+	}
 
 private:
 	//	指定のパスからITEMIDLISTを取得
@@ -743,7 +762,8 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("selectDirectory",     &Class::selectDirectory,     TJS_STATICMEMBER);
 	NCB_METHOD(isExistentDirectory);
 	NCB_METHOD(copyFile);
-        NCB_METHOD(isExistentStorageNoSearchNoNormalize);
+	NCB_METHOD(isExistentStorageNoSearchNoNormalize);
+	NCB_METHOD(getDisplayName);
 };
 
 /**
