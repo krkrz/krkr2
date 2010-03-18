@@ -197,7 +197,7 @@ class HistoryLayer extends Layer
 		dic.dataPages = dataPages;
 		dic.dataPage = dataPage;
 		dic.dataLines = dataLines;
-		dic.currentLine = dic.currentLine;
+		dic.currentLine = currentLine;
 		dic.currentAction = currentAction;
 		dic.currentActionExp = currentActionExp;
 		dic.currentActionID = currentActionID;
