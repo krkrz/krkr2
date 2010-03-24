@@ -423,9 +423,13 @@ protected:
 		HINSTANCE hinst = GetModuleHandle(0);
 		if (win.Type() == tvtObject) {
 			DspT *obj = win.AsObjectNoAddRef();
-			VarT val;
-			obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
-			hwnd = (HWND)((tjs_int64)(val));
+			if (obj) {
+				VarT val;
+				obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
+				hwnd = (HWND)((tjs_int64)(val));
+			} else {
+				hwnd = TVPGetApplicationWindowHandle();
+			}
 			if (!icon) icon = LoadIcon(hinst, IDI_APPLICATION);
 		}
 		int ret;
