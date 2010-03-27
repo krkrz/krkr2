@@ -116,7 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\ncbind"
+				AdditionalIncludeDirectories="..;..\ncbind"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WIN32OLE_EXPORTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
