@@ -18,7 +18,7 @@
 #include "CIStream.h"
 
 #include "DShowException.h"
-
+#include <strsafe.h>
 #include <dmodshow.h>
 #include <dmoreg.h>
 #include "CDemuxSource.h"
