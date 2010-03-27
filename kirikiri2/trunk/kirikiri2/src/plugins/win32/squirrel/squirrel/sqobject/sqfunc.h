@@ -616,6 +616,13 @@ public:
 		sq_newclosure(v,VFuncCaller,1);
 		sq_createslot(v, -3);
 	}
+
+	// VFunc “o˜^
+	void RegisterVStatic(SQFUNCTION func, const SQChar *name) {
+		sq_pushstring(v, name, -1);
+		sq_newclosure(v, func, 0);
+		sq_newslot(v, -3, SQTrue);
+	}
 };
 
 // ------------------------------------------------------------------
@@ -629,5 +636,6 @@ public:
 #define SQFUNC(Class, Name)   cls.Register(&Class::Name, _SC(#Name))
 #define SQVFUNC(Class, Name)  cls.RegisterV(&Class::Name, _SC(#Name))
 #define SQNFUNC(Class, Name) cls.Register(Class ## _ ## Name, _SC(#Name))
+#define SQSVFUNC(Class, Name)  cls.RegisterVStatic(&Class::Name, _SC(#Name))
 
 #endif

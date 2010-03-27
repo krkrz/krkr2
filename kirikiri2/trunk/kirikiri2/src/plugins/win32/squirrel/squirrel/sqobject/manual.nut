@@ -145,7 +145,8 @@ class Thread extends Object {
 	function getStatus();
 
 	/**
-	 * @return このスレッドの終了コード
+	 * @return このスレッドの終了/suspendコード
+	 * スクリプトから return, suspend, exit() された時の指定値が格納されています
 	 */
 	function getExitCode();
 

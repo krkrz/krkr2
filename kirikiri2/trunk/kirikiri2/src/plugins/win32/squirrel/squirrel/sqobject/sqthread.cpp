@@ -489,23 +489,25 @@ Thread::_main(long diff)
 		if (sq_getvmstate(_thread) == SQ_VMSTATE_SUSPENDED) {
 			_waitResult.push(_thread);
 			_waitResult.clear();
-			result = sq_wakeupvm(_thread, SQTrue, SQFalse, SQTrue, SQFalse);
+			result = sq_wakeupvm(_thread, SQTrue, SQTrue, SQTrue, SQFalse);
 		} else {
 			sq_pushroottable(_thread);
 			SQInteger n = _args.pushArray(_thread) + 1;
 			_args.clear();
-			result = sq_call(_thread, n, SQFalse, SQTrue);
+			result = sq_call(_thread, n, SQTrue, SQTrue);
 		}
 		if (SQ_FAILED(result)) {
 			// スレッドがエラー終了
 			printError();
 			_exit();
-		} else  if (sq_getvmstate(_thread) == SQ_VMSTATE_IDLE) {
-			// スレッドが正常に終了
-			if (result > 0) {
-				_exitCode.getStack(_thread, -1);
+		} else {
+			// 終了コード取得。return/suspend の値が格納される
+			_exitCode.getStack(_thread, -1);
+			sq_pop(_thread, 1);
+			if (sq_getvmstate(_thread) == SQ_VMSTATE_IDLE) {
+				// スレッドが終了
+				_exit();
 			}
-			_exit();
 		}
 	}
 	

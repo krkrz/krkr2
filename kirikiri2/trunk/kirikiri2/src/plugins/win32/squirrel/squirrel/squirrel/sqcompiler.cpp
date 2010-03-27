@@ -841,18 +841,32 @@ public:
 	{
 		SQObject varname;
 		do {
-			Lex(); varname = Expect(TK_IDENTIFIER);
-			if(_token == _SC('=')) {
-				Lex(); Expression();
+			Lex();
+			if(_token == TK_FUNCTION) {
+				Lex();
+				varname = Expect(TK_IDENTIFIER);
+				Expect(_SC('('));
+				CreateFunction(_null_);
+				_fs->AddInstruction(_OP_CLOSURE, _fs->PushTarget(), _fs->_functions.size() - 1,0);
 				SQInteger src = _fs->PopTarget();
 				SQInteger dest = _fs->PushTarget();
 				if(dest != src) _fs->AddInstruction(_OP_MOVE, dest, src);
+				_fs->PopTarget();
+				_fs->PushLocalVariable(varname);
+			} else {
+				varname = Expect(TK_IDENTIFIER);
+				if(_token == _SC('=')) {
+					Lex(); Expression();
+					SQInteger src = _fs->PopTarget();
+					SQInteger dest = _fs->PushTarget();
+					if(dest != src) _fs->AddInstruction(_OP_MOVE, dest, src);
+				}
+				else{
+					_fs->AddInstruction(_OP_LOADNULLS, _fs->PushTarget(),1);
+				}
+				_fs->PopTarget();
+				_fs->PushLocalVariable(varname);
 			}
-			else{
-				_fs->AddInstruction(_OP_LOADNULLS, _fs->PushTarget(),1);
-			}
-			_fs->PopTarget();
-			_fs->PushLocalVariable(varname);
 		
 		} while(_token == _SC(','));
 	}
