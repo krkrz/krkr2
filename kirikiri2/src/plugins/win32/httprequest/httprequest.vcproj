@@ -97,7 +97,7 @@
 			OutputDirectory=".\..\..\..\..\bin\win32\plugin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			CharacterSet="2"
+			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
