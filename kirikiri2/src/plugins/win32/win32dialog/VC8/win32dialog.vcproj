@@ -94,7 +94,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="..\..\..\..\..\bin\win32\plugin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -179,15 +179,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\main.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\ncbind\ncbind.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\tp_stub.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\main.cpp"
 				>
 			</File>
 		</Filter>
