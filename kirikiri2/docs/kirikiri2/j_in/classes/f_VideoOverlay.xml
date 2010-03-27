@@ -773,6 +773,228 @@
 	</desc>
 </member>
 
+<member>
+	<name>contrastRangeMin</name>
+	<type>property</type>
+	<shortdesc>ビデオのコントラストレンジ最小値</shortdesc>
+	<access>r</access>
+	<desc>
+		コントラストの幅の最小値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
 
+<member>
+	<name>contrastRangeMax</name>
+	<type>property</type>
+	<shortdesc>ビデオのコントラストレンジ最大値</shortdesc>
+	<access>r</access>
+	<desc>
+		コントラストの幅の最大値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>contrastDefaultValue</name>
+	<type>property</type>
+	<shortdesc>ビデオのコントラスト既定値</shortdesc>
+	<access>r</access>
+	<desc>
+		コントラストの既定値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>contrastStepSize</name>
+	<type>property</type>
+	<shortdesc>ビデオのコントラスト増減ステップ値</shortdesc>
+	<access>r</access>
+	<desc>
+		contrastRangeMin から contrastRangeMax への有効な増分を表します。<r/>
+		この値の単位でコントラストを変更できます。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>contrast</name>
+	<type>property</type>
+	<shortdesc>ビデオのコントラスト</shortdesc>
+	<access>r/w</access>
+	<desc>
+		ビデオのコントラストを表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>brightnessRangeMin</name>
+	<type>property</type>
+	<shortdesc>ビデオの輝度レンジ最小値</shortdesc>
+	<access>r</access>
+	<desc>
+		輝度の幅の最小値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>brightnessRangeMax</name>
+	<type>property</type>
+	<shortdesc>ビデオの輝度レンジ最大値</shortdesc>
+	<access>r</access>
+	<desc>
+		輝度の幅の最大値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>brightnessDefaultValue</name>
+	<type>property</type>
+	<shortdesc>ビデオの輝度既定値</shortdesc>
+	<access>r</access>
+	<desc>
+		輝度の既定値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>brightnessStepSize</name>
+	<type>property</type>
+	<shortdesc>ビデオの輝度増減ステップ値</shortdesc>
+	<access>r</access>
+	<desc>
+		brightnessRangeMin から brightnessRangeMax への有効な増分を表します。<r/>
+		この値の単位で輝度を変更できます。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>brightness</name>
+	<type>property</type>
+	<shortdesc>ビデオの輝度</shortdesc>
+	<access>r/w</access>
+	<desc>
+		ビデオの輝度を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>hueRangeMin</name>
+	<type>property</type>
+	<shortdesc>ビデオの色相レンジ最小値</shortdesc>
+	<access>r</access>
+	<desc>
+		色相の幅の最小値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>hueRangeMax</name>
+	<type>property</type>
+	<shortdesc>ビデオの色相レンジ最大値</shortdesc>
+	<access>r</access>
+	<desc>
+		色相の幅の最大値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>hueDefaultValue</name>
+	<type>property</type>
+	<shortdesc>ビデオの色相既定値</shortdesc>
+	<access>r</access>
+	<desc>
+		色相の既定値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>hueStepSize</name>
+	<type>property</type>
+	<shortdesc>ビデオの色相増減ステップ値</shortdesc>
+	<access>r</access>
+	<desc>
+		hueRangeMin から hueRangeMax への有効な増分を表します。<r/>
+		この値の単位で色相を変更できます。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>hue</name>
+	<type>property</type>
+	<shortdesc>ビデオの色相</shortdesc>
+	<access>r/w</access>
+	<desc>
+		ビデオの色相を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>saturationRangeMin</name>
+	<type>property</type>
+	<shortdesc>ビデオの彩度レンジ最小値</shortdesc>
+	<access>r</access>
+	<desc>
+		彩度の幅の最小値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>saturationRangeMax</name>
+	<type>property</type>
+	<shortdesc>ビデオの彩度レンジ最大値</shortdesc>
+	<access>r</access>
+	<desc>
+		彩度の幅の最大値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>saturationDefaultValue</name>
+	<type>property</type>
+	<shortdesc>ビデオの彩度既定値</shortdesc>
+	<access>r</access>
+	<desc>
+		彩度の既定値を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>saturationStepSize</name>
+	<type>property</type>
+	<shortdesc>ビデオの彩度増減ステップ値</shortdesc>
+	<access>r</access>
+	<desc>
+		saturationRangeMin から saturationRangeMax への有効な増分を表します。<r/>
+		この値の単位で彩度を変更できます。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
+
+<member>
+	<name>saturation</name>
+	<type>property</type>
+	<shortdesc>ビデオの彩度</shortdesc>
+	<access>r/w</access>
+	<desc>
+		ビデオの彩度を表します。<r/>
+		ミキサーモードでのみ利用可能です。<r/>
+	</desc>
+</member>
 
 </doc>
