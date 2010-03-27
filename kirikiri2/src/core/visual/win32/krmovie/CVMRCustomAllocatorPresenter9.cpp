@@ -15,6 +15,7 @@
 #include "DShowException.h"
 #include "OptionInfo.h"
 #include "tp_stub.h"
+#include <windows.h>
 
 #define EC_UPDATE		(EC_USER+1)
 

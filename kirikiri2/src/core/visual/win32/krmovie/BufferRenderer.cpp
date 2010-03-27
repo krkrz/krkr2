@@ -13,6 +13,7 @@
 *****************************************************************************/
 
 #include <streams.h>
+#include <atlbase.h>
 #include "BufferRenderer.h"
 
 #ifdef _DEBUG
