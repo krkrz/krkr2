@@ -1,4 +1,4 @@
-Author: 渡邊剛(go@wamsoft.jp)
+Author: 渡邊剛(go@denpa.org)
 Date: 2009/4/22
 
 ●概要
@@ -193,6 +193,7 @@ continuous handler: 制御が終わったあとの自律計算処理
 
  sqfunc.cpp     シンプルな継承/メンバ関数処理の実装例
  sqplusfunc.cpp	SQPlusを使う場合の実装例
+ sqratfunc.cpp	SQRatを使う場合の実装例
 
 ●スクリプトの呼び出し
 
@@ -217,6 +218,6 @@ SqPlus::SquirrelFunction<int>("fork")(NULL, _SC("file.nut"));
 squirrel 同様 zlibライセンスに従って利用してください。
 
 /*
- * copyright (c)2009 http://wamsoft.jp
+ * copyright (c)2009 Go Watanabe go@denpa.org
  * zlib license
  */

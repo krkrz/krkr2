@@ -1,4 +1,4 @@
-Author: 渡邊剛(go@wamsoft.jp)
+Author: 渡邊剛(go@denpa.org)
 Date: 2009/4/29
 
 ●Object/Thread機能
@@ -27,6 +27,10 @@ abs(v)  整数なら iabs, 実数なら fabs 扱い
 format(fmt, ...)  %s の場合は、パラメータに対して規定の文字列
 　　　　　　　　　変換処理を行ってから処理するように仕様変更。
 　　　　　　　　　文字列以外を渡してもエラーにならず確実に実行できます。
+
+◇文字列関数追加
+
+printf(fmt, ...) 書式付きprint。print(format(fmt, ...)) と等価
 
 ◇数値変換仕様変更
 

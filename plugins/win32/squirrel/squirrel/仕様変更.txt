@@ -1,4 +1,4 @@
-Author: “nç²„(go@wamsoft.jp)
+Author: “nç²„(go@denpa.org)
 Date: 2009/4/22
 
 œSQUIRRELŽd—l•ÏX
@@ -78,6 +78,25 @@ squirrel ƒOƒ[ƒoƒ‹ŠÖ” writeclosuretofile() ‚àÅŒã‚É endian ˆø”‚ª’Ç‰Á‚³‚ê‚Ü‚·
 "invalid endian closure stream" ƒGƒ‰[‚É‚È‚è‚Ü‚·B
 ¦“Ç‚Ýž‚ß‚éƒGƒ“ƒfƒBƒAƒ“‚ÍŽÀsŠÂ‹«‚É‡’v‚µ‚½‚à‚Ì‚ÉŒÀ‚è‚Ü‚·B
 
+Esq.exe ‚ÉƒRƒ“ƒpƒCƒ‹Žž‚ÉŽ–‘O‚É“Ç‚Ýž‚Þƒtƒ@ƒCƒ‹Žw’è -p ƒIƒvƒVƒ‡ƒ“‚ð’Ç‰Á
+
+ enum ’è‹`‚È‚ÇAƒRƒ“ƒpƒCƒ‹‘O‚É“Ç‚Ýž‚Ü‚¹‚Ä‚¨‚«‚½‚¢î•ñ‚ð
+ 1ƒtƒ@ƒCƒ‹‚ÉW–ñ‚µ‚ÄAŒÂ•Êƒtƒ@ƒCƒ‹‚ÌƒRƒ“ƒpƒCƒ‹Žž‚ÉŽ–‘O‚É
+ “Ç‚Ýž‚Ü‚¹‚½‚¢—p“r‚ÉŽg‚¦‚Ü‚·
+
+E•¶–@’Ç‰Á
+
+syntax suger ‚ðˆê‚Â’Ç‰Á
+
+local function name() {};
+
+‚Æ‚¢‚¤‹Lq‚Í
+
+local name = function() {};
+
+‚Æ“™‰¿‚É‚È‚é
+
+
 œSQPLUSŽd—l•ÏX
 
 ƒIƒŠƒWƒiƒ‹‚Ì SQPLUS ‚Å‚ÍAƒGƒ‰[ˆ—‚É—áŠO‚ðŽg‚Á‚Ä‚¢‚½‚½‚ßA
@@ -117,4 +136,9 @@ squirrel ƒOƒ[ƒoƒ‹ŠÖ” writeclosuretofile() ‚àÅŒã‚É endian ˆø”‚ª’Ç‰Á‚³‚ê‚Ü‚·
 
 DECLARE_INSTANCE_TYPE_NAME_RELEASE(TYPE,NAME)
 DECLARE_INSTANCE_TYPE_RELEASE(TYPE)
+
+œSQRATŽd—l•ÏX
+
+ESqrat::Class ‚ÉASQFUNCTION Œ`Ž®‚Ì
+@ƒƒ“ƒoƒƒ\ƒbƒh‚ð“o˜^‚·‚é‚½‚ß‚ÌŒû VarArgFunc()‚ð’Ç‰Á
 

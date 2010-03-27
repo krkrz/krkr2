@@ -13,10 +13,13 @@ public:
 	SQFileInfo(const SQChar *filename, bool binary) : file(NULL), buffer(NULL), size(0), binary(binary) {
 		file = sqstd_fopen(filename, binary ? _SC("rb") : _SC("r"));
 		if (file) {
-			size = sqstd_fseek(file, 0, SQ_SEEK_END);
-			if (size > 0) {
-				buffer = sq_malloc(size);
-				sqstd_fread(buffer, size, 1, file);
+			if (sqstd_fseek(file, 0, SQ_SEEK_END) == 0) {
+				size = sqstd_ftell(file);
+				sqstd_fseek(file, 0, SQ_SEEK_SET);
+				if (size > 0) {
+					buffer = sq_malloc(size);
+					size = sqstd_fread(buffer, 1, size, file);
+				}
 			}
 		}
 	}

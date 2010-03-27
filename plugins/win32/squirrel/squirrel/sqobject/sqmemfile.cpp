@@ -11,11 +11,14 @@ class MemFile
 {
 public:
 	MemFile(const char *dataBuffer, int dataSize) : dataBuffer(dataBuffer), dataSize(dataSize), cur(0) {}
-    ~MemFile() {};
+	~MemFile() {};
 
 	// “Ç‚İ‚İ
 	// @return “Ç‚İ‚ñ‚¾ƒf[ƒ^”
 	int read(void *buffer, int size, int cnt) {
+		if (cur >= dataSize) {
+			return 0;
+		}
 		int lcnt = (dataSize - cur) / size;
 		if (cnt > lcnt) {
 			cnt = lcnt;
