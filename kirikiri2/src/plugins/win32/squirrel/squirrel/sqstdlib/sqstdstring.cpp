@@ -200,6 +200,19 @@ static SQInteger _string_format(HSQUIRRELVM v)
 	return 1;
 }
 
+static SQInteger _string_printf(HSQUIRRELVM v)
+{
+	SQChar *dest = NULL;
+	SQInteger length = 0;
+	if(SQ_FAILED(sqstd_format(v,2,&length,&dest)))
+		return -1;
+	SQPRINTFUNCTION func = sq_getprintfunc(v);
+	if (func) {
+		func(v, _SC("%*s"), length, dest);
+	}
+	return 0;
+}
+
 static void __strip_l(const SQChar *str,const SQChar **start)
 {
 	const SQChar *t = str;
@@ -379,6 +392,7 @@ static SQRegFunction rexobj_funcs[]={
 
 #define _DECL_FUNC(name,nparams,pmask) {_SC(#name),_string_##name,nparams,pmask}
 static SQRegFunction stringlib_funcs[]={
+	_DECL_FUNC(printf,-2,_SC(".s")),
 	_DECL_FUNC(format,-2,_SC(".s")),
 	_DECL_FUNC(strip,2,_SC(".s")),
 	_DECL_FUNC(lstrip,2,_SC(".s")),

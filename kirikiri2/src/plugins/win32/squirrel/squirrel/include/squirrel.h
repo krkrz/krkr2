@@ -414,7 +414,7 @@ SQUIRREL_API SQInteger sq_collectgarbage(HSQUIRRELVM v);
 #define SQ_DEFAULT_ENDIAN 0
 #define SQ_LITTLE_ENDIAN 1
 #define SQ_BIG_ENDIAN 2
-SQUIRREL_API SQRESULT sq_writeclosure(HSQUIRRELVM vm,SQWRITEFUNC writef,SQUserPointer up, SQInteger endian);
+SQUIRREL_API SQRESULT sq_writeclosure(HSQUIRRELVM vm,SQWRITEFUNC writef,SQUserPointer up, SQInteger endian=0);
 SQUIRREL_API SQRESULT sq_readclosure(HSQUIRRELVM vm,SQREADFUNC readf,SQUserPointer up);
 
 /*mem allocation*/
