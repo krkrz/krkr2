@@ -463,10 +463,12 @@ struct WindowEx
 				// メニューアイコン強制差し替え
 				mes->Result = ::DefWindowProc(hwnd, mes->Msg, mes->WParam, mes->LParam);
 				HMENU menu = (HMENU)mes->WParam;
-				int cnt = ::GetMenuItemCount(menu);
-				for (int i = 0; i < cnt; i++) checkUpdateMenuItem(menu, i, ::GetMenuItemID(menu, i));
+				checkUpdateMenuItem(menu);
 				return true;
 			}
+			break;
+		case WM_NCPAINT:
+			if (menuex) checkUpdateMenuItem(::GetMenu(hwnd));
 			break;
 
 			// メニュー開始終了
@@ -489,8 +491,12 @@ struct WindowEx
 	}
 
 	// メニュー更新処理（MenuItemEx用）
-	void checkUpdateMenuItem(HMENU, int, UINT);
 	void setMenuItemID(iTJSDispatch2*, UINT, bool);
+	void checkUpdateMenuItem(HMENU, int, UINT);
+	void checkUpdateMenuItem(HMENU menu) {
+		int cnt = menu ? ::GetMenuItemCount(menu) : 0;
+		for (int i = 0; i < cnt; i++) checkUpdateMenuItem(menu, i, ::GetMenuItemID(menu, i));
+	}
 
 	// メッセージレシーバ
 	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *mes) {
