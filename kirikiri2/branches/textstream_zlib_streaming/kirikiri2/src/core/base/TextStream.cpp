@@ -306,6 +306,8 @@ class tTVPTextWriteStream : public iTJSTextWriteStream
 	// TODO: 32bit wchar_t support
 
 
+        static const tjs_uint COMPRESSION_BUFFER_SIZE = 1024 * 1024;
+
 	tTJSBinaryStream * Stream;
 	tjs_int CryptMode;
 		// -1 for no-crypt
@@ -314,7 +316,10 @@ class tTVPTextWriteStream : public iTJSTextWriteStream
 		// 2: complessed
     int CompressionLevel; // compression level of zlib
 
-	tTVPMemoryStream * DataBuf; // uncompressed data buffer
+        z_stream_s *ZStream;
+        tjs_uint CompressionSizePosition;
+        tjs_nchar *CompressionBuffer;
+        bool CompressionFailed;
 
 public:
 	tTVPTextWriteStream(const ttstr & name, const ttstr &modestr)
@@ -326,9 +331,11 @@ public:
 		// oN: write from binary offset N (in bytes)
 		Stream = NULL;
 		CryptMode = -1;
-		DataBuf = NULL;
 		CompressionLevel = Z_DEFAULT_COMPRESSION;
-
+                ZStream = NULL;
+                CompressionSizePosition = 0;
+                CompressionBuffer = NULL;
+                CompressionFailed = false;
 
 		// check c/z mode
 		const tjs_char *p;
@@ -386,55 +393,83 @@ public:
 			Stream->WriteBuffer(crypt_mode_sig, 3);
 		}
 
-		if(CryptMode == 2)
-		{
-			// Compression
-			DataBuf = new tTVPMemoryStream();
-		}
-
 		// now output text stream will write unicode texts
 		static tjs_uint8 bommark[4] = { 0xff, 0xfe,
 										0x00, 0x00/*dummy 2bytes*/ };
 		Stream->WriteBuffer(bommark, 2);
 
+		if(CryptMode == 2)
+		{
+                        // allocate and initialize zlib straem
+                        ZStream = new z_stream_s();
+                        ZStream->zalloc = Z_NULL;
+                        ZStream->zfree = Z_NULL;
+                        ZStream->opaque = Z_NULL;
+                        if (deflateInit(ZStream, CompressionLevel) != Z_OK) {
+                          CompressionFailed = true;
+                          TVPThrowExceptionMessage(TVPCompressionFailed);
+                        }
 
+                        CompressionBuffer = new tjs_nchar[COMPRESSION_BUFFER_SIZE];
+
+                        ZStream->next_in = NULL;
+                        ZStream->avail_in = 0;
+                        ZStream->next_out = CompressionBuffer;
+                        ZStream->avail_out = COMPRESSION_BUFFER_SIZE;
+
+			// Compression Size (write dummy)
+                        CompressionSizePosition = Stream->GetPosition();
+                        WriteI64LE((tjs_uint64)0);
+                        WriteI64LE((tjs_uint64)0);
+		}
 	}
 
 	~tTVPTextWriteStream()
 	{
 		if(CryptMode == 2)
-		{
-			// compressed; compress here
+                {
+                  
+                  if (! CompressionFailed) {
+                    try {
+                      // close zlib stream
+                      int result = 0;
+                      do {
+                        result = deflate(ZStream, Z_FINISH);
+                        if (result != Z_OK
+                            && result != Z_STREAM_END) {
+                          TVPThrowExceptionMessage(TVPCompressionFailed);
+                        }
+                        Stream->WriteBuffer(CompressionBuffer, COMPRESSION_BUFFER_SIZE - ZStream->avail_out);
+                        ZStream->next_out = CompressionBuffer;
+                        ZStream->avail_out = COMPRESSION_BUFFER_SIZE;
+                      } while (result != Z_STREAM_END);
+                      
+                      // rollback and write compression size.
+                      Stream->SetPosition(CompressionSizePosition);
+                      WriteI64LE((tjs_uint64)ZStream->total_out);
+                      WriteI64LE((tjs_uint64)ZStream->total_in);
+                    }
+                    catch(...) {
+                      // delete zlib compress stream
+                      if (ZStream) {
+                        deflateEnd(ZStream);
+                        delete ZStream;
+                      }
+                      delete[] CompressionBuffer;
+                      delete Stream;
+                      throw;
+                    }
+                  }
+                  // delete zlib compress stream
+                  if (ZStream) {
+                    deflateEnd(ZStream);
+                    delete ZStream;
+                  }
+                  delete[] CompressionBuffer;
 
-			// allocate outout buffer
-			unsigned long databuflen = (unsigned long)DataBuf->GetSize();
-			unsigned long outbuflen;
-			tjs_uint8 *outbuf = new tjs_uint8
-				[outbuflen = (databuflen + databuflen / 900 + 23)];
-			try
-			{
-				// compress
-				int status = compress2(outbuf, &outbuflen,
-					(unsigned char *)DataBuf->GetInternalBuffer(),
-					databuflen, CompressionLevel);
-				if(status != Z_OK)
-					TVPThrowExceptionMessage(TVPCompressionFailed);
-
-				WriteI64LE((tjs_uint64)outbuflen);
-				WriteI64LE((tjs_uint64)databuflen);
-
-				Stream->WriteBuffer(outbuf, outbuflen);
-			}
-			catch(...)
-			{
-				delete [] outbuf;
-				throw;
-			}
-			delete [] outbuf;
 		}
 
 		if(Stream) delete Stream;
-		if(DataBuf) delete DataBuf;;
 	}
 
 	void WriteI64LE(tjs_uint64 v)
@@ -539,10 +574,22 @@ public:
 	{
 		if(CryptMode == 2)
 		{
-			// compressed
-			// once store to the memory
-			if(!DataBuf) DataBuf = new tTVPMemoryStream();
-			DataBuf->Write(ptr, size);
+                        // compressed with zlib stream.
+                        ZStream->next_in = (Bytef*)ptr;
+                        ZStream->avail_in = size;
+
+                        while (ZStream->avail_in > 0) {
+                          int result = deflate(ZStream, Z_NO_FLUSH);
+                          if (result != Z_OK) {
+                            CompressionFailed = true;
+                            TVPThrowExceptionMessage(TVPCompressionFailed);
+                          }
+                          if (ZStream->avail_out == 0) {
+                            Stream->WriteBuffer(CompressionBuffer, COMPRESSION_BUFFER_SIZE);
+                            ZStream->next_out = CompressionBuffer;
+                            ZStream->avail_out = COMPRESSION_BUFFER_SIZE;
+                          }
+                        }
 		}
 		else
 		{
