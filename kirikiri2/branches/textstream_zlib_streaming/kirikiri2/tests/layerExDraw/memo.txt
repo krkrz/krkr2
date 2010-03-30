@@ -1,0 +1,10 @@
+test.emf ‚ÍˆÈ‰º‚©‚ç‚à‚ç‚Á‚Ä‚«‚Ü‚µ‚½
+
+from http://openclipart.org
+
+Title:    blueberry - iconset
+Author:   Marko J. Kolehmainen
+License:  http://web.resource.org/cc/PublicDomain
+Keywords: icon
+          desktop
+          computer

@@ -1,0 +1,196 @@
+System.setArgument("-contfreq", "30");
+Scripts.execStorage("UpdateRegion.tjs");
+Scripts.execStorage("AffineLayer.tjs");
+
+Plugins.link("layerExDraw.dll");
+
+var WIDTH=800;
+var HEIGHT=600;
+var dm = Debug.message; // これで dm("message"); でコンソールに message を表示できる
+
+class MyWindow extends Window
+{
+	var base;
+	var layer;
+	var alayer;
+	var startTime;
+	
+	function drawRect(x, y, size, brush) {
+		var app = new GdiPlus.Appearance();
+		app.addBrush(brush, 0, 0);
+		layer.drawRectangle(app, x, y, size, size);
+	}
+
+	function drawLine(x, y, size, pen) {
+		var app = new GdiPlus.Appearance();
+		app.addPen(0xffffffff, pen, 0, 0);
+		layer.drawLine(app, x, y, x + size, y);
+	}
+	
+	function MyWindow() {
+		super.Window();
+		setInnerSize(WIDTH, HEIGHT);
+
+		// プライマリレイヤ
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0xff000000);
+		add(base);
+
+		// 表示レイヤ
+		layer = new Layer(this, base);
+		layer.setSize(WIDTH, HEIGHT);
+		layer.setPos(0, 0);
+		//layer.setClip(100,100,WIDTH-200, HEIGHT-200);
+		//var matrix = new GdiPlus.Matrix();
+		//matrix.init();
+		//matrix.Rotate(30,1);
+		//layer.setTransform(matrix);
+		layer.visible = true;
+		add(layer);
+
+		var x=10;
+		var y=10;
+		var size=150;
+		drawRect(x, y, size, 0xffffffff);
+		x += (size+10);
+
+		drawRect(x, y, size,
+				 %[type:GdiPlus.BrushTypeHatchFill,
+			   hatchStyle: GdiPlus.HatchStyleCross,
+			   foreColor: 0xffff00ff,
+			   backColor: 0xffffff88]);
+		x += (size+10);
+		
+		drawRect(x, y, size,
+				 %[type:GdiPlus.BrushTypeTextureFill, image:"test.png", dstRect:[0,0,50,50]]);
+		x += (size+10);
+		
+		drawRect(x, y, size,
+				 %[type:GdiPlus.BrushTypeLinearGradient, point1:[0, 0], color1:0xffff0000, point2:[0, 100], color2:0xff0000ff]);
+		x += (size+10);
+
+		y += (size+30);
+		x = 10;
+		size = 500;
+		
+		drawLine(x, y, size, 1);
+		y += 10;
+		drawLine(x, y, size, 3);
+		y += 10;
+		drawLine(x, y, size, 5);
+		y += 10;
+		drawLine(x, y, size, 7);
+		y += 30;
+		
+		drawLine(x, y, size, %[width:2, dashStyle:GdiPlus.DashStyleDash]);
+		y += 10;
+		drawLine(x, y, size, %[width:2, dashStyle:GdiPlus.DashStyleDot]);
+		y += 10;
+		drawLine(x, y, size, %[width:2, dashStyle:GdiPlus.DashStyleDashDot]);
+		y += 10;
+		drawLine(x, y, size, %[width:2, dashStyle:GdiPlus.DashStyleDashDotDot]);
+		y += 10;
+		drawLine(x, y, size, %[width:2, dashStyle:[10,10,20,20,30,30,40,40]]);
+		y += 30;
+
+		drawLine(x, y, size, %[width:5, dashStyle:GdiPlus.DashStyleDash]);
+		y += 10;
+		drawLine(x, y, size, %[width:5, dashStyle:GdiPlus.DashStyleDot]);
+		y += 10;
+		drawLine(x, y, size, %[width:5, dashStyle:GdiPlus.DashStyleDashDot]);
+		y += 10;
+		drawLine(x, y, size, %[width:5, dashStyle:GdiPlus.DashStyleDashDotDot]);
+		y += 10;
+		drawLine(x, y, size, %[width:5, dashStyle:[10,10,20,20,30,30,40,40]]);
+
+		y += 80;
+		
+		var app = new GdiPlus.Appearance();
+		app.addPen(0xffffffff,
+				   %[width:15,
+				 startCap:GdiPlus.LineCapRound,
+				 endCap:GdiPlus.LineCapRound,
+				 dashCap:GdiPlus.LineCapRound,
+				 lineJoin:GdiPlus.LineJoinRound], 0, 0);
+		app.addBrush(0xff333333, 0, 0);
+		app.addPen(0xffff0000, 1, 0, 0);
+		var font = new GdiPlus.Font("ＭＳ ゴシック", 40, GdiPlus.FontStyleBold);
+		dm("フォント情報 ascent:" + font.ascent + " descent:" + font.descent + " linespacing:" + font.lineSpacing);
+
+		var text = "■テキスト描画テストABCghijklpq■";
+
+		var frect = layer.measureString(font, text);
+		dm("measureString領域" + frect.left + "," + frect.top + "," + frect.width + "," + frect.height);
+		
+		var trect = layer.drawPathString(font, app, x, y-font.ascent, text);
+		dm("テキスト描画位置" + x + "," + y);
+		dm("drawPathString領域" + trect.left + "," + trect.top + "," + trect.width + "," + trect.height);
+
+		app.clear();
+		app.addPen(0xff0000ff, 1, 0, 0);
+		layer.drawLine(app, x, y, x+frect.width, y);
+		app.clear();
+		app.addPen(0xff00ff00, 1, 0, 0);
+		layer.drawRectangle(app, x, y-font.ascent, frect.width, font.ascent + font.descent);
+		app.clear();
+		app.addPen(0xffff0000, 1, 0, 0);
+		layer.drawRectangle(app, trect.left, trect.top, trect.width, trect.height);
+		
+		y += 80;
+
+		app.clear();
+		app.addBrush(0xffffffff, 0, 0);
+		
+		var trect = layer.drawString(font, app, x, y-font.ascent, text);
+		dm("テキスト描画位置" + x + "," + y);
+		dm("drawString領域" + trect.left + "," + trect.top + "," + trect.width + "," + trect.height);
+
+		app.clear();
+		app.addPen(0xff0000ff, 1, 0, 0);
+		layer.drawLine(app, x, y, x+frect.width, y);
+		app.clear();
+		app.addPen(0xff00ff00, 1, 0, 0);
+		layer.drawRectangle(app, x, y-font.ascent, frect.width, font.ascent + font.descent);
+		app.clear();
+		app.addPen(0xffff0000, 1, 0, 0);
+		layer.drawRectangle(app, trect.left, trect.top, trect.width, trect.height);
+
+		// アフィンレイヤのテスト用
+		alayer = new AffineLayer(this, base);
+		alayer.setPos(WIDTH/2+WIDTH/4, HEIGHT/4);
+		alayer.visible = true;
+		add(alayer);
+		alayer.loadImages("test.emf");
+		alayer.afx = "center";
+		alayer.afy = "center";
+		
+		startTime = System.getTickCount();
+		System.addContinuousHandler(actionHandler);
+	}
+
+	function onKeyDown(key, shift)
+	{
+		Debug.message("キーがおされた:" + key);
+		if(key == VK_ESCAPE) {
+			close();
+		} else if(key == VK_TAB) {
+			fullScreen = !fullScreen;
+		}
+	}
+
+	function onCloseQuery() {
+		System.removeContinuousHandler(actionHandler);
+		super.onCloseQuery(true);
+	}
+
+	function actionHandler(tick) {
+		var now = tick - startTime;
+		alayer.zoom = 20 + 100 - 100 * Math.cos(2 * Math.PI * now / 5000);
+		alayer.rotate = (360 * now / 2000) % 360;
+	}
+
+};
+
+var win = new MyWindow();
+win.visible = true;

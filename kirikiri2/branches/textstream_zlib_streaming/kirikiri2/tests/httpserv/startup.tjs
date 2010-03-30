@@ -1,0 +1,128 @@
+Plugins.link("httpserv.dll");
+Storages.addAutoPath("archive.xp3>");
+
+class MyHTTPServer extends SimpleHTTPServer {
+	var url, charset;
+	function MyHTTPServer(cset) {
+		charset = cset;
+		var cp;
+		with (global.SimpleHTTPServer) switch (cset) {
+		case "utf-8":       cp = .cpUTF8; break;
+		case "Shift_JIS":   cp = .cpSJIS; break;
+		case "euc-jp":      cp = .cpEUC;  break;
+		case "iso-2022-jp": cp = .cpJIS;  break;
+		default: throw new Exception("unknown codepage:" + cset);
+		}
+		super.SimpleHTTPServer();
+		codepage = cp;
+	}
+	function finalize() {
+		super.finalize(...);
+	}
+	function start() {
+		var port = super.start();
+		url = @"http://127.0.0.1:${port}/";
+		return port;
+	}
+	function openURL() {
+		System.shellExecute(url);
+	}
+	var ext2mime = %[
+		".jpeg" => "image/jpeg",
+		".jpg"  => "image/jpeg",
+		".png"  => "image/png",
+		".html" => "text/html",
+		".txt"  => "text/plain",
+		".tjs"  => "text/plain",
+		];
+	function showDictionary(tag, dic) {
+		var text, list = [];
+		list.assign(dic);
+		for (var i = 0; i < list.count; i+=2) {
+			text += @"<li>${tag}['${list[i]}'] = '${list[i+1]}'</li>";
+		}
+		return text;
+	}
+	function onRequest(elm) {
+		var ret = %[
+			"content_type" => "text/html; charset="+charset,
+			];
+		var path = elm.path;
+		dm(elm.request, path);
+		var title = @"SimpleHTTPServer test [${charset}]";
+		switch (path) {
+		case "/":
+			var textform = @"action=${path}><input type=text name=text><input type=submit value=";
+			var form = showDictionary("form",   elm.form);
+			var head = showDictionary("header", elm.header);
+			var text = @"<html><head><title>${title}</title></head>\n";
+			text += @"<body><h1>${title}</h1>\n";
+			text +=  "<h2>Test</h2>";
+			text +=  "<ul>\n";
+			text +=  "<li><a href=file.html>file</a></li>\n";
+			text +=  "<li><a href=archive.html>in archive</a></li>\n";
+			text +=  "</ul>\n";
+			text += @"<h2>GET Form</h2 ><form method=GET  ${textform}GET ></form>\n";
+			text += @"<h2>POST Form</h2><form method=POST ${textform}POST></form>\n";
+			text +=  "<ul>\n";
+			text += @"<li>method: ${elm.method}</li>";
+			text += @"<li>request: ${elm.request}</li>";
+			text += @"<li>path: ${elm.path}</li>";
+			text +=  "<hr width=30% align=left>\n"+form if (form != "");
+			text +=  "<hr width=30% align=left>\n"+head if (head != "");
+			text +=  "</ul></body></html>\n";
+			ret.text = text;
+			break;
+		default:
+			if (path.charAt(0) == "/") path = path.substr(1);
+			if (Storages.isExistentStorage(path)) {
+				ret.file = path;
+				var type, ext = Storages.extractStorageExt(ret.file);
+				/**/type = ext2mime[ext] if (ext != "");
+				ret.content_type = (type != "") ? type : "application/octet-stream";
+			} else {
+				ret.status = 404;
+				ret.text = "";
+			}
+		}
+		return ret;
+	}
+	function dm(*) {
+		Debug.message(charset, *);
+	}
+}
+
+class DummyWindow extends Window {
+	var csets = [ "utf-8", "Shift_JIS", "euc-jp", "iso-2022-jp" ];
+	var servs = [];
+	var delayexec, timercnt;
+	function DummyWindow() {
+		super.Window();
+		for (var i = 0; i < csets.count; i++) {
+			var serv = new MyHTTPServer(csets[i]);
+			serv.start();
+			servs.add(serv);
+			add(serv);
+			var mi = new MenuItem(this, csets[i]);
+			mi.onClick = serv.openURL;
+			add(mi);
+			menu.add(mi);
+		}
+		caption = "Simple HTTP Servers";
+		innerSunken = false;
+		innerHeight = 0;
+		visible = true;
+	}
+	function onCloseQuery() { visible = false; super.onCloseQuery(true); }
+	function finalize() {
+		invalidate delayexec if (delayexec);
+		for (var i = 0; i < servs.count; i++) {
+			var serv = servs[i];
+			serv.stop();
+		}
+		super.finalize(...);
+	}
+}
+Debug.console.visible = true;
+//Debug.controller.visible = true;
+var win = new DummyWindow();

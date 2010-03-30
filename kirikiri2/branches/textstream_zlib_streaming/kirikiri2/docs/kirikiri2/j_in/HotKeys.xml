@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>ホットキー</title>
+
+<para>
+<ptitle>共通ホットキー</ptitle>
+　吉里吉里には共通して使用できるホットキーがいくつかあります。<r/>
+<r/>
+<dl>
+<dt>コントローラ (Shift + F1)</dt>
+<dd>
+　<link href="Controller"/> を表示します。
+</dd>
+
+
+<dt>スクリプトエディタ (Shift + F2)</dt>
+<dd>
+　<link href="ScriptEditor"/> を表示します。
+</dd>
+
+
+<dt>監視式 (Shift + F3)</dt>
+<dd>
+　<link href="ExprWatch"/> を表示します。
+</dd>
+
+
+<dt>コンソール (Shift + F4)</dt>
+<dd>
+　<link href="Console"/> を表示します。
+</dd>
+
+
+<dt>更新矩形の表示 (Shift + F11)</dt>
+<dd>
+　ウィンドウ ( <at href="f_Window.html">Window クラス</at> で作成したウィンドウ ) をアクティブにしてこのホットキーを押すと、そのウィンドウの表示更新領域を黄色～白の矩形で表示することができます。ウィンドウのどの領域が更新されたかを確認することができます。
+</dd>
+
+
+<dt>レイヤ構造のダンプ (Shift + F12)</dt>
+<dd>
+　ウィンドウ ( <at href="f_Window.html">Window クラス</at> で作成したウィンドウ ) をアクティブにしてこのホットキーを押すと、そのウィンドウに所属するレイヤの構造がコンソールに表示されます。
+</dd>
+
+
+<dt>環境情報のコピー (Ctrl + F11)</dt>
+<dd>
+　吉里吉里が動作しているコンピュータの情報や、<at href="f_Debug_notice.html">Debug.notice メソッド</at> で出力したログをクリップボードにコピーします。ユーザの環境の情報を収集する際に利用することができます。
+</dd>
+
+
+<dt>著作権情報の表示 (Ctrl + F12)</dt>
+<dd>
+　吉里吉里の著作権情報を表示します。
+</dd>
+
+
+<dt>強制終了 (Ctrl + Alt + F12)</dt>
+<dd>
+　このキーを２～３秒間押すと、起動している吉里吉里をすべて強制終了することができます。吉里吉里がアクティブでない状態でも強制終了させることができます。
+</dd>
+</dl>
+<r/>
+<note>
+これらのホットキーは、強制終了のホットキーを除き、<link href="CommandLine" />でキーを変更できます。<r/>
+</note>
+
+</para>
+
+
+</doc>

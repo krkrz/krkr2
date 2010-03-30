@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<anchor target="main"/>
+<keywords/>
+<title>TJS2 リファレンス 目次</title>
+<para>
+<ptitle>言語リファレンス</ptitle>
+<link href="about"/><r/>
+<link href="style"/><r/>
+<link href="pp"/><r/>
+<link href="token"/><r/>
+<link href="types"/><r/>
+<link href="variable"/><r/>
+<link href="factor"/><r/>
+<link href="statement_and_block"/><r/>
+<link href="expr_and_op"/><r/>
+<link href="if"/><r/>
+<link href="while"/><r/>
+<link href="for"/><r/>
+<link href="switch"/><r/>
+<link href="try"/><r/>
+<link href="function"/><r/>
+<link href="property"/><r/>
+<link href="class"/><r/>
+<link href="with"/><r/>
+<link href="string"/><r/>
+<link href="octet"/><r/>
+<link href="exception"/><r/>
+<link href="array"/><r/>
+<link href="dictionary"/><r/>
+<link href="date"/><r/>
+<link href="math"/><r/>
+<link href="randomgenerator"/><r/>
+<link href="regexp"/><r/>
+</para>
+
+<para>
+<ptitle>組み込みの手引き</ptitle>
+<link href="basictypes"/><r/>
+<link href="ttjs"/><r/>
+<link href="variant"/><r/>
+<link href="interface"/><r/>
+<link href="simple"/><r/>
+</para>
+
+<para>
+<ptitle>付録</ptitle>
+<link href="vmcodes"/><r/>
+</para>
+
+</doc>

@@ -1,0 +1,33 @@
+// libexpat
+// XMLParser クラス
+Plugins.link("csvParser.dll");
+
+Debug.console.visible = true;
+
+// 窓
+var win = new Window();
+win.visible=true;
+
+class MyParser extends CSVParser {
+
+    /**
+     * 行毎に呼び出される
+     * @param columns カラムデータ(Array)
+     * @param lineNo 論理行番号(1～)
+     */
+    function doLine(columns, lineNo) {
+        var str = "lineNo:" + lineNo;
+        for (var i=0;i<columns.count;i++) {
+            str += " no:" + i + " data:" + columns[i];
+        }
+        Debug.message(str);
+    }
+    function MyParser() {
+        super.CSVParser();
+    }
+};
+
+var parser = new MyParser();
+
+parser.parseStorage("test.txt");
+parser.parse("行1,data1\n行2,data2\n行3,data3");

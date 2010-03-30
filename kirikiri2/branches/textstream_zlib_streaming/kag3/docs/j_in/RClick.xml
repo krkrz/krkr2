@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+
+<doc>
+<title>右クリックサブルーチンについて</title>
+
+<para>
+<ptitle>右クリックサブルーチンとは</ptitle>
+　マウスの右クリックで呼び出される KAG のサブルーチンです。<r/>
+　右クリックによってセーブ/ロードの画面を表示させたりするのに用います。<r/>
+</para>
+
+<para>
+<ptitle>とりあえず例</ptitle>
+　右クリックサブルーチンを作るには rclick タグを用います。このタグによって、右クリックをされたときに指定のサブルーチンを呼び出すか、あるいは、指定のラベルにジャンプするかを指定できます。<r/>
+<r/>
+　たとえば、rlick.ks に以下の内容を書いたとします。<r/>
+<example>
+*rclick<r/>
+@rclick jump=true storage="rclick.ks" target="*exit" enabled=true<r/>
+@current layer=message1<r/>
+@layopt layer=message0 page=fore visible=false<r/>
+@layopt layer=message1 page=fore visible=true<r/>
+@er<r/>
+ここは右クリックルーチン内です。<r/>
+[s]<r/>
+<r/>
+*exit<r/>
+@layopt layer=message1 page=fore visible=false<r/>
+@layopt layer=message0 page=fore visible=true<r/>
+@current layer=message0<r/>
+@rclick call=true storage="rclick.ks" target="*rclick" enabled=true<r/>
+@return<r/>
+</example>
+　これで、たとえば、first.ks には以下の行を記述します。
+<bq>
+@rclick call=true storage="rclick.ks" target="*rclick" enabled=true<r/>
+</bq>
+<r/>
+　すると、右クリックで rclick.ks の *rclick が呼ばれるようになります。<r/>
+　上記の例の rclick.ks では、まず右クリックがされたら *exit にジャンプするように設定しています。これにより、右クリックサブルーチン内で右クリックを行えば元に戻ることができます。<r/>
+　メッセージレイヤ0 を非表示にしています。これにより、メッセージレイヤ0 になにか選択肢が表示されていても選択肢を選択できなくすることができます。<r/>
+　メッセージレイヤ1 を表示状態にし、そこに「ここは右クリックルーチン内です。」と表示し、そこで停止します。<r/>
+</para>
+
+<para>
+<ptitle>難しい例</ptitle>
+　右クリックサブルーチンとしては複雑な例を挙げますが、メッセージ履歴を見たり、セーブ・ロードができたりするものです。
+<example>
+*sub1<r/>
+@tempsave<r/>
+; ↑一時的に状態を保存<r/>
+@history output=false<r/>
+; ↑メッセージ履歴への出力を無効に<r/>
+@mapdisable layer=0 page=fore<r/>
+; ↑クリッカブルマップをもし使っている場合はこのようにして無効化する<r/>
+@backlay<r/>
+@layopt layer=message1 page=back visible=true<r/>
+; ↑このサブルーチン内ではメッセージレイヤ1を使う<r/>
+@layopt layer=message0 page=back visible=false<r/>
+@current layer=message1 page=back<r/>
+@position left=0 top=0 width=640 height=480<r/>
+@eval exp="f.r_first=true"<r/>
+; ↑このルーチンに入ったときにだけトランジションを行うように<r/>
+;<r/>
+*menu<r/>
+@er<r/>
+@nowait<r/>
+[link target=*hide]メッセージを消す[endlink][r]<r/>
+[link target=*history]メッセージ履歴を見る[endlink][r]<r/>
+[link target=*load]栞をたどる[endlink][r]<r/>
+[link target=*save]栞をはさむ[endlink][r]<r/>
+[link target=*gotostart]最初に戻る[endlink][r]<r/>
+[link target=*ret]戻る[endlink][r]<r/>
+@endnowait<r/>
+@current layer=message1 page=fore<r/>
+@if exp="f.r_first"<r/>
+@trans time=500 rule=trans1 vague=128<r/>
+@wt<r/>
+@endif<r/>
+@eval exp="f.r_first=false"<r/>
+@s<r/>
+<r/>
+*ret<r/>
+; サブルーチンから戻る<r/>
+@tempload bgm=false se=false backlay=true<r/>
+@trans time=500 rule=trans1 vague=128<r/>
+@wt<r/>
+@return<r/>
+<r/>
+*hide<r/>
+; メッセージを消す<r/>
+@hidemessage<r/>
+@jump target=*menu<r/>
+<r/>
+*history<r/>
+; メッセージ履歴を見る<r/>
+@showhistory<r/>
+@jump target=*menu<r/>
+<r/>
+*load<r/>
+; 栞をたどる<r/>
+; emb exp= .... については <link href="TJSTips"/> を参照<r/>
+@er<r/>
+@nowait<r/>
+[link target=*lt0][emb exp="kag.getBookMarkPageName(0)"][endlink][r]<r/>
+[link target=*lt1][emb exp="kag.getBookMarkPageName(1)"][endlink][r]<r/>
+[link target=*lt2][emb exp="kag.getBookMarkPageName(2)"][endlink][r]<r/>
+[link target=*lt3][emb exp="kag.getBookMarkPageName(3)"][endlink][r]<r/>
+[link target=*lt4][emb exp="kag.getBookMarkPageName(4)"][endlink][r]<r/>
+[link target=*menu]戻る[endlink][r]<r/>
+@endnowait<r/>
+@s<r/>
+<r/>
+*lt0<r/>
+@load place=0 ask=true<r/>
+@jump target=*menu<r/>
+*lt1<r/>
+@load place=1 ask=true<r/>
+@jump target=*menu<r/>
+*lt2<r/>
+@load place=2 ask=true<r/>
+@jump target=*menu<r/>
+*lt3<r/>
+@load place=3 ask=true<r/>
+@jump target=*menu<r/>
+*lt4<r/>
+@load place=4 ask=true<r/>
+@jump target=*menu<r/>
+<r/>
+*save<r/>
+; 栞をはさむ<r/>
+; emb exp= .... については <link href="TJSTips"/> を参照<r/>
+@er<r/>
+@nowait<r/>
+[link target=*st0][emb exp="kag.getBookMarkPageName(0)"][endlink][r]<r/>
+[link target=*st1][emb exp="kag.getBookMarkPageName(1)"][endlink][r]<r/>
+[link target=*st2][emb exp="kag.getBookMarkPageName(2)"][endlink][r]<r/>
+[link target=*st3][emb exp="kag.getBookMarkPageName(3)"][endlink][r]<r/>
+[link target=*st4][emb exp="kag.getBookMarkPageName(4)"][endlink][r]<r/>
+[link target=*menu]戻る[endlink][r]<r/>
+@endnowait<r/>
+@s<r/>
+<r/>
+*st0<r/>
+@save place=0 ask=true<r/>
+@jump target=*menu<r/>
+*st1<r/>
+@save place=1 ask=true<r/>
+@jump target=*menu<r/>
+*st2<r/>
+@save place=2 ask=true<r/>
+@jump target=*menu<r/>
+*st3<r/>
+@save place=3 ask=true<r/>
+@jump target=*menu<r/>
+*st4<r/>
+@save place=4 ask=true<r/>
+@jump target=*menu<r/>
+<r/>
+<r/>
+*gotostart<r/>
+; 「最初に戻る」<r/>
+@gotostart ask=true<r/>
+@jump target=*menu<r/>
+</example>
+<r/>
+　このほか、栞データにサムネイル画像を保存する場合は若干の注意がありますので locksnapshot と unlocksnapshot タグを参照してください。<r/>
+</para>
+</doc>

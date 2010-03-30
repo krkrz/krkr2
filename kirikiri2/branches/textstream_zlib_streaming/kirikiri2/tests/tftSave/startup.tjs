@@ -1,0 +1,44 @@
+Plugins.link("tftSave.dll");
+
+var path = Storages.extractStoragePath(Storages.getPlacedPath("startup.tjs"));
+
+var win = new Window();
+var pri = new Layer(win, null);
+var lay = new Layer(win, pri);
+
+var savech = 
+	(
+//		"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚X‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n‚o‚p‚q‚r‚s‚t‚u‚v‚w‚x‚y‚‚‚‚ƒ‚„‚…‚†‚‡‚ˆ‚‰‚Š‚‹‚Œ‚‚Ž‚‚‚‘‚’‚“‚”‚•‚–‚—‚˜‚™‚š"
+		"‚Ÿ‚ ‚¡‚¢‚£‚¤‚¥‚¦‚§‚¨‚©‚ª‚«‚¬‚­‚®‚¯‚°‚±‚²‚³‚´‚µ‚¶‚·‚¸‚¹‚º‚»‚¼‚½‚¾‚¿‚À‚Á‚Â‚Ã‚Ä‚Å‚Æ‚Ç‚È‚É‚Ê‚Ë‚Ì‚Í‚Î‚Ï‚Ð‚Ñ‚Ò‚Ó‚Ô‚Õ‚Ö‚×‚Ø‚Ù‚Ú‚Û‚Ü‚Ý‚Þ‚ß‚à‚á‚â‚ã‚ä‚å‚æ‚ç‚è‚é‚ê‚ë‚ì‚í‚î‚ï‚ð‚ñ"
+//		"ƒ@ƒAƒBƒCƒDƒEƒFƒGƒHƒIƒJƒKƒLƒMƒNƒOƒPƒQƒRƒSƒTƒUƒVƒWƒXƒYƒZƒ[ƒ\ƒ]ƒ^ƒ_ƒ`ƒaƒbƒcƒdƒeƒfƒgƒhƒiƒjƒkƒlƒmƒnƒoƒpƒqƒrƒsƒtƒuƒvƒwƒxƒyƒzƒ{ƒ|ƒ}ƒ~ƒ€ƒƒ‚ƒƒƒ„ƒ…ƒ†ƒ‡ƒˆƒ‰ƒŠƒ‹ƒŒƒƒŽƒƒƒ‘ƒ’ƒ“"
+//		"ƒ”ƒ•ƒ–ABCDEFGHIJKLMNO‹ŒRSTUVWXY[`cdefgh‡€‡ijklmnopqrstuvwxyzƒ„"
+	);
+var chlist = [];
+for (var i = savech.length-1; i >= 0; i--) chlist.add(# savech.charAt(i));
+chlist.sort();
+
+var sz = 24;
+with (lay.font) {
+	.height = sz;
+	.face = "‚l‚r ƒSƒVƒbƒN";
+}
+
+System.savePreRenderedFont(path + "test.tft", chlist, function (ch) {
+	lay.drawGlyph(ch);
+	return lay;
+} incontextof global);
+
+win.visible = true;
+
+with (pri.font) {
+	.height = sz;
+	.face = "‚l‚r –¾’©";
+	.mapPrerenderedFont(path + "test.tft");
+}
+with (pri) {
+	.visible = true;
+	.setSize(win.innerWidth, win.innerHeight);
+	.fillRect(0, 0, .width, .height, 0);
+	.drawText(0, 0, "‚ ‚¢‚¤‚¦‚¨ƒeƒXƒgƒeƒXƒg", 0xFFFFFF, 255, true);
+}
+

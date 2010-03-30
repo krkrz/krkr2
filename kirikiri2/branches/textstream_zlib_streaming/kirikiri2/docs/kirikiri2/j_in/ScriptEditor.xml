@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>スクリプトエディタ</title>
+
+<para>
+<ptitle>スクリプトエディタについて</ptitle>
+　スクリプトエディタは、実行中に Shift + F2 を押すことにより表示することができます。<r/>
+　スクリプトエディタでは簡単な TJS スクリプトの編集とその実行をすることができます。<r/>
+　このエディタは簡易的なものであり、本格的なスクリプトの編集は意図していません。<r/>
+<r/>
+　例外が発生したとき、その例外の発生位置を指し示すために「スクリプトエディタ (例外通知)」というスクリプトエディタのウィンドウが開く場合があります。この場合はそのスクリプトエディタは内容が変更禁止の状態になります。<r/>
+</para>
+
+<para>
+<ptitle>画面の説明</ptitle>
+<img src="ScriptEditor.png"/><r/><r/>
+右クリックメニューの説明です。<r/>
+<dl>
+<dt><img src="CutIcon.png"/> 切り取り</dt>
+<dd>
+　選択範囲を切り取ります。切り取られた選択範囲はクリップボードに保持されます。
+</dd>
+
+<dt><img src="CopyIcon.png"/> コピー</dt>
+<dd>
+　選択範囲をクリップボードにコピーします。
+</dd>
+
+<dt><img src="PasteIcon.png"/> 貼り付け</dt>
+<dd>
+　クリップボードから文字を貼り付けます。
+</dd>
+
+<dt><img src="UndoIcon.png"/> 元に戻す</dt>
+<dd>
+　直前の操作を元に戻します。
+</dd>
+
+<dt><img src="ExecIcon.png"/> 実行</dt>
+<dd>
+　スクリプトエディタに入力された内容を TJS2 スクリプトとして実行します。
+</dd>
+
+<dt><img src="SaveIcon.png"/> 保存</dt>
+<dd>
+　内容をファイルに保存します。
+</dd>
+
+<dt><img src="ControllerIcon.png"/> コントローラ</dt>
+<dd>
+　<link href="Controller"/> を表示します。
+</dd>
+
+<dt><img src="ExprWatchIcon.png"/> 監視式</dt>
+<dd>
+　<link href="ExprWatch"/> を表示します。
+</dd>
+
+<dt><img src="ConsoleIcon.png"/> コンソール</dt>
+<dd>
+　<link href="Console"/> を表示します。
+</dd>
+</dl>
+<r/>
+
+</para>
+
+</doc>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>Controller</title>
+<desc>
+　Controller クラスは、<kw>コントローラ</kw>に関する管理を行うクラスです。このクラスからオブジェクトを作成することはできません ( このクラスにはアクセスできません )。このクラスのオブジェクトには <ref>Debug.controller</ref> でアクセスできます。<r/>
+</desc>
+
+
+<member>
+	<name>visible</name>
+	<type>property</type>
+	<shortdesc>表示されているかどうか</shortdesc>
+	<access>r/w</access>
+	<desc>
+		　コントロールが表示されているかどうかを表します。値を設定することもできます。<r/>
+		　真を指定すると表示されます。<r/>
+	</desc>
+</member>
+
+</doc>

@@ -1,0 +1,27 @@
+<script language="JavaScript">
+    function callExternalInterface() {
+    /* Call a function registered as callPlayBall in the SWF named myMovie. */
+//    getMovieName("movie").callFromTJS("test");
+//	  getMovieName("movie").stopPlay();
+      alert(getMovieName("movie").XXX);
+      alert(getMovieName("movie").callFromTJS);
+    }
+    /* This utility function resolves the string movieName to a Flash object reference based on browser type. */
+    function getMovieName(movieName) {
+    if (navigator.appName.indexOf("Microsoft") != -1) {
+    return window[movieName]
+    }
+    else {
+    return document[movieName]
+    }
+    }
+</script>
+
+<body>
+
+<object id=movie data="test2.swf" type="application/x-shockwave-flash" width="800" height="600">
+<param name="src" value="test2.swf" />
+</object>
+
+<input type="button" onClick="callExternalInterface()" value="Call Flash Function" />
+</body>

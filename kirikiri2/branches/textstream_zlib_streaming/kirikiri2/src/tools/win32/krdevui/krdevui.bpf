@@ -1,0 +1,50 @@
+USEFORM("FolderSelectorUnit.cpp", FolderSelectorForm);
+USEFORM("ConfSettingsUnit.cpp", ConfSettingsForm);
+USEFORM("ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
+USEFORM("RelFolderSelectorUnit.cpp", RelFolderSelectorForm);
+USEFORM("RelSettingsUnit.cpp", RelSettingsForm);
+USEFORM("RelDirSearchUnit.cpp", RelDirSearchForm);
+USEFORM("FontMakerUnit.cpp", FontMakerForm);
+USEFORM("FontMakerWriteUnit.cpp", FontMakerWriteForm);
+USEFORM("FontPreviewUnit.cpp", FontPreviewForm);
+USEUNIT("RelMain.cpp");
+USEUNIT("ConfMain.cpp");
+USEUNIT("MainUnit.cpp");
+USEFORM("tpc\ProgressUnit.cpp", ProgressForm);
+USEFORM("tpc\TPCMainUnit.cpp", TPCMainForm);
+USEFORM("tpc\JPEGQualityUnit.cpp", JPEGQualityForm);
+USEFORM("tpc\LogViewerUnit.cpp", LogViewerForm);
+USEUNIT("tpc\png\DeePNGUnit.cpp");
+USEUNIT("tpc\psd\DeePSDUnit.cpp");
+USEUNIT("tpc\tlg5\slide.cpp");
+USEUNIT("tpc\tlg5\TLG5Saver.cpp");
+USERES("krdevui.res");
+USELIB("..\..\..\..\..\Lib\zlib.lib");
+USELIB("..\..\..\..\..\Lib\deelibpng.lib");
+USEUNIT("SignUnit.cpp");
+USEUNIT("KrkrExecutableUnit.cpp");
+USEFORM("RandomizeFormUnit.cpp", RandomizeForm);
+USEFORM("SignMainFormUnit.cpp", SignMainForm);
+USEUNIT("tpc\tlg6\TLG6Saver.cpp");
+USEUNIT("tpc\tlg6\GolombTable.cpp");
+USEUNIT("tpc\TLGMetaInfo.cpp");
+USEUNIT("looptuner2\DSound.cpp");
+USEFORM("looptuner2\EditLabelAttribUnit.cpp", EditLabelAttribFrame); /* TFrame: File Type */
+USEFORM("looptuner2\EditLinkAttribUnit.cpp", EditLinkAttribFrame); /* TFrame: File Type */
+USEFORM("looptuner2\LabelDetailUnit.cpp", LabelDetailForm);
+USEFORM("looptuner2\LinkDetailUnit.cpp", LinkDetailForm);
+USEUNIT("looptuner2\looptune.cpp");
+USEFORM("looptuner2\LoopTunerMainUnit.cpp", TSSLoopTuner2MainForm);
+USEUNIT("looptuner2\RIFFWaveContext.cpp");
+USEUNIT("looptuner2\TSSWaveContext.cpp");
+USEUNIT("looptuner2\WaveReader.cpp");
+USEUNIT("looptuner2\WaveView.cpp");
+USEUNIT("..\..\..\core\base\CharacterSet.cpp");
+USEUNIT("..\..\..\core\sound\win32\tvpsnd.c");
+USELIB("..\..\..\..\..\..\..\Lib\libtomcrypt1.lib");
+USEUNIT("looptuner2\TotalView.cpp");
+USEUNIT("looptuner2\WaveLoopManager.cpp");
+//---------------------------------------------------------------------------
+This file is used by the project manager only and should be treated like the project file
+
+DllEntryPoint

@@ -1,0 +1,4 @@
+Plugins.link("squirrel.dll");
+System.exitOnNoWindowStartup = false;
+System.exitOnWindowClose = false;
+System.exitOnSquirrelDone = true;
