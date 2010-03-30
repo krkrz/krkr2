@@ -1,17 +1,17 @@
 #include "ncbind.hpp"
 
-
-struct ShrinkCopy
+struct LayerUtils
 {
+	// １ピクセルの型
+	typedef unsigned long PixelT;
+
 	// バッファ参照用の型
-	typedef unsigned char const *BufRefT;
-	typedef unsigned char       *WrtRefT;
+	typedef unsigned char UnitT;
+	typedef UnitT const *BufRefT;
+	typedef UnitT       *WrtRefT;
 	typedef tTVReal              real;
 
-	/**
-	 * レイヤのサイズとバッファを取得する
-	 */
-	static bool GetLayerSize(iTJSDispatch2 *lay, long &w, long &h, long &pitch)
+	static bool IsValidLayer(iTJSDispatch2 *lay)
 	{
 		// レイヤインスタンス以外ではエラー
 		if (!lay || TJS_FAILED(lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay))) return false;
@@ -20,13 +20,23 @@ struct ShrinkCopy
 		tTJSVariant val;
 		if (TJS_FAILED(lay->PropGet(0, TJS_W("hasImage"), 0, &val, lay)) || (val.AsInteger() == 0)) return false;
 
+		return true;
+	}
+
+	/**
+	 * レイヤのサイズとバッファを取得する
+	 */
+	static bool GetLayerSize(iTJSDispatch2 *lay, long &w, long &h, long &pitch)
+	{
+		if (!IsValidLayer(lay)) return false;
+
 		// レイヤサイズを取得
-		val.Clear();
-		if (TJS_FAILED(imageWidth->PropGet( 0, 0, 0, &val, lay))) return false;
+		tTJSVariant val;
+		if (TJS_FAILED(lay->PropGet(0, TJS_W("imageWidth"), 0, &val, lay))) return false;
 		w = (long)val.AsInteger();
 
 		val.Clear();
-		if (TJS_FAILED(imageHeight->PropGet(0, 0, 0, &val, lay))) return false;
+		if (TJS_FAILED(lay->PropGet(0, TJS_W("imageHeight"), 0, &val, lay))) return false;
 		h = (long)val.AsInteger();
 
 		// ピッチ取得
@@ -61,7 +71,10 @@ struct ShrinkCopy
 		ptr = reinterpret_cast<WrtRefT>(val.AsInteger());
 		return  (ptr != 0);
 	}
+};
 
+struct ShrinkCopy : public LayerUtils
+{
 	// TJS Method
 	static tjs_error (TJS_INTF_METHOD layerShrinkCopy)(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *dst)
 	{
@@ -166,7 +179,6 @@ struct ShrinkCopy
 		return true;
 	}
 
-	typedef unsigned long PixelT;
 	typedef unsigned long AvgT;
 	typedef unsigned char uchar;
 	struct AvgInfoT { int offset, step; AvgT ta, tc, ba, bc, total; };
@@ -353,38 +365,121 @@ protected:
 	WrtRefT pd;
 	long diw, dih, dpch;
 
-public:
-	static void InitImageSizeProp() {
-		iTJSDispatch2 *global = TVPGetScriptDispatch();
-		if (!global) return;
-		tTJSVariant vlay;
-		if (TJS_SUCCEEDED(global->PropGet(0, TJS_W("Layer"), 0, &vlay, global))) {
-			iTJSDispatch2 *lay = vlay.AsObjectNoAddRef();
-			if (lay) {
-				tTJSVariant vprop;
-				if (TJS_SUCCEEDED(lay->PropGet(TJS_IGNOREPROP, TJS_W("imageWidth" ), 0, &vprop, lay))) imageWidth  = vprop.AsObject();
-				vprop.Clear();
-				if (TJS_SUCCEEDED(lay->PropGet(TJS_IGNOREPROP, TJS_W("imageHeight"), 0, &vprop, lay))) imageHeight = vprop.AsObject();
+};
+NCB_ATTACH_FUNCTION(shrinkCopy, Layer, ShrinkCopy::layerShrinkCopy);
 
-				if (!imageWidth || !imageHeight) 
-					TVPThrowExceptionMessage(TJS_W("invoking of Layer.image{Width/Height} failed."));
+
+struct LimitedShrink : public LayerUtils
+{
+	// TJS Method
+	static tjs_error (TJS_INTF_METHOD layerShrinkCopy)(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *dst)
+	{
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		LimitedShrink inst( dst, param[0]->AsObjectNoAddRef(), (long)param[1]->AsInteger(),
+							(numparams >= 3) ?                 (long)param[2]->AsInteger() : 0);
+		if (!inst.check())  return TJS_E_INVALIDPARAM;
+		if (!inst.resize()) return TJS_E_FAIL;
+		inst.copy();
+		return TJS_S_OK;
+	}
+
+	LimitedShrink(iTJSDispatch2 *_dst, iTJSDispatch2 *_src, long _stepx, long _stepy)
+		: dst(_dst), src(_src), stepx(_stepx), stepy(_stepy), xdiv(0), xrem(false)
+	{
+		if (!stepy) stepy = stepx;
+	}
+
+	bool check()
+	{
+		return (stepx > 0 && stepy > 0 &&
+				GetLayerBufferAndSize(src, siw, sih, ps, spch) &&
+				IsValidLayer(dst));
+	}
+	bool resize() {
+		tTJSVariant nw((tjs_int)((siw + stepx - 1) / stepx));
+		tTJSVariant nh((tjs_int)((sih + stepy - 1) / stepy));
+		tTJSVariant *param[] = { &nw, &nh };
+		return (TJS_SUCCEEDED(dst->FuncCall(0, TJS_W("setImageSize"), 0, NULL, 2, param, dst)) &&
+				GetLayerBufferAndSize(dst, diw, dih, pd, dpch));
+	}
+	void copy() {
+		xdiv = siw/stepx;
+		xrem = siw - xdiv*stepx;
+		if (stepy <= 1) {
+			for (long y = 0; y < sih; y++, pd+=dpch, ps+=spch)
+				shrinkLineX(pd, ps);
+		} else {
+			long bpch = diw * 4;
+			WrtRefT buf = new UnitT[bpch * stepy];
+			try {
+				long div = sih/stepy;
+				for (long len = div; len > 0; len--, pd+=dpch) {
+					for (long sub = stepy, ofs = 0; sub > 0; sub--, ofs+=bpch, ps+=spch)
+						shrinkLineX(buf + ofs, ps);
+					shrinkLineY(pd, buf, bpch, stepy);
+				}
+				div *= stepy;
+				if (div < sih) {
+					long yrem = sih - div;
+					for (long sub = yrem, ofs = 0; sub > 0; sub--, ofs+=bpch, ps+=spch)
+						shrinkLineX(buf + ofs, ps);
+					shrinkLineY(pd, buf, bpch, yrem);
+				}
+			} catch(...) {
+				delete[] buf;
+				throw;
+			}
+			delete[] buf;
+		}
+	}
+	static inline void ShrinkLine(WrtRefT &w, BufRefT &r, long len, long shrink, long step, long tstep) {
+		BufRefT tr = r;
+		switch (shrink) {
+		case 1:
+			for (; len > 0; len--, r+=step) {
+				*w++ = r[0];
+				*w++ = r[1];
+				*w++ = r[2];
+				*w++ = 255;
+			}
+			break;
+		case 2:
+		case 3:
+		case 4:
+			/* 専用処理を書く */
+		default:
+			for (PixelT sr, sg, sb; len > 0; len--, r+=step) {
+				sr = sg = sb = 0;
+				tr = r;
+				for (long sub = shrink; sub > 0; sub--, tr+=tstep) {
+					sr += (PixelT)tr[0];
+					sg += (PixelT)tr[1];
+					sb += (PixelT)tr[2];
+				}
+				*w++ = (UnitT)(sr/shrink);
+				*w++ = (UnitT)(sg/shrink);
+				*w++ = (UnitT)(sb/shrink);
+				*w++ = 255;
 			}
 		}
 	}
-	static void UnInitImageSizeProp() {
-		if (imageWidth)  imageWidth ->Release();
-		if (imageHeight) imageHeight->Release();
+	
+	void shrinkLineX(WrtRefT w, BufRefT r) {
+		ShrinkLine(w, r, xdiv, stepx, stepx*4, 4);
+		if (xrem > 0) ShrinkLine(w, r, 1, xrem, 0, 4);
 	}
-private:
-	static iTJSDispatch2 *imageWidth, *imageHeight;
+	inline void shrinkLineY(WrtRefT w, BufRefT r, long pch, long shrink) {
+		ShrinkLine(w, r, diw, shrink, 4, pch);
+	}
+protected:
+	iTJSDispatch2 *dst;
+	iTJSDispatch2 *src;
+	long stepx, stepy, xdiv, xrem;
+
+	BufRefT ps;
+	long siw, sih, spch;
+
+	WrtRefT pd;
+	long diw, dih, dpch;
 };
-iTJSDispatch2 *ShrinkCopy::imageWidth  = 0;
-iTJSDispatch2 *ShrinkCopy::imageHeight = 0;
-
-void PreRegist()    { ShrinkCopy::  InitImageSizeProp(); }
-void PostUnRegist() { ShrinkCopy::UnInitImageSizeProp(); }
-
-NCB_PRE_REGIST_CALLBACK(   PreRegist);
-NCB_POST_UNREGIST_CALLBACK(PostUnRegist);
-
-NCB_ATTACH_FUNCTION(shrinkCopy, Layer, ShrinkCopy::layerShrinkCopy);
+NCB_ATTACH_FUNCTION(shrinkCopyFast, Layer, LimitedShrink::layerShrinkCopy);
