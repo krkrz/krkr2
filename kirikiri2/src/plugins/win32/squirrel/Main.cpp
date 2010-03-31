@@ -539,10 +539,10 @@ public:
 	/**
 	 * squirrelスレッドの実行
 	 */
-	static tjs_error TJS_INTF_METHOD driveSQ(tTJSVariant *result,
-											 tjs_int numparams,
-											 tTJSVariant **param,
-											 iTJSDispatch2 *objthis) {
+	static tjs_error TJS_INTF_METHOD drive(tTJSVariant *result,
+										   tjs_int numparams,
+										   tTJSVariant **param,
+										   iTJSDispatch2 *objthis) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		sqobject::Thread::update((int)*param[0]);
 		sqobject::beforeContinuous();
@@ -551,6 +551,19 @@ public:
 		if (result) {
 			*result = count;
 		}
+		return TJS_S_OK;
+	}
+
+	/**
+	 * トリガ実行
+	 * @param name トリガ名
+	 */
+	static tjs_error TJS_INTF_METHOD trigger(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		sqobject::Thread::trigger(param[0]->GetString());
 		return TJS_S_OK;
 	}
 	
@@ -724,7 +737,8 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("execStorageSQ", &ScriptsSquirrel::execStorage, TJS_STATICMEMBER);
 	RawCallback("forkSQ",        &ScriptsSquirrel::fork,        TJS_STATICMEMBER);
 	RawCallback("forkStorageSQ", &ScriptsSquirrel::forkStorage, TJS_STATICMEMBER);
-	RawCallback("driveSQ",       &ScriptsSquirrel::driveSQ,     TJS_STATICMEMBER);
+	RawCallback("driveSQ",       &ScriptsSquirrel::drive,       TJS_STATICMEMBER);
+	RawCallback("triggerSQ",     &ScriptsSquirrel::trigger,     TJS_STATICMEMBER);
 	RawCallback("callSQ",        &ScriptsSquirrel::call,        TJS_STATICMEMBER);
 	RawCallback("saveSQ",        &ScriptsSquirrel::save,        TJS_STATICMEMBER);
 	RawCallback("toSQString",    &ScriptsSquirrel::toString,    TJS_STATICMEMBER);

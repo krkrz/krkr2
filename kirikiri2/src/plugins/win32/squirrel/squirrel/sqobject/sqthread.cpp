@@ -622,6 +622,20 @@ Thread::fork(const SQChar *scriptName, int argc, const SQChar **argv)
 }
 
 /**
+ * 全スレッドへのトリガ通知
+ * @param name 処理待ちトリガ名
+ */
+void
+Thread::trigger(const SQChar *name)
+{
+	SQInteger max = threadList.len();
+	for (SQInteger i=0;i<max;i++) {
+		ObjectInfo obj = threadList.get(i);
+		obj.notifyTrigger(name);
+	}
+}
+
+/**
  * 動作スレッドの破棄
  */
 void
@@ -810,12 +824,7 @@ Thread::global_wait(HSQUIRRELVM v)
 SQRESULT
 Thread::global_trigger(HSQUIRRELVM v)
 {
-	const SQChar *name = getString(v, 2);
-	SQInteger max = threadList.len();
-	for (SQInteger i=0;i<max;i++) {
-		ObjectInfo obj = threadList.get(i);
-		obj.notifyTrigger(name);
-	}
+	trigger(getString(v,2));
 	return SQ_OK;
 }
 

@@ -117,6 +117,12 @@ class Scripts {
 	 * @return 動作しているスレッドの数
 	 */
 	function driveSQ(diff);
+
+	/**
+	 * Squirrel疑似スレッド用のトリガ呼び出し
+	 * @param name トリガ名
+	 */
+	function triggerSQ(name);
 }
 
 /**
@@ -136,7 +142,7 @@ class SQFunction {
 	 * @param 引数はそのまま変換してわたされます
 	 * @return 関数の返り値
 	 */
-    function call();
+	function call();
 };
 
 /**
