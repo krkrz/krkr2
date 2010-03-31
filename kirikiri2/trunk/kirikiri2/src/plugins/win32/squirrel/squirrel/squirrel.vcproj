@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="shift_jis"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="8.00"
 	Name="squirrellib"
 	ProjectGUID="{E42515D2-100D-4BF4-A726-3C1B8D18E271}"
 	RootNamespace="squirrel"
