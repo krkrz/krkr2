@@ -289,6 +289,12 @@ public:
 	static bool fork(const SQChar *scriptName, int argc=0, const SQChar **argv=NULL);
 
 	/**
+	 * 全スレッドへのトリガ通知
+	 * @param name 処理待ちトリガ名
+	 */
+	static void trigger(const SQChar *name);
+	
+	/**
 	 * 動作スレッドの破棄
 	 */
 	static void done();
