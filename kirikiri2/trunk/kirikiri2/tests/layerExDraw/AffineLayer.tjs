@@ -777,7 +777,7 @@ class VectorAffineSourceLayer extends AffineSourceLayer {
 		ret._imageTop     = _imageTop;
 		ret._width        = _width;
 		ret._height       = _height;
-		ret._image        = _image.clone();
+		ret._image        = _image.Clone();
 		return ret;
 	}
 
