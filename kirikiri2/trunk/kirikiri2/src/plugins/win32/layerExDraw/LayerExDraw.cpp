@@ -1805,25 +1805,28 @@ LayerExDraw::redraw(Image *image)
 		graphics->DrawImage(image, bounds->X, bounds->Y, bounds->Width, bounds->Height);
 		graphics->SetTransform(&calcTransform);
 		delete bounds;
-		delete image;
 		_pUpdate(0, NULL);
 		return true;
 	}
 	return false;
 }
 
-
 /**
- * ‹L˜^“à—e‚ÌŒ»Ý‚Ì‰ð‘œ“x‚Å‚ÌÄ•`‰æ
+ * ‹L˜^“à—e‚ð Image ‚Æ‚µ‚ÄŽæ“¾
+ * @return ¬Œ÷‚µ‚½‚ç true
  */
-bool
-LayerExDraw::redrawRecord()
+Image *
+LayerExDraw::getRecordImage()
 {
-	bool ret = false;
+	Image *image = NULL;
 	if (metafile) {
-		delete metaGraphics;
-		metaGraphics = NULL;
+		// ƒƒ^î•ñ‚ðŽæ“¾‚·‚é‚É‚Íˆê“x•Â‚¶‚é•K—v‚ª‚ ‚é
+		if (metaGraphics) {
+			delete metaGraphics;
+			metaGraphics = NULL;
+		}
 
+		//•Â‚¶‚½‚ ‚ÆŒp‘±‚·‚é‚½‚ß‚ÌÄ•`‰ææ‚ð•Ê“r\’z
 		HGLOBAL oldBuffer = metaBuffer;
 		metaBuffer = NULL;
 		createRecord();
@@ -1832,13 +1835,31 @@ LayerExDraw::redrawRecord()
 		if (oldBuffer) {
 			IStream* pStream = NULL;
 			if(::CreateStreamOnHGlobal(oldBuffer, FALSE, &pStream) == S_OK) 	{
-				ret = redraw(Image::FromStream(pStream,false));
+				image = Image::FromStream(pStream,false);
+				if (image) {
+					redraw(image);
+				}
 				pStream->Release();
 			}
 			::GlobalFree(oldBuffer);
 		}
 	}
-	return ret;
+	return image;
+}
+
+/**
+ * ‹L˜^“à—e‚ÌŒ»Ý‚Ì‰ð‘œ“x‚Å‚ÌÄ•`‰æ
+ */
+bool
+LayerExDraw::redrawRecord()
+{
+	// Ä•`‰æˆ—
+	Image *image = getRecordImage();
+	if (image) {
+		delete image;
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -1851,10 +1872,11 @@ LayerExDraw::saveRecord(const tjs_char *filename)
 {
 	bool ret = false;
 	if (metafile) {		
+		// ƒƒ^î•ñ‚ðŽæ“¾‚·‚é‚É‚Íˆê“x•Â‚¶‚é•K—v‚ª‚ ‚é
 		delete metaGraphics;
 		metaGraphics = NULL;
-
 		ULONG size;
+		// ƒtƒ@ƒCƒ‹‚É‘‚«o‚·
 		if (metaBuffer && (size = (ULONG)::GlobalSize(metaBuffer)) > 0) {
 			IStream *out = TVPCreateIStream(filename, TJS_BS_WRITE);
 			if (out) {
@@ -1866,28 +1888,11 @@ LayerExDraw::saveRecord(const tjs_char *filename)
 				out->Release();
 			}
 		}
-		
-		HGLOBAL oldBuffer = metaBuffer;
-		metaBuffer = NULL;
-		createRecord();
-
-		// ƒƒ^î•ñ‚ÌÄ\’z
-		IStream* pStream = NULL;
-		if(::CreateStreamOnHGlobal(oldBuffer, FALSE, &pStream) == S_OK) 	{
-			Image *image = Image::FromStream(pStream,false);
-			RectF *bounds = getBounds(image);
-			
-			Matrix matrix;
-			metaGraphics->Clear(Color(0));
-			metaGraphics->SetTransform(&matrix);
-			metaGraphics->DrawImage(image, bounds->X, bounds->Y, bounds->Width, bounds->Height);
-			metaGraphics->SetTransform(&transform);
-			
-			delete bounds;
+		// Ä•`‰æˆ—
+		Image *image = getRecordImage();
+		if (image) {
 			delete image;
-			pStream->Release();
 		}
-		::GlobalFree(oldBuffer);
 	}
 	return ret;
 }
@@ -1901,10 +1906,12 @@ LayerExDraw::saveRecord(const tjs_char *filename)
 bool
 LayerExDraw::loadRecord(const tjs_char *filename)
 {
+	bool ret = false;
 	Image *image;
 	if (filename && (image = loadImage(filename))) {
 		createRecord();
-		return redraw(image);
+		ret =  redraw(image);
+		delete image;
 	}
 	return false;
 }
