@@ -380,12 +380,12 @@ MatrixFactory(GdipWrapper<Matrix> **result, tjs_int numparams, tTJSVariant **par
 			   (params[1]->Type() == tvtObject && (point = ncbInstanceAdaptor<PointF>::GetNativeInstance(params[0]->AsObjectNoAddRef())))) {
 		matrix = new Matrix(*rect, point);
 	} else if (numparams == 6) {
-		matrix = new Matrix(params[0]->AsReal(),
-							params[1]->AsReal(),
-							params[2]->AsReal(),
-							params[3]->AsReal(),
-							params[4]->AsReal(),
-							params[5]->AsReal());
+		matrix = new Matrix((REAL)params[0]->AsReal(),
+							(REAL)params[1]->AsReal(),
+							(REAL)params[2]->AsReal(),
+							(REAL)params[3]->AsReal(),
+							(REAL)params[4]->AsReal(),
+							(REAL)params[5]->AsReal());
 	} else {
 		return TJS_E_INVALIDPARAM;
 	}
@@ -804,6 +804,27 @@ NCB_GET_INSTANCE_HOOK(LayerExDraw)
 
 #define LAYEREX_METHOD(type,name)  Method(TJS_W(# name), &Type::name, Bridge<LayerExDraw::BridgeFunctor<type>>())
 
+/**
+ * Image はラッピングする必要があるので proxy method で対応
+ */
+static tTJSVariant GetRecordImage(LayerExDraw *obj)
+{
+	typedef GdipWrapper<Image> WrapperT;
+	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
+	tTJSVariant ret;
+	Image *image = obj->getRecordImage();
+	if (image) {
+		iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new WrapperT(image));
+		if (adpobj) {
+			ret = tTJSVariant(adpobj, adpobj);
+			adpobj->Release();			
+		} else {
+			delete image;
+		}
+	}
+	return ret;
+}
+
 // フックつきアタッチ
 NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_PROPERTY(updateWhenDraw, getUpdateWhenDraw, setUpdateWhenDraw);
@@ -853,6 +874,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(drawImageAffine);
 
 	NCB_PROPERTY(record, getRecord, setRecord);
+	//NCB_METHOD_PROXY(getRecordImage, GetRecordImage);
 	NCB_METHOD(redrawRecord);
 	NCB_METHOD(saveRecord);
 	NCB_METHOD(loadRecord);

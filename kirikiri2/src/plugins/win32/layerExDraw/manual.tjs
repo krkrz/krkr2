@@ -791,5 +791,11 @@ class Layer {
 	 * @return 成功したら true
 	 */
 	function loadRecord(filename);
+
+	/**
+	 * 記録内容を Image として返す
+	 * return Image オブジェクト
+	 */
+	function getRecordImage();
 };
 

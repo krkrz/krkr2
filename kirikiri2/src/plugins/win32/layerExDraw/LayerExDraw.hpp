@@ -643,6 +643,12 @@ public:
 	}
 
 	/**
+	 * ‹L˜^“à—e‚ğ Image ‚Æ‚µ‚Äæ“¾
+	 * @return ¬Œ÷‚µ‚½‚ç true
+	 */
+	Image *getRecordImage();
+	
+	/**
 	 * ‹L˜^“à—e‚ÌÄ•`‰æ
 	 * @return Ä•`‰æ‚µ‚½‚ç true
 	 */
