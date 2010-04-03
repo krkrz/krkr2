@@ -43,7 +43,6 @@ class MyWindow extends Window
 		layer.setPos(0, 0);
 		//layer.setClip(100,100,WIDTH-200, HEIGHT-200);
 		//var matrix = new GdiPlus.Matrix();
-		//matrix.init();
 		//matrix.Rotate(30,1);
 		//layer.setTransform(matrix);
 		layer.visible = true;
@@ -189,8 +188,31 @@ class MyWindow extends Window
 		alayer.zoom = 20 + 100 - 100 * Math.cos(2 * Math.PI * now / 5000);
 		alayer.rotate = (360 * now / 2000) % 360;
 	}
-
 };
 
 var win = new MyWindow();
 win.visible = true;
+
+var layer = new Layer(win, win.primaryLayer);
+with (layer) {
+	.setSize(120,120); .visible = true; 
+	.record = true; 
+	var app = new GdiPlus.Appearance();
+	app.addBrush(0, 0, 0);
+	.drawRectangle(app, 0, 0, .width, .height);
+	var n = [120,30,70,40,100];
+	var c = [0xff0000ff,0xff00ff00,0xffff0000,0xffffff00,0xffff00ff];
+	var s = -90;
+	for (var i=0;i<n.count;i++) {
+		var app = new GdiPlus.Appearance();
+		app.addBrush(c[i],0,0);
+		app.addPen(0xff000000,%[width:1, lineJoin:GdiPlus.LineJoinRound],0,0);
+		.drawPie(app, 10, 10, 100, 100, s, n[i]);
+		s += n[i];
+	}
+	.saveRecord("pie.emf");
+}
+
+var layer2 = new Layer(win, win.primaryLayer);
+layer2.setPos(0,200,200,200);
+layer2.drawImage(0,0,new GdiPlus.Image("test.png"));
