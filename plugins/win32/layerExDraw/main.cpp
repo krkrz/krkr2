@@ -805,24 +805,30 @@ NCB_GET_INSTANCE_HOOK(LayerExDraw)
 #define LAYEREX_METHOD(type,name)  Method(TJS_W(# name), &Type::name, Bridge<LayerExDraw::BridgeFunctor<type>>())
 
 /**
- * Image はラッピングする必要があるので proxy method で対応
+ * Image はラッピングする必要があるので rawcallback で対応
  */
-static tTJSVariant GetRecordImage(LayerExDraw *obj)
+static tjs_error TJS_INTF_METHOD
+GetRecordImage(tTJSVariant *result, tjs_int numparams,
+			   tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	typedef GdipWrapper<Image> WrapperT;
-	typedef ncbInstanceAdaptor<WrapperT> AdaptorT;
-	tTJSVariant ret;
-	Image *image = obj->getRecordImage();
-	if (image) {
-		iTJSDispatch2 *adpobj = AdaptorT::CreateAdaptor(new WrapperT(image));
-		if (adpobj) {
-			ret = tTJSVariant(adpobj, adpobj);
-			adpobj->Release();			
-		} else {
-			delete image;
+	LayerExDraw *obj = ncbInstanceAdaptor<LayerExDraw>::GetNativeInstance(objthis, true);
+	if (result) result->Clear();
+	if (obj) {
+		Image *image = obj->getRecordImage();
+		if (image) {
+			typedef GdipWrapper<Image> WrapperT;
+			WrapperT *wrap = new WrapperT(image);
+			iTJSDispatch2 *adpobj = ncbInstanceAdaptor<WrapperT>::CreateAdaptor(wrap);
+			if (adpobj) {
+				if (result) *result = tTJSVariant(adpobj, adpobj);
+				adpobj->Release();
+			} else {
+				delete wrap;
+				delete image;
+			}
 		}
 	}
-	return ret;
+	return TJS_S_OK;
 }
 
 // フックつきアタッチ
@@ -874,7 +880,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(drawImageAffine);
 
 	NCB_PROPERTY(record, getRecord, setRecord);
-	//NCB_METHOD_PROXY(getRecordImage, GetRecordImage);
+	NCB_METHOD_RAW_CALLBACK(getRecordImage, GetRecordImage, 0);
 	NCB_METHOD(redrawRecord);
 	NCB_METHOD(saveRecord);
 	NCB_METHOD(loadRecord);
