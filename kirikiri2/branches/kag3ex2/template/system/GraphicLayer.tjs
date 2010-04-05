@@ -849,6 +849,7 @@ class GraphicLayerEx extends GraphicLayer {
 		}
 		// flip情報をコピー
 		if (src.flip !== void) {
+			flipType = src.flipType;
 			flip = src.flip;
 			flip.flipEntry(this);
 		}
@@ -1014,13 +1015,35 @@ class GraphicLayerEx extends GraphicLayer {
 	 * @param nowait 待たない
      * @time 変更にかかる時間
      */
-	function setMove(x, y, time, accel=0, nowait=false) {
+	function setMove(x, y, time, accel=0, nowait=false, afx=void, afy=void) {
 		if (time) {
-			beginAction(%[left:%[handler:MoveAction, value:x, time:time, accel:accel],
-					  top:%[handler:MoveAction, value:y, time:time, accel:accel], nowait:nowait]);
-        } else {
+			var action = %[left:%[handler:MoveAction, value:x, time:time, accel:accel],
+					   top:%[handler:MoveAction, value:y, time:time, accel:accel],
+					   nowait:nowait];
+			if (afx !== void) {
+				var tmp = this.afx;
+				this.afx = afx;
+//				dm("setMove:afx:%s->%s".sprintf(tmp,this.afx));
+				action.afx = %[handler:MoveAction, value:this.afx, time:time, accel:accel];
+				this.afx = tmp;
+			}
+			if (afy !== void) {
+				var tmp = this.afy;
+				this.afy = afy;
+//				dm("setMove:afy:%s->%s".sprintf(tmp,this.afy));
+				action.afy = %[handler:MoveAction, value:this.afy, time:time, accel:accel];
+				this.afy = tmp;
+			}
+			beginAction(action);
+		} else {
+			if (afx !== void) {
+				this.afx = afx;
+			}
+			if (afy !== void) {
+				this.afy = afy;
+			}
 			setPos(x, y);
-        }
+		}
     }
 
 	// -------------------------------------------------------

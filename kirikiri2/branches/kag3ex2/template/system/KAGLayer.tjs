@@ -398,7 +398,7 @@ class AnimKAGLayer extends KAGLayer {
         super.onPaint(...);
         if (animCount !== void && animCount > 0 && animTime > 0) {
             var now = System.getTickCount() - animStartTime;
-            var t = ((now / animTime) % animCount) * imageHeight / animCount;
+            var t = ((now \ animTime) % animCount) * (imageHeight \ animCount);
             if (t <= imageHeight - height) {
                 imageTop = -t;
             }

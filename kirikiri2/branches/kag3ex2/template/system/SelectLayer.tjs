@@ -176,6 +176,7 @@ function getSelectButtonLayer()
 class SelectLayer {
 
     var msgoff = false;
+    var msgon  = false;
     var fadeTime;
     
     var window;
@@ -300,7 +301,8 @@ class SelectLayer {
         closesebuf = elm.closesebuf !== void ? elm.closesebuf : kag.numSEBuffers - 1;
         
         // メッセージ窓を消去するかどうか
-        msgoff = elm.msgoff if elm.msgoff !== void;
+        msgoff = +elm.msgoff if elm.msgoff !== void;
+        msgon  = +elm.msgon  if elm.msgon  !== void;
 
         // フェード時間
         fadeTime = +elm.fadetime if elm.fadetime !== void;
@@ -530,7 +532,7 @@ class SelectLayer {
         var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : kag.numSEBuffers - 2;
         var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : kag.numSEBuffers - 1;
 
-        var select = getSelectButtonLayer(this, elm.text, elm.selected);
+		var select = getSelectButtonLayer(elm);
         select.name = "選択肢ボタン" + elm.text;
         
         select.onenter = MessageLayer.createSoundExpression(elm.onenter, enterse, entersebuf);
@@ -542,6 +544,9 @@ class SelectLayer {
         
         selects.add(select);
     }
+	function getSelectButtonLayer(elm) {
+		return global.getSelectButtonLayer(this, elm.text, elm.selected);
+	}
 
     /*
      * 親の差し替え
@@ -654,17 +659,6 @@ class SelectLayer {
 		}
 	}
 
-    function lockFocus() {
-        for (var i=0; i<selects.count;i++) {
-            var select = selects[i];
-            select.focusable = false;
-        }
-    }
-    
-    function unlockFocus() {
-        for (var i=0; i<selects.count;i++) {
-            var select = selects[i];
-            select.focusable = true;
-        }
-    }
+	function lockFocus()   { setInnerProps("focusable", false); }
+	function unlockFocus() { setInnerProps("focusable", true);  }
 }

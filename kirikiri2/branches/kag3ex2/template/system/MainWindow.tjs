@@ -54,6 +54,7 @@ class KAGWindow extends Window
 
 	var snapshotLayer = void; // 画像のスナップショットを一時的に保存するレイヤ
 	var snapshotLockCount = 0; // ロックカウント
+	var snapshotHideMessage = false; // スナップショット取得時にメッセージレイヤを一時消去するか
 
 	var lastSaveDataNameGlobal = ""; // 最後に保存したフリーセーブモードでのファイル名
 	/*C*/var lastSaveDataName = ""; // 最後に保存したフリーセーブモードでのファイル名
@@ -199,7 +200,13 @@ class KAGWindow extends Window
 
 	var lineBreak; // 行待ち用アニメーションレイヤ
 	var pageBreak; // ページ待ち用グリフのアニメーションレイヤ
-	var clickWaiting = false; // クリック待ちかどうか
+	var _clickWaiting = false; // クリック待ちかどうか
+	property clickWaiting {
+		getter { return _clickWaiting; }
+		setter(v) {     _clickWaiting = v;
+			fore.base.cursor = !v ? cursorDefault : !autoMode ? cursorWaitingClick : cursorWaitingAuto;
+		}
+	}
 
 	var mainConductor; // メインのコンダクタ
 	var extraConductor; // 予備のコンダクタ
@@ -346,6 +353,7 @@ class KAGWindow extends Window
 		if (current !== void && currentNum == _clearMessageLayerNumOnSkipNoDispChanged) {
 			if(currentWithBack) current.comp.clear(true);
 			current.clear(true);
+			if(v && historyWriteEnabled) historyLayer.repage();
 		}
 		callHook("onSkipNoDispChanged", v);
 	}
@@ -445,7 +453,8 @@ class KAGWindow extends Window
 		//dm("nowaitModeWait:" + nowaitModeWait);
 		return nowaitModeWait;
     }
-    
+
+	var skipKeyRepeatEnabled = true; // return/space押しっぱなしでスキップ状態にするかどうか
 	var skipKeyRepressed = false; // return あるいは space キー ( f キーなどではない )
 								// が押されると true になる ( スキップ解除時に false
 
@@ -503,6 +512,7 @@ class KAGWindow extends Window
 	var cursorDefault = crArrow;  // 通常のマウスカーソル
 	var cursorPointed = crHandPoint;  // ボタン、リンク等をポイントした時のマウスカーソル
 	var cursorWaitingClick = crArrow;  // クリック待ちのマウスカーソル
+	var cursorWaitingAuto = crArrow;  // crAppStart; // オート時の待ちのマウスカーソル
 	var cursorDraggable = crSizeAll; // ドラッグ可能な場所用のマウスカーソル
 
 	/*C*/var startAnchorEnabled = false; // 「最初に戻る」が使用可能かどうか
@@ -560,6 +570,7 @@ class KAGWindow extends Window
 	var keyDownHook = []; // キーが押されたときに呼び出される物
 	var leftClickHook = []; // 右クリックされたときに呼び出される物
 	var rightClickHook = []; // 左クリックされたときに呼び出される物
+	var mouseMoveHook = []; // マウス移動で呼び出される物
 
 	var padKeyMap; // パッドボタン -> ハンドラ(キーコード)。コンストラクタ内で設定
 	var padKeyMapReverse; // キーコード -> パッドボタン。コンストラクタ内で設定
@@ -842,6 +853,7 @@ class KAGWindow extends Window
 
 		if(ismain) (Menu_visible_config incontextof this)();
 		menuBarEnable = menu.visible; // メニューバー有効フラグはvisible_config後のvisible状態とする
+		menuBarState  = menuBarEnable ? 1 : 0; // menuBarMode == 0 の時は設定されないのでここで確定しておく
 
 		createBookMarkSubMenus();
 
@@ -854,9 +866,12 @@ class KAGWindow extends Window
 				innerSunken = false;
 				registerExEvent();
 				exEventEnabled = true;
+				setWindowsClickEventHook();
 
-				cursorPointed =       getSystemMouseCursor("Hand", cursorPointed)
-					if (typeof global.getSystemMouseCursor == "Object");
+				if (typeof       global.getSystemMouseCursor == "Object") {
+					cursorPointed     = getSystemMouseCursor("Hand",        cursorPointed);
+//					cursorWaitingAuto = getSystemMouseCursor("AppStarting", cursorWaitingAuto);
+				}
 
 				createMenuBarHideMenu();
 			} else {
@@ -902,6 +917,13 @@ class KAGWindow extends Window
 			.setSize(exWidth, exHeight);
 			.fillRect(0,0,exWidth, exHeight,0);
 			.hasImage = false;
+			.onMouseDown = function (x, y, btn) {
+				switch (btn) {
+				case mbLeft:  window.onPrimaryClick();      break;
+				case mbRight: window.onPrimaryRightClick(); break;
+				}
+				return (global.Layer.onMouseDown incontextof this)(...);
+			} incontextof _primaryLayer;
 		}
 		// ベースになるレイヤ
 		sysbase = new Layer(this, _primaryLayer);
@@ -1201,6 +1223,7 @@ class KAGWindow extends Window
 
 	function close()
 	{
+		callHook("onCloseHook") if(!askOnClose);
 		// ウィンドウを閉じる
 		saveSystemVariables();
 		super.close(...);
@@ -1311,7 +1334,7 @@ class KAGWindow extends Window
 
 	//---------------------------------------------------------- フック処理 --
 
-	var hookMap = %[ keyDown:this.keyDownHook, leftClick:this.leftClickHook, rightClick:this.rightClickHook ];
+	var hookMap = %[ keyDown:this.keyDownHook, leftClick:this.leftClickHook, rightClick:this.rightClickHook, mouseMove:this.mouseMoveHook ];
 	function callHook(tag, *)
 	{
 		// 文字列を渡されたときはテーブルから参照
@@ -1527,7 +1550,7 @@ class KAGWindow extends Window
 					_pseudoFullScreen =
 						%[	/**/x:left, y:top, w:width, h:height,
 							/**/max:max, restmax:(System.getArgument("-restoremaximizebyf2w") == "yes"),
-							/**/rect:getNormalRect(), bs:borderStyle, //menu:menu.visible,
+							/**/rect:getNormalRect(), bs:borderStyle, menu:menu.visible,
 							/**/shortcut:(menuBarEnable ? makePseudoMenuTable(menu) : void) ];
 					if (!max) {
 						visible = false;
@@ -1555,7 +1578,7 @@ class KAGWindow extends Window
 					visible = false;
 					setPos (.x, .y);
 					setSize(.w, .h);
-					// menu.visible  = .menu;
+					menu.visible  = .menu if (!menuBarHideModeEnable);
 					borderStyle   = .bs;
 
 					trig.callResize = true;
@@ -1627,7 +1650,6 @@ class KAGWindow extends Window
 	property tempZoomed    { getter { return _zoomNumer !== void; } }
 	function setZoom(numer, denom, resize = true) {
 		if (super.fullScreen) return;
-		_zoomNumer = _zoomDenom = void;
 		var zn = super.zoomNumer;
 		var zd = super.zoomDenom;
 		super.setZoom(numer, denom);
@@ -1637,12 +1659,15 @@ class KAGWindow extends Window
 		if (resize) {
 			setInnerSize(w, h);
 			resetPrimaryPos();
+			_zoomNumer = _zoomDenom = void;
 		} else {
 			resetPrimaryPos(z, w, h);
-			_zoomNumer = zn;
-			_zoomDenom = zd;
+			if (!tempZoomed) {
+				_zoomNumer = zn;
+				_zoomDenom = zd;
+			}
 		}
-		top++, top--; // VCRなムービーが追従するようにおまじない XXX
+//		top++, top--; // VCRなムービーが追従するようにおまじない XXX
 	}
 
 	var menuBarMode = 1; // 0:固定・変更不可，1:固定・変更可（menuBarState準拠）
@@ -1746,7 +1771,7 @@ class KAGWindow extends Window
 		}
 		_ncCaptionClick = void;
 	}
-	function onMouseLeave  () { checkMenuBarHideTrackPseudoMenu(); }
+	function onMouseLeave  () { checkMenuBarHideTrackPseudoMenu(); callHook("onMouseLeaveHook"); }
 	function onNcMouseLeave() { checkMenuBarHideTrackPseudoMenu(); }
 	function checkMenuBarHideTrackPseudoMenu() {
 		if (_ncCaptionMove || trackTempMenuShowing > 0) {
@@ -1774,6 +1799,8 @@ class KAGWindow extends Window
 	function onMouseMove(x, y) {
 		if (pseudoFullScreened && y == 0 && menuBarEnable && menuBarState) trackPseudoMenu();
 		else if (trackTempMenuShowing) checkMenuBarHideTrackPseudoMenu();
+		var hook = mouseMoveHook;
+		if (hook.count > 0) with (primaryLayer) callHook(hook, .cursorX, .cursorY);
 		return super.onMouseMove(...);
 	}
 
@@ -1810,7 +1837,7 @@ class KAGWindow extends Window
 		if (first && !exEventEnabled) {
 			var f10 = table[VK_F10];
 			f10 = table[VK_F10] = %[] if (f10 === void);
-			f10[0] = trackMenuByKey;
+			f10[0] = trackMenuByKey if (f10[0] === void);
 		}
 		return table;
 	}
@@ -1926,10 +1953,14 @@ class KAGWindow extends Window
 		onFullScreenMenuItemClick();
 		return true;
 	}
-	var _minimized;
-	function onMinimize() { _minimized = true;  }
-	function onHide()     { _minimized = true;  }
-	function onShow()     { _minimized = false; }
+	var _minimized = false;
+	function changeMinimized(v) {
+		callHook("onMinimizeChangedHook", v) if (_minimized != v);
+		_minimized = v;
+	}
+	function onMinimize() { changeMinimized(true);  }
+	function onHide()     { changeMinimized(true);  }
+	function onShow()     { changeMinimized(false); }
 
 	var _onResizeProcess = true;
 	function onResize() {
@@ -2347,7 +2378,7 @@ class KAGWindow extends Window
             rightClickMenuItem.enabled = inStable && !historyLayer.visible && !currentDialog;
 
 		if(typeof this.showHistoryMenuItem != "undefined")
-            showHistoryMenuItem.enabled = inStable && ((!messageLayerHiding && !mapSelectShowing && !transShowing && !currentDialog && !panelModal &&
+            showHistoryMenuItem.enabled = inStable && ((!messageLayerHiding && !mapSelectShowing && !transShowing && !currentDialog && !panelShowing &&
 				historyEnabled) || historyLayer.visible);
 
         if(typeof this.autoModeMenuItem != "undefined")
@@ -2874,6 +2905,7 @@ class KAGWindow extends Window
 		f.cursorDefault      = getSafeCursor(cursorDefault);
 		f.cursorPointed      = getSafeCursor(cursorPointed);
 		f.cursorWaitingClick = getSafeCursor(cursorWaitingClick);
+		f.cursorWaitingAuto  = getSafeCursor(cursorWaitingAuto);
 		f.cursorDraggable    = getSafeCursor(cursorDraggable);
 
 		// 自動ウェイト
@@ -3022,6 +3054,7 @@ class KAGWindow extends Window
 		if ((cur = getSafeCursor(f.cursorDefault))      !== void) cursorDefault      = cur;
 		if ((cur = getSafeCursor(f.cursorPointed))      !== void) cursorPointed      = cur;
 		if ((cur = getSafeCursor(f.cursorWaitingClick)) !== void) cursorWaitingClick = cur;
+		if ((cur = getSafeCursor(f.cursorWaitingAuto))  !== void) cursorWaitingAuto  = cur;
 		if ((cur = getSafeCursor(f.cursorDraggable))    !== void) cursorDraggable    = cur;
 		fore.base.setDefaultCursor(cursorDefault);
 		back.base.setDefaultCursor(cursorDefault);
@@ -3516,11 +3549,14 @@ class KAGWindow extends Window
 			return saveDataLocation + "/" + dataName + num + (saveThumbnail?".bmp":".kdt");
 	}
 
-	function captureSnapshot(layer = snapshotLayer) {
+	function captureSnapshot(layer = snapshotLayer, w = scWidth, h = scHeight, hide = snapshotHideMessage) {
 		with (layer) {
-			.setImageSize(scWidth, scHeight);
+			.setImageSize(w, h);
 			.face = dfAlpha;
-			.piledCopy(0, 0, fore.base, 0, 0, scWidth, scHeight);
+			if (hide && !messageLayerHiding) setMessageLayerHiddenState(true);
+			else hide = false;
+			.piledCopy(0, 0, fore.base, 0, 0, w, h);
+			if (hide) setMessageLayerHiddenState(false);
 		}
 	}
 
@@ -4159,6 +4195,7 @@ class KAGWindow extends Window
 		conv('cursorDefault', elm['default']); 
 		conv('cursorPointed', elm.pointed);
 		conv('cursorWaitingClick', elm.click);
+		conv('cursorWaitingAuto',  elm.auto);
 		conv('cursorDraggable', elm.draggable);
 		fore.base.setDefaultCursor(cursorDefault);
 		back.base.setDefaultCursor(cursorDefault);
@@ -4805,7 +4842,7 @@ class KAGWindow extends Window
 	function onConductorUnknownTag(tagname, elm)
 	{
         var ret;
-        if (unknownHandler === void || (ret = unknownHandler(tagname,elm)) === void) {
+        if (unknownHandler === void || (ret = unknownHandler(...)) === void) {
             // 不明なタグがあった場合
             throw new Exception("タグ/マクロ \"" + tagname + "\" は存在しません");
         } else {
@@ -5296,10 +5333,7 @@ class KAGWindow extends Window
 			rightClickMenuItem.checked = false;
 		messageLayerHiding = false;
 		conductor.trigger('message'); // 'message' を送る
-		if(clickWaiting)
-			fore.base.cursor = cursorWaitingClick;
-		else
-			fore.base.cursor = cursorDefault;
+		clickWaiting = _clickWaiting; // マウスカーソル再設定
 		setMenuAccessibleAll();
 	}
 
@@ -5376,18 +5410,24 @@ class KAGWindow extends Window
         return false;
     }
 
+	function selectFontDoUserSelect() {
+		// フォントを選択する
+		with (fore.base.font) {
+			.face = chDefaultFace;
+			.height = -20;
+			if (.doUserSelect(...)) return .face;
+		}
+	}
 	function selectFont()
 	{
-		// フォントを選択する
-		fore.base.font.face = chDefaultFace;
-		fore.base.font.height = -20;
 		var flags = fsfSameCharSet | fsfNoVertical | fsfTrueTypeOnly | fsfUseFontFace;
 		if(showFixedPitchOnlyInFontSelector) flags |= fsfFixedPitch;
-		if(fore.base.font.doUserSelect(flags, "フォントの選択",
-			"フォントを選択してください", "ABCDEFGHIあいうえお亜胃宇絵御"))
+		var sample = typeof this.selectFontSampleText == "String" ? selectFontSampleText : "ABCDEFGHIあいうえお亜胃宇絵御";
+		var sel = selectFontDoUserSelect(flags, "フォントの選択", "フォントを選択してください", sample);
+		if (sel != "")
 		{
 			chBitmapFont  = "";
-			chDefaultFace = fore.base.font.face;
+			chDefaultFace = sel;
 			setMessageLayerUserFont();
 		}
 		callHook("onSetBitmapFontHook", chBitmapFont);
@@ -6290,6 +6330,10 @@ class KAGWindow extends Window
 			chUserMode = true;
 			setUserSpeed();
 		}
+		else if(typeof speed == "String" && speed != "" && speed.charAt(0) == "x") {
+			chSpeed = userChSpeed * +speed.substr(1);
+			chUserMode = false;
+		}
 		else
 		{
 			chSpeed = +speed;
@@ -6357,7 +6401,7 @@ class KAGWindow extends Window
         // すべてスキップまたは既読の場合のみ
         if (allskip || getCurrentRead()) {
             // 次の停止までスキップ
-            onPrimaryClick(); // クリックの動作をエミュレートする
+            onPrimaryClick(true); // クリックの動作をエミュレートする
             skipMode = SKIP_STOP;
             actualChSpeed = 0;
 			if (nodisp) {
@@ -6370,7 +6414,7 @@ class KAGWindow extends Window
 	{
 		// 次の停止までスキップ(早送りモード)
 		showMessageLayerByUser() if(messageLayerHiding);
-		onPrimaryClick();
+		onPrimaryClick(true);
 		skipMode = SKIP_FAST;
 		actualChSpeed = 0;
 	}
@@ -6378,7 +6422,7 @@ class KAGWindow extends Window
 	function skipToLabel(nodisp=false, stoplabel = "")
     {
         // デバッグ用: 次のラベルまで強制スキップ
-		onPrimaryClick();
+		onPrimaryClick(true);
 		skipMode = SKIP_LABEL;
 		skipToLabelStop = stoplabel;
 		if (nodisp) {
@@ -6429,10 +6473,12 @@ class KAGWindow extends Window
 			if (typeof this.autoModeMenuItem !== "undefined") {
                 autoModeMenuItem.checked = false;
             }
+			// オート待ちをキャンセル
 			if (clickWaiting) {
-				conductor.trigger('click');
+				conductor.trigger("cancelauto");
 			}
 			autoMode = false;
+			setMenuAccessibleAll();
 		}
 	}
 
@@ -6594,8 +6640,9 @@ class KAGWindow extends Window
 		for (var i=0;i<names.count;i+=2) {
 			var name = names[i];
 			var time = names[i+1];
-			//dm("delay更新:%s:%d/%d", name, time, tick);
+			//dm("delay更新:%s:%s/%s".sprintf(name, time, tick));
 			if (typeof time == "Integer" && tick - time >= 0) {
+				//dm("delay展開:%s".sprintf(name));
 				extractDelay(name);
 			}
 		}
@@ -6834,18 +6881,19 @@ class KAGWindow extends Window
 
 	//------------------------------------------------------------- クリック --
 
-	function onPrimaryClick()
+	function onPrimaryClick(force = false)
 	{
         // プライマリレイヤで「クリックの動作」がなにもフィルタリングされなかった
 		// とき、プライマリレイヤから呼ばれる。
-		clickCount ++;
-		if(!callHook(leftClickHook))
+		clickCount++ if (!force);
+		if(force || !callHook(leftClickHook))
 		{
 			if(messageLayerHiding)
 			{
 				showMessageLayerByUser(); // メッセージレイヤを表示する
+				if (!force) return;
 			}
-            else
+//          else
             {
 				var st = conductor.status;
 				var runst = conductor.mRun;
@@ -6927,6 +6975,42 @@ class KAGWindow extends Window
 	{
 		conductor.trigger("mouseup" + btn);
 		super.onMouseUp(...);
+		// [XXX] ダイアログがモード状態で表示されている時，レイヤ範囲外のクリックを検知できない
+		if (currentDialog !== void && btn == mbRight) with (sysbase) {
+			var x = .cursorX, y = .cursorY, left = .left, top = .top;
+			if (x < left || y < top || x >= left+.width || y >= top+.height) {
+				onPrimaryRightClick(); // 右クリックの動作DialogLayerのフックが取得する
+			}
+		}
+	}
+
+	// ネイティブフルスクリーンでプライマリレイヤ外をクリックされた時の処理（要WinodwEX）
+	var _windowsClickEventMessageMap = %[];
+	function setWindowsClickEventHook() {
+		if (typeof this.setMessageHook != "Object" ||
+			typeof global.Window.getNotificationNum != "Object") return;
+		var setMH = setMessageHook;
+		var getMN = global.Window.getNotificationNum;
+		var map   = _windowsClickEventMessageMap;
+		var ev    = [ "LBUTTONDOWN", "RBUTTONDOWN", "LBUTTONDBLCLK", "RBUTTONDBLCLK" ];
+		for (var i = 0; i < ev.count; i++) {
+			var name = ev[i];
+			setMH(true, name);
+			map[name] = getMN(name);
+		}
+	}
+	function onWindowsMessageHook(msg, wp, lp) {
+		with (_windowsClickEventMessageMap) switch (msg) {
+		case .LBUTTONDOWN: case .LBUTTONDBLCLK:
+			//dm("outer click");
+			onPrimaryClick();
+			break;
+		case .RBUTTONDOWN: case .RBUTTONDBLCLK:
+			//dm("outer Rclick");
+			onPrimaryRightClick();
+			break;
+		}
+		return callHook("onWindowsMessageHook", msg, wp, lp);
 	}
 
 	//------------------------------------------------------- キーボード操作 --
@@ -7027,7 +7111,7 @@ class KAGWindow extends Window
 				if((shift & ssRepeat) && clickSkipEnabled)
 				{
 					// キーリピート
-					if(skipMode < SKIP_FAST && skipKeyRepressed)
+					if(skipMode < SKIP_FAST && skipKeyRepressed && skipKeyRepeatEnabled)
 						skipToStop2(); // まだskipMode 4に入っていない場合は早送りモードに入る
 					// skipKeyRepressed をチェックするのは
 					// 連続してキーリピートが発生しているときに
@@ -7056,7 +7140,7 @@ class KAGWindow extends Window
 	{
 		// VK_RETURN あるいは VK_SPACE が押されているかどうか
 		var sg = getKeyState;
-		return sg(VK_RETURN) || sg(VK_SPACE) || sg(VK_CONTROL);
+		return (skipKeyRepeatEnabled && (sg(VK_RETURN) || sg(VK_SPACE))) || sg(VK_CONTROL);
 	}
 
 	function releaseCapture() {
@@ -7106,6 +7190,10 @@ class KAGWindow extends Window
 	{
 		// ホイールが回転した
 		super.onMouseWheel(...);
+
+		// フック処理
+		if (callHook("onMouseWheelHook", shift, delta, x, y)) return;
+
 		// ダイアログ表示中なら常にそちらへ流す
 		if (currentDialog !== void) {
 			// ホイール処理があれば実行
@@ -7205,10 +7293,18 @@ class KAGWindow extends Window
             waittime = 1;
         }
         conductor.waitWithTimeOut(%[
+			cancelauto : function (tag)
+			{
+				clickWaiting = false;
+				hideClickGlyphs();
+				if (tag !== void) {
+					insertTag(tag);
+				}
+			} incontextof this,
+			cancelauto_arg : tag,
             click : function (tag)
             {
 				clickWaiting = false;
-				fore.base.cursor = cursorDefault;
 				hideClickGlyphs();
 				if (cancelAutoWhenClick) {
 					cancelAutoMode();
@@ -7221,7 +7317,6 @@ class KAGWindow extends Window
             timeout : function
             {
 				clickWaiting = false;
-				fore.base.cursor = cursorDefault;
                 hideClickGlyphs();
             } incontextof this
                 ], waittime);
@@ -7268,13 +7363,11 @@ class KAGWindow extends Window
 			click : function
 			{
 				clickWaiting = false;
-				fore.base.cursor = cursorDefault;
 				notifyRun();
                 hideClickGlyphs();
             } incontextof this
 			]);
 		clickWaiting = true;
-		fore.base.cursor = cursorWaitingClick;
 		notifyStable();
 		return -2;
 	}
@@ -7309,13 +7402,11 @@ class KAGWindow extends Window
 			click : function
 			{
 				clickWaiting = false;
-				fore.base.cursor = cursorDefault;
 				notifyRun();
                 hideClickGlyphs();
 			} incontextof this
 			]);
 		clickWaiting = true;
-		fore.base.cursor = cursorWaitingClick;
 		notifyStable();
 		return -2;
 	}
@@ -7343,12 +7434,19 @@ class KAGWindow extends Window
 		if(nowaitMode) {
 			current.clear2(); // clear2 を呼ぶ
 			return 0;
-		} else if(autoMode)
+		}
+		if(autoMode)
 		{
-            var wait = calcAutoModePageWait();
+			var wait = calcAutoModePageWait();
 			conductor.waitWithTimeOut(%[ // タイムアウト付きウェイト
+				cancelauto : function
+				{
+					clickWaiting = false;
+					current.clear2(); // clear2 を呼ぶ
+				} incontextof this,
 				click : function
 				{
+					clickWaiting = false;
 					current.clear2(); // clear2 を呼ぶ
 					if (cancelAutoWhenClick) {
 						cancelAutoMode();
@@ -7356,9 +7454,11 @@ class KAGWindow extends Window
 				} incontextof this,
 				timeout : function
 				{
+					clickWaiting = false;
 					current.clear2(); // clear2 を呼ぶ
 				} incontextof this
 				], wait <= 0 ? 1 : wait);
+			clickWaiting = true;
 			return -3;
 		}
 		else
@@ -7371,13 +7471,11 @@ class KAGWindow extends Window
 				click : function
 				{
 					clickWaiting = false;
-					fore.base.cursor = cursorDefault;
 					current.clear2(); // clear2 を呼ぶ
 					notifyRun();
 				} incontextof this
 				]);
 			clickWaiting = true;
-			fore.base.cursor = cursorWaitingClick;
 			notifyStable();
 			return -3;
 		}
@@ -8142,7 +8240,7 @@ class KAGWindow extends Window
 		if (list === void) return;
 		for (var i  = list.count-1; i >= 0; i--) {
 			var obj = list[i];
-			/**/obj.stop() if (obj !== void);
+			/**/obj.flipStop() if (obj !== void);
 		}
 	}
 	function getGenericFlipsInstanceCount(gft) {
@@ -8569,6 +8667,9 @@ class KAGWindow extends Window
         
         // 文字登録
 		if (!skipNoDisp) {
+			if (autoIndent < 0 && (elm.text == "「" || elm.text == "『") && afterName) {
+				addParseTag(cd, "preindent", elm);
+			}
 			addParseTag(cd, "ch", elm);
 		}
         emptyLine = false;
@@ -8961,15 +9062,20 @@ class KAGWindow extends Window
 		{
 			if(acs) { updateBeforeCh--; return -5; } else { updateBeforeCh--; }
 		}
-		var text = elm.text;
+		var text = elm.text, repage = void;
 		if (textWriteEnabled) {
 			if(currentWithBack) current.comp.processCh(text);
-			if(current.processCh(text))
+			repage = current.processCh(text, chUserMode ? acs : 0);
+			if(repage)
 			{
 				return showPageBreakAndClear();
 			}
 		}
-		if(historyWriteEnabled) historyLayer.store(text);
+		if(historyWriteEnabled)
+		{
+			historyLayer.autoReline() if (repage === false && typeof historyLayer.autoReline == "Object");
+			historyLayer.store(text);
+		}
 		if(autoWCEnabled)
 		{
 			// 自動ウェイト
@@ -9372,6 +9478,18 @@ class KAGWindow extends Window
 			if(historyWriteEnabled) historyLayer.repage();
 			if(currentWithBack) current.comp.clear(elm.all);
 			current.clear(elm.all);
+		}
+		return 0;
+	} incontextof this,
+
+	preindent : function(elm)
+	{
+		if (!skipNoDisp) {
+			var ch = elm.text;
+			if (textWriteEnabled) {
+				if(currentWithBack) current.comp.preIndent(ch);
+				current.preIndent(ch);
+			}
 		}
 		return 0;
 	} incontextof this,
@@ -10561,10 +10679,18 @@ class KAGWindow extends Window
 			return 0;
 		}
 
-		if (selectLayer.msgoff && setCurrentMessageLayerVisible(false)) {
-            // 処理待ち
-            return -3;
-        }
+		with (selectLayer) {
+			var msgoff = false, msgon = false;
+			if      (elm.msgoff) msgoff = true;
+			else if (elm.msgon ) msgon  = true;
+			else {
+				msgoff = typeof .msgoff != "undefined" && !!.msgoff;
+				msgon  = typeof .msgon  != "undefined" && !!.msgon;
+			}
+			// メッセージ窓の状態を変更
+			if ((msgoff && setCurrentMessageLayerVisible(false)) ||
+				(msgon  && setCurrentMessageLayerVisible(true))) return -3;
+		}
 
 		f.selectDoneFlag = true;
 
@@ -10590,7 +10716,7 @@ class KAGWindow extends Window
         }
         cancelAutoMode();
         
-        f.selDoneStorage = elm.storage if elm.storage !== void;
+        f.selDoneStorage = elm.storage if elm.storage !== void || elm.target !== void;
         f.selDoneTarget  = elm.target  if elm.target  !== void;
 
 		// ページ後処理
@@ -10886,7 +11012,7 @@ class KAGWindow extends Window
 
 	notextmode : function(elm)
 	{
-		textWriteEnabled = false;
+		textWriteEnabled = (elm.enabled !== void) ? !elm.enabled : false;
 		return 0;
 	} incontextof this,
 				  
@@ -11072,9 +11198,9 @@ class KAGWindow extends Window
      * 指定された名前のキャラのボイスが有効かどうか
      */
     function getVoiceOn(name) {
-        //dm("ボイス有効確認:" + name);
-        if (name === void) {
-            name = "etc";
+		//dm("ボイス有効確認:" + name);
+		if (name === void || name == "") {
+			name = "etc";
         }
         if (scflags.voiceon !== void) {
             if (scflags.voiceon[name] !== void) {
@@ -11104,7 +11230,7 @@ class KAGWindow extends Window
      */
 	function getVoiceVolume(name, rawvalue = false) {
 		var volume = 100;
-		if (name === void) {
+		if (name === void || name == "") {
 			name = "etc";
 		}
 		if (scflags.voice !== void && 
@@ -11382,7 +11508,7 @@ class KAGWindow extends Window
 		var filename = conductor.curStorage;
 		var line     = conductor.curLine+1;
 		var shortfn  = Storages.extractStorageName(filename);
-		var fullfn   = Storages.getPlacedPath(filename);
+		var fullfn   = filename != "" ? Storages.getPlacedPath(filename) : void;
 		if (fullfn != "") {
 			var exename  = System.exePath.toLowerCase();
 			if (fullfn.substring(0,exename.length).toLowerCase() == exename) {
@@ -11564,6 +11690,7 @@ class KAGWindow extends Window
     function onDebugWinMenuItemClick(sender)
 	{
         debugwin.visible = !debugwin.visible;
+		callHook("onDebugWinVisibleChanged", debugwin.visible);
         if(typeof this.debugWinMenuItem != "undefined")
             debugWinMenuItem.checked = debugwin.visible;
         if (debugwin.visible) {
@@ -11653,4 +11780,3 @@ print FH $content;
 
 
 # */
-

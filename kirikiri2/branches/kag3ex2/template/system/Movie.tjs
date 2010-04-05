@@ -54,10 +54,12 @@ class Movie extends VideoOverlay
 
 		dic.lastStatus = lastStatus;
 		dic.storageName = storageName;
+		dic.aspectZoom = aspectZoom;
 	}
 	function internalRestore(dic) {
 		mode = dic.mode;
 		loop = dic.loop;
+		aspectZoom = dic.aspectZoom;
 
 		if (mode == vomLayer)
 		{
@@ -254,7 +256,7 @@ class Movie extends VideoOverlay
 
 	function error() {
 		//dm(...);
-		kag.errorImage(...);
+		owner.errorImage(...);
 	}
 
 	function stop()
@@ -264,20 +266,62 @@ class Movie extends VideoOverlay
 		super.close();
 	}
 
+	var _aspectZoom, _aspectZoomEnabled, _aspectZoomWidth, _aspectZoomHeight, _aspectZoomPrimary;
+	property aspectZoom {
+		getter { return _aspectZoom; }
+		setter(v) {
+			_aspectZoomEnabled = _aspectZoom = void;
+			var m = (/^([1-9]\d*)[Xx,\*]([1-9]\d*)(.*)$/).match(v);
+			if (m.count > 0) {
+				_aspectZoom = m[0];
+				_aspectZoomEnabled = true;
+				_aspectZoomWidth  = +m[1];
+				_aspectZoomHeight = +m[2];
+
+				var opt = (m[3] != "") ? m[3].toLowerCase().split(":",, true) : [];
+				_aspectZoomPrimary = (opt.find("primary") >= 0);
+			}
+		}
+	}
+	function calcAspectZoom(x,y,w,h) {
+		if (_aspectZoomEnabled) try {
+			if (_aspectZoomPrimary && hasOverlayWindow) {
+				var prim = (typeof owner._primaryLayer == "Object") ? owner._primaryLayer : owner.primaryLayer;
+				x = y = 0;
+				w = prim.width;
+				h = prim.height;
+			}
+			var vert = (w/h > _aspectZoomWidth/_aspectZoomHeight);
+			var z = (vert) ? (h / _aspectZoomHeight) : (w / _aspectZoomWidth);
+
+			var zw = Math.ceil(_aspectZoomWidth  * z);
+			var zh = Math.ceil(_aspectZoomHeight * z);
+			x = /* vert ?*/ (w - zw) \ 2 /*: 0*/;
+			y = /*!vert ?*/ (h - zh) \ 2 /*: 0*/;
+			w = zw, h = zh;
+		} catch {}
+		return %[ x:x, y:y, w:w, h:h ];
+	}
+	function calcAspectZoomX(x) { return !_aspectZoomEnabled ? x : calcAspectZoom(x, _top+offsety,  _boundWidth, _boundHeight).x; }
+	function calcAspectZoomY(y) { return !_aspectZoomEnabled ? y : calcAspectZoom(_left+offsetx, y, _boundWidth, _boundHeight).y; }
+
 	var _left, _top, _boundWidth, _boundHeight, _offsetx, _offsety;
-	property offsetx { getter { return (mode == vomMixer || mode == vomOverlay) ? _offsetx : 0; } }
-	property offsety { getter { return (mode == vomMixer || mode == vomOverlay) ? _offsety : 0; } }
-	property left { getter { return _left; } setter(v) { super.left = (_left = v) + offsetx; } }
-	property top  { getter { return _top;  } setter(v) { super.top  = (_top  = v) + offsety; } }
+	property hasOverlayWindow { getter { return (mode == vomMixer || mode == vomOverlay); } }
+	property offsetx { getter { return hasOverlayWindow ? _offsetx : 0; } }
+	property offsety { getter { return hasOverlayWindow ? _offsety : 0; } }
+	property left { getter { return _left; } setter(v) { super.left = calcAspectZoomX((_left = v) + offsetx); } }
+	property top  { getter { return _top;  } setter(v) { super.top  = calcAspectZoomY((_top  = v) + offsety); } }
 	function setBounds(x, y, w, h) {
-		return super.setBounds((_left=x) + offsetx, (_top=y) + offsety, (_boundWidth=w), (_boundHeight =h));
+		_layerResizeRect = void;
+		var bounds = calcAspectZoom((_left=x) + offsetx, (_top=y) + offsety, (_boundWidth=w), (_boundHeight =h));
+		with (bounds) return super.setBounds(.x, .y, .w, .h);
 	}
 
 	function setOptions(elm)
 	{
 		// elm Ç©ÇÁÉIÉvÉVÉáÉìÇê›íË
 		visible = +elm.visible if elm.visible !== void;
-		var l = left, t = top, w = width, h = height;
+		var l = left, t = top, w = _boundWidth, h = _boundHeight;
 		var set = false;
 		(set = true, _offsetx = +elm.primox) if (elm.primox !== void);
 		(set = true, _offsety = +elm.primoy) if (elm.primoy !== void);
@@ -285,7 +329,7 @@ class Movie extends VideoOverlay
 		(set = true, t = +elm.top) if elm.top !== void;
 		(set = true, w = +elm.width) if elm.width !== void;
 		(set = true, h = +elm.height) if elm.height !== void;
-		if(set) setBounds(l, t, w, h);
+		if(set && elm.aspectzoom === void) setBounds(l, t, w, h);
 		
 		//
 		position = +elm.position if elm.position !== void;
@@ -312,6 +356,10 @@ class Movie extends VideoOverlay
 
 			layerResizeMode = (mode == vomLayer && elm.laystretch);
 		}
+		if(elm.aspectzoom !== void) {
+			aspectZoom = elm.aspectzoom;
+			setBounds(l, t, w, h);
+		}
 		playRate = +elm.playrate if elm.playrate !== void;
 		if (elm.volume !== void) audioVolume  = +elm.volume * 1000;
 		if (elm.pan    !== void) audioBalance = +elm.pan    * 1000;
@@ -325,7 +373,7 @@ class Movie extends VideoOverlay
 	property audioVolume  { setter(v) { _audioVolume  = v; try { super.audioVolume  = v; } catch {} } getter { return _audioVolume;  } }
 	property audioBalance { setter(v) { _audioBalance = v; try { super.audioBalance = v; } catch {} } getter { return _audioBalance; } }
 
-	var _layerResizeMode = false, _renderLayer;
+	var _layerResizeMode = false, _renderLayer, _layerResizeRect;
 	property layerResizeMode {
 		getter { return _layerResizeMode; }
 		setter(v) {
@@ -351,14 +399,21 @@ class Movie extends VideoOverlay
 		}
 	}
 	function layerResizeModeOnFrameUpdate() {
-		var rw, rh, bw = _boundWidth, bh = _boundHeight;
+		var rw, rh;
 		with (_renderLayer) {
 			.visible = false;
 			rw = .imageWidth;
 			rh = .imageHeight;
 		}
-		_layer1.stretchCopy(0, 0, bw, bh, _renderLayer, 0, 0, rw, rh, stNearest) if (_layer1 && isvalid _layer1);
-		_layer2.stretchCopy(0, 0, bw, bh, _renderLayer, 0, 0, rw, rh, stNearest) if (_layer2 && isvalid _layer2);
+		if (_layerResizeRect === void) {
+			_layerResizeRect = calcAspectZoom(0,0,_boundWidth,_boundHeight);
+			_layer1.fillRect(0, 0, _layer1.imageWidth, _layer1.imageHeight, 0) if (_layer1 && isvalid _layer1);
+			_layer2.fillRect(0, 0, _layer2.imageWidth, _layer2.imageHeight, 0) if (_layer2 && isvalid _layer2);
+		}
+		with (_layerResizeRect) {
+			_layer1.stretchCopy(.x, .y, .w, .h, _renderLayer, 0, 0, rw, rh, stNearest) if (_layer1 && isvalid _layer1);
+			_layer2.stretchCopy(.x, .y, .w, .h, _renderLayer, 0, 0, rw, rh, stNearest) if (_layer2 && isvalid _layer2);
+		}
 	}
 	function layerResizeModeSetLayer(isOne, lay) {
 		if (_layerResizeMode) {
@@ -366,13 +421,13 @@ class Movie extends VideoOverlay
 			else       _layer2 = lay;
 			layerResizeMode = false if (!_layer1 && !_layer2);
 		} else {
-			if (isOne) super.layer1 = lay;
-			else       super.layer2 = lay;
+			if (isOne) super.layer1 = _layer1 = lay;
+			else       super.layer2 = _layer2 = lay;
 		}
 	}
 	var _layer1 = null, _layer2 = null;
-	property layer1 { getter { return _layerResizeMode ? _layer1 : super.layer1; } setter(v) { layerResizeModeSetLayer(true,  v); } }
-	property layer2 { getter { return _layerResizeMode ? _layer2 : super.layer2; } setter(v) { layerResizeModeSetLayer(false, v); } }
+	property layer1 { getter { return _layer1; } setter(v) { layerResizeModeSetLayer(true,  v); } }
+	property layer2 { getter { return _layer2; } setter(v) { layerResizeModeSetLayer(false, v); } }
 
 	function setVideoLayer(layer,elm)
 	{

@@ -7,7 +7,7 @@ class KAGEnvLayer extends KAGEnvImage {
     // kag ‚ÌQÆ
     property kag {
         getter() {
-            return env.kag;
+            return window; // KAGEnvImage.window == env.kag;
         }
     }
 

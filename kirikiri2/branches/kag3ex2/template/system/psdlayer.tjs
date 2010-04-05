@@ -4,14 +4,12 @@
 class NotifyParentLayer extends Layer {
 
 	var groupName; // グループ名
-	var repaintLayer; // 更新対象通知先
 	
 	/**
 	 * コンストラクタ
 	 */
-	function NotifyParentLayer(window, repaintLayer) {
-		this.repaintLayer = repaintLayer;
-		super.Layer(window, repaintLayer._baseLayer);
+	function NotifyParentLayer() {
+		super.Layer(...);
 	}
 
 	// 更新通知処理用
@@ -20,7 +18,7 @@ class NotifyParentLayer extends Layer {
 			width  = this.width if width === void;
 			height = this.height if height === void;
 			//dm("親領域更新:"+name + " pos:" + left + "," + top + "," + width + "," + height);
-			repaintLayer.update(this.left + left, this.top + top, width, height);
+			parent.update(this.left + left, this.top + top, width, height);
 		}
 	}
 
@@ -292,7 +290,6 @@ class NotifyParentLayer extends Layer {
 class RepaintLayer extends Layer {
 
 	var _region; // 更新領域保持用
-	var _baseLayer; // 合成処理ベース用
 
 	/**
 	 * コンストラクタ
@@ -302,7 +299,6 @@ class RepaintLayer extends Layer {
 	function RepaintLayer(window, layer) {
 		super.Layer(...);
 		type = ltAlpha;
-		_baseLayer = new global.Layer(window, this);
 	}
 
 	/**
@@ -336,38 +332,6 @@ class RepaintLayer extends Layer {
 	function update() {
 		super.update(...);
 		updateRegion(...);
-	}
-
-	function updateBase() {
-		with (_baseLayer) {
-			.setSize(width, height);
-			.fillRect(0,0,width,height,0x00ffffff);
-		}
-	}
-	
-	function setSize(width, height) {
-		super.setSize(width, height);
-		updateBase();
-	}
-
-	property width {
-		getter() {
-			return super.width;
-		}
-		setter(v) {
-			super.width = v;
-			updateBase();
-		}
-	}
-
-	property height {
-		getter() {
-			return super.height;
-		}
-		setter(v) {
-			super.height = v;
-			updateBase();
-		}
 	}
 }
 
@@ -711,8 +675,33 @@ class PSDLayer extends RepaintLayer {
 			}
 		}
 		if (_region !== void) {
+			// piled copy できるといいんだけど、そうすると、素体レイヤがせっかくもってる
+			// アルファ保護情報がロストするのでこの処理以外の形にできない。残念。
 			//dm("レイヤ描画更新:%d,%d,%d,%d".sprintf(_region.left, _region.top, _region.width, _region.height));
-			piledCopy(_region.left, _region.top, _baseLayer, _region.left, _region.top, _region.width, _region.height);
+			fillRect(_region.left, _region.top, _region.width, _region.height, 0x00000000);
+			var first = true;
+			for (var i=layers.count-1;i>=0;i--) {
+				var info = layers[i];
+				if (isShowLayer(info) && info.layer) {
+					if (first) {
+						holdAlpha = false;
+						copyRect(_region.left, _region.top,
+								 info.layer,
+								 _region.left - info.left,
+								 _region.top  - info.top,
+								 _region.width, _region.height);
+						first = false;
+						holdAlpha = true;
+					} else {
+						operateRect(_region.left,
+									_region.top,
+									info.layer,
+									_region.left - info.left,
+									_region.top  - info.top,
+									_region.width, _region.height, omAuto, info.opacity);
+					}
+				}
+			}
 			_region = void;
 		} else {
 			//dm("レイヤが更新されてません");

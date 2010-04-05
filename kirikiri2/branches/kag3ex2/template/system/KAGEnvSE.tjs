@@ -29,6 +29,7 @@ class KAGEnvSE {
 
 	function onRestore(f) {
 		if (f !== void) {
+			kag.se[id].stop(); // 確実に止める（onSeStopでname=voidにされるので注意）
 			name = f.name;
 			loop = f.loop;
 			id   = f.id;
@@ -36,6 +37,7 @@ class KAGEnvSE {
 			if (name != "" && loop) {
 				setPlay(name, %[loop:loop]);
 				if (f.volume !== void) {
+					fade = %[] if (fade === void);
 					fade.volume = f.volume;
 				}
 			}
@@ -67,6 +69,7 @@ class KAGEnvSE {
 					fade.volume = volume = 100;
 				}
 			} else {
+				stop = 0 if (loop); // ループSE再生中の場合は確実に止める
 				play = void;
 				name = void;
 				loop = void;
@@ -192,7 +195,7 @@ class KAGEnvSE {
 	function sync() {
 		if (!kag.skipNoDisp) {
 			if (fade !== void) {
-				if (fade.time === void) {
+				if (fade.time === void || play !== void) {
 					kag.se[id].volume = fade.volume;
 				} else {
 					kag.se[id].fade(fade);
@@ -200,14 +203,17 @@ class KAGEnvSE {
 				fade = void;
 			}
 			if (play !== void) {
+				var origName = name; // [XXX]再生中の効果音に再度再生するとonSeStopが呼ばれname=voidにされるので
 				if (kag.skipMode<SKIP_STOP || play.loop || !kag.nosewhenskip) {
 					var time = +play.time;
 					if (time > 0)  {
+						if (kag.se[id].volume <= 1) kag.se[id].volume = 100;
 						kag.se[id].fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
 					} else {
 						kag.se[id].play(%[ storage:name, loop:play.loop, start:play.start]);
 					}
 				}
+				name = origName; // [XXX]もう一度設定しなおす
 				play = void;
 			}
 		}

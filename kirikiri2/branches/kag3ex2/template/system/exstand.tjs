@@ -81,6 +81,7 @@ class ExStandInfoParser extends CSVParser
 					chinfo = %[name:chname, map:%[], list:[], allDressNameList:[], allDressNameMap:%[]];
 					result[chname] = chinfo;
 				}
+				var dressNames = [];
 				var dressMap  = %[];
 				var faceList  = [];
 				var faceMap   = %[];
@@ -103,6 +104,55 @@ class ExStandInfoParser extends CSVParser
 						var line = file[i].split(/\t/);
 						if (line.count > 0 && line[0].charAt(0) != "#") {
 							switch(line[0].toLowerCase()) {
+							case "rename":
+								// 名前置換処理
+								if (line.count >= 3 && line[2] != "" && line[3] != "") {
+									var name = line[2];
+									var target = line[3];
+									switch (line[1]) {
+									case "dress":
+										{
+											var dress = dressMap[target];
+											if (dress !== void) {
+												dress.name = name;
+												dressMap[name] = dress;
+												delete dressMap[target];
+											}
+											for (var i=0;i<dressNames.count;i++) {
+												if (dressNames[i] == target) {
+													dressNames[i] = name;
+												}
+											}
+										}
+										break;
+									case "diff":
+										{
+											var names = [];
+											names.assign(dressMap);
+											for (var i=0;i<names.count;i+=2) {
+												var diffMap = names[i+1].diffMap;
+												var diff = diffMap[target];
+												if (diff !== void) {
+													diff.name = name;
+													diffMap[name] = diff;
+													delete diffMap[target];
+												}
+											}
+										}
+										break;
+									case "face":
+										{
+											var face = faceMap[target];
+											if (face !== void) {
+												face.name = name;
+												faceMap[name] = face;
+												delete faceMap[target];
+											}
+										}
+										break;
+									}
+								}
+								break;
 							case "dress":
 								{
 									var dressName = line[1];
@@ -111,10 +161,7 @@ class ExStandInfoParser extends CSVParser
 										// 新規服装
 										dress = %[name:dressName, baseList:[], diffList:[], diffMap:%[]];
 										dressMap[dressName] = dress;
-										if (chinfo.allDressNameMap[dressName] === void) {
-											chinfo.allDressNameMap[dressName] = true;
-											chinfo.allDressNameList.add(dressName);
-										}
+										dressNames.add(dressName);
 									}
 									switch (line[2].toLowerCase()) {
 									case "base": // ベース画像追加
@@ -262,6 +309,13 @@ class ExStandInfoParser extends CSVParser
 								break;
 							}
 						}
+					}
+				}
+				for (var i=0;i<dressNames.count;i++) {
+					var dressName = dressNames[i];
+					if (chinfo.allDressNameMap[dressName] === void) {
+						chinfo.allDressNameMap[dressName] = true;
+						chinfo.allDressNameList.add(dressName);
 					}
 				}
 				// ポーズ名とファイル名の対応を保存
@@ -1012,7 +1066,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	/**
 	 * コンストラクタ
 	 */
-	function KAGEnvCharacterEx(emv, name, initName, init) {
+	function KAGEnvCharacterEx(env, name, initName, init) {
 
 		super.KAGEnvCharacter(...);
 		
@@ -1049,12 +1103,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	function finalize() {
 		stopAnim();
 		System.removeContinuousHandler(updateHandler);
-		clearStandLayers();
+		super.finalize();
 		invalidateListMap(standlayerList, standlayerMap);
 		invalidateListMap(currentPoseNameList, currentPoseNameMap);
 		invalidateListMap(currentDiffNameList, currentDiffNameMap);
 		invalidateListMap(currentFaceNameList, currentFaceNameMap);
-		super.finalize();
 	}
 	
 	/**
@@ -1126,7 +1179,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			}
 		}
 		// 見つからない場合は新規に作成
-		var standlayer = new StandLayer(kag.temporaryLayer, standInfo);
+		var standlayer = new StandLayer(kag.temporaryLayer, standInfo); // kag === property super.kag
 		standlayer.name = name + "_" + poseName;
 		standlayer.setLevel(level, imageLevel, env.levels);
 		while (standlayers.count > 3) { // キャッシュは4つまで
@@ -1669,49 +1722,44 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
         return find;
     };
 
+	function _doPoseFaceCommandOne(func, names, i, e) {
+		var name = names[i];
+		if (name != "" && func(name, names[i+1], e)) {
+			names[i] = void;
+			delete e[name];
+			return true;
+		}
+	}
+
 	function doPoseFaceCommand(e) {
+		var names = [], name, count, dress = 0, pose = 0, diff = 0;
+		names.assign(e);
+		count = names.count;
+
 		// 服装指定コマンドの処理
-		var names = [];
-		names.assign(e);
-		for (var i=0; i<names.count; i+= 2) {
-			if (doDressCommand(names[i], names[i+1], e)) {
-				delete e[names[i]];
-			}
-		}
+		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doDressCommand, names, i, e)) dress++;
+
 		// ポーズ指定コマンドの処理
-		names.assign(e);
-		for (var i=0; i<names.count; i+= 2) {
-			if (doPoseCommand(names[i], names[i+1], e)) {
-				delete e[names[i]];
-			}
-		}
+		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doPoseCommand,  names, i, e)) pose++;
+
 		// 差分指定コマンドの処理
-		names.assign(e);
-		for (var i=0; i<names.count; i+= 2) {
-			if (doDiffCommand(names[i], names[i+1], e)) {
-				delete e[names[i]];
-			}
-		}
+		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doDiffCommand,  names, i, e)) diff++;
+
 		// 表情指定コマンドの処理
-		names.assign(e);
-		for (var i=0; i<names.count; i+= 2) {
-			if (doFaceCommand(names[i], names[i+1], e)) {
-				delete e[names[i]];
-			}
-		}
+		for (var i=0; i<count; i+=2) _doPoseFaceCommandOne(doFaceCommand,    names, i, e);
+
 		// 追加パーツ指定コマンドの処理
-		names.assign(e);
-		for (var i=0; i<names.count; i+= 2) {
-			if (doAddCommand(names[i], names[i+1], e)) {
-				delete e[names[i]];
-			}
-		}
+		for (var i=0; i<count; i+=2) _doPoseFaceCommandOne(doAddCommand,     names, i, e);
+
 		// 追加表情指定コマンドの処理
-		names.assign(e);
-		for (var i=0; i<names.count; i+= 2) {
-			if (doAddFaceCommand(names[i], names[i+1], e)) {
-				delete e[names[i]];
-			}
+		for (var i=0; i<count; i+=2) _doPoseFaceCommandOne(doAddFaceCommand, names, i, e);
+
+		if (dress > 1 || pose > 1 || diff > 1) {
+			var tags = [];
+			tags.add("服装")   if (dress > 1);
+			tags.add("ポーズ") if (pose  > 1);
+			tags.add("差分")   if (diff  > 1);
+			exStandError(tags.join("/")+"が多重指定されています。結果不定です。");
 		}
 	}
 	
@@ -1815,12 +1863,12 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				//var xoff = standinfo.xoffset * levelInfo.zoom / 100;
 				//var yoff = standinfo.yoffset * levelInfo.zoom / 100;
 				layer.assignImages(standlayer);
-				layer.defaultAfx = layer.afx = (int)((standlayer.pageWidth/2 - standlayer.offsetX) * z / 100);
-				layer.defaultAfy = layer.afy = (int)((standlayer.pageHeight - standlayer.offsetY) * z / 100);
+				layer.setSizeToImageSize();
 				layer.resolution = 10000 / z;
+				afx = defaultAfx = (int)((standlayer.pageWidth/2 - standlayer.offsetX) * z / 100);
+				afy = defaultAfy = (int)((standlayer.pageHeight - standlayer.offsetY) * z / 100);
+				//dm("width:%d height:%d afx:%s afy:%s".sprintf(layer.width, layer.height, afx, afy));
 			}
-			afx = defaultAfx = void;
-			afy = defaultAfy = void;
 			//dm("元のサイズ:" + standlayer.imageWidth + "," + standlayer.imageHeight);
 			//dm("解像度:" + layer.resolution);
 			//dm("変換後サイズ:" + layer.imageWidth + "," + layer.imageHeight);
@@ -1839,16 +1887,41 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 		setter(v) {
 			*(&global.KAGEnvCharacter.disp incontextof this) = v;
-			if (!isShowBU()) {
-				clearStandLayers(); // clearListMap(standlayerList, standlayerMap);
-			}
 		}
 	}
 
 	// -----------------------------------------------------------------
 	// 立ち絵情報参照用
 	// -----------------------------------------------------------------
-	
+
+	/**
+	 * 顔領域を取得する
+	 */
+	function getFaceArea(standlayer) {
+		var info = standlayer.getPropInfo(dress + "顔領域");
+		if (info === void) {
+			info = standlayer.getPropInfo("顔領域");
+			//dm("通常顔領域");
+		}
+		if (info === void && (init.faceArea !== void || env.envinfo.faceArea !== void)) {
+			var fca = (env.envinfo.faceArea !== void) ? env.envinfo.faceArea : %[];
+			(Dictionary.assign incontextof fca)(init.faceArea, false) if (init.faceArea !== void);
+			var point = getFacePoint(standlayer, fca);
+			if (point !== void) {
+				var x = point.left + fca.xoffset, y = point.top + fca.yoffset, w = fca.width, h = fca.height;
+				if (fca.center) x += point.width\2, y += point.height\2;
+				info = %[left:x-w\2, top:y-h\2, width:w, height:h];
+			}
+		}
+		return info;
+	}
+	/**
+	 * 顔原点を取得する
+	 */
+	function getFacePoint(standlayer, fca) {
+		return standlayer.getPropInfo(fca.name != "" ? fca.name : "顔原点");
+	}
+
     /**
      * 表情を描画する
      */
@@ -1859,20 +1932,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		if (pose !== void && dress !== void && diff !== void && face !== void) {
 			var standInfo = getStandInfo(pose);
 			var standlayer = getStandLayer(pose, faceLevelName);
-			var info = standlayer.getPropInfo(dress + "顔領域");
-			if (info === void) {
-				info = standlayer.getPropInfo("顔領域");
-				//dm("通常顔領域");
-			}
-			if (info === void && (init.faceArea !== void || env.envinfo.faceArea !== void)) {
-				var point = standlayer.getPropInfo("顔原点");
-				if (point !== void) {
-					var area = init.faceArea !== void ? init.faceArea : env.envinfo.faceArea;
-					var w = area.width;
-					var h = area.height;
-					info = %[left:point.left-w/2, top:point.top-h/2, width:w, height:h];
-				}
-			}
+			var info = getFaceArea(standlayer);
 			if (info !== void) {
 				//dm("顔領域:%d %d %d %d".sprintf(info.left, info.top, info.width, info.height));
 				var d;
@@ -1884,7 +1944,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				} else {
 					d = diff;
 				}
-				dm("差分指定 %s -> %s".sprintf(diff, d));
+				//dm("差分指定 %s -> %s".sprintf(diff, d));
 				standlayer.setDress(dress);
 				standlayer.setDiff(d);
 				standlayer.setAdd(addimage, true);
@@ -1927,49 +1987,55 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					var top   = info.top;
 					var width = info.width;
 					var height = info.height + standInfo.faceyoff;
+					var ox, oy, px, py;
 
 					if (left < 0) {
-						width += left;
+						width -= (ox = -left);
 						left = 0;
 					}
 					if (top < 0) {
-						height += top;
+						height -= (oy = -top);
 						top = 0;
 					}
 					if (left+width >= standlayer.width) {
-						width -= (left+width - standlayer.width);
+						width -= (px = (left+width - standlayer.width));
 					}
 					if (top+height >= standlayer.height) {
-						height -= (top+height - standlayer.height);
+						height -= (py = (top+height - standlayer.height));
 					}
 
 					var dwidth = width * standInfo.facezoom / 100.0;
 					var dheight = height * standInfo.facezoom / 100.0;
 					var envfz = init.faceZoom !== void ? init.faceZoom : env.envinfo.faceZoom;
 					if (envfz !== void) {
-						dwidth  *= envfz / 100.0;
-						dheight *= envfz / 100.0;
+						var z = envfz / 100.0;
+						dwidth  *= z;
+						dheight *= z;
+						ox *= z, oy *= z, px *= z, py *= z;
 					}
 					//dm("%s:表情表示 %d %d %d %d  %d %d\n".sprintf(name,left,top,width,height, standlayer.width, standlayer.height));
 
 					with (layer) {
-						.setImageSize(dwidth, dheight);
+						.setImageSize(dwidth + ox+px, dheight + oy+py);
 						.setSizeToImageSize();
 						.repos() if (typeof .repos == "Object");
 						.fillRect(0,0,.width,.height,0);
 						if (envfz < 50) {
-							.shrinkCopy(0, 0, dwidth, dheight, standlayer, left, top, width, height);
+							.shrinkCopy(ox, oy, dwidth, dheight, standlayer, left, top, width, height);
 						} else {
-							.stretchCopy(0, 0, dwidth, dheight, standlayer, left, top, width, height, stCubic);
+							.stretchCopy(ox, oy, dwidth, dheight, standlayer, left, top, width, height, stCubic);
 						}
 					}
+				}
+				if (env.envinfo.faceApplyColor) {
+					applyColor(layer);
 				}
 				layer.visible = true;
 			} else {
 				dm("表情描画:顔領域情報取得失敗");
 				layer.visible = false;
 			}
-        } else {
+		} else {
             layer.visible = false;
         }
     }

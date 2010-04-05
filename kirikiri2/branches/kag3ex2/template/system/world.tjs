@@ -39,7 +39,8 @@ class EnvGraphicLayer extends GraphicLayerEx
 		freeImage();
 		type = ltAlpha;
 		hitType = htMask;
-		hitThreshold = 256;
+		hitThreshold = (typeof ownerenv.defaultHitThreshold != "undefined") ?
+			/**/          (int)ownerenv.defaultHitThreshold : 256;
 		noshiftMode   = owner.noshiftMode;
 		nocameraMode  = owner.nocameraMode | owner.noshiftMode;
 		levelz  = owner.levelz !== void ? owner.levelz : 100;
@@ -47,6 +48,8 @@ class EnvGraphicLayer extends GraphicLayerEx
 		yoffset = 0;
 		levelxoffset = 0;
 		levelyoffset = 0;
+
+		hint = name if (ownerenv.setHintForDebug);
 	}
 
 	function finalize()	{
@@ -437,81 +440,83 @@ KAGLoadScript('KAGEnvironment.tjs');
  */
 class KAGWorldPlugin extends KAGPlugin
 {
-    var env;
+    var env, _kag;
     function KAGWorldPlugin(kag) {
         super.KAGPlugin();
-        env = new KAGEnvironment(kag);
+        env = new KAGEnvironment(_kag = kag);
 
         // KAG に自分をコマンドとして登録
-		kag.tagHandlers["env"]        = env.tagfunc;
-        kag.tagHandlers["allchar"]    = env.allchar;
-        kag.tagHandlers["alllayer"]   = env.alllayer;
-		kag.tagHandlers["allse"]      = env.allse;
+		with (_kag) {
+			.tagHandlers["env"]        = env.tagfunc;
+			.tagHandlers["allchar"]    = env.allchar;
+			.tagHandlers["alllayer"]   = env.alllayer;
+			.tagHandlers["allse"]      = env.allse;
 
-		kag.tagHandlers["begintrans"] = env.beginTrans;
-		kag.tagHandlers["endtrans"]   = env.endTrans;
-		kag.tagHandlers["beginenvtrans"] = env.beginEnvTrans;
-		kag.tagHandlers["newlay"]     = env.newLayer;
-        kag.tagHandlers["newlayer"]   = env.newLayer;
-        kag.tagHandlers["dellay"]     = env.delLayer;
-        kag.tagHandlers["dellayer"]   = env.delLayer;
-        kag.tagHandlers["newchar"]    = env.newCharacter;
-        kag.tagHandlers["delchar"]    = env.delCharacter;
+			.tagHandlers["begintrans"] = env.beginTrans;
+			.tagHandlers["endtrans"]   = env.endTrans;
+			.tagHandlers["beginenvtrans"] = env.beginEnvTrans;
+			.tagHandlers["newlay"]     = env.newLayer;
+			.tagHandlers["newlayer"]   = env.newLayer;
+			.tagHandlers["dellay"]     = env.delLayer;
+			.tagHandlers["dellayer"]   = env.delLayer;
+			.tagHandlers["newchar"]    = env.newCharacter;
+			.tagHandlers["delchar"]    = env.delCharacter;
 
-        kag.tagHandlers["msgoff"]     = env.msgoff;
-        kag.tagHandlers["msgon"]      = env.msgon;
-        kag.tagHandlers["clear"]      = env.clear;
-        
-        kag.tagHandlers["dispname"]        = env.dispname;
-        kag.tagHandlers["dispnameVoice"]   = env.dispnameVoice;
-        kag.tagHandlers["quake"]           = env.quake;
-        kag.tagHandlers["afterpage"]       = env.afterpage;
-        kag.tagHandlers["afterline"]       = env.afterline;
+			.tagHandlers["msgoff"]     = env.msgoff;
+			.tagHandlers["msgon"]      = env.msgon;
+			.tagHandlers["clear"]      = env.clear;
 
-		kag.tagHandlers["showvoiceinfo"]   = env.showVoiceInfo;
-		kag.tagHandlers["twait"]           = env.doTalkWait;
-		kag.tagHandlers["showtwait"]       = env.showTalkWait;
-		kag.tagHandlers["*"]               = env.doTalkWait;
+			.tagHandlers["dispname"]        = env.dispname;
+			.tagHandlers["dispnameVoice"]   = env.dispnameVoice;
+			.tagHandlers["quake"]           = env.quake;
+			.tagHandlers["afterpage"]       = env.afterpage;
+			.tagHandlers["afterline"]       = env.afterline;
 
-		kag.tagHandlers["laytrans"]  = env.laytrans;
-		
-        // レイヤトランジション処理中は transMode を有効にしておく
-        kag.tagHandlers["ltbegin"] = function(elm) {
-            transMode = 2;
-            return kag.layerTransBegin(elm);
-        } incontextof env;
-        kag.tagHandlers["ltend"] = function(elm) {
-            transMode = 0;
-            return kag.layerTransEnd(elm);
-        } incontextof env;
-        
-        // 特殊ハンドラ登録
-		kag.unknownHandler     = env.unknown;
-		kag.seStopHandler      = env.onSeStop;
-		kag.stopActionHandler  = env.onStopAction;
-		kag.stopTransitionHandler = env.onStopTransition;
-		kag.syncHandler        = env.syncAll;
-		kag.clearLayersHandler = env.clearLayers;
-		kag.updateVoice        = env.updateVoice;
-		kag.voiceUpdateHandler = env.resetAllVoiceVolume;
+			.tagHandlers["showvoiceinfo"]   = env.showVoiceInfo;
+			.tagHandlers["twait"]           = env.doTalkWait;
+			.tagHandlers["showtwait"]       = env.showTalkWait;
+			.tagHandlers["*"]               = env.doTalkWait;
+
+			.tagHandlers["laytrans"]  = env.laytrans;
+
+			// レイヤトランジション処理中は transMode を有効にしておく
+			.tagHandlers["ltbegin"] = function(elm) {
+				transMode = 2;
+				return kag.layerTransBegin(elm); // [NGK] ここのkagはenvの変数が参照される
+			} incontextof env;
+			.tagHandlers["ltend"] = function(elm) {
+				transMode = 0;
+				return kag.layerTransEnd(elm); // [NGK] ここのkagはenvの変数が参照される
+			} incontextof env;
+
+			// 特殊ハンドラ登録
+			.unknownHandler     = env.unknown;
+			.seStopHandler      = env.onSeStop;
+			.stopActionHandler  = env.onStopAction;
+			.stopTransitionHandler = env.onStopTransition;
+			.syncHandler        = env.syncAll;
+			.clearLayersHandler = env.clearLayers;
+			.updateVoice        = env.updateVoice;
+			.voiceUpdateHandler = env.resetAllVoiceVolume;
+		}
 	}
 
     function finalize() {
-        if (env) {
-			if (kag.unknownHandler === env.unknown) {
-				kag.unknownHandler = void;
+        if (env) with (_kag) {
+			if (.unknownHandler === env.unknown) {
+				.unknownHandler = void;
 			}
-			if (kag.seStopHandler== env.onSeStop) {
-				delete kag.seStopHandler;
+			if (.seStopHandler== env.onSeStop) {
+				delete .seStopHandler;
 			}
-			if (kag.stopActionHandler === env.onStopAction) {
-				delete kag.stopActionHandler;
+			if (.stopActionHandler === env.onStopAction) {
+				delete .stopActionHandler;
 			}
-			if (kag.stopTransitionHandler === env.onStopTransition) {
-				delete kag.stopTransitionHandler;
+			if (.stopTransitionHandler === env.onStopTransition) {
+				delete .stopTransitionHandler;
 			}
-			if (kag.voiceUpdateHandler === env.resetAllVoiceVolume) {
-				delete kag.voiceUpdateHandler;
+			if (.voiceUpdateHandler === env.resetAllVoiceVolume) {
+				delete .voiceUpdateHandler;
 			}
 			invalidate env;
 		}
@@ -536,6 +541,6 @@ class KAGWorldPlugin extends KAGPlugin
 	
 	function onResetAll() {
 		env.resetEnv();
-		env.update(kag.fore);
+		env.update(_kag.fore);
 	}
 };

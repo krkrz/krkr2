@@ -7,6 +7,8 @@ class KAGEnvironment extends KAGEnvImage {
     var kag;
     var xmax;
     var ymax;
+	var defaultHitThreshold = 256;
+	var setHintForDebug = false;
 
     // フェード指定のデフォルト値
     // envinit.tjs で定義するか、システムのデフォルトを使う
@@ -177,20 +179,20 @@ class KAGEnvironment extends KAGEnvImage {
      * @param kag KAG本体
      */
 	function KAGEnvironment(kag) {
+		this.kag = kag;
 
 		super.KAGEnvImage(this, "env");
 		absolute = 100;
 		layerClass = global.EnvBaseGraphicLayer;
 		
-        this.kag = kag;
         xmax = kag.scWidth / 2;
         ymax = kag.scHeight / 2;
 
 		characters = %[];
 		layers = %[];
 		event = new KAGEnvBaseLayer(env, "event", 6 * 100000 - 100); // イベントレイヤ
-		event.nocamera = true;
-		event.noshift  = true;
+		event.nocameraMode = true;
+		event.noshiftMode  = true;
 
 		// BGM オブジェクト
 		bgm = new KAGEnvBgm(env);
@@ -199,7 +201,9 @@ class KAGEnvironment extends KAGEnvImage {
 		for (var i=0; i<kag.numSEBuffers; i++) {
 			ses[i] = new KAGEnvSE(env, i);
         }
-        
+
+		cameraCurrentActionList = new Array();
+		
 		resetEnv();
 		//dm("環境初期化完了");
     }
@@ -212,6 +216,7 @@ class KAGEnvironment extends KAGEnvImage {
 		invalidate characters;
 		invalidate layers;
 		invalidate event;
+		invalidate cameraCurrentActionList;
 		super.finalize();
 		//dm("環境終了");
     }
@@ -264,7 +269,10 @@ class KAGEnvironment extends KAGEnvImage {
 		f.cameraoy = cameraoy;
 
         f.colorall = colorall;
-    }
+
+		f.cameraActionList = [];
+		(Array.assign incontextof f.cameraActionList)(cameraCurrentActionList);
+	}
 
     /**
      * ロード処理
@@ -325,6 +333,13 @@ class KAGEnvironment extends KAGEnvImage {
 		cameraox = f.cameraox;
 		cameraoy = f.cameraoy;
 		updateCameraFlag = true;
+
+		if (f.cameraActionList !== void) {
+			for (var i=0;i<f.cameraActionList.count;i++) {
+				var action = f.cameraActionList[i];
+				kag.beginAction(this, action);
+			}
+		}
 		
 		super.onRestore(f);
 		syncAll();
@@ -454,6 +469,7 @@ class KAGEnvironment extends KAGEnvImage {
 		
 		initImage();
 		event.initImage();
+		event.clearFileState();
 		event.absolute = (eventLevel + 1) * 100000 - 100;
 
 		// キャラクタ情報の破棄
@@ -532,7 +548,8 @@ class KAGEnvironment extends KAGEnvImage {
 		_shifty = 0;
 		cameraox = 0;
 		cameraoy = 0;
-		
+		stopCamera();
+
 		if (elm && elm.sync) {
 			syncAll();
 		}
@@ -742,6 +759,13 @@ class KAGEnvironment extends KAGEnvImage {
                 global.setStageHook(stageName, elm);
             }
 
+			// 舞台変更時はキャラの余分な情報を破棄する
+			foreach(characters, function(name, value, dict, base) {
+				if (!value.isShow()) {
+					value.clearStandLayers();
+				}
+			}, this);
+			
 			// 舞台レイヤ更新
 			nostagelayer = elm.nolayer;
 			initStageLayer(false, false);
@@ -786,7 +810,7 @@ class KAGEnvironment extends KAGEnvImage {
                 global.setTimeHook(timeName, elm);
             }
 
-            // 時間変更はキャラの立ち絵も再描画の必要がある
+			// 時間変更はキャラの立ち絵も再描画の必要がある
 			foreach(characters, function(name, value, dict, base) {
 				if (value.isShowBU()) {
 					value.setRedraw();
@@ -1877,16 +1901,30 @@ class KAGEnvironment extends KAGEnvImage {
      * @param name SE の名前
      */
 	function getSeIdFromName(name) {
-		for (var i=0; i<ses.count; i++) {
-			if (ses[i].name == name) {
-				return i;
-            }
-        }
-        // みつからないのであいている番号を返す
+		if (name != "") {
+			name = name.toLowerCase();
+			for (var i=0; i<ses.count; i++) {
+				var sename = ses[i].name;
+				//dm("getSeIdFromName", name, sename);
+				if (sename != "" && sename.toLowerCase() == name) return i;
+			}
+		}
+		// みつからないのであいている番号を返す
 		var ret = getSeId();
 		return ret;
     }
     
+    /**
+     * tagnameを変更しつつtagfuncを呼び出す
+     */
+	function invokeTagFunc(target, elm, tagname, origTagName) {
+		elm.tagname = tagname;
+		elm[origTagName] = true;
+//		var order = elm["*order"];
+//		order.unshift(origTagName) if (order !== void);
+		return target.tagfunc(elm);
+	}
+
     /**
      * KAG 不明処理ハンドラ
      */
@@ -1904,9 +1942,8 @@ class KAGEnvironment extends KAGEnvImage {
 			return event.tagfunc(elm);
 		} else if (tagName.substring(0,2) == "ev" ||
 				   (events !== void && events[tagName] !== void)) {
-			elm[tagName] = true;
-			return event.tagfunc(elm);
-        }
+			return invokeTagFunc(event, elm, "event", tagName);
+		}
 
         // BGM 処理用
         if (tagName == "bgm") {
@@ -1932,7 +1969,9 @@ class KAGEnvironment extends KAGEnvImage {
             var ch = getCharacter(elm.name);
             if (ch !== void) {
                 return ch.tagfunc(elm);
-            }
+			} else {
+				kag.errorCmd("キャラクタ指定が不明です: " + elm.name);
+			}
 		} else {
 			var ch = getCharacter(tagName);
 			if (ch !== void) {
@@ -1944,7 +1983,9 @@ class KAGEnvironment extends KAGEnvImage {
             var lay = getEnvLayer(elm.name);
             if (lay !== void) {
                 return lay.tagfunc(elm);
-            }
+			} else {
+				kag.errorCmd("レイヤ指定が不明です: " + elm.name);
+			}
 		} else { 
 			var lay = getEnvLayer(tagName);
 			if (lay !== void) {
@@ -1952,23 +1993,14 @@ class KAGEnvironment extends KAGEnvImage {
 			}
 		}
 
-		// 環境のコマンドか？
-		if (envCommands[tagName] !== void) {
-			elm.tagname = "env";
-			elm[tagName] = true;
-			return tagfunc(elm);
-		}
-		
+		// 環境のコマンドではなく
 		// カレントのターゲットがある場合はそのコマンドとして実行
-		if (currentNameTarget !== void) {
-			elm[tagName] = true;
-			return currentNameTarget.tagfunc(elm);
-		} else {
-			// 環境のコマンドとして実行
-			elm.tagname = "env";
-			elm[tagName] = true;
-			return tagfunc(elm);
+		if (envCommands[tagName] === void && currentNameTarget !== void) {
+			return invokeTagFunc(currentNameTarget, elm, "char"/*ch.name*/, tagName);
 		}
+
+		// いずれの条件にも満たない場合は環境のコマンドとして実行
+		return invokeTagFunc(this, elm, "env", tagName);
     }
 
     /**
@@ -2017,7 +2049,7 @@ class KAGEnvironment extends KAGEnvImage {
 		});
 		redraw = true;
 		// サウンド同期実行
-		for (var i=0; i<kag.numSEBuffers; i++) {
+		for (var i=0; i<ses.count; i++) {
 			ses[i].sync();
 		}
 		bgm.sync();
@@ -2212,6 +2244,8 @@ class KAGEnvironment extends KAGEnvImage {
 		}
 	}
 
+	var cameraCurrentActionList;
+	
 	function doCameraAct(name, param, time, elm) {
 		var action = %[name => %[handler:MoveAction, value:param, time:time, accel:elm.accel]];
 		if (elm.nowait) {
@@ -2307,6 +2341,17 @@ class KAGEnvironment extends KAGEnvImage {
 			var action = createAction(name, elm);
 			if (action !== void) {
 				kag.beginAction(this, action);
+				if (action instanceof "Dictionary") {
+					if (action.time == 0) {
+						//dm("アクションを記録:" + i);
+						cameraCurrentActionList.add(action);
+					}
+				} else if (action instanceof "Array") {
+					if (action.count > 0 && action[action.count - 1].time == 0) {
+						//dm("アクションを記録:" + i + " count:" + action.count);
+						cameraCurrentActionList.add(action);
+					}
+				}
 				actionCameraFlag = true;
 			}
 		}
@@ -2352,6 +2397,7 @@ class KAGEnvironment extends KAGEnvImage {
 
 	function stopCamera(elm) {
 		kag.stopAction(this);
+		cameraCurrentActionList.clear();
 		return 0;
 	}
 

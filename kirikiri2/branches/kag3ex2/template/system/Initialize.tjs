@@ -129,53 +129,53 @@ function addVoiceArchive(name) {
 	addArchiveWithSubFolder("voice", name);
 }
 
-Storages.addAutoPath(System.exePath + "tools/") if debugWindowEnabled; // exePath 以下の tools/
+/*
+	フォルダ登録及びアーカイブの検索と使用
+	（後に登録した物ほど検索の優先度が高くなります）
+*/
+
+if (debugWindowEnabled) {
+	Storages.addAutoPath(System.exePath + "tools/"); // exePath 以下の tools/
+	Storages.addAutoPath(System.exePath + "tools/debug/"); // exePath 以下の tools/debug
+	useArchiveIfExists("debug");
+}
 Storages.addAutoPath(System.exePath + "video/"); // exePath 以下の video/
 Storages.addAutoPath("data/"); // data フォルダ
-Storages.addAutoPath("video/"); // video フォルダ
-Storages.addAutoPath("others/"); // その他
-Storages.addAutoPath("rule/"); // ルール画像フォルダ
-Storages.addAutoPath("sound/"); // 効果音フォルダ
-Storages.addAutoPath("bgm/"); // BGM フォルダ
-Storages.addAutoPath("fgimage/"); // 前景画像フォルダ
-Storages.addAutoPath("bgimage/"); // 背景画像フォルダ
-Storages.addAutoPath("scenario/"); // シナリオフォルダ
-Storages.addAutoPath("image/"); // そのほかの画像フォルダ
-Storages.addAutoPath("system/"); // システムフォルダ
-Storages.addAutoPath("voice/");  // ボイスフォルダ
-Storages.addAutoPath("face/");   // フェイスフォルダ
-Storages.addAutoPath("init/");   // 初期化用フォルダ
-Storages.addAutoPath("sysscn/"); // システム用シナリオ
-Storages.addAutoPath("main/"); // システム用シナリオ
-Storages.addAutoPath("evimage/");
-Storages.addAutoPath("thum/");
-Storages.addAutoPath("uipsd/");
+{
+	// data以下のサブフォルダを登録
+	// もしこれらの名前を持ったアーカイブが実行可能ファイルと
+	// 同じ場所にあった場合、それを優先して使う
+	var subfolders = [
+		"video",    // video フォルダ
+		"others",   // その他
+		"rule",     // ルール画像フォルダ
+		"sound",    // 効果音フォルダ
+		"bgm",      // BGM フォルダ
+		"fgimage",  // 前景画像フォルダ
+		"bgimage",  // 背景画像フォルダ
+		"scenario", // シナリオフォルダ
+		"image",    // そのほかの画像フォルダ
+		"system",   // システムフォルダ
+		"voice",    // ボイスフォルダ
+		"face",     // フェイスフォルダ
+		"init",     // 初期化用フォルダ
+		"sysscn",   // システム用シナリオ
+		"main",     // システム用シナリオ
+		"evimage",  // イベント画像
+		"thum",     // サムネイル
+		"uipsd",    // ユーザーインターフェース用パーツ画像
+		];
+	for (var i = 0; i < subfolders.count; i++) {
+		var name = subfolders[i];
+		addArchive(name) if (name != "");
+	}
+}
 
-// パッチアーカイブの検索と使用
-// もしこれらの名前を持ったアーカイブが実行可能ファイルと
-// 同じ場所にあった場合、それを優先して使う
-useArchiveIfExists("video.xp3");
-useArchiveIfExists("others.xp3");
-useArchiveIfExists("rule.xp3");
-useArchiveIfExists("sound.xp3");
-useArchiveIfExists("bgm.xp3");
-useArchiveIfExists("fgimage.xp3");
-useArchiveIfExists("bgimage.xp3");
-useArchiveIfExists("scenario.xp3");
-useArchiveIfExists("image.xp3");
-useArchiveIfExists("system.xp3");
-useArchiveIfExists("voice.xp3");
-useArchiveIfExists("face.xp3");
-useArchiveIfExists("init.xp3");
-useArchiveIfExists("sysscn.xp3");
-useArchiveIfExists("main.xp3");
-useArchiveIfExists("evimage.xp3");
-useArchiveIfExists("thum.xp3");
-useArchiveIfExists("uipsd.xp3");
-
+// カスタムフォルダ登録処理スクリプトを実行（※パッチの前に評価すること）
 if(Storages.isExistentStorage("Storages.tjs"))
 	Scripts.execStorage("Storages.tjs");
 
+// パッチアーカイブ（※パッチの中身は平坦展開でパッチ内サブフォルダは使えない）
 useArchiveIfExists("patch.xp3");
 
 // 追加のパッチ用アーカイブの検索
@@ -321,7 +321,7 @@ if (typeof global.ratPlayerEnabled != "undefined" && global.ratPlayerEnabled) {
 
 // add by GoWatanabe
 KAGLoadScript("LayerEx.tjs");
-KAGLoadScript("BitmapFont.tjs");
+KAGLoadScript("BitmapFont.tjs")   if (KAGConfigEnabled("fontExBitmapEnabled", false));
 
 KAGLoadScript("Utils.tjs");
 KAGLoadScript("KAGLayer.tjs");

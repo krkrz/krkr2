@@ -1199,6 +1199,22 @@ class AffineLayer extends KAGLayer {
     }
 
 	/**
+	 * ’†«F‚ÅÁ‹
+	 */
+	function clearNeutralColor() {
+		switch (type) {
+		case ltOpaque:
+		case ltAlpha:
+			// ‰½‚à‚µ‚È‚¢
+			break;
+		default:
+			setPos(-1000, -1000, 1, 1); // ‰æ–ÊŠO‚É
+			(global.Layer.fillRect incontextof this)(0, 0, super.width, super.height, neutralColor);
+			break;
+		}
+	}
+
+	/**
 	 * •`‰æˆ—ŒÄ‚Ño‚µ
 	 * @param target •`‰æ‘ÎÛ
 	 */
