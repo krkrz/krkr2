@@ -922,7 +922,14 @@ class TrigonoAction extends VibrateAction {
         super.VibrateAction(target, propName, elm);
         cycle  = +elm.cycle if elm.cycle !== void;
         angvel = +elm.angvel if elm.angvel !== void;
-    }
+		if (kag.drawspeed > 0) {
+			if (cycle !== void) {
+				cycle *= kag.drawspeed;
+			} else {
+				angvel /= kag.drawspeed;
+			}
+		}
+	}
 
     function getAngle(now) {
         return (cycle !== void) ? (Math.PI * 2 * now / cycle) : (Math.PI * 2 * now * angvel / 360000.0);
@@ -1092,7 +1099,10 @@ function LayerVibrateZoomModule(info, elm) {
 
 function LayerNormalRotateModule(info, elm) {
     var cycle = elm.angvel !== void ? 360/elm.angvel*1000 : elm.cycle;
-    info.addAction("rotate", TriangleAction, %[vibration:360, ontime:cycle, offtime:0, time:elm.time, delay:elm.delay]);
+	if (kag.drawspeed > 0) {
+		cycle *= kag.drawspeed;
+	}
+	info.addAction("rotate", TriangleAction, %[vibration:360, ontime:cycle, offtime:0, time:elm.time, delay:elm.delay]);
 }
 
 function LayerVibrateRotateModule(info, elm) {

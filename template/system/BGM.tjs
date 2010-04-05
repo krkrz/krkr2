@@ -292,7 +292,7 @@ class BGM
 		{
 			if(!found)
 			{
-                kag.errorSound(storage + ":BGMファイルがありません");
+				owner.errorSound(storage + ":BGMファイルがありません");
                 return;
 			}
 
@@ -313,7 +313,7 @@ class BGM
 			}
 			catch(e)
 			{
-                kag.errorSound(storage + ":BGMが再生できません : " + e.message);
+				owner.errorSound(storage + ":BGMが再生できません : " + e.message);
                 return;
 			}
 		}

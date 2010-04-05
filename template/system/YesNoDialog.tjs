@@ -7,18 +7,20 @@ class YesNoDialogWindow extends Window
 	var noButton; // [いいえ] ボタン
 
 	var result = false; // no:false yes:true
+	var _activate, _defaultFocus;
 
-	function YesNoDialogWindow(message, cap)
+	function YesNoDialogWindow(message, cap, df)
 	{
 		super.Window();
 
+		_defaultFocus = df;
+
 		// メインウィンドウから cursor**** の情報をとってくる
-		if(global.Window.mainWindow !== null &&
-			typeof global.Window.mainWindow.cursorDefault != "undefined")
-			this.cursorDefault = global.Window.mainWindow.cursorDefault;
-		if(global.Window.mainWindow !== null &&
-			typeof global.Window.mainWindow.cursorPointed != "undefined")
-			this.cursorPointed = global.Window.mainWindow.cursorPointed;
+		var mainWin = global.Window.mainWindow;
+		if (mainWin) {
+			this.cursorDefault = mainWin.cursorDefault if (typeof mainWin.cursorDefault != "undefined");
+			this.cursorPointed = mainWin.cursorPointed if (typeof mainWin.cursorPointed != "undefined");
+		}
 
 		// 外見の調整
 		borderStyle = bsDialog;
@@ -42,14 +44,15 @@ class YesNoDialogWindow extends Window
 		var h = th*2 + 60;
 
 		// 拡大率の設定
-		if (kag.fullScreen) {
-			if (kag.innerWidth / kag.pxWidth
-				< kag.innerHeight / kag.pxHeight)
-				setZoom(kag.innerWidth, kag.pxWidth);
-			else
-				setZoom(kag.innerHeight, kag.pxHeight);
-		} else {
-		  setZoom(kag.zoomNumer, kag.zoomDenom);
+		if (mainWin) with (mainWin) {
+			if (.fullScreen) {
+				if (.innerWidth/.pxWidth < .innerHeight/.pxHeight)
+					setZoom(.innerWidth, .pxWidth);
+				else
+					setZoom(.innerHeight, .pxHeight);
+			} else {
+				setZoom(.zoomNumer, .zoomDenom);
+			}
 		}
 		// サイズを決定
 		setInnerSize(w * zoomNumer / zoomDenom,
@@ -61,32 +64,32 @@ class YesNoDialogWindow extends Window
 		primaryLayer.colorRect(0, 0, w, h, clBtnFace, 255);
 
 		// ウィンドウ位置の調整
-		var center = getParentWindowCenterPos(global.Window.mainWindow, width, height);
+		var center = getParentWindowCenterPos(mainWin, width, height);
 		if (center !== void) setPos(center.x, center.y);
 
 		// メッセージの描画
 		primaryLayer.drawText((w - tw)>>1, 14, message, clBtnText);
 
 		// Yesボタン
-		add(yesButton = new ButtonLayer(this, primaryLayer));
-		yesButton.caption = "はい";
-		yesButton.captionColor = clBtnText;
-		yesButton.width = 70;
-		yesButton.height = 25;
-		yesButton.top = th + 35;
-		yesButton.left = (w - (70*2 + 10)>>1);
-		yesButton.visible = true;
+		add(yesButton = createButton("はい",    (w - (70*2 + 10) >>1),           th + 35));
 
 		// Noボタン
-		add(noButton = new ButtonLayer(this, primaryLayer));
-		noButton.caption = "いいえ";
-		noButton.captionColor = clBtnText;
-		noButton.width = 70;
-		noButton.height = 25;
-		noButton.top = th + 35;
-		noButton.left = ((w - (70*2 + 10))>>1) + 70 + 10;
-		noButton.visible = true;
+		add(noButton =  createButton("いいえ", ((w - (70*2 + 10))>>1) + 70 + 10, th + 35));
+	}
 
+	function createButton(caption, x, y, w = 70, h = 25)
+	{
+		var btn = new ButtonLayer(this, primaryLayer);
+		with (btn) {
+			.caption = caption;
+			.captionColor = clBtnText;
+			.width = w;
+			.height = h;
+			.top = y;
+			.left = x;
+			.visible = true;
+		}
+		return btn;
 	}
 
 	function finalize()
@@ -139,6 +142,17 @@ class YesNoDialogWindow extends Window
 				break;
 			}
 		}
+		else if (ev.type == "onActivate" && !_activate)
+		{
+			_activate = true;
+			var btn = _defaultFocus + "Button";
+			if (typeof this[btn] == "Object") {
+				btn =  this[btn];
+				btn.focus();
+//				if (System.getArgument("-curmove") != "no")
+//					with (btn) .setCursorPos(.width\2, .height\2);
+			}
+		}
 	}
 
 	function onKeyDown(key, shift)
@@ -155,9 +169,9 @@ class YesNoDialogWindow extends Window
 }
 
 // Yes か No かはっきりさせる関数
-function askYesNo(message, caption = "確認", yesFunc=void, noFunc=void, param=void, doneFunc=void)
+function askYesNo(message, caption = "確認", yesFunc=void, noFunc=void, param=void, doneFunc=void, defaultFocus)
 {
-	var win = new YesNoDialogWindow(message, caption);
+	var win = new YesNoDialogWindow(message, caption, defaultFocus);
 	win.showModal();
 	var res = win.result;
 	invalidate win;

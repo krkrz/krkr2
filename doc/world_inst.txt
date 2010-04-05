@@ -1,6 +1,9 @@
 Title: 吉里吉里/KAGEX WORLD拡張 データ設定マニュアル
 Author: 合資会社ワムソフト
 
+※deprecated
+　立ち絵定義の方法などが新しくなってない
+
 ●はじめに
 
 ここでは 吉里吉里/KAGEX にて拡張された envinit.tjs への

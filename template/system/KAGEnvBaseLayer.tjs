@@ -75,7 +75,7 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 		
 		// ‹L˜^
 		if (elm.noflag === void) {
-			kag.sflags["cg_" + (file.toUpperCase())] = true;
+			kag.sflags["cg_" + (file.toUpperCase())] = true; // [NGK] property KAGEnvLayer.kag
 		}
 		
         return true;

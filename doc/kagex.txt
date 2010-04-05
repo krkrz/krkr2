@@ -232,9 +232,11 @@ color, storage, tile, movie は排他で、この順で有効です。
             ※opacity と type は画像ロード時のものに初期化されます
     time    指定時間で移動
     accel   移動のアクセラレーション
-　　　　　　 負の数:減速
-             0:リニア
-             正の数:加速
+		負の数:減速
+		0:リニア
+		正の数:加速
+		"acdec"：加減速運動（３次曲線）
+		"accos"：加減速運動（コサイン移動）
     nowait  待ち処理時にキャンセルしない
 　　left    time対応
     top     time対応

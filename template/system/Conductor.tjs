@@ -145,7 +145,9 @@ class BaseConductor extends global.BaseConductorExtendClass
 		//    dm("遅延タグ解放:" + value);
 		//}
 		var n = 0;
-		for (var i=delaytags.count-1;i>=0;i--) {
+		var l = delaytags.count;
+		for (var i=0;i<l;) {
+			var delFlag = false;
 			var obj = delaytags[i];
 			var isTick   = typeof value == "Integer";
 			var isNumber = typeof obj.delayrun == "Integer";
@@ -177,7 +179,13 @@ class BaseConductor extends global.BaseConductorExtendClass
 						}
 					}
 					delaytags.erase(i);
+					delFlag = true;
 				}
+			}
+			if (delFlag) {
+				l--;
+			} else {
+				i++;
 			}
 		}
 		return delaytags.count > 0 || waitUntil["delay_*"] !== void;
@@ -320,7 +328,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 					return;
 				} else {
 
-					//if (this === kag.mainConductor) {dm(runLine + "/" + runCount +  " タグ実行:" +  obj.tagname);}
+					//if (this === Window.mainWindow.mainConductor) {dm(runLine + "/" + runCount +  " タグ実行:" +  obj.tagname);}
 
 					// 遅延実行のキャンセル
 					if (obj.tagname == "delaydone") {
@@ -747,6 +755,7 @@ class Conductor extends BaseConductor
 	var timeOutTimer;
 	var waitUntil = %[];
 	var lastTagName = ''; // 直前のタグ名
+//	var tagAttribOrder = []; // タグオプション順序
 
 	function Conductor(owner, handlers)
 	{
@@ -776,6 +785,7 @@ class Conductor extends BaseConductor
 		// immediate=true の場合は、
 		// このメソッドを実行したらすぐに吉里吉里に制御を戻す
 		// (すべての関数から戻る)こと
+		cancelTimeOut();
 		status = mRun;
 		startProcess(immediate);
 	}
@@ -783,6 +793,7 @@ class Conductor extends BaseConductor
 	function sleep()
 	{
 		// 実行の停止
+		cancelTimeOut();
 		status = mStop;
 		stop();
 	}
@@ -792,6 +803,7 @@ class Conductor extends BaseConductor
 		// 待ち
 		// until = trigger で用いるシグナル名とコールバック関数の
 		// 辞書配列
+		cancelTimeOut();
 		status = mWait;
 		stop();
 		(Dictionary.assign incontextof waitUntil)(until);
@@ -810,10 +822,15 @@ class Conductor extends BaseConductor
 		timeOutTimer.enabled = true;
 	}
 
+	function cancelTimeOut()
+	{
+		timeOutTimer.enabled = false;
+	}
+
 	function onTimeOut()
 	{
 		// timeOutTimer がタイムアウトした
-		timeOutTimer.enabled = false;
+		cancelTimeOut();
 		trigger('timeout'); // 自分自身で timeout をトリガする
 	}
 
@@ -839,7 +856,14 @@ class Conductor extends BaseConductor
 			return false;
 		}
 	}
-
+/*
+	function getNextTag()
+	{
+		var r = super.getNextTag(tagAttribOrder);
+		r["*order"] = tagAttribOrder;
+		return r;
+	}
+*/
 	function onTag(elm)
 	{
 		// タグの処理

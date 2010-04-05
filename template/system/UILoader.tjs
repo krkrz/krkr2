@@ -58,6 +58,7 @@ class UIListParser extends CSVParser {
 		case "copy": doCopy(info, columns); break;
 		case "cref": doCRef(info, columns); break;
 		case "ordr": doOrdr(info, columns); break;
+		case "stat": doStat(info, columns); break;
 		default: knownType = false; break;
 		}
 		check = true if (knownType);
@@ -83,6 +84,27 @@ class UIListParser extends CSVParser {
 		info.class  = "copy";
 		info.copy   = columns[2];
 		info.subref = columns[3];
+	}
+
+	// stateコピー用
+	function doStat(info, columns) {
+		var target =  columns[1], ui;
+		if (target == "" || result[target] === void || (ui = result[target].uistates) === void) {
+			dm("stat:指定されたtargetは存在しません:" + target) if (target != "");
+			return;
+		}
+		if (columns[3] == "") {
+			dm("stat:上書きするstateを指定してください:" + target);
+			return;
+		}
+		if (columns[2] != "" && ui[columns[2]] === void) {
+			dm("stat:指定されたstatは存在しません:" + columns[2]);
+		}
+		var list = [];
+		{ foreach(ui, function(k,v,d, t) { t.add(k); }, list); }
+
+		dm("statcopy: " + columns[2] +" -> "+ columns[3], list.join(","));
+		ui[columns[3]] = ui[columns[2]] if (columns[2] != "");
 	}
 
 	// rgrp
@@ -601,6 +623,10 @@ class uiEntryNormal {
 			.nofixpos  = true if .nofixpos  === void;
 			.bgcolor   = 0    if .bgcolor   === void;
 			.opacity   = 0    if .opacity   === void;
+			if (.uipsdfix) {
+				if (!.vertical) .width+=2,  .x-=1;
+				else            .height+=2, .y-=1;
+			}
 		}
 		return _entry("Slider", layer, name, v);
 	}

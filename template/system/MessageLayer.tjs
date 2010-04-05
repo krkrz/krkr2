@@ -495,13 +495,13 @@ class SystemButtonLayer extends ButtonLayer
         super.onMouseLeave(...);
 	}
     
-	function onMouseUp(x, y, button, shift)
+	function onExecute(x, y, button, shift)
 	{
         if (enabled && button == mbLeft && onclick !== void && (noStable || window.inStable)) {
             Scripts.eval(onclick);
         }
         if (isvalid this) {
-            super.onMouseUp(...);
+            super.onExecute(...);
         }
     }
 
@@ -1060,6 +1060,7 @@ class MessageLayer extends AnimKAGLayer
 
 	var lineLayer; // 行描画用のレイヤ
 	var textLayer; // テキストを保持するレイヤ(optional) ⇒ hasTextLayerプロパティを参照
+	var chFadeLayer; // 文字表示にフェードを使う場合 ⇒ hasChFadeLayerプロパティを参照
 	/*C*/var redrawTextStates; // テキスト再描画用情報(optional) ⇒ redrawTextEnabled参照
 	/*C*/var lineLayerBase; // ベースライン(横書き:下線位置/縦書き:中央位置)
 	/*C*/var lineLayerPos; // lineLayer 中の文字表示位置
@@ -1892,12 +1893,12 @@ class MessageLayer extends AnimKAGLayer
 		ll.face = dfAuto;
 		var lliw = ll.imageWidth;
 		var llih = ll.imageHeight;
-		ll.fillRect(0, 0, lliw, llih, 0);
-			// 完全透明に
+		ll.fillRect(0, 0, lliw, llih, 0); // 完全透明に
 		ll.face = dfProvince;
-		ll.fillRect(0, 0, lliw, llih, 0);
+		ll.fillRect(0, 0, lliw, llih, 0); // 領域をクリア
 		ll.face = dfAuto;
-			// 領域をクリア
+
+		resetChFadeLayer(true);
 	}
 
 	// テキストレイヤの有無を取得・設定するプロパティ（redrawFrameを直で呼ぶような特殊用途用）
@@ -1988,6 +1989,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function fixLineLayer()
 	{
+		stopChFade();
 		// lineLayer を現在の表示位置に確定
 		var ll = lineLayer;
 		if(ll.visible == false) return;
@@ -2146,6 +2148,7 @@ class MessageLayer extends AnimKAGLayer
 							lineLayerOriginY + getLineLayerTopOffset());
 			}
 		}
+		resetChFadeLayer();
 	}
 
 	function getLineLayerLeftOffset()
@@ -2252,16 +2255,73 @@ class MessageLayer extends AnimKAGLayer
 		return false;
 	}
 
-	function processCh(ch)
+	// 文字表示のフェード対応
+	// ※MessageLayer_configで設定すると非常に問題があるので，AfterInitなどで個別に設定してください
+	property hasChFadeLayer {
+		getter { return chFadeLayer !== void; }
+		setter(v) {
+			if        ( v && chFadeLayer === void) {
+				chFadeLayer = new global.KAGLayer(window, lineLayer);
+				with (chFadeLayer) {
+					.hitType = htMask;
+					.hitThreshold = 256; // マウスメッセージは全域透過
+					.type = layerType;
+					.name = name + ":文字フェード";
+					.setPos(0, 0);
+					.visible = true;
+				}
+				resetChFadeLayer();
+			} else if (!v && chFadeLayer !== void) {
+				invalidate chFadeLayer;
+				chFadeLayer = void;
+			}
+		}
+	}
+	var _chFadeLayerAction;
+	function startChFade(time) {
+		if (!hasChFadeLayer) return;
+		var act = _chFadeLayerAction;
+		if (act === void)
+			act = _chFadeLayerAction = %[ opacity:%[ handler:MoveAction, start:0, value:255, time:0 ] ];
+		with (act)         .opacity.time = time;
+		with (chFadeLayer) .opacity      = 0;
+		window.beginAction(chFadeLayer, act, fixChFadeLayer);
+	}
+	function stopChFade() { window.stopAction(chFadeLayer) if (hasChFadeLayer); }
+	function fixChFadeLayer() {
+		if (hasChFadeLayer) with (chFadeLayer) {
+			lineLayer.operateRect(0, 0, chFadeLayer, 0, 0, .imageWidth, .imageHeight);
+			.fillRect(0, 0, .imageWidth, .imageHeight, 0);
+		}
+	}
+	function resetChFadeLayer(init) {
+		if (hasChFadeLayer) with (chFadeLayer) {
+			if (init) stopChFade();
+			var ll = lineLayer, lf = ll.font;
+			.setImageSize(ll.imageWidth, ll.imageHeight);
+			.setSizeToImageSize();
+			with (.font) {
+				.angle  = lf.angle;
+				.bold   = lf.bold;
+				.face   = lf.face;
+				.height = lf.height;
+				.italic = lf.italic;
+			}
+		}
+	}
+
+	function processCh(ch, steptime = 0)
 	{
-		storeRedrawTextState("processCh", ch);
+		stopChFade();
+		storeRedrawTextState("processCh", ch, 0);
 		// 文字 ch を描画する
 		// 改行が行われ、かつそれがページ末端を越える場合は true を返す
 		// それ以外は false
-		var vert = vertical;
+		var vert = vertical, relined = false;
 
 		if((vert ?  y >= relinexpos  : x >= relinexpos ) && autoReturn)
 		{
+			relined = true;
 			if (kinsokuCount <= 0) {
 				if(reline()) return autoReturn;
 			} else if(((lastDrawnCh=="" || wwLeading.indexOf(lastDrawnCh)==-1) &&
@@ -2283,6 +2343,7 @@ class MessageLayer extends AnimKAGLayer
 				if(reline()) return autoReturn;
 			} else {
 				kinsokuCount--;
+				relined = false;
 			}
 		}
 
@@ -2292,8 +2353,8 @@ class MessageLayer extends AnimKAGLayer
 
 		beginLinkLine() if inlink;
 
- 		var ll = lineLayer;
- 		var llfont = ll.font;
+		var ll = (steptime > 0 && hasChFadeLayer) ? chFadeLayer : lineLayer;
+		var llfont = ll.font;
 
 		var cw = llfont.getTextWidth(ch);
 
@@ -2332,7 +2393,9 @@ class MessageLayer extends AnimKAGLayer
 			currentRuby = '';
 		}
 
+		ll = lineLayer;
 		ll.visible = true;
+		startChFade(steptime) if (steptime > 0);
 
 		if(inlink)
 		{
@@ -2361,7 +2424,7 @@ class MessageLayer extends AnimKAGLayer
 
 		adjustAlign() if(align >= 0);
 
-		return false;
+		return relined ? false : void; // [XXX]
 	}
 	function drawTextToLayer(lay, x, y, text, color) {
 		var win = lay.window;
@@ -2593,6 +2656,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function putHorizonCh(text, expand = false)
 	{
+		stopChFade();
 		storeRedrawTextState("putHorizonCh", text, expand);
 		// 縦中横を描画する
 		if(!vertical) throw new Exception("縦書きモードでないと使用できません");
@@ -3755,7 +3819,7 @@ class MessageLayer extends AnimKAGLayer
         return -1;
     }
 
-    function tabPrev() {
+    function tabPrev(force = false) {
 		selClickLock = false;
 		keyLink = lastKeyLink if (keyLink < 0 && lastKeyLink >= 0);
 		if(keyLink == -1 || keyLink == 0)
@@ -3770,11 +3834,11 @@ class MessageLayer extends AnimKAGLayer
 		}
 		keyLink = checkFocus(keyLink, -1);
 		if (keyLink < 0) return;
-		var obj = setFocusToLink(keyLink);
+		var obj = setFocusToLink(keyLink, force);
 		if(obj !== void) obj.focus();
     }
     
-    function tabNext() {
+    function tabNext(force = false) {
 		selClickLock = false;
 		keyLink = lastKeyLink if (keyLink < 0 && lastKeyLink >= 0);
 		if(keyLink == -1 || keyLink == numLinks -1)
@@ -3789,7 +3853,7 @@ class MessageLayer extends AnimKAGLayer
 		}
 		keyLink = checkFocus(keyLink, 1);
 		if (keyLink < 0) return;
-		var obj = setFocusToLink(keyLink);
+		var obj = setFocusToLink(keyLink, force);
 		if(obj !== void) obj.focus();
     }
     
@@ -3971,6 +4035,7 @@ class MessageLayer extends AnimKAGLayer
 
 	function processGraph(elm)
 	{
+		stopChFade();
 		storeRedrawTextState("processGraph", elm);
 		// インライン画像を elm に従って表示する
 		var key = adjustColorKey(elm.key);
@@ -4049,6 +4114,15 @@ class MessageLayer extends AnimKAGLayer
 		glyphFixedTop = +elm.top if elm.top !== void;
 	}
 
+	function preIndent(ch)
+	{
+		changeLineSize() if sizeChanged;
+		var cw = lineLayer.font.getTextWidth(ch);
+		var newx = x - marginL, newy = y - marginT;
+		if(vertical) newy -= cw;
+		else         newx -= cw;
+		locate(newx, newy);
+	}
 	function setIndent()
 	{
 		storeRedrawTextState("setIndent");

@@ -356,6 +356,7 @@ class DialogLayer extends KAGLayer
 
     function finalize()
 	{
+		setClickHook(false);
 		invalidateLinkObjects();
 		super.finalize();
 	}
@@ -364,8 +365,22 @@ class DialogLayer extends KAGLayer
      * 開く処理
      */
     function open() {
-        window.openDialog(this);
+		window.openDialog(this);
+		setClickHook(true);
     }
+
+	function setClickHook(en) {
+		if (en) setClickHook(false);
+		var set = en ? window.addHook : window.removeHook;
+		set("leftClick",  this.leftClickHook);
+		set("rightClick", this.rightClickHook);
+	}
+
+	function leftClickHook()  { return true; }
+	function rightClickHook() {
+		if (enabled) close();
+		return true;
+	}
 
     /**
      * オープン直後によばれる
@@ -379,7 +394,8 @@ class DialogLayer extends KAGLayer
      */
     function close() {
 		enabled = false;
-        window.closeDialog(this);
+		window.closeDialog(this);
+		setClickHook(false);
     }
 
     /**

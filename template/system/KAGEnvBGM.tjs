@@ -49,8 +49,10 @@ class KAGEnvBgm {
     /**
      * コンストラクタ
      */
+	var kag;
     function KAGEnvBgm(env) {
-        this.env = env;
+		this.env = env;
+		this.kag = env.kag;
     }
 
     /**
@@ -73,7 +75,7 @@ class KAGEnvBgm {
 			}
 			// 再生既読フラグ
 			if (elm.noflag === void) {
-				kag.sflags["bgm_" + (param.toUpperCase())] = true;
+				kag.sflags["bgm_" + (param.toUpperCase())] = true; // [NGK] means Non Global Kag.
 			}
 			doflag = true;
         }
@@ -220,61 +222,62 @@ class KAGEnvBgm {
         }
 		sync();
 		if (waitFade !== void) {
-			return kag.waitBGMFade(waitFade);
+			return kag.waitBGMFade(waitFade); // [NGK]
 		} else  if (wait !== void) {
-			return kag.waitBGMStop(wait);
+			return kag.waitBGMStop(wait); // [NGK]
 		}
         return 0;
     }
 
 	function sync() {
-		if (!kag.skipNoDisp) {
+		var bgm = kag.bgm, skipMode = kag.skipMode; // [NGK]
+		if (!kag.skipNoDisp) { // [NGK]
 			if (fade !== void) {
 				if (fade.time === void) {
-					kag.bgm.setVolume(fade.volume * 1000);
+					bgm.setVolume(fade.volume * 1000); 
 				} else {
-					kag.bgm.fade(fade);
+					bgm.fade(fade);
 				}
 				fade = void;
 			}
 			if (play !== void) {
-				if (kag.bgm.playingStorage != name) {
+				if (bgm.playingStorage != name) {
 					var time = +play.time;
 					if (play.noxchg) {
-						if (kag.skipMode == SKIP_NONE && time > 0)  {
-							kag.bgm.fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
+						if (skipMode == SKIP_NONE && time > 0)  {
+							bgm.fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
 						} else {
-							kag.bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
+							bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
 						}
 					} else {
-						if (kag.skipMode == SKIP_NONE && (time > 0 || +play.intime > 0)) {
-							kag.bgm.exchange(%[ storage:name, loop:play.loop, time:time, intime:play.intime, outtime:play.outtime, overlap:play.overlap, start:play.start]);
+						if (skipMode == SKIP_NONE && (time > 0 || +play.intime > 0)) {
+							bgm.exchange(%[ storage:name, loop:play.loop, time:time, intime:play.intime, outtime:play.outtime, overlap:play.overlap, start:play.start]);
 						} else {
-							kag.bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
+							bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
 						}
 					}
 				}
-				kag.clearBgmStop();
-				kag.clearBgmLabel();
+				kag.clearBgmStop(); // [NGK]
+				kag.clearBgmLabel(); // [NGK]
 				play = void;
 			}
 			if (pause !== void) {
 				if (pause > 0) {
-					kag.bgm.fadePause(%[ time: +param]);
+					bgm.fadePause(%[ time: +param]);
 				} else {
-					kag.bgm.pause();
+					bgm.pause();
 				}
 				pause = void;
 			} else if (resume !== void) {
-				kag.bgm.resume();
+				bgm.resume();
 				resume = void;
 			}
 		}
 		if (stop !== void) {
-			if (kag.skipMode == SKIP_NONE && stop > 0) {
-				kag.bgm.fadeOut(%[ time:stop ]);
+			if (skipMode == SKIP_NONE && stop > 0) {
+				bgm.fadeOut(%[ time:stop ]);
 			} else {
-				kag.bgm.stop();
+				bgm.stop();
 			}
 			stop = void;
 		}
