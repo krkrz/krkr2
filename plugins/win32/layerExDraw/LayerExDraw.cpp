@@ -1681,21 +1681,18 @@ LayerExDraw::drawImageAffine(Image *src, REAL sleft, REAL stop, REAL swidth, REA
 {
 	RectF rect;
 	if (src) {
-		RectF srcRect(sleft, stop, swidth, sheight);
 		PointF points[4]; // å≥ç¿ïWíl
 		if (affine) {
-			REAL x2 = sleft+swidth;
-			REAL y2 = stop +sheight;
 #define AFFINEX(x,y) A*x+C*y+E
 #define AFFINEY(x,y) B*x+D*y+F
-			points[0].X = AFFINEX(sleft,stop);
-			points[0].Y = AFFINEY(sleft,stop);
-			points[1].X = AFFINEX(x2,stop);
-			points[1].Y = AFFINEY(x2,stop);
-			points[2].X = AFFINEX(sleft,y2);
-			points[2].Y = AFFINEY(sleft,y2);
-			points[3].X = AFFINEX(x2,y2);
-			points[3].Y = AFFINEY(x2,y2);
+			points[0].X = AFFINEX(0,0);
+			points[0].Y = AFFINEY(0,0);
+			points[1].X = AFFINEX(swidth,0);
+			points[1].Y = AFFINEY(swidth,0);
+			points[2].X = AFFINEX(0,sheight);
+			points[2].Y = AFFINEY(0,sheight);
+			points[3].X = AFFINEX(swidth,sheight);
+			points[3].Y = AFFINEY(swidth,sheight);
 		} else {
 			points[0].X = A;
 			points[0].Y = B;
