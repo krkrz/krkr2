@@ -245,6 +245,8 @@ NCB_ATTACH_CLASS だけでなく，NCB_REGISTER_CLASS で
 　▼NCB_REGISTER_FUNCTION(Name, Function);
 
 TJS グローバル空間に Name という名前で Function という関数を登録します。
+Function が tTJSNativeClassMethodCallback 型の場合は
+そのまま RawCallback 形式のグローバル関数として動作します。
 
 
 　▼NCB_ATTACH_FUNCTION(Name, TJS2Class, Function);
