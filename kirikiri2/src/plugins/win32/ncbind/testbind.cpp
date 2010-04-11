@@ -346,11 +346,20 @@ static void GlobalFunctionTest1(int a, char const *b) {
 	mes("GlobalFunctionTest1(", a, ",", b, ")");
 }
 
+static tjs_error TJS_INTF_METHOD
+GlobalFunctionTest2(tTJSVariant *result,tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+	mes("GlobalFunctionTest2(", numparams, ")");
+	return TJS_S_OK;
+}
+
+
 NCB_REGISTER_FUNCTION(Function1, GlobalFunctionTest1);
+NCB_REGISTER_FUNCTION(Function2, GlobalFunctionTest2);
 
 CHECK(FunctionTest,
 	  SCRIPT_BEGIN
 	  SCRIPT_LOG_CHECK("Function1(123,'abc')", "GlobalFunctionTest1(123,abc)")
+	  SCRIPT_LOG_CHECK("Function2(123,'abc')", "GlobalFunctionTest2(2)")
 	  SCRIPT_END);
 
 
