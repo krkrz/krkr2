@@ -30,6 +30,8 @@ class MyWindow extends Window
 {
 	var initTrigger;
 	var base;
+	var prevTick;
+	var prevThreadCount;
 
 	function MyWindow() {
 		super.Window();
@@ -42,12 +44,32 @@ class MyWindow extends Window
 		base.fillRect(0,0,WIDTH,HEIGHT,0x000000);
 		add(base);
 
+		// squirrel 用のメイン処理を駆動させる
+		prevTick = System.getTickCount();
+		System.addContinuousHandler(sqmain);
+
+		// 処理開始
 		initTrigger = new AsyncTrigger(init, "");
 		initTrigger.cached = true;
 		initTrigger.mode = atmExclusive;
 		initTrigger.trigger();
 	}
 
+	/**
+	 * squirrel用のメイン部
+	 */
+	function sqmain(tick) {
+		var threadCount = Scripts.driveSQ(tick - prevTick);
+		if (threadCount != prevThreadCount) {
+			dm("squirrel thread count:%d".sprintf(threadCount));
+			prevThreadCount = threadCount;
+		}
+		prevTick = tick;
+	}
+
+	/**
+	 * 終了処理
+	 */
 	function onKeyDown(key, shift) {
 		if(key == VK_ESCAPE) {
 			close();
@@ -107,7 +129,6 @@ class MyWindow extends Window
 		dm("バイナリファイルから実行");
 		Scripts.execStorageSQ("test2.nutb");
 		
-		// Squirrel Continuous ハンドラ
 		//var cont = new SQContinuous("main");
 		//cont.start();
 
