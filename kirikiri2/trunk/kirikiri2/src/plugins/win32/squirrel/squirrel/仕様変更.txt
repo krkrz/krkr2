@@ -96,6 +96,10 @@ local name = function() {};
 
 と等価になる
 
+・型名変更
+
+userpointer の typeof で帰る型名を "userdata" ではなく
+"userpointer" に変更。区別がつかないと困る場合がある
 
 ●SQPLUS仕様変更
 

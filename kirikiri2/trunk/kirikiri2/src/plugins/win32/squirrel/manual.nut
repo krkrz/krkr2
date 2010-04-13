@@ -13,3 +13,15 @@
  * 返される場合は、squirrel のクラスでのインスタンスとしてラッピングされます。
  */
 function createTJSClass(className, ...);
+
+/**
+ * 吉里吉里オブジェクトの有効性の確認
+ * @param obj 吉里吉里オブジェクト
+ * @return valid なら true
+ */
+function tjsIsValid(obj);
+
+/**
+ * TJS用のNULL値
+ */
+tjsNull;
