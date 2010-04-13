@@ -23,6 +23,11 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
 
   整数、実数、文字列などのプリミティブ値は値渡しになります。
 
+  TJS2 の void は squirrel の null と対応します
+
+  TJSの null は squirrel では値0の userpointer と対応します
+  この値は squirrel ではグローバル変数 tjsNull で参照可能です。
+
   TJS2 オブジェクト(iTJSDispatch2*) は、Squirrel では UserData として
   参照可能で、メタメソッド get/set/call を通じて操作可能です。
 　クラスオブジェクトを call した場合は、TJS2 側でインスタンスが作成され、

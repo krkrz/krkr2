@@ -456,49 +456,51 @@ sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 		sq_pushnull(v);
 		break;
 	case tvtObject:
-		if (!TJSObject::pushVariant(v, variant)) {
-
+		{
 			iTJSDispatch2 *obj = variant.AsObjectNoAddRef();
-			if (obj->IsInstanceOf(0, NULL, NULL, SQUIRRELOBJCLASS, obj) == TJS_S_TRUE) {
-				iTJSDispatch2Wrapper *wobj = (iTJSDispatch2Wrapper*)obj;
-				wobj->push(v);
-
-			} else {
-
-				// UserData 確保
-				tTJSVariant *self = (tTJSVariant*)sq_newuserdata(v, sizeof tTJSVariant);
-				if (self) {
-					new (self) tTJSVariant();
-					*self = variant;
-					// 開放ロジックを追加
-					sq_setreleasehook(v, -1, variantRelease);
-					
-					// タグ登録
-					sq_settypetag(v, -1, TJSTYPETAG);
-					
-					
-					// メソッド群を追加
-					sq_newtable(v);
-					
-					sq_pushstring(v, L"_get", -1);
-					sq_newclosure(v, get, 0);
-					sq_createslot(v, -3);
-					
-					sq_pushstring(v, L"_set", -1);
-					sq_newclosure(v, set, 0);
-					sq_createslot(v, -3);
-					
-					sq_pushstring(v, L"_call", -1);
-					if (self->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Class", NULL) == TJS_S_TRUE) {
-						sq_newclosure(v, callConstructor, 0);
-					} else {
-						sq_newclosure(v, callMethod, 0);
-					}
-					sq_createslot(v, -3);
-				
-					sq_setdelegate(v, -2);
+			if (obj == NULL) {
+				// NULLの処理
+				sq_pushuserpointer(v, NULL);
+			} else if (!TJSObject::pushVariant(v, variant)) {
+				if (obj->IsInstanceOf(0, NULL, NULL, SQUIRRELOBJCLASS, obj) == TJS_S_TRUE) {
+					iTJSDispatch2Wrapper *wobj = (iTJSDispatch2Wrapper*)obj;
+					wobj->push(v);
 				} else {
-					sq_pushnull(v);
+					// UserData 確保
+					tTJSVariant *self = (tTJSVariant*)sq_newuserdata(v, sizeof tTJSVariant);
+					if (self) {
+						new (self) tTJSVariant();
+						*self = variant;
+						// 開放ロジックを追加
+						sq_setreleasehook(v, -1, variantRelease);
+						
+						// タグ登録
+						sq_settypetag(v, -1, TJSTYPETAG);
+						
+						
+						// メソッド群を追加
+						sq_newtable(v);
+						
+						sq_pushstring(v, L"_get", -1);
+						sq_newclosure(v, get, 0);
+						sq_createslot(v, -3);
+						
+						sq_pushstring(v, L"_set", -1);
+						sq_newclosure(v, set, 0);
+						sq_createslot(v, -3);
+						
+						sq_pushstring(v, L"_call", -1);
+						if (self->AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Class", NULL) == TJS_S_TRUE) {
+							sq_newclosure(v, callConstructor, 0);
+						} else {
+							sq_newclosure(v, callMethod, 0);
+						}
+						sq_createslot(v, -3);
+						
+						sq_setdelegate(v, -2);
+					} else {
+						sq_pushnull(v);
+					}
 				}
 			}
 		}
@@ -539,7 +541,7 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 {
 	if (result) {
 		switch (sq_gettype(v, idx)) {
-		case OT_NULL: result->Clear(); break;
+		case OT_NULL: result->Clear(); break; // void
 		case OT_INTEGER: { SQInteger i; sq_getinteger(v, idx, &i);	*result = (tTVInteger)i; } break;
 		case OT_FLOAT:   { SQFloat f; sq_getfloat(v, idx, &f); 	    *result = (tTVReal)f; } break;
 		case OT_BOOL:    { SQBool b; sq_getbool(v, idx, &b);        *result = b != SQFalse; } break;
@@ -561,10 +563,12 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 		case OT_CLOSURE:
 		case OT_NATIVECLOSURE:
 		case OT_GENERATOR:
-		case OT_USERPOINTER:
 		case OT_THREAD:
 		case OT_WEAKREF:
 			wrap(v, idx, result);
+			break;
+		case OT_USERPOINTER: // null
+			*result = (iTJSDispatch2*)0;
 			break;
 		default:
 			result->Clear();
