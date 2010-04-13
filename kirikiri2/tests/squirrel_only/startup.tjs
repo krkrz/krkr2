@@ -1,4 +1,22 @@
 Plugins.link("squirrel.dll");
-System.exitOnNoWindowStartup = false;
-System.exitOnWindowClose = false;
-System.exitOnSquirrelDone = true;
+Debug.console.visible = true;
+System.exitOnNoWindowStartup = false; // 起動時ウインドウ無し終了の抑制・危険なので注意
+System.exitOnWindowClose = false; // メインウインドウが閉じる時の終了の抑制・危険なので注意
+var argc = 0;
+var args = [];
+var arg;
+while ((arg = System.getArgument("-arg" + argc)) !== void) {
+	args.add(arg);
+	argc++;
+}
+Scripts.forkStorageSQ("startup.nut", args*);
+var prevTick = System.getTickCount();
+function main(tick)
+{
+	if (Scripts.driveSQ(tick - prevTick) == 0) {
+		// squirrel スレッドが全て終了したら止める
+		System.terminate();
+	}
+	prevTick = tick;
+}
+System.addContinuousHandler(main);

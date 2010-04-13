@@ -127,6 +127,21 @@ private:
 
 sqobject::ObjectInfo TJSObject::classMap;
 
+/**
+ * 吉里吉里オブジェクトが有効かどうか
+ * @param v squirrelVM
+ */
+static SQRESULT tjsIsValid(HSQUIRRELVM v)
+{
+	SQBool ret = SQFalse;
+	tTJSVariant tjsObj;
+	if (sq_gettop(v) >= 2 && SQ_SUCCEEDED(sq_getvariant(v, 2, &tjsObj)) && tjsObj.Type() == tvtObject) {
+		ret = tjsObj.AsObjectClosureNoAddRef().IsValid(0, NULL, NULL, NULL) == TJS_S_TRUE ? SQTrue : SQFalse;
+	}
+	sq_pushbool(v, ret);
+	return 1;
+}
+
 // 初期化用
 void
 TJSObject::init(HSQUIRRELVM vm)
@@ -138,6 +153,12 @@ TJSObject::init(HSQUIRRELVM vm)
 	sq_pushroottable(vm);
 	sq_pushstring(vm, _SC("createTJSClass"), -1);
 	sq_newclosure(vm, createTJSClass, 0);
+	sq_createslot(vm, -3);
+	sq_pushstring(vm, _SC("tjsNull"), -1);
+	sq_pushuserpointer(vm, NULL);
+	sq_createslot(vm, -3);
+	sq_pushstring(vm, _SC("tjsIsValid"), -1);
+	sq_newclosure(vm, tjsIsValid, 0);
 	sq_createslot(vm, -3);
 	sq_pop(vm, 1);
 }
@@ -249,7 +270,7 @@ TJSObject::getVariant(HSQUIRRELVM v, SQInteger idx, tTJSVariant *variant)
 		return ret;
 	} else if (sq_gettype(v, idx) == OT_INSTANCE) {
 		TJSObject *obj = (TJSObject*)::getInstance(v, idx, typeName);
-		if (obj) {
+		if (obj && obj->instance.AsObjectClosureNoAddRef().IsValid(0, NULL, NULL, NULL) == TJS_S_TRUE) {
 			*variant = obj->instance;
 			return true;
 		}
@@ -314,7 +335,7 @@ static bool TJS_USERENTRY Catch(void * data, const tTVPExceptionDesc & desc) {
 static void TJS_USERENTRY TryInvalidate(void * data) {
 	tTJSVariant *v = (tTJSVariant*)data;
 	if (v && v->Type() == tvtObject) {
-		if (v->AsObjectClosureNoAddRef().IsValid(0, NULL, NULL, NULL)) {
+		if (v->AsObjectClosureNoAddRef().IsValid(0, NULL, NULL, NULL) == TJS_S_TRUE) {
 			v->AsObjectClosureNoAddRef().Invalidate(0, NULL, NULL, NULL);
 		}
 	}

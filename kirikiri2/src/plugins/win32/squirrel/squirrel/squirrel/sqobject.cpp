@@ -27,9 +27,8 @@ const SQChar *IdType2Name(SQObjectType type)
 	case _RT_CLOSURE:
 	case _RT_NATIVECLOSURE:
 		return _SC("function");
-	case _RT_USERDATA:
-	case _RT_USERPOINTER:
-		return _SC("userdata");
+	case _RT_USERDATA:return _SC("userdata");
+	case _RT_USERPOINTER:return _SC("userpointer");
 	case _RT_THREAD: return _SC("thread");
 	case _RT_FUNCPROTO: return _SC("function");
 	case _RT_CLASS: return _SC("class");
