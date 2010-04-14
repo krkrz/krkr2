@@ -14,39 +14,61 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
 
 ●システム概要
 
+◇名前空間
+
 ・Squirrel のグローバル空間は吉里吉里全体に対して１つだけ存在します。
 　
 　Squirrel 用のスクリプトの実行はこのグローバル空間上でおこなわれ、
 　定義されたファンクションやクラスもこのグローバル空間に登録されていきます。
 
-・TJS2 ←→ Squirrel 間で変数を参照できます
-
-  整数、実数、文字列などのプリミティブ値は値渡しになります。
-
-  TJS2 の void は squirrel の null と対応します
-
-  TJSの null は squirrel では値0の userpointer と対応します
-  この値は squirrel ではグローバル変数 tjsNull で参照可能です。
-
-  TJS2 オブジェクト(iTJSDispatch2*) は、Squirrel では UserData として
-  参照可能で、メタメソッド get/set/call を通じて操作可能です。
-　クラスオブジェクトを call した場合は、TJS2 側でインスタンスが作成され、
-　それを UserData で参照したものが帰ります。
-
-　squirrel側で createTJSClass することで、TJSのクラスを Squirrel 
-　側で継承可能な状態で取り扱うことができるようになります。
-  登録されたクラスの TJSインスタンスは、Squirrel 側に渡す際に、
-　UserData ではなく、該当クラスのインスタンスとして処理されるようになります。
-
-  squirrel オブジェクトは、TJS2 側では iTJSDispatch2 として参照可能で、
-  PropGet/PropSet/FuncCall/CreateNew を通じて操作可能です。
-  incontextof 指定は無視されます。
-
-  Scripts.registSQ() で TJS2 の値を squirrel 側に登録できます。
-
 ・TJS2 のグローバル空間を Squirrel 側から "::krkr" で参照できます。
 
 ・Squirrel のグローバル空間を TJS2 側から "sqglobal" で参照できます。
+
+・I/O 空間は OS直接ではなく、TJS のストレージ空間が参照されます。
+
+　ファイル名も TJS のストレージ名になります。
+　stdin/stdout/stderr は利用できません
+
+◇TJS2/Squirrel値変換ルール
+
+・整数、実数、文字列などのプリミティブ値は値渡しになります。
+
+・TJS2 の void は squirrel の null と対応します
+
+・TJSの null は squirrel では値0の userpointer と対応します
+
+  この値は squirrel ではグローバル変数 tjsNull で参照可能です。
+
+・TJS2オブジェクト(iTJSDispatch2*) は、Squirrel では userData として参照可能です
+
+　メタメソッド get/set/call を通じて操作可能です。
+　クラスオブジェクトを call した場合は、TJS2 側で
+　インスタンスが作成されそれを UserData で参照したものが帰ります。
+
+・createTJSClass()で、TJSのクラスを Squirrelクラスとして扱うことができます
+
+  登録されたクラスの TJSインスタンスは UserData ではなく、該当クラスの
+  インスタンスとして処理されるようになります。
+
+  Squirrel側で生成されたインスタンスの場合は、Squirrel に返す際にも、
+　そのまま元の Squirrelオブジェクトが帰ります。TJS側で生成された
+　オブジェクトの場合は、新しいSquirrelインスタンスにラッピングされて帰ります
+
+  TJSインスタンス内部からのイベント呼び出しは、該当メソッドが
+　TJSインスタンス中に無い場合は、misssing 機能により、
+　同名の squirrel のメソッドが呼び出されます
+
+  tjsOverride() でTJSインスタンスに直接メソッドを登録できます
+
+・squirrel オブジェクトは、TJS2 側では iTJSDispatch2 として参照可能です
+
+  PropGet/PropSet/FuncCall/CreateNew を通じて操作可能です。
+  incontextof 指定は無視されます。
+
+・Scripts.registSQ() で TJS2 の値を squirrel 側に登録できます。
+
+◇標準ライブラリ
 
 ・Squirrel 標準ライブラリのうち以下のものが利用可能です
 
@@ -54,10 +76,6 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
   - blob
   - math
   - string
-
-　I/O 関係は OS直接ではなく、TJS のストレージ空間が参照されます。
-　また、ファイル名も TJS のストレージ名になります。
-　stdin/stdout/stderr は利用できません
 
 ●使用方法
 
@@ -105,25 +123,32 @@ startup.nut がスレッド起動され、それ以降 squirrel
 スレッドが無くなるまで動作を継続します。
 
 -----------------------------------------------------------------------------
+Plugins.link("squirrel.dll");
 System.exitOnNoWindowStartup = false; // 起動時ウインドウ無し終了の抑制
 System.exitOnWindowClose = false; // メインウインドウが閉じる時の終了の抑制
-Plugins.link("squirrel.dll");
-var argc = 0;
-var args = [];
-while ((var arg = System.getArgument("-arg" + argc)) !== void) {
-  args.add(arg);
-  argc++;
-}
-Scripts.forkSQ("startup.nut", args*);
+
+// メインループ登録
 var prevTick = System.getTickCount();
-function sqmain(tick) 
+function main(tick)
 {
 	if (Scripts.driveSQ(tick - prevTick) == 0) {
+		// squirrel スレッドが全て終了したら止める
 		System.terminate();
 	}
 	prevTick = tick;
 }
-System.addContinuousHandler(sqmain);
+System.addContinuousHandler(main);
+
+// 引数を処理
+var argc = 0;
+var args = [];
+var arg;
+while ((arg = System.getArgument("-arg" + argc)) !== void) {
+	args.add(arg);
+	argc++;
+}
+// squirrel のスクリプトを起動
+Scripts.forkStorageSQ("startup.nut", args*);
 -----------------------------------------------------------------------------
 
 ※System.exitOnNoWindowStartup は リビジョン4577以降の吉里吉里でのみ使えます

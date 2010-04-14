@@ -15,13 +15,37 @@
 function createTJSClass(className, ...);
 
 /**
- * 吉里吉里オブジェクトの有効性の確認
- * @param obj 吉里吉里オブジェクト
- * @return valid なら true
+ * 吉里吉里クラスの squirrel における基底クラス構造
+ * このインスタンスに対する吉里吉里側からのメンバ参照は、元の吉里吉里インスタンスのそれが呼ばれますが、
+ * 存在してないメンバの場合は、missing 機能により squirrel 側オブジェクトの同名メンバが参照されます。
  */
-function tjsIsValid(obj);
+class TJSObject extends Object {
+
+	/**
+	 * コンストラクタ
+	 */
+	constructor();
+
+	/**
+	 * 吉里吉里オブジェクトの有効性の確認
+	 * @return valid なら true
+	 */
+	function tjsIsValid();
+	
+	/**
+	 * 吉里吉里オブジェクトの強制オーバライド処理
+	 * 吉里吉里インスタンスのメンバを強制的に置き換えます。
+	 * イベント処理を squirrel 側で行いたい場合、元にしたクラス側で定義が無い場合は、missing 処理で
+	 * 自動的に squirrel メンバが参照されますが、元にしたクラス側で定義が既にあって、それを上書きしたい
+	 * 場合に使います。
+	 * @param name メンバ名
+	 * @param value 登録する値
+	 */
+	function tjsOverride(name, value);
+};
 
 /**
- * TJS用のNULL値
+ * TJS用のNULL値。tjsのメソッドに null を渡す必要がある場合などに使います。
+ * squirrel の null は tjs では void 扱いです。
  */
 tjsNull;
