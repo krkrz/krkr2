@@ -10,7 +10,7 @@ function main(tick)
 {
 	if (Scripts.driveSQ(tick - prevTick) == 0) {
 		// squirrel スレッドが全て終了したら止める
-		//System.terminate();
+		System.terminate();
 	}
 	prevTick = tick;
 }
