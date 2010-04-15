@@ -440,6 +440,14 @@ void
 Appearance::clear()
 {
 	drawInfos.clear();
+
+	// customLineCaps‚àíœ
+	vector<CustomLineCap*>::const_iterator i = customLineCaps.begin();
+	while (i != customLineCaps.end()) {
+		delete *i;
+		i++;
+	}
+	customLineCaps.clear();
 }
 
 // --------------------------------------------------------
@@ -798,14 +806,15 @@ Appearance::addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox,
 		pen->SetWidth((REAL)(tjs_real)widthOrOption);
 	} else {
 		ncbPropAccessor info(widthOrOption);
-		
+		REAL penWidth = 1.0;
 		tTJSVariant var;
 
 		// SetWidth
 		if (info.checkVariant(L"width", var)) {
-			pen->SetWidth((REAL)(tjs_real)var);
+			penWidth = (REAL)(tjs_real)var;
 		}
-		
+		pen->SetWidth(penWidth);
+
 		// SetAlignment
 		if (info.checkVariant(L"alignment", var)) {
 			pen->SetAlignment((PenAlignment)(tjs_int)var);
@@ -840,15 +849,25 @@ Appearance::addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox,
 		}
 
 		// SetStartCap
-		// SetCustomStartCap XXX
+		// SetCustomStartCap
 		if (info.checkVariant(L"startCap", var)) {
-			pen->SetStartCap((LineCap)(tjs_int)var);
+			LineCap cap = LineCapFlat;
+			CustomLineCap *custom = NULL;
+			if (getLineCap(var, cap, custom, penWidth)) {
+				if (custom != NULL) pen->SetCustomStartCap(custom);
+				else                pen->SetStartCap(cap);
+			}
 		}
 
 		// SetEndCap
-		// SetCustomEndCap XXX
+		// SetCustomEndCap
 		if (info.checkVariant(L"endCap", var)) {
-			pen->SetEndCap((LineCap)(tjs_int)var);
+			LineCap cap = LineCapFlat;
+			CustomLineCap *custom = NULL;
+			if (getLineCap(var, cap, custom, penWidth)) {
+				if (custom != NULL) pen->SetCustomEndCap(custom);
+				else                pen->SetEndCap(cap);
+			}
 		}
 
 		// SetLineJoin
@@ -863,6 +882,34 @@ Appearance::addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox,
 	}
 	drawInfos.push_back(DrawInfo(ox, oy, pen));
 }
+
+bool
+Appearance::getLineCap(tTJSVariant &in, LineCap &cap, CustomLineCap* &custom, REAL pw)
+{
+	switch (in.Type()) {
+	case tvtVoid:
+	case tvtInteger:
+		cap = (LineCap)(tjs_int)in;
+		break;
+	case tvtObject:
+		{
+			ncbPropAccessor info(in);
+			REAL width = pw, height = pw;
+			tTJSVariant var;
+			if (info.checkVariant(L"width",  var)) width  = (REAL)(tjs_real)var;
+			if (info.checkVariant(L"height", var)) height = (REAL)(tjs_real)var;
+			BOOL filled = (BOOL)info.getIntValue(L"filled", 1);
+			AdjustableArrowCap *arrow = new AdjustableArrowCap(height, width, filled);
+			if (info.checkVariant(L"middleInset", var))
+				arrow->SetMiddleInset((REAL)(tjs_real)var);
+			customLineCaps.push_back((custom = static_cast<CustomLineCap*>(arrow)));
+		}
+		break;
+	default: return false;
+	}
+	return true;
+}
+
 
 // --------------------------------------------------------
 // ƒtƒHƒ“ƒg•`‰æŒn
