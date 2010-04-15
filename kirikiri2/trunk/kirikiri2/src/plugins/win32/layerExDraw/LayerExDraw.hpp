@@ -157,6 +157,13 @@ public:
 	 * @param oy 表示オフセットY
 	 */
 	void addPen(tTJSVariant colorOrBrush, tTJSVariant widthOrOption, REAL ox=0, REAL oy=0);
+
+protected:
+	/**
+	 * LineCapの取得
+	 */
+	bool getLineCap(tTJSVariant &in, LineCap &cap, CustomLineCap* &custom, REAL pw);
+	vector<CustomLineCap*>customLineCaps;
 };
 
 /*

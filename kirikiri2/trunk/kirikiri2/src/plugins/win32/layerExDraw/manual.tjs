@@ -320,10 +320,13 @@ class GdiPlus {
 		 *  dashCap: ダッシュの cap style の指定。省略時は DashCapFlat
 		 *  dashOffset: ダッシュのオフセット指定。省略時は0
 		 *  dashStyle: ダッシュスタイル。配列にするとユーザ定義(数値配列)。デフォルトは DasyStyleSolid
-		 *  startCap: 開始位置の cap style の指定。省略時は LineCapFlat
-		 *  endCap: 終了位置の cap style の指定。省略時は LineCapFlat
+		 *  startCap: 開始位置の cap style の指定。省略時は LineCapFlat，辞書時はAdjustableArrowCap
+		 *  endCap: 終了位置の cap style の指定。省略時は LineCapFlat，辞書時はAdjustableArrowCap
 		 *  lineJoin: 結合形状指定。 省略時は LineJoinMiter
 		 *  miterLimit: miter limit 指定（数値)
+		 *
+		 * AdjustableArrowCap：LineCapArrowAnchorでは不満なあなたに
+		 *  width(矢印幅), height(矢印高さ), filled(trueなら三角形，falseなら三又) が指定が可能
 		 */
 		function addPen(colorOrBrush, widthOrOption, ox, oy);
 	};
