@@ -41,7 +41,12 @@ class MyWindow extends Window
 		layer.fillRect(0,0,100,100,0xffff0000);
 		layer.setPos(400,100);
 		layer.visible = true;
-		//tjsOverride("onCloseQuery", onCloseQuery.bindenv(this));
+
+		// イベントを受理できるようにTJSインスタンスを上書きする
+		tjsOverride("onCloseQuery");
+		//tjsOverride("onMouseDown", onMouseDown);   // これだとコンテキストが global
+		//tjsOverride("onMouseDown", onMouseDown.bindenv(this));   // これが妥当
+		tjsOverride("onMouseDown"); // この記述は自動的に bindenv(this) した自分の onMouseDown を取得
 	}
 
 	/**
@@ -50,6 +55,8 @@ class MyWindow extends Window
 	function main() {
 		// メインループを構築
 		while (tjsIsValid()) {
+			// ほんとは static メソッドなんだけど今吉里吉里側で
+			// スタティックフラグが立ってないのでこの呼び出しでないとダメ
 			if (System.getKeyState.bindenv(System)(13)) { // VK_RETURN
 				break;
 			}
@@ -59,12 +66,20 @@ class MyWindow extends Window
 			::suspend();
 		}
 	};
-
+	
 	/**
 	 * 終了確認イベント
 	 */
 	function onCloseQuery(onclose) {
+		// 終了させない
 		::Window.onCloseQuery(false);
+	}
+
+	/**
+	 * マウス押し下げイベント
+	 */
+	function onMouseDown(x, y, button, shift) {
+		printf("%s:onMouseDown:%d,%d,%d,%d\n", this, x, y, button, shift);
 	}
 };
 

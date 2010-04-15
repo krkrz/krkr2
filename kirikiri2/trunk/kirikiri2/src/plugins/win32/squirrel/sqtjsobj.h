@@ -62,14 +62,14 @@ public:
 	 * TJSオブジェクト用のメソッド
 	 * 引数1 オブジェクト
 	 * 引数2～配列
-	 * 自由変数1 メンバ名
+	 * 自由変数1 メソッド
 	 */
 	static SQRESULT tjsInvoker(HSQUIRRELVM v);
 
 	/**
 	 * TJSオブジェクト用のプロパティゲッター
 	 * 引数1 オブジェクト
-	 * 自由変数1 プロパティ名
+	 * 自由変数1 プロパティ
 	 */
 	static SQRESULT tjsGetter(HSQUIRRELVM v);
 
@@ -77,33 +77,33 @@ public:
 	 * TJSオブジェクト用のプロパティセッター
 	 * 引数1 オブジェクト
 	 * 引数2 設定値
-	 * 自由変数1 プロパティ名
+	 * 自由変数1 プロパティ
 	 */
 	static SQRESULT tjsSetter(HSQUIRRELVM v);
 
 	/**
-	 * TJSオブジェクト用のメソッド
+	 * TJSオブジェクト用の静的メソッド
 	 * 引数1 オブジェクト
 	 * 引数2～配列
-	 * 自由変数1 クラス名
-	 * 自由変数2 メンバ名
+	 * 自由変数1 クラス
+	 * 自由変数2 メンバ
 	 */
 	static SQRESULT tjsStaticInvoker(HSQUIRRELVM v);
 
 	/**
-	 * TJSオブジェクト用のプロパティゲッター
+	 * TJSオブジェクト用の静的プロパティゲッター
 	 * 引数1 オブジェクト
-	 * 自由変数1 クラス名
-	 * 自由変数2 プロパティ名
+	 * 自由変数1 クラス
+	 * 自由変数2 プロパティ
 	 */
 	static SQRESULT tjsStaticGetter(HSQUIRRELVM v);
 
 	/**
-	 * TJSオブジェクト用のプロパティセッター
+	 * TJSオブジェクト用の静的プロパティセッター
 	 * 引数1 オブジェクト
 	 * 引数2 設定値
-	 * 自由変数1 クラス名
-	 * 自由変数2 プロパティ名
+	 * 自由変数1 クラス
+	 * 自由変数2 プロパティ
 	 */
 	static SQRESULT tjsStaticSetter(HSQUIRRELVM v);
 
