@@ -6,6 +6,7 @@
 extern void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
 extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
 extern SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error);
+extern void SQEXCEPTION(HSQUIRRELVM v);
 
 // sqfunc.cpp より
 extern SQRESULT ERROR_CREATE(HSQUIRRELVM v);
@@ -114,10 +115,11 @@ protected:
 		if (staticMember) {
 			sq_pushvariant(v, tjsClassObj);
 			sq_newclosure(v, TJSObject::tjsStaticGetter, 2);
+			sq_newslot(v, -3, SQTrue);
 		} else {
 			sq_newclosure(v, TJSObject::tjsGetter, 1);
+			sq_newslot(v, -3, SQFalse);
 		}
-		sq_createslot(v, -3);
 	}
 	
 private:
@@ -172,7 +174,7 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 	
 	// クラスを生成
 	sq_pushstring(v, SQOBJECTNAME, -1);
-	sq_get(v,-3);
+	sq_get(v,1); // from root
 	sq_newclass(v, true); // 継承する
 	sq_settypetag(v, -1, TJSOBJTYPETAG);
 
@@ -341,7 +343,7 @@ class tMissingFunction : public tTJSDispatch
 
 /**
  * missing 処理用の口
- * squirrel インスタンスにメンバが存在しなかった場合は squirrel オブジェクトを直接参照する
+ * TJSインスタンスにメンバが存在しなかった場合は squirrelインスタンスを参照する
  */
 tjs_error TJSObject::missing(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
 							 tTJSVariant *result,
@@ -384,6 +386,60 @@ tjs_error TJSObject::missing(tjs_uint32 flag, const tjs_char * membername, tjs_u
 	return TJS_E_NATIVECLASSCRASH;
 }
 
+//---------------------------------------------------------------------------
+// callSQ関数
+//---------------------------------------------------------------------------
+class tCallSQFunction : public tTJSDispatch
+{
+	tjs_error TJS_INTF_METHOD FuncCall(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+									   tTJSVariant *result,
+									   tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+		return TJSObject::call(flag, membername, hint, result, numparams, param, objthis);
+	};
+};
+
+/**
+ * call 処理用の口
+ * TJSインスタンスからsquirrelインスタンスのメソッドを直接呼び出す
+ */
+tjs_error
+TJSObject::call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+				tTJSVariant *result,
+				tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	if (numparams < 1) {return TJS_E_BADPARAMCOUNT;};
+	// バインドされている squirrel オブジェクトを取得
+	iTJSNativeInstance *ninstance;
+	if (TJS_SUCCEEDED(objthis->NativeInstanceSupport(TJS_NIS_GETINSTANCE, classId, &ninstance))) {
+		TJSObject *self = (TJSObject*)ninstance;
+		HSQUIRRELVM gv = sqobject::getGlobalVM();
+		self->self.push(gv); // this
+		sq_pushstring(gv, param[0]->GetString(), -1); // methodName
+		if (SQ_SUCCEEDED(sq_get(gv, -2))) {
+			self->self.push(gv); // this
+			for (int i=1;i<numparams;i++) {	// 引数
+				sq_pushvariant(gv, *param[i]);
+			}
+			if (SQ_SUCCEEDED(sq_call(gv, numparams, result ? SQTrue:SQFalse, SQTrue))) {
+				if (result) {
+					sq_getvariant(gv, -1, result);
+					sq_pop(gv, 1); // result
+				}
+				sq_pop(gv, 2); // func, this
+				return TJS_S_OK;
+			} else {
+				sq_pop(gv, 2); // func, this
+				SQEXCEPTION(gv);
+			}
+		} else {
+			sq_pop(gv, 1); // this
+			SQEXCEPTION(gv);
+		}
+	}
+	return TJS_E_NATIVECLASSCRASH;
+}
+
+
 /**
  * コンストラクタ
  */
@@ -396,10 +452,18 @@ TJSObject::TJSObject(HSQUIRRELVM v, int idx, tTJSVariant &instance) : instance(i
 	iTJSNativeInstance *ninstance = this;
 	objthis->NativeInstanceSupport(TJS_NIS_REGISTER, classId, &ninstance);
 
+	// callSQ メソッド登録
+	tCallSQFunction *callSQ = new tCallSQFunction();
+	if (callSQ) {
+		tTJSVariant val(callSQ, objthis);
+		objthis->PropSet(TJS_MEMBERENSURE, TJS_W("callSQ"), NULL, &val, objthis);
+		callSQ->Release();
+	}
+	
 	// missing メソッド登録
 	tMissingFunction *missing = new tMissingFunction();
 	if (missing) {
-		tTJSVariant val(missing);
+		tTJSVariant val(missing, objthis);
 		const tjs_char *missingName = TJS_W("missing");
 		objthis->PropSet(TJS_MEMBERENSURE, missingName, NULL, &val, objthis);
 		missing->Release();

@@ -22,8 +22,16 @@ public:
 	// ---------------------------------------------------------------
 
 	/**
+	 * call 処理用の口
+	 * TJSインスタンスからsquirrelインスタンスのメソッドを直接呼び出す
+	 */
+	static tjs_error call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+						  tTJSVariant *result,
+						  tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+	
+	/**
 	 * missing 処理用の口
-	 * squirrel インスタンスにメンバが存在しなかった場合は squirrel オブジェクトを直接参照する
+	 * TJSインスタンスにメンバが存在しなかった場合は squirrelインスタンスを参照する
 	 */
 	static tjs_error missing(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
 							 tTJSVariant *result,
