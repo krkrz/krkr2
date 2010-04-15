@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\bin\win32\plugin"
+			OutputDirectory="..\..\..\..\..\bin\win32\plugin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".."
+				AdditionalIncludeDirectories="..\..\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LAYEREXDRAW_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -93,7 +93,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\bin\win32\plugin"
+			OutputDirectory="..\..\..\..\..\bin\win32\plugin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -116,7 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".."
+				AdditionalIncludeDirectories="..\..\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LAYEREXDRAW_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -177,19 +177,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\LayerExDraw.cpp"
+				RelativePath="..\LayerExDraw.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath="..\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ncbind\ncbind.cpp"
+				RelativePath="..\..\ncbind\ncbind.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\tp_stub.cpp"
+				RelativePath="..\..\tp_stub.cpp"
 				>
 			</File>
 		</Filter>
@@ -199,27 +199,27 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\layerExBase.hpp"
+				RelativePath="..\layerExBase.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\LayerExDraw.hpp"
+				RelativePath="..\LayerExDraw.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ncbind\ncb_foreach.h"
+				RelativePath="..\..\ncbind\ncb_foreach.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ncbind\ncb_invoke.hpp"
+				RelativePath="..\..\ncbind\ncb_invoke.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\ncbind\ncbind.hpp"
+				RelativePath="..\..\ncbind\ncbind.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\tp_stub.h"
+				RelativePath="..\..\tp_stub.h"
 				>
 			</File>
 		</Filter>
