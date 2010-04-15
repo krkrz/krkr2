@@ -51,9 +51,9 @@ public:
 				iTJSDispatch2 *member = param[2]->AsObjectNoAddRef();
 				if (member) {
 					if (TJS_SUCCEEDED(member->IsInstanceOf(0,NULL,NULL,L"Function",NULL))) {
-						registFunction(name, staticMember);
+						registerFunction(name, *param[2], staticMember);
 					} else if (TJS_SUCCEEDED(member->IsInstanceOf(0,NULL,NULL,L"Property",NULL))) {
-						registProperty(name, staticMember);
+						registerProperty(name, *param[2], staticMember);
 					}
 				} else {
 					registNull(name);
@@ -76,39 +76,41 @@ protected:
 	}
 
 	// ファンクション登録
-	void registFunction(const tjs_char *functionName, bool staticMember) {
+	void registerFunction(const tjs_char *functionName, tTJSVariant &function, bool staticMember) {
 		sq_pushstring(v, functionName, -1);
-		sq_pushstring(v, functionName, -1);
+		sq_pushvariant(v, function);
 		if (staticMember) {
 			sq_pushvariant(v, tjsClassObj);
 			sq_newclosure(v, TJSObject::tjsStaticInvoker, 2);
+			sq_newslot(v, -3, SQTrue);
 		} else {
 			sq_newclosure(v, TJSObject::tjsInvoker, 1);
+			sq_newslot(v, -3, SQFalse);
 		}
-		sq_createslot(v, -3);
 	}
 
 	// プロパティ登録
-	void registProperty(const tjs_char *propertyName, bool staticMember) {
+	void registerProperty(const tjs_char *propertyName, tTJSVariant &property, bool staticMember) {
 
 		ttstr name = L"set";
 		name += toupper(*propertyName);
 		name += (propertyName + 1);
 		sq_pushstring(v, name.c_str(), -1);
-		sq_pushstring(v, propertyName, -1);
+		sq_pushvariant(v, property);
 		if (staticMember) {
 			sq_pushvariant(v, tjsClassObj);
 			sq_newclosure(v, TJSObject::tjsStaticSetter, 2);
+			sq_newslot(v, -3, SQTrue);
 		} else {
 			sq_newclosure(v, TJSObject::tjsSetter, 1);
+			sq_newslot(v, -3, SQFalse);
 		}
-		sq_createslot(v, -3);
 
 		name = L"get";
 		name += toupper(*propertyName);
 		name += (propertyName + 1);
 		sq_pushstring(v, name.c_str(), -1);
-		sq_pushstring(v, propertyName, -1);
+		sq_pushvariant(v, property);
 		if (staticMember) {
 			sq_pushvariant(v, tjsClassObj);
 			sq_newclosure(v, TJSObject::tjsStaticGetter, 2);
@@ -227,6 +229,7 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 		sq_createslot(v, -3);
 		sq_pushstring(v, _SC("tjsOverride"), -1);
 		sq_newclosure(v, TJSObject::tjsOverride, 0);
+		sq_setparamscheck(v, -2, _SC(".sc"));
 		sq_createslot(v, -3);
 		
 		// 作成したクラス情報を tjsクラス名とあわせて記録
@@ -499,7 +502,7 @@ public:
 			delete[] args;
 		}
 	}
-
+	
 	SQRESULT create(tTJSVariant &target) {
 		TVPDoTryBlock(TryCreate, Catch, Finally, (void *)this);
 		target = r;
@@ -521,11 +524,6 @@ public:
 		return result;
 	}
 
-	SQRESULT override() {
-		TVPDoTryBlock(TryOverride, Catch, Finally, (void *)this);
-		return result;
-	}
-	
 private:
 
 	void _TryCreate() {
@@ -547,15 +545,18 @@ private:
 
 	void _TryExec() {
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().FuncCall(0, sqobject::getString(v,-1), NULL, &r, argc, args, NULL))) {
-			if (r.Type() != tvtVoid) {
-				sq_pushvariant(v, r);
-				result = 1;
+		tTJSVariant method;
+		if (SQ_SUCCEEDED(result = sq_getvariant(v, -1, &method))) {
+			if (TJS_SUCCEEDED(error = method.AsObjectNoAddRef()->FuncCall(0, NULL, NULL, &r, argc, args, instance.AsObjectNoAddRef()))) {
+				if (r.Type() != tvtVoid) {
+					sq_pushvariant(v, r);
+					result = 1;
+				} else {
+					result = 0;
+				}
 			} else {
-				result = 0;
+				result = ERROR_KRKR(v, error);
 			}
-		} else {
-			result = ERROR_KRKR(v, error);
 		}
 	}
 	
@@ -567,10 +568,13 @@ private:
 	void _TrySetter() {
 		sq_getvariant(v, 2, &r);
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, sqobject::getString(v, -1), NULL, &r, NULL))) {
-			result = SQ_OK;
-		} else {
-			result = ERROR_KRKR(v, error);
+		tTJSVariant prop;
+		if (SQ_SUCCEEDED(result = sq_getvariant(v, -1, &prop))) {
+			if (TJS_SUCCEEDED(error = prop.AsObjectNoAddRef()->PropSet(TJS_MEMBERENSURE, NULL, NULL, &r, instance.AsObjectNoAddRef()))) {
+				result = SQ_OK;
+			} else {
+				result = ERROR_KRKR(v, error);
+			}
 		}
 	}
 	
@@ -581,11 +585,14 @@ private:
 	
 	void _TryGetter() {
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropGet(0, sqobject::getString(v, -1), NULL, &r, NULL))) {
-			sq_pushvariant(v, r);
-			result = 1;
-		} else {
-			result = ERROR_KRKR(v, error);
+		tTJSVariant prop;
+		if (SQ_SUCCEEDED(result = sq_getvariant(v, -1, &prop))) {
+			if (TJS_SUCCEEDED(error = prop.AsObjectNoAddRef()->PropGet(0, NULL, NULL, &r, instance.AsObjectNoAddRef()))) {
+				sq_pushvariant(v, r);
+				result = 1;
+			} else {
+				result = ERROR_KRKR(v, error);
+			}
 		}
 	}
 	
@@ -594,21 +601,6 @@ private:
 		info->_TryGetter();
 	}
 
-	void _TryOverride() {
-		sq_getvariant(v, 3, &r);
-		tjs_error error;
-		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, sqobject::getString(v, 2), NULL, &r, NULL))) {
-			result = SQ_OK;
-		} else {
-			result = ERROR_KRKR(v, error);
-		}
-	}
-	
-	static void TJS_USERENTRY TryOverride(void * data) {
-		FuncInfo *info = (FuncInfo*)data;
-		info->_TryOverride();
-	}
-	
 	static bool TJS_USERENTRY Catch(void * data, const tTVPExceptionDesc & desc) {
 		FuncInfo *info = (FuncInfo*)data;
 		info->result = sq_throwerror(info->v, desc.message.c_str());
@@ -660,7 +652,7 @@ TJSObject::tjsConstructor(HSQUIRRELVM v)
  * TJSオブジェクト用のメソッド
  * 引数1 オブジェクト
  * 引数2～ 引数
- * 自由変数1 メンバ名
+ * 自由変数1 メソッド
  */
 SQRESULT
 TJSObject::tjsInvoker(HSQUIRRELVM v)
@@ -676,7 +668,7 @@ TJSObject::tjsInvoker(HSQUIRRELVM v)
 /**
  * TJSオブジェクト用のプロパティゲッター
  * 引数1 オブジェクト
- * 自由変数1 プロパティ名
+ * 自由変数1 プロパティ
  */
 SQRESULT
 TJSObject::tjsGetter(HSQUIRRELVM v)
@@ -693,7 +685,7 @@ TJSObject::tjsGetter(HSQUIRRELVM v)
  * TJSオブジェクト用のプロパティセッター
  * 引数1 オブジェクト
  * 引数2 設定値
- * 自由変数1 プロパティ名
+ * 自由変数1 プロパティ
  */
 SQRESULT
 TJSObject::tjsSetter(HSQUIRRELVM v)
@@ -707,11 +699,11 @@ TJSObject::tjsSetter(HSQUIRRELVM v)
 }
 
 /**
- * TJSオブジェクト用のメソッド
+ * TJSオブジェクト用の静的メソッド
  * 引数1 オブジェクト
  * 引数2～ 引数
  * 自由変数1 クラスオブジェクト
- * 自由変数2 メンバ名
+ * 自由変数2 メソッド
  */
 SQRESULT
 TJSObject::tjsStaticInvoker(HSQUIRRELVM v)
@@ -725,10 +717,10 @@ TJSObject::tjsStaticInvoker(HSQUIRRELVM v)
 }
 
 /**
- * TJSオブジェクト用のプロパティゲッター
+ * TJSオブジェクト用の静的プロパティゲッター
  * 引数1 オブジェクト
  * 自由変数1 クラスオブジェクト
- * 自由変数2 プロパティ名
+ * 自由変数2 プロパティ
  */
 SQRESULT
 TJSObject::tjsStaticGetter(HSQUIRRELVM v)
@@ -742,11 +734,11 @@ TJSObject::tjsStaticGetter(HSQUIRRELVM v)
 }
 	
 /**
- * TJSオブジェクト用のプロパティセッター
+ * TJSオブジェクト用の静的プロパティセッター
  * 引数1 オブジェクト
  * 引数2 設定値
  * 自由変数1 クラスオブジェクト
- * 自由変数2 プロパティ名
+ * 自由変数2 プロパティ
  */
 SQRESULT
 TJSObject::tjsStaticSetter(HSQUIRRELVM v)
@@ -780,15 +772,54 @@ TJSObject::tjsIsValid(HSQUIRRELVM v)
  * TJSオブジェクトのオーバライド処理
  * 引数1 オブジェクト
  * 引数2 名前
- * 引数3 squirrelクロージャ
+ * 引数3 値。省略時は squirrel インスタンスから名前で参照
  */
 SQRESULT 
 TJSObject::tjsOverride(HSQUIRRELVM v)
 {
+	SQRESULT result;
 	tTJSVariant instance;
 	if (getVariant(v,1,&instance) && instance.Type() == tvtObject) {
-		FuncInfo info(v, instance);
-		return info.override();
+		tTJSVariant value;
+		const SQChar *methodName = sqobject::getString(v,2);
+		int n = sq_gettop(v);
+		if (n >= 3) {
+			// 引数で明示指定されている
+			if (SQ_FAILED(result = sq_getvariant(v, 3, &value))) {
+				return result;
+			}
+		} else {
+			// 自己オブジェクトから名前で検索して登録
+			sq_push(v, 1);
+			sq_pushstring(v, methodName, -1);
+			if (SQ_FAILED(result = sq_get(v, -2))) {
+				sq_pop(v, 1); //self
+				return result;
+			} else {
+				SQObjectType type = sq_gettype(v, -1);
+				if (type == OT_CLOSURE || type == OT_NATIVECLOSURE) {
+					// クロージャの場合は bindenv しておく
+					sq_push(v, 1);
+					if (SQ_FAILED(result = sq_bindenv(v, -2))) {
+						sq_pop(v, 2); // func, self
+						return result;
+					} else {
+						sq_remove(v, -2); // original func
+					}
+				}
+				if (SQ_FAILED(result = sq_getvariant(v, -1, &value))) { // value
+					sq_pop(v, 1); //self
+					return result;
+				}
+				sq_pop(v, 1); // self
+			}
+		}
+		tjs_error error;
+		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, methodName, NULL, &value, NULL))) {
+			return SQ_OK;
+		} else {
+			return  ERROR_KRKR(v, error);
+		}
 	}
 	return ERROR_BADINSTANCE(v);
 }
