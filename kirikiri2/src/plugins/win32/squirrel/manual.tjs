@@ -168,3 +168,18 @@ class SQContinuous {
 	 */
     function stop();
 };
+
+/**
+ * squirrel 側で createTJSClass して生成されたインスタンス中では
+ * 以下の特殊なメソッドが利用可能です。イベントの伝播などで活用可能です。
+ */
+class TJSObject {
+	/**
+	 * Squirrel インスタンスメソッドの呼び出し
+	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
+	 * @param name メソッド名
+	 * @param ... 引数
+	 * @return スクリプトの実行結果
+	 */
+	function callSQ(name, ...);
+};

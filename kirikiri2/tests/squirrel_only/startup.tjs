@@ -4,6 +4,19 @@ Plugins.link("squirrel.dll");
 System.exitOnNoWindowStartup = false; // 起動時ウインドウ無し終了の抑制・危険なので注意
 System.exitOnWindowClose = false; // メインウインドウが閉じる時の終了の抑制・危険なので注意
 
+// squirrel で使うクラスを定義
+class TestWindow extends Window {
+	
+	function TestWindow() {
+		super.Window(...);
+	}
+	
+	function onKeyDown(key, shift) {
+		// squirrel にイベント転送
+		callSQ("onKeyDown", key, shift);
+	}
+};
+
 // メインループ登録
 var prevTick = System.getTickCount();
 function main(tick)

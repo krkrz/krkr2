@@ -8,7 +8,7 @@ while (cnt < vargc) {
 }
 
 // クラスを参照
-Window <- ::createTJSClass("Window");
+Window <- ::createTJSClass("TestWindow", "Window"); // 継承クラスは要列挙
 Layer  <- ::createTJSClass("Layer");
 System <- ::createTJSClass("System");
 
@@ -43,10 +43,15 @@ class MyWindow extends Window
 		layer.visible = true;
 
 		// イベントを受理できるようにTJSインスタンスを上書きする
-		tjsOverride("onCloseQuery");
+
 		//tjsOverride("onMouseDown", onMouseDown);   // これだとコンテキストが global
 		//tjsOverride("onMouseDown", onMouseDown.bindenv(this));   // これが妥当
 		tjsOverride("onMouseDown"); // この記述は自動的に bindenv(this) した自分の onMouseDown を取得
+
+		//コメントアウトするとクローズ拒否
+		//tjsOverride("onCloseQuery");
+
+		// onKeyDown については TJS側に callSQ による呼び出しブリッジ記述がある
 	}
 
 	/**
@@ -68,6 +73,20 @@ class MyWindow extends Window
 	};
 	
 	/**
+	 * マウス押し下げイベント
+	 */
+	function onMouseDown(x, y, button, shift) {
+		printf("%s:onMouseDown:%d,%d,%d,%d\n", this, x, y, button, shift);
+	}
+
+	/**
+	 * キー押し下げイベント
+	 */
+	function onKeyDown(key,shift) {
+		printf("%s:onKeyDown:%02x,%02x\n", this, key, shift);
+	}
+
+	/**
 	 * 終了確認イベント
 	 */
 	function onCloseQuery(onclose) {
@@ -75,12 +94,6 @@ class MyWindow extends Window
 		::Window.onCloseQuery(false);
 	}
 
-	/**
-	 * マウス押し下げイベント
-	 */
-	function onMouseDown(x, y, button, shift) {
-		printf("%s:onMouseDown:%d,%d,%d,%d\n", this, x, y, button, shift);
-	}
 };
 
 // window
