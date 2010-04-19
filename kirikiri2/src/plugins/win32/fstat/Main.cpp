@@ -348,14 +348,18 @@ public:
 	 * 実ファイルがある場合のみ削除されます
 	 */
 	static bool deleteFile(ttstr filename) {
+		BOOL r = false;
 		filename = TVPGetPlacedPath(filename);
 		if (filename.length() && !wcschr(filename.c_str(), '>')) {
 			TVPGetLocalName(filename);
-			if (DeleteFile(filename.c_str())) {
-				return true;
+			r	= DeleteFile(filename.c_str());
+			if (r == FALSE) {
+				ttstr mes;
+				getLastError(mes);
+				TVPAddLog(ttstr(TJS_W("deleteFile : ")) + filename + TJS_W(" : ") + mes);
 			}
 		}
-		return false;
+		return r;
 	}
 
 	/**
@@ -366,15 +370,19 @@ public:
 	 * 移動対象ファイルが実在し、移動先パスにファイルが無い場合のみ移動されます
 	 */
 	static bool moveFile(ttstr fromFile, ttstr toFile) {
+		BOOL r = false;
 		if (fromFile.length() && !wcschr(fromFile.c_str(), '>')
-                    && toFile.length() && !wcschr(toFile.c_str(), '>')) {
+			&& toFile.length() && !wcschr(toFile.c_str(), '>')) {
 			TVPGetLocalName(fromFile);
 			TVPGetLocalName(toFile);
-			if (MoveFile(fromFile.c_str(), toFile.c_str())) {
-				return true;
+			r	= MoveFile(fromFile.c_str(), toFile.c_str());
+			if (r == FALSE) {
+				ttstr mes;
+				getLastError(mes);
+				TVPAddLog(ttstr(TJS_W("moveFile : ")) + fromFile + ", " + toFile + TJS_W(" : ") + mes);
 			}
-                    }
-		return false;
+		}
+		return r;
 	}
   
 	/**
@@ -446,7 +454,13 @@ public:
 		dir = TVPNormalizeStorageName(dir);
 		TVPGetLocalName(dir);
 
-		return RemoveDirectory(dir.c_str()) == TRUE;
+		BOOL	r = RemoveDirectory(dir.c_str());
+		if(r == FALSE) {
+			ttstr mes;
+			getLastError(mes);
+			TVPAddLog(ttstr(TJS_W("removeDirectory : ")) + dir + TJS_W(" : ") + mes);
+		}
+		return r;
 	}
 
 	/**
@@ -462,7 +476,13 @@ public:
 		}
 		dir	= TVPNormalizeStorageName(dir);
 		TVPGetLocalName(dir);
-		return CreateDirectory(dir.c_str(), NULL) == TRUE;
+		BOOL	r = CreateDirectory(dir.c_str(), NULL);
+		if (r == FALSE) {
+			ttstr mes;
+			getLastError(mes);
+			TVPAddLog(ttstr(TJS_W("createDirectory : ")) + dir + TJS_W(" : ") + mes);
+		}
+		return r;
 	}
 
 	/**
@@ -555,7 +575,6 @@ public:
 		}
 		else
 			bi.hwndOwner	= NULL;
-		TVPAddLog(L"bi.hwndOwner = "+ttstr((tjs_int)bi.hwndOwner));
 
 		//	title
 		if(elm->IsValid(0, L"title", NULL, elm) == TJS_S_TRUE &&
@@ -597,14 +616,16 @@ public:
 		ITEMIDLIST*	pidl;
 		if((pidl = ::SHBrowseForFolder(&bi)) != NULL)
 		{
-                        if(::SHGetPathFromIDList(pidl, folder) != TRUE) {
+			if(::SHGetPathFromIDList(pidl, folder) != TRUE)
+			{
 				if(result) *result = 0;
-                        } else
+			}
+			else
 			{
 				if(result) *result = TJS_S_TRUE;
 				val	= folder;
-                                val = TVPNormalizeStorageName(val);
-				elm->PropSet(0, L"name", NULL, &val, elm);
+				val = TVPNormalizeStorageName(val);
+				elm->PropSet(TJS_MEMBERENSURE, L"name", NULL, &val, elm);
 			}
 			FreeITEMIDLIST(pidl);
 		}
