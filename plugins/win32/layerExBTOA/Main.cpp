@@ -302,9 +302,55 @@ none:
 }
 
 
+static tjs_error TJS_INTF_METHOD
+fillByProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+	unsigned char index = (int)*param[0];
+	DWORD color = (int)*param[1];
+
+	// ‘‚«ž‚Ýæ
+	WrtRefT dbuf = 0;
+	long dw, dh, dpitch;
+	if (!GetLayerBufferAndSize(lay, dw, dh, dbuf, dpitch)) {
+		TVPThrowExceptionMessage(TJS_W("must be Layer."));
+	}
+
+	ReadRefT sbuf = 0;
+	long spitch;
+	{
+		tTJSVariant val;
+		if (TJS_FAILED(lay->PropGet(0, TJS_W("provinceImageBuffer"), 0, &val, lay)) ||
+			(sbuf = reinterpret_cast<ReadRefT>(val.AsInteger())) == NULL) {
+			TVPThrowExceptionMessage(TJS_W("no province image."));
+		}
+		if (TJS_FAILED(lay->PropGet(0, TJS_W("provinceImageBufferPitch"), 0, &val, lay)) ||
+			(spitch = (long)val.AsInteger()) == 0) {
+			TVPThrowExceptionMessage(TJS_W("no province pitch."));
+		}
+	}
+
+	for (int y = 0; y < dh; y++) {
+		ReadRefT q = sbuf;
+		DWORD *p = (DWORD*)dbuf;
+		ttstr s;
+		for (int x = 0; x < dw; x++) {
+			if (*q == index) {
+				*(DWORD*)p = color;
+			}
+			q++;
+			p++;
+		}
+		sbuf += spitch;
+		dbuf += dpitch;
+	}
+	return TJS_S_OK;
+}
+
 NCB_ATTACH_FUNCTION(copyRightBlueToLeftAlpha, Layer, copyRightBlueToLeftAlpha);
 NCB_ATTACH_FUNCTION(copyBottomBlueToTopAlpha, Layer, copyBottomBlueToTopAlpha);
 NCB_ATTACH_FUNCTION(fillAlpha, Layer, fillAlpha);
 
 NCB_ATTACH_FUNCTION(copyAlphaToProvince, Layer, copyAlphaToProvince);
 NCB_ATTACH_FUNCTION(clipAlphaRect, Layer, clipAlphaRect);
+NCB_ATTACH_FUNCTION(fillByProvince, Layer, fillByProvince);
