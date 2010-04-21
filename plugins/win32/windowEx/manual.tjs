@@ -29,6 +29,14 @@ class Window {
 	function minimize();
 
 	/**
+	 * ウィンドウが最小化かどうか取得
+	 */
+	property minimized {
+		getter;
+		setter(v) { if (minimized != v) { if (v) minimize(); else showRestore(); } }
+	}
+
+	/**
 	 * ウィンドウ最大化・最小化の復帰
 	 */
 	function showRestore();

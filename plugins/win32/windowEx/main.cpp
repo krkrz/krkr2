@@ -168,6 +168,21 @@ struct WindowEx
 		return TJS_S_OK;
 	}
 
+	// property minimized
+	static bool isMinimized(iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND(obj);
+		return (hwnd != NULL && ::IsIconic(hwnd));
+	}
+	static tjs_error TJS_INTF_METHOD getMinimized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		if (r) *r = isMinimized(obj);
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setMinimized(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		bool m = !!p[0]->AsInteger();
+		if (m != isMinimized(obj)) postSysCommand(obj, m ? SC_MINIMIZE : SC_RESTORE);
+		return TJS_S_OK;
+	}
+
 	// property disableResize
 	static tjs_error TJS_INTF_METHOD getDisableResize(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
 		WindowEx *self = GetInstance(obj);
@@ -603,6 +618,7 @@ protected:
 		}
 		return TJS_S_OK;
 	}
+
 	static bool _getNotificationVariant(tTJSVariant &tmp) {
 		iTJSDispatch2 *obj =  TVPGetScriptDispatch();
 		tmp.Clear();
@@ -683,6 +699,7 @@ protected:
 		}
 		return true;
 	}
+
 private:
 	iTJSDispatch2 *self, *menuex;
 	iTJSDispatch2 *sysMenuModified, *sysMenuModMap; //< システムメニュー改変用
@@ -888,6 +905,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 	RawCallback(TJS_W("minimize"),            &Class::minimize,          0);
 	RawCallback(TJS_W("maximize"),            &Class::maximize,          0);
 	RawCallback(TJS_W("maximized"),           &Class::getMaximized,      &Class::setMaximized, 0);
+	RawCallback(TJS_W("minimized"),           &Class::getMinimized,      &Class::setMinimized, 0);
 	RawCallback(TJS_W("showRestore"),         &Class::showRestore,       0);
 	RawCallback(TJS_W("resetWindowIcon"),     &Class::resetWindowIcon,   0);
 	RawCallback(TJS_W("getWindowRect"),       &Class::getWindowRect,     0);
