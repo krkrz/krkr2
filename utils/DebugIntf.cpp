@@ -509,7 +509,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/message)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/message)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/message)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/notice)
 {
@@ -533,7 +533,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/notice)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/notice)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/notice)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/startLogToFile)
 {
@@ -546,7 +546,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/startLogToFile)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/startLogToFile)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/startLogToFile)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/logAsError)
 {
@@ -554,7 +554,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/logAsError)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/logAsError)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/logAsError)
 //----------------------------------------------------------------------
 
 //-- properies
@@ -576,7 +576,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(logLocation)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(logLocation)
+TJS_END_NATIVE_STATIC_PROP_DECL(logLocation)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(logToFileOnError)
 {
@@ -594,7 +594,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(logToFileOnError)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(logToFileOnError)
+TJS_END_NATIVE_STATIC_PROP_DECL(logToFileOnError)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(clearLogFileOnError)
 {
@@ -612,7 +612,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(clearLogFileOnError)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(clearLogFileOnError)
+TJS_END_NATIVE_STATIC_PROP_DECL(clearLogFileOnError)
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------

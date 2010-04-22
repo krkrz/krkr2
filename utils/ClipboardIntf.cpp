@@ -63,7 +63,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/hasFormat)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/hasFormat)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/hasFormat)
 //----------------------------------------------------------------------
 
 //-- events
@@ -96,7 +96,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(asText)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(asText)
+TJS_END_NATIVE_STATIC_PROP_DECL(asText)
 //----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS
