@@ -44,6 +44,8 @@ protected:
         mutable REAL ascent;
         mutable REAL descent;
         mutable REAL lineSpacing;
+        mutable REAL ascentLeading;
+        mutable REAL descentLeading;
 
 	/**
 	 * フォント情報のクリア
@@ -51,6 +53,7 @@ protected:
 	void clear();
 
         OUTLINETEXTMETRIC *createFontMetric(void) const;
+
 
 public:
 
@@ -82,6 +85,8 @@ public:
         void updateSizeParams(void) const;
 	REAL getAscent() const;
 	REAL getDescent() const;
+	REAL getAscentLeading() const;
+	REAL getDescentLeading() const;
 	REAL getLineSpacing() const;
 };
 
