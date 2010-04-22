@@ -1213,7 +1213,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/searchCD)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/searchCD)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getLocalName)
@@ -1229,7 +1229,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getLocalName)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/getLocalName)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/selectFile)
@@ -1244,7 +1244,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/selectFile)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/selectFile)
 //----------------------------------------------------------------------
 

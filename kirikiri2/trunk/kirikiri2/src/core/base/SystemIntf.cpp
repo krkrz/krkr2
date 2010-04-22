@@ -107,7 +107,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/terminate)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/terminate)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/terminate)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exit)
 {
@@ -117,7 +117,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exit)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/exit)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/exit)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/inputString)
 {
@@ -136,7 +136,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/inputString)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/inputString)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/inputString)
 //---------------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/addContinuousHandler)
 {
@@ -150,7 +150,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/addContinuousHandler)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/addContinuousHandler)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/addContinuousHandler)
 //---------------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/removeContinuousHandler)
 {
@@ -164,7 +164,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/removeContinuousHandler)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/removeContinuousHandler)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/removeContinuousHandler)
 //---------------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/toActualColor)
 {
@@ -181,7 +181,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/toActualColor)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/toActualColor)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/toActualColor)
 //---------------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/clearGraphicCache)
 {
@@ -190,7 +190,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/clearGraphicCache)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/clearGraphicCache)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/clearGraphicCache)
 //---------------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/touchImages)
 {
@@ -222,7 +222,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/touchImages)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/touchImages)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/touchImages)
 //---------------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/createUUID)
 {
@@ -251,7 +251,7 @@ TJS_W("%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x"),
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/createUUID)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/createUUID)
 //---------------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/assignMessage)
 {
@@ -268,7 +268,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/assignMessage)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/assignMessage)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/assignMessage)
 //---------------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/doCompact)
 {
@@ -283,7 +283,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/doCompact)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/doCompact)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/doCompact)
 //----------------------------------------------------------------------
 
 //--properties
@@ -300,7 +300,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(versionString)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(versionString)
+TJS_END_NATIVE_STATIC_PROP_DECL(versionString)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(versionInformation)
 {
@@ -313,7 +313,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(versionInformation)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(versionInformation)
+TJS_END_NATIVE_STATIC_PROP_DECL(versionInformation)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(eventDisabled)
 {
@@ -331,7 +331,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(eventDisabled)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(eventDisabled)
+TJS_END_NATIVE_STATIC_PROP_DECL(eventDisabled)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(graphicCacheLimit)
 {
@@ -349,7 +349,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(graphicCacheLimit)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(graphicCacheLimit)
+TJS_END_NATIVE_STATIC_PROP_DECL(graphicCacheLimit)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(platformName)
 {
@@ -362,7 +362,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(platformName)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(platformName)
+TJS_END_NATIVE_STATIC_PROP_DECL(platformName)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(osName)
 {
@@ -375,7 +375,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(osName)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(osName)
+TJS_END_NATIVE_STATIC_PROP_DECL(osName)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(exitOnWindowClose)
 {
@@ -393,7 +393,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(exitOnWindowClose)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(exitOnWindowClose)
+TJS_END_NATIVE_STATIC_PROP_DECL(exitOnWindowClose)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(exitOnNoWindowStartup)
 {
@@ -411,7 +411,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(exitOnNoWindowStartup)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(exitOnNoWindowStartup)
+TJS_END_NATIVE_STATIC_PROP_DECL(exitOnNoWindowStartup)
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------

@@ -984,7 +984,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/execStorage)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/execStorage)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/execStorage)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/evalStorage)
 {
@@ -1001,7 +1001,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/evalStorage)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/evalStorage)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/evalStorage)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 {
@@ -1024,7 +1024,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/exec)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/exec)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/eval)
 {
@@ -1046,7 +1046,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/eval)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/eval)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/eval)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dump)
 {
@@ -1055,7 +1055,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dump)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/dump)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/dump)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTraceString)
 {
@@ -1072,7 +1072,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTraceString)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/getTraceString)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/getTraceString)
 //----------------------------------------------------------------------
 #ifdef TJS_DEBUG_DUMP_STRING
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
@@ -1082,7 +1082,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/dumpStringHeap)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/dumpStringHeap)
 #endif
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setCallMissing) /* UNDOCUMENTED: subject to change */
@@ -1100,7 +1100,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setCallMissing) /* UNDOCUMENTED: subj
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/setCallMissing) /* UNDOCUMENTED: subject to change */
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/setCallMissing) /* UNDOCUMENTED: subject to change */
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getClassNames) /* UNDOCUMENTED: subject to change */
 {
@@ -1139,7 +1139,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getClassNames) /* UNDOCUMENTED: subje
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/getClassNames) /* UNDOCUMENTED: subject to change */
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/getClassNames) /* UNDOCUMENTED: subject to change */
 //----------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS

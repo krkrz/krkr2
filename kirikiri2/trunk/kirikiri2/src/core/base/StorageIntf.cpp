@@ -1370,7 +1370,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/addAutoPath)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/addAutoPath)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/addAutoPath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/removeAutoPath)
 {
@@ -1384,7 +1384,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/removeAutoPath)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/removeAutoPath)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/removeAutoPath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getFullPath)
 {
@@ -1397,7 +1397,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getFullPath)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/getFullPath)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/getFullPath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getPlacedPath)
 {
@@ -1410,7 +1410,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getPlacedPath)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/getPlacedPath)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/getPlacedPath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/isExistentStorage)
 {
@@ -1423,7 +1423,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/isExistentStorage)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/isExistentStorage)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/isExistentStorage)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/extractStorageExt)
 {
@@ -1436,7 +1436,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/extractStorageExt)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/extractStorageExt)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/extractStorageExt)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/extractStorageName)
 {
@@ -1449,7 +1449,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/extractStorageName)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/extractStorageName)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/extractStorageName)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/extractStoragePath)
 {
@@ -1462,7 +1462,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/extractStoragePath)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/extractStoragePath)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/extractStoragePath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/chopStorageExt)
 {
@@ -1475,7 +1475,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/chopStorageExt)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/chopStorageExt)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/chopStorageExt)
 //----------------------------------------------------------------------
 	TJS_END_NATIVE_MEMBERS
 }

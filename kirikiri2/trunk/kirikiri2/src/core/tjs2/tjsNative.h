@@ -370,6 +370,13 @@ inline TJS_EXP_FUNC_DEF(tTJSNativeClassForPlugin *, TJSCreateNativeClassForPlugi
 		TJSCreateNativeClassMethod(NCM_##name::Process), \
 		(object)->GetClassName().c_str(), nitMethod);
 
+#define TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(object, name) \
+		TJS_END_NATIVE_METHOD_DECL_INT \
+		TJSNativeClassRegisterNCM((object), TJS_W(#name), \
+		TJSCreateNativeClassMethod(NCM_##name::Process), \
+		(object)->GetClassName().c_str(), nitMethod, TJS_STATICMEMBER);
+
+
 #define TJS_DECL_EMPTY_FINALIZE_METHOD \
 	TJS_BEGIN_NATIVE_METHOD_DECL(finalize) \
 	{ return TJS_S_OK; } \
@@ -427,6 +434,12 @@ inline TJS_EXP_FUNC_DEF(tTJSNativeClassForPlugin *, TJSCreateNativeClassForPlugi
 		;TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
 		TJSCreateNativeClassProperty(NCM_##name::Get, NCM_##name::Set), \
 		__classname, nitProperty, TJS_STATICMEMBER);
+
+#define TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(object, name) \
+		;TJSNativeClassRegisterNCM((object), TJS_W(#name), \
+		TJSCreateNativeClassProperty(NCM_##name::Get, NCM_##name::Set), \
+		(object)->GetClassName().c_str(), nitProperty, TJS_STATICMEMBER);
+
 
 #define TJS_BEGIN_NATIVE_PROP_GETTER \
 		static tjs_error TJS_INTF_METHOD Get(tTJSVariant *result, \
