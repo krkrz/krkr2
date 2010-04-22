@@ -955,7 +955,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/link)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/link)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/unlink)
@@ -970,7 +970,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/unlink)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/unlink)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(getList)
@@ -996,7 +996,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(getList)
 	array->Release();
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(cls, getList)
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(cls, getList)
 //---------------------------------------------------------------------------
 
 
