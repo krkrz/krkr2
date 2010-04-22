@@ -224,7 +224,11 @@ class GdiPlus {
 
 		property ascent;      //< ascent (読み出し専用)
 		property descent;     //< descent (読み出し専用)
-		property lineSpacing; //< 行間の長さ (読み出し専用)
+		property lineSpacing; //< 行間の長さ (読み出し専用)。
+                property ascentLeading; //< ascent側のinternalLeading(読み出し専用)
+                property descentLeading; //< descent側のinternalLeading(読み出し専用)
+          // ascent + descent は lineSpacing に等しい。
+          // lineSpacing - ( ascentLeading + descentLeading ) は emSize に等しい。
 	};
 
 	/**
