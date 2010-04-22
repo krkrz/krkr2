@@ -74,7 +74,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(visible)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(visible)
+TJS_END_NATIVE_STATIC_PROP_DECL(visible)
 //----------------------------------------------------------------------
 	TJS_END_NATIVE_MEMBERS
 
@@ -145,7 +145,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(visible)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(visible)
+TJS_END_NATIVE_STATIC_PROP_DECL(visible)
 //----------------------------------------------------------------------
 	TJS_END_NATIVE_MEMBERS
 
@@ -194,7 +194,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(controller)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, controller)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, controller)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(console)
 {
@@ -209,7 +209,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(console)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, console)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, console)
 //----------------------------------------------------------------------
 	return cls;
 }

@@ -86,7 +86,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/abs)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/abs)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/abs)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/acos)
 {
@@ -100,7 +100,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/acos)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/acos)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/acos)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/asin)
 {
@@ -114,7 +114,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/asin)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/asin)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/asin)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/atan)
 {
@@ -128,7 +128,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/atan)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/atan)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/atan)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/atan2)
 {
@@ -142,7 +142,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/atan2)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/atan2)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/atan2)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/ceil)
 {
@@ -156,7 +156,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/ceil)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/ceil)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/ceil)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exp)
 {
@@ -170,7 +170,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exp)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/exp)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/exp)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/floor)
 {
@@ -184,7 +184,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/floor)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/floor)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/floor)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/log)
 {
@@ -198,7 +198,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/log)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/log)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/log)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/pow)
 {
@@ -212,7 +212,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/pow)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/pow)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/pow)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/max)
 {
@@ -254,7 +254,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/max)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/max)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/max)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/min)
 {
@@ -297,7 +297,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/min)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/min)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/min)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/random)
 {
@@ -308,7 +308,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/random)
 	}
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/random)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/random)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/round)
 {
@@ -322,7 +322,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/round)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/round)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/round)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/sin)
 {
@@ -336,7 +336,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/sin)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/sin)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/sin)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/cos)
 {
@@ -350,7 +350,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/cos)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/cos)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/cos)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/sqrt)
 {
@@ -364,7 +364,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/sqrt)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/sqrt)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/sqrt)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/tan)
 {
@@ -378,7 +378,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/tan)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL(/*func. name*/tan)
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/tan)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(E)
 {
@@ -391,7 +391,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(E)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(E)
+TJS_END_NATIVE_STATIC_PROP_DECL(E)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(LOG2E)
 {
@@ -404,7 +404,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(LOG2E)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(LOG2E)
+TJS_END_NATIVE_STATIC_PROP_DECL(LOG2E)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(LOG10E)
 {
@@ -417,7 +417,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(LOG10E)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(LOG10E)
+TJS_END_NATIVE_STATIC_PROP_DECL(LOG10E)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(LN10)
 {
@@ -430,7 +430,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(LN10)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(LN10)
+TJS_END_NATIVE_STATIC_PROP_DECL(LN10)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(LN2)
 {
@@ -443,7 +443,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(LN2)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(LN2)
+TJS_END_NATIVE_STATIC_PROP_DECL(LN2)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(PI)
 {
@@ -456,7 +456,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(PI)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(PI)
+TJS_END_NATIVE_STATIC_PROP_DECL(PI)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(SQRT1_2)
 {
@@ -469,7 +469,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(SQRT1_2)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(SQRT1_2)
+TJS_END_NATIVE_STATIC_PROP_DECL(SQRT1_2)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(SQRT2)
 {
@@ -482,7 +482,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(SQRT2)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL(SQRT2)
+TJS_END_NATIVE_STATIC_PROP_DECL(SQRT2)
 //---------------------------------------------------------------------------
 
 	TJS_END_NATIVE_MEMBERS

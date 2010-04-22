@@ -627,7 +627,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/inform)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/inform)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTickCount)
@@ -640,7 +640,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getTickCount)
 	}
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/getTickCount)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getKeyState)
@@ -657,7 +657,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getKeyState)
 	if(result) *result = (tjs_int)res;
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/getKeyState)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/shellExecute)
@@ -674,7 +674,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/shellExecute)
 	if(result) *result = (tjs_int)res;
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/shellExecute)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/system)
@@ -690,7 +690,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/system)
 	if(result) *result = (tjs_int)ret;
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/system)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/readRegValue)
@@ -705,7 +705,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/readRegValue)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/readRegValue)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getArgument)
@@ -721,7 +721,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getArgument)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/getArgument)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setArgument)
@@ -735,7 +735,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setArgument)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/setArgument)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/createAppLock)
@@ -751,7 +751,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/createAppLock)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/createAppLock)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/nullpo)
@@ -761,7 +761,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/nullpo)
 
 	return TJS_S_OK;
 }
-TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/nullpo)
 //---------------------------------------------------------------------------
 
@@ -781,7 +781,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(exePath)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, exePath)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, exePath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(personalPath)
 {
@@ -794,7 +794,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(personalPath)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, personalPath)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, personalPath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(appDataPath)
 {
@@ -807,7 +807,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(appDataPath)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, appDataPath)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, appDataPath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(dataPath)
 {
@@ -820,7 +820,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(dataPath)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, dataPath)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, dataPath)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(exeName)
 {
@@ -834,7 +834,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(exeName)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, exeName)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, exeName)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(title)
 {
@@ -858,7 +858,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(title)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, title)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, title)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(screenWidth)
 {
@@ -871,7 +871,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(screenWidth)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, screenWidth)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, screenWidth)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(screenHeight)
 {
@@ -884,7 +884,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(screenHeight)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, screenHeight)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, screenHeight)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(desktopLeft)
 {
@@ -899,7 +899,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(desktopLeft)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, desktopLeft)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, desktopLeft)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(desktopTop)
 {
@@ -914,7 +914,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(desktopTop)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, desktopTop)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, desktopTop)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(desktopWidth)
 {
@@ -929,7 +929,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(desktopWidth)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, desktopWidth)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, desktopWidth)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(desktopHeight)
 {
@@ -944,7 +944,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(desktopHeight)
 
 	TJS_DENY_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, desktopHeight)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, desktopHeight)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(stayOnTop)
 {
@@ -962,7 +962,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(stayOnTop)
 	}
 	TJS_END_NATIVE_PROP_SETTER
 }
-TJS_END_NATIVE_PROP_DECL_OUTER(cls, stayOnTop)
+TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(cls, stayOnTop)
 //----------------------------------------------------------------------
 
 
