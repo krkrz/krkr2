@@ -356,6 +356,7 @@ FontInfo::createFontMetric(void) const
     return NULL;
   }
   HGDIOBJ hOldFont = SelectObject(dc, hFont);
+
   int size = ::GetOutlineTextMetrics(dc, 0, NULL);
   if (size > 0) {
     char *buf = new char[size];
@@ -363,6 +364,7 @@ FontInfo::createFontMetric(void) const
       SelectObject(dc, hOldFont);
       DeleteObject(hFont);
       DeleteObject(dc);
+
       return reinterpret_cast<OUTLINETEXTMETRIC*>(buf);
     }
     delete[] buf;
@@ -383,20 +385,18 @@ FontInfo::updateSizeParams(void) const
   propertyModified = false;
   ascent = 0;
   descent = 0;
+  ascentLeading = 0;
+  descentLeading = 0;
   lineSpacing = 0;
 
-  if (fontFamily) {
-    ascent = fontFamily->GetCellAscent(style) * emSize / fontFamily->GetEmHeight(style);
-    descent = fontFamily->GetCellDescent(style) * emSize / fontFamily->GetEmHeight(style);
-    lineSpacing = fontFamily->GetLineSpacing(style) * emSize / fontFamily->GetEmHeight(style);
-  } else {
-    OUTLINETEXTMETRIC *otm = createFontMetric();
-    if (otm) {
-      ascent = REAL(otm->otmAscent);
-      descent = REAL(otm->otmDescent);
-      lineSpacing = REAL(otm->otmTextMetrics.tmHeight + otm->otmTextMetrics.tmExternalLeading);
-      delete otm;
-    }
+  OUTLINETEXTMETRIC *otm = createFontMetric();
+  if (otm) {
+    ascent = REAL(otm->otmTextMetrics.tmAscent);
+    descent = REAL(otm->otmTextMetrics.tmDescent);
+    ascentLeading = ascent - REAL(otm->otmAscent);
+    descentLeading = descent - REAL(- otm->otmDescent);
+    lineSpacing = REAL(otm->otmTextMetrics.tmHeight);
+    delete otm;
   }
 }
 
@@ -413,6 +413,21 @@ FontInfo::getDescent() const
 {
   this->updateSizeParams();
   return descent;
+}
+
+REAL 
+FontInfo::getAscentLeading() const
+{
+  this->updateSizeParams();
+  return ascentLeading;
+}
+
+
+REAL 
+FontInfo::getDescentLeading() const
+{
+  this->updateSizeParams();
+  return descentLeading;
 }
 
 REAL 
@@ -2144,7 +2159,7 @@ LayerExDraw::drawPathString2(const FontInfo *font, const Appearance *app, REAL x
 {
   // •¶Žš—ñ‚ÌƒpƒX‚ð€”õ
   GraphicsPath path;
-  PointF offset(x + LONG(0.167 * font->emSize), y);
+  PointF offset(x + LONG(0.167 * font->emSize) - 0.5, y - 0.5);
   this->getTextOutline(font, offset, &path, text);
   RectF result = drawPath(app, &path);
   result.X = x;
