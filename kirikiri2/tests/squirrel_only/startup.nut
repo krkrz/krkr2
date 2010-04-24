@@ -60,9 +60,7 @@ class MyWindow extends Window
 	function main() {
 		// メインループを構築
 		while (tjsIsValid()) {
-			// ほんとは static メソッドなんだけど今吉里吉里側で
-			// スタティックフラグが立ってないのでこの呼び出しでないとダメ
-			if (System.getKeyState.bindenv(System)(13)) { // VK_RETURN
+			if (System.getKeyState(13)) { // VK_RETURN
 				break;
 			}
 			local tick = ::getCurrentTick();
