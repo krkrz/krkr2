@@ -552,12 +552,14 @@ NCB_GDIP_METHOD(RotateFlip);
 
 NCB_REGISTER_SUBCLASS(FontInfo) {
 	NCB_CONSTRUCTOR((const tjs_char *, REAL, INT));
-	NCB_PROPERTY_WO(familyName, setFamilyName);
+	NCB_PROPERTY(familyName, getFamilyName, setFamilyName);
 	NCB_PROPERTY(emSize, getEmSize, setEmSize);
 	NCB_PROPERTY(style, getStyle, setStyle);
 	NCB_PROPERTY(forceSelfPathDraw, getForceSelfPathDraw, setForceSelfPathDraw);
 	NCB_PROPERTY_RO(ascent, getAscent);
 	NCB_PROPERTY_RO(descent, getDescent);
+	NCB_PROPERTY_RO(ascentLeading, getAscentLeading);
+	NCB_PROPERTY_RO(descentLeading, getDescentLeading);
 	NCB_PROPERTY_RO(lineSpacing, getLineSpacing);
 };
 
