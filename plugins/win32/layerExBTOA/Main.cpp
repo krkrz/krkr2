@@ -2,6 +2,14 @@
 #include <vector>
 using namespace std;
 
+// レイヤクラスを参照
+iTJSDispatch2 *getLayerClass(void)
+{
+	tTJSVariant var;
+	TVPExecuteExpression(TJS_W("Layer"), &var);
+	return  var.AsObjectNoAddRef();
+}
+
 //----------------------------------------------
 // レイヤイメージ操作ユーティリティ
 
@@ -15,25 +23,27 @@ typedef unsigned char const *ReadRefT;
 static bool
 GetLayerSize(iTJSDispatch2 *lay, long &w, long &h, long &pitch)
 {
+	iTJSDispatch2 *layerClass = getLayerClass();
+
 	// レイヤインスタンス以外ではエラー
 	if (!lay || TJS_FAILED(lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay))) return false;
 
 	// レイヤイメージは在るか？
 	tTJSVariant val;
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("hasImage"), 0, &val, lay)) || (val.AsInteger() == 0)) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("hasImage"), 0, &val, lay)) || (val.AsInteger() == 0)) return false;
 
 	// レイヤサイズを取得
 	val.Clear();
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("imageWidth"), 0, &val, lay))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("imageWidth"), 0, &val, lay))) return false;
 	w = (long)val.AsInteger();
 
 	val.Clear();
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("imageHeight"), 0, &val, lay))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("imageHeight"), 0, &val, lay))) return false;
 	h = (long)val.AsInteger();
 
 	// ピッチ取得
 	val.Clear();
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("mainImageBufferPitch"), 0, &val, lay))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferPitch"), 0, &val, lay))) return false;
 	pitch = (long)val.AsInteger();
 
 	// 正常な値かどうか
@@ -44,11 +54,13 @@ GetLayerSize(iTJSDispatch2 *lay, long &w, long &h, long &pitch)
 static bool
 GetLayerBufferAndSize(iTJSDispatch2 *lay, long &w, long &h, WrtRefT &ptr, long &pitch)
 {
+	iTJSDispatch2 *layerClass = getLayerClass();
+	
 	if (!GetLayerSize(lay, w, h, pitch)) return false;
 
 	// バッファ取得
 	tTJSVariant val;
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("mainImageBufferForWrite"), 0, &val, lay))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), 0, &val, lay))) return false;
 	ptr = reinterpret_cast<WrtRefT>(val.AsInteger());
 	return  (ptr != 0);
 }
@@ -146,6 +158,8 @@ fillAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispa
 static tjs_error TJS_INTF_METHOD
 copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
 {
+	iTJSDispatch2 *layerClass = getLayerClass();
+
 	ReadRefT sbuf = 0;
 	WrtRefT  dbuf = 0;
 	long w, h, spitch, dpitch, threshold = -1;
@@ -156,19 +170,20 @@ copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 	if (!GetLayerSize(lay, w, h, spitch)) {
 		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
 	}
+
 	tTJSVariant val;
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("mainImageBuffer"), 0, &val, lay)) ||
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBuffer"), 0, &val, lay)) ||
 		(sbuf = reinterpret_cast<ReadRefT>(val.AsInteger())) == NULL) {
 		TVPThrowExceptionMessage(TJS_W("src has no image."));
 	}
 
 	val.Clear();
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("provinceImageBufferForWrite"), 0, &val, lay)) ||
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferForWrite"), 0, &val, lay)) ||
 		(dbuf = reinterpret_cast<WrtRefT>(val.AsInteger())) == NULL) {
 		TVPThrowExceptionMessage(TJS_W("dst has no province image."));
 	}
 	val.Clear();
-	if (TJS_FAILED(lay->PropGet(0, TJS_W("provinceImageBufferPitch"), 0, &val, lay)) ||
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferPitch"), 0, &val, lay)) ||
 		(dpitch = (long)val.AsInteger()) == 0) {
 		TVPThrowExceptionMessage(TJS_W("dst has no province pitch."));
 	}
@@ -202,6 +217,8 @@ copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 static tjs_error TJS_INTF_METHOD
 clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *dst)
 {
+	iTJSDispatch2 *layerClass = getLayerClass();
+
 	ReadRefT sbuf = 0;
 	WrtRefT  dbuf = 0;
 	iTJSDispatch2 *src = 0;
@@ -212,6 +229,7 @@ clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSD
 	unsigned char clrval = 0;
 	bool clr = false;
 	if (numparams < 7) return TJS_E_BADPARAMCOUNT;
+
 	dx  = (long)param[0]->AsInteger();
 	dy  = (long)param[1]->AsInteger();
 	src =       param[2]->AsObjectNoAddRef();
@@ -263,10 +281,10 @@ clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSD
 	if (w <= 0 || h <= 0) goto none;
 
 	// バッファ取得
-	if (TJS_FAILED(src->PropGet(0, TJS_W("mainImageBuffer"), 0, &val, src))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBuffer"), 0, &val, src))) return false;
 	sbuf = reinterpret_cast<ReadRefT>(val.AsInteger());
 
-	if (TJS_FAILED(dst->PropGet(0, TJS_W("mainImageBufferForWrite"), 0, &val, dst))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), 0, &val, dst))) return false;
 	dbuf = reinterpret_cast<WrtRefT>(val.AsInteger());
 
 	if (!sbuf || !dbuf) TVPThrowExceptionMessage(TJS_W("Layer has no images."));
@@ -305,6 +323,8 @@ none:
 static tjs_error TJS_INTF_METHOD
 fillByProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
 {
+	iTJSDispatch2 *layerClass = getLayerClass();
+	
 	if (numparams < 2) return TJS_E_BADPARAMCOUNT;
 	unsigned char index = (int)*param[0];
 	DWORD color = (int)*param[1];
@@ -320,11 +340,11 @@ fillByProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJS
 	long spitch;
 	{
 		tTJSVariant val;
-		if (TJS_FAILED(lay->PropGet(0, TJS_W("provinceImageBuffer"), 0, &val, lay)) ||
+		if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBuffer"), 0, &val, lay)) ||
 			(sbuf = reinterpret_cast<ReadRefT>(val.AsInteger())) == NULL) {
 			TVPThrowExceptionMessage(TJS_W("no province image."));
 		}
-		if (TJS_FAILED(lay->PropGet(0, TJS_W("provinceImageBufferPitch"), 0, &val, lay)) ||
+		if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferPitch"), 0, &val, lay)) ||
 			(spitch = (long)val.AsInteger()) == 0) {
 			TVPThrowExceptionMessage(TJS_W("no province pitch."));
 		}
