@@ -1605,7 +1605,7 @@ struct PadEx
 				}
 			}
 		}
-		return (OrigWndProc ? OrigWndProc(hwnd, uMsg, wParam, lParam)
+		return (OrigWndProc ? CallWindowProc(OrigWndProc, hwnd, uMsg, wParam, lParam)
 				:         ::DefWindowProc(hwnd, uMsg, wParam, lParam));
 	}
 
