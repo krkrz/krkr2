@@ -12,6 +12,7 @@
 
 #include "tjsCommHead.h"
 
+#include "DebugIntf.h"
 #include "LayerBitmapIntf.h"
 #include "MsgIntf.h"
 #include "Resampler.h"
@@ -78,7 +79,7 @@ static float sBmFactor[] =
 
 //---------------------------------------------------------------------------
 static const tjs_int TVPMaxThreadNum = 8;
-tjs_int TVPDrawThreadNum = 0;
+tjs_int TVPDrawThreadNum = 1;
 typedef void (*TVP_THREAD_TASK_FUNC)(void *);
 typedef void * TVP_THREAD_PARAM;
 struct ThreadInfo {
@@ -151,7 +152,8 @@ static void BeginThreadTask(tjs_int taskNum)
   TVPThreadTaskNum = taskNum;
   TVPThreadTaskCount = 0;
   TVPRunningThreadCount = 0;
-  tjs_int threadNum = GetThreadNum();
+  tjs_int extraThreadNum = GetThreadNum() - 1;
+  if (taskNum  > 1)
   if (TVPProcesserIdList.empty()) {
     DWORD processAffinityMask, systemAffinityMask;
     GetProcessAffinityMask(GetCurrentProcess(),
@@ -164,7 +166,7 @@ static void BeginThreadTask(tjs_int taskNum)
     if (TVPProcesserIdList.empty())
       TVPProcesserIdList.push_back(MAXIMUM_PROCESSORS);
   }
-  while (TVPThreadList.size() < threadNum) {
+  while (TVPThreadList.size() < extraThreadNum) {
     ThreadInfo *threadInfo = new ThreadInfo();
     threadInfo->readyToExit = false;
     threadInfo->pingEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -176,7 +178,7 @@ static void BeginThreadTask(tjs_int taskNum)
     TVPThreadList.push_back(threadInfo);
     TVPPongEventList.push_back(threadInfo->pongEvent);
   }
-  while (TVPThreadList.size() > threadNum) {
+  while (TVPThreadList.size() > extraThreadNum) {
     ThreadInfo *threadInfo = TVPThreadList.back();
     threadInfo->readyToExit = true;
     SetEvent(threadInfo->pingEvent);
@@ -211,10 +213,12 @@ static void ExecThreadTask(TVP_THREAD_TASK_FUNC func,
 //---------------------------------------------------------------------------
 static void EndThreadTask(void) 
 {
-  WaitForMultipleObjects(TVPRunningThreadCount,
-                         &(TVPPongEventList[0]),
-                         TRUE,
-                         INFINITE);
+  if (TVPRunningThreadCount) {
+    WaitForMultipleObjects(TVPRunningThreadCount,
+                           &(TVPPongEventList[0]),
+                           TRUE,
+                           INFINITE);
+  }
 }
 //---------------------------------------------------------------------------
 
