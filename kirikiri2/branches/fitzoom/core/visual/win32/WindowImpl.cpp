@@ -200,7 +200,8 @@ enum tTVPFullScreenUsingEngineZoomMode
 {
 	fszmNone, //!< no zoom by the engine
 	fszmInner, //!< inner fit on the monitor (uncovered areas may be filled with black)
-	fszmOuter //!< outer fit on the monitor (primary layer may jut out of the monitor)
+	fszmOuter, //!< outer fit on the monitor (primary layer may jut out of the monitor)
+	fszmFit    //!< fit to on monitor
 };
 static tTVPFullScreenUsingEngineZoomMode TVPPreferredFullScreenUsingEngineZoomMode = fszmInner;
 
@@ -243,6 +244,8 @@ static void TVPInitFullScreenOptions()
 			TVPPreferredFullScreenUsingEngineZoomMode = fszmInner;
 		if(str == TJS_W("outer"))
 			TVPPreferredFullScreenUsingEngineZoomMode = fszmOuter;
+		if(str == TJS_W("fit"))
+			TVPPreferredFullScreenUsingEngineZoomMode = fszmFit;
 		else if(str == TJS_W("no"))
 			TVPPreferredFullScreenUsingEngineZoomMode = fszmNone;
 	}
@@ -738,6 +741,7 @@ void TVPMakeFullScreenModeCandidates(
 	TVPAddLog(TJS_W("(info) condition: zoom mode: ") + ttstr(
 		zoom_mode == fszmInner ? TJS_W("inner") :
 		zoom_mode == fszmOuter ? TJS_W("outer") :
+		zoom_mode == fszmFit ? TJS_W("fit") :
 			TJS_W("none")));
 
 	// get original screen metrics
@@ -879,7 +883,14 @@ void TVPMakeFullScreenModeCandidates(
 		candidate.Width = i->Width;
 		candidate.Height = i->Height;
 		candidate.BitsPerPixel = i->BitsPerPixel;
-		if(zoom_mode != fszmNone)
+		candidate.ZoomFit = 0;
+
+		if(zoom_mode == fszmFit) {
+			// zooming disabled
+			candidate.ZoomFit = 1;
+			candidate.ZoomDenom = candidate.ZoomNumer = 1;
+		}
+		else if(zoom_mode != fszmNone)
 		{
 			double width_r  = (double)candidate.Width /  (double)preferred.Width;
 			double height_r = (double)candidate.Height / (double)preferred.Height;
@@ -2043,6 +2054,11 @@ tjs_int tTJSNI_Window::GetZoomDenom() const
 	return Form->GetZoomDenom();
 }
 //---------------------------------------------------------------------------
+bool tTJSNI_Window::GetZoomFit() const
+{
+	if(!Form) return 0;
+	return Form->GetZoomFit();
+}
 
 
 

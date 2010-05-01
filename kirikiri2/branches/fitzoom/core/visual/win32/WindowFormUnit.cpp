@@ -336,6 +336,7 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 
 	PaintBox = NULL;
 
+	ZoomFit = false;
 	ZoomDenom = ActualZoomDenom = 1;
 	ZoomNumer = ActualZoomNumer = 1;
 
@@ -823,11 +824,15 @@ void __fastcall TTVPWindowForm::SetDrawDeviceDestRect()
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::InternalSetPaintBoxSize()
 {
-	tjs_int l = MulDiv(LayerLeft,   ActualZoomNumer, ActualZoomDenom);
-	tjs_int t = MulDiv(LayerTop,    ActualZoomNumer, ActualZoomDenom);
-	tjs_int w = MulDiv(LayerWidth,  ActualZoomNumer, ActualZoomDenom);
-	tjs_int h = MulDiv(LayerHeight, ActualZoomNumer, ActualZoomDenom);
-	PaintBox->SetBounds(l, t, w, h);
+	if (ZoomFit) {
+		PaintBox->SetBounds(0, 0, ScrollBox->Width, ScrollBox->Height);
+	} else {
+		tjs_int l = MulDiv(LayerLeft,   ActualZoomNumer, ActualZoomDenom);
+		tjs_int t = MulDiv(LayerTop,    ActualZoomNumer, ActualZoomDenom);
+		tjs_int w = MulDiv(LayerWidth,  ActualZoomNumer, ActualZoomDenom);
+		tjs_int h = MulDiv(LayerHeight, ActualZoomNumer, ActualZoomDenom);
+		PaintBox->SetBounds(l, t, w, h);
+	}
 	SetDrawDeviceDestRect();
 }
 //---------------------------------------------------------------------------
@@ -1347,12 +1352,20 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 
 			// determine fullscreen zoom factor and ScrollBox size
 			int sb_w, sb_h, zoom_d, zoom_n;
-			zoom_d = TVPFullScreenMode.ZoomDenom;
-			zoom_n = TVPFullScreenMode.ZoomNumer;
-			sb_w = desired_fs_w * zoom_n / zoom_d;
-			sb_h = desired_fs_h * zoom_n / zoom_d;
+			if (TVPFullScreenMode.ZoomFit) {
+				ZoomFit = true;
+				sb_w = fs_w;
+				sb_h = fs_h;
+				SetZoom(1, 1, false);
+			} else {
+				ZoomFit = false;
+				zoom_d = TVPFullScreenMode.ZoomDenom;
+				zoom_n = TVPFullScreenMode.ZoomNumer;
+				sb_w = desired_fs_w * zoom_n / zoom_d;
+				sb_h = desired_fs_h * zoom_n / zoom_d;
+				SetZoom(zoom_n, zoom_d, false);
+			}
 
-			SetZoom(zoom_n, zoom_d, false);
 
 			// indicate fullscreen state
 			TVPFullScreenedWindow = this;
@@ -1398,6 +1411,7 @@ void __fastcall TTVPWindowForm::SetFullScreenMode(bool b)
 			TVPFullScreenedWindow = NULL;
 
 			// revert zooming factor
+			ZoomFit = false;
 			ActualZoomDenom = ZoomDenom;
 			ActualZoomNumer = ZoomNumer;
 

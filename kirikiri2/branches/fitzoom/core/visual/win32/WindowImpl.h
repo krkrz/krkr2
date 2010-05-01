@@ -157,6 +157,7 @@ struct tTVPScreenMode
 //! @brief		Structure for monitor screen mode candidate
 struct tTVPScreenModeCandidate : tTVPScreenMode
 {
+	tjs_int ZoomFit;   //!< fit zoom mode flag
 	tjs_int ZoomNumer; //!< zoom ratio numer
 	tjs_int ZoomDenom; //!< zoom ratio denom
 	tjs_int RankZoomIn;
@@ -167,6 +168,7 @@ struct tTVPScreenModeCandidate : tTVPScreenMode
 	ttstr Dump() const
 	{
 		return tTVPScreenMode::Dump() +
+			TJS_W(", ZoomFit=") + ttstr(ZoomFit) +
 			TJS_W(", ZoomNumer=") + ttstr(ZoomNumer) +
 			TJS_W(", ZoomDenom=") + ttstr(ZoomDenom) +
 			TJS_W(", RankZoomIn=") + ttstr(RankZoomIn) +
@@ -400,7 +402,8 @@ public:
 	tjs_int GetZoomNumer() const;
 	void SetZoomDenom(tjs_int n);
 	tjs_int GetZoomDenom() const;
-
+	bool GetZoomFit() const;
+	
 protected:
 };
 //---------------------------------------------------------------------------
