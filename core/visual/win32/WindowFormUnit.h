@@ -218,6 +218,7 @@ private:
 	tjs_int ZoomNumer; // Zooming factor numerator (setting)
 	tjs_int ActualZoomDenom; // Zooming factor denominator (actual)
 	tjs_int ActualZoomNumer; // Zooming factor numerator (actual)
+	bool ZoomFit;         // Fit Zooming mode
 
 	//-- menu related
 	bool MenuBarVisible;
@@ -305,6 +306,7 @@ public:
 	void __fastcall SetZoomDenom(tjs_int d)
 		{ SetZoom(ZoomNumer, d); }
 	tjs_int __fastcall GetZoomDenom() const { return ZoomDenom; }
+	bool __fastcall GetZoomFit() const { return ZoomFit; }
 
 	void __fastcall SetImeMode(tTVPImeMode mode);
 	void __fastcall SetDefaultImeMode(tTVPImeMode mode, bool reset);
