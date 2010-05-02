@@ -28,6 +28,8 @@ static const char *copyright =
 #include "unzip.h"
 #include "zip.h"
 
+#include "narrow.h"
+
 #define BUFFERSIZE (16384)
 #define CASESENSITIVITY (0)
 #define MAXFILENAME (256)
@@ -134,34 +136,6 @@ static void setDateProp(iTJSDispatch2 *obj, const tjs_char *name, FILETIME &file
 		}
 	}
 }
-
-
-
-/**
- * C文字列処理用
- */
-class NarrowString {
-private:
-	tjs_nchar *_data;
-public:
-	NarrowString(ttstr &str) : _data(NULL) {
-		tjs_int len = str.GetNarrowStrLen();
-		_data = new tjs_nchar[len+1];
-		str.ToNarrowStr(_data, len+1);
-	}
-	~NarrowString() {
-		delete[] _data;
-	}
-
-	const tjs_nchar *data() {
-		return _data;
-	}
-
-	operator const char *() const
-	{
-		return (const char *)_data;
-	}
-};
 
 /**
  * ZIP圧縮処理クラス
@@ -527,12 +501,16 @@ NCB_REGISTER_CLASS(Unzip) {
 	RawCallback("extract", &ClassT::extract, 0);
 }
 
+extern void initZipStorage();
+extern void doneZipStorage();
+
 /**
  * 登録処理前
  */
 static void PreRegistCallback()
 {
 	TVPAddImportantLog(ttstr(copyright));
+	initZipStorage();
 }
 
 /**
@@ -558,6 +536,15 @@ static void PreUnregistCallback()
 	RELEASE(dateSetTime);
 }
 
+/**
+ * 開放処理後
+ */
+static void PostUnregistCallback()
+{
+	doneZipStorage();
+}
+
 NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
 NCB_POST_REGIST_CALLBACK(PostRegistCallback);
 NCB_PRE_UNREGIST_CALLBACK(PreUnregistCallback);
+NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
