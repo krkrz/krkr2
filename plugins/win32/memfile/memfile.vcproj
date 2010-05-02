@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="shift_jis"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="memfile"
 	ProjectGUID="{14C4F76F-8B7D-49F4-9037-579BE2D9C485}"
 	RootNamespace="memfile"
