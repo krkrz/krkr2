@@ -1,4 +1,5 @@
 Plugins.link("minizip.dll");
+Plugins.link("fstat.dll");
 
 function showDate(date) {
 	if (date !== void && date !== null) {
@@ -6,15 +7,14 @@ function showDate(date) {
 	}
 }
 var win = new Window();
-win.add(new Layer(win, null));
 win.visible = true;
 
 Debug.console.visible = true;
 
 var zip = new Zip();
 zip.open("test.zip", true);
-zip.add("file1.txt", "file1.txt");
-zip.add("file2.txt", "folder/file2.txt");
+zip.add("file1.txt", "zipfile1.txt");
+zip.add("file2.txt", "folder/zipfile2.txt");
 zip.close();
 
 var unzip = new Unzip();
@@ -34,3 +34,10 @@ for (var i=0;i<list.count;i++) {
 	unzip.extract(info.filename, "extract/" + info.filename);
 }
 unzip.close();
+
+Storages.mountZip("test", "test.zip");
+Storages.exportFile("zip://test/zipfile1.txt", "export_file1.txt");
+Storages.exportFile("zip://test/folder/zipfile2.txt", "export_file2.txt");
+Storages.addAutoPath("zip://test/");
+Storages.exportFile("zipfile1.txt", "export_zipfile1.txt");
+Storages.unmountZip("test");

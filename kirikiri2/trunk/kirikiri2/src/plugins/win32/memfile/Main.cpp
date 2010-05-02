@@ -117,7 +117,9 @@ public:
 		if (pDirectory) {
 			Directory::const_iterator it = pDirectory->begin();
 			while (it != pDirectory->end()) {
-				lister->Add(it->first);
+				if (!it->second->isDirectory()) {
+					lister->Add(it->first);
+				}
 				it++;
 			}
 		}
@@ -591,8 +593,6 @@ public:
 		if (mem == NULL) {
 			mem = new MemStorage();
 			TVPRegisterStorageMedia(mem);
-			// ‚±‚ê‚ð‚µ‚Ä‚¨‚©‚È‚¢‚Æ getFullPath() ‚È‚Ç‚ª‚¤‚Ü‚­“®‚¢‚Ä‚­‚ê‚È‚¢
-			TVPSetCurrentDirectory(BASENAME L"://./");
 		}
 	}
 

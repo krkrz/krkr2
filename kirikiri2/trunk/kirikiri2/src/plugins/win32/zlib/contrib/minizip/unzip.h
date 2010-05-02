@@ -70,6 +70,7 @@ typedef unzFile__ *unzFile;
 typedef voidp unzFile;
 #endif
 
+typedef voidp unzData;
 
 #define UNZ_OK                          (0)
 #define UNZ_END_OF_LIST_OF_FILE         (-100)
@@ -369,12 +370,19 @@ extern int ZEXPORT unzOpenCurrentFile3 OF((unzFile file,
          but you CANNOT set method parameter as NULL
 */
 
+extern int ZEXPORT unzOpenData OF((unzFile file, unzData *data,
+								   int* method,
+								   int* level,
+								   int raw,
+								   const char* password));
 
 extern int ZEXPORT unzCloseCurrentFile OF((unzFile file));
 /*
   Close the file in zip opened with unzOpenCurrentFile
   Return UNZ_CRCERROR if all the file was read but the CRC is not good
 */
+
+extern int ZEXPORT unzCloseData OF((unzData data));
 
 extern int ZEXPORT unzReadCurrentFile OF((unzFile file,
                       voidp buf,
@@ -390,17 +398,28 @@ extern int ZEXPORT unzReadCurrentFile OF((unzFile file,
     (UNZ_ERRNO for IO error, or zLib error for uncompress error)
 */
 
+extern int ZEXPORT unzReadData OF((unzData data,
+                      voidp buf,
+                      unsigned len));
+
+
 extern z_off_t ZEXPORT unztell OF((unzFile file));
+
+extern ZPOS64_T ZEXPORT unztellData OF((unzData data));
 
 extern ZPOS64_T ZEXPORT unztell64 OF((unzFile file));
 /*
   Give the current position in uncompressed data
 */
 
+extern ZPOS64_T ZEXPORT unztell64Data OF((unzData data));
+
 extern int ZEXPORT unzeof OF((unzFile file));
 /*
   return 1 if the end of file was reached, 0 elsewhere
 */
+
+extern int ZEXPORT unzeofData OF((unzData data));
 
 extern int ZEXPORT unzGetLocalExtrafield OF((unzFile file,
                                              voidp buf,
