@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <windows.h>
 #include "ncbind/ncbind.hpp"
 #include <map>
@@ -150,7 +151,7 @@ public:
 		if (pDirectory) {
 			const tjs_char *p = name.c_str();
 			const tjs_char *q;
-			if ((q = wcsstr(p, L"/"))) {
+			if ((q = wcschr(p, '/'))) {
 				if (q == p) {
 					return NULL;
 				}
@@ -215,7 +216,7 @@ public:
 		if (pDirectory && name != "" && name.GetLastChar() != '/') {
 			const tjs_char *p = name.c_str();
 			const tjs_char *q;
-			if ((q = wcsstr(p, L"/"))) {
+			if ((q = wcschr(p, '/'))) {
 				if (q == p) {
 					return NULL;
 				}
@@ -240,7 +241,7 @@ public:
 		if (pDirectory && name != "") {
 			const tjs_char *p = name.c_str();
 			const tjs_char *q;
-			if ((q = wcsstr(p, L"/"))) {
+			if ((q = wcschr(p, '/'))) {
 				if (q == p) {
 					return NULL;
 				}
@@ -397,46 +398,79 @@ class MemStorage : public iTVPStorageMedia
 {
 
 public:
-	MemStorage() : root(NULL, ttstr("root"), true) {}
+	MemStorage() : refCount(1), root(NULL, ttstr("root"), true) {}
 
-	virtual void AddRef() {};
+	~MemStorage() {;}
 
-	virtual void Release() {};
-	
+	virtual void TJS_INTF_METHOD AddRef() {
+		refCount++;
+	};
+
+	virtual void TJS_INTF_METHOD Release() {
+		if (refCount == 1) {
+			delete this;
+		} else {
+			refCount--;
+		}
+	};
+
 	// returns media name like "file", "http" etc.
-	virtual ttstr GetName() {
-		ttstr name(BASENAME);
-		return name;
+	virtual void TJS_INTF_METHOD GetName(ttstr &name) {
+		name = BASENAME;
 	}
 
-	//	virtual ttstr IsCaseSensitive() = 0;
+	//	virtual ttstr TJS_INTF_METHOD IsCaseSensitive() = 0;
 	// returns whether this media is case sensitive or not
 
 	// normalize domain name according with the media's rule
-	virtual void NormalizeDomainName(ttstr &name) {
+	virtual void TJS_INTF_METHOD NormalizeDomainName(ttstr &name) {
 		// nothing to do
 	}
 
 	// normalize path name according with the media's rule
-	virtual void NormalizePathName(ttstr &name) {
+	virtual void TJS_INTF_METHOD NormalizePathName(ttstr &name) {
 		// nothing to do
 	}
 
+	void getFilename(const ttstr &name, ttstr &dname, ttstr &fname) {
+		const tjs_char *p = name.c_str();
+		const tjs_char *q;
+		if ((q = wcschr(p, '/'))) {
+			dname = ttstr(p, q-p);
+			fname = ttstr(q+1);
+			if (dname != L".") {
+				TVPThrowExceptionMessage(TJS_W("no such domain:%1"), dname);
+			}
+		} else {
+			TVPThrowExceptionMessage(TJS_W("invalid path:%1"), name);
+		}
+	}
+	
 	// check file existence
-	virtual bool CheckExistentStorage(const ttstr &name) {
-		return root.findFile(name) != NULL;
+	virtual bool TJS_INTF_METHOD CheckExistentStorage(const ttstr &name) {
+		ttstr dname, fname;
+		getFilename(name, dname, fname);
+		return root.findFile(fname) != NULL;
 	}
 
 	// open a storage and return a tTJSBinaryStream instance.
 	// name does not contain in-archive storage name but
 	// is normalized.
-	virtual tTJSBinaryStream * Open(const ttstr & name, tjs_uint32 flags) {
-		return root.open(name, flags);
+	virtual tTJSBinaryStream * TJS_INTF_METHOD Open(const ttstr & name, tjs_uint32 flags) {
+		ttstr dname, fname;
+		getFilename(name, dname, fname);
+		tTJSBinaryStream *ret = root.open(fname, flags);
+		if (!ret) {
+			TVPThrowExceptionMessage(TJS_W("cannot open memfile:%1"), name);
+		}
+		return ret;
 	}
 
 	// list files at given place
-	virtual void GetListAt(const ttstr &name, iTVPStorageLister * lister) {
-		const FileInfo *directory = root.findDirectory(name);
+	virtual void TJS_INTF_METHOD GetListAt(const ttstr &name, iTVPStorageLister * lister) {
+		ttstr dname, fname;
+		getFilename(name, dname, fname);
+		const FileInfo *directory = root.findDirectory(fname);
 		if (directory) {
 			directory->getDirectory(lister);
 		}
@@ -445,8 +479,8 @@ public:
 	// basically the same as above,
 	// check wether given name is easily accessible from local OS filesystem.
 	// if true, returns local OS native name. otherwise returns an empty string.
-	virtual ttstr GetLocallyAccessibleName(const ttstr &name) {
-		return ttstr();
+	virtual void TJS_INTF_METHOD GetLocallyAccessibleName(ttstr &name) {
+		name = "";
 	}
 
 public:
@@ -541,6 +575,7 @@ public:
 	}
 	
 private:
+	tjs_uint refCount;
 	FileInfo root;
 };
 
@@ -556,19 +591,22 @@ public:
 		if (mem == NULL) {
 			mem = new MemStorage();
 			TVPRegisterStorageMedia(mem);
+			// これをしておかないと getFullPath() などがうまく動いてくれない
+			TVPSetCurrentDirectory(BASENAME L"://./");
 		}
 	}
 
 	static void doneMemoryFile() {
 		if (mem != NULL) {
-			delete mem;
+			TVPUnregisterStorageMedia(mem);
+			mem->Release();
 			mem = NULL;
 		}
 	}
 
 	/**
 	 * メモリファイルの存在確認
-	 * @param filename 対象ファイル名 (mem://はつけない)
+	 * @param filename 対象ファイル名 (mem:///はつけない)
 	 * @return 存在したら true
 	 */
 	static bool isExistMemoryFile(ttstr filename) {
@@ -577,7 +615,7 @@ public:
 
 	/**
 	 * メモリディレクトリの存在確認
-	 * @param dirname 対象ディレクトリ名 (mem://はつけない)
+	 * @param dirname 対象ディレクトリ名 (mem:///はつけない)
 	 * @return 存在したら true
 	 */
 	static bool isExistMemoryDirectory(ttstr filename) {
@@ -586,7 +624,7 @@ public:
 	
 	/**
 	 * メモリファイルを削除する
-	 * @param filename 対象ファイル名 (mem://はつけない)
+	 * @param filename 対象ファイル名 (mem:///はつけない)
 	 * @return ファイルが削除されたら true
 	 */
 	static bool deleteMemoryFile(ttstr filename) {
@@ -595,7 +633,7 @@ public:
 
 	/**
 	 * メモリディレクトリを削除する
-	 * @param dirname 対象ディレクトリ名 (mem://はつけない)
+	 * @param dirname 対象ディレクトリ名 (mem:///はつけない)
 	 * @return ディレクトリが削除されたら true
 	 */
 	static bool deleteMemoryDirectory(ttstr dirname) {
@@ -604,7 +642,7 @@ public:
 
 	/**
 	 * メモリファイル情報を取得する
-	 * @param filename 対象ファイル名 (mem://はつけない)
+	 * @param filename 対象ファイル名 (mem:///はつけない)
 	 * @return ファイル情報 %[name:名前, size:サイズ, isDirectory:ディレクトリならtrue]
 	 */
 	static tTJSVariant getMemoryFileInfo(ttstr filename) {
@@ -613,7 +651,7 @@ public:
 	
 	/**
 	 * メモリファイル情報を取得する
-	 * @param filename 対象ファイル名 (mem://はつけない)
+	 * @param filename 対象ファイル名 (mem:///はつけない)
 	 * @return ファイルが存在したら内容を octet で返す。なければ void
 	 */
 	static tTJSVariant getMemoryFileData(ttstr filename) {
@@ -622,7 +660,7 @@ public:
 
 	/**
 	 * メモリディレクトリ情報を取得する
-	 * @param dirname 対象ディレクトリ名 (mem://はつけない)
+	 * @param dirname 対象ディレクトリ名 (mem:///はつけない)
 	 * @return ファイル情報の配列 %[name:名前, size:サイズ, isDirectory:ディレクトリならtrue]
 	 */
 	static tTJSVariant getMemoryDirectory(ttstr dirname) {
@@ -636,8 +674,6 @@ protected:
 MemStorage *StoragesMemFile::mem = NULL;
 
 NCB_ATTACH_CLASS(StoragesMemFile, Storages) {
-//	NCB_METHOD(initMemoryFile);
-//	NCB_METHOD(doneMemoryFile);
 	NCB_METHOD(isExistMemoryFile);
 	NCB_METHOD(isExistMemoryDirectory);
 	NCB_METHOD(deleteMemoryFile);
