@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\storage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\tp_stub.cpp"
 				>
 			</File>

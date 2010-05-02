@@ -90,3 +90,25 @@ class Unzip {
 	 */
 	function close();
 }
+
+/**
+ * Storages クラス機能拡張
+ */
+class Storages {
+
+	/**
+	 * zipファイルをファイルシステムとして mount します
+	 * zip://ドメイン名/ファイル名 でアクセス可能になります。読み込み専用になります。
+	 * @param name ドメイン名
+	 * @param zipfile マウントするZIPファイル名
+	 * @return マウントに成功したら true
+	 */
+	function mountZip(name, zipfile);
+
+	/**
+	 * zipファイルを unmount します
+	 * @param name ドメイン名
+	 * @return アンマウントに成功したら true
+	 */
+	function unmountZip(name);
+}
