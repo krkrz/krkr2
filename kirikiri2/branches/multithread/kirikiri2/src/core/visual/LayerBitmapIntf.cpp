@@ -153,7 +153,6 @@ static void BeginThreadTask(tjs_int taskNum)
   TVPThreadTaskCount = 0;
   TVPRunningThreadCount = 0;
   tjs_int extraThreadNum = GetThreadNum() - 1;
-  if (taskNum  > 1)
   if (TVPProcesserIdList.empty()) {
     DWORD processAffinityMask, systemAffinityMask;
     GetProcessAffinityMask(GetCurrentProcess(),
