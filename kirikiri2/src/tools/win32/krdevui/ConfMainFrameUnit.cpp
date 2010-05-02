@@ -14,6 +14,7 @@
 	#include "tjsCommHead.h"
 #endif
 
+#include <Shlobj.h>
 #include <vector>
 #include <stdio.h>
 #include <Registry.hpp>
