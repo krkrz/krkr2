@@ -1,7 +1,7 @@
 /*
 
 	TVP2 ( T Visual Presenter 2 )  A script authoring tool
-	Copyright (C) 2000 W.Dee <dee@kikyou.info> and contributors
+	Copyright (C) 2000-2009 W.Dee <dee@kikyou.info> and contributors
 
 	See details of license at "license.txt"
 */
@@ -750,6 +750,13 @@ class tTJSNativeClassForPlugin : public tTJSNativeClass { };
 		TJSCreateNativeClassMethod(NCM_##name::Process), \
 		(object)->GetClassName().c_str(), nitMethod);
 
+#define TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(object, name) \
+		TJS_END_NATIVE_METHOD_DECL_INT \
+		TJSNativeClassRegisterNCM((object), TJS_W(#name), \
+		TJSCreateNativeClassMethod(NCM_##name::Process), \
+		(object)->GetClassName().c_str(), nitMethod, TJS_STATICMEMBER);
+
+
 #define TJS_DECL_EMPTY_FINALIZE_METHOD \
 	TJS_BEGIN_NATIVE_METHOD_DECL(finalize) \
 	{ return TJS_S_OK; } \
@@ -807,6 +814,12 @@ class tTJSNativeClassForPlugin : public tTJSNativeClass { };
 		;TJSNativeClassRegisterNCM(TJS_NCM_REG_THIS, TJS_W(#name), \
 		TJSCreateNativeClassProperty(NCM_##name::Get, NCM_##name::Set), \
 		__classname, nitProperty, TJS_STATICMEMBER);
+
+#define TJS_END_NATIVE_STATIC_PROP_DECL_OUTER(object, name) \
+		;TJSNativeClassRegisterNCM((object), TJS_W(#name), \
+		TJSCreateNativeClassProperty(NCM_##name::Get, NCM_##name::Set), \
+		(object)->GetClassName().c_str(), nitProperty, TJS_STATICMEMBER);
+
 
 #define TJS_BEGIN_NATIVE_PROP_GETTER \
 		static tjs_error TJS_INTF_METHOD Get(tTJSVariant *result, \
@@ -4413,42 +4426,42 @@ class tTJSBinaryStream;
 class iTVPStorageLister // callback class for GetListAt
 {
 public:
-	virtual void Add(const ttstr &file) = 0;
+	virtual void TJS_INTF_METHOD Add(const ttstr &file) = 0;
 };
 //---------------------------------------------------------------------------
 class iTVPStorageMedia
 {
 public:
-	virtual void AddRef() = 0;
-	virtual void Release() = 0;
+	virtual void TJS_INTF_METHOD AddRef() = 0;
+	virtual void TJS_INTF_METHOD Release() = 0;
 
-	virtual ttstr GetName() = 0;
+	virtual void TJS_INTF_METHOD GetName(ttstr &name) = 0;
 		// returns media name like "file", "http" etc.
 
-//	virtual ttstr IsCaseSensitive() = 0;
+//	virtual bool TJS_INTF_METHOD IsCaseSensitive() = 0;
 		// returns whether this media is case sensitive or not
 
-	virtual void NormalizeDomainName(ttstr &name) = 0;
+	virtual void TJS_INTF_METHOD NormalizeDomainName(ttstr &name) = 0;
 		// normalize domain name according with the media's rule
 
-	virtual void NormalizePathName(ttstr &name) = 0;
+	virtual void TJS_INTF_METHOD NormalizePathName(ttstr &name) = 0;
 		// normalize path name according with the media's rule
 
 	// "name" below is normalized but does not contain media, eg.
 	// not "media://domain/path" but "domain/path"
 
-	virtual bool CheckExistentStorage(const ttstr &name) = 0;
+	virtual bool TJS_INTF_METHOD CheckExistentStorage(const ttstr &name) = 0;
 		// check file existence
 
-	virtual tTJSBinaryStream * Open(const ttstr & name, tjs_uint32 flags) = 0;
+	virtual tTJSBinaryStream * TJS_INTF_METHOD Open(const ttstr & name, tjs_uint32 flags) = 0;
 		// open a storage and return a tTJSBinaryStream instance.
 		// name does not contain in-archive storage name but
 		// is normalized.
 
-	virtual void GetListAt(const ttstr &name, iTVPStorageLister * lister) = 0;
+	virtual void TJS_INTF_METHOD GetListAt(const ttstr &name, iTVPStorageLister * lister) = 0;
 		// list files at given place
 
-	virtual ttstr GetLocallyAccessibleName(const ttstr &name) = 0;
+	virtual void TJS_INTF_METHOD GetLocallyAccessibleName(ttstr &name) = 0;
 		// basically the same as above,
 		// check wether given name is easily accessible from local OS filesystem.
 		// if true, returns local OS native name. otherwise returns an empty string.
