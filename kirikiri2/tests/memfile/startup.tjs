@@ -1,0 +1,37 @@
+Debug.console.visible = true;
+Plugins.link("memfile.dll");
+Plugins.link("fstat.dll");
+
+class MyWindow extends Window {
+
+	function MyWindow() {
+		super.Window(...);
+	}
+	
+	var  a = [1,2,3];
+	var b;
+
+	function test(name) {
+		Debug.message("%s -> %s".sprintf(name, Storages.getFullPath(name)));
+		try {
+			a.saveStruct(name);
+			Debug.message("saveSuccess:%s:%s".sprintf(name, Scripts.evalStorage(name)));
+		} catch (e) {
+			Debug.message("saveError:%s:%s".sprintf(name, e.message));
+		}
+
+	}
+	
+	function onKeyDown(key) {
+		if (key == 13) {
+			test("mem:hoge");
+			test("mem:abc/hoge");
+			test("mem:/abc/hoge");
+			test("mem://abc/hoge");
+			test("mem:///abc/hoge");
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;
