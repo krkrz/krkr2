@@ -157,7 +157,7 @@ class tTVPStorageMediaManager
 		tjs_int MediaNameLen;
 //		bool IsCaseSensitive;
 
-		tMediaRecord(iTVPStorageMedia *media) : MediaIntf(media)
+		tMediaRecord(iTVPStorageMedia *media) : MediaIntf(media), CurrentDomain("."), CurrentPath("/");
 			{ ttstr name; media->GetName(name); MediaNameLen = name.GetLen();
 			/*IsCaseSensitive = media->IsCaseSensitive();*/ }
 
