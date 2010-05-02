@@ -158,7 +158,7 @@ class tTVPStorageMediaManager
 //		bool IsCaseSensitive;
 
 		tMediaRecord(iTVPStorageMedia *media) : MediaIntf(media)
-			{ MediaNameLen = media->GetName().GetLen();
+			{ ttstr name; media->GetName(name); MediaNameLen = name.GetLen();
 			/*IsCaseSensitive = media->IsCaseSensitive();*/ }
 
 		const tjs_char *GetDomainAndPath(const ttstr &name)
@@ -223,11 +223,12 @@ tTVPStorageMediaManager::tMediaRecord *
 //---------------------------------------------------------------------------
 void tTVPStorageMediaManager::Register(iTVPStorageMedia * media)
 {
-	ttstr medianame = media->GetName();
+	ttstr medianame;
+	media->GetName(medianame);
 
 	tMediaRecord *rec = HashTable.Find(*(tMediaNameString*)&medianame);
 	if(rec)
-		TVPThrowExceptionMessage((TJS_W("Media name \"") + media->GetName() +
+		TVPThrowExceptionMessage((TJS_W("Media name \"") + medianame +
 			TJS_W("\" had already been registered")).c_str());
 
 	tMediaRecord new_rec(media);
@@ -237,11 +238,12 @@ void tTVPStorageMediaManager::Register(iTVPStorageMedia * media)
 //---------------------------------------------------------------------------
 void tTVPStorageMediaManager::Unregister(iTVPStorageMedia * media)
 {
-	ttstr medianame = media->GetName();
+	ttstr medianame;
+	media->GetName(medianame);
 
 	tMediaRecord *rec = HashTable.Find(*(tMediaNameString*)&medianame);
-	if(rec)
-		TVPThrowExceptionMessage((TJS_W("Media name \"") + media->GetName() +
+	if(!rec)
+		TVPThrowExceptionMessage((TJS_W("Media name \"") + medianame +
 			TJS_W("\" is not registered")).c_str());
 	HashTable.Delete(*(tMediaNameString*)&medianame);
 }
@@ -519,7 +521,9 @@ ttstr tTVPStorageMediaManager::GetLocallyAccessibleName(const ttstr &name)
 	// gateway for GetLocallyAccessibleName
 	// name must not be an in-archive storage name
 	tMediaRecord *rec = GetMediaRecord(name);
-	return rec->MediaIntf.GetObjectNoAddRef()->GetLocallyAccessibleName(rec->GetDomainAndPath(name));
+	ttstr dname = rec->GetDomainAndPath(name);
+	rec->MediaIntf.GetObjectNoAddRef()->GetLocallyAccessibleName(dname);
+	return dname;
 }
 //---------------------------------------------------------------------------
 
@@ -1108,7 +1112,7 @@ static tjs_uint TVPRebuildAutoPathTable()
 			{
 			public:
 				std::vector<ttstr> list;
-				void Add(const ttstr &file)
+				void TJS_INTF_METHOD Add(const ttstr &file)
 				{
 					list.push_back(file);
 				}
