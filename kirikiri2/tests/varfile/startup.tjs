@@ -1,0 +1,39 @@
+Debug.console.visible = true;
+Plugins.link("varfile.dll");
+Plugins.link("fstat.dll");
+
+var abc = %[];
+
+class MyWindow extends Window {
+
+	function MyWindow() {
+		super.Window(...);
+	}
+	
+	var  a = [1,2,3];
+	var b;
+
+	function test(name) {
+		var hoge = Storages.getFullPath(name);
+		Debug.message("%s -> %s".sprintf(name, Storages.getFullPath(name)));
+		try {
+			a.saveStruct(name);
+			Debug.message("saveSuccess:%s:%s".sprintf(name, Scripts.evalStorage(name)));
+		} catch (e) {
+			Debug.message("saveError:%s:%s".sprintf(name, e.message));
+		}
+	}
+	
+	function onKeyDown(key) {
+		if (key == 13) {
+			test("var:hoge");
+			test("var:abc/hoge");
+			test("var:/abc/hoge");
+			test("var://abc/hoge");
+			test("var:///abc/hoge");
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;
