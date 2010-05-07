@@ -786,8 +786,8 @@ static void TVPInitEnvironProfile()
 		}
 		catch(...)
 		{
-			// make dummy profile
-			TVPEnvironProfile = new tTVPProfileHolder();
+			TVPEnvironProfile = new tTVPProfileHolder(TVPGetTemporaryName().AsAnsiString());
+			TVPProfileWrite = false;
 		}
 	}
 }
@@ -832,7 +832,6 @@ void TVPEnvironProfileRelease()
 //---------------------------------------------------------------------------
 tTVPProfileHolder *TVPGetEnvironProfile()
 {
-	// read value from section and name, return defstr if not found.
 	TVPInitEnvironProfile();
 	return TVPEnvironProfile;
 }
