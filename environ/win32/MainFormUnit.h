@@ -164,6 +164,7 @@ class tTVPProfileHolder : public TMemIniFile
 {
 public:
 	__fastcall tTVPProfileHolder(const AnsiString &fn) : TMemIniFile(fn) {};
+	__fastcall tTVPProfileHolder() : TMemIniFile() {};
 	__fastcall ~tTVPProfileHolder() {};
 
 	void __fastcall WriteStrings(const AnsiString &section, const AnsiString &ident,
