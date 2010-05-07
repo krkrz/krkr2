@@ -777,10 +777,18 @@ static void TVPInitEnvironProfile()
 	{
 		// read profile from project directory or
 		// current directory ( if projdir was not specified )
-		TVPEnvironProfile =
-			new tTVPProfileHolder(TVPNativeDataPath + "krenvprf.kep");
 		if(strchr(TVPNativeDataPath.c_str(), TVPArchiveDelimiter))
 			TVPProfileWrite = false; else TVPProfileWrite = true;
+		try
+		{
+			TVPEnvironProfile =
+				new tTVPProfileHolder(TVPNativeDataPath + "krenvprf.kep");
+		}
+		catch(...)
+		{
+			// make dummy profile
+			TVPEnvironProfile = new tTVPProfileHolder();
+		}
 	}
 }
 //---------------------------------------------------------------------------
