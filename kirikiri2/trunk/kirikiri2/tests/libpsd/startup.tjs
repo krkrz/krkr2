@@ -14,12 +14,14 @@ class MyWindow extends Window
 	var filemenu;
 	var exitmenu;
 	var openmenu;
+	var blendmenu;
 	
 	function MyWindow() {
 		super.Window();
 		menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
-		filemenu.add(openmenu = new MenuItem(this, "開く(&O)"));
-		filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
+		filemenu.add(openmenu  = new MenuItem(this, "開く(&O)"));
+		filemenu.add(blendmenu = new MenuItem(this, "合成(&B)"));
+		filemenu.add(exitmenu  = new MenuItem(this, "終了(&X)"));
 
 		setInnerSize(WIDTH, HEIGHT);
 
@@ -111,8 +113,23 @@ class MyWindow extends Window
 				glay.fillRect(v[i] \ 32, 0, 1, psd.height, 0xC0808080);
 			}
 		}
-
 	}
+
+	function blend(filename) {
+		clear();
+		var psd = new PSD();
+		if (!psd.load(filename)) {
+			System.inform("ロードに失敗しました");
+			return;
+		}
+
+		var layer = new Layer(this, base);
+		psd.getBlend(layer, 0, 0, psd.width, psd.height);
+		layer.visible = true;
+		layers.add(layer);
+	}
+
+	
 	function dictToString(dic) {
 		var ret = [], tmp = [];
 		tmp.assign(dic);
@@ -133,7 +150,7 @@ class MyWindow extends Window
 		title  :   "PSDファイルの読込み",
 			];
 		if (!Storages.selectFile(fileDialog)) return; // キャンセルで抜ける
-		open(fileDialog.name);
+		return fileDialog.name;
 	}
 	
 	// 実行部
@@ -142,7 +159,15 @@ class MyWindow extends Window
 			if (ev.target == exitmenu) {
 				close();
 			} else if (ev.target == openmenu) {
-				openDialog();
+				var filename = openDialog();
+				if (filename !== void) {
+					open(filename);
+				}
+			} else if (ev.target == blendmenu) {
+				var filename = openDialog();
+				if (filename !== void) {
+					blend(filename);
+				}
 			}
 		}
 	}

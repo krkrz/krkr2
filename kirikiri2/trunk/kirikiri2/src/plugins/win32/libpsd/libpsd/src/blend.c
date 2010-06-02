@@ -1297,9 +1297,14 @@ psd_status psd_image_blend(psd_context * context, psd_int left, psd_int top, psd
 #endif // ifdef PSD_SUPPORT_LAYER_BLEND
 }
 
-void psd_image_blend_free(psd_context * context)
+psd_status psd_image_blend_free(psd_context * context)
 {
+	if(context == NULL)
+		return psd_status_invalid_context;
 	psd_freeif(context->rand_data);
+	context->rand_data = NULL;
 	psd_freeif(context->blending_image_data);
+	context->blending_image_data = NULL;
+	return psd_status_done;
 }
 

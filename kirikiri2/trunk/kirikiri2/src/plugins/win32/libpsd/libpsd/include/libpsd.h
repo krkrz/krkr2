@@ -428,7 +428,8 @@ typedef struct _psd_slices_resource_block
 // Slices resource format
 // Adobe Photoshop 6.0 and later stores slices information for an image in an image
 // resource block. .
-typedef struct _psd_slices_resource{
+typedef struct _psd_slices_resource
+{
 	psd_int						bounding_top;	// Bounding rectangle for all of the slices: top, left, bottom, right of all the slices
 	psd_int						bounding_left;
 	psd_int						bounding_bottom;
@@ -1349,6 +1350,7 @@ psd_status psd_image_free(psd_context * context);
 psd_status psd_adjustment_layer_update(psd_layer_record * layer);
 psd_status psd_layer_effects_update(psd_layer_record * layer, psd_layer_effects_type type);
 psd_status psd_image_blend(psd_context * context, psd_int left, psd_int top, psd_int width, psd_int height);
+psd_status psd_image_blend_free(psd_context * context);
 
 
 #ifdef __cplusplus

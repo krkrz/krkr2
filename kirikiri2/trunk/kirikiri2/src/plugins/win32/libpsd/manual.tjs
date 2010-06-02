@@ -130,4 +130,31 @@ class PSD {
 	 * name          name が設定されます
 	 */
 	function getLayerData(layer, no);
+
+
+	/**
+	 * スライスデータの読み出し
+	 * @return スライス情報辞書 %[ top, left, bottom, right, slices:[ %[ id, group_id, left, top, bottom, right ], ... ] ]
+	 *         スライス情報がない場合は void を返す
+	 */
+	function getSlices();
+
+	/**
+	 * ガイドデータの読み出し
+	 * @return ガイド情報辞書 %[ vertical:[ x1, x2, ... ], horizontal:[ y1, y2, ... ] ]
+	 *         ガイド情報がない場合は void を返す
+	 */
+	function getGuides();
+
+
+	/**
+	 * 合成結果の取得。取得領域は画像全体サイズ内におさまってる必要があります
+	 * @param layer 格納先レイヤ(width,heightサイズに調整される)
+	 * @param left 合成結果取得領域の左上座標
+	 * @param top 合成結果取得領域の左上座標
+	 * @param width 取得サイズ横幅
+	 * @param height 取得サイズ縦幅
+	 * @return 取得に成功したら true
+	 */
+	function getBlend(layer, left, top, width, height);
 };
