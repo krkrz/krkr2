@@ -212,9 +212,9 @@ public:
 	 * @param no レイヤ番号
 	 */
 	void getLayerData(tTJSVariant layer, int no) {
-//		if (!layer.IsInstanceOf(L"Layer")) {
-//			TVPThrowExceptionMessage(L"not layer");
-//		}
+		if (!layer.AsObjectNoAddRef()->IsInstanceOf(0, 0, 0, L"Layer", NULL)) {
+			TVPThrowExceptionMessage(L"not layer");
+		}
 		checkLayerNo(no);
 
 		psd_layer_record *lay = context->layer_records + no;
@@ -361,7 +361,50 @@ public:
 		return result;
 	}
 
+	/**
+	 * 合成結果の取得。取得領域は画像全体サイズ内におさまってる必要があります
+	 * @param layer 格納先レイヤ(width,heightサイズに調整される)
+	 * @param left 合成結果取得領域の左上座標
+	 * @param top 合成結果取得領域の左上座標
+	 * @param width 取得サイズ横幅
+	 * @param height 取得サイズ縦幅
+	 * @return 取得に成功したら true
+	 */
+	bool getBlend(tTJSVariant layer, int left, int top, int width, int height) {
+		if (!layer.AsObjectNoAddRef()->IsInstanceOf(0, 0, 0, L"Layer", NULL)) {
+			TVPThrowExceptionMessage(L"not layer");
+		}
 
+		// 合成結果を生成
+		if (psd_image_blend(context, left, top, width, height) == psd_status_done) {
+
+			// 格納先を調整
+			ncbPropAccessor obj(layer);
+			obj.SetValue(L"width",  width);
+			obj.SetValue(L"height", height);
+			obj.SetValue(L"imageLeft",  0);
+			obj.SetValue(L"imageTop",   0);
+			obj.SetValue(L"imageWidth",  width);
+			obj.SetValue(L"imageHeight", height);
+			
+			// 合成結果画像データのコピー
+			psd_argb_color *src = context->blending_image_data + top * context->width + left;
+			int len = width * 4;
+			unsigned char *buffer = (unsigned char*)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
+			int pitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+			for (int y=0;y<height;y++) {
+				memcpy(buffer, (unsigned char*)src, len);
+				src    += context->width;
+				buffer += pitch;
+			}
+
+			// 合成結果情報の破棄
+			psd_image_blend_free(context);
+
+			return true;
+		}
+		return false;
+	}
 };
 
 #define ENUM(n) Variant(#n + 4, (int)n)
@@ -441,4 +484,6 @@ NCB_REGISTER_CLASS(PSD) {
 
 	NCB_METHOD(getSlices);
 	NCB_METHOD(getGuides);
+
+	NCB_METHOD(getBlend);
 };
