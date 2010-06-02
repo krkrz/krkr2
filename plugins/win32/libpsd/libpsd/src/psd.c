@@ -47,7 +47,6 @@ extern void psd_color_mode_data_free(psd_context * context);
 extern void psd_image_resource_free(psd_context * context);
 extern void psd_layer_and_mask_free(psd_context * context);
 extern void psd_image_data_free(psd_context * context);
-extern void psd_image_blend_free(psd_context * context);
 
 // for unicode string resoruce added by miahmie. 2007/11/26
 extern void psd_unicode_strings_free(psd_context * context);
