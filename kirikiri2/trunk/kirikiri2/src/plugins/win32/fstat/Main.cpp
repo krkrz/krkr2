@@ -292,7 +292,7 @@ public:
 		HANDLE hFile = _getFileHandle(filename, false);
 		FILETIME ft;
 		if (hFile == INVALID_HANDLE_VALUE) return 0;
-		bool rs = GetFileTime(hFile, 0, 0, &ft);
+		bool rs = !! GetFileTime(hFile, 0, 0, &ft);
 		CloseHandle(hFile);
 		if (!rs) return 0;
 		tjs_uint64 ret = ft.dwHighDateTime;
@@ -308,7 +308,7 @@ public:
 		FILETIME ft;
 		ft.dwHighDateTime = (time >> 32) & 0xFFFFFFFF;
 		ft.dwLowDateTime  =  time        & 0xFFFFFFFF;
-		bool rs = SetFileTime(hFile, 0, 0, &ft);
+		bool rs = !! SetFileTime(hFile, 0, 0, &ft);
 		CloseHandle(hFile);
 		return rs;
 	}
@@ -359,7 +359,7 @@ public:
 				TVPAddLog(ttstr(TJS_W("deleteFile : ")) + filename + TJS_W(" : ") + mes);
 			}
 		}
-		return r;
+		return !! r;
 	}
 
 	/**
@@ -382,7 +382,7 @@ public:
 				TVPAddLog(ttstr(TJS_W("moveFile : ")) + fromFile + ", " + toFile + TJS_W(" : ") + mes);
 			}
 		}
-		return r;
+		return !! r;
 	}
   
 	/**
@@ -460,7 +460,7 @@ public:
 			getLastError(mes);
 			TVPAddLog(ttstr(TJS_W("removeDirectory : ")) + dir + TJS_W(" : ") + mes);
 		}
-		return r;
+		return !! r;
 	}
 
 	/**
@@ -482,7 +482,7 @@ public:
 			getLastError(mes);
 			TVPAddLog(ttstr(TJS_W("createDirectory : ")) + dir + TJS_W(" : ") + mes);
 		}
-		return r;
+		return !! r;
 	}
 
 	/**
@@ -763,6 +763,44 @@ private:
 		}
 		return 0;
 	}
+
+public:
+	/**
+	 * MD5ハッシュ値の取得
+	 * @param filename 対象ファイル名
+	 * @return ハッシュ値（32文字の16進数ハッシュ文字列（小文字））
+	 */
+	static tjs_error TJS_INTF_METHOD getMD5HashString(tTJSVariant *result,
+													  tjs_int numparams,
+													  tTJSVariant **param,
+													  iTJSDispatch2 *objthis) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+		ttstr filename = TVPGetPlacedPath(*param[0]);
+		IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
+		if (!in) TVPThrowExceptionMessage((ttstr(TJS_W("cannot open : ")) + param[0]->GetString()).c_str());
+
+		TVP_md5_state_t st;
+		TVP_md5_init(&st);
+
+		tjs_uint8 buffer[1024]; // > 16 digestバッファ兼ねる
+		DWORD size = 0;
+		while (in->Read(buffer, sizeof buffer, &size) == S_OK && size > 0) {
+			TVP_md5_append(&st, buffer, (int)size);
+		}
+		in->Release();
+
+		TVP_md5_finish(&st, buffer);
+
+		tjs_char ret[32+1], *hex = TJS_W("0123456789abcdef");
+		for (tjs_int i=0; i<16; i++) {
+			ret[i*2  ] = hex[(buffer[i] >> 4) & 0xF];
+			ret[i*2+1] = hex[(buffer[i]     ) & 0xF];
+		}
+		ret[32] = 0;
+		if (result) *result = ttstr(ret);
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
@@ -785,6 +823,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(copyFile);
 	NCB_METHOD(isExistentStorageNoSearchNoNormalize);
 	NCB_METHOD(getDisplayName);
+	RawCallback("getMD5HashString",    &Class::getMD5HashString,    TJS_STATICMEMBER);
 };
 
 /**
