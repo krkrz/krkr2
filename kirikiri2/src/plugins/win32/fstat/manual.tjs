@@ -162,4 +162,11 @@ class Storages {
 	 * @return 表示名
 	 */
 	function getDisplayName(filename); // by go
+
+	/**
+	 * MD5ハッシュ値の取得
+	 * @param filename 対象ファイル名
+	 * @return ハッシュ値（32文字の16進数ハッシュ文字列（小文字））
+	 */
+	function getMD5HashString(filename); // by miahmie
 };
