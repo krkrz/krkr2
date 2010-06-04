@@ -1,7 +1,7 @@
 #ifndef SQRATFUNC_H
 #define SQRATFUNC_H
 
-#include <sqrat.h>
+#include "sqobjectinfo.h"
 
 /**
  * sqobject::sqobject を継承したオブジェクト用に sqrat あわせでテンプレートを作成

@@ -4,13 +4,50 @@
  */
 #include "sqobjectinfo.h"
 #include "sqobject.h"
-#include "sqthread.h"
 #include <string.h>
 
 namespace sqobject {
 
+bool
+ObjectInfo::pushObject(HSQUIRRELVM v, Object *obj)
+{
+	if (obj->isInit()) {
+		obj->push(v);
+		return true;
+	}
+	return false;
+}
+
+// roottable の取得
+ObjectInfo
+ObjectInfo::getRoot()
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushroottable(gv); // root
+	ObjectInfo ret(gv, -1);
+	sq_pop(gv, 1);
+	return ret;
+}
+
+ObjectInfo
+ObjectInfo::createArray(SQInteger size)
+{
+	ObjectInfo ret;
+	ret.initArray(size);
+	return ret;
+}
+
+ObjectInfo
+ObjectInfo::createTable()
+{
+	ObjectInfo ret;
+	ret.initTable();
+	return ret;
+}
+
 // 比較
-bool ObjectInfo::operator == (const ObjectInfo &o)
+bool
+ObjectInfo::operator == (const ObjectInfo &o)
 {
 	bool cmp = false;
 	HSQUIRRELVM v = getGlobalVM();
@@ -20,7 +57,67 @@ bool ObjectInfo::operator == (const ObjectInfo &o)
 	sq_pop(v,2);
 	return cmp;
 }
-	
+
+bool
+ObjectInfo::operator !=(const ObjectInfo& o)
+{
+	bool cmp = false;
+	HSQUIRRELVM v = getGlobalVM();
+	push(v);
+	o.push(v);
+	cmp = sq_cmp(v) != 0;
+	sq_pop(v,2);
+	return cmp;
+}
+
+bool
+ObjectInfo::operator <(const ObjectInfo& o)
+{
+	bool cmp = false;
+	HSQUIRRELVM v = getGlobalVM();
+	push(v);
+	o.push(v);
+	cmp = sq_cmp(v) < 0;
+	sq_pop(v,2);
+	return cmp;
+}
+
+bool
+ObjectInfo::operator <=(const ObjectInfo& o)
+{
+	bool cmp = false;
+	HSQUIRRELVM v = getGlobalVM();
+	push(v);
+	o.push(v);
+	cmp = sq_cmp(v) <= 0;
+	sq_pop(v,2);
+	return cmp;
+}
+
+bool
+ObjectInfo::operator >(const ObjectInfo& o)
+{
+	bool cmp = false;
+	HSQUIRRELVM v = getGlobalVM();
+	push(v);
+	o.push(v);
+	cmp = sq_cmp(v) > 0;
+	sq_pop(v,2);
+	return cmp;
+}
+
+bool
+ObjectInfo::operator >=(const ObjectInfo& o)
+{
+	bool cmp = false;
+	HSQUIRRELVM v = getGlobalVM();
+	push(v);
+	o.push(v);
+	cmp = sq_cmp(v) >= 0;
+	sq_pop(v,2);
+	return cmp;
+}
+
 // 内容消去
 void
 ObjectInfo::clear()
@@ -235,26 +332,31 @@ ObjectInfo::initTable()
 }
 
 /// 配列に値を追加
-void ObjectInfo::append(HSQUIRRELVM v, SQInteger idx)
+SQRESULT ObjectInfo::append(HSQUIRRELVM v, SQInteger idx)
 {
 	HSQUIRRELVM gv = getGlobalVM();
 	push(gv);
 	sq_move(gv, v, idx);
-	sq_arrayappend(gv, -2);
+	SQRESULT ret = sq_arrayappend(gv, -2);
 	sq_pop(gv,1);
+	return ret;
 }
 
 /// 配列に配列を追加
-void ObjectInfo::appendArray(ObjectInfo &array)
+SQRESULT ObjectInfo::appendArray(ObjectInfo &array)
 {
+	SQRESULT result = SQ_OK;
 	HSQUIRRELVM gv = getGlobalVM();
 	push(gv);
 	SQInteger max = array.len();
 	for (SQInteger i=0;i<max;i++) {
 		array.pushData(gv, i);
-		sq_arrayappend(gv, -2);
+		if (SQ_FAILED(result = sq_arrayappend(gv, -2))) {
+			break;
+		}
 	}
 	sq_pop(gv,1);
+	return result;
 }
 
 /// 配列の長さ
@@ -319,42 +421,6 @@ bool
 ObjectInfo::isClass() const
 {
 	return sq_isclass(obj);
-}
-
-// -------------------------------------------------------------
-// スレッド系操作用
-// -------------------------------------------------------------
-
-void
-ObjectInfo::addWait(ObjectInfo &thread)
-{
-	Object *object = getObject();
-	if (object) {
-		object->_addWait(thread);
-	}
-}
-
-void
-ObjectInfo::removeWait(sqobject::ObjectInfo &thread)
-{
-	Object *object = getObject();
-	if (object) {
-		object->_removeWait(thread);
-	}
-}
-
-bool
-ObjectInfo::notifyObject(ObjectInfo &target)
-{
-	Thread *thread = getThread();
-	return thread ? thread->_notifyObject(target) : false;
-}
-
-bool
-ObjectInfo::notifyTrigger(const SQChar *name)
-{
-	Thread *thread = getThread();
-	return thread ? thread->_notifyTrigger(name) : false;
 }
 
 };

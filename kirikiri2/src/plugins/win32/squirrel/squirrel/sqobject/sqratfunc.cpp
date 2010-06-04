@@ -4,10 +4,9 @@
  * sqrat を使った Object, Thread 登録処理の実装例です。
  * sqrat の機能をつかって継承を処理しています。
  */
-#include "sqobjectinfo.h"
+#include "sqratfunc.h"
 #include "sqobject.h"
 #include "sqthread.h"
-#include "sqratfunc.h"
 
 #include <sqstdstring.h>
 #include <sqstdmath.h>
@@ -41,32 +40,6 @@ HSQUIRRELVM getGlobalVM()
 void done()
 {
 	sq_close(vm);
-}
-
-// ---------------------------------------------------
-// オブジェクト取得
-// ---------------------------------------------------
-
-// Thread のインスタンスユーザポインタを取得
-Thread *
-ObjectInfo::getThread()
-{
-	HSQUIRRELVM gv = getGlobalVM();
-	push(gv);
-	Thread *ret = Sqrat::Var<Thread*>(gv, -1).value;
-	sq_pop(gv,1);
-	return ret;
-}
-
-// Object のインスタンスユーザポインタを取得
-Object *
-ObjectInfo::getObject()
-{
-	HSQUIRRELVM gv = getGlobalVM();
-	push(gv);
-	Object *ret = Sqrat::Var<Object*>(gv, -1).value;
-	sq_pop(gv, 1);
-	return ret;
 }
 
 // デストラクタ登録用

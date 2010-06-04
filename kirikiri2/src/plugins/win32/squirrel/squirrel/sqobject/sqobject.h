@@ -31,17 +31,24 @@ protected:
 	ObjectInfo delegate;
 
 public:
+	bool isInit() {
+		return !self.isNull();
+	}
+	void push(HSQUIRRELVM v) {
+		self.push(v);
+	}
+	
 	/**
 	 * オブジェクト待ちの登録
 	 * @param thread スレッド
 	 */
-	void _addWait(ObjectInfo &thread);
+	void addWait(ObjectInfo &thread);
 	
 	/**
 	 * オブジェクト待ちの解除
 	 * @param thread スレッド
 	 */
-	void _removeWait(ObjectInfo &thread);
+	void removeWait(ObjectInfo &thread);
 	
 	/**
 	 * コンストラクタ
