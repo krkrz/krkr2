@@ -135,14 +135,14 @@ public:
 	 * @param name トリガ名
 	 * @return 該当オブジェクトを待ってた場合は true
 	 */
-	bool _notifyTrigger(const SQChar *name);
+	bool notifyTrigger(const SQChar *name);
 
 	/**
 	 * オブジェクトに対する待ち情報を完了させる
 	 * @param target 待ち対象
 	 * @return 該当オブジェクトを待ってた場合は true
 	 */
-	bool _notifyObject(ObjectInfo &target);
+	bool notifyObject(ObjectInfo &target);
 	
 	// ------------------------------------------------------------------
 	//

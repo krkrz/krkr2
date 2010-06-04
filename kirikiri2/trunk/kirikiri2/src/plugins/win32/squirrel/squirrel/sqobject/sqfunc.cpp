@@ -4,7 +4,9 @@
  * Object, Thread の登録処理の実装例です。
  * 継承情報は単純リスト管理してます
  */
-#include "sqfunc.h"
+#include "sqobjectinfo.h"
+#include "sqobject.h"
+#include "sqthread.h"
 
 #include <string.h>
 #include <sqstdstring.h>
@@ -143,30 +145,6 @@ void done()
 	typeMap.clearData();
 	typeMap.clear();
 	sq_close(vm);
-}
-
-// Thread のインスタンスユーザポインタを取得
-Thread *
-ObjectInfo::getThread()
-{
-	HSQUIRRELVM gv = getGlobalVM();
-	push(gv);
-	Thread *ret = NULL;
-	ret = (Thread*)::getInstance(gv, -1, GetTypeName(ret));
-	sq_pop(gv,1);
-	return ret;
-}
-
-// Object のインスタンスユーザポインタを取得
-Object *
-ObjectInfo::getObject()
-{
-	HSQUIRRELVM gv = getGlobalVM();
-	push(gv);
-	Object *ret = NULL;
-	ret = (Object*)::getInstance(gv, -1, GetTypeName(ret));
-	sq_pop(gv,1);
-	return ret;
 }
 
 // ------------------------------------------------------------------

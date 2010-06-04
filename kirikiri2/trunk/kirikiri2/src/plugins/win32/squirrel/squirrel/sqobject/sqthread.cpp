@@ -4,8 +4,21 @@
  */
 #include "sqthread.h"
 #include <string.h>
-
 extern SQRESULT sqstd_loadmemory(HSQUIRRELVM v, const char *dataBuffer, int dataSize, const SQChar *filename, SQBool printerror);
+
+#ifdef USESQPLUS
+using namespace SqPlus;
+using namespace sqobject;
+DECLARE_INSTANCE_TYPE_NAME_RELEASE(Object, SQOBJECT);
+DECLARE_INSTANCE_TYPE_NAME_RELEASE(Thread, SQTHREAD);
+#else
+#ifndef USESQRAT
+namespace sqobject {
+DECLARE_CLASSNAME(Object, SQOBJECT);
+DECLARE_CLASSNAME(Thread, SQTHREAD);
+}
+#endif
+#endif
 
 namespace sqobject {
 
@@ -45,12 +58,12 @@ Thread::isSameThread(HSQUIRRELVM v)
  * @return 該当オブジェクトを待ってた場合は true
  */
 bool
-Thread::_notifyObject(ObjectInfo &target)
+Thread::notifyObject(ObjectInfo &target)
 {
 	bool find = false;
 	if (!_waitSystem.isNull() && _waitSystem == target) { // systemコマンド専用の待ち
 		find = true;
-		Thread *th = _waitSystem.getThread();
+		Thread *th = _waitSystem;
 		if (th) {
 			_waitResult = th->_exitCode;
 		}
@@ -82,7 +95,7 @@ Thread::_notifyObject(ObjectInfo &target)
  * @return 該当オブジェクトを待ってた場合は true
 	 */
 bool
-Thread::_notifyTrigger(const SQChar *name)
+Thread::notifyTrigger(const SQChar *name)
 {
 	bool find = false;
 	int i = 0;
@@ -172,13 +185,19 @@ void
 Thread::_clearWait()
 {
 	// system用の waitの解除
-	_waitSystem.removeWait(self);
+	Object *obj = _waitSystem;
+	if (obj) {
+		obj->removeWait(self);
+	}
 	_waitSystem.clear();
 
 	// その他の wait の解除
 	SQInteger max = _waitList.len();
 	for (SQInteger i=0;i<max;i++) {
-		_waitList.get(i).removeWait(self);
+		Object *obj = _waitList.get(i);
+		if (obj) {
+			obj->removeWait(self);
+		}
 	}
 	_waitList.clearData();
 	// タイムアウト指定の解除
@@ -242,7 +261,7 @@ Thread::_wait(HSQUIRRELVM v, int idx)
 	_waitResult.clear();
 	SQInteger max = sq_gettop(v);
 	for (int i=idx;i<=max;i++) {
-		switch (sq_gettype(v, 2)) {
+		switch (sq_gettype(v, i)) {
 		case OT_INTEGER:
 		case OT_FLOAT:
 			// 数値の場合はタイムアウト待ち
@@ -266,7 +285,10 @@ Thread::_wait(HSQUIRRELVM v, int idx)
 			{
 				ObjectInfo o;
 				o.getStackWeak(v,i);
-				o.addWait(self);
+				Object *obj = o;
+				if (obj) {
+					obj->addWait(self);
+				}
 				_waitList.append(o);
 			}
 			break;
@@ -286,7 +308,10 @@ Thread::_system(HSQUIRRELVM v)
 	_clearWait();
 	_waitResult.clear();
 	_waitSystem.getStackWeak(v, -1);
-	_waitSystem.addWait(self);
+	Object *obj = _waitSystem;
+	if (obj) {
+		obj->addWait(self);
+	}
 }
 
 // ---------------------------------------------------------------
@@ -570,7 +595,7 @@ Thread::main()
 	SQInteger i=0;
 	SQInteger max = threadList.len();
 	while (i < max) {
-		Thread *th = threadList.get(i).getThread();
+		Thread *th = threadList.get(i);
 		if (!th || th->_main(diffTick)) {
 			threadList.remove(i);
 			max--;
@@ -630,8 +655,10 @@ Thread::trigger(const SQChar *name)
 {
 	SQInteger max = threadList.len();
 	for (SQInteger i=0;i<max;i++) {
-		ObjectInfo obj = threadList.get(i);
-		obj.notifyTrigger(name);
+		Thread *th = threadList.get(i);
+		if (th) {
+			th->notifyTrigger(name);
+		}
 	}
 }
 
@@ -646,7 +673,7 @@ Thread::done()
 	newThreadList.clearData();
 	SQInteger max = threadList.len();
 	for (SQInteger i=0;i<max;i++) {
-		Thread *th = threadList.get(i).getThread();
+		Thread *th = threadList.get(i);
 		if (th) { th->_exit();}
 	}
 	threadList.clearData();
@@ -696,10 +723,9 @@ Thread::global_getCurrentThread(HSQUIRRELVM v)
 {
 	SQInteger max = threadList.len();
 	for (SQInteger i=0;i<max;i++) {
-		ObjectInfo obj = threadList.get(i);
-		Thread *th = obj.getThread();
+		Thread *th = threadList.get(i);
 		if (th && th->isSameThread(v)) {
-			obj.push(v);
+			th->push(v);
 			return 1;
 		}
 	}
@@ -739,8 +765,7 @@ Thread::getCurrentThread(HSQUIRRELVM v)
 {
 	SQInteger max = threadList.len();
 	for (SQInteger i=0;i<max;i++) {
-		ObjectInfo obj = threadList.get(i);
-		Thread *th = obj.getThread();
+		Thread *th = threadList.get(i);
 		if (th && th->isSameThread(v)) {
 			return th;
 		}

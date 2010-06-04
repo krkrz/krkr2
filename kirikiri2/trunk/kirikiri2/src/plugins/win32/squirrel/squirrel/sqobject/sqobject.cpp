@@ -3,9 +3,22 @@
  * zlib license
  */
 #include "sqthread.h"
-
 #include <string.h>
 #include <ctype.h>
+
+#ifdef USESQPLUS
+using namespace SqPlus;
+using namespace sqobject;
+DECLARE_INSTANCE_TYPE_NAME_RELEASE(Object, SQOBJECT);
+DECLARE_INSTANCE_TYPE_NAME_RELEASE(Thread, SQTHREAD);
+#else
+#ifndef USESQRAT
+namespace sqobject {
+DECLARE_CLASSNAME(Object, SQOBJECT);
+DECLARE_CLASSNAME(Thread, SQTHREAD);
+}
+#endif
+#endif
 
 namespace sqobject {
 
@@ -76,7 +89,7 @@ static void pushGetterName(HSQUIRRELVM v, const SQChar *name)
  * @param thread スレッド
  */
 void
-Object::_addWait(ObjectInfo &thread)
+Object::addWait(ObjectInfo &thread)
 {
 	_waitThreadList.append(thread);
 }
@@ -86,7 +99,7 @@ Object::_addWait(ObjectInfo &thread)
  * @param thread スレッド
  */
 void
-Object::_removeWait(ObjectInfo &thread)
+Object::removeWait(ObjectInfo &thread)
 {
 	SQInteger i = _waitThreadList.len() - 1;
 	while (i >= 0) {
@@ -159,8 +172,8 @@ Object::notify()
 {
 	SQInteger max = _waitThreadList.len();
 	for (int i=0;i<max;i++) {
-		ObjectInfo th = _waitThreadList.get(i);
-		if (th.notifyObject(self)) {
+		Thread *th = _waitThreadList.get(i);
+		if (th && th->notifyObject(self)) {
 			_waitThreadList.remove(i);
 			return;
 		}
@@ -175,8 +188,10 @@ Object::notifyAll()
 {
 	SQInteger max = _waitThreadList.len();
 	for (int i=0;i<max;i++) {
-		ObjectInfo th = _waitThreadList.get(i);
-		th.notifyObject(self);
+		Thread *th = _waitThreadList.get(i);
+		if (th) {
+			th->notifyObject(self);
+		}
 	}
 	_waitThreadList.clearData();
 }
