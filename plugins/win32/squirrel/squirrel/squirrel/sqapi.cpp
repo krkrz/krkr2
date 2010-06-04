@@ -512,6 +512,9 @@ SQRESULT sq_getinteger(HSQUIRRELVM v,SQInteger idx,SQInteger *i)
 	if(sq_isnumeric(o)) {
 		*i = tointeger(o);
 		return SQ_OK;
+	} else if (sq_isbool(o)) {
+		*i = _integer(o);
+		return SQ_OK;
 	}
 	return SQ_ERROR;
 }
@@ -522,6 +525,9 @@ SQRESULT sq_getfloat(HSQUIRRELVM v,SQInteger idx,SQFloat *f)
 	if(sq_isnumeric(o)) {
 		*f = tofloat(o);
 		return SQ_OK;
+	} else if (sq_isbool(o)) {
+		*f = _integer(o);
+		return SQ_OK;
 	}
 	return SQ_ERROR;
 }
@@ -531,6 +537,9 @@ SQRESULT sq_getbool(HSQUIRRELVM v,SQInteger idx,SQBool *b)
 	SQObjectPtr &o = stack_get(v, idx);
 	if(sq_isbool(o)) {
 		*b = _integer(o);
+		return SQ_OK;
+	} else if(sq_isnumeric(o)) {
+		*b = tointeger(o) != 0 ? SQTrue : SQFalse;
 		return SQ_OK;
 	}
 	return SQ_ERROR;

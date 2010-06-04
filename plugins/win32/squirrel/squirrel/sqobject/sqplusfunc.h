@@ -1,7 +1,8 @@
 #ifndef SQPLUSFUNC_H
 #define SQPLUSFUNC_H
 
-#include <sqplus.h>
+#include "sqobjectinfo.h"
+using namespace SqPlus;
 
 /**
  * 各種処理用テンプレート

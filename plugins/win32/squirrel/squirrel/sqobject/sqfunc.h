@@ -2,9 +2,6 @@
 #define __SQFUNC__H_
 
 #include <new>
-#include "sqobjectinfo.h"
-#include "sqobject.h"
-#include "sqthread.h"
 
 extern SQRESULT ERROR_CREATE(HSQUIRRELVM v);
 extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
