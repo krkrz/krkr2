@@ -35,7 +35,7 @@ sub normalize_string
 	{
 		if($str !~ /\s/ && $str ne '')
 		{
-			push(array2, $str);
+			push(@array2, $str);
 		}
 	}
 	$str = join(' ', @array2);

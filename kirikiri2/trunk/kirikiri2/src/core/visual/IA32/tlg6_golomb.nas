@@ -98,6 +98,7 @@ bit_mask_neg_tbl:
 ;--------------------------------------------------------------------
 %else
 ;--------------------------------------------------------------------
+%unmacro	get_running_count 0
 %macro	get_running_count 0
 
 		; get running count

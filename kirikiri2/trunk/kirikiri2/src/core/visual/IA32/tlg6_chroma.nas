@@ -58,6 +58,7 @@ avg_mask_01		dd		0x01010101, 0x01010101
 ;--------------------------------------------------------------------
 ;		macros
 ;--------------------------------------------------------------------
+%unmacro		do_med	1
 %macro		do_med	1
 	movq	mm2,	mm6		;// mm2 as c
 	movq	mm6,	mm1
@@ -91,6 +92,7 @@ avg_mask_01		dd		0x01010101, 0x01010101
 	%endif
 %endmacro
 
+%unmacro		do_avg	1
 %macro		do_avg	1
 	movq	mm2,	mm6		;// mm2 as c
 	movq	mm6,	mm1
@@ -115,8 +117,9 @@ avg_mask_01		dd		0x01010101, 0x01010101
 	%endif
 %endmacro
 
+%unmacro			do_filter_med_f		0
 %macro			do_filter_med_f		0
-%%loop
+%%loop:
 	movq	mm4,	[edx + eax]
 
 	filter_insts
@@ -152,8 +155,9 @@ avg_mask_01		dd		0x01010101, 0x01010101
 	jmp	.dl3_exit
 %endmacro
 
+%unmacro			do_filter_med_b		0
 %macro			do_filter_med_b		0
-%%loop
+%%loop:
 	movq	mm4,	[edx + eax - 4]
 
 	filter_insts
@@ -188,8 +192,9 @@ avg_mask_01		dd		0x01010101, 0x01010101
 	jmp	.dl3_exit
 %endmacro
 
+%unmacro			do_filter_avg_f		0
 %macro			do_filter_avg_f		0
-%%loop
+%%loop:
 	movq	mm4,	[edx + eax]
 
 	filter_insts
@@ -225,8 +230,9 @@ avg_mask_01		dd		0x01010101, 0x01010101
 	jmp	.dl3_exit
 %endmacro
 
+%unmacro			do_filter_avg_b		0
 %macro			do_filter_avg_b		0
-%%loop
+%%loop:
 	movq	mm4,	[edx + eax - 4]
 
 	filter_insts
@@ -446,6 +452,7 @@ proc_start	FUNCTION_LABEL
 	nop
 
 		; ------------------------------------------------------------ 0
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	%endmacro
 
@@ -466,6 +473,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 1
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	movq	mm3,	mm4
@@ -494,6 +502,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 2
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psllq	mm2,	8
@@ -522,6 +531,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 3
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psrlq	mm2,	8
@@ -550,6 +560,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 4
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psrlq	mm2,	16
@@ -582,6 +593,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 5
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psrlq	mm2,	16
@@ -610,6 +622,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 6
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psrlq	mm2,	8
@@ -634,6 +647,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 7
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psllq	mm2,	8
@@ -658,6 +672,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 8
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psllq	mm2,	8
@@ -682,6 +697,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 9
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psllq	mm2,	16
@@ -714,6 +730,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 10
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	movq	mm3,	mm4
@@ -742,6 +759,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 11
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	movq	mm3,	mm4
@@ -770,6 +788,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 12
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psllq	mm2,	16
@@ -798,6 +817,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 13
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psrlq	mm2,	8
@@ -830,6 +850,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 14
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	psrlq	mm2,	8
@@ -862,6 +883,7 @@ proc_start	FUNCTION_LABEL
 	do_filter_avg_b
 
 		; ------------------------------------------------------------ 15
+	%unmacro	filter_insts	0
 	%macro	filter_insts	0
 	movq	mm2,	mm4
 	movq	mm3,	mm4
