@@ -319,7 +319,7 @@ TVPAlphaBlend_o_name:
 
 	jmp	short	.ploop
 
-.ptransp
+.ptransp:
 	add	edi,	byte 8
 	add	ebp,	byte 8
 	cmp	edi,	esi

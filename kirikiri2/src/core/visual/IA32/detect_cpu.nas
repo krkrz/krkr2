@@ -151,7 +151,7 @@ TVPCheckCPU:			; check CPU type and feature
 	cpuid
 	mov	[TVPCPUVendor+ 0],	ebx
 	mov	[TVPCPUVendor+ 4],	edx
-	mov	[TVPCPUVendor+ 8].	ecx
+	mov	[TVPCPUVendor+ 8],	ecx
 
 		; check Intel, AMD, CYRIX, IDT, etc
 	xor	edx,	edx
