@@ -396,7 +396,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(exitOnWindowClose)
 }
 TJS_END_NATIVE_STATIC_PROP_DECL(exitOnWindowClose)
 //----------------------------------------------------------------------
-TJS_BEGIN_NATIVE_STATIC_PROP_DECL(drawThreadNum)
+TJS_BEGIN_NATIVE_PROP_DECL(drawThreadNum)
 {
         TJS_BEGIN_NATIVE_PROP_GETTER
           {
@@ -413,7 +413,7 @@ TJS_BEGIN_NATIVE_STATIC_PROP_DECL(drawThreadNum)
 }
 TJS_END_NATIVE_STATIC_PROP_DECL(drawThreadNum)
 //----------------------------------------------------------------------
-TJS_BEGIN_NATIVE_STATIC_PROP_DECL(processorNum)
+TJS_BEGIN_NATIVE_PROP_DECL(processorNum)
 {
         TJS_BEGIN_NATIVE_PROP_GETTER
           {
@@ -425,7 +425,7 @@ TJS_BEGIN_NATIVE_STATIC_PROP_DECL(processorNum)
 }
 TJS_END_NATIVE_STATIC_PROP_DECL(processorNum)
 //----------------------------------------------------------------------
-TJS_BEGIN_NATIVE_STATIC_PROP_DECL(exitOnNoWindowStartup)
+TJS_BEGIN_NATIVE_PROP_DECL(exitOnNoWindowStartup)
 {
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
