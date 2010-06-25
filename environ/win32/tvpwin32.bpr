@@ -137,6 +137,7 @@ PrivateBuild=
 SpecialBuild=
 
 [Excluded Packages]
+d:\PROGRA~1\Borland\CBUILD~1\Projects\Bpl\OLEDNDC5.BPL=d:\program files\borland\cbuilder5\Projects\Bpl\OleDnDC5
 $(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
