@@ -1237,6 +1237,17 @@ void TVPAfterSystemInit()
 		if(str == TJS_W("normal")) prectick = 10;
 	}
 
+        // draw thread num
+        tjs_int drawThreadNum = 1;
+        if (TVPGetCommandLine(TJS_W("-drawthread"), &opt)) {
+          ttstr str(opt);
+          if (str == TJS_W("auto"))
+            drawThreadNum = 0;
+          else
+            drawThreadNum = (tjs_int)opt;
+        }
+        TVPDrawThreadNum = drawThreadNum;
+
 	if(prectick)
 	{
 		// retrieve minimum timer resolution
