@@ -74,6 +74,7 @@ class KAGEnvImage {
 	}
 
 	var layerClass = global.EnvGraphicLayer;
+	var defaultLayerType = ltAlpha;
 	
 	// 処理対象レイヤ
 	var targetLayer;
@@ -195,6 +196,7 @@ class KAGEnvImage {
 				doShow = true;
 				redraw = true;
 				reposition = true;
+				reclip = true;
 				if (type !== void) {
 					doType = true;
 				}
@@ -517,8 +519,18 @@ class KAGEnvImage {
 		rasterCycle = elm.rastercycle;
 	}
 
+	// クリップ調整
+	var xclip;
+	var yclip;
+	var xclipFrom;
+	var yclipFrom;
+	var clipTime;
+	var clipAccel;
+	var clipNowait;
+	var reclip;
+	
     // 表示位置座標
-    var xpos;
+	var xpos;
     var ypos;
     var xposFrom;
     var yposFrom;
@@ -734,7 +746,21 @@ class KAGEnvImage {
 			_filter = set;
 		}
 	}
-	
+
+	// クリップ画像
+	var _clip;
+	property clip {
+		getter() {
+			return _clip;
+		}
+		setter(v) {
+			if (_clip !== v) {
+				_clip = v !== void && (typeof v == "String" && v.length > 0) ? v : void;
+				redraw = true;
+			}
+		}
+	}
+
 	// 配置状態の初期化
 	// xpos, ypos, afx, afy, rotate, zoom, raster を初期化
 	function resetPos(param, elm) {
@@ -755,7 +781,7 @@ class KAGEnvImage {
 	// 色状態の初期化
 	// type, opacity, gamma, grayscale, blurx, blury を初期化
 	function resetColor(param, elm) {
-		type = ltAlpha;
+		type = defaultLayerType;
 		setOpacity(255, elm);
 		_grayscale = void;
 		_rgamma = void;
@@ -771,6 +797,7 @@ class KAGEnvImage {
 		_noise = void;
 		_filter = void;
 		_script = void;
+		_clip = void;
 		if (!env.colorall) {
 			redraw = true;
 		}
@@ -801,7 +828,7 @@ class KAGEnvImage {
 	}
 
 	function initImage() {
-		type = ltAlpha;
+		type = defaultLayerType;
 		opacityFrom = void;
         opacityTime = void;
         opacityAccel = void;
@@ -837,6 +864,15 @@ class KAGEnvImage {
 		moveNowait = void;
         reposition = false;
 
+		xclip    = void;
+        yclip     = void;
+        xclipFrom = void;
+        yclipFrom = void;
+		clipTime = void;
+		clipAccel = void;
+		clipNowait = void;
+		reclip = false;
+		
         _rgamma = void;
 		_ggamma = void;
 		_bgamma = void;
@@ -853,6 +889,7 @@ class KAGEnvImage {
 		
 		_filter = void;
 		_script = void;
+		_clip = void;
         
 		actionList.clear();
 		currentActionList.clear();
@@ -868,7 +905,7 @@ class KAGEnvImage {
 	 * @param elm パラメータ指定
 	 */
 	function initFile(elm) {
-		if (elm.type === void) type = ltAlpha;
+		if (elm.type === void) type = defaultLayerType;
 		if (elm.opacity === void) opacity = 255;
 		if (elm.rotate === void) rotate = 0;
 		if (elm.zoom === void) zoom = 100;
@@ -915,6 +952,28 @@ class KAGEnvImage {
         reposition = true;
     }
 
+	function setXClip(cmd, elm) {
+		if (clipTime === void) {
+			clipTime  = elm.time;
+			clipAccel = elm.accel;
+			clipNowait = elm.nowait;
+		}
+		xclipFrom = calcRelative(xclip, getFrom(cmd), env.xmax);
+		xclip     = calcRelative(xclip, getTo(cmd), env.xmax);
+		reclip = true;
+    } 
+
+    function setYClip(cmd, elm) {
+		if (clipTime === void) {
+			clipTime  = elm.time;
+			clipAccel = elm.accel;
+			clipNowait = elm.nowait;
+        }
+		yclipFrom = calcRelative(yclip, getFrom(cmd), env.ymax);
+		yclip     = calcRelative(yclip, getTo(cmd), env.ymax);
+		reclip = true;
+    }
+	
 	function setAfx(cmd, elm) {
 		if (moveTime === void) {
 			moveTime  = elm.time;
@@ -1229,12 +1288,12 @@ class KAGEnvImage {
 	var autoTrans;
 
 	// 自動トランジションを登録
-	function setAutoTrans(list) {
+	function setAutoTrans(list, elm) {
 		for (var i=0;i<list.count;i++) {
 			var param = list[i];
 			if (param !== void) {
 				if (typeof param == "String") {
-					var tr = getTrans(param);
+					var tr = getTrans(param, elm);
 					if (tr !== void) {
 						autoTrans = tr;
 						//dm("自動トランジション指定:" + tr.method + ":" + tr.time);
@@ -1252,7 +1311,7 @@ class KAGEnvImage {
 	/**
 	 * 表示処理用の自動トランジションの指定
 	 */
-	function setDispAutoTrans() {
+	function setDispAutoTrans(elm) {
 	}
 	
 	// --------------------------------------------------------------
@@ -1348,6 +1407,8 @@ class KAGEnvImage {
 			_raster  = result.raster  if result.raster  !== void;
 			xpos = result.left if result.left !== void;
 			ypos = result.top  if result.top  !== void;
+			xclip = result.clipImageLeft if result.clipImageLeft !== void;
+			yclip = result.clipImageTop  if result.clipImageTop !== void;
 		}
 	}
 
@@ -1387,6 +1448,8 @@ class KAGEnvImage {
 		updatePropMoveAction(action, "raster");
 		updatePropMoveAction(action, "left", "xpos");
 		updatePropMoveAction(action, "top",  "ypos");
+		updatePropMoveAction(action, "clipImageLeft", "xclip");
+		updatePropMoveAction(action, "clipImageTop",  "yclip");
 	}
 	
 	function applyPropMoveAction(action, prop, thisprop) {
@@ -1412,6 +1475,8 @@ class KAGEnvImage {
 		applyPropMoveAction(action, "raster");
 		applyPropMoveAction(action, "left", "xpos");
 		applyPropMoveAction(action, "top",  "ypos");
+		applyPropMoveAction(action, "clipImageLeft", "xclip");
+		applyPropMoveAction(action, "clipImageTop",  "yclip");
 		//dm("%s:アクション強制適応後位置:%d,%d".sprintf(name,xpos, ypos));
 	}
 
@@ -1476,6 +1541,7 @@ class KAGEnvImage {
 		resetColor(param, elm);
 		resetPos(param, elm);
 		script = void;
+		clip = void;
     } incontextof this,
 	resetpos : this.resetPos incontextof this,
 	resetcolor : this.resetColor incontextof this,
@@ -1527,10 +1593,22 @@ class KAGEnvImage {
 	script : function(param, elm) {
 		script = param;
     } incontextof this,
+	clip : function(param, elm) {
+		clip = param;
+	} incontextof this,
+	clip : function(param, elm) {
+
+
+		clip = param;
+	} incontextof this,
+
+
 	action : setAction incontextof this,
     stopaction : stopAction incontextof this,
 	xpos : this.setXPos incontextof this,
 	ypos : this.setYPos incontextof this,
+	xclip : this.setXClip incontextof this,
+	yclip : this.setYClip incontextof this,
 	left : this.setXPos incontextof this,
 	top : this.setYPos incontextof this,
 	noshift : function(cmd,elm) { noshiftMode = +cmd; } incontextof this,
@@ -1601,7 +1679,9 @@ class KAGEnvImage {
         f.xpos    = xpos;
         f.ypos    = ypos;
         f.disp    = disp;
-
+		f.xclip   = xclip;
+		f.yclip   = yclip;
+		
 		f.actionList = [];
 		(Array.assign incontextof f.actionList)(currentActionList);
 		//for (var i=0;i<currentActionList.count;i++) {
@@ -1621,6 +1701,7 @@ class KAGEnvImage {
 		f.noise = _noise;
 		f.filter = _filter;
 		f.script = _script;
+		f.clip   = _clip;
 
 		f.absolute = absolute;
 
@@ -1672,8 +1753,17 @@ class KAGEnvImage {
         moveAccel = void;
 		moveNowait = void;
 
+		xclip      = f.xclip;
+		xclipFrom  = void;
+		yclip      = f.yclip;
+        yclipFrom  = void;
+		clipTime  = void;
+        clipAccel = void;
+		clipNowait = void;
+		
         if (isShowBU()) {
-            reposition = true;
+			reposition = true;
+			reclip = true;
         }
 
 		_grayscale = f.grayscale;
@@ -1690,6 +1780,7 @@ class KAGEnvImage {
 		_noise = f.noise;
 		_filter    = f.filter;
 		_script    = f.script;
+		_clip      = f.clip;
 		if (_grayscale !== void ||
 			_rgamma    !== void ||
 			_ggamma    !== void ||
@@ -1703,7 +1794,8 @@ class KAGEnvImage {
 			_luminance !== void ||
 			_noise !== void ||
 			_filter !== void ||
-			_script !== void) {
+			_script !== void ||
+			_clip !== void) {
             redraw = true;
         }
 
@@ -1758,8 +1850,17 @@ class KAGEnvImage {
         moveAccel = void;
 		moveNowait = void;
 
+		xclip      = orig.xclip;
+		xclipFrom  = void;
+        yclip      = orig.yclip;
+        yclipFrom  = void;
+		clipTime  = void;
+		clipAccel = void;
+		clipNowait = void;
+		
         if (isShowBU()) {
-            reposition = true;
+			reposition = true;
+			reclip = true;
         }
 
 		_grayscale = orig.grayscale;
@@ -1776,6 +1877,7 @@ class KAGEnvImage {
 		_noise = orig.noise;
 		_filter = orig.filter;
 		_script = orig.script;
+		_clip   = orig.clip;
 		if (_grayscale !== void ||
 			_rgamma    !== void ||
 			_ggamma    !== void ||
@@ -1789,7 +1891,8 @@ class KAGEnvImage {
 			_luminance !== void ||
 			_noise !== void ||
 			_filter !== void ||
-			_script !== void) {
+			_script !== void ||
+			_clip !== void) {
             redraw = true;
         }
 	}
@@ -1827,6 +1930,30 @@ class KAGEnvImage {
 		moveTime = void;
 	}
 
+    /**
+     * レイヤ配置処理(標準)：左上原点
+     * @param layer 処理対象レイヤ
+     */
+	function calcClip(layer) {
+		//dm("%s:位置指定:%s,%s af:%s,%s time:%s".sprintf(name, xpos, ypos, afx, afy, moveTime));
+		var l = (int)xclip;
+		var t = (int)yclip;
+		if (clipTime !== void && clipTime > 0) {
+			if (xclipFrom !== void || yclipFrom !== void) {
+				var fl = xclipFrom !== void ? (int)xclipFrom : l;
+				var ft = yclipFrom !== void ? (int)yclipFrom : t;
+				layer.clipImageLeft = fl;
+				layer.clipImageTop  = ft;
+			}
+			layer.setClipImageMove(l, t, clipTime, clipAccel, clipNowait);
+		} else {
+			layer.setClipImageMove(l, t, 0, 0, false);
+		}
+		xclipFrom = void;
+		yclipFrom = void;
+		clipTime = void;
+	}
+	
 	/**
 	 * トランジションの強制中断
 	 */
@@ -2078,7 +2205,7 @@ class KAGEnvImage {
 	 * 単純更新
 	 */
 	function _update(base) {
-		if ((isShowBU() || targetLayer !== void) && (updateFlag || redraw || reposition)) {
+		if ((isShowBU() || targetLayer !== void) && (updateFlag || redraw || reposition || reclip)) {
 			//dm("更新処理実行:" + name + " updateFlag:" + updateFlag + " redraw:" + redraw + " reposition:" + reposition);
 			if (targetLayer === void || targetLayer.parent !== base.base) {
 				var layer = createLayer(base);
@@ -2096,6 +2223,11 @@ class KAGEnvImage {
 			}
 			if (redraw) {
 				drawLayer(targetLayer);
+				if (clip !== void) {
+					targetLayer.loadClipImage(clip);
+				} else {
+					targetLayer.clearClipImage();
+				}
 				if (script !== void) {
 					// スクリプト適用
 					try {
@@ -2153,8 +2285,12 @@ class KAGEnvImage {
 				setSize(targetLayer);
 				calcPosition(targetLayer);
 			}
+			if (redraw || reclip) {
+				calcClip(targetLayer);
+			}
 			redraw = false;
 			reposition = false;
+			reclip = false;
 			updateLayer(targetLayer);
 		} else {
 			updateSkip();
@@ -2186,13 +2322,17 @@ class KAGEnvImage {
     function command(elm) {
 		var names = [];
 		names.assign(elm);
+		onBeforeDoCommand(elm);
 		for (var i=0; i<names.count; i+= 2) {
 			if (!doCommand(names[i], names[i+1], elm)) {
 				kag.errorCmd(name + ":未知のコマンド:" + names[i]);
 			}
 		}
+		onAfterDoCommand(elm);
 	}
-	
+	function onBeforeDoCommand() {}
+	function  onAfterDoCommand() {}
+
 	/**
 	 * KAG タグ処理
 	 * @param elm 要素
@@ -2226,7 +2366,7 @@ class KAGEnvImage {
 			} else {
 				// 表示・消去指定に対応
 				if (mode == 1 || mode == 2) {
-					setDispAutoTrans();
+					setDispAutoTrans(elm);
 				}
 				trans = autoTrans;
 			}
@@ -2242,6 +2382,14 @@ class KAGEnvImage {
 		var waitMode = 0; // 0:待ちなし 1:アクションまち 2:トランジションまち
 		
 		if (!kag.skipNoDisp) {
+
+			var syncMode;
+			if (!env.envinfo.nosynctrans) {
+				syncMode = !elm.nosync && (elm.sync || !(trans !== void && trans.nosync));
+			} else {
+				syncMode = !elm.nosync && (elm.sync || (trans !== void && trans.sync));
+			}
+
 			//dm("更新処理開始" + name);
 			if (env.transMode) {
 				//dm("トランジション処理中");
@@ -2266,7 +2414,7 @@ class KAGEnvImage {
 						if (transall || trans.transall || isAbsoluteChange) {
 							//dm("色合い変更またはabsolute変更あり");
 							// absolute が変化する場合は強制で全体トランジション
-							if (elm.nosync || trans.nosync) {
+							if (!syncMode) {
 								kag.errorCmd("absolute変化・色変化・transall指定の場合は nosync できません:" + name);
 							}
 							kag.addFastTag("beginenvtrans", %[]);
@@ -2307,13 +2455,6 @@ class KAGEnvImage {
 			}
 			hideMessage(trans);
 
-			var syncMode;
-			if (!env.envinfo.nosynctrans) {
-				syncMode = !elm.nosync && !(trans !== void && trans.nosync);
-			} else {
-				syncMode = !elm.nosync && (elm.sync || (trans !== void && trans.sync));
-			}
-			
 			// シンクロ指定
 			if (waitMode == 1) {
 				// アクショントランス待ち

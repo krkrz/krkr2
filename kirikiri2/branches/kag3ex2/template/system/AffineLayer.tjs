@@ -738,6 +738,15 @@ class BitmapAffineSourceLayer extends AffineSourceLayer {
 		}
     }
 
+
+    // ----------------------------------------------------------------
+	// layerExBtoA 対応
+
+	function clipAlphaRect() {
+		// resolution指定無効
+		_image.clipAlphaRect(...);
+	}
+
 };
 
 /**
@@ -1039,6 +1048,10 @@ class AffineLayer extends KAGLayer {
 
 	var defaultAfx = "left";
 	var defaultAfy = "top";
+
+	var _clipImage; ///< クリッピング用
+	var _clipImageLeft;
+	var _clipImageTop;
 	
 	// ビットマップ画像用に初期化
 	function _initBitmap() {
@@ -1064,7 +1077,30 @@ class AffineLayer extends KAGLayer {
 		_zoomy = 100;
 		_doAffine = false;
 		_clearRegion = new UpdateRegion();
+		_clipImage = void;
+		_clipImageLeft = 0;
+		_clipImageTop  = 0;
 		super.setPos(0, 0, par.width, par.height);
+	}
+
+	// クリップ画像読み込み
+	function loadClipImage(name) {
+		if (_clipImage === void) {
+			_clipImage = new global.Layer(window, this);
+		}
+		_clipImage.loadImages(name);
+		calcAffine();
+	}
+	
+	// クリップ画像消去
+	function clearClipImage() {
+		if (_clipImage !== void) {
+			invalidate _clipImage;
+			_clipImage = void;
+			_clipImageLeft = 0;
+			_clipImageTop = 0;
+			calcAffine();
+		}
 	}
 
     /**
@@ -1075,6 +1111,9 @@ class AffineLayer extends KAGLayer {
 		super.finalize();
 		// 最後まで残しておかないと他のメソッドをよばれた時に困る
 		invalidate _image;
+		if (_clipImage !== void) {
+			invalidate _clipImage;
+		}
     }
 
 	property name {
@@ -1203,9 +1242,11 @@ class AffineLayer extends KAGLayer {
 	 */
 	function clearNeutralColor() {
 		switch (type) {
-		case ltOpaque:
 		case ltAlpha:
 			// 何もしない
+			break;
+		case ltOpaque:
+			setPos(-1000, -1000, 1, 1); // 画面外に
 			break;
 		default:
 			setPos(-1000, -1000, 1, 1); // 画面外に
@@ -1251,9 +1292,40 @@ class AffineLayer extends KAGLayer {
 				_doAffine = false;
 			}
 		}
+		if (_clipImage !== void) {
+			super.clipAlphaRect(_clipImageLeft, _clipImageTop, _clipImage,0,0,_clipImage.imageWidth,_clipImage.imageHeight,0);
+		}
 		super.onPaint(...);
 	}
-    
+
+	property clipImageLeft {
+		setter(v) {
+			if (v != _clipImageLeft) {
+				_clipImageLeft = v;
+				if (_clipImage !== void) {
+					calcAffine();
+				}
+			}
+		}
+		getter() {
+			return _clipImageLeft;
+		}
+	}
+
+	property clipImageTop {
+		setter(v) {
+			if (v != _clipImageTop) {
+				_clipImageTop = v;
+				if (_clipImage !== void) {
+					calcAffine();
+				}
+			}
+		}
+		getter() {
+			return _clipImageTop;
+		}
+    }
+	
     /// 回転量（度）
     property rotate {
         setter(v) {
@@ -1535,9 +1607,18 @@ class AffineLayer extends KAGLayer {
 				_rasterStart = src._rasterStart;
 				System.addContinuousHandler(onFlipRaster);
 			}
+			if (src._clipImage !== void) {
+				if (_clipImage === void) {
+					_clipImage = new global.Layer(window, this);
+				}
+				_clipImage.assignImages(src._clipImage);
+			}
+			_clipImageLeft = src._clipImageLeft;
+			_clipImageTop  = src._clipImageTop;
 		} else {
 			_initBitmap();
 			_image.assignImages(src);
+			clearClipImage();
         }
 		calcAffine();
     }
@@ -1840,6 +1921,17 @@ class AffineLayer extends KAGLayer {
 			return _rasterCycle;
 		}
 	}
+
+	// --------------------------------------
+	// layerExBtoA 対応
+	// --------------------------------------
+
+	function clipAlphaRect() {
+		_initBitmap();
+		_image.clipAlphaRect(...);
+        calcAffine();
+    }
+
 };
 
 // 定数定義

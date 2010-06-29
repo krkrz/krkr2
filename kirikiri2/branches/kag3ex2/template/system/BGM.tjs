@@ -396,11 +396,12 @@ class BGM
 		buf2.paused = true if buf2 !== void;
 	}
 
-	function resume()
+	function resume(resetVolume = true)
 	{
-        // 演奏を再開
-        buf1.paused = false;
-        buf2.paused = false if buf2 !== void;
+		// 演奏を再開
+		buf1.volume = volume if (resetVolume);
+		buf1.paused = false;
+		buf2.paused = false if buf2 !== void;
 	}
 
 	function fadeOut(elm)
@@ -411,11 +412,19 @@ class BGM
 		currentStorage = "";
 	}
 
-    function fadePause(elm)
-    {
-        if(_enabled) currentBuffer.fadeOutAndPause(elm.time);
-    }    
-    
+	function fadePause(elm)
+	{
+		if(_enabled) currentBuffer.fadeOutAndPause(elm.time);
+	}
+
+	function fadeResume(elm)
+	{
+		var time = (elm !== void && elm.time !== void) ? +elm.time : 0;
+		if(time != 0) buf1.volume = 0; else buf1.volume = volume;
+		resume(false);
+		if(_enabled) if(time !=0 ) currentBuffer.fade(volume, time);
+	}
+
 	function fade(elm)
 	{
 		// 指定音量までフェード

@@ -681,6 +681,10 @@ class GraphicLayerEx extends GraphicLayer {
 					setTileImage(elm.tile);
 				} else if (elm.flip !== void) {
 					startFlip(elm.flip, elm);
+				} else if (elm.movie !== void) {
+					startFlip(elm.movie, elm); // 旧KAG記述互換用
+				} else if (elm.fire !== void) {
+					startFlip(elm.movie, elm); // 旧KAG記述互換用
 				}
 			}
 			_setOptions(elm);
@@ -1046,6 +1050,27 @@ class GraphicLayerEx extends GraphicLayer {
 		}
     }
 
+    /**
+	 * クリップ画像を移動する
+	 * @param x X位置
+	 * @param y Y位置
+	 * @param accele 負:減速 0:線形 正:加速
+	 * @param nowait 待たない
+	 * @time 変更にかかる時間
+	 */
+	function setClipImageMove(x, y, time, accel=0, nowait=false) {
+		if (time) {
+			var action = %[clipImageLeft:%[handler:MoveAction, value:x, time:time, accel:accel],
+					   clipImageTop:%[handler:MoveAction, value:y, time:time, accel:accel],
+					   nowait:nowait];
+			beginAction(action);
+		} else {
+			clipImageLeft = x;
+			clipImageTop  = y;
+		}
+    }
+
+	
 	// -------------------------------------------------------
 	// タイル描画処理
 

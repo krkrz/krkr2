@@ -6,8 +6,8 @@ class KAGEnvSimpleLayer extends KAGEnvLayer, KAGEnvLevelLayer {
 	/**
 	 * 表示処理用の自動トランジションの指定
 	 */
-	function setDispAutoTrans() {
-		setAutoTrans([env.envinfo.layerDispTrans]);
+	function setDispAutoTrans(elm) {
+		setAutoTrans([env.envinfo.layerDispTrans], elm);
 	}
 
 	/**

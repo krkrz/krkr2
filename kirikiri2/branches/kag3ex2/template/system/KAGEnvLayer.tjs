@@ -15,6 +15,10 @@ class KAGEnvLayer extends KAGEnvImage {
     var imageFile;
 	/// 色指定塗りつぶし
 	var imageColor;
+	/// マスク画像
+	var maskFile;
+	var maskLeft;
+	var maskTop;
 
 	// 汎用フリップエフェクト
 	var flipType;
@@ -106,6 +110,9 @@ class KAGEnvLayer extends KAGEnvImage {
         super.onStore(f);
 		f.imageFile = imageFile;
 		f.imageColor = imageColor;
+		f.maskFile = maskFile;
+		f.maskLeft = maskLeft;
+		f.maskTop  = maskTop;
 
 		f.flipFile = flipFile;
 		if (flipFile != "") {
@@ -127,7 +134,9 @@ class KAGEnvLayer extends KAGEnvImage {
     function onRestore(f) {
 		imageFile = f.imageFile;
 		imageColor = f.imageColor;
-
+		maskFile = f.maskFile;
+		maskLeft = f.maskLeft;
+		maskTop  = f.maskTop;
 		flipUpdateFlag = void;
 		flipFile = f.flipFile;
 		if (flipFile != "") {
@@ -151,6 +160,9 @@ class KAGEnvLayer extends KAGEnvImage {
 		if (orig instanceof "KAGEnvLayer") {
 			imageFile = orig.imageFile;
 			imageColor = orig.imageColor;
+			maskFile = orig.maskFile;
+			maskLeft = orig.maskLeft;
+			maskTop  = orig.maskTop;
 
 			flipFile = orig.flipFile;
 			if (flipFile != "") {
@@ -173,6 +185,9 @@ class KAGEnvLayer extends KAGEnvImage {
 	function clearFileState() {
 		imageFile  = void;
 		imageColor = void;
+		maskFile = void;
+		maskLeft = 0;
+		maskTop = 0;
 		tileFile   = void;
 		flipType = flipFile = flipInfo = flipRestore = void;
 	}
@@ -188,6 +203,13 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 	}
 
+	// マスク初期化
+	function initMask(elm) {
+		maskFile = elm.mask !== void ? elm.mask : void;
+		maskLeft = elm.maskleft !== void ? elm.maskleft : 0;
+		maskTop  = elm.masktop !== void ? elm.masktop : 0;
+	}
+
 	// 画像ファイルを指定
 	function setImageFile(file, elm) {
 
@@ -195,6 +217,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		clearFileState();
 		imageFile  = file;
 
+		initMask(elm);
 		initPosAndShow(elm);
 		if (elm.noflag === void && file !== void) {
 			// 記録
@@ -211,6 +234,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		clearFileState();
 		imageColor = +color;
 
+		initMask(elm);
 		initPosAndShow(elm);
 		return true;
     }
@@ -270,6 +294,7 @@ class KAGEnvLayer extends KAGEnvImage {
 	color : function(param, elm) {
 		setImageColor(param, elm);
 	} incontextof this,
+	mask : null,
 	tile : function(param, elm) {
 		setTileFile(param, elm);
 	} incontextof this,
@@ -355,6 +380,22 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 		return ret;
 	}
+	
+	// マスクでクリップ
+	function maskLayer(layer) {
+		if (maskFile !== void) {
+			//dm("maskFile:" + maskFile);
+			try {
+				var temp = window.temporaryLayer;
+				temp.loadImages(maskFile);
+				temp.setSizeToImageSize();
+				//dm("size:" + temp.imageWidth, temp.imageHeight);
+				layer.clipAlphaRect(maskLeft, maskTop, temp, 0, 0, temp.imageWidth, temp.imageHeight, 0);
+			} catch (e) {
+				errorLayer(layer, maskFile + ":マスク画像がロードできません:" + e.message);
+			}
+		}
+	}
 
 	function drawLayer(layer) {
 		layer.clearTile();
@@ -382,6 +423,7 @@ class KAGEnvLayer extends KAGEnvImage {
 					layer.loadImages(%[ "storage" => imageFile]);
 					_width  = layer.width;
 					_height = layer.height;
+					maskLayer(layer);
 				} catch (e) {
 					errorLayer(layer, imageFile + ":画像がロードできません:" + e.message);
 				}
@@ -389,6 +431,7 @@ class KAGEnvLayer extends KAGEnvImage {
 				// 塗りつぶし
 				layer.setSize(_width, _height);
 				layer.fillRect(0, 0, layer.width, layer.height, imageColor);
+				maskLayer(layer);
 			} else if (flipFile !== void) {
 				try {
 					if (flipRestore !== void) {

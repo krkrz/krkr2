@@ -442,11 +442,11 @@ function uiloadEntry(layer, names, dic, elm, table, evals, order)
 			value = temp;
 			/* not break */
 		default:
+			value.x -= basex;
+			value.y -= basey;
+			uiloadEvals(value,  evals["-"+value.name], dic, base);
 			var func = table[value.class];
 			if (func !== void) {
-				value.x -= basex;
-				value.y -= basey;
-				uiloadEvals(value,  evals["-"+value.name], dic, base);
 				var target = func(layer, name, value, elm);
 				uiloadEvals(target, evals[value.name], dic, base) if (target !== void);
 			}
@@ -546,7 +546,7 @@ function uiloadWithFuncTable(layer, elm, funcTable) {
 // ボタンレイヤを単純なレイヤに変更する
 function uiSetLayerOption(target) {
 	with (target) {
-		.setImageSize(.width, .height); // ボタン分を使わないのでサイズを縮める
+		.imageWidth = .width; // ボタン分を使わないのでサイズを縮める
 		.enabled = .focusable = false;
 		if (typeof .eventTransparent != "undefined") .eventTransparent = true;
 		else .hitType = htProvince;
