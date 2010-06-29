@@ -81,6 +81,10 @@ class KAGEnvBgm {
         }
     }
 
+	function _getTimeParam(param, elm) {
+		return (elm !== void && elm.time !== void) ? +elm.time : +param;
+	}
+
     /**
      * 停止処理
      * @param param フェードアウト時間
@@ -92,13 +96,7 @@ class KAGEnvBgm {
 		resume = void;
 		name = void;
 		paused = false;
-		var time;
-		if (elm !== void && elm.time !== void) {
-			time = +elm.time;
-		} else {
-			time = +param;
-		}
-		stop = time;
+		stop = _getTimeParam(param, elm);
 		doflag = true;
     }
 
@@ -109,7 +107,7 @@ class KAGEnvBgm {
 	function setPause(param, elm) {
 		if (name !== void) {
 			resume = void;
-			pause = +param;
+			pause = _getTimeParam(param, elm);
 			paused = true;
 			doflag = true;
 		}
@@ -121,7 +119,7 @@ class KAGEnvBgm {
 	function setResume(param, elm) {
 		if (name !== void) {
 			pause = void;
-			resume = true;
+			resume = _getTimeParam(param, elm);
 			paused = false;
 			doflag = true;
 		}
@@ -262,14 +260,18 @@ class KAGEnvBgm {
 				play = void;
 			}
 			if (pause !== void) {
-				if (pause > 0) {
-					bgm.fadePause(%[ time: +param]);
+				if (pause > 1) {
+					bgm.fadePause(%[ time: +pause ]);
 				} else {
 					bgm.pause();
 				}
 				pause = void;
 			} else if (resume !== void) {
-				bgm.resume();
+				if (resume > 1) {
+					bgm.fadeResume(%[ time: +resume ]);
+				} else {
+					bgm.resume();
+				}
 				resume = void;
 			}
 		}

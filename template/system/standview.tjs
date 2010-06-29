@@ -96,6 +96,11 @@ class StandViewModelessDialog {
 	var dialog, window, maprect, baserect;
 	function StandViewModelessDialog(win) {
 		dialog = new WIN32DialogEX(this);
+		runjob = new AsyncTrigger(this, "runCommandJobs");
+		with (runjob) {
+			.cached = true;
+			.mode = atmNormal;
+		}
 		window = win;
 		with (dialog) {
 			.modeless = true;
@@ -207,9 +212,17 @@ class StandViewModelessDialog {
 			}
 		}
 	}
-	function commandCallback(func, *) {
+	var joblist = [], runjob;
+	function commandCallback(func, param*) {
 		if (func == "") return;
-		if (typeof this[func] == "Object") this[func](*);
+		if (typeof this[func] == "Object") {
+			joblist.push(%[ func:func, param:param ]);
+			runjob.trigger();
+		}
+	}
+	function runCommandJobs() {
+		var job;
+		while ((job = joblist.shift()) !== void) with (job) this[.func](.param*);
 	}
 	function onInit() {
 		maprect = dialog.mapRect(baserect) if (maprect === void);
@@ -282,6 +295,7 @@ class StandViewModelessDialog {
 	function finalize() {
 		visible = false;
 		invalidate dialog if (dialog !== void);
+		invalidate runjob if (runjob !== void);
 	}
 	var _visible = false;
 	property visible {
@@ -995,10 +1009,16 @@ class StandViewWindow extends KAGWindow
 			var name = ext[i], info = ext[i+1];
 			if (name == "" ||  info === void) continue;
 			with (global.KAGEnvironment) switch (info.type) {
-				case .DISPPOSITION: disp.add (%[ name:name, value:info.disp  ]); break;
-				case .LEVEL:        level.add(%[ name:name, value:info.level ]); break;
-				case .XPOSITION:    xpos.add (%[ name:name, value:info.xpos  ]); break;
-				case .YPOSITION:    ypos.add (%[ name:name, value:info.ypos  ]); break;
+			case .DISPPOSITION: disp.add (%[ name:name, value:info.disp  ]); break;
+			case .LEVEL:        level.add(%[ name:name, value:info.level ]); break;
+			case .XPOSITION:    xpos.add (%[ name:name, value:info.xpos  ]); break;
+			case .YPOSITION:    ypos.add (%[ name:name, value:info.ypos  ]); break;
+			default:
+				if      (info.disp  !== void) disp.add (%[ name:name, value:info.disp  ]);
+				else if (info.level !== void) level.add(%[ name:name, value:info.level ]);
+				else if (info.xpos  !== void) xpos.add (%[ name:name, value:info.xpos  ]);
+				else if (info.ypos  !== void) ypos.add (%[ name:name, value:info.ypos  ]);
+				break;
 			}
 		}
 		var sortfunc = function(a, b) { return a.value < b.value; };

@@ -353,7 +353,7 @@ class KAGWindow extends Window
 		if (current !== void && currentNum == _clearMessageLayerNumOnSkipNoDispChanged) {
 			if(currentWithBack) current.comp.clear(true);
 			current.clear(true);
-			if(v && historyWriteEnabled) historyLayer.repage();
+			if(v && historyWriteEnabled) historyLayer.repage(true);
 		}
 		callHook("onSkipNoDispChanged", v);
 	}
@@ -520,6 +520,7 @@ class KAGWindow extends Window
 	/*C*/var storeEnabled = true; // ユーザが「栞をはさむ」メニューにアクセス可能かどうか
 	/*C*/var restoreEnabled = true; // ユーザが「栞をたどる」メニューにアクセス可能かどうか
 	var storeLabelPassed = false; // 保存可能なラベルを通過したかどうか
+	var storeLabelPassedLastStorage; // 最後に保存可能なラベルを通過した時のストレージ
     /*C*/var currentStorage = ""; // 現在のラベル
     /*C*/var currentLabel = ""; // 現在のラベル
 	/*C*/var currentPageName = ""; // 現在のページ名
@@ -772,8 +773,7 @@ class KAGWindow extends Window
 		work = true if updateDelay(now);
 		
 		// アクション更新
-		updateAction(now);
-		work = true if actionCount > 0;
+		work = true if updateAction(now);
 
 		// GenericFlip更新
 		if (updateGenericFlips(now)) work = true;
@@ -3263,6 +3263,7 @@ class KAGWindow extends Window
 		setConductorToMain();
 		mainConductor.clear();
 		mainConductor.restore(pcflags.mainConductor);
+		storeLabelPassedLastStorage = mainConductor.curStorage;
 		// XXX 順番入れ替え
 		
 		// 読み込み
@@ -3360,9 +3361,9 @@ class KAGWindow extends Window
 		(Dictionary.assignStruct incontextof pcflags)(dic.core);
 
 		if (historyWriteEnabled) {
-			historyLayer.reline();
-			historyLayer.repage();
 			historyLayer.clearAction();
+			historyLayer.reline();
+			historyLayer.repage(true);
 		}
 
 		// データを元に、栞をたどる動作をする
@@ -4356,6 +4357,7 @@ class KAGWindow extends Window
      */
 	function showSelect()
 	{
+		callHook("onShowSelectHook", f.selectInfos);
 		selectLayer.clearButtons();
 		for (var i=0;i<f.selectInfos.count;i++) {
 			selectLayer.addSelect(f.selectInfos[i]);
@@ -4613,14 +4615,14 @@ class KAGWindow extends Window
 		if(conductor.status != conductor.mRun) conductor.run(immediate); // 実行開始
     }
 
-	function processGo()
+	function processGo(immediate = false)
 	{
         // コンダクタを現在位置から実行開始させる
         if (debugLevel >= tkdlSimple)
             dm("処理を開始します");
 		inSleep = false;
 		notifyRun();
-		conductor.run(false); // 実行開始
+		conductor.run(immediate); // 実行開始
 	}
 
 	function processCall(file, label)
@@ -4714,6 +4716,7 @@ class KAGWindow extends Window
 			if(usingExtraConductor) throw new Exception("右クリックサブルーチン内/extraCondutor"
 				"サブルーチン内では保存可能なラベルを記述できません");
 			storeFlags(), storeLabelPassed = true, setMenuAccessibleAll();
+			storeLabelPassedLastStorage = conductor.curStorage;
 			if(recordHistoryOfStore == 1) // 1 : 保存可能なラベルごと
 				setToRecordHistory();
 
@@ -4731,7 +4734,7 @@ class KAGWindow extends Window
 
 	function onConductorJump(elm)
 	{
-        // コンダクタで jump タグを処理するとき
+		// コンダクタで jump タグを処理するとき
         closeDialog();
         if(!usingExtraConductor) incRecordLabel(elm.countpage === void || +elm.countpage);
 		return true;
@@ -5410,9 +5413,13 @@ class KAGWindow extends Window
         return false;
     }
 
+	property genericFontInstance { getter { return fore.base.font; } }
+	function getFontFaceList() {
+		return genericFontInstance.getList(...);
+	}
 	function selectFontDoUserSelect() {
 		// フォントを選択する
-		with (fore.base.font) {
+		with (genericFontInstance) {
 			.face = chDefaultFace;
 			.height = -20;
 			if (.doUserSelect(...)) return .face;
@@ -5973,12 +5980,25 @@ class KAGWindow extends Window
 
     // アクション対象全部
     var allActions = %[];
-    var actionCount = 0;
+
+	// wait対象アクションが動作中
+	function isWorkingAction() {
+		var names = [];
+		names.assign(allActions);
+		var count = 0;
+		for (var i=0;i<names.count;i+=2) {
+			var info = names[i+1];
+			if (!info.nowait) {
+				return true;
+			}
+		}
+		return false;
+	}
 
     /**
      * アクション実行中か
      */
-    function isInAction(target) {
+	function isInAction(target) {
         return allActions[target] !== void;
     }
 
@@ -5996,7 +6016,6 @@ class KAGWindow extends Window
 			destAction.target = dest;
 			destAction.onActionCompleted = completed if (completed !== void);
 			allActions[dest] = destAction;
-			actionCount++;
 		}
 	}
 
@@ -6023,7 +6042,6 @@ class KAGWindow extends Window
 		if (info === void) {
 			info = new ActionSequense(target);
 			allActions[target] = info;
-			actionCount++;
 		}
 		// 終了ハンドラを登録
 		info.onActionCompleted = completed if (completed !== void);
@@ -6117,27 +6135,33 @@ class KAGWindow extends Window
 		var info = allActions[target];
 		if (info !== void) {
 			//dm("指定アクション停止:" + target);
-			actionCount-- if (actionCount > 0);
 			internalActionComplete(info, true);
 			invalidate info;
 			delete allActions[target];
-			internalAllActionComplete() if (!actionCount);
+			if (!isWorkingAction()) {
+				internalAllActionComplete();
+			}
 		}
 	}
 
     /**
      * 全アクションの停止
+	 * @param all nowaitのアクションも停止する
      */
 	function stopAllActions(all) {
 		//dm("全アクション停止:" + all);
 		var names = [];
 		names.assign(allActions);
 		(Dictionary.clear incontextof allActions)();
-		var hasAction = (actionCount > 0);
-		actionCount = 0;
+		var oldAction = false;
+//		var newAction = false; // 非nowaitアクションは必ず停止するので newAction フラグは不要
+		var update = false;
 		for (var i=0;i<names.count;i+=2) {
 			var name = names[i];
 			var info = names[i+1];
+			if (!info.nowait) {
+				oldAction = true;
+			}
 			if (all || !info.nowait) {
 				//dm("停止対象アクション:" + name + ": " + info.nowait);
 				internalActionComplete(info, true);
@@ -6145,42 +6169,58 @@ class KAGWindow extends Window
 				delete names[name];
 			} else {
 				allActions[name] = info;
-				actionCount++;
+//				if (!info.nowait) {
+//					newAction = true;
+//				}
+				update = true;
 			}
 		}
 		// nowait分を更新（スキップ時にonFlipTimerIntervalが呼ばれない場合があるため）
-		if (!skipNoDisp && actionCount > 0) updateAction(System.getTickCount());
-		else if (hasAction && !actionCount) internalAllActionComplete();
-
+		if (!skipNoDisp && update) {
+			updateAction(System.getTickCount());
+		} else {
+			if (oldAction/* && !newAction*/) {
+				internalAllActionComplete();
+			}
+		}
 		stopActionHandler(all) if (typeof this.stopActionHandler == "Object");
 	}
     
     /**
      * アクション状態更新
      * システム全体から呼び出す
-     * @param now 現在時刻
+	 * @param now 現在時刻
+	 * @return 動作中アクションが残ってる
      */
-    function updateAction(now) {
-        var names = [];
-        names.assign(allActions);
-        (Dictionary.clear incontextof allActions)();
-		var hasAction = (actionCount > 0);
-		actionCount = 0;
-        for (var i=0;i<names.count;i+=2) {
-            var target = names[i];
+	function updateAction(now) {
+		var names = [];
+		names.assign(allActions);
+		(Dictionary.clear incontextof allActions)();
+		var oldAction = false;
+		var newAction = false;
+		var update = false;
+		for (var i=0;i<names.count;i+=2) {
+			var target = names[i];
 			//dm("アクション実行:" + target);
-            var info   = names[i+1];
+			var info   = names[i+1];
+			if (!info.nowait) {
+				oldAction = true;
+			}
 			if (info.doAction(now, false)) {
 				//dm("アクション終了:" + info.target);
 				internalActionComplete(info, false);
 				invalidate info;
             } else {
-                // 再登録
-                allActions[target] = info;
-				actionCount++;
-            }
-        }
-		if (hasAction && !actionCount) internalAllActionComplete();
+				// 再登録
+				allActions[target] = info;
+				if (!info.nowait) {
+					newAction = true;
+				}
+				update = true;
+			}
+		}
+		if (oldAction && !newAction) internalAllActionComplete();
+		return update;
     }
     
     /**
@@ -6230,7 +6270,7 @@ class KAGWindow extends Window
 
 	function waitAllAction(canskip)	{
 		// アクションを待つ
-		if (actionCount == 0) return 0; // アクションを待てない
+		if (!isWorkingAction()) return 0; // アクションを待てない
 		if((canskip === void || +canskip) && clickSkipEnabled)
 		{
 			// スキップできる場合
@@ -6266,7 +6306,7 @@ class KAGWindow extends Window
 
 	// アクションとトランジションを同時に待つ
 	function waitAllActionAndTransition(canskip)	{
-		if (actionCount == 0 && transCount == 0) return 0;
+		if (!isWorkingAction() && transCount == 0) return 0;
 		if((canskip === void || +canskip) && clickSkipEnabled)
 		{
 			// スキップできる場合
@@ -7183,6 +7223,11 @@ class KAGWindow extends Window
 		if(pseudoMenuShortcut(key, shift)) return;
 		if(focusedLayer === null)
 			internalOnKeyDown(key, shift);
+		super.onKeyDown(...);
+	}
+	function onKeyUp(key, shift)
+	{
+		callHook("keyUp", key, shift);
 		super.onKeyDown(...);
 	}
 
@@ -9490,6 +9535,8 @@ class KAGWindow extends Window
 				if(currentWithBack) current.comp.preIndent(ch);
 				current.preIndent(ch);
 			}
+			if(historyWriteEnabled && typeof historyLayer.preIndent == "Object")
+				historyLayer.preIndent();
 		}
 		return 0;
 	} incontextof this,
@@ -10771,7 +10818,7 @@ class KAGWindow extends Window
 		hideSelect();
 		afterSelect();
 		setMenuAccessibleAll();
-		return 0;
+		return (elm.storage != '' || elm.target != '') ? tagHandlers.next(elm) : 0;
 	} incontextof this,
 
 	//----------------------------------------- タグハンドラ群(選択肢) --

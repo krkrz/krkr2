@@ -14,7 +14,7 @@ class SelectButtonLayer extends ButtonLayer
     var storage; // 処理終了後のジャンプ先
     var target;  // 処理終了後のジャンプ先
 	var tag;     // ボタン固有名称（フラグ用）
-	var selected;// 過去に選択したことがある
+	var drawopt; // 描画オプション
 	var message; // メッセージテキスト（再描画用）
 	var ui;
 
@@ -31,7 +31,7 @@ class SelectButtonLayer extends ButtonLayer
         for (var i=0;i<cnt;i++) {
             var x = i*width + dx;
             //dm("メッセージ:" + x);
-			owner.drawTextToLayer(this, x, y, message, i, selected);
+			owner.drawTextToLayer(this, x, y, message, i, drawopt);
         }
     }
     
@@ -40,11 +40,13 @@ class SelectButtonLayer extends ButtonLayer
      * @param owner   選択レイヤ
      * @param message 表示するメッセージを指定
      */
-    function SelectButtonLayer(owner, message, selected) {
+    function SelectButtonLayer(owner, message, drawopt) {
+		_enabled   = super.enabled;
+		_focusable = super.focusable;
 
         this.owner = owner;
-		this.selected = selected;
-		this.message  = message;
+		this.drawopt = drawopt;
+		this.message = message;
 		this.__gdiplusfontapp = owner.fontAppearance.gdiplus
 			if (                owner.fontAppearance.gdiplus !== void);
         
@@ -159,6 +161,17 @@ class SelectButtonLayer extends ButtonLayer
         }
 		return super.onFocus(...);
     }
+
+	var     _forceDisabled = false;
+	property forceDisabled { getter { return _forceDisabled; } setter (v) {
+		_forceDisabled = v;
+		enabled   = _enabled;
+		focusable = _focusable;
+	} }
+	property enabled   { getter { return _enabled   && !_forceDisabled; } setter(v) { super.enabled   = (_enabled   = v) && !_forceDisabled; } }
+	property focusable { getter { return _focusable && !_forceDisabled; } setter(v) { super.focusable = (_focusable = v) && !_forceDisabled; } }
+	var     _enabled;
+	var     _focusable;
 }
 
 /**
@@ -211,6 +224,7 @@ class SelectLayer {
     var fontShadow;
     var fontEdge;
     var fontColor       = 0xffffff;
+	var fontDisabledColor = void;
     var fontSelectedColor = void;
     var fontEdgeColor   = 0x0080ff;
     var fontShadowColor = 0000000;
@@ -265,6 +279,7 @@ class SelectLayer {
         fontSize   = +elm.size if elm.size !== void;
         fontColor  = +elm.color if elm.color !== void;
 		fontSelectedColor = +elm.selectedcolor if (elm.selectedcolor !== void);
+		fontDisabledColor = +elm.disabledcolor if (elm.disabledcolor !== void);
 
         fontItalic = +elm.italic if elm.italic !== void;
         fontShadow = +elm.shadow if elm.shadow !== void;
@@ -383,15 +398,16 @@ class SelectLayer {
     /**
      * エフェクトつき文字描画(SelectButtonLayerから呼ばれる)
      */
-	function drawTextToLayer(lay, x, y, text, sel, ted = false) {
-		sel += 4 if (ted);
+	function drawTextToLayer(lay, x, y, text, sel, opt) {
+		sel += 4 if (opt.selected);
 		var ref = fontAppearance.contexts[sel], context = %[];
 		if (ref === void) return;
 		(Dictionary.assign incontextof context)(ref, true);
+		var col = (opt.disabled && fontDisabledColor !== void) ? fontDisabledColor : context.color;
 
 		// MessageLayer.drawTextToLayerに投げるためのhack
 		context.antialiased = true; //window.chDefaultAntialiased;
-		(MessageLayer.drawTextToLayer incontextof context)(lay, x, y, text, context.color);
+		(MessageLayer.drawTextToLayer incontextof context)(lay, x, y, text, col);
 		invalidate context;
 	}
 
@@ -545,7 +561,9 @@ class SelectLayer {
         selects.add(select);
     }
 	function getSelectButtonLayer(elm) {
-		return global.getSelectButtonLayer(this, elm.text, elm.selected);
+		var r = global.getSelectButtonLayer(this, elm.text, elm);
+		r.forceDisabled = elm.disabled;
+		return r;
 	}
 
     /*
@@ -602,7 +620,10 @@ class SelectLayer {
 	 * 選択肢終了
 	 */
 	function end(select) {
-		window.insertTag("doneselect", %[ tag:select.tag ]);
+		var elm;
+		if (select) with (select) elm = %[ tag:.tag, storage:.storage, target:.target ];
+		window.processGo();
+		window.insertTag("doneselect", elm !== void ? elm : %[]);
 		if (setVisibleTime(false, fadeTime)) {
 			window.insertTag("wact", %[ target:this ]);
 		}
@@ -631,11 +652,6 @@ class SelectLayer {
     function onButtonClick(sel) {
 		var select = (sel && typeof sel == "Object" && sel isvalid) ? sel : %[];
 		Scripts.eval(select.onclick) if select.onclick != '';
-		if (select.storage != '' || select.target != '') {
-			window.process(select.storage, select.target);
-		} else {
-			window.processGo();
-		}
 		end(select);
 	}
 

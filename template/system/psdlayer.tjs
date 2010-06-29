@@ -814,7 +814,7 @@ class PSDLayer extends RepaintLayer {
 		for (var i=count;i>=0;i--) {
 			var info = psd.getLayerInfo(i);
 			//dm(@'■レイヤ${i}: "${psd.getLayerName(i)}"\n' + dictToString(info));
-			info.name = info.name.replace(/\//g, "_");
+			info.name = info.name.replace(/[\/]/g, "_");
 			switch (info.layer_type) {
 			case PSD.layer_type_normal:
 				{
@@ -1155,12 +1155,8 @@ class PSDLayer extends RepaintLayer {
 	function saveImages(storage, zoom=100, zoomType=stLinear, noimage=false) {
 		
 		// 保存用プラグインロード
-		if (typeof global.Array.save2 == "undefined") {
-			Plugins.link("savestruct.dll");
-		}
-		if (typeof global.Layer.saveLayerImageTlg5 == "undefined") {
-			Plugins.link("layerExSave.dll");
-		}
+		useSaveStruct();
+		useLayerExSave();
 
 		var ext = Storages.extractStorageExt(storage).toUpperCase();
 		if (ext == ".TXT") {
@@ -1181,10 +1177,8 @@ class PSDLayer extends RepaintLayer {
 	function saveInfos(storage) {
 
 		// 保存用プラグインロード
-		if (typeof global.Array.save2 == "undefined") {
-			Plugins.link("savestruct.dll");
-		}
-		
+		useSaveStruct();
+
 		var savedata = [];
 		for (var i=0;i<layers.count;i++) {
 			savedata.add(getFullname(layers[i]));
@@ -1225,7 +1219,7 @@ class PSDLayer extends RepaintLayer {
 		//dm("cropLayer:" + info.name + ":" + ooze);
 		getDispLayer(info);
 
-		var layer;
+		var layer, opr = omAlpha; //omPsNormal;
 
 		if (false) {
 			var work = new global.Layer(window, this);
@@ -1233,12 +1227,12 @@ class PSDLayer extends RepaintLayer {
 			work.fillRect(0,0,work.width,work.height,0);
 			with (info.layer) {
 				for (var diff=4;diff>0;diff--) {
-					work.operateRect(.left - x -diff, .top - y, info.layer, 0, 0, .width, .height, omAlpha);
-					work.operateRect(.left - x +diff, .top - y, info.layer, 0, 0, .width, .height, omAlpha);
-					work.operateRect(.left - x, .top - y-diff, info.layer, 0, 0, .width, .height, omAlpha);
-					work.operateRect(.left - x, .top - y+diff, info.layer, 0, 0, .width, .height, omAlpha);
+					work.operateRect(.left - x -diff, .top - y, info.layer, 0, 0, .width, .height, opr);
+					work.operateRect(.left - x +diff, .top - y, info.layer, 0, 0, .width, .height, opr);
+					work.operateRect(.left - x, .top - y-diff,  info.layer, 0, 0, .width, .height, opr);
+					work.operateRect(.left - x, .top - y+diff,  info.layer, 0, 0, .width, .height, opr);
 				}
-				work.operateRect(.left - x, .top - y, info.layer, 0, 0, .width, .height, omAlpha);
+				work.operateRect(.left - x, .top - y, info.layer, 0, 0, .width, .height, opr);
 			}
 
 			layer = new NotifyParentLayer(window, this);
@@ -1258,7 +1252,8 @@ class PSDLayer extends RepaintLayer {
 			layer.setSize(w, h);
 			layer.fillRect(0,0,w,h,0);
 			with (info.layer) {
-				layer.operateRect(.left - x, .top - y, info.layer, 0, 0, .width, .height, omAlpha);
+//				layer.operateRect(.left - x, .top - y, info.layer, 0, 0, .width, .height, opr);
+				layer.copyRect(.left - x, .top - y, info.layer, 0, 0, .width, .height);
 			}
 			layer.oozeColor(ooze);
 		}
@@ -1321,9 +1316,7 @@ class PSDLayer extends RepaintLayer {
 	 * @param percent パーセント指定
 	 */
 	function rescale(percent, type) {
-		if (typeof global.Layer.saveLayerImageTlg5 == "undefined") {
-			Plugins.link("layerExSave.dll");
-		}
+		useLayerExSave();
 		var w = (int)(width * percent / 100);
 		var h = (int)(height * percent / 100);
 		for (var i=0;i<layers.count;i++) {
@@ -1346,9 +1339,7 @@ class PSDLayer extends RepaintLayer {
 	 * @param h 高さ
 	 */
 	function resize(x, y, w, h) {
-		if (typeof global.Layer.saveLayerImageTlg5 == "undefined") {
-			Plugins.link("layerExSave.dll");
-		}
+		useLayerExSave();
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
 			cropLayer(info, x, y, w, h);
@@ -1364,9 +1355,7 @@ class PSDLayer extends RepaintLayer {
 	 * 画像全体を最適化する
 	 */
 	function fix() {
-		if (typeof global.Layer.saveLayerImageTlg5 == "undefined") {
-			Plugins.link("layerExSave.dll");
-		}
+		useLayerExSave();
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
 			cropLayer(info, 0, 0, width, height);
@@ -1379,26 +1368,35 @@ class PSDLayer extends RepaintLayer {
 	 * 画像のアルファ部の情報を0クリアする
 	 */
 	function clearAlpha() {
-		if (typeof global.Layer.saveLayerImageTlg5 == "undefined") {
-			Plugins.link("layerExSave.dll");
-		}
+		useLayerExSave();
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
 			getDispLayer(info);
-			if (info.layer) {
-				var layer = new NotifyParentLayer(window, this);
-				with (info.layer) {
+			if (info.layer) with (info.layer) {
+				if (false) {
+					var layer = new NotifyParentLayer(window, this);
 					layer.setSize(.width, .height);
 					layer.fillRect(0,0, layer.width, layer.height,0);
 					layer.operateRect(0, 0, info.layer, 0, 0, .width, .height, omAlpha);
+					_setLayerInfo(layer, info);
+					invalidate info.layer;
+					info.layer = layer;
+				} else {
+					var layer = new NotifyParentLayer(window, this);
+					layer.setImageSize(.imageWidth, .imageHeight);
+					layer.fillRect(0,0,.imageWidth, .imageHeight,0);
+					.getDiffPixel(layer, 0x00000000, void);
+					invalidate layer;
 				}
-				_setLayerInfo(layer, info);
-				invalidate info.layer;
-				info.layer = layer;
 			}
 		}
 		update(0,0,width,height);
 	}
 
+	/**
+	 * 補助プラグインの読み込み
+	 */
+	function useLayerExSave() { Plugins.link("layerExSave.dll") if (typeof global.Layer.saveLayerImageTlg5 != "Object"); }
+	function useSaveStruct()  { Plugins.link("savestruct.dll")  if (typeof global.Array.save2              != "Object"); }
 
 };

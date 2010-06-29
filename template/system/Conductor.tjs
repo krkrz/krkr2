@@ -196,6 +196,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 		var tick = System.getTickCount();
 		// 次の要素を得る
 		nextTimerTick = timer.interval + tick;
+		mp_target = this;
 		var obj;
 		try
 		{
@@ -245,6 +246,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 						pendings = newp;
 						callOwnerMethod("setUserSpeed");
 
+						if (targetLine === void && waitAndBreak(tick, -4)) return;
 						continue;
 						
 					} else {
@@ -305,6 +307,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 								pendings.insert(0, obj);
 								//pendings.insert(0, %[tagname:"autolabel"]);
 								targetLine = void;
+								if (waitAndBreak(tick, -4)) return;
 							}
 							continue;
 						}
@@ -376,57 +379,9 @@ class BaseConductor extends global.BaseConductorExtendClass
 						timer.interval = 0;
 						continue;
 					}
-					else if(step < 0)
-					{
-						switch(step)
-						{
-						case -5: // いったんイベントを処理(現在のタグは後回し)
-							pendings.insert(0, obj);
-							oneshot.mode = atmAtIdle;
-							oneshot.trigger(); // トリガ
-							timer.interval = 0; // タイマは停止
-							inProcessing = false;
-							reentered = false;
-							return;
-						case -4: // いったんイベントを処理
-							oneshot.mode = atmAtIdle;
-							oneshot.trigger(); // トリガ
-							timer.interval = 0; // タイマは停止
-							inProcessing = false;
-							reentered = false;
-							return;
-						case -3: // 後回ししてブレーク
-							pendings.insert(0, obj);
-							timer.interval = 0; // タイマは停止
-							inProcessing = false;
-							reentered = false;
-							return;
-						case -2: // ブレーク
-							timer.interval = 0; // タイマは停止
-							inProcessing = false;
-							reentered = false;
-							return;
-						case -1: // シナリオ終了
-							timer.interval = 0; 
-							timer.enabled = false;
-							timerEnabled = false;
-							onStop();
-							inProcessing = false;
-							reentered = false;
-							return;
-						}
-					}
 					else
 					{
-						// 次へ
-						if(timer.interval != step)
-						{
-							timer.interval = step;
-							nextTimerTick = step + tick;
-						}
-						inProcessing = false;
-						reentered = false;
-						return;
+						if (waitAndBreak(tick, step, obj)) return;
 					}
 				}
 			}
@@ -455,6 +410,46 @@ class BaseConductor extends global.BaseConductorExtendClass
                 throw new ConductorException(msg);
 //              System.inform(msg, "エラー");
 		}
+		mp_target = void;
+	}
+
+	function waitAndBreak(tick, step, obj)
+	{
+		switch(step)
+		{
+		case -5: // いったんイベントを処理(現在のタグは後回し)
+			pendings.insert(0, obj);
+			// not break;
+		case -4: // いったんイベントを処理
+			oneshot.mode = atmAtIdle;
+			oneshot.trigger(); // トリガ
+			timer.interval = 0; // タイマは停止
+			break;
+		case -3: // ブレーク(現在のタグは後回し)
+			pendings.insert(0, obj);
+			// not break;
+		case -2: // ブレーク
+			timer.interval = 0; // タイマは停止
+			break;
+		case -1: // シナリオ終了
+			timer.interval = 0; 
+			timer.enabled = false;
+			timerEnabled = false;
+			onStop();
+			break;
+		default:
+			if (step <= 0) return false;
+			else if (/* step > 0 && */ timer.interval != step)
+			{
+				timer.interval = step;
+				nextTimerTick  = step + tick;
+			}
+			break;
+		}
+		inProcessing = false;
+		reentered = false;
+		mp_target = void;
+		return true;
 	}
 
 	// シナリオファイルに変更があった／trueを返すとそのまま例外投げ

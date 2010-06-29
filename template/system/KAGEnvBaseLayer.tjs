@@ -32,8 +32,8 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 	/**
 	 * 表示処理用の自動トランジションの指定
 	 */
-	function setDispAutoTrans() {
-		setAutoTrans([env.envinfo.eventTrans, env.envinfo.envTrans]);
+	function setDispAutoTrans(elm) {
+		setAutoTrans([env.envinfo.eventTrans, env.envinfo.envTrans], elm);
 	}
 	
     /**
@@ -71,7 +71,7 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 		disp = SHOW;
 		redraw = true;
 		reposition = true;
-		setAutoTrans([eventTrans, env.envinfo.eventTrans, env.envinfo.envTrans]);
+		setAutoTrans([eventTrans, env.envinfo.eventTrans, env.envinfo.envTrans], elm);
 		
 		// 記録
 		if (elm.noflag === void) {

@@ -47,10 +47,12 @@ class KAGEnvSE {
     /**
      * コンストラクタ
      */
-    function KAGEnvSE(env, id) {
-        this.env = env;
-        this.id = id;
-    }
+	var kag;
+	function KAGEnvSE(env, id) {
+		this.env = env;
+		this.kag = env.kag;
+		this.id = id;
+	}
 
     /**
      * 再生処理
@@ -180,9 +182,10 @@ class KAGEnvSE {
         waitFade = void;
 		doflag = false;
 		foreach(elm, doCommand);
-		if (!doflag && elm.tagname != "se" && elm.tagname != "allse") {
-			setPlay(elm.tagname, elm);
-        }
+		var tagname = elm.tagname;
+		if (!doflag && checkTagNamePlay(tagname)) {
+			setPlay(tagname, elm); 
+		}
 		sync();
 		if (waitFade !== void) {
 			return kag.waitSEFade(waitFade);
@@ -191,6 +194,24 @@ class KAGEnvSE {
 		}
 		return 0;
     }
+
+	// タグ名をファイル名とみなして再生できるかどうか
+	function checkTagNamePlay(tagname) {
+		switch (tagname) {
+		case "se":
+		case "allse":
+			// 標準タグなので無効
+			return false;
+
+		default:
+			// ループSEの場合は同じタグ名による再度再生をさせいない
+			if (loop && name == tagname)
+				return false;
+			break;
+		}
+		return true;
+	}
+
 
 	function sync() {
 		if (!kag.skipNoDisp) {

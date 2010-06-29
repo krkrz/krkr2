@@ -17,7 +17,7 @@ var dm = Debug.message; // これで dm("message"); でコンソールに message を表示で
 	デバッグウィンドウが有効かどうか
 */
 
-property debugWindowEnabled { getter() { return System.getArgument("-debugwin") != "no"; } }
+("property debugWindowEnabled { getter() { return " + (System.getArgument("-debugwin") != "no") + "; } }")!;
 
 if (!debugWindowEnabled) {
 	/*
@@ -55,6 +55,8 @@ if (!debugWindowEnabled) {
 		}
 		return false; // false を返すと通常の例外処理
 	};
+	// プリプロセッサ指定
+	Scripts.exec("@set (DEBUG=1)");
 
 	// messenger.dll読み込みはデバッグ時のみ
 	try {
@@ -411,9 +413,12 @@ var f = kag.flags;   // ユーザ変数 (フラグ)
 var sf = kag.sflags; // システム変数 (システム)
 var tf = kag.tflags; // 一時変数 (一時フラグ)
 
-property mp
-{
-	getter { return kag.conductor.macroParams; }
+var mp_dummy = %[], mp_target;
+property mp {
+	getter {
+		var macroParams;
+		return mp_target && (macroParams = mp_target.macroParams) ? macroParams : mp_dummy;
+	}
 }
 
 /*

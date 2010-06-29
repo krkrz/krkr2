@@ -285,7 +285,8 @@ class Movie extends VideoOverlay
 	}
 	function calcAspectZoom(x,y,w,h) {
 		if (_aspectZoomEnabled) try {
-			if (_aspectZoomPrimary && hasOverlayWindow) {
+			var full = (_aspectZoomPrimary && hasOverlayWindow);
+			if (full) {
 				var prim = (typeof owner._primaryLayer == "Object") ? owner._primaryLayer : owner.primaryLayer;
 				x = y = 0;
 				w = prim.width;
@@ -299,6 +300,10 @@ class Movie extends VideoOverlay
 			x = /* vert ?*/ (w - zw) \ 2 /*: 0*/;
 			y = /*!vert ?*/ (h - zh) \ 2 /*: 0*/;
 			w = zw, h = zh;
+			if (!full && typeof owner.sysbase == "Object") with (owner.sysbase) {
+				x += .left;
+				y += .top;
+			}
 		} catch {}
 		return %[ x:x, y:y, w:w, h:h ];
 	}

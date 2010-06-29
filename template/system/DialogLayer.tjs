@@ -544,7 +544,7 @@ class DialogLayer extends KAGLayer
         } else if (elm.normal !== void) {
             object.loadButtons(elm.normal, elm.over, elm.on, elm.focus);
         } else if (elm.graphic !== void) {
-            object.loadImages(elm.graphic, elm.graphickey);
+            object.loadImages(elm.graphic, elm.graphickey, elm.animcount, elm.animtime);
         } else if (elm.caption !== void) {
             object.caption = elm.caption;
 			object.width  = elm.width;

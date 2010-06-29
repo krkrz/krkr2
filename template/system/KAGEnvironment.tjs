@@ -184,6 +184,7 @@ class KAGEnvironment extends KAGEnvImage {
 		super.KAGEnvImage(this, "env");
 		absolute = 100;
 		layerClass = global.EnvBaseGraphicLayer;
+//		defaultLayerType = ltOpaque; // ステージはltOpaqueがデフォルト[XXX]トランジションがおかしいので保留
 		
         xmax = kag.scWidth / 2;
         ymax = kag.scHeight / 2;
@@ -774,7 +775,7 @@ class KAGEnvironment extends KAGEnvImage {
 			}
 			
 			// トランジション指定
-			setAutoTrans([stages[stage].trans, env.envinfo.stageTrans, env.envinfo.envTrans]);
+			setAutoTrans([stages[stage].trans, env.envinfo.stageTrans, env.envinfo.envTrans], elm);
         }
 		// イベント絵は消去
 		if (event.isShow()) {
@@ -826,7 +827,7 @@ class KAGEnvironment extends KAGEnvImage {
 			}
 			
             // トランジション指定
-			setAutoTrans([times[time].trans, env.envinfo.timeTrans, env.envinfo.stageTrans, env.envinfo.envTrans]);
+			setAutoTrans([times[time].trans, env.envinfo.timeTrans, env.envinfo.stageTrans, env.envinfo.envTrans], elm);
         }
         // イベント絵は消去
 		if (event.isShow()) {
@@ -842,6 +843,9 @@ class KAGEnvironment extends KAGEnvImage {
      * 全体トランジション開始
      */
 	function beginTrans(elm) {
+		if (transMode) {
+			kag.errorCmd("begintransが多重で使用されました");
+		}
 		kag.stopAllTransitions();
 		kag.backupLayer(EMPTY, true);
 		transMode = true;
@@ -885,6 +889,9 @@ class KAGEnvironment extends KAGEnvImage {
      * 全体トランジション終了
      */
     function endTrans(elm) {
+		if (!transMode) {
+			kag.errorCmd("endtransが単体で使用されました");
+		}
 		// まず解除（トランジション処理中で true だと処理が登録されないので)
 		transMode = false;
 		ret = void;
