@@ -238,6 +238,17 @@ class WIN32Dialog {
 	/*static*/function messageBox(window, text, caption, type);
 
 	/**
+	 * ChooseColor のラッパー
+	 * @param window  オーナーwindow（指定しない場合はnullを渡すこと）
+	 * @param elm     オプション（辞書または省略可能）
+	 *                %[ color:初期選択色, palette:[ パレット色1, ... , パレット色16 ],
+	 *                   disableCustomColor:色の作成を無効にする, openCustomColor:色作成を最初から開いた状態にする ]
+	 * @return        選択された色(0xRRGGBB) キャンセル時はvoid
+	 *                elm.palette が渡された場合は，その内容も更新される
+	 */
+	/*static*/function chooseColor(window, elm);
+
+	/**
 	 * モードレスダイアログ用のフラグ
 	 * trueならばモードレス状態でダイアログを開きます。
 	 * モードレスではダイアログのstyleにWS_VISIBLEを指定しない場合は

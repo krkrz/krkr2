@@ -526,8 +526,7 @@ public:
 			VarT val;
 			obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
 			hwnd = (HWND)((tjs_int64)(val));
-			if (!hwnd) hwnd = TVPGetApplicationWindowHandle();
-		}
+		} else hwnd = TVPGetApplicationWindowHandle();
 		if (hwnd && MessageBoxHook == 0 && (type & MB_OWNER_CENTER)) {
 			MessageBoxOwnerHWND = hwnd;
 			MessageBoxHook = SetWindowsHookEx(WH_CBT, MessageBoxHookProc,
@@ -616,6 +615,72 @@ public:
 		init.dwSize = sizeof(init);
 		init.dwICC = icc;
 		return ::InitCommonControlsEx(&init) ? true : false;
+	}
+
+	// -------------------------------------------------------------
+	// 色選択ダイアログ
+	static inline COLORREF ConvertRGBtoColorRef(DWORD rgb) {
+		return RGB(((rgb>>16)&0xFF), ((rgb>>8)&0xFF), (rgb&0xFF));
+	}
+	static inline DWORD ConvertColorRefToRGB(COLORREF ref) {
+		DWORD r = GetRValue(ref) & 0xFF;
+		DWORD g = GetGValue(ref) & 0xFF;
+		DWORD b = GetBValue(ref) & 0xFF;
+		return (r<<16) | (g<<8) | b;
+	}
+	static tjs_error TJS_INTF_METHOD chooseColor(VarT *result, tjs_int num, VarT **param, iTJSDispatch2 *obj) {
+		COLORREF CustomColors[16];
+		ZeroMemory(CustomColors, sizeof(CustomColors));
+
+		CHOOSECOLOR ccol;
+		ZeroMemory(&ccol,  sizeof(ccol));
+		ccol.lStructSize = sizeof(ccol);
+		ccol.lpCustColors = CustomColors;
+
+		HWND hwnd = 0;
+		if (num >= 1) {
+			DspT *obj = param[0]->AsObjectNoAddRef();
+			if (obj) {
+				VarT val;
+				obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
+				hwnd = (HWND)((tjs_int64)(val));
+			} else hwnd = TVPGetApplicationWindowHandle();
+		}
+		ccol.hwndOwner = hwnd;
+		bool hasPalette = false;
+		if (num >= 2) {
+			PropT elm(*param[1]);
+			if (elm.HasValue(TJS_W("color"))) {
+				ccol.rgbResult = ConvertRGBtoColorRef(elm.getIntValue(TJS_W("color")));
+				ccol.Flags |= CC_RGBINIT;
+			}
+			tTJSVariantType pt;
+			if (elm.HasValue(TJS_W("palette"),0, &pt) && pt == tvtObject) {
+				hasPalette = true;
+				PropT array(elm.GetValue(TJS_W("palette"), ncbTypedefs::Tag<VarT>()));
+				tjs_int len = array.GetCount();
+				for (int i = 0 ; i < 16; i++) {
+					if (i >= len) break;
+					CustomColors[i] = ConvertRGBtoColorRef((DWORD)array.getIntValue(i));
+				}
+			}
+			if        (elm.getIntValue(TJS_W("disableCustomColor"))) {
+				ccol.Flags |= CC_PREVENTFULLOPEN;
+			} else if (elm.getIntValue(TJS_W("openCustomColor"))) {
+				ccol.Flags |= CC_FULLOPEN;
+			}
+		}
+		if (::ChooseColor(&ccol)) {
+			if (result) *result = (tjs_int64)ConvertColorRefToRGB(ccol.rgbResult);
+		}
+		if (hasPalette) {
+			PropT elm(*param[1]);
+			PropT array(elm.GetValue(TJS_W("palette"), ncbTypedefs::Tag<VarT>()));
+			for (int i = 0 ; i < 16; i++) {
+				array.SetValue(i, (tjs_int64)ConvertColorRefToRGB(CustomColors[i]));
+			}
+		}
+		return TJS_S_OK;
 	}
 
 	// -------------------------------------------------------------
@@ -1856,5 +1921,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 
 	Method(TJS_W("getOctetAddress"),      &Class::GetOctetAddress);
 	Method(TJS_W("getStringAddress"),     &Class::GetStringAddress);
+
+	RawCallback(TJS_W("chooseColor"), &Class::chooseColor, TJS_STATICMEMBER);
 }
 
