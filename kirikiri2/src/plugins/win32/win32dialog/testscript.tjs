@@ -166,6 +166,8 @@ Debug.console.visible=true;
 // コモンコントロール初期化
 WIN32Dialog.initCommonControls();
 
+var palette = [];
+
 var dm = Debug.message;
 var win = new Window();
 with (win) {
@@ -182,6 +184,14 @@ with (win) {
 	add(createMenuItem(win, "ModeLess::LoadRes",  function{ testModeless(win, 1); }));
 	add(createMenuItem(win, "MessageBoxTest",     function{
 		with (WIN32Dialog) dm(.messageBox(global.win, "テキスト", "キャプション", .MB_OKCANCEL|.MB_ICONEXCLAMATION|.MB_OWNER_CENTER) == .IDOK);
+	}));
+	add(createMenuItem(win, "ChooseColorTest",    function{
+		with (WIN32Dialog) dm(.chooseColor(global.win, %[
+		palette:global.palette,
+//		color:0xFF00FF,
+//		openCustomColor:true,
+//		disableCustomColor:true,
+			]));
 	}));
 	add(createMenuItem(win, "OwnerDrawTest",      function{
 		var dlg = new OwnerDrawTestDialog(win.primaryLayer);
