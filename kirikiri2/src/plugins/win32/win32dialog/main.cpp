@@ -868,7 +868,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 
 	Method(TJS_W("show"),            &Class::show);
 	Property(TJS_W("modeless"),      &Class::getModeless, &Class::setModeless);
-	Property(TJS_W("HWND"),          &Class::getModeless, (int)0);
+	Property(TJS_W("HWND"),          &Class::getHWND, (int)0);
 
 	// íËêîíËã`
 
