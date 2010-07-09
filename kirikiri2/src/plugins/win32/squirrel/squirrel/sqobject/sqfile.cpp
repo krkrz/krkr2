@@ -9,6 +9,9 @@
 class SQFileInfo {
 
 public:
+#ifdef SQOBJHEAP
+    SQHEAPDEFINE;
+#endif
 	/// コンストラクタ
 	SQFileInfo(const SQChar *filename, bool binary) : file(NULL), buffer(NULL), size(0), binary(binary) {
 		file = sqstd_fopen(filename, binary ? _SC("rb") : _SC("r"));

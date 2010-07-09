@@ -526,7 +526,7 @@ SQRESULT sq_getfloat(HSQUIRRELVM v,SQInteger idx,SQFloat *f)
 		*f = tofloat(o);
 		return SQ_OK;
 	} else if (sq_isbool(o)) {
-		*f = _integer(o);
+		*f = (SQFloat)_integer(o);
 		return SQ_OK;
 	}
 	return SQ_ERROR;
@@ -849,6 +849,18 @@ SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx)
 		return SQ_OK;
 	v->Pop(1);
 	return sq_throwerror(v,_SC("the index doesn't exist"));
+}
+
+SQBool sq_exists(HSQUIRRELVM v,SQInteger idx)
+{
+	SQObjectPtr &self=stack_get(v,idx);
+	if(v->Get(self,v->GetUp(-1),v->GetUp(-1),true,false)) {
+		v->Pop(1);
+		return SQTrue;
+	} else {
+		v->Pop(1);
+		return SQFalse;
+	}
 }
 
 SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx)
