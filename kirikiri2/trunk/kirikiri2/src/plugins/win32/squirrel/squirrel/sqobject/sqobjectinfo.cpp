@@ -5,11 +5,12 @@
 #include "sqobjectinfo.h"
 #include "sqobject.h"
 #include <string.h>
+#include <sqstdstring.h>
 
 namespace sqobject {
 
 bool
-ObjectInfo::pushObject(HSQUIRRELVM v, Object *obj)
+pushObject(HSQUIRRELVM v, Object *obj)
 {
 	if (obj->isInit()) {
 		obj->push(v);
@@ -157,6 +158,13 @@ ObjectInfo::getStackWeak(HSQUIRRELVM v, SQInteger idx)
 // コンストラクタ
 ObjectInfo::ObjectInfo() {
 	sq_resetobject(&obj);
+}
+
+// コンストラクタ
+ObjectInfo::ObjectInfo(HSQOBJECT obj) : obj(obj)
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_addref(gv, &obj);
 }
 
 // コンストラクタ
@@ -422,5 +430,88 @@ ObjectInfo::isClass() const
 {
 	return sq_isclass(obj);
 }
+
+// ---------------------------------------------------
+// 文字列処理他
+// ---------------------------------------------------
+
+std::basic_string<SQChar>
+ObjectInfo::toString() const
+{
+	std::basic_string<SQChar> ret;
+	HSQUIRRELVM gv = getGlobalVM();
+	push(gv);
+	sq_tostring(gv, -1);
+	const SQChar *str;
+	if (SQ_SUCCEEDED(sq_getstring(gv, -1, &str))) {
+		ret = str;
+	}
+	sq_pop(gv, 2);
+	return ret;
+}
+
+int
+ObjectInfo::printf(const SQChar *format)
+{
+	HSQUIRRELVM gv = getGlobalVM();
+	sq_pushstring(gv, format, -1);
+	return _printf(gv, 0);
+}
+
+int
+ObjectInfo::_printf(HSQUIRRELVM v, int argnum)
+{
+	int n = sq_gettop(v);
+	SQChar *dest = NULL;
+	SQInteger length = 0;
+	if(SQ_SUCCEEDED(sqstd_format(v,n-argnum,&length,&dest))) {
+		SQPRINTFUNCTION func = sq_getprintfunc(v);
+		if (func) {
+			func(v, _SC("%*s"), length, dest);
+		}
+	}
+	sq_pop(v, argnum+1);
+	return length;
+}
+
+// 値の push
+void pushValue(HSQUIRRELVM v, bool value) { sq_pushbool(v,value ? SQTrue : SQFalse); }
+void pushValue(HSQUIRRELVM v, SQBool value) { sq_pushbool(v,value); }
+void pushValue(HSQUIRRELVM v, SQInteger value) { sq_pushinteger(v,value); }
+void pushValue(HSQUIRRELVM v, SQFloat value) { sq_pushfloat(v,value); }
+void pushValue(HSQUIRRELVM v, const SQChar *value) { if (value) {sq_pushstring(v,value,-1);} else { sq_pushnull(v);} }
+void pushValue(HSQUIRRELVM v, SQUserPointer value) { if (value) {sq_pushuserpointer(v,value);} else { sq_pushnull(v);} }
+void pushValue(HSQUIRRELVM v, ObjectInfo &obj) { obj.push(v); }
+void pushValue(HSQUIRRELVM v, std::basic_string<SQChar> &value) { sq_pushstring(v,value.c_str(),value.length()); }
+void pushValue(HSQUIRRELVM v, SQFUNCTION func) { sq_newclosure(v, func, 0); }
+
+// 値の取得
+SQRESULT getValue(HSQUIRRELVM v, bool *value) { SQBool b;SQRESULT ret = sq_getbool(v, -1, &b); *value = b != SQFalse; return ret; }
+SQRESULT getValue(HSQUIRRELVM v, SQBool *value) { return sq_getbool(v, -1, value); }
+SQRESULT getValue(HSQUIRRELVM v, SQInteger *value) { return sq_getinteger(v, -1, value); }
+SQRESULT getValue(HSQUIRRELVM v, SQFloat *value) { return sq_getfloat(v, -1, value); }
+SQRESULT getValue(HSQUIRRELVM v, const SQChar **value) { return sq_getstring(v, -1, value); }
+SQRESULT getValue(HSQUIRRELVM v, SQUserPointer *value) { return sq_getuserpointer(v, -1, value); }
+SQRESULT getValue(HSQUIRRELVM v, ObjectInfo *value) { value->getStack(v,-1); return SQ_OK; }
+SQRESULT getValue(HSQUIRRELVM v, std::basic_string<SQChar> *value) {const SQChar *str; SQRESULT ret; if (SQ_SUCCEEDED((ret = sq_getstring(v, -1, &str)))) { *value = str;} return ret;}
+
+// 値の強制初期化
+void clearValue(bool *value) { *value = false; }
+void clearValue(SQBool *value) { *value = SQFalse; }
+void clearValue(SQInteger *value) { *value = 0; }
+void clearValue(SQFloat *value) { *value = 0.0f; }
+void clearValue(const SQChar **value) { *value = 0; }
+void clearValue(SQUserPointer *value) { *value = 0; }
+void clearValue(ObjectInfo *value) { value->clear(); }
+void clearValue(std::basic_string<SQChar> *value) { *value = _SC(""); }
+
+// 値の取得：基本↑のコピペ。文字列は安全でない場合があるので排除する必要あり
+SQRESULT getResultValue(HSQUIRRELVM v, bool *value) { SQBool b;SQRESULT ret = sq_getbool(v, -1, &b); *value = b != SQFalse; return ret; }
+SQRESULT getResultValue(HSQUIRRELVM v, SQBool *value) { return sq_getbool(v, -1, value); }
+SQRESULT getResultValue(HSQUIRRELVM v, SQInteger *value) { return sq_getinteger(v, -1, value); }
+SQRESULT getResultValue(HSQUIRRELVM v, SQFloat *value) { return sq_getfloat(v, -1, value); }
+SQRESULT getResultValue(HSQUIRRELVM v, SQUserPointer *value) { return sq_getuserpointer(v, -1, value); }
+SQRESULT getResultValue(HSQUIRRELVM v, ObjectInfo *value) { value->getStack(v,-1); return SQ_OK; }
+SQRESULT getResultValue(HSQUIRRELVM v, std::basic_string<SQChar> *value) {const SQChar *str; SQRESULT ret; if (SQ_SUCCEEDED((ret = sq_getstring(v, -1, &str)))) { *value = str;} return ret;}
 
 };
