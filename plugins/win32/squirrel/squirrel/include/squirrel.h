@@ -369,6 +369,7 @@ SQUIRREL_API SQRESULT sq_newslot(HSQUIRRELVM v, SQInteger idx, SQBool bstatic);
 SQUIRREL_API SQRESULT sq_deleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval);
 SQUIRREL_API SQRESULT sq_set(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx);
+SQUIRREL_API SQBool sq_exists(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_rawget(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx);
 SQUIRREL_API SQRESULT sq_rawdeleteslot(HSQUIRRELVM v,SQInteger idx,SQBool pushval);

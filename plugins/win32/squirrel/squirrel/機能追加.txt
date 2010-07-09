@@ -8,6 +8,18 @@ Date: 2009/4/29
 関連して sq コマンドも Object 機能が組み込まれています。
 ※ Thread は対応させていません
 
+●squirrelAPI追加
+
+in 演算子相当の APIを追加
+
+/**
+ * スタックから値を取り出して、その値が idx で示される要素中に存在するか判定する
+ * @param v VM
+ * @param idx 確認対象のインデックス
+ * @return 存在していたら SQTrue
+ */
+SQUIRREL_API SQBool sq_exists(HSQUIRRELVM v,SQInteger idx);
+
 ●squirrel機能追加
 
 以下のような機能が標準delegate/標準ライブラリに拡張されています。

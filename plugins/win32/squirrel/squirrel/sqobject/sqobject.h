@@ -31,6 +31,9 @@ protected:
 	ObjectInfo delegate;
 
 public:
+#ifdef SQOBJHEAP
+	SQHEAPDEFINE;
+#endif
 	bool isInit() {
 		return !self.isNull();
 	}

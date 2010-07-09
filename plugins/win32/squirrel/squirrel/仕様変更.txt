@@ -101,6 +101,16 @@ local name = function() {};
 userpointer の typeof で帰る型名を "userdata" ではなく
 "userpointer" に変更。区別がつかないと困る場合がある
 
+・数値と真偽値の自動変換処理
+
+  C API 的には数値と真偽値は自動変換するように API 仕様を変更しました。
+  区別が必要な場合はあらかじめ sq_gettype() するようにしてください。
+
+  sq_getinteger() 真偽値を 0/1 として取得可能
+  sq_getfloat()   真偽値を 0.0/1.0 として取得可能
+　sq_getbool()    数値を 0:SQFalse それ以外:SQTrue として取得可能
+
+
 ●SQPLUS仕様変更
 
 オリジナルの SQPLUS では、エラー処理に例外を使っていたため、
