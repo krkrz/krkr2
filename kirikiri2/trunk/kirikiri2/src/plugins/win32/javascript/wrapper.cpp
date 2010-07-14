@@ -7,6 +7,7 @@
 #include "tp_stub.h"
 #include <v8.h>
 #include "tjsobj.h"
+#include "tjsinstance.h"
 
 using namespace v8;
 
@@ -52,8 +53,8 @@ public:
 	/**
 	 * 保持してる値を返す
 	 */
-	void getValue(Handle<Value> &result) {
-		result = obj;
+	Local<Value> getValue() {
+		return *obj;
 	}
 
 public:
@@ -235,18 +236,17 @@ toJSValue(const tTJSVariant &variant)
 			if (obj == NULL) {
 				// NULLの処理
 				return *Null();
-//			} else if (TJSInstance::getJSValue(result, variant)) {
+			} else if (obj->IsInstanceOf(0, NULL, NULL, JSOBJECTCLASS, obj) == TJS_S_TRUE) {
+				// Javascript ラッピングオブジェクトの場合
+				iTJSDispatch2Wrapper *wobj = (iTJSDispatch2Wrapper*)obj;
+				return wobj->getValue();
 			} else {
-				// オブジェクトラッピング処理失敗の場合
-				if (obj->IsInstanceOf(0, NULL, NULL, JSOBJECTCLASS, obj) == TJS_S_TRUE) {
-					// Javascript ラッピングオブジェクトの場合
-					iTJSDispatch2Wrapper *wobj = (iTJSDispatch2Wrapper*)obj;
-					Local<Value> result;
-					wobj->getValue(result);
-					return result;
-				} else {
-					return TJSObject::toJSObject(variant);
-				}
+				Local<Object> result;
+//				if (TJSInstance::getJSObject(result, variant)) {
+//					// 登録済みインスタンスの場合
+//					return result;
+//				}
+				return TJSObject::toJSObject(variant);
 			}
 		}
 		break;
@@ -297,7 +297,7 @@ toVariant(Handle<Value> value)
 		result = toVariant(value->ToObject());
 	} else if (value->IsObject()) {
 		Local<Object> obj = value->ToObject();
-		if (!TJSObject::getVariant(result, obj) /**&& !TJSInstance::getVariant(result,obj)*/) {
+		if (!TJSBase::getVariant(result, obj)) {
 			result = toVariant(obj);
 		}
 	} else if (value->IsBoolean()) {
