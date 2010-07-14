@@ -72,32 +72,27 @@ TJSObject::done()
 	objectTemplate.Dispose();
 }
 
-TJSObject::TJSObject(iTJSDispatch2 *dispatch) : TJSBase(TYPE_OBJECT), dispatch(dispatch)
+TJSObject::TJSObject(const tTJSVariant &variant) : TJSBase(TYPE_OBJECT), variant(variant)
 {
-	if (dispatch) {
-		dispatch->AddRef();
-	}
 }
 
 TJSObject::~TJSObject()
 {
-	if (dispatch) {
-		dispatch->Release();
-	}
 }
 
 // パラメータ取得
-iTJSDispatch2 *
-TJSObject::getDispatch(Handle<Object> obj)
+bool
+TJSObject::getVariant(tTJSVariant &result, Handle<Object> obj)
 {
 	if (obj->InternalFieldCount() > 0) {
 		TJSBase *base = (TJSBase*)obj->GetPointerFromInternalField(0);
 		if (base->isType(TYPE_OBJECT)) {
 			TJSObject *self = (TJSObject*)base;
-			return self->dispatch;
+			result = self->variant;
+			return true;
 		}
 	}
-	return NULL;
+	return false;
 }
 
 // パラメータ解放
@@ -114,12 +109,12 @@ TJSObject::release(Persistent<Value> object, void *parameter)
 Handle<Value>
 TJSObject::getter(Local<String> property, const AccessorInfo& info)
 {
-	iTJSDispatch2 *self = getDispatch(info.This());
-	if (self) {
+	tTJSVariant self;
+	if (getVariant(self, info.This())) {
 		String::Value propName(property);
 		tjs_error error;
 		tTJSVariant result;
-		if (TJS_SUCCEEDED(error = self->PropGet(0, *propName, NULL, &result, self))) {
+		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().PropGet(0, *propName, NULL, &result, NULL))) {
 			return toJSValue(result);
 		} else {
 			return ERROR_KRKR(error);
@@ -132,12 +127,12 @@ TJSObject::getter(Local<String> property, const AccessorInfo& info)
 Handle<Value>
 TJSObject::setter(Local<String> property, Local<Value> value, const AccessorInfo& info)
 {
-	iTJSDispatch2 *self = getDispatch(info.This());
-	if (self) {
+	tTJSVariant self;
+	if (getVariant(self, info.This())) {
 		String::Value propName(property);
 		tTJSVariant param = toVariant(value);
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = self->PropSet(TJS_MEMBERENSURE, *propName, NULL, &param, self))) {
+		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, *propName, NULL, &param, NULL))) {
 			return Undefined();
 		} else {
 			return ERROR_KRKR(error);
@@ -150,11 +145,8 @@ TJSObject::setter(Local<String> property, Local<Value> value, const AccessorInfo
 Handle<Value>
 TJSObject::caller(const Arguments& args)
 {
-	iTJSDispatch2 *self   = getDispatch(args.This());
-	iTJSDispatch2 *method = getDispatch(args.Callee());
-	
-	if (self && method) {
-		
+	tTJSVariant self;
+	if (getVariant(self, args.This())) {
 		Handle<Value> ret;
 		
 		// 引数変換
@@ -168,7 +160,7 @@ TJSObject::caller(const Arguments& args)
 		// メソッド呼び出し
 		tTJSVariant result;
 		tjs_error error;
-		if (TJS_SUCCEEDED(error = method->FuncCall(0, NULL, NULL, &result, argc, argv, self))) {
+		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().FuncCall(0, NULL, NULL, &result, argc, argv, NULL))) {
 			ret = toJSValue(result);
 		} else {
 			ret = ERROR_KRKR(error);
@@ -186,28 +178,16 @@ TJSObject::caller(const Arguments& args)
 	return ERROR_BADINSTANCE();
 }
 
-// iTJSDispatch2 をオブジェクト化
+// tTJSVariant をオブジェクト化
 Local<Object>
-TJSObject::toJSObject(iTJSDispatch2 *dispatch)
+TJSObject::toJSObject(const tTJSVariant &variant)
 {
 	Local<Object> obj = objectTemplate->NewInstance();
 	if (obj->IsObject()) {
-		TJSObject *wrap = new TJSObject(dispatch);
+		TJSObject *wrap = new TJSObject(variant);
 		obj->SetPointerInInternalField(0, (void*)wrap);
 		Persistent<Object> ref = Persistent<Object>::New(obj);
 		ref.MakeWeak(wrap, release);
 	}
 	return obj;
-}
-
-// tTJSVariant化
-bool
-TJSObject::getVariant(tTJSVariant &result, Handle<Object> obj)
-{
-	iTJSDispatch2 *dispatch = getDispatch(obj);
-	if (dispatch) {
-		result = tTJSVariant(dispatch, dispatch);
-		return true;
-	}
-	return false;
 }

@@ -19,7 +19,7 @@ public:
 	static void done();
 
 	// オブジェクト生成
-	static Local<Object> toJSObject(iTJSDispatch2 *dispatch);
+	static Local<Object> toJSObject(const tTJSVariant &variant);
 	// バリアント取得用
 	static bool getVariant(tTJSVariant &result, Handle<Object> obj);
 
@@ -27,8 +27,6 @@ private:
 	// オブジェクト定義
 	static Persistent<ObjectTemplate> objectTemplate;
 
-	// 情報取得用
-	static iTJSDispatch2 *getDispatch(Handle<Object> obj);
 	// 解放用
 	static void release(Persistent<Value> object, void *parameter);
 
@@ -38,10 +36,10 @@ private:
 	static Handle<Value> caller(const Arguments& args);
 
 	// 格納情報コンストラクタ
-	TJSObject(iTJSDispatch2 *dispatch);
+	TJSObject(const tTJSVariant &variant);
 	~TJSObject();
-
-	iTJSDispatch2 * dispatch;
+	
+	tTJSVariant variant;
 };
 
 #endif
