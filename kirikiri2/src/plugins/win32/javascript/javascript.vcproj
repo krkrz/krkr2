@@ -191,6 +191,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tjsbase.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\tjsobj.cpp"
 				>
 			</File>
