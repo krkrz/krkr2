@@ -1,17 +1,18 @@
 #ifndef __TJSBASE_H__
 #define __TJSBASE_H__
 
+#include <windows.h>
+#include "tp_stub.h"
+#include <v8.h>
+using namespace v8;
+
 class TJSBase {
 public:
-	enum Type {
-		TYPE_OBJECT,
-		TYPE_INSTANCE
-	};
-	TJSBase(Type type) : type(type) {}
+	TJSBase(const tTJSVariant &variant) : variant(variant) {}
 	virtual ~TJSBase() {};
-	bool isType(Type type) { return this->type == type; }
-protected:
-	Type type;
+	static bool getVariant(tTJSVariant &result, Handle<Object> obj);
+private:
+	tTJSVariant variant;
 };
 
 #endif

@@ -1,11 +1,6 @@
 #ifndef __TJSOBJ_H__
 #define __TJSOBJ_H__
 
-#include <windows.h>
-#include "tp_stub.h"
-#include <v8.h>
-using namespace v8;
-
 #include "tjsbase.h"
 
 /**
@@ -20,8 +15,6 @@ public:
 
 	// オブジェクト生成
 	static Local<Object> toJSObject(const tTJSVariant &variant);
-	// バリアント取得用
-	static bool getVariant(tTJSVariant &result, Handle<Object> obj);
 
 private:
 	// オブジェクト定義
@@ -36,10 +29,7 @@ private:
 	static Handle<Value> caller(const Arguments& args);
 
 	// 格納情報コンストラクタ
-	TJSObject(const tTJSVariant &variant);
-	~TJSObject();
-	
-	tTJSVariant variant;
+	TJSObject(Handle<Object> obj, const tTJSVariant &variant);
 };
 
 #endif

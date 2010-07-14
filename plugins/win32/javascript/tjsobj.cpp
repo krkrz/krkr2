@@ -1,10 +1,3 @@
-#include <windows.h>
-#include "tp_stub.h"
-#include <v8.h>
-using namespace v8;
-
-extern Persistent<Context> mainContext;
-
 #include "tjsobj.h"
 extern Local<Value> toJSValue(const tTJSVariant &variant);
 extern tTJSVariant toVariant(Handle<Value> value);
@@ -72,27 +65,11 @@ TJSObject::done()
 	objectTemplate.Dispose();
 }
 
-TJSObject::TJSObject(const tTJSVariant &variant) : TJSBase(TYPE_OBJECT), variant(variant)
+TJSObject::TJSObject(Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
 {
-}
-
-TJSObject::~TJSObject()
-{
-}
-
-// パラメータ取得
-bool
-TJSObject::getVariant(tTJSVariant &result, Handle<Object> obj)
-{
-	if (obj->InternalFieldCount() > 0) {
-		TJSBase *base = (TJSBase*)obj->GetPointerFromInternalField(0);
-		if (base->isType(TYPE_OBJECT)) {
-			TJSObject *self = (TJSObject*)base;
-			result = self->variant;
-			return true;
-		}
-	}
-	return false;
+	obj->SetPointerInInternalField(0, (void*)this);
+	Persistent<Object> ref = Persistent<Object>::New(obj);
+	ref.MakeWeak(this, release);
 }
 
 // パラメータ解放
@@ -184,10 +161,7 @@ TJSObject::toJSObject(const tTJSVariant &variant)
 {
 	Local<Object> obj = objectTemplate->NewInstance();
 	if (obj->IsObject()) {
-		TJSObject *wrap = new TJSObject(variant);
-		obj->SetPointerInInternalField(0, (void*)wrap);
-		Persistent<Object> ref = Persistent<Object>::New(obj);
-		ref.MakeWeak(wrap, release);
+		new TJSObject(obj, variant);
 	}
 	return obj;
 }
