@@ -245,7 +245,7 @@ toJSValue(const tTJSVariant &variant)
 					wobj->getValue(result);
 					return result;
 				} else {
-					return TJSObject::toJSObject(obj);
+					return TJSObject::toJSObject(variant);
 				}
 			}
 		}
@@ -256,7 +256,7 @@ toJSValue(const tTJSVariant &variant)
 		return *Null();
 	case tvtInteger:
 	case tvtReal:
-		return Number::New((tTVReal)(variant));
+		return Number::New((tTVReal)variant);
 	}
 	return *Undefined();
 }
