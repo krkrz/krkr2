@@ -30,15 +30,16 @@ V8 JavaScript Engine (http://code.google.com/p/v8/) の吉里吉里バインドです。
 Javascript の実行用メソッドが Scripts クラスに拡張されます。
 これにより外部の Javascript ファイルを読み込んで実行可能になります
 
-◇吉里吉里クラスの javascriptクラス化
+◇吉里吉里クラスの javascriptプロトタイプクラス化
 
-吉里吉里のクラスを javascript のクラスとして継承可能な状態で
-扱うことができます。
+吉里吉里のクラスを javascript のプロトタイプクラスとして
+継承可能な状態で扱うことができます。
 
 ・createTJSClass()で、TJSのクラスを内部的に保持する 
 　Javascriptクラス生成関数を作成することができます。
 
-  tjsOverride() でTJSインスタンスに直接メソッドを登録できます
+  tjsOverride() でTJSインスタンスに対して直接 javascript メソッドを
+  登録できます
 
   TJSインスタンス側に callSQ() として javascript インスタンスの
 　メソッドを明示的に呼び出す命令が拡張されます。

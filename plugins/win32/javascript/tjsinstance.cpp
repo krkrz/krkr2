@@ -3,6 +3,7 @@
 
 extern Local<Value> toJSValue(const tTJSVariant &variant);
 extern tTJSVariant toVariant(Handle<Value> value);
+extern tTJSVariant toVariant(Handle<Object> object, Handle<Object> context);
 
 extern Handle<Value> ERROR_KRKR(tjs_error error);
 extern Handle<Value> ERROR_BADINSTANCE();
@@ -173,7 +174,11 @@ TJSInstance::getProp(Local<Object> obj, const tjs_char *membername, tTJSVariant 
 		return TJS_E_MEMBERNOTFOUND;
 	} else {
 		if (result) {
-			*result = toVariant(ret);
+			if (ret->IsFunction()) {
+				*result = toVariant(ret->ToObject(), obj);
+			} else {
+				*result = toVariant(ret);
+			}
 		}
 	}
 	return TJS_S_OK;
@@ -247,13 +252,14 @@ TJSInstance::createMethod(Local<Object> obj, const tjs_char *membername, iTJSDis
 
 // メソッド呼び出し共通処理
 tjs_error
-TJSInstance::callMethod(Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param)
+TJSInstance::callMethod(Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
 	HandleScope handle_scope;
 	Context::Scope context_scope(mainContext);
 	TryCatch try_catch;
 
-	Local<Object> method = membername ? obj->Get(String::New(membername))->ToObject() : obj;
+	Local<Object> context = membername ? obj : objthis ? toJSValue(tTJSVariant(objthis))->ToObject() : mainContext->Global();
+	Local<Object> method  = membername ? obj->Get(String::New(membername))->ToObject() : obj;
 
 	if (!method->IsFunction()) {
 		return TJS_E_NOTIMPL;
@@ -266,7 +272,7 @@ TJSInstance::callMethod(Local<Object> obj, const tjs_char *membername, tTJSVaria
 	for (int i=0;i<numparams;i++) {
 		argv[i] = toJSValue(*param[i]);
 	}
-	Handle<Value> ret = func->Call(obj, numparams, argv);
+	Handle<Value> ret = func->Call(context, numparams, argv);
 	delete argv;
 	
 	if (ret.IsEmpty()) {
@@ -350,7 +356,7 @@ TJSInstance::call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint
 	iTJSNativeInstance *ninstance;
 	if (TJS_SUCCEEDED(objthis->NativeInstanceSupport(TJS_NIS_GETINSTANCE, classId, &ninstance))) {
 		TJSInstance *self = (TJSInstance*)ninstance;
-		return callMethod(self->self->ToObject(), param[0]->GetString(), result, numparams-1, param+1);
+		return callMethod(self->self->ToObject(), param[0]->GetString(), result, numparams-1, param+1, objthis);
 	}
 	return TJS_E_NATIVECLASSCRASH;
 }
@@ -362,6 +368,7 @@ TJSInstance::call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint
 TJSInstance::TJSInstance(Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
 {
 	// Javascript オブジェクトに格納
+	int field = obj->InternalFieldCount();
 	obj->SetPointerInInternalField(0, (void*)this);
 	self = Persistent<Object>::New(obj);
 	self.MakeWeak(this, release);
@@ -450,12 +457,84 @@ TJSInstance::Destruct()
 	delete this;
 }
 
+// -----------------------------------------------------------------------------------------------------------
+
+// TJSの例外回避呼び出し処理用
+class CreateInfo {
+
+public:
+	// コンストラクタ
+	CreateInfo(const tTJSVariant &classObj, const Arguments& args) : classObj(classObj), args(args), argc(0), argv(NULL) {
+		// 引数生成
+		argc = args.Length();
+		if (argc > 0) {
+			argv = new tTJSVariant*[(size_t)argc];
+			for (tjs_int i=0;i<argc;i++) {
+				argv[i] = new tTJSVariant();
+				*argv[i] = toVariant(args[i]);
+			}
+		}
+	}
+
+	// デストラクタ
+	~CreateInfo() {
+		// 引数破棄
+		if (argv) {
+			for (int i=0;i<argc;i++) {
+				delete argv[i];
+			}
+			delete[] argv;
+		}
+	}
+	
+	Handle<Value> create() {
+		TVPDoTryBlock(TryCreate, Catch, Finally, (void *)this);
+		return ret;
+	}
+
+private:
+
+	void _TryCreate() {
+		tjs_error error;
+		iTJSDispatch2 *newinstance;
+		if (TJS_SUCCEEDED(error = classObj.AsObjectClosureNoAddRef().CreateNew(0, NULL, NULL, &newinstance, argc, argv, NULL))) {
+			new TJSInstance(args.This(), tTJSVariant(newinstance, newinstance));
+			newinstance->Release();
+			ret = args.This();
+		} else {
+			ret = ERROR_KRKR(error);
+		}
+	}
+
+	static void TJS_USERENTRY TryCreate(void * data) {
+		CreateInfo *info = (CreateInfo*)data;
+		info->_TryCreate();
+	}
+
+	static bool TJS_USERENTRY Catch(void * data, const tTVPExceptionDesc & desc) {
+		CreateInfo *info = (CreateInfo*)data;
+		info->ret = ThrowException(String::New(desc.message.c_str()));
+		// 例外は常に無視
+		return false;
+	}
+
+	static void TJS_USERENTRY Finally(void * data) {
+	}
+
+private:
+	const tTJSVariant &classObj;
+	const Arguments& args;
+	tjs_int argc;
+	tTJSVariant **argv;
+	Handle<Value> ret;
+};
+
 // TJSの例外回避呼び出し処理用
 class FuncInfo {
 
 public:
 	// コンストラクタ
-	FuncInfo(const tTJSVariant &instance, const tTJSVariant &method, const Arguments& args) : instance(instance), method(method), args(args), argc(0), argv(NULL) {
+	FuncInfo(const tTJSVariant &instance, const tTJSVariant &method, const Arguments& args) : instance(instance), method(method), argc(0), argv(NULL) {
 		// 引数生成
 		argc = args.Length();
 		if (argc > 0) {
@@ -478,34 +557,12 @@ public:
 		}
 	}
 	
-	Handle<Value> create() {
-		TVPDoTryBlock(TryCreate, Catch, Finally, (void *)this);
-		return ret;
-	}
-
 	Handle<Value> exec() {
 		TVPDoTryBlock(TryExec, Catch, Finally, (void *)this);
 		return ret;
 	}
 
 private:
-
-	void _TryCreate() {
-		tjs_error error;
-		iTJSDispatch2 *newinstance;
-		if (TJS_SUCCEEDED(error = method.AsObjectClosureNoAddRef().CreateNew(0, NULL, NULL, &newinstance, argc, argv, NULL))) {
-			new TJSInstance(args.This(), tTJSVariant(newinstance, newinstance));
-			newinstance->Release();
-			ret = args.This();
-		} else {
-			ret = ERROR_KRKR(error);
-		}
-	}
-
-	static void TJS_USERENTRY TryCreate(void * data) {
-		FuncInfo *info = (FuncInfo*)data;
-		info->_TryCreate();
-	}
 
 	void _TryExec() {
 		tjs_error error;
@@ -536,7 +593,6 @@ private:
 private:
 	const tTJSVariant &instance;
 	const tTJSVariant &method;
-	const Arguments& args;
 	tjs_int argc;
 	tTJSVariant **argv;
 	Local<Value> result;
@@ -633,10 +689,9 @@ private:
 Handle<Value>
 TJSInstance::tjsConstructor(const Arguments& args)
 {
-	tTJSVariant instance;
-	tTJSVariant method;
-	if (getVariant(instance, args.This()) && getVariant(method, args.Data()->ToObject())) {
-		FuncInfo info(instance, method, args);
+	tTJSVariant classObj;
+	if (getVariant(classObj, args.Data()->ToObject())) {
+		CreateInfo info(classObj, args);
 		return info.create();
 	}
 	return ERROR_BADINSTANCE();
@@ -718,14 +773,18 @@ TJSInstance::tjsOverride(const Arguments& args)
 	tTJSVariant instance;
 	if (getVariant(instance, args.This())) {
 		if (args.Length() > 0) {
-			tTJSVariant value = toVariant(args.Length() > 1 ? args[1] : args.This()->Get(args[0]));
-			String::Value methodName(args[0]);
-			tjs_error error;
-			if (TJS_FAILED(error = instance.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, *methodName, NULL, &value, NULL))) {
-				return ERROR_KRKR(error);
+			Handle<Value> func = args.Length() > 1 ? args[1] : args.This()->Get(args[0]);
+			if (func->IsFunction()) {
+				tTJSVariant value = toVariant(func->ToObject(), args.This());
+				String::Value methodName(args[0]);
+				tjs_error error;
+				if (TJS_FAILED(error = instance.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, *methodName, NULL, &value, NULL))) {
+					return ERROR_KRKR(error);
+				}
+				return Undefined();
 			}
 		}
-		return Undefined();
+		return ThrowException(String::New("not function"));
 	}
 	return ERROR_BADINSTANCE();
 }
