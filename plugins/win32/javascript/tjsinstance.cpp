@@ -71,7 +71,7 @@ private:
 	
 	// プロパティ登録
 	void registerProperty(const tjs_char *propertyName, tTJSVariant &property, bool staticMember) {
-		classTemplate->InstanceTemplate()->SetAccessor(String::New(propertyName), TJSInstance::tjsGetter, TJSInstance::tjsSetter, TJSObject::toJSObject(property));
+		classTemplate->PrototypeTemplate()->SetAccessor(String::New(propertyName), TJSInstance::tjsGetter, TJSInstance::tjsSetter, TJSObject::toJSObject(property));
 	}
 	
 	Local<FunctionTemplate> &classTemplate;
@@ -114,7 +114,6 @@ TJSInstance::createTJSClass(const Arguments& args)
 	// クラステンプレートを生成
 	Local<FunctionTemplate> classTemplate = FunctionTemplate::New(tjsConstructor, TJSObject::toJSObject(tjsClassObj));
 	classTemplate->SetClassName(args[0]->ToString()); // 表示名
-	classTemplate->InstanceTemplate()->SetInternalFieldCount(1);
 	
 	// メンバ登録処理
 	for (int i=args.Length()-1;i>=0;i--) {
@@ -368,8 +367,7 @@ TJSInstance::call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint
 TJSInstance::TJSInstance(Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
 {
 	// Javascript オブジェクトに格納
-	int field = obj->InternalFieldCount();
-	obj->SetPointerInInternalField(0, (void*)this);
+	wrap(obj);
 	self = Persistent<Object>::New(obj);
 	self.MakeWeak(this, release);
 	
