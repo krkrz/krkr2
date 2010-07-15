@@ -49,7 +49,6 @@ TJSObject::init()
 	objectTemplate = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
 	objectTemplate->SetNamedPropertyHandler(getter, setter);
 	objectTemplate->SetCallAsFunctionHandler(caller);
-	objectTemplate->SetInternalFieldCount(1);
 }
 
 // オブジェクト定義解放
@@ -62,7 +61,7 @@ TJSObject::done()
 // コンストラクタ
 TJSObject::TJSObject(Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
 {
-	obj->SetPointerInInternalField(0, (void*)this);
+	wrap(obj);
 	Persistent<Object> ref = Persistent<Object>::New(obj);
 	ref.MakeWeak(this, release);
 }
@@ -81,9 +80,12 @@ TJSObject::release(Persistent<Value> object, void *parameter)
 Handle<Value>
 TJSObject::getter(Local<String> property, const AccessorInfo& info)
 {
+	String::Value propName(property);
+	if (wcscmp(*propName, TJSINSTANCENAME) == 0) {
+		return Handle<Value>();
+	}
 	tTJSVariant self;
 	if (getVariant(self, info.This())) {
-		String::Value propName(property);
 		tjs_error error;
 		tTJSVariant result;
 		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().PropGet(0, *propName, NULL, &result, NULL))) {
@@ -168,8 +170,6 @@ Local<Object>
 TJSObject::toJSObject(const tTJSVariant &variant)
 {
 	Local<Object> obj = objectTemplate->NewInstance();
-	if (obj->IsObject()) {
-		new TJSObject(obj, variant);
-	}
+	new TJSObject(obj, variant);
 	return obj;
 }
