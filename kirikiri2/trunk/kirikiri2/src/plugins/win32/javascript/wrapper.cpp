@@ -3,25 +3,8 @@
  * 吉里吉里のオブジェクトは XXXX として管理する
  */
 
-#include <windows.h>
-#include "tp_stub.h"
-#include <v8.h>
 #include "tjsobj.h"
 #include "tjsinstance.h"
-
-using namespace v8;
-
-extern Persistent<Context> mainContext;
-
-/**
- * 吉里吉里に対して例外通知
- */
-void
-JSEXCEPTION(TryCatch *try_catch)
-{
-	String::Value exception(try_catch->Exception());
-	TVPThrowExceptionMessage(*exception);
-}
 
 // 値の格納・取得用
 Local<Value> toJSValue(const tTJSVariant &variant);
@@ -67,35 +50,7 @@ public:
 		tjs_int numparams,
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis) {
-		if (membername) {
-			return TJS_E_MEMBERNOTFOUND;
-		}
-		if (!obj->IsFunction()) {
-			return TJS_E_NOTIMPL;
-		}
-
-		HandleScope handle_scope;
-		Context::Scope context_scope(mainContext);
-		TryCatch try_catch;
-		
-		// 関数抽出
-		Local<Function> func = Local<Function>::Cast(obj->ToObject());
-		// 引数
-		Handle<Value> *argv = new Handle<Value>[numparams];
-		for (int i=0;i<numparams;i++) {
-			argv[i] = toJSValue(*param[i]);
-		}
-		Handle<Object> ret = func->NewInstance(numparams, argv);
-		delete argv;
-		
-		if (ret.IsEmpty()) {
-			JSEXCEPTION(&try_catch);
-		} else {
-			if (result) {
-				*result = toVariant(ret);
-			}
-		}
-		return TJS_S_OK;
+		return TJSInstance::createMethod(obj->ToObject(), membername, result, numparams, param);
 	}
 
 	// メソッド呼び出し
@@ -108,16 +63,7 @@ public:
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis
 		) {
-
-		HandleScope handle_scope;
-		Context::Scope context_scope(mainContext);
-		TryCatch try_catch;
-
-		if (membername == NULL) {
-			return callMethod(obj->ToObject(), result, numparams, param);
-		} else {
-			return callMethod(obj->Get(String::New(membername)), result, numparams, param);
-		}
+		return TJSInstance::callMethod(obj->ToObject(), membername, result, numparams, param);
 	}
 
 	// プロパティ取得
@@ -130,20 +76,7 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-
-		HandleScope handle_scope;
-		Context::Scope context_scope(mainContext);
-		TryCatch try_catch;
-
-		Local<Value> ret = obj->Get(String::New(membername));
-		if (ret.IsEmpty()) {
-			return TJS_E_MEMBERNOTFOUND;
-		} else {
-			if (result) {
-				*result = toVariant(ret);
-			}
-		}
-		return TJS_S_OK;
+		return TJSInstance::getProp(obj->ToObject(), membername, result);
 	}
 
 	// プロパティ設定
@@ -153,18 +86,14 @@ public:
 		tjs_uint32 *hint,
 		const tTJSVariant *param,
 		iTJSDispatch2 *objthis) {
-		if (!membername) {
-			return TJS_E_NOTIMPL;
-		}
+		return TJSInstance::setProp(obj->ToObject(), membername, param);
+	}
 
-		HandleScope handle_scope;
-		Context::Scope context_scope(mainContext);
-		TryCatch try_catch;
-
-		if (obj->Set(String::New(membername), toJSValue(*param))) {
-			return TJS_S_OK;
-		}
-		return TJS_E_MEMBERNOTFOUND;
+	// メンバ削除
+	tjs_error TJS_INTF_METHOD DeleteMember(
+		tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
+		iTJSDispatch2 *objthis) {
+		return TJSInstance::remove(obj->ToObject(), membername);
 	}
 
 	tjs_error TJS_INTF_METHOD IsInstanceOf(
@@ -183,36 +112,6 @@ public:
 protected:
 	/// 内部保持用
 	Persistent<Object> obj;
-
-	// メソッド呼び出し共通処理
-	static tjs_error callMethod(Local<Value> method, tTJSVariant *result, tjs_int numparams, tTJSVariant **param) {
-		if (!method->IsFunction()) {
-			return TJS_E_NOTIMPL;
-		}
-		
-		HandleScope handle_scope;
-		Context::Scope context_scope(mainContext);
-		TryCatch try_catch;
-		
-		// 関数抽出
-		Local<Function> func = Local<Function>::Cast(method);
-		// 引数
-		Handle<Value> *argv = new Handle<Value>[numparams];
-		for (int i=0;i<numparams;i++) {
-			argv[i] = toJSValue(*param[i]);
-		}
-		Handle<Value> ret = func->Call(mainContext->Global(), numparams, argv);
-		delete argv;
-		
-		if (ret.IsEmpty()) {
-			JSEXCEPTION(&try_catch);
-		} else {
-			if (result) {
-				*result = toVariant(ret);
-			}
-		}
-		return TJS_S_OK;
-	}
 };
 
 //----------------------------------------------------------------------------
@@ -242,10 +141,11 @@ toJSValue(const tTJSVariant &variant)
 				return wobj->getValue();
 			} else {
 				Local<Object> result;
-//				if (TJSInstance::getJSObject(result, variant)) {
-//					// 登録済みインスタンスの場合
-//					return result;
-//				}
+				if (TJSInstance::getJSObject(result, variant)) {
+					// 登録済みインスタンスの場合
+					return result;
+				}
+				// 単純ラッピング
 				return TJSObject::toJSObject(variant);
 			}
 		}
@@ -291,13 +191,13 @@ toVariant(Handle<Value> value)
 	} else if (value->IsString()) {
 		String::Value str(value);
 		result = *str;
-	} else if (value->IsFunction()) {
-		result = toVariant(value->ToObject());
-	} else if (value->IsArray()) {
+	} else if (value->IsFunction() || value->IsArray() || value->IsDate()) {
+		// 単純ラッピング
 		result = toVariant(value->ToObject());
 	} else if (value->IsObject()) {
 		Local<Object> obj = value->ToObject();
 		if (!TJSBase::getVariant(result, obj)) {
+			// 単純ラッピング
 			result = toVariant(obj);
 		}
 	} else if (value->IsBoolean()) {
@@ -308,8 +208,6 @@ toVariant(Handle<Value> value)
 		result = value->Int32Value();
 	} else if (value->IsUint32()) {
 		result = (tTVInteger)value->Uint32Value();
-	} else if (value->IsDate()) {
-		result = (iTJSDispatch2*)0;
 	}
 	// value->IsUndefined()
 	// value->IsExternal()

@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tjsinstance.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\tjsobj.cpp"
 				>
 			</File>
@@ -226,6 +230,10 @@
 			</File>
 			<File
 				RelativePath=".\tjsbase.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tjsinstance.h"
 				>
 			</File>
 			<File
