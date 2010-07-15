@@ -5,6 +5,12 @@ Author: わたなべごう
 
 V8 JavaScript Engine (http://code.google.com/p/v8/) の吉里吉里バインドです。
 
+●コンパイル方法
+
+(1) このフォルダ直下に、V8 Javascript Engine を "v8" という名前でチェックアウト
+(2) VisualStudio 用にコンパイルして v8/v8.lib, v8/v8_g.lib を準備
+(3) javascript.sln を開いてコンパイル
+
 ●システム概要
 
 ◇名前空間
@@ -22,8 +28,6 @@ V8 JavaScript Engine (http://code.google.com/p/v8/) の吉里吉里バインドです。
 ・TJS2 の void は javascript の undefined と対応します
 ・TJS2 の null は javascript の null と対応します
 ・オブジェクトは相互に呼び出し可能です
-
-●使用方法
 
 ◇Scripts 拡張
 
