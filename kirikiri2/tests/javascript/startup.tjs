@@ -1,0 +1,21 @@
+Plugins.link("javascript.dll");
+
+Debug.console.visible = true;
+
+function test()
+{
+	return 100;
+}
+
+// JS Às
+Scripts.execJS("var a=10;");
+Scripts.execJS("function b(){return 10;}");
+Scripts.execJS("var c = krkr.test();");
+
+// JSQÆ
+Debug.message("a  :" + jsglobal.a);
+Debug.message("b():" + jsglobal.b());
+Debug.message("c  :" + jsglobal.c);
+
+// Javascript‚É§Œä‚ğˆÚ‚·
+Scripts.execStorageJS("startup.js");
