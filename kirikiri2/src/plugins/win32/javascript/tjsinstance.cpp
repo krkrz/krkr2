@@ -16,7 +16,44 @@ extern Persistent<Context> mainContext;
 void
 JSEXCEPTION(TryCatch *try_catch)
 {
+	HandleScope handle_scope;
 	String::Value exception(try_catch->Exception());
+
+	Handle<Message> message = try_catch->Message();
+	if (!message.IsEmpty()) {
+		// 例外表示
+		String::Value filename(message->GetScriptResourceName());
+		ttstr msg;
+		msg += *filename;
+		msg += ":";
+		msg += tTJSVariant(message->GetLineNumber());
+		msg += ":";
+		msg += *exception;
+
+		TVPAddLog(msg);
+		
+		// Print (filename):(line number): (message).
+		String::Value sourceline(message->GetSourceLine());
+		TVPAddLog(ttstr(*sourceline));
+
+		// エラー行表示
+		ttstr wavy;
+		int start = message->GetStartColumn();
+		for (int i = 0; i < start; i++) {
+			wavy += " ";
+		}
+		int end = message->GetEndColumn();
+		for (int i = start; i < end; i++) {
+			wavy +="^";
+		}
+		TVPAddLog(wavy);
+
+		// スタックトレース表示
+		String::Value stack_trace(try_catch->StackTrace());
+		if (stack_trace.length() > 0) {
+			TVPAddLog(ttstr(*stack_trace));
+		}
+	}
 	TVPThrowExceptionMessage(*exception);
 }
 
