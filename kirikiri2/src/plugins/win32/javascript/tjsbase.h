@@ -11,7 +11,7 @@ public:
 	TJSBase(const tTJSVariant &variant) : variant(variant) {}
 	virtual ~TJSBase() {};
 	static bool getVariant(tTJSVariant &result, Handle<Object> obj);
-private:
+protected:
 	tTJSVariant variant;
 };
 

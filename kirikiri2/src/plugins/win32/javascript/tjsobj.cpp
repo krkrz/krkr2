@@ -31,12 +31,6 @@ ERROR_KRKR(tjs_error error)
 }
 
 Handle<Value>
-ERROR_CREATE()
-{
-	return ThrowException(String::New("create failed"));
-}
-
-Handle<Value>
 ERROR_BADINSTANCE()
 {
 	return ThrowException(String::New("bad instance"));
@@ -65,6 +59,7 @@ TJSObject::done()
 	objectTemplate.Dispose();
 }
 
+// コンストラクタ
 TJSObject::TJSObject(Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
 {
 	obj->SetPointerInInternalField(0, (void*)this);
@@ -134,15 +129,28 @@ TJSObject::caller(const Arguments& args)
 			*argv[i] = toVariant(args[i]);
 		}
 
-		// メソッド呼び出し
-		tTJSVariant result;
-		tjs_error error;
-		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().FuncCall(0, NULL, NULL, &result, argc, argv, NULL))) {
-			ret = toJSValue(result);
+		if (self.AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Class", NULL) == TJS_S_TRUE) {
+			// クラスオブジェクトならコンストラクタ呼び出し
+			iTJSDispatch2 *instance = NULL;
+			tjs_error error;
+			if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().CreateNew(0, NULL, NULL, &instance, argc, argv, NULL))) {
+				ret = toJSValue(tTJSVariant(instance, instance));
+				instance->Release();
+			} else {
+				ret = ERROR_KRKR(error);
+			}
 		} else {
-			ret = ERROR_KRKR(error);
+			// メソッド呼び出し
+			tTJSVariant result;
+			tjs_error error;
+			if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().FuncCall(0, NULL, NULL, &result, argc, argv, NULL))) {
+				ret = toJSValue(result);
+			} else {
+				ret = ERROR_KRKR(error);
+			}
 		}
-		
+
+		// 引数解放
 		if (argv) {
 			for (int i=0;i<argc;i++) {
 				delete argv[i];
