@@ -63,7 +63,7 @@ public:
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis
 		) {
-		return TJSInstance::callMethod(obj->ToObject(), membername, result, numparams, param);
+		return TJSInstance::callMethod(obj->ToObject(), membername, result, numparams, param, objthis);
 	}
 
 	// プロパティ取得
@@ -159,6 +159,23 @@ toJSValue(const tTJSVariant &variant)
 		return Number::New((tTVReal)variant);
 	}
 	return *Undefined();
+}
+
+tTJSVariant
+toVariant(Handle<Object> object, Handle<Object> context)
+{
+	tTJSVariant result;
+	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(object);
+	iTJSDispatch2 *tjsctx = new iTJSDispatch2Wrapper(context);
+	if (tjsobj && tjsctx) {
+		result = tTJSVariant(tjsobj, tjsctx);
+		tjsobj->Release();
+		tjsctx->Release();
+	} else {
+		if (tjsobj) { tjsobj->Release(); };
+		if (tjsctx) { tjsctx->Release(); };
+	}
+	return result;
 }
 
 tTJSVariant

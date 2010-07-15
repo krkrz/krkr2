@@ -26,7 +26,7 @@ public:
 	static tjs_error setProp(Local<Object> obj, const tjs_char *membername, const tTJSVariant *param);
 	static tjs_error remove(Local<Object> obj, const tjs_char *membername);
 	static tjs_error createMethod(Local<Object> obj, const tjs_char *membername, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param);
-	static tjs_error callMethod(Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param);
+	static tjs_error callMethod(Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
 	
 	// ---------------------------------------------------------------
 
