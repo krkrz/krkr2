@@ -2,6 +2,7 @@
 #include "ncbind/ncbind.hpp"
 #include <vector>
 #include <v8.h>
+#include <v8-debug.h>
 
 using namespace v8;
 
@@ -108,11 +109,38 @@ public:
 		tjs_error ret = _exec(filename, data.c_str(), result);
 		return ret;
 	}
+
+	/**
+	 * デバッガの有効化
+	 * @param port ポート番号(デフォルトは5858)
+	 * @return 実行結果
+	 */
+	static tjs_error TJS_INTF_METHOD enableDebug(tTJSVariant *result,
+												 tjs_int numparams,
+												 tTJSVariant **param,
+												 iTJSDispatch2 *objthis) {
+		int  port  = numparams > 0 ? (int)*param[0] : 5858;
+		bool wait  = numparams > 1 ? (int)*param[1] != 0 : false;
+		Debug::EnableAgent("kirikiriV8", port, wait);
+		return TJS_S_OK;
+	}
+
+	// デバッガ駆動用
+	static tjs_error TJS_INTF_METHOD processDebug(tTJSVariant *result,
+												  tjs_int numparams,
+												  tTJSVariant **param,
+												  iTJSDispatch2 *objthis) {
+		Context::Scope context_scope(mainContext);
+		Debug::ProcessDebugMessages();
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_CLASS(ScriptsJavascript, Scripts) {
-	RawCallback("execJS",        &ScriptsJavascript::exec,        TJS_STATICMEMBER);
-	RawCallback("execStorageJS", &ScriptsJavascript::execStorage, TJS_STATICMEMBER);
+	RawCallback("execJS",        &ScriptsJavascript::exec,          TJS_STATICMEMBER);
+	RawCallback("execStorageJS", &ScriptsJavascript::execStorage,   TJS_STATICMEMBER);
+	RawCallback("enableDebugJS", &ScriptsJavascript::enableDebug,   TJS_STATICMEMBER);
+	RawCallback("processDebugJS", &ScriptsJavascript::processDebug, TJS_STATICMEMBER);
 };
 
 //---------------------------------------------------------------------------
