@@ -62,7 +62,26 @@ Javascript の実行用メソッドが Scripts クラスに拡張されます。
 
 ●ライセンス
 
-V8 Javascript Engine は 新BSDライセンスです
+このプラグイン自体のライセンスは吉里吉里本体に準拠してください。
+
+This license applies to all parts of V8 that are not externally
+maintained libraries.  The externally maintained libraries used by V8
+are:
+
+  - Dtoa, located under third_party/dtoa.  This code is copyrighted by
+    David M. Gay and released under an MIT license.
+
+  - Strongtalk assembler, the basis of the files assembler-arm-inl.h,
+    assembler-arm.cc, assembler-arm.h, assembler-ia32-inl.h,
+    assembler-ia32.cc, assembler-ia32.h, assembler.cc and assembler.h.
+    This code is copyrighted by Sun Microsystems Inc. and released
+    under a 3-clause BSD license.
+
+  - Valgrind client API header, located at third_party/valgrind/valgrind.h
+    This is release under the BSD license.
+
+These libraries have their own licenses; we recommend you read them,
+as their terms may differ from the terms below.
 
 Copyright 2006-2009, Google Inc. All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -90,5 +109,3 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-このプラグイン自体のライセンスは吉里吉里本体に準拠してください。
