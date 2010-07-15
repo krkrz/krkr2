@@ -20,19 +20,43 @@ function createTJSClass(className, ...);
  */
 function TJSObject();
 
-/**
- * 吉里吉里オブジェクトの有効性の確認
- * レイヤなど吉里吉里側で強制 invalidate される可能性があるオブジェクトの状況確認に使います。
- * @return valid なら true
- */
-TJSObject.tjsIsValid = function();
+TJSObject.prototype = {
+	
+  // 全メソッド/プロパティがプロトタイプとして登録済み状態
 
-/**
- * 吉里吉里オブジェクトの強制オーバライド処理
- * 吉里吉里インスタンスのメンバを強制的に上書きします。
- * イベントなどを javascript 側でうけたい場合に指定します
- * 値を省略した場合は自己オブジェクトを参照します
- * @param name メンバ名
- * @param value 登録する値(省略可)
- */
-TJSObject.tjsOverride = function(name, value=null);
+  /**
+   * 吉里吉里オブジェクトの有効性の確認
+   * レイヤなど吉里吉里側で強制 invalidate される可能性があるオブジェクトの状況確認に使います。
+   * @return valid なら true
+   */
+ tjsIsValid : function(),
+
+  /**
+   * 吉里吉里オブジェクトの強制オーバライド処理
+   * 吉里吉里インスタンスのメンバを強制的に上書きします。
+   * イベントなどを javascript 側でうけたい場合に指定します
+   * 値を省略した場合は自己オブジェクトを参照します
+   * @param name メンバ名
+   * @param value 登録する値(省略可)
+   */
+  tjsOverride : function(name, value=null),
+}
+
+// -----------------------------------------------------------
+// 継承記述例
+// -----------------------------------------------------------
+
+// 独自レイヤクラス
+function MyObject(arg)
+{
+	// 親コンストラクタ呼び出し
+	TJSObject.call(this, arg);
+	// 各種初期化など
+	this.XXX();
+}
+
+// 独自レイヤのプロトタイプ
+MyObject.prototype = {
+  __proto__: TJSObject.prototype // 親オブジェクトのプロトタイプを指定
+  ...  // 以下自前のメソッド追加
+};
