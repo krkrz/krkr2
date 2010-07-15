@@ -93,18 +93,17 @@ public:
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
 		const tjs_char *filename = param[0]->GetString();
 		iTJSTextReadStream * stream = TVPCreateTextStreamForRead(filename, TJS_W(""));
-		tjs_error ret = TJS_S_OK;
+		ttstr data;
 		try {
-			ttstr data;
 			stream->Read(data, 0);
-			ret = _exec(filename, data.c_str(), result);
+			stream->Destruct();
 		}
 		catch(...)
 		{
 			stream->Destruct();
 			throw;
 		}
-		stream->Destruct();
+		tjs_error ret = _exec(filename, data.c_str(), result);
 		return ret;
 	}
 };
@@ -129,7 +128,7 @@ static void PreRegistCallback()
 	// グローバルテンプレートの準備
 	Local<ObjectTemplate> globalTemplate = ObjectTemplate::New();
 
-	//TJSInstance::init(globalTemplate);
+	TJSInstance::init(globalTemplate);
 	TJSObject::init();
 
 	// コンテキスト生成
