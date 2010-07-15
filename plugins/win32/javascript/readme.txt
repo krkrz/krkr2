@@ -23,29 +23,20 @@ V8 JavaScript Engine (http://code.google.com/p/v8/) の吉里吉里バインドです。
 ・TJS2 の null は javascript の null と対応します
 ・オブジェクトは相互に呼び出し可能です
 
-プリミティブ値が吉里吉里のそれとして登録されることになるので注意が必要です。
-完全に Javascript な空間が欲しい場合は適宜辞書などを作成してそこに値を
-登録してください。
-
 ●使用方法
 
 ◇Scripts 拡張
 
 Javascript の実行用メソッドが Scripts クラスに拡張されます。
-これにより外部の Javascript ファイルを読み込んでクラスや
-メソッドとして登録可能になります。
+これにより外部の Javascript ファイルを読み込んで実行可能になります
 
 ◇吉里吉里クラスの javascriptクラス化
 
 吉里吉里のクラスを javascript のクラスとして継承可能な状態で
 扱うことができます。
 
-・createTJSClass()で、TJSのクラスを Javascriptクラスとして扱うことができます
-
-　登録されたクラスでは、Javascript側で生成されたインスタンスの場合は、
-　Javascript に返す際にもそのまま元の Javascriptオブジェクトが帰ります。
-　TJS側で生成されたインスタンスの場合は、新しいJavascriptインスタンスに
-　ラッピングされて帰ります
+・createTJSClass()で、TJSのクラスを内部的に保持する 
+　Javascriptクラス生成関数を作成することができます。
 
   tjsOverride() でTJSインスタンスに直接メソッドを登録できます
 
@@ -57,6 +48,10 @@ Javascript の実行用メソッドが Scripts クラスに拡張されます。
   TJSインスタンス内部からのイベント呼び出しにもこれが適用されるため、
 　TJSインスタンス中に定義がなければ自動的に javascript インスタンスの
 　それが呼び出されます
+
+  ※squirrel 実装とは異なりこの機能で取得した吉里吉里クラスの
+  吉里吉里側で生成されたインスタンスが返される場合のラッピング処理は
+　行われませんのでご注意ください
 
 操作の詳細は manual.tjs / manual.js を参照してください。
 

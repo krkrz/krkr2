@@ -28,34 +28,6 @@ Persistent<Context> mainContext;
 //---------------------------------------------------------------------------
 
 /**
- * Javascript の グローバル空間に登録処理を行う
- */
-static void
-registerglobal(const tjs_char *name, const tTJSVariant &variant)
-{
-	Context::Scope context_scope(mainContext);
-	Local<Object> jsglobal = mainContext->Global();
-	if (!jsglobal.IsEmpty()) {
-		jsglobal->Set(String::New(name), toJSValue(variant));
-	}
-}
-
-/**
- * Javascript の グローバル空間から削除処理を行う
- */
-static void
-unregisterglobal(const tjs_char *name)
-{
-	Context::Scope context_scope(mainContext);
-	Local<Object> jsglobal = mainContext->Global();
-	if (!jsglobal.IsEmpty()) {
-		jsglobal->Delete(String::New(name));
-	}
-}
-
-//---------------------------------------------------------------------------
-
-/**
  * Scripts クラスへの Javascript 実行メソッドの追加
  */
 class ScriptsJavascript {
@@ -74,8 +46,8 @@ public:
 										   tTJSVariant *result) {
 		HandleScope handle_scope;
 		Context::Scope context_scope(mainContext);
-		
 		TryCatch try_catch;
+
 		Local<Script> script = Script::Compile(String::New(scriptText), filename ? String::New(filename) : Undefined());
 		if (script.IsEmpty()) {
 			// Print errors that happened during compilation.
@@ -135,47 +107,11 @@ public:
 		stream->Destruct();
 		return ret;
 	}
-
-	/**
-	 * squirrel の名前空間に登録
-	 * @param name オブジェクト名
-	 * @param obj オブジェクト
-	 */
-	static tjs_error TJS_INTF_METHOD registerJS(tTJSVariant *result,
-											  tjs_int numparams,
-											  tTJSVariant **param,
-											  iTJSDispatch2 *objthis) {
-		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-		if (numparams > 1) {
-			registerglobal(param[0]->GetString(), *param[1]);
-		} else {
-			tTJSVariant var;
-			TVPExecuteExpression(param[0]->GetString(), &var);
-			registerglobal(param[0]->GetString(), var);
-		}
-		return TJS_S_OK;
-	}
-
-	/**
-	 * squirrel の名前空間から削除
-	 * @param name オブジェクト名
-	 * @param obj オブジェクト
-	 */
-	static tjs_error TJS_INTF_METHOD unregisterJS(tTJSVariant *result,
-												tjs_int numparams,
-												tTJSVariant **param,
-												iTJSDispatch2 *objthis) {
-		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-		unregisterglobal(param[0]->GetString());
-		return TJS_S_OK;
-	}
 };
 
 NCB_ATTACH_CLASS(ScriptsJavascript, Scripts) {
 	RawCallback("execJS",        &ScriptsJavascript::exec,        TJS_STATICMEMBER);
 	RawCallback("execStorageJS", &ScriptsJavascript::execStorage, TJS_STATICMEMBER);
-	RawCallback("registerJS",    &ScriptsJavascript::registerJS,  TJS_STATICMEMBER);
-	RawCallback("unregisterJS",  &ScriptsJavascript::unregisterJS,TJS_STATICMEMBER);
 };
 
 //---------------------------------------------------------------------------
@@ -198,7 +134,6 @@ static void PreRegistCallback()
 
 	// コンテキスト生成
 	mainContext = Persistent<Context>::New(Context::New(NULL, globalTemplate));
-
 	Context::Scope context_scope(mainContext);
 	
 	// グローバルオブジェクトの準備
@@ -210,12 +145,9 @@ static void PreRegistCallback()
 			global->PropSet(TJS_MEMBERENSURE, JAVASCRIPT_GLOBAL, NULL, &result, global);
 		}
 		// Javascript の グローバルに吉里吉里の グローバルを登録する
-		registerglobal(KIRIKIRI_GLOBAL, tTJSVariant(global, global));
+		mainContext->Global()->Set(String::New(KIRIKIRI_GLOBAL), toJSValue(tTJSVariant(global, global)));
 		global->Release();
 	}
-
-	registerglobal(L"test", tTJSVariant(3));
-	registerglobal(L"test2", tTJSVariant(1.0));
 }
 
 /**
@@ -224,7 +156,6 @@ static void PreRegistCallback()
 static void PostUnregistCallback()
 {
 	mainContext.Dispose();
-	//TJSInstance::done();
 	TJSObject::done();
 	V8::Dispose();
 }
