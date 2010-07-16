@@ -47,7 +47,7 @@ Javascript の実行用メソッドが Scripts クラスに拡張されます。
   tjsOverride() でTJSインスタンスに対して直接 javascript メソッドを
   登録できます
 
-  TJSインスタンス側に callSQ() として javascript インスタンスの
+  TJSインスタンス側に callJS() として javascript インスタンスの
 　メソッドを明示的に呼び出す命令が拡張されます。
 
   TJSインスタンス側では missing 機能が設定され、存在しないメンバが

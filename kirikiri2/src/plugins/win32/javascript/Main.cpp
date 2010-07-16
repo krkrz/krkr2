@@ -10,9 +10,9 @@ using namespace v8;
 #include "tjsobj.h"
 #include "tjsinstance.h"
 
-// squirrel 上での TJS2のグローバル空間の参照名
+// javascript 上での TJS2のグローバル空間の参照名
 #define KIRIKIRI_GLOBAL L"krkr"
-// TJS2 上での squirrel のグローバル空間の参照名
+// TJS2 上での javascript のグローバル空間の参照名
 #define JAVASCRIPT_GLOBAL L"jsglobal"
 
 // 値の格納・取得用

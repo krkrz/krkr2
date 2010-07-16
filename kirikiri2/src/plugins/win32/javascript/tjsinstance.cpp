@@ -176,7 +176,6 @@ TJSInstance::createTJSClass(const Arguments& args)
 
 /**
  * 吉里吉里オブジェクトを javascriptオブジェクトに変換
- * 登録済みクラスの場合はそのクラスのインスタンスとしてくみ上げる
  * @return 登録成功
  */
 bool
