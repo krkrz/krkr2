@@ -510,16 +510,13 @@ protected:
 		return ret;
 	}
 
-public:
-
 	/**
 	 * イベント登録
 	 */
-	static tjs_error addEventMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+	static tjs_error _addEventMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis, WIN32OLE *self) {
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
 		}
-		WIN32OLE *self = ncbInstanceAdaptor<WIN32OLE>::GetNativeInstance(objthis);
 		if (!self) {
 			return TJS_E_NATIVECLASSCRASH;
 		}
@@ -539,11 +536,6 @@ public:
 		}
 		return TJS_S_OK;
 	}
-	
-	/**
-	 * 定数の取得
-	 */
-protected:
 
 	/**
 	 * 定数の取得
@@ -618,12 +610,10 @@ protected:
 		}
 	}
 
-public:
 	/**
 	 * メソッド実行
 	 */
-	static tjs_error getConstantMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
-		WIN32OLE *self = ncbInstanceAdaptor<WIN32OLE>::GetNativeInstance(objthis);
+	static tjs_error _getConstantMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis, WIN32OLE *self) {
 		if (!self) {
 			return TJS_E_NATIVECLASSCRASH;
 		}
@@ -637,6 +627,17 @@ public:
 			self->getConstant(objthis);
 		}
 		return TJS_S_OK;
+	}
+
+public:
+	static tjs_error addEventMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+		WIN32OLE *self = ncbInstanceAdaptor<WIN32OLE>::GetNativeInstance(objthis);
+		return _addEventMethod(result, numparams, param, objthis, self);
+	}
+	
+	static tjs_error getConstantMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+		WIN32OLE *self = ncbInstanceAdaptor<WIN32OLE>::GetNativeInstance(objthis);
+		return _getConstantMethod(result, numparams, param, objthis, self);
 	}
 };
 
@@ -952,7 +953,32 @@ protected:
 		}
 	}
 public:
+	static tjs_error invokeMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, ActiveX *self) {
+		return self->invoke(DISPATCH_PROPERTYGET|DISPATCH_METHOD, result, numparams, param);
+	}
+	
+	static tjs_error setMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, ActiveX *self) {
+		return self->invoke(DISPATCH_PROPERTYPUT, result, numparams, param);
+	}
+	
+	static tjs_error getMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, ActiveX *self) {
+		return self->invoke(DISPATCH_PROPERTYGET, result, numparams, param);
+	}
 
+	static tjs_error missingMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, ActiveX *self) {
+		return self->missing(result, numparams, param);
+	}
+
+	static tjs_error addEventMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+		ActiveX *self = ncbInstanceAdaptor<ActiveX>::GetNativeInstance(objthis);
+		return _addEventMethod(result, numparams, param, objthis, self);
+	}
+	
+	static tjs_error getConstantMethod(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
+		ActiveX *self = ncbInstanceAdaptor<ActiveX>::GetNativeInstance(objthis);
+		return _getConstantMethod(result, numparams, param, objthis, self);
+	}
+	
 BEGIN_MSG_MAP(ActiveX)
 END_MSG_MAP()
 	
