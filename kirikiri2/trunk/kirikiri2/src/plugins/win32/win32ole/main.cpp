@@ -1184,8 +1184,8 @@ NCB_REGISTER_CLASS(ActiveX) {
 //---------------------------------------------------------------------------
 
 // 吉里吉里のアーカイブにアクセスするための処理
-void registArchive();
-void unregistArchive();
+void registerArchive();
+void unregisterArchive();
 
 static BOOL gOLEInitialized = false;
 
@@ -1203,7 +1203,7 @@ static void PreRegistCallback()
 	}
 	
 	// アーカイブ処理
-	registArchive();
+	registerArchive();
 	
 	// ATL関連初期化
 	_Module.Init(NULL, NULL);
@@ -1233,7 +1233,7 @@ static void PostUnregistCallback()
 	_Module.Term();
 
 	// アーカイブ終了
-	unregistArchive();
+	unregisterArchive();
 	
 	if (gOLEInitialized) {
 		OleUninitialize();
