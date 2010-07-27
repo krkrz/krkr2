@@ -1,0 +1,21 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+class Window
+{
+	/**
+	 * レジストリにデータを書き込みます
+	 * @param key 書き込み先のキー
+	 * @param name 値の名前
+	 * @param value 書き込む値(文字列又は整数値)
+	 */
+	function writeRegistory(key, name, value);
+
+	/**
+	 * レジストリからデータを読み込みます
+	 * @param key 読み込み先のキー
+	 * @param name 値の名前
+	 * @return 読み込んだ値(文字列又は整数値)
+	 */
+	function readRegistory(key, name);
+};
