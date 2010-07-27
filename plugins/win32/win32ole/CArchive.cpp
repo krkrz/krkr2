@@ -51,11 +51,12 @@ public:
 	}
 
 	ULONG STDMETHODCALLTYPE Release() {
-		if (--refCount <= 0) {
+		int ret = --refCount;
+		if (ret <= 0) {
 			delete this;
-			refCount = 0;
+			ret = 0;
 		}
-		return refCount;
+		return ret;
 	}
 	
 	//----------------------------------------------------------------------------
@@ -177,11 +178,10 @@ public:
 		if (pUnkOuter) {
 			return CLASS_E_NOAGGREGATION;
 		} 
-		CArchive *p = new CArchive;
+		CArchive *p = new CArchive();
 		if (p == NULL) {
 			return E_OUTOFMEMORY;
 		}
-		p->AddRef();
 		HRESULT hr = p->QueryInterface(riid, ppvObject);
 		p->Release();
 		return hr;
@@ -198,7 +198,7 @@ static IClassFactory *pcf = NULL;
 /**
  * アーカイブ処理をプロセスのインターネットセッションに登録する
  */
-void registArchive()
+void registerArchive()
 {
 	if (pIInternetSession == NULL && CoInternetGetSession(0, &pIInternetSession, 0) == S_OK) {
 		pcf = new CArchive();
@@ -210,7 +210,7 @@ void registArchive()
 /**
  * アーカイブ処理をプロセスのインターネットセッションから解除する
  */
-void unregistArchive()
+void unregisterArchive()
 {
 	if (pIInternetSession) {
 		pIInternetSession->UnregisterNameSpace(pcf, PROTOCOL);
