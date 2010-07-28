@@ -4,7 +4,6 @@ Author: Kiyobee
 ●これはなに？
 
 Windows のレジストリに値を書き込むことができます。
-現状では HKEY_CURRENT_USER 以下にのみ対応しています。
 
 ●使用方法
 
