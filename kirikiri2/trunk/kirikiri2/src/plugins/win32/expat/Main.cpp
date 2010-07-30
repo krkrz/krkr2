@@ -628,9 +628,15 @@ static iTJSDispatch2 * Create_NC_XMLParser()
 
 //---------------------------------------------------------------------------
 
-//#pragma argsused
+#if _MSC_VER <= 1200
+// FIXME:
+// このプラグマって BCC の……（略
+#pragma argsused
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
 	void* lpReserved)
+#else
+int WINAPI DllMain(HINSTANCE hinst, unsigned long reason, void* lpReserved)
+#endif
 {
 	return 1;
 }
