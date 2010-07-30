@@ -1,3 +1,25 @@
+#if !defined _MSC_VER
+#error "ゴメナサイネ VC ツカテ クダサイ"
+#endif
+#if _MSC_VER < 1200
+#error "コンパイルには MS-VC6.0 以降が必要です。"
+#endif
+
+#define CRINKAGE	extern "C"
+
+#if _MSC_VER <= 1200
+// FIXME:
+// _export って BCC のキーワードじゃないのかしら？
+// よくわからんけど、元がそうなってたのでそのままにしておく
+#  define EXPORT_DLL	_stdcall _export
+#else
+#  define EXPORT_DLL	_stdcall
+#endif
+
+#if _MSC_VER >= 1400
+#  define MSVC_HAS_SECURE_CRT
+#endif
+
 #include <windows.h>
 #include "tp_stub.h"
 #include <stdio.h>
@@ -36,7 +58,11 @@ static void log(const tjs_char *format, ...)
 	va_list args;
 	va_start(args, format);
 	tjs_char msg[1024];
+#if defined MSVC_HAS_SECURE_CRT
+	_vsnwprintf_s(msg, sizeof(msg), _TRUNCATE, format, args);
+#else
 	_vsnwprintf(msg, 1024, format, args);
+#endif
 	TVPAddLog(msg);
 	va_end(args);
 }
@@ -602,7 +628,7 @@ static iTJSDispatch2 * Create_NC_XMLParser()
 
 //---------------------------------------------------------------------------
 
-#pragma argsused
+//#pragma argsused
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
 	void* lpReserved)
 {
@@ -611,7 +637,7 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
 
 //---------------------------------------------------------------------------
 static tjs_int GlobalRefCountAtInit = 0;
-extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
+CRINKAGE HRESULT EXPORT_DLL V2Link(iTVPFunctionExporter *exporter)
 {
 	// スタブの初期化(必ず記述する)
 	TVPInitImportStub(exporter);
@@ -637,7 +663,7 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-extern "C" HRESULT _stdcall _export V2Unlink()
+CRINKAGE HRESULT EXPORT_DLL V2Unlink()
 {
 	// 吉里吉里側から、プラグインを解放しようとするときに呼ばれる関数。
 
