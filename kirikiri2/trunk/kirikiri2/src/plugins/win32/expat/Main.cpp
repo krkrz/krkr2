@@ -643,7 +643,7 @@ int WINAPI DllMain(HINSTANCE hinst, unsigned long reason, void* lpReserved)
 
 //---------------------------------------------------------------------------
 static tjs_int GlobalRefCountAtInit = 0;
-CRINKAGE HRESULT EXPORT_DLL V2Link(iTVPFunctionExporter *exporter)
+CLINKAGE HRESULT EXPORT_DLL V2Link(iTVPFunctionExporter *exporter)
 {
 	// スタブの初期化(必ず記述する)
 	TVPInitImportStub(exporter);
@@ -669,7 +669,7 @@ CRINKAGE HRESULT EXPORT_DLL V2Link(iTVPFunctionExporter *exporter)
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-CRINKAGE HRESULT EXPORT_DLL V2Unlink()
+CLINKAGE HRESULT EXPORT_DLL V2Unlink()
 {
 	// 吉里吉里側から、プラグインを解放しようとするときに呼ばれる関数。
 
