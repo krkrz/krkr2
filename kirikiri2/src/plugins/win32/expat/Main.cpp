@@ -5,7 +5,7 @@
 #error "コンパイルには MS-VC6.0 以降が必要です。"
 #endif
 
-#define CRINKAGE	extern "C"
+#define CLINKAGE	extern "C"
 
 #if _MSC_VER <= 1200
 // FIXME:
