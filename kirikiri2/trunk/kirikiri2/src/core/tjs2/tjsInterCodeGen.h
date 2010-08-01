@@ -21,6 +21,9 @@
 #include "tjsError.h"
 #include "tjsObject.h"
 
+#ifdef ENABLE_DEBUGGER
+#include "tjsDebug.h"
+#endif // ENABLE_DEBUGGER
 
 
 namespace TJS
@@ -330,6 +333,11 @@ private:
 	tTJSInterCodeContext *PropGetter;
 	tTJSInterCodeContext *SuperClassGetter;
 
+#ifdef ENABLE_DEBUGGER
+	ScopeKey		DebuggerScopeKey;		//!< for exec
+	tTJSVariant*	DebuggerRegisterArea;	//!< for exec
+#endif	// ENABLE_DEBUGGER
+
 public:
 	tTJSContextType GetContextType() const { return ContextType; }
 	const tjs_char *GetContextTypeName() const;
@@ -339,6 +347,14 @@ public:
 
 	tTJSScriptBlock * GetBlock() const { return Block; }
 
+#ifdef ENABLE_DEBUGGER
+	ttstr GetClassName() const;
+	ttstr GetSelfClassName() const;
+
+	const ScopeKey& GetDebuggerScopeKey() { return DebuggerScopeKey; }
+	tTJSVariant* GetDebuggerRegisterArea() { return DebuggerRegisterArea; }
+	tTJSVariant* GetDebuggerDataArea() { return DataArea; }
+#endif	// ENABLE_DEBUGGER
 private:
 	void OutputWarning(const tjs_char *msg, tjs_int pos = -1);
 
