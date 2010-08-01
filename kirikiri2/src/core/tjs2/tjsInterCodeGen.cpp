@@ -228,6 +228,9 @@ tTJSInterCodeContext::tTJSInterCodeContext(tTJSInterCodeContext *parent,
 	SourcePosArrayCapa = 0;
 	SourcePosArraySize = 0;
 
+#ifdef ENABLE_DEBUGGER
+	DebuggerRegisterArea = NULL;
+#endif	// ENABLE_DEBUGGER
 
 	if(name)
 	{
@@ -291,6 +294,10 @@ tTJSInterCodeContext::tTJSInterCodeContext(tTJSInterCodeContext *parent,
 		delete [] Name;
 		throw;
 	}
+#ifdef ENABLE_DEBUGGER
+	// ŒÃ‚¢ƒ[ƒJƒ‹•Ï”‚Ííœ‚µ‚Ä‚µ‚Ü‚¤
+	TJSDebuggerClearLocalVariable( GetClassName().c_str(), GetName(), Block->GetName(), FunctionRegisterCodePoint );
+#endif	// ENABLE_DEBUGGER
 }
 //---------------------------------------------------------------------------
 tTJSInterCodeContext::~tTJSInterCodeContext()
@@ -421,6 +428,56 @@ ttstr tTJSInterCodeContext::GetShortDescriptionWithClassName() const
 
 	return ret;
 }
+#ifdef ENABLE_DEBUGGER
+//---------------------------------------------------------------------------
+ttstr tTJSInterCodeContext::GetClassName() const
+{
+	ttstr ret;
+
+	tTJSInterCodeContext * parent;
+
+	const tjs_char *classname;
+
+	if(ContextType == ctPropertySetter || ContextType == ctPropertyGetter)
+		parent = Parent ? Parent->Parent : NULL;
+	else
+		parent = Parent;
+
+	if(parent)
+		classname = parent->Name;
+	else
+		classname = NULL;
+
+	if( classname ) ret = ttstr(classname);
+
+	return ret;
+}
+//---------------------------------------------------------------------------
+ttstr tTJSInterCodeContext::GetSelfClassName() const
+{
+	ttstr ret;
+
+	const tTJSInterCodeContext* parent;
+
+	const tjs_char *classname;
+
+	if(ContextType == ctPropertySetter || ContextType == ctPropertyGetter)
+		parent = Parent ? Parent->Parent : NULL;
+	else if( ContextType == ctClass )
+		parent = this;
+	else
+		parent = Parent;
+
+	if(parent)
+		classname = parent->Name;
+	else
+		classname = NULL;
+
+	if( classname ) ret = ttstr(classname);
+
+	return ret;
+}
+#endif	// ENABLE_DEBUGGER
 //---------------------------------------------------------------------------
 void tTJSInterCodeContext::OutputWarning(const tjs_char *msg, tjs_int pos)
 {
@@ -2518,13 +2575,17 @@ void tTJSInterCodeContext::AddLocalVariable(const tjs_char *name, tjs_int init)
 	if(Namespace.GetLevel() >= base)
 	{
 		// create on local
-
 //		tjs_int ff = Namespace.Find(name);
 		Namespace.Add(name);
 		if(init != 0)
 		{
 			// initial value is given
 			tjs_int n = Namespace.Find(name);
+#ifdef ENABLE_DEBUGGER
+			int regoffset = TJS_TO_VM_REG_ADDR(-n-VariableReserveCount-1);
+			// class name, func name, file name, code offset, var name, reg offset
+			TJSDebuggerAddLocalVariable( GetClassName().c_str(), GetName(), Block->GetName(), FunctionRegisterCodePoint, name, regoffset );
+#endif // ENABLE_DEBUGGER
 			PutCode(VM_CP, LEX_POS);
 			PutCode(TJS_TO_VM_REG_ADDR(-n-VariableReserveCount-1), LEX_POS);
 			PutCode(TJS_TO_VM_REG_ADDR(init), LEX_POS);
@@ -2533,6 +2594,11 @@ void tTJSInterCodeContext::AddLocalVariable(const tjs_char *name, tjs_int init)
 		{
 			// first initialization
 			tjs_int n = Namespace.Find(name);
+#ifdef ENABLE_DEBUGGER
+			int regoffset = TJS_TO_VM_REG_ADDR(-n-VariableReserveCount-1);
+			// class name, func name, file name, code offset, var name, reg offset
+			TJSDebuggerAddLocalVariable( GetClassName().c_str(), GetName(), Block->GetName(), FunctionRegisterCodePoint, name, regoffset );
+#endif // ENABLE_DEBUGGER
 			PutCode(VM_CL, LEX_POS);
 			PutCode(TJS_TO_VM_REG_ADDR(-n-VariableReserveCount-1), LEX_POS);
 		}
@@ -2541,6 +2607,9 @@ void tTJSInterCodeContext::AddLocalVariable(const tjs_char *name, tjs_int init)
 	{
 		// create member on this
 		tjs_int	dp = PutData(tTJSVariant(name));
+#ifdef ENABLE_DEBUGGER
+		TJSDebuggerAddClassVariable( GetSelfClassName().c_str(), name, TJS_TO_VM_REG_ADDR(dp) );
+#endif // ENABLE_DEBUGGER
 		PutCode(VM_SPDS, LEX_POS);
 		PutCode(TJS_TO_VM_REG_ADDR(-1), LEX_POS);
 		PutCode(TJS_TO_VM_REG_ADDR(dp), LEX_POS);
