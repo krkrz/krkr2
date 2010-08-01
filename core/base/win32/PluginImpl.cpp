@@ -764,7 +764,7 @@ int ZLIB_compress2(unsigned char *dest, unsigned long *destlen,
 //---------------------------------------------------------------------------
 #include "md5.h"
 static char TVP_assert_md5_state_t_size[
-	 (!(sizeof(TVP_md5_state_t) - sizeof(md5_state_t)))];
+	 (sizeof(TVP_md5_state_t) >= sizeof(md5_state_t))];
 	// if this errors, sizeof(TVP_md5_state_t) is not equal to sizeof(md5_state_t).
 	// sizeof(TVP_md5_state_t) must be equal to sizeof(md5_state_t).
 //---------------------------------------------------------------------------
