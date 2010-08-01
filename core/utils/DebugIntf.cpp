@@ -17,6 +17,9 @@
 #include "StorageIntf.h"
 #include "SysInitIntf.h"
 #include "SysInitImpl.h"
+#ifdef ENABLE_DEBUGGER
+#include "tjsDebug.h"
+#endif // ENABLE_DEBUGGER
 
 //---------------------------------------------------------------------------
 // global variables
@@ -284,6 +287,9 @@ void TVPAddLog(const ttstr &line, bool appendtoimportant)
 	p++;
 	TJS_strcpy(p, line.c_str());
 	if(TVPOnLog) TVPOnLog(buf);
+#ifdef ENABLE_DEBUGGER
+	if( TJSEnableDebugMode ) TJSDebuggerLog(buf,appendtoimportant);
+#endif	// ENABLE_DEBUGGER
 	if(TVPLoggingToFile) TVPLogStreamHolder.Log(buf);
 }
 //---------------------------------------------------------------------------
