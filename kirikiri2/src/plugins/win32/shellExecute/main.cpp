@@ -102,12 +102,19 @@ struct CommandExecute
 		return true;
 	}
 
+#define		BUF_SIZE	1024
+
 	bool wait(LineCallbackT linecb, void *cbdata, int timeout = 0, DWORD cycle = WSO_LOOPTIMEOUT) {
 		// パイプから出力を読み込み
 		ttstr output;
 		DWORD cnt, last=::GetTickCount();
 		::PeekNamedPipe(hOR, 0, 0, 0, &cnt, NULL);
-		char buf[1024], crlf=0;
+		char buf[BUF_SIZE], crlf=0;
+		char tmp[BUF_SIZE+1];			//文字の上位バイトだけ分断されてしまった場合に並べ直すエリア
+		char kind[BUF_SIZE+1];			//文字構成種 0:半角 1:全角上位バイト 2:全角下位バイト
+		char halfchar;					//分断された上位バイト
+		bool ishalf = false;			//分断されているかどうか
+		tjs_char wbuf[BUF_SIZE+1];
 		bool rest = false;
 		int line = 0;
 
@@ -116,13 +123,57 @@ struct CommandExecute
 				last = GetTickCount();
 				::ReadFile(hOR, buf, sizeof(buf)-1, &cnt, NULL);
 				buf[cnt] = 0;
+				if( ishalf )
+				{
+					//分断された上位バイトに連結
+					ZeroMemory(tmp, sizeof(tmp));
+					tmp[0] = halfchar;
+					memcpy( &tmp[1], buf, cnt );
+					cnt++;
+					memcpy( buf, tmp, cnt );
+				}
+				halfchar = 0;
+				ishalf = false;
+
+				//パイプから読み込んだデータの終端マルチバイト判定および途中途中での
+				//改行コード判定が随所で必要なので先に先頭から全部なめておく
+				ZeroMemory(kind, sizeof(kind));
+				for (DWORD pos = 0; pos < cnt; pos++) {
+					unsigned char cl = buf[pos];
+					if( pos )
+					{
+						//前のバイトが全角上位バイトだったら無条件で下位バイト扱い
+						if ( kind[pos-1] == 1 )	{
+							kind[pos] = 2;
+							continue;
+						}
+					}
+					//コマンドラインの標準入出力なのでSJIS前提での固定処理：上位バイト判定
+					if ( cl > 0x80 && cl < 0xA0 || cl > 0xDF && cl < 0xFD )
+						kind[pos] = 1;
+				}
+
+				if ( kind[cnt-1] == 1 ) {
+					//最終バイトがマルチバイトの上位バイトかどうか判定
+					ishalf = true;
+					halfchar = buf[cnt-1];
+					cnt--;
+					buf[cnt] = 0;
+				}
 				DWORD start = 0;
+				bool mb = false;
 				for (DWORD pos = 0; pos < cnt; pos++) {
 					char ch = buf[pos];
-					if (ch == '\r' || ch == '\n') {
+					//改行コード判定は半角(kind=0)であることが前提
+					if ( (ch == '\r' || ch == '\n') && ! kind[pos] ) {
 						if (crlf == 0 || crlf == ch) {
 							buf[pos] = 0;
-							ttstr append(buf+start);
+
+							//	マルチバイト文字列をワイド文字列に変換して ttstr に入れないと例外が出る
+							ZeroMemory(wbuf, sizeof(wbuf));
+							MultiByteToWideChar(0, 0, buf+start, pos-start, wbuf, sizeof(wbuf)-1);
+							ttstr append(wbuf);
+
 							output += append;
 							linecb(cbdata, line++, output.c_str());
 							output.Clear();
@@ -137,7 +188,10 @@ struct CommandExecute
 					}
 				}
 				if ((rest = (start < cnt))) {
-					ttstr append(buf+start);
+					ZeroMemory(wbuf, sizeof(wbuf));
+					MultiByteToWideChar(0, 0, buf+start, cnt-start, wbuf, sizeof(wbuf)-1);
+					ttstr append(wbuf);
+
 					output += append;
 				}
 				if ((int)cnt == sizeof(buf)-1) {
