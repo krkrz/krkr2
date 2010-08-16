@@ -164,9 +164,6 @@ private:
 	// NativeClass ID
 	static int classId;
 	
-	// 登録されたクラスの名前マップ
-	static sqobject::ObjectInfo classMap;
-
 	// 処理対象オブジェクト
 	tTJSVariant instance;
 	
