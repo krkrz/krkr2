@@ -13,5 +13,5 @@ print("layer visible:" + layer.visible);
 System <- createTJSClass("System");
 
 print("type:" + typeof System);
-print("tick値:" + System.getTickCount.bindenv(System)());
-print("実行ファイルのパス:" + System.getExePath.bindenv(System)());
+print("tick値:" + System.getTickCount());
+print("実行ファイルのパス:" + System.getExePath());
