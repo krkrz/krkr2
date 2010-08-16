@@ -44,34 +44,36 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
 
 　メタメソッド get/set/call を通じて操作可能です。
 　クラスオブジェクトを call した場合は、TJS2 側で
-　インスタンスが作成されそれを UserData で参照したものが帰ります。
-
-・createTJSClass()で、TJSのクラスを Squirrelクラスとして扱うことができます
-
-  登録されたクラスの TJSインスタンスは UserData ではなく、該当クラスの
-  インスタンスとして処理されるようになります。
-
-  Squirrel側で生成されたインスタンスの場合は、Squirrel に返す際にも、
-　そのまま元の Squirrelオブジェクトが帰ります。TJS側で生成された
-　オブジェクトの場合は、新しいSquirrelインスタンスにラッピングされて帰ります
-
-  tjsOverride() でTJSインスタンスに直接メソッドを登録できます
-
-  TJSインスタンス側に callSQ() として squirrel インスタンスの
-　メソッドを明示的に呼び出す命令が拡張されます。
-
-  TJSインスタンス側では missing 機能が設定され、存在しないメンバが
-　参照された場合は squirrel インスタンスの同名メンバが参照されます。
-  TJSインスタンス内部からのイベント呼び出しにもこれが適用されるため、
-　TJSインスタンス中に定義がなければ自動的に squirrel インスタンスの
-　それが呼び出されます
+　インスタンスが作成されそれを UserData で参照したものが帰ります
 
 ・squirrel オブジェクトは、TJS2 側では iTJSDispatch2 として参照可能です
 
   PropGet/PropSet/FuncCall/CreateNew を通じて操作可能です。
   incontextof 指定は無視されます。
 
-・Scripts.registSQ() で TJS2 の値を squirrel 側に登録できます。
+・createTJSClass()で、TJSのクラスを Squirrelクラスとして扱うことができます
+
+  - このクラスから作られた squirrel インスタンスは TJS2側に渡る時に
+　　内包した TJS インスタンスの参照が渡されます
+
+  - TJS2 を経由して Squirrel 側に値が戻るときは、
+　　そのまま元の Squirrelインスタンスが帰ります。
+
+  - tjsOverride() で生成されたTJSインスタンス部に直接メソッドを登録できます
+
+  - TJSインスタンス側に callSQ() として対応する squirrel インスタンスの
+　  メソッドを明示的に呼び出す命令が拡張されます。
+
+  - TJSインスタンス側では missing 機能が設定され、存在しないメンバが
+　  参照された場合は squirrel インスタンスの同名メンバが参照されます。
+    TJSインスタンス内部からのイベント呼び出しにもこれが適用されるため、
+　  TJSインスタンス中に定義がなければ自動的に squirrel インスタンスの
+　  それが呼び出されます
+  
+  - この形で作られたTJSインスタンスは squirrel インスタンスが破棄される
+    ときに invalidate されます
+
+・Scripts.registerSQ() で TJS2 の値を squirrel 側に登録できます。
 
 ◇標準ライブラリ
 

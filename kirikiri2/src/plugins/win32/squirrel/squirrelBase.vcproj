@@ -5,7 +5,6 @@
 	Name="squirrel"
 	ProjectGUID="{99495428-58B1-484B-948A-B744811A4909}"
 	RootNamespace="squirrelBase"
-	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -80,8 +79,6 @@
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -102,6 +99,9 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -166,8 +166,6 @@
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -188,6 +186,9 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -272,6 +273,10 @@
 			>
 			<File
 				RelativePath=".\sqobject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sqtjsobj.h"
 				>
 			</File>
 			<File

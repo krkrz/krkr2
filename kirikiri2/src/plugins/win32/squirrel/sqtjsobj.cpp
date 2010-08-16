@@ -124,15 +124,12 @@ private:
 
 // TJSObject登録用のクラスID
 int TJSObject::classId;
-// TJSObjectと吉里吉里クラスの対応記録用マップ
-sqobject::ObjectInfo TJSObject::classMap;
 
 // 初期化用
 void
 TJSObject::init(HSQUIRRELVM vm)
 {
 	classId = TJSRegisterNativeClass(L"SquirrelClass");
-	classMap.initTable();
 	sq_pushroottable(vm);
 	sq_pushstring(vm, _SC("createTJSClass"), -1);
 	sq_newclosure(vm, createTJSClass, 0);
@@ -147,7 +144,6 @@ TJSObject::init(HSQUIRRELVM vm)
 void
 TJSObject::done()
 {
-	classMap.clear();
 }
 
 /**
@@ -224,9 +220,6 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 		sq_newclosure(v, TJSObject::tjsOverride, 0);
 		sq_setparamscheck(v, -2, _SC(".sc"));
 		sq_createslot(v, -3);
-
-		// 作成したクラス情報を tjsクラス名とあわせて記録
-		classMap[tjsClassName] = classObj;
 	}
 
 	return 1;
@@ -270,49 +263,19 @@ TJSObject::getVariant(HSQUIRRELVM v, SQInteger idx, tTJSVariant *variant)
 }
 
 /**
- * 吉里吉里オブジェクトを squirrel に登録。
- * 登録済みクラスの場合はそのクラスのインスタンスとしてくみ上げる
+ * 吉里吉里オブジェクトを squirrel に登録。squirrel 側で生成されたオブジェクトの場合は元のオブジェクト情報をそのまま返す
  * @return 登録成功
  */
 bool
 TJSObject::pushVariant(HSQUIRRELVM v, tTJSVariant &variant)
 {
 	// 登録済みインスタンスかどうかの判定
-
-	// インスタンスからクラス名を取得
-	iTJSDispatch2 *dispatch = variant.AsObjectNoAddRef();
-
 	iTJSNativeInstance *ninstance;
-	if (TJS_SUCCEEDED(dispatch->NativeInstanceSupport(TJS_NIS_GETINSTANCE, classId, &ninstance))) {
+	if (TJS_SUCCEEDED(variant.AsObjectNoAddRef()->NativeInstanceSupport(TJS_NIS_GETINSTANCE, classId, &ninstance))) {
 		// 元々 squirrel 側から登録されたオブジェクトの場合は元の squirrel オブジェクト情報をそのまま返す
 		TJSObject *self = (TJSObject*)ninstance;
 		self->self.push(v);
 		return true;
-	} else {
-		// そうじゃない場合はオブジェクトを生成して返す
-		tTJSVariant val;
-		if (TJS_SUCCEEDED(dispatch->ClassInstanceInfo(TJS_CII_GET, 0, &val))) {
-			const tjs_char *className = val.GetString();
-			// 合致するクラス名が登録済みか？
-			sqobject::ObjectInfo info = classMap.get(className);
-			if (info.isClass()) {
-				// クラスを push
-				info.push(v);
-				if (SQ_SUCCEEDED(sq_createinstance(v, -1))) {
-					// インスタンスを生成
-					TJSObject *self = new TJSObject(v, -1, variant);
-					if (SQ_SUCCEEDED(sq_setinstanceup(v, -1, self))) {
-						sq_setreleasehook(v, -1, release);
-						sq_remove(v, -2);
-						return true;
-					} else {
-						sq_pop(v,1);
-						delete self;
-					}
-				}
-				sq_pop(v,1);
-			}
-		}
 	}
 	return false;
 }
