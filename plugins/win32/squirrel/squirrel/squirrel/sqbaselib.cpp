@@ -588,28 +588,9 @@ static SQInteger array_remove(HSQUIRRELVM v)
 
 static SQInteger array_removeValue(HSQUIRRELVM v)
 {
-	SQObject &o = stack_get(v, 1);
-	SQObjectPtr &value = stack_get(v, 2);
 	SQBool all = sq_gettop(v) > 2 ? (tointeger(stack_get(v,3)) ? SQTrue : SQFalse) : SQTrue;
-
-	SQInteger i = 0;
-	SQInteger alen = _array(o)->Size();
-	while (i<alen){
-		SQObjectPtr avalue;
-		_array(o)->Get(i,avalue);
-		SQInteger res;
-		v->ObjCmp(value,avalue,res);
-		if (res == 0) {
-			_array(o)->Remove(i);
-			alen--;
-			if (!all) {
-				return SQ_OK;
-			}
-		} else {
-			i++;
-		}
-	}
-	return SQ_OK;
+	sq_push(v, 2);
+	return sq_arrayremovevalue(v, 1, all);
 }
 
 
@@ -722,6 +703,45 @@ static SQInteger array_slice(HSQUIRRELVM v)
 	return 1;
 }
 
+static SQInteger array_splice(HSQUIRRELVM v)
+{
+	SQInteger top = sq_gettop(v);
+	SQInteger sidx=0,cnt=0;
+	SQObjectPtr o = stack_get(v,1);
+	SQInteger alen = _array(o)->Size();
+	{
+		SQObjectPtr &start=stack_get(v,2);
+		if(type(start)!=OT_NULL && sq_isnumeric(start)){
+			sidx=tointeger(start);
+		}
+	}
+	if(sidx < 0)sidx = alen + sidx;
+	if (top > 2) {
+		SQObjectPtr &end=stack_get(v,3);
+		if(sq_isnumeric(end)){
+			cnt=tointeger(end);
+		}
+	} else {
+		cnt = alen - sidx;
+	}
+	if(cnt <= 0)return sq_throwerror(v,_SC("wrong indexes"));
+	if(sidx+cnt > alen)return sq_throwerror(v,_SC("slice out of range"));
+	SQArray *arr=SQArray::Create(_ss(v),cnt);
+	SQObjectPtr t;
+	for (SQInteger i=1;i<=cnt;i++){
+		int idx = sidx+cnt-i;
+		_array(o)->Get(idx,t);
+		_array(o)->Remove(idx);
+		arr->Set(cnt-i,t);
+	}
+	for (SQInteger i=4;i<=top;i++) {
+		SQObject &val=stack_get(v,i);
+		_array(o)->Insert(sidx++,val);
+	}
+	v->Push(arr);
+	return 1;
+}
+
 SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
 	{_SC("len"),default_delegate_len,1, _SC("a")},
 	{_SC("append"),array_append,2, _SC("a")},
@@ -737,6 +757,7 @@ SQRegFunction SQSharedState::_array_default_delegate_funcz[]={
 	{_SC("reverse"),array_reverse,1, _SC("a")},
 	{_SC("sort"),array_sort,-1, _SC("ac")},
 	{_SC("slice"),array_slice,-1, _SC("ann")},
+	{_SC("splice"),array_splice,-1, _SC("ann")},
 	{_SC("weakref"),obj_delegate_weakref,1, NULL },
 	{_SC("tostring"),default_delegate_tostring,1, _SC(".")},
 	{_SC("tonumber"),default_delegate_tonumber,1, _SC(".")},

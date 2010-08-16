@@ -19,21 +19,6 @@ static void add(ObjectInfo &list, ObjectInfo &info)
 	list.append(info);
 }
 
-// ƒŠƒXƒg‚©‚çíœ(‘S•”íœ)
-static void remove(ObjectInfo &list, ObjectInfo &info)
-{
-	SQInteger max = list.len();
-	SQInteger i=0;
-	while (i<max) {
-		if (list.get(i) == info) {
-			list.remove(i);
-			max--;
-		} else {
-			i++;
-		}
-	}
-}
-
 static void call(ObjectInfo &list, int tick, int diff)
 {
 	SQInteger max = list.len();
@@ -75,9 +60,9 @@ static SQRESULT removeContinuousHandler(HSQUIRRELVM v)
 		type=1;
 	}
 	if (type == 0) {
-		remove(beforeContinuousList, info);
+		beforeContinuousList.removeValue(info, true);
 	} else if (type == 1) {
-		remove(afterContinuousList, info);
+		afterContinuousList.removeValue(info, true);
 	}
 	return SQ_OK;
 }

@@ -25,91 +25,7 @@ SQRESULT ERROR_BADMETHOD(HSQUIRRELVM v) {
 	return sq_throwerror(v, _SC("bad method"));
 }
 
-sqobject::ObjectInfo typeTagListMap;
-sqobject::ObjectInfo typeMap;
-
-/**
- * 継承関係を登録する
- * @param typeName 型名
- * @param parentName 親の型名
- */
-void
-registerInherit(const SQChar *typeName, const SQChar *parentName)
-{
-	typeMap.create(typeName, parentName);
-}
-
-/**
- * 親の型名を返す
- * @param typeName 型名
- * @return 親の型名
- */
-const SQChar *
-getParentName(const SQChar *typeName)
-{
-	const SQChar *parent = NULL;
-	typeMap.get(typeName, &parent);
-	return parent;
-}
-
-/**
- * オブジェクトのタグを登録する。親オブジェクトにも再帰的に登録する。
- * @param typeName 型名
- * @parma tag タグ
- */
-void
-registerTypeTag(const SQChar *typeName, SQUserPointer tag)
-{
-	// タグを登録
-	sqobject::ObjectInfo list = typeTagListMap.get(typeName);
-	if (!list.isArray()) {
-		list.initArray();
-		typeTagListMap.create(typeName, list);
-	}
-	list.append(tag);
-
-	// 親クラスにも登録
-	const SQChar *pname = getParentName(typeName);
-	if (pname) {
-		registerTypeTag(pname, tag);
-	}
-}
-
-/**
- * 該当オブジェクトのネイティブインスタンスを取得。登録されてるタグリストを使う
- * @param v squirrelVM
- * @param idx スタックインデックス
- * @param typeName 型名
- * @return 指定された型のネイティブインスタンス。みつからない場合は NULL
- */
-SQUserPointer
-getInstance(HSQUIRRELVM v, SQInteger idx, const SQChar *typeName)
-{
-	sqobject::ObjectInfo list = typeTagListMap.get(typeName);
-	if (list.isArray()) {
-		SQInteger max = list.len();
-		for (SQInteger i=0;i<max;i++) {
-			SQUserPointer tag;
-			list.get(i, &tag);
-			SQUserPointer up;
-			if (SQ_SUCCEEDED(sq_getinstanceup(v, idx, &up, tag))) {
-				return up;
-			}
-		}
-	}
-	return NULL;
-}
-
 namespace sqobject {
-
-// typetag 全ソースでユニークなアドレスにする必要がある
-const SQUserPointer OBJECTTYPETAG = (SQUserPointer)"OBJECTTYPETAG";
-const SQUserPointer THREADTYPETAG = (SQUserPointer)"THREADTYPETAG";
-
-// クラス情報定義
-
-DECLARE_CLASSNAME(Object, SQOBJECT);
-DECLARE_CLASSNAME(Thread, SQTHREAD);
 
 // global vm
 HSQUIRRELVM vm;
@@ -122,8 +38,6 @@ HSQUIRRELVM init() {
 	sqstd_register_stringlib(vm);
 	sqstd_seterrorhandlers(vm);
 	sq_pop(vm,1);
-	typeMap.initTable();
-	typeTagListMap.initTable();
 	return vm;
 }
 
@@ -140,10 +54,6 @@ void done()
 	sq_pushroottable(vm);
 	sq_clear(vm,-1);
 	sq_pop(vm,1);
-	typeTagListMap.clearData();
-	typeTagListMap.clear();
-	typeMap.clearData();
-	typeMap.clear();
 	sq_close(vm);
 }
 
@@ -227,10 +137,7 @@ static SQRESULT Object_set(HSQUIRRELVM v)
 void
 Object::registerClass()
 {
-	HSQUIRRELVM v = getGlobalVM();
-	sq_pushroottable(v); // root
-
-	SQCLASS(Object,BaseClass,OBJECTTYPETAG);
+	SQCLASS(Object,BaseClass,SQOBJECTNAME);
 	SQVCONSTRUCTOR();
 	
 #ifdef USE_SQOBJECT_TEMPLATE
@@ -254,8 +161,6 @@ Object::registerClass()
 	SQNFUNC(Object,get);
 	SQNFUNC(Object,set);
 #endif
-	sq_createslot(v, -3); // 生成したクラスを登録
-	sq_pop(v,1); // root
 };
 
 #ifndef USE_SQOBJECT_TEMPLATE
@@ -355,10 +260,7 @@ static SQRESULT Thread_cancelWait(HSQUIRRELVM v)
 void
 Thread::registerClass()
 {
-	HSQUIRRELVM v = getGlobalVM();
-	sq_pushroottable(v); // root
-
-	SQCLASS(Thread, Object, THREADTYPETAG);
+	SQCLASS(Thread, Object,SQTHREADNAME);
 	SQVCONSTRUCTOR();
 
 #ifdef USE_SQOBJECT_TEMPLATE
@@ -382,9 +284,6 @@ Thread::registerClass()
 	SQNFUNC(Thread,wait);
 	SQNFUNC(Thread,cancelWait);
 #endif
-	
-	sq_createslot(v, -3);
-	sq_pop(v, 1); // root
 };
 
 }

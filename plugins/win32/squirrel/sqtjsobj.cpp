@@ -8,16 +8,9 @@ extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
 extern SQRESULT ERROR_KRKR(HSQUIRRELVM v, tjs_error error);
 extern void SQEXCEPTION(HSQUIRRELVM v);
 
-// sqfunc.cpp より
-extern SQRESULT ERROR_CREATE(HSQUIRRELVM v);
-extern SQRESULT ERROR_BADINSTANCE(HSQUIRRELVM v);
-void registerInherit(const SQChar *typeName, const SQChar *parentName);
-void registerTypeTag(const SQChar *typeName, SQUserPointer tag);
-SQUserPointer getInstance(HSQUIRRELVM v, SQInteger idx, const SQChar *typeName);
+#include <sqfunc.h>
 
 // 型情報
-static const SQChar *typeName = _SC("TJSObject"); ///< 型名
-static const SQUserPointer TJSOBJTYPETAG = (SQUserPointer)_SC("TJSOBJTYPETAG"); ///< squirrel型タグ
 static const SQChar *tjsClassAttrName = _SC("tjsClass");
 
 /**
@@ -129,8 +122,9 @@ private:
 
 // -----------------------------------------------------------------------
 
+// TJSObject登録用のクラスID
 int TJSObject::classId;
-
+// TJSObjectと吉里吉里クラスの対応記録用マップ
 sqobject::ObjectInfo TJSObject::classMap;
 
 // 初期化用
@@ -138,11 +132,7 @@ void
 TJSObject::init(HSQUIRRELVM vm)
 {
 	classId = TJSRegisterNativeClass(L"SquirrelClass");
-
 	classMap.initTable();
-	registerInherit(typeName, SQOBJECTNAME);
-	registerTypeTag(typeName, TJSOBJTYPETAG);
-	
 	sq_pushroottable(vm);
 	sq_pushstring(vm, _SC("createTJSClass"), -1);
 	sq_newclosure(vm, createTJSClass, 0);
@@ -171,12 +161,15 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 	if (top < 2) {
 		return sq_throwerror(v, _SC("invalid param"));
 	}
+
+	HSQOBJECT& classObj  = SQClassType<TJSObject>::ClassObject();
+	HSQOBJECT& parentObj = SQClassType<sqobject::Object>::ClassObject();
 	
 	// クラスを生成
-	sq_pushstring(v, SQOBJECTNAME, -1);
-	sq_get(v,1); // from root
+	sq_pushobject(v, parentObj);
 	sq_newclass(v, true); // 継承する
-	sq_settypetag(v, -1, TJSOBJTYPETAG);
+	sq_settypetag(v, -1, (SQUserPointer)&classObj);
+	sq_getstackobj(v, -1, &classObj);
 
 	// メンバ登録
 	const tjs_char *tjsClassName = NULL;
@@ -207,10 +200,8 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 			sq_pop(v,1);
 			sq_pushnull(v);
 			if (SQ_SUCCEEDED(sq_getattributes(v, -2))) {
-				top = sq_gettop(v);
 				sq_pushstring(v, tjsClassAttrName, -1);
 				sq_pushvariant(v, tjsClassObj);
-				top = sq_gettop(v);
 				if (SQ_SUCCEEDED(sq_createslot(v, -3))) {
 					sq_pop(v,1);
 				} else {
@@ -224,7 +215,7 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 			// XXX
 			sq_pop(v,2);
 		}
-
+		
 		// TJS機能メソッドを登録
 		sq_pushstring(v, _SC("tjsIsValid"), -1);
 		sq_newclosure(v, TJSObject::tjsIsValid, 0);
@@ -233,9 +224,9 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 		sq_newclosure(v, TJSObject::tjsOverride, 0);
 		sq_setparamscheck(v, -2, _SC(".sc"));
 		sq_createslot(v, -3);
-		
+
 		// 作成したクラス情報を tjsクラス名とあわせて記録
-		classMap.create(tjsClassName, sqobject::ObjectInfo(v,-1));
+		classMap[tjsClassName] = classObj;
 	}
 
 	return 1;
@@ -269,7 +260,7 @@ TJSObject::getVariant(HSQUIRRELVM v, SQInteger idx, tTJSVariant *variant)
 		}
 		return ret;
 	} else if (sq_gettype(v, idx) == OT_INSTANCE) {
-		TJSObject *obj = (TJSObject*)::getInstance(v, idx, typeName);
+		TJSObject *obj = SQClassType<TJSObject>::getInstance(v, idx);
 		if (obj && obj->instance.AsObjectClosureNoAddRef().IsValid(0, NULL, NULL, NULL) == TJS_S_TRUE) {
 			*variant = obj->instance;
 			return true;

@@ -11,13 +11,6 @@ using namespace SqPlus;
 using namespace sqobject;
 DECLARE_INSTANCE_TYPE_NAME_RELEASE(Object, SQOBJECT);
 DECLARE_INSTANCE_TYPE_NAME_RELEASE(Thread, SQTHREAD);
-#else
-#ifndef USESQRAT
-namespace sqobject {
-DECLARE_CLASSNAME(Object, SQOBJECT);
-DECLARE_CLASSNAME(Thread, SQTHREAD);
-}
-#endif
 #endif
 
 namespace sqobject {
@@ -102,7 +95,7 @@ Thread::notifyTrigger(const SQChar *name)
 	SQInteger max = _waitList.len();
 	while (i < max) {
 		ObjectInfo obj = _waitList.get(i);
-		if (obj.isSameString(name)) {
+		if (obj == name) {
 			find = true;
 			_waitResult = obj;
 			_waitList.remove(i);

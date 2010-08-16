@@ -27,8 +27,11 @@ namespace sqobject {
 			}
 		}
 		
-		static SQInteger Copy(HSQUIRRELVM vm, SQInteger idx, const void* value) {
-			C* instance = new C(*static_cast<const C*>(value));
+		static SQInteger Copy(HSQUIRRELVM vm, SQInteger idx, const C* value) {
+			return SQ_ERROR;
+		}
+
+		static SQInteger Init(HSQUIRRELVM vm, SQInteger idx, C* instance) {
 			if (instance) {
 				instance->initSelf(vm, idx);
 				sq_setinstanceup(vm, idx, instance);
@@ -60,13 +63,34 @@ namespace sqobject {
 			if (instance) {
 				instance->initSelf(vm);
 				sq_setinstanceup(vm, 1, instance);
-				sq_setreleasehook(vm, 1, &Delete);
+				sq_setreleasehook(vm, 1, &DefaultConstructor<C>::Delete);
 				return SQ_OK;
 			} else {
 				return SQ_ERROR;
 			}
 		}
 	};
+
+	/**
+	 * ファクトリー形式コンストラクタ用のアロケータ
+	 */
+	template <class C>
+	class Factory : public DefaultConstructor<C> {
+	public:
+		static SQRESULT New(HSQUIRRELVM vm) {
+			C *instance = NULL;
+			SQRESULT ret = C::factory(vm, &instance);
+			if (SQ_SUCCEEDED(ret)) {
+				instance->initSelf(vm);
+				sq_setinstanceup(vm, 1, instance);
+				sq_setreleasehook(vm, 1, &DefaultConstructor<C>::Delete);
+				return SQ_OK;
+			} else {
+				return ret;
+			}
+		}
+	};
+
 	
 	/**
 	 * コンストラクタなしオブジェクト用アロケータ。newすると例外
@@ -93,9 +117,10 @@ namespace sqobject {
 			// Find the get method in the get table
 			sq_push(vm, 2);
 			if (SQ_FAILED( sq_get(vm,-2) )) {
-				C* ptr = NULL;
-				sq_getinstanceup(vm, 1, (SQUserPointer*)&ptr, NULL);
-				return ptr->_get(vm);
+				SQUserPointer p = NULL;
+				sq_getinstanceup(vm, 1, &p, NULL);
+				C* ptr = (C*)p;
+				return ptr ? ptr->_get(vm) : SQ_ERROR;
 			}
 			
 			// push 'this'
@@ -110,9 +135,10 @@ namespace sqobject {
 			// Find the set method in the set table
 			sq_push(vm, 2);
 			if (SQ_FAILED( sq_get(vm,-2) )) {
-				C* ptr = NULL;
-				sq_getinstanceup(vm, 1, (SQUserPointer*)&ptr, NULL);
-				return ptr->_set(vm);
+				SQUserPointer p = NULL;
+				sq_getinstanceup(vm, 1, &p, NULL);
+				C* ptr = (C*)p;
+				return ptr ? ptr->_set(vm) : SQ_ERROR;
 			}
 			
 			// push 'this'
@@ -162,11 +188,55 @@ namespace sqobject {
 }; // namespace
 
 // ----------------------------------------------
+// クラス登録用マクロ
+// ----------------------------------------------
+
+// 非継承クラス
+#define SQCLASS_NOCONSTRUCTOR(Target, Name)\
+  Sqrat::Class<Target, Sqrat::CopyOnly<Target> > cls(sqobject::getGlobalVM());\
+  Sqrat::RootTable(sqobject::getGlobalVM()).Bind(Name, cls);
+
+// Object継承クラス
+#define SQCLASSEX(Target, Parent, Name)\
+  Sqrat::DerivedClass<Target, Parent, sqobject::DefaultConstructor<Target> > cls(sqobject::getGlobalVM());\
+  sqobject::OverrideSetGet<Target>::Func(sqobject::getGlobalVM());\
+  Sqrat::RootTable(sqobject::getGlobalVM()).Bind(Name, cls);
+
+// Object継承クラス・VM指定コンストラクタ
+#define SQCLASSEX_VCONSTRUCTOR(Target, Parent, Name)\
+  Sqrat::DerivedClass<Target, Parent, sqobject::VMConstructor<Target> > cls(sqobject::getGlobalVM());\
+  sqobject::OverrideSetGet<Target>::Func(sqobject::getGlobalVM());\
+  Sqrat::RootTable(sqobject::getGlobalVM()).Bind(Name, cls);
+
+// Object継承クラス・ファクトリ形式
+#define SQCLASSEX_FACTORY(Target, Parent, Name)\
+  Sqrat::DerivedClass<Target, Parent, sqobject::Factory<Target> > cls(sqobject::getGlobalVM());\
+  sqobject::OverrideSetGet<Target>::Func(sqobject::getGlobalVM());\
+  Sqrat::RootTable(sqobject::getGlobalVM()).Bind(Name, cls);
+
+// Object継承クラス・コンストラクタ無し
+#define SQCLASSEX_NOCONSTRUCTOR(Target, Parent, Name)\
+  Sqrat::DerivedClass<Target, Parent, sqobject::NOConstructor<Target> > cls(sqobject::getGlobalVM());\
+  sqobject::OverrideSetGet<Target>::Func(sqobject::getGlobalVM());\
+  Sqrat::RootTable(sqobject::getGlobalVM()).Bind(Name, cls);
+
+// Object継承クラス
+#define SQCLASSOBJ(Target, Name) SQCLASSEX(Target, Object, Name)
+#define SQCLASSOBJ_VCONSTRUCTOR(Target, Name) SQCLASSEX_VCONSTRUCTOR(Target, Object, Name)
+#define SQCLASSOBJ_FACTORY(Target, Name) SQCLASSEX_FACTORY(Target, Object, Name)
+#define SQCLASSOBJ_NOCONSTRUCTOR(Target, Name) SQCLASSEX_NOCONSTRUCTOR(Target, Object, Name)
+
+// ----------------------------------------------
 // ファンクション登録用マクロ
 // ----------------------------------------------
 
 #define SQFUNC(Class, Name)  cls.Func(_SC(#Name), &Class::Name)
+#define SQFUNCNAME(Class, Method, Name)  cls.Func(_SC(#Name), &Class::Method)
 #define SQSFUNC(Class, Name) cls.StaticFunc(_SC(#Name), &Class::Name)
+#define SQSFUNCNAME(Class, Method, Name) cls.StaticFunc(_SC(#Name), &Class::Method)
 #define SQVFUNC(Class, Name) cls.VarArgFunc(_SC(#Name), &Class::Name)
+#define SQVFUNCNAME(Class, Method, Name) cls.VarArgFunc(_SC(#Name), &Class::Method)
+#define SQSVFUNC(Class, Name) cls.SquirrelFunc(_SC(#Name), &Class::Name, true)
+#define SQSVFUNCNAME(Class, Method, Name) cls.SquirrelFunc(_SC(#Name), &Class::Method, true)
 
 #endif

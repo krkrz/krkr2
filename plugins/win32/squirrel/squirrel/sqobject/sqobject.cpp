@@ -11,13 +11,6 @@ using namespace SqPlus;
 using namespace sqobject;
 DECLARE_INSTANCE_TYPE_NAME_RELEASE(Object, SQOBJECT);
 DECLARE_INSTANCE_TYPE_NAME_RELEASE(Thread, SQTHREAD);
-#else
-#ifndef USESQRAT
-namespace sqobject {
-DECLARE_CLASSNAME(Object, SQOBJECT);
-DECLARE_CLASSNAME(Thread, SQTHREAD);
-}
-#endif
 #endif
 
 namespace sqobject {
@@ -101,13 +94,7 @@ Object::addWait(ObjectInfo &thread)
 void
 Object::removeWait(ObjectInfo &thread)
 {
-	SQInteger i = _waitThreadList.len() - 1;
-	while (i >= 0) {
-		if (_waitThreadList.get(i) == thread) {
-			_waitThreadList.remove(i);
-		}
-		i--;
-	}
+	_waitThreadList.removeValue(thread, true);
 }
 
 /**
