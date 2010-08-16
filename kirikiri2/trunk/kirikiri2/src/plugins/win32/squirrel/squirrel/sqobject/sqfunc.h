@@ -9,18 +9,59 @@ extern SQRESULT ERROR_BADMETHOD(HSQUIRRELVM v);
 
 // äÓíÍÉNÉâÉXÉ_É~Å[óp
 struct BaseClass {};
-inline const SQChar *GetTypeName(const BaseClass *t) { return NULL; }
 
-// ÉNÉâÉXñºìoò^óp
-#define DECLARE_CLASSNAME0(TYPE,NAME) \
-inline const SQChar * GetTypeName(const TYPE *t) { return _SC(#NAME); }
-#define DECLARE_CLASSNAME(TYPE,NAME) DECLARE_CLASSNAME0(TYPE,NAME)
-#define DECLARE_CLASS(TYPE) DECLARE_CLASSNAME(TYPE,TYPE)
+// ÉNÉâÉXå^èÓïÒï€éùóp
+template <typename T>
+struct SQClassType {
+public:
+	static inline HSQOBJECT& ClassObject() {
+		static HSQOBJECT classObj = {OT_NULL};
+		return classObj;
+	}
 
-extern void registerInherit(const SQChar *typeName, const SQChar *parentName);
-extern const SQChar *getParentName(const SQChar *typeName);
-extern void registerTypeTag(const SQChar *typeName, SQUserPointer tag);
-extern SQUserPointer getInstance(HSQUIRRELVM v, SQInteger idx, const SQChar *typeName);
+	static T* getInstance(HSQUIRRELVM vm, SQInteger idx) {
+		SQUserPointer typetag = NULL;
+		sq_getobjtypetag(&ClassObject(),&typetag);
+		SQUserPointer up;
+		if (SQ_SUCCEEDED(sq_getinstanceup(vm, idx, &up, typetag))) {
+			return (T*)up;
+		}
+		return NULL;
+	}
+
+	// XXX sqobject::Object ëOíÒÉRÅ[Éhíçà”
+	
+	static void pushInstance(HSQUIRRELVM v, T *value) {
+		sq_pushobject(v, ClassObject());
+		if (SQ_SUCCEEDED(sq_createinstance(v, -1))) {
+			sq_remove(vm, -2);
+			value->initSelf(vm, idx);
+			if (SQ_SUCCEEDED(sq_setinstanceup(v, -1, value))) {;
+				sq_setreleasehook(v, -1, release);
+			} else {
+				delete value;
+				sq_pop(vm, 1);
+				sq_pushnull(v);
+			}
+		} else {
+			delete value;
+			sq_pop(v, 1);
+			sq_pushnull(v);
+		}
+	}
+
+	static SQRESULT release(SQUserPointer up, SQInteger size) {
+		if (up) {
+			T* self = (T*)up;
+			if (self) {
+				self->destructor();
+				delete self;
+			}
+		}
+		return SQ_OK;
+	}
+};
+
 
 /**
  * ÉNÉâÉXìoò^ópÉeÉìÉvÉåÅ[Ég
@@ -34,36 +75,34 @@ private:
 	HSQUIRRELVM v;
 	
 public:
+
 	/**
 	 * ÉNÉâÉXÇíËã`Ç∑ÇÈ
 	 * @param v squirrelVM
-	 * @param typetag å^éØï É^ÉO
+	 * @param typeName ìoò^å^ñº
 	 */
-	SQTemplate(HSQUIRRELVM v, SQUserPointer typetag) : v(v) {
+	SQTemplate(HSQUIRRELVM v, const SQChar *typeName) : v(v) {
+		
+		HSQOBJECT& classObj  = SQClassType<T>::ClassObject();
+		HSQOBJECT& parentObj = SQClassType<P>::ClassObject();
 
-		// å^ñºÇ DECLARE_CLASSNAME ÇÃìoò^ÇÇ¬Ç©Ç¡ÇƒéQè∆
-		T* typeDummy = NULL;
-		P* parentDummy = NULL;
-		const SQChar *typeName = GetTypeName(typeDummy);
-		const SQChar *parentName = GetTypeName(parentDummy);
-
-		sq_pushstring(v, typeName, -1);
-		if (parentName) {
+		sq_pushroottable(v); // root
+		sq_pushstring(v, typeName, -1); // typeName
+		if (!sq_isnull(parentObj)) {
 			// êeÉNÉâÉXÇ™éwíËÇ≥ÇÍÇƒÇÈèÍçáÇÕåpè≥èàóù
-			::registerInherit(typeName, parentName);
-			sq_pushstring(v, parentName, -1);
-			if (SQ_SUCCEEDED(sq_get(v,-3))) {
-				sq_newclass(v, true);
-			} else {
-				sq_newclass(v, false);
-			}
+			sq_pushobject(v, parentObj);
+			sq_newclass(v, true);
 		} else {
 			// åpè≥Ç»ÇµÇ≈ÉNÉâÉXê∂ê¨
 			sq_newclass(v, false);
 		}
 		// É^ÉOÇìoò^
-		sq_settypetag(v, -1, typetag);
-		::registerTypeTag(typeName, typetag);
+		sq_settypetag(v, -1, (SQUserPointer)&classObj);
+		// ÉNÉâÉXÉIÉuÉWÉFÉNÉgéÊìæ
+		sq_getstackobj(v, -1, &classObj);
+		
+		sq_createslot(v, -3);
+		sq_pop(v, 1); // root
 		
 		// ÉRÉìÉXÉgÉâÉNÉ^ÅEÉfÉXÉgÉâÉNÉ^Çìoò^
 		Register(destructor, _SC("destructor"));
@@ -140,9 +179,11 @@ public:
 
 	// SQFUNCTION ìoò^
 	void Register(SQFUNCTION func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		sq_newclosure(v, func, 0);
 		sq_createslot(v, -3);
+		sq_pop(v,1);
 	}
 
 	// -------------------------------------------------
@@ -151,8 +192,7 @@ public:
 
 	// ÉCÉìÉXÉ^ÉìÉXéÊìæ
 	static T *getInstance(HSQUIRRELVM v, int idx=1) {
-		const T *dummy = NULL;
-		return static_cast<T*>(::getInstance(v,idx,GetTypeName(dummy)));
+		return SQClassType<T>::getInstance(v, idx);
 	}
 	
 	// ä÷êîÉ|ÉCÉìÉ^éÊìæ
@@ -187,11 +227,13 @@ public:
 
 	// VoidFunc ìoò^
 	void Register(VoidFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,VoidFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v,1);
 	}
 
 	// -------------------------------------------------
@@ -219,20 +261,24 @@ public:
 
 	// IntArgFunc ìoò^
 	void Register(IntArgFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,IntArgFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v,1);
 	}
 
 	// IntArgFunc ìoò^
 	void Register(UIntArgFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,IntArgFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v,1);
 	}
 
 	// -------------------------------------------------
@@ -259,11 +305,13 @@ public:
 
 	// IntArgFunc ìoò^
 	void Register(RealArgFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,RealArgFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 
 	// -------------------------------------------------
@@ -291,11 +339,13 @@ public:
 
 	// IntArgFunc ìoò^
 	void Register(RealArg2Func func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,RealArg2FuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 	
 	// -------------------------------------------------
@@ -322,11 +372,13 @@ public:
 
 	// BoolArgFunc ìoò^
 	void Register(BoolArgFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,BoolArgFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 
 	// ãAÇËíl void Ç≈à¯êîintÇÃä÷êî
@@ -352,11 +404,13 @@ public:
 
 	// BoolArgFunc ìoò^
 	void Register(BoolArg2Func func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,BoolArg2FuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 
 	
@@ -384,11 +438,13 @@ public:
 
 	// StrArgFunc ìoò^
 	void Register(StrArgFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,StrArgFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 	
 	// -------------------------------------------------
@@ -414,20 +470,24 @@ public:
 
 	// IntFunc ìoò^
 	void Register(IntFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,IntFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 
 	// IntFunc ìoò^
 	void Register(UIntFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,IntFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 	
 	// -------------------------------------------------
@@ -452,11 +512,13 @@ public:
 
 	// RealFunc ìoò^
 	void Register(RealFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,RealFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 
 	// -------------------------------------------------
@@ -466,11 +528,13 @@ public:
 
 	// RealFunc ìoò^
 	void Register(RealFuncConst func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,RealFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 	
 	// -------------------------------------------------
@@ -481,20 +545,24 @@ public:
 
 	// IntFunc ìoò^
 	void Register(IntFuncConst func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,IntFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 
 	// IntFunc ìoò^
 	void Register(UIntFuncConst func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,IntFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 	
 	// -------------------------------------------------
@@ -519,11 +587,13 @@ public:
 
 	// BoolFunc ìoò^
 	void Register(BoolFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,BoolFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 
 	// -------------------------------------------------
@@ -548,11 +618,13 @@ public:
 
 	// BoolFuncConst ìoò^
 	void Register(BoolFuncConst func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,BoolFuncConstCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 	
 	// -------------------------------------------------
@@ -577,11 +649,13 @@ public:
 
 	// BoolFunc ìoò^
 	void Register(StrFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,StrFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 	
 	// -------------------------------------------------
@@ -607,18 +681,22 @@ public:
 
 	// VFunc ìoò^
 	void RegisterV(VFunc func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		SQUserPointer up = sq_newuserdata(v,sizeof(func));
 		memcpy(up,&func,sizeof(func));
 		sq_newclosure(v,VFuncCaller,1);
 		sq_createslot(v, -3);
+		sq_pop(v, 1);
 	}
 
 	// VFunc ìoò^
 	void RegisterVStatic(SQFUNCTION func, const SQChar *name) {
+		sq_pushobject(v, SQClassType<T>::ClassObject());
 		sq_pushstring(v, name, -1);
 		sq_newclosure(v, func, 0);
 		sq_newslot(v, -3, SQTrue);
+		sq_pop(v, 1);
 	}
 };
 
@@ -626,7 +704,7 @@ public:
 // ÉNÉâÉXìoò^ópÉ}ÉNÉç
 // ------------------------------------------------------------------
 
-#define SQCLASS(Class,Parent,typetag) SQTemplate<Class,Parent> cls(v,typetag);
+#define SQCLASS(Class,Parent,Name) SQTemplate<Class,Parent> cls(getGlobalVM(),Name);
 #define SQCONSTRUCTOR() cls.Register(cls.constructor, _SC("constructor"));
 #define SQVCONSTRUCTOR() cls.Register(cls.vconstructor, _SC("constructor"));
 #define SQMYCONSTRUCTOR(Class, Name) cls.Register(&Class::Name, _SC("constructor"));

@@ -46,79 +46,6 @@ ObjectInfo::createTable()
 	return ret;
 }
 
-// 比較
-bool
-ObjectInfo::operator == (const ObjectInfo &o)
-{
-	bool cmp = false;
-	HSQUIRRELVM v = getGlobalVM();
-	push(v);
-	o.push(v);
-	cmp = sq_cmp(v) == 0;
-	sq_pop(v,2);
-	return cmp;
-}
-
-bool
-ObjectInfo::operator !=(const ObjectInfo& o)
-{
-	bool cmp = false;
-	HSQUIRRELVM v = getGlobalVM();
-	push(v);
-	o.push(v);
-	cmp = sq_cmp(v) != 0;
-	sq_pop(v,2);
-	return cmp;
-}
-
-bool
-ObjectInfo::operator <(const ObjectInfo& o)
-{
-	bool cmp = false;
-	HSQUIRRELVM v = getGlobalVM();
-	push(v);
-	o.push(v);
-	cmp = sq_cmp(v) < 0;
-	sq_pop(v,2);
-	return cmp;
-}
-
-bool
-ObjectInfo::operator <=(const ObjectInfo& o)
-{
-	bool cmp = false;
-	HSQUIRRELVM v = getGlobalVM();
-	push(v);
-	o.push(v);
-	cmp = sq_cmp(v) <= 0;
-	sq_pop(v,2);
-	return cmp;
-}
-
-bool
-ObjectInfo::operator >(const ObjectInfo& o)
-{
-	bool cmp = false;
-	HSQUIRRELVM v = getGlobalVM();
-	push(v);
-	o.push(v);
-	cmp = sq_cmp(v) > 0;
-	sq_pop(v,2);
-	return cmp;
-}
-
-bool
-ObjectInfo::operator >=(const ObjectInfo& o)
-{
-	bool cmp = false;
-	HSQUIRRELVM v = getGlobalVM();
-	push(v);
-	o.push(v);
-	cmp = sq_cmp(v) >= 0;
-	sq_pop(v,2);
-	return cmp;
-}
-
 // 内容消去
 void
 ObjectInfo::clear()
@@ -293,24 +220,6 @@ ObjectInfo::getString()
 }
 
 // ---------------------------------------------------
-// wait処理用メソッド
-// ---------------------------------------------------
-
-bool
-ObjectInfo::isSameString(const SQChar *str) const
-{
-	if (str && sq_isstring(obj)) {
-		HSQUIRRELVM gv = getGlobalVM();
-		push(gv);
-		const SQChar *mystr;
-		sq_getstring(gv, -1, &mystr);
-		sq_pop(gv, 1);
-		return mystr && scstrcmp(str, mystr) == 0;
-	}
-	return false;
-}
-
-// ---------------------------------------------------
 // 配列処理用メソッド
 // ---------------------------------------------------
 
@@ -450,30 +359,6 @@ ObjectInfo::toString() const
 	return ret;
 }
 
-int
-ObjectInfo::printf(const SQChar *format)
-{
-	HSQUIRRELVM gv = getGlobalVM();
-	sq_pushstring(gv, format, -1);
-	return _printf(gv, 0);
-}
-
-int
-ObjectInfo::_printf(HSQUIRRELVM v, int argnum)
-{
-	int n = sq_gettop(v);
-	SQChar *dest = NULL;
-	SQInteger length = 0;
-	if(SQ_SUCCEEDED(sqstd_format(v,n-argnum,&length,&dest))) {
-		SQPRINTFUNCTION func = sq_getprintfunc(v);
-		if (func) {
-			func(v, _SC("%*s"), length, dest);
-		}
-	}
-	sq_pop(v, argnum+1);
-	return length;
-}
-
 // 値の push
 void pushValue(HSQUIRRELVM v, bool value) { sq_pushbool(v,value ? SQTrue : SQFalse); }
 void pushValue(HSQUIRRELVM v, SQBool value) { sq_pushbool(v,value); }
@@ -482,18 +367,20 @@ void pushValue(HSQUIRRELVM v, SQFloat value) { sq_pushfloat(v,value); }
 void pushValue(HSQUIRRELVM v, const SQChar *value) { if (value) {sq_pushstring(v,value,-1);} else { sq_pushnull(v);} }
 void pushValue(HSQUIRRELVM v, SQUserPointer value) { if (value) {sq_pushuserpointer(v,value);} else { sq_pushnull(v);} }
 void pushValue(HSQUIRRELVM v, ObjectInfo &obj) { obj.push(v); }
+void pushValue(HSQUIRRELVM v, StackValue &value) { value.push(v); }
 void pushValue(HSQUIRRELVM v, std::basic_string<SQChar> &value) { sq_pushstring(v,value.c_str(),value.length()); }
 void pushValue(HSQUIRRELVM v, SQFUNCTION func) { sq_newclosure(v, func, 0); }
+void pushValue(HSQUIRRELVM v, HSQOBJECT obj) { sq_pushobject(v, obj); }
 
 // 値の取得
-SQRESULT getValue(HSQUIRRELVM v, bool *value) { SQBool b;SQRESULT ret = sq_getbool(v, -1, &b); *value = b != SQFalse; return ret; }
-SQRESULT getValue(HSQUIRRELVM v, SQBool *value) { return sq_getbool(v, -1, value); }
-SQRESULT getValue(HSQUIRRELVM v, SQInteger *value) { return sq_getinteger(v, -1, value); }
-SQRESULT getValue(HSQUIRRELVM v, SQFloat *value) { return sq_getfloat(v, -1, value); }
-SQRESULT getValue(HSQUIRRELVM v, const SQChar **value) { return sq_getstring(v, -1, value); }
-SQRESULT getValue(HSQUIRRELVM v, SQUserPointer *value) { return sq_getuserpointer(v, -1, value); }
-SQRESULT getValue(HSQUIRRELVM v, ObjectInfo *value) { value->getStack(v,-1); return SQ_OK; }
-SQRESULT getValue(HSQUIRRELVM v, std::basic_string<SQChar> *value) {const SQChar *str; SQRESULT ret; if (SQ_SUCCEEDED((ret = sq_getstring(v, -1, &str)))) { *value = str;} return ret;}
+SQRESULT getValue(HSQUIRRELVM v, bool *value, int idx) { SQBool b;SQRESULT ret = sq_getbool(v, idx, &b); *value = b != SQFalse; return ret; }
+SQRESULT getValue(HSQUIRRELVM v, SQBool *value, int idx) { return sq_getbool(v, idx, value); }
+SQRESULT getValue(HSQUIRRELVM v, SQInteger *value, int idx) { return sq_getinteger(v, idx, value); }
+SQRESULT getValue(HSQUIRRELVM v, SQFloat *value, int idx) { return sq_getfloat(v, idx, value); }
+SQRESULT getValue(HSQUIRRELVM v, const SQChar **value, int idx) { return sq_getstring(v, idx, value); }
+SQRESULT getValue(HSQUIRRELVM v, SQUserPointer *value, int idx) { return sq_getuserpointer(v, idx, value); }
+SQRESULT getValue(HSQUIRRELVM v, ObjectInfo *value, int idx) { value->getStack(v,idx); return SQ_OK; }
+SQRESULT getValue(HSQUIRRELVM v, std::basic_string<SQChar> *value, int idx) {const SQChar *str; SQRESULT ret; if (SQ_SUCCEEDED((ret = sq_getstring(v, idx, &str)))) { *value = str;} return ret;}
 
 // 値の強制初期化
 void clearValue(bool *value) { *value = false; }

@@ -74,7 +74,7 @@ namespace sqobject{
 
 ◇オブジェクト参照処理の実装
 
-バインダに応じたネイティブオブジェクトの参照処理が必要になります。
+バインダに応じたネイティブオブジェクトの参照(push/get)処理が必要になります。
 sqplus, sqrat および独自実装用のコードは既に組んであるので、
 必要に応じてプリプロセッサで以下を定義してください
 
@@ -83,8 +83,19 @@ USESQRAT   sqrat をバインダとして使用する
 
 未定義の場合は独自の簡易バインダ (sqfunc.h) による処理になります
 
-ObjectInfo のメンバ obj から Object や Thread の
-ネイティブ C++ インスタンスを取得する以下のメソッドを実装します。
+※登録用に ObjectInfo の諸機能を使うため以下のメソッドが必要になります。
+
+// Object 継承オブジェクトの push
+template<typename T>
+void pushValue(HSQUIRRELVM v, T *value);
+
+// その他のオブジェクト用の汎用 push
+template<typename T>
+void pushOtherValue(HSQUIRRELVM v, T *value) {
+
+// オブジェクトの値取得
+template<typename T>
+SQRESULT getValue(HSQUIRRELVM v, T **value, int idx=-1) {
 
 ◇オブジェクト登録処理の実装
 

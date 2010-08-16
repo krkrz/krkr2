@@ -45,6 +45,18 @@ struct SQTemplate {
 	  return SQ_ERROR;
 	}
   }
+  static SQRESULT factory(HSQUIRRELVM v) {
+	T *data = NULL;
+	SQRESULT ret;
+	if (SQ_SUCCEEDED(ret = T::factory(v, &data))) {
+	  data->initSelf(v);
+	  SqPlus::PostConstruct<T>(v, data, release);
+	  return SQ_OK;
+	} else {
+	  return ret;
+	}
+  }
+
   static SQRESULT noconstructor(HSQUIRRELVM v) {
 	return sq_throwerror(v, "can't create instance");
   }
@@ -88,6 +100,16 @@ SQRESULT pushnewsqobj(HSQUIRRELVM v, const SQChar *className, T *obj) {
 	}
 }
 
+template <typename T>
+SQRESULT pushotherobj(HSQUIRRELVM v, const SQChar *className, T *obj) {
+	if (obj && CreateNativeClassInstance(v, className, obj, ReleaseClassPtr<T>::release)) {
+		return 1;
+	} else {
+		return sq_throwerror(v, "can't create instance");
+	}
+}
+
+
 // ------------------------------------------------------------------
 // クラス登録用マクロ
 // ------------------------------------------------------------------
@@ -97,51 +119,55 @@ SQRESULT pushnewsqobj(HSQUIRRELVM v, const SQChar *className, T *obj) {
 // クラスの名前参照のためあらかじめ DECLARE_INSTANCE_TYPE_* で型情報を定義しておく必要があります
 
 // クラス定義(通常用)
-#define SQCLASS(Class) SQClassDefNoConstructor<Class> cls(TypeInfo<Class>().typeName)
-// クラス定義 sqobject::Objectを継承（型名:Object)
-#define SQCLASSOBJ(Class) SQClassDefNoConstructor<Class,Object> cls(TypeInfo<Class>().typeName, SQOBJECTNAME)
+#define SQCLASS_NOCONSTRUCTOR(Class, Name)\
+ SQClassDefNoConstructor<Class> cls(TypeInfo<Class>().typeName);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::noconstructor, _SC("constructor"))
+
 // クラス定義 任意継承
-#define SQCLASSEX(Class,Parent) SQClassDefNoConstructor<Class,Parent> cls(TypeInfo<Class>().typeName, TypeInfo<Parent>().typeName)
+#define SQCLASSEX(Class,Parent,Name)\
+ SQClassDefNoConstructor<Class,Parent> cls(TypeInfo<Class>().typeName, TypeInfo<Parent>().typeName);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::constructor, _SC("constructor"))
 
-// ----------------------------------------------
-// コンストラクタ定義用マクロ
+#define SQCLASSEX_VCONSTRUCTOR(Class,Parent,Name)\
+ SQClassDefNoConstructor<Class,Parent> cls(TypeInfo<Class>().typeName, TypeInfo<Parent>().typeName);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::vconstructor, _SC("constructor"))
 
-// sqobject::Object 系コンストラクタ・引数なし
-#define SQCONSTRUCTOR(Class) cls.staticFuncVarArgs(SQTemplate<Class>::constructor, _SC("constructor"))
-#define SQCONSTRUCTOR_(Class, TypeCheck) cls.staticFuncVarArgs(SQTemplate<Class>::constructor, _SC("constructor"), TypeCheck)
+#define SQCLASSEX_FACTORY(Class,Parent,Name)\
+ SQClassDefNoConstructor<Class,Parent> cls(TypeInfo<Class>().typeName, TypeInfo<Parent>().typeName);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::factory, _SC("constructor"))
 
-// sqobject::Object 系コンストラクタ・HSQUIRRELを引数
-#define SQVCONSTRUCTOR(Class) cls.staticFuncVarArgs(SQTemplate<Class>::vconstructor, _SC("constructor"))
-#define SQVCONSTRUCTOR_(Class,TypeCheck) cls.staticFuncVarArgs(SQTemplate<Class>::vconstructor, _SC("constructor"), TypeCheck)
+#define SQCLASSEX_NOCONSTRUCTOR(Class,Parent,Name)\
+ SQClassDefNoConstructor<Class,Parent> cls(TypeInfo<Class>().typeName, TypeInfo<Parent>().typeName);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::noconstructor, _SC("constructor"))
 
-// クラスに static SQRESULT constructor(HSQUIRRELVM) を持つ場合用
-#define SQSCONSTRUCTOR(Class) cls.staticFuncVarArgs(Class::constructor, _SC("constructor"))
-#define SQSCONSTRUCTOR_(Class,TypeCheck) cls.staticFuncVarArgs(Class::constructor, _SC("constructor"), TypeCheck)
+// Object継承クラス
+#define SQCLASSOBJ(Class,Name)\
+ SQClassDefNoConstructor<Class,Object> cls(TypeInfo<Class>().typeName, SQOBJECTNAME);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::constructor, _SC("constructor"))
 
-// コンストラクタ無し
-#define SQNOCONSTRUCTOR(Class) cls.staticFuncVarArgs(SQTemplate<Class>::noconstructor, _SC("constructor"))
+#define SQCLASSOBJ_VCONSTRUCTOR(Class,Name)\
+ SQClassDefNoConstructor<Class,Object> cls(TypeInfo<Class>().typeName, SQOBJECTNAME);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::vconstructor, _SC("constructor"))
 
-// 自前コンストラクタ
-#define SQMYCONSTRUCTOR(constructor) cls.staticFuncVarArgs(constructor, _SC("constructor"))
-#define SQMYCONSTRUCTOR_(constructor, TypeCheck) cls.staticFuncVarArgs(constructor, _SC("constructor"), TypeCheck)
+#define SQCLASSOBJ_FACTORY(Class,Name)\
+ SQClassDefNoConstructor<Class,Object> cls(TypeInfo<Class>().typeName, SQOBJECTNAME);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::factory, _SC("constructor"))
 
-// デストラクタ(空)
-#define SQDESTRUCTOR(Class) cls.staticFuncVarArgs(SQTemplate<Class>::destructor, _SC("destructor"))
+#define SQCLASSOBJ_NOCONSTRUCTOR(Class,Name)\
+ SQClassDefNoConstructor<Class,Object> cls(TypeInfo<Class>().typeName, SQOBJECTNAME);\
+ cls.staticFuncVarArgs(SQTemplate<Class>::noconstructor, _SC("constructor"))
+
 
 // ----------------------------------------------
 // ファンクション登録用マクロ
 
 #define SQFUNC(Class, Name) cls.func(&Class::Name,_SC(#Name))
-#define SQFUNC_(Class, Name, TypeCheck) cls.func(&Class::Name,_SC(#Name), TypeCheck)
+#define SQFUNCNAME(Class, Method, Name) cls.func(&Class::Method,_SC(#Name))
 #define SQVFUNC(Class, Name) cls.funcVarArgs(&Class::Name,_SC(#Name))
-#define SQVFUNC_(Class, Name, TypeCheck) cls.funcVarArgs(&Class::Name,_SC(#Name), TypeCheck)
+#define SQVFUNCNAME(Class, Method, Name) cls.funcVarArgs(&Class::Method,_SC(#Name))
 #define SQSFUNC(Class, Name) cls.staticFunc(&Class::Name,_SC(#Name))
-#define SQSFUNC_(Class, Name, TypeCheck) cls.staticFunc(&Class::Name,_SC(#Name), TypeCheck)
+#define SQSFUNCNAME(Class, Method, Name) cls.staticFunc(&Class::Method,_SC(#Name))
 #define SQSVFUNC(Class, Name) cls.staticFuncVarArgs(&Class::Name,_SC(#Name))
-#define SQSVFUNC_(Class, Name, TypeCheck) cls.staticFuncVarArgs(&Class::Name,_SC(#Name), TypeCheck)
-
-#define SQPUSH(v, obj) pushsqobj(v, GetTypeName(*obj), obj)
-#define SQPUSHNEW(v, obj) pushnewsqobj(v, GetTypeName(*obj), obj)
-#define SQSETINSTANCE(v, Class, param) SQTemplate<Class>::_constructor(v, new Class param)
+#define SQSVFUNCNAME(Class, Method, Name) cls.staticFuncVarArgs(&Class::Method,_SC(#Name))
 
 #endif

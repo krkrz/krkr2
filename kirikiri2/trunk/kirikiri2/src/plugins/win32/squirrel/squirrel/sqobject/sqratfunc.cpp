@@ -53,16 +53,17 @@ static SQRESULT destructor(HSQUIRRELVM v) {
 void
 Object::registerClass()
 {
-	Sqrat::Class<Object, sqobject::VMConstructor<Object>> cls(vm);
+	Sqrat::Class<Object, sqobject::VMConstructor<Object> > cls(vm, (SQUserPointer)SQOBJECTNAME);
 	cls.SquirrelFunc(_SC("destructor"), ::destructor);
+	// sqrat の set/get を上書きして sqobject 機能と整合をとる
+	sqobject::OverrideSetGet<Object>::Func(vm);
+	Sqrat::RootTable(vm).Bind(SQOBJECTNAME, cls);
+
 	SQFUNC(Object,notify);
 	SQFUNC(Object,notifyAll);
 	SQVFUNC(Object,hasSetProp);
 	SQVFUNC(Object,setDelegate);
 	SQVFUNC(Object,getDelegate);
-	// sqrat の set/get を上書きして sqobject 機能と整合をとる
-	sqobject::OverrideSetGet<Object>::Func(vm);
-	Sqrat::RootTable(vm).Bind(SQOBJECTNAME, cls);
 };
 
 /**
@@ -71,7 +72,7 @@ Object::registerClass()
 void
 Thread::registerClass()
 {
-	Sqrat::DerivedClass<Thread, Object, sqobject::VMConstructor<Thread>> cls(vm);
+	SQCLASSOBJ_VCONSTRUCTOR(Thread,SQTHREADNAME);
 	SQVFUNC(Thread,exec);
 	SQVFUNC(Thread,exit);
 	SQFUNC(Thread,stop);
@@ -81,8 +82,6 @@ Thread::registerClass()
 	SQVFUNC(Thread,getExitCode);
 	SQVFUNC(Thread,wait);
 	SQFUNC(Thread,cancelWait);
-	sqobject::OverrideSetGet<Thread>::Func(vm);
-	Sqrat::RootTable(vm).Bind(SQTHREADNAME, cls);
 };
 
 }

@@ -190,6 +190,21 @@ SQRESULT sqstd_format(HSQUIRRELVM v,SQInteger nformatstringidx,SQInteger *outlen
 	return SQ_OK;
 }
 
+SQInteger sqstd_printf(HSQUIRRELVM v, SQInteger nargs)
+{
+	SQInteger n = sq_gettop(v);
+	SQChar *dest = NULL;
+	SQInteger length = 0;
+	if(SQ_SUCCEEDED(sqstd_format(v,n-nargs,&length,&dest))) {
+		SQPRINTFUNCTION func = sq_getprintfunc(v);
+		if (func) {
+			func(v, _SC("%*s"), length, dest);
+		}
+	}
+	sq_pop(v, nargs+1);
+	return length;
+}
+
 static SQInteger _string_format(HSQUIRRELVM v)
 {
 	SQChar *dest = NULL;
