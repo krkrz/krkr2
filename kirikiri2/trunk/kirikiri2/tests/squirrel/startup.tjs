@@ -55,6 +55,11 @@ class MyWindow extends Window
 		initTrigger.trigger();
 	}
 
+	function onCloseQuery() {
+		System.removeContinuousHandler(sqmain);
+		super.onCloseQuery(true);
+	}
+
 	/**
 	 * squirrel—p‚ÌƒƒCƒ“•”
 	 */
