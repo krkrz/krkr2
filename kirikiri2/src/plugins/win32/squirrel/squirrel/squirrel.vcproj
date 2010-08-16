@@ -6,7 +6,6 @@
 	ProjectGUID="{E42515D2-100D-4BF4-A726-3C1B8D18E271}"
 	RootNamespace="squirrel"
 	Keyword="Win32Proj"
-	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -22,7 +21,6 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="1"
-			EnableManagedIncrementalBuild="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -312,6 +310,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sqobject\sqfunc.h"
+				>
+			</File>
+			<File
 				RelativePath=".\squirrel\sqfuncproto.h"
 				>
 			</File>
@@ -324,11 +326,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\squirrel\sqobject.h"
+				RelativePath=".\sqobject\sqobject.h"
 				>
 			</File>
 			<File
-				RelativePath=".\sqobject\sqobject.h"
+				RelativePath=".\squirrel\sqobject.h"
 				>
 			</File>
 			<File

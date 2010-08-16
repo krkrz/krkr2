@@ -54,9 +54,9 @@ void done()
 void
 Object::registerClass()
 {
-	SQCLASS(Object);
-	SQVCONSTRUCTOR(Object);
-	SQDESTRUCTOR(Object);
+	SQClassDefNoConstructor<Object> cls(TypeInfo<Object>().typeName);\
+	cls.staticFuncVarArgs(SQTemplate<Object>::vconstructor, _SC("constructor"));
+	cls.staticFuncVarArgs(SQTemplate<Object>::destructor, _SC("destructor"));
 	SQFUNC(Object,notify);
 	SQFUNC(Object,notifyAll);
 	SQVFUNC(Object,hasSetProp);
@@ -76,9 +76,7 @@ Object::registerClass()
 void
 Thread::registerClass()
 {
-	SQCLASSEX(Thread, Object);
-	SQVCONSTRUCTOR(Thread);
-	SQDESTRUCTOR(Thread);
+	SQCLASSOBJ_VCONSTRUCTOR(Thread,SQTHREADNAME);
 	SQVFUNC(Thread,exec);
 	SQVFUNC(Thread,exit);
 	SQFUNC(Thread,stop);

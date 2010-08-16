@@ -334,6 +334,34 @@ SQRESULT sq_arrayinsert(HSQUIRRELVM v,SQInteger idx,SQInteger destpos)
 	return ret;
 }
 
+SQRESULT sq_arrayremovevalue(HSQUIRRELVM v, SQInteger idx, SQBool all)
+{
+	sq_aux_paramscheck(v, 2);
+	SQObjectPtr *o;
+	_GETSAFE_OBJ(v, idx, OT_ARRAY, o); 
+	SQArray *arr = _array(*o);
+	SQObjectPtr &value = v->GetUp(-1);
+	SQInteger i = 0;
+	SQInteger alen = arr->Size();
+	while (i<alen){
+		SQObjectPtr avalue;
+		arr->Get(i,avalue);
+		SQInteger res;
+		v->ObjCmp(value,avalue,res);
+		if (res == 0) {
+			arr->Remove(i);
+			alen--;
+			if (!all) {
+				v->Pop(1);
+				return SQ_OK;
+			}
+		} else {
+			i++;
+		}
+	}
+	v->Pop(1);
+	return SQ_OK;
+}
 
 void sq_newclosure(HSQUIRRELVM v,SQFUNCTION func,SQUnsignedInteger nfreevars)
 {
@@ -713,8 +741,13 @@ SQRESULT sq_newslot(HSQUIRRELVM v, SQInteger idx, SQBool bstatic)
 	SQObjectPtr &self = stack_get(v, idx);
 	if(type(self) == OT_TABLE || type(self) == OT_CLASS) {
 		SQObjectPtr &key = v->GetUp(-2);
-		if(type(key) == OT_NULL) return sq_throwerror(v, _SC("null is not a valid key"));
+		if(type(key) == OT_NULL) {
+			v->Pop(2);
+			return sq_throwerror(v, _SC("null is not a valid key"));
+		}
 		v->NewSlot(self, key, v->GetUp(-1),bstatic?true:false);
+		v->Pop(2);
+	} else {
 		v->Pop(2);
 	}
 	return SQ_OK;
@@ -743,13 +776,18 @@ SQRESULT sq_set(HSQUIRRELVM v,SQInteger idx)
 		v->Pop(2);
 		return SQ_OK;
 	}
-	v->Raise_IdxError(v->GetUp(-2));return SQ_ERROR;
+	v->Raise_IdxError(v->GetUp(-2));
+	v->Pop(2);
+	return SQ_ERROR;
 }
 
 SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr &self = stack_get(v, idx);
-	if(type(v->GetUp(-2)) == OT_NULL) return sq_throwerror(v, _SC("null key"));
+	if(type(v->GetUp(-2)) == OT_NULL) {
+		v->Pop(2);
+		return sq_throwerror(v, _SC("null key"));
+	}
 	switch(type(self)) {
 	case OT_TABLE:
 		_table(self)->NewSlot(v->GetUp(-2), v->GetUp(-1));
@@ -777,7 +815,9 @@ SQRESULT sq_rawset(HSQUIRRELVM v,SQInteger idx)
 		v->Pop(2);
 		return sq_throwerror(v, _SC("rawset works only on array/table/class and instance"));
 	}
-	v->Raise_IdxError(v->GetUp(-2));return SQ_ERROR;
+	v->Raise_IdxError(v->GetUp(-2));
+	v->Pop(2);
+	return SQ_ERROR;
 }
 
 SQRESULT sq_setdelegate(HSQUIRRELVM v,SQInteger idx)

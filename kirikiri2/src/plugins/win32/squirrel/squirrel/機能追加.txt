@@ -1,5 +1,5 @@
 Author: 渡邊剛(go@denpa.org)
-Date: 2009/4/29
+Date: 2010/8/16
 
 ●Object/Thread機能
 
@@ -19,6 +19,16 @@ in 演算子相当の APIを追加
  * @return 存在していたら SQTrue
  */
 SQUIRREL_API SQBool sq_exists(HSQUIRRELVM v,SQInteger idx);
+
+・配列から直接値を削除するAPIを追加
+
+/**
+ * スタックから値を取り出してその値と等しい値を配列から削除する
+ * @param v VM
+ * @param idx 処理対象配列のインデックス
+ * @param all true:全要素を削除 false:最初の1つだけ削除
+ */
+SQUIRREL_API SQRESULT sq_arrayremovevalue(HSQUIRRELVM v,SQInteger idx,SQBool all);
 
 ●squirrel機能追加
 
@@ -85,6 +95,8 @@ find(value)               要素 value を持つインデックスを返す
 findall(value)            要素 value を持つインデックスの配列を返す
 includes(value)           要素 value を含むなら true を返す
 includeCount(value)       要素 value を含む数を返す
+splice(start, cnt, ...)   start から cnt個数の要素を続く要素で置換する
+						  置換された対象が配列として返される。
 
 ◇テーブル delegate 追加
 
@@ -100,3 +112,15 @@ includeCount(value)       要素 value を含む数を返す
 
 printCallStack()	   スタックの内容をコンソールに表示
 notifyAllExceptions(value) 全例外のエラー表示通知を行うかどうかを指定
+
+
+◇文字列ライブラリグローバル関数追加
+
+/**
+ * printf処理。書式文字列とパラメータを順次pushしてから呼び出す。
+ * @param v VM
+ * @param nargs パラメータの数(書式文字列は除く)
+ * @return 表示された文字列の長さ
+ */
+SQInteger sqstd_printf(HSQUIRRELVM v, SQInteger nargs);
+

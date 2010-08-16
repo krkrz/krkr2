@@ -1,5 +1,5 @@
 Author: 渡邊剛(go@denpa.org)
-Date: 2009/4/22
+Date: 2010/8/16
 
 ●SQUIRREL仕様変更
 
@@ -110,6 +110,8 @@ userpointer の typeof で帰る型名を "userdata" ではなく
   sq_getfloat()   真偽値を 0.0/1.0 として取得可能
 　sq_getbool()    数値を 0:SQFalse それ以外:SQTrue として取得可能
 
+・バグ修正 se_set/sq_rawset/sq_newslot が処理に失敗したときに
+　引数をスタックから解放してないバグがあったのを修正
 
 ●SQPLUS仕様変更
 
@@ -156,3 +158,20 @@ DECLARE_INSTANCE_TYPE_RELEASE(TYPE)
 ・Sqrat::Class に、SQFUNCTION 形式の
 　メンバメソッドを登録するための口 VarArgFunc()を追加
 
+・スクリプトコンパイル用の口は封印(例外つかってるため)
+
+・自前で生成したオブジェクトを返す機構が無かったので追加
+
+  ClassType::PushInstanceInit 新設
+  Allocator 系にこれの処理用の Init() メソッド追加
+
+  sqrat::Var<Type*>::pushInit(vm, (Type*)value); で push 可能
+
+・static 関数は登録時に static フラグを立てるように修正
+
+・インスタンスの型処理が一切行われていなかったので行うように
+　修正。インスタンスから違うネイティブ型を取得しようとすると NULL が帰ります。
+
+・(ソース修正)ポインタ系の警告が出る部分を表記修正多数
+
+・printf 機能を追加

@@ -311,6 +311,7 @@ get(HSQUIRRELVM v)
 	if (GetVariant(v, 1, &instance)) {
 		tTJSVariant result;
 		tjs_error error;
+		const tjs_char *name = sqobject::getString(v,2);
 		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropGet(0, sqobject::getString(v, 2), NULL, &result, NULL))) {
 			sq_pushvariant(v, result);
 			return 1;
