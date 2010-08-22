@@ -426,7 +426,7 @@ psd_status psd_get_image_resource(psd_context * context)
 					// (Photoshop 4.0) Grid and guides information
 					case 1032:
 						// Version ( = 1)
-					    {int ver = psd_stream_get_int(context); psd_assert(ver == 1);};
+					    {int ver = psd_stream_get_int(context); if(!(ver == 1)) break;};
 						// Future implementation of document-specific grids (4 bytes horizontal, 4 bytes vertical).
 						context->grid_guides.horz_grid = psd_stream_get_int(context);
 						context->grid_guides.vert_grid = psd_stream_get_int(context);
@@ -459,7 +459,7 @@ psd_status psd_get_image_resource(psd_context * context)
 					// (Photoshop 5.0) Color samplers resource
 					case 1038:
 						// Version ( = 1)
-					    {int ver = psd_stream_get_int(context); psd_assert(ver == 1);}
+					    {int ver = psd_stream_get_int(context); if(!(ver == 1)) break;}
 						// Number of color samplers to follow.
 						context->color_samplers.number_of_color_samplers = psd_stream_get_int(context);
 						if (context->color_samplers.number_of_color_samplers > 0)
@@ -483,7 +483,7 @@ psd_status psd_get_image_resource(psd_context * context)
 					// (Photoshop 6.0) Slices
 					case 1050:
 						// Version ( = 6)
-					{int ver = psd_stream_get_int(context); psd_assert(ver == 6);}
+					{int ver = psd_stream_get_int(context); if (!(ver == 6)) break;}
 						// Bounding rectangle for all of the slices: top, left, bottom, right of all the slices
 						context->slices_resource.bounding_top = psd_stream_get_int(context);
 						context->slices_resource.bounding_left = psd_stream_get_int(context);
@@ -633,7 +633,7 @@ psd_status psd_get_image_resource(psd_context * context)
 					// (Photoshop CS) Pixel Aspect Ratio
 					case 1064:
 						// 4 bytes (version = 1)
-					{int ver = psd_stream_get_int(context); psd_assert(ver  == 1);};
+					{int ver = psd_stream_get_int(context); if (!(ver  == 1)) break;};
 						// 8 bytes double, x / y of a pixel
 						context->pixel_aspect_ratio = psd_stream_get_double(context);
 						break;
@@ -641,11 +641,11 @@ psd_status psd_get_image_resource(psd_context * context)
 					// Print flags information
 					case 10000:
 						// 2 bytes version ( = 1)
-					{int ver = psd_stream_get_short(context); psd_assert(ver == 1);};
+					{int ver = psd_stream_get_short(context); if (!(ver == 1)) break;};
 						// 1 byte center crop marks
 						context->print_flags_info.center_crop = psd_stream_get_bool(context);
 						// 1 byte ( = 0)
-					{int ver = psd_stream_get_char(context); psd_assert(ver == 0);};
+					{int ver = psd_stream_get_char(context); if (!(ver == 0)) break;};
 						// 4 bytes bleed width value
 						context->print_flags_info.value = psd_stream_get_int(context);
 						// 2 bytes bleed width scale
