@@ -1455,6 +1455,52 @@
 			</info>
 		</attrib>
 
+		<attrib name="shadow">
+			<shortinfo> 影合成 </shortinfo>
+			<required> no </required>
+			<format> 0xRRGGBB 形式 </format>
+			<info>
+				　レイヤの画像に影をつけます。影色を 0xRRGGBB 形式で指定します。数値省略時は 0x000000 扱いです。
+				shadowopacity,shadowx,shadowy,shadowblur でつける影のパラメータを指定できます。
+			</info>
+		</attrib>
+
+		<attrib name="shadowopacity">
+			<shortinfo> 影濃度 </shortinfo>
+			<required> no </required>
+			<format> 濃度指定(0～255) </format>
+			<info>
+				　shadowで影をつけるときの影の濃度を指定します。未指定時の値は200です。
+			</info>
+		</attrib>
+
+		<attrib name="shadowx">
+			<shortinfo> 影のX方向ずれ指定 </shortinfo>
+			<required> no </required>
+			<format> ピクセル値 </format>
+			<info>
+				　shadowで影をつけるときの影のX方向のずれの量を指定します。未指定時の値は10です。
+			</info>
+		</attrib>
+
+		<attrib name="shadowy">
+			<shortinfo> 影のY方向ずれ指定 </shortinfo>
+			<required> no </required>
+			<format> ピクセル値 </format>
+			<info>
+				　shadowで影をつけるときの影のY方向のずれの量を指定します。未指定時の値は10です。
+			</info>
+		</attrib>
+
+		<attrib name="shadowblur">
+			<shortinfo> 影ぼかし量 </shortinfo>
+			<required> no </required>
+			<format> 数値指定(0～) </format>
+			<info>
+				　shadowで影をつけるときの影のぼかし具合を指定します。未指定時の値は 3 です。<BR>
+			</info>
+		</attrib>
+
 		<attrib name="clipleft">
 			<shortinfo> クリップ矩形左端位置 </shortinfo>
 			<required> no </required>

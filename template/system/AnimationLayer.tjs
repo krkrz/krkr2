@@ -819,6 +819,15 @@ class AnimationLayer extends KAGLayer
 								  +param.lightcolor,
 								  mode);
 		}
+		if (param.shadow !== void) {
+			// 影つけ
+			var dx = param.shadowx !== void ? +param.shadowx : 10;
+			var dy = param.shadowy !== void ? +param.shadowy : 10;
+			var blur = param.shadowblur !== void ? +param.shadowblur : 3;
+			var color = param.shadow === true ? 0 : +param.shadow;
+			var opacity = param.shadowopacity !== void ? +param.shadowopacity : 200;
+			layer.doDropShadow(dx, dy, blur, color, opacity);
+		}
 		layer.face = orgface;
 		layer.holdAlpha = orgholdlpha;
 	}
@@ -1196,6 +1205,47 @@ class AnimationLayer extends KAGLayer
 		invalidate fillLayer;
 	}
 
+	/**
+	 * 影を追加する
+	 * @param dx 影のX移動量 (右にプラス)
+	 * @param dy 影のY移動量 (下にプラス)
+	 * @param blur ぼかし量
+	 * @param shadowColor 影の色
+	 * @param shadoAlpha 影の不透明度
+	 */
+	function doDropShadow(dx=10, dy=10, blur=3, shadowColor=0x000000, shadowOpacity=200)
+	{
+		var THIS = global.Layer;
+		
+		// 作業用レイヤ
+		var work = new THIS(window, parent);
+		work.setImagePos(THIS.imageLeft, THIS.imageTop);
+		work.setImageSize(THIS.imageWidth, THIS.imageHeight);
+		
+		// 影生成処理
+		var shadow = new THIS(window, parent);
+		shadow.assignImages(this);
+		// 塗りつぶし
+		shadow.face = dfMain;
+		shadow.holdAlpha = true;
+		shadow.fillRect(THIS.imageLeft, THIS.imageTop, THIS.imageWidth, THIS.imageHeight, shadowColor);
+		shadow.face = dfBoth;
+		shadow.holdAlpha = false;
+		// ぼかす
+		shadow.doBoxBlur(blur, blur);
+		
+		// 影をコピー
+		work.operateRect(THIS.imageLeft + dx, THIS.imageTop + dy, shadow, THIS.imageLeft, THIS.imageTop, THIS.imageWidth, THIS.imageHeight, ltPsNormal, shadowOpacity);
+		// 自分をコピー
+		work.operateRect(THIS.imageLeft, THIS.imageTop, this, THIS.imageLeft, THIS.imageTop, THIS.imageWidth, THIS.imageHeight, ltPsNormal, 255);
+		
+		// 画像さしかえ
+		THIS.assignImages(work);
+		
+		// 後片付け
+		invalidate work;
+		invalidate shadow;
+	};
 }
 
 
