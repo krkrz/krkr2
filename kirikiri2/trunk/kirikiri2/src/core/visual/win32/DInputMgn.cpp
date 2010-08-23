@@ -172,13 +172,30 @@ static tTVPPadKeyFlag TVPVirtualKeyToPadCode(WORD vk)
 //---------------------------------------------------------------------------
 // tTVPKeyRepeatEmulator : A class for emulating keyboard key repeats.
 //---------------------------------------------------------------------------
+INT32 tTVPKeyRepeatEmulator::HoldTime = 500; // keyboard key-repeats hold-time
+INT32 tTVPKeyRepeatEmulator::IntervalTime = 30; // keyboard key-repeats interval-time
+//---------------------------------------------------------------------------
+void tTVPKeyRepeatEmulator::GetKeyRepeatParam()
+{
+	static tjs_int ArgumentGeneration = 0;
+	if(ArgumentGeneration != TVPGetCommandLineArgumentGeneration())
+	{
+		ArgumentGeneration = TVPGetCommandLineArgumentGeneration();
+		tTJSVariant val;
+		if(TVPGetCommandLine(TJS_W("-paddelay"), &val))
+		{
+			HoldTime = (int)val;
+		}
+		if(TVPGetCommandLine(TJS_W("-padinterval"), &val))
+		{
+			IntervalTime = (int)val;
+		}
+	}
+}
+//---------------------------------------------------------------------------
 #define TVP_REPEAT_LIMIT 10
 tTVPKeyRepeatEmulator::tTVPKeyRepeatEmulator() : Pressed(false)
 {
-//	if(!SystemParametersInfo(SPI_GETKEYBOARDDELAY, 0, (void*)&HoldTime, 0))
-	HoldTime = 500; // 500ms default
-	if(!SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, (void*)&IntervalTime, 0))
-		IntervalTime = 30; // 30ms default
 }
 //---------------------------------------------------------------------------
 tTVPKeyRepeatEmulator::~tTVPKeyRepeatEmulator()
@@ -200,6 +217,8 @@ void tTVPKeyRepeatEmulator::Up()
 tjs_int tTVPKeyRepeatEmulator::GetRepeatCount()
 {
 	// calculate repeat count, from previous call of "GetRepeatCount" function.
+	GetKeyRepeatParam();
+
 	if(!Pressed) return 0;
 	if(HoldTime<0) return 0;
 	if(IntervalTime<=0) return 0;
