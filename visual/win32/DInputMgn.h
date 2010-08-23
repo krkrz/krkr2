@@ -59,8 +59,8 @@ class tTVPKeyRepeatEmulator
 	bool  Pressed;
 	tjs_int LastRepeatCount;
 
-	INT32 HoldTime; // keyboard key-repeats hold-time
-	INT32 IntervalTime; // keyboard key-repeats interval-time
+	static INT32 HoldTime; // keyboard key-repeats hold-time
+	static INT32 IntervalTime; // keyboard key-repeats interval-time
 
 
 	/*
@@ -73,6 +73,8 @@ class tTVPKeyRepeatEmulator
 		-----------------------------------------------------------> time
 
 	*/
+
+	static void GetKeyRepeatParam();
 
 public:
 	tTVPKeyRepeatEmulator();
