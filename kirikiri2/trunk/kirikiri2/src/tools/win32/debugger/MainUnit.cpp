@@ -20,13 +20,6 @@ __fastcall TScriptDebuggerForm::TScriptDebuggerForm(TComponent* Owner)
 	: TForm(Owner)
 {
 	memset( &proc_info_, 0, sizeof(proc_info_) );
-/*
-	debuggee_path_ = "E:\\krkr\\krkr2\\kirikiri2\\bin\\win32\\tvpwin32.exe";
-	debuggee_args_ = "-debug";
-	debuggee_data_ = "E:\\krkr\\krkr2\\kirikiri2\\bin\\win32\\data";
-	debuggee_working_folder_ = "E:\\krkr\\krkr2\\kirikiri2\\bin\\win32\\";
-*/
-//	append_ext_.push_back( ".tjs" );
 
 	debuggee_check_thread_ = NULL;
 	break_lineno_ = -1;
@@ -61,12 +54,49 @@ __fastcall TScriptDebuggerForm::TScriptDebuggerForm(TComponent* Owner)
 
 	system_image_list_ = NULL;
 	GetSystemImageList();
+
+	// コマンドライン読み込み
+	ParseCommandline();
+
+	if( project_file_path_.IsEmpty() ) {
+		AnsiString defaultPjName("debugger.sdp");
+		if( FileExists(defaultPjName) ) {
+			project_file_path_ = ExpandFileName( defaultPjName );
+			ReadProjectFile();
+		}
+	}
 }
 //---------------------------------------------------------------------------
 __fastcall TScriptDebuggerForm::~TScriptDebuggerForm()
 {
 	::ImageList_Destroy( system_image_list_ );
 }
+//---------------------------------------------------------------------------
+void __fastcall TScriptDebuggerForm::ParseCommandline()
+{
+	enum {
+		OPT_INVALID = -1,
+		OPT_PROJECT = 0,
+	};
+	int type = OPT_INVALID;
+	int count = ParamCount();
+	for( int i = 0; i < count; i++ ) {
+		AnsiString param = ParamStr(1+i);
+		if( param[1] == '-' ) {
+			AnsiString typeName = param.SubString( 2, param.Length()-1 );
+			if( typeName == AnsiString("p") ) {
+				type = OPT_PROJECT;
+			}
+		} else {
+			if( type == OPT_PROJECT ) {
+				project_file_path_ = ExpandFileName( param );
+				ReadProjectFile();
+				type = OPT_INVALID;
+			}
+		}
+	}
+}
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 /*
 AnsiString __fastcall MyReplaceText(const AnsiString& Src, const AnsiString& From, const AnsiString& To)
@@ -698,10 +728,21 @@ void __fastcall TScriptDebuggerForm::ReadProjectFile()
 	curfile_breakpoints_ = NULL;
 	std::auto_ptr<TIniFile> projFile( new TIniFile( project_file_path_ ) );
 	if( projFile.get() ) {
-		debuggee_path_ = projFile->ReadString( "Debugee", "Path", "" );
-		debuggee_args_ = projFile->ReadString( "Debugee", "Args", "" );
-		debuggee_data_ = projFile->ReadString( "Debugee", "DataFolder", "" );
-		debuggee_working_folder_ = projFile->ReadString( "Debugee", "WorkingFolder", "" );
+		// projファイルのパスをカレントディレクトリに設定する
+		AnsiString filePath = ExtractFilePath(project_file_path_);
+		AnsiString oldCurDir = GetCurrentDir();
+		if( SetCurrentDir( filePath ) ) {
+			debuggee_path_ = ExpandFileName( projFile->ReadString( "Debugee", "Path", "" ) );
+			debuggee_args_ = projFile->ReadString( "Debugee", "Args", "" );
+			debuggee_data_ = ExpandFileName( projFile->ReadString( "Debugee", "DataFolder", "" ) );
+			debuggee_working_folder_ = ExpandFileName( projFile->ReadString( "Debugee", "WorkingFolder", "" ) );
+			SetCurrentDir( oldCurDir );	// 元に戻す
+		} else {
+			debuggee_path_ = projFile->ReadString( "Debugee", "Path", "" );
+			debuggee_args_ = projFile->ReadString( "Debugee", "Args", "" );
+			debuggee_data_ = projFile->ReadString( "Debugee", "DataFolder", "" );
+			debuggee_working_folder_ = projFile->ReadString( "Debugee", "WorkingFolder", "" );
+		}
 
 		AnsiString scriptExts = projFile->ReadString( "Debugee", "ScriptExt", "" );
 		ReadStringListFromString( scriptExts, script_exts_ );
@@ -721,10 +762,25 @@ void __fastcall TScriptDebuggerForm::WriteProjectFile()
 
 	std::auto_ptr<TIniFile> projFile( new TIniFile( project_file_path_ ) );
 	if( projFile.get() ) {
-		projFile->WriteString( "Debugee", "Path", debuggee_path_ );
+		AnsiString pjDrive = ExtractFileDrive( project_file_path_ );
+		AnsiString baseName = ExtractFilePath( project_file_path_ );
+
+		AnsiString writePath = debuggee_path_;
+		AnsiString writeDataPath = debuggee_data_;
+		AnsiString writeWorkingFolder = debuggee_working_folder_;
+		if( pjDrive == ExtractFileDrive( debuggee_path_ ) ) {
+			writePath = ExtractRelativePath( baseName, debuggee_path_ );
+		}
+		if( pjDrive == ExtractFileDrive( debuggee_data_ ) ) {
+			writeDataPath = ExtractRelativePath( baseName, debuggee_data_ );
+		}
+		if( pjDrive == ExtractFileDrive( debuggee_working_folder_ ) ) {
+			writeWorkingFolder = ExtractRelativePath( baseName, debuggee_working_folder_ );
+		}
+		projFile->WriteString( "Debugee", "Path", writePath );
 		projFile->WriteString( "Debugee", "Args", debuggee_args_ );
-		projFile->WriteString( "Debugee", "DataFolder", debuggee_data_ );
-		projFile->WriteString( "Debugee", "WorkingFolder", debuggee_working_folder_ );
+		projFile->WriteString( "Debugee", "DataFolder", writeDataPath );
+		projFile->WriteString( "Debugee", "WorkingFolder", writeWorkingFolder );
 
 		AnsiString scriptExts;
 		WriteStringListFromString( scriptExts, script_exts_ );
@@ -826,6 +882,16 @@ void __fastcall TScriptDebuggerForm::SetProjectActionExecute(TObject *Sender)
 			ExecuteDebugAction->Enabled = true;
 		}
 	}
+}
+//---------------------------------------------------------------------------
+AnsiString __fastcall TScriptDebuggerForm::GetApplicationFileName()
+{
+	return ExtractFileName( Application->ExeName );
+}
+//---------------------------------------------------------------------------
+AnsiString __fastcall TScriptDebuggerForm::GetApplicationFolderName()
+{
+	return ExtractFilePath( Application->ExeName );
 }
 //---------------------------------------------------------------------------
 void __fastcall TScriptDebuggerForm::SourceLineListBoxDrawItem( TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)

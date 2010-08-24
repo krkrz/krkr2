@@ -243,6 +243,10 @@ private:	// ユーザー宣言
 
 	void __fastcall GetSystemImageList();
 
+	void __fastcall ParseCommandline();
+	AnsiString __fastcall GetApplicationFileName();
+	AnsiString __fastcall GetApplicationFolderName();
+
 public:		// ユーザー宣言
 	__fastcall TScriptDebuggerForm(TComponent* Owner);
 	virtual __fastcall ~TScriptDebuggerForm();
@@ -252,6 +256,10 @@ public:		// ユーザー宣言
 	__property AnsiString DebuggeeCommandLine  = { read=GetDebuggeeCommandLine };
 	//! デバッギワークフォルダ
 	__property AnsiString DebuggeeWorkingFolder  = { read=debuggee_working_folder_ };
+    //! アプリケーションファイル名
+    __property AnsiString ApplicationFileName  = { read=GetApplicationFileName };
+    //! アプリケーションフォルダ名
+    __property AnsiString ApplicationFolderName  = { read=GetApplicationFolderName};
 
 	__property bool IsRequestBreak = { read=is_request_break_, write=is_request_break_ };
 
