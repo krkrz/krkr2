@@ -403,10 +403,6 @@ object ScriptDebuggerForm: TScriptDebuggerForm
           TabOrder = 0
           object FileTabSheet: TTabSheet
             Caption = #12501#12449#12452#12523
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object SourceLineListBox: TListBox
               Left = 0
               Top = 0
@@ -482,10 +478,11 @@ object ScriptDebuggerForm: TScriptDebuggerForm
           object CallStackLabel: TLabel
             Left = 0
             Top = 0
-            Width = 60
+            Width = 263
             Height = 13
             Align = alTop
             Caption = #12467#12540#12523#12473#12479#12483#12463
+            ExplicitWidth = 60
           end
           object CallStackListBox: TListBox
             Left = 0
