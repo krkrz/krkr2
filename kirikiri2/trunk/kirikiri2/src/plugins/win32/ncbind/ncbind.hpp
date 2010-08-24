@@ -605,6 +605,7 @@ NCB_SET_TOVALUE_CONVERTOR(  iTJSDispatch2 const*, ncbDispatchConvertor);
 // Dicionary/Array 向けラッパ(手抜き実装)
 struct ncbPropAccessor {
 	typedef ncbTypedefs   DefsT;
+	typedef DefsT::NameT  NameT;
 	typedef DefsT::FlagsT FlagsT;
 	typedef DefsT::NameT  KeyT;
 	typedef tjs_int32     IndexT;
@@ -620,8 +621,18 @@ struct ncbPropAccessor {
 	ncbPropAccessor(tTJSVariant var) : _obj(var.AsObject()) {
 		//_obj->AddRef();
 	}
+    ncbPropAccessor(NameT name) {
+	    tTJSVariant val;
+	    iTJSDispatch2 *global = TVPGetScriptDispatch();
+	    if (global) {
+	        global->PropGet(0, name, 0, &val, global);
+		}
+	    _obj = val.AsObject();
+	}
 	virtual ~ncbPropAccessor() {
-		_obj->Release();
+	    if (_obj) {
+		    _obj->Release();
+		}
 	}
 	CountT GetCount() const {
 		CountT sz;
@@ -637,6 +648,12 @@ struct ncbPropAccessor {
 	TargetT GetValue(IndexT ofs, DefsT::Tag<TargetT> const &tag, FlagsT f = 0) {
 		VariantT var;
 		_obj->PropGetByNum(f, ofs, &var, _obj);
+		return _toTarget(var, tag);
+	}
+	template <typename TargetT>
+	TargetT GetValue(iTJSDispatch2 *obj, IndexT ofs, DefsT::Tag<TargetT> const &tag, FlagsT f = 0) {
+		VariantT var;
+		_obj->PropGetByNum(f, ofs, &var, obj);
 		return _toTarget(var, tag);
 	}
 	tjs_int getIntValue(IndexT ofs, tjs_int defaultValue=0) {
@@ -664,6 +681,12 @@ struct ncbPropAccessor {
 	TargetT GetValue(KeyT key, DefsT::Tag<TargetT> const &tag, FlagsT f = 0, HintT hint = 0) {
 		VariantT var;
 		_obj->PropGet(f, key, hint, &var, _obj);
+		return _toTarget(var, tag);
+	}
+	template <typename TargetT>
+	TargetT GetValue(iTJSDispatch2* obj, KeyT key, DefsT::Tag<TargetT> const &tag, FlagsT f = 0, HintT hint = 0) {
+		VariantT var;
+		_obj->PropGet(f, key, hint, &var, obj);
 		return _toTarget(var, tag);
 	}
 	tjs_int getIntValue(KeyT key, tjs_int defaultValue=0) {
@@ -699,9 +722,21 @@ struct ncbPropAccessor {
 		if (ret && type) *type = var.Type();
 		return ret;
 	}
+	bool HasValue(iTJSDispatch2 *obj, IndexT ofs, tTJSVariantType *type = 0) {
+		VariantT var;
+		bool ret = TJS_SUCCEEDED(_obj->PropGetByNum(TJS_MEMBERMUSTEXIST, ofs, &var, obj));
+		if (ret && type) *type = var.Type();
+		return ret;
+	}
 	bool HasValue(KeyT key, HintT hint = 0, tTJSVariantType *type = 0) {
 		VariantT var;
 		bool ret = TJS_SUCCEEDED(_obj->PropGet(TJS_MEMBERMUSTEXIST, key, hint, &var, _obj));
+		if (ret && type) *type = var.Type();
+		return ret;
+	}
+	bool HasValue(iTJSDispatch2 *obj, KeyT key, HintT hint = 0, tTJSVariantType *type = 0) {
+		VariantT var;
+		bool ret = TJS_SUCCEEDED(_obj->PropGet(TJS_MEMBERMUSTEXIST, key, hint, &var, obj));
 		if (ret && type) *type = var.Type();
 		return ret;
 	}
@@ -712,10 +747,22 @@ struct ncbPropAccessor {
 		return (_obj->PropSetByNum(f, ofs, &var, _obj) == TJS_S_OK);
 	}
 	template <typename TargetT>
+	bool SetValue(iTJSDispatch2 *obj, IndexT ofs, TargetT const &val, FlagsT f = TJS_MEMBERENSURE) {
+		VariantT var;
+		_toVariant(var, val);
+		return (_obj->PropSetByNum(f, ofs, &var, obj) == TJS_S_OK);
+	}
+	template <typename TargetT>
 	bool SetValue(KeyT key, TargetT const &val, FlagsT f = TJS_MEMBERENSURE, HintT hint = 0) {
 		VariantT var;
 		_toVariant(var, val);
 		return (_obj->PropSet(f, key, hint, &var, _obj) == TJS_S_OK);
+	}
+	template <typename TargetT>
+	bool SetValue(iTJSDispatch2 *obj, KeyT key, TargetT const &val, FlagsT f = TJS_MEMBERENSURE, HintT hint = 0) {
+		VariantT var;
+		_toVariant(var, val);
+		return (_obj->PropSet(f, key, hint, &var, obj) == TJS_S_OK);
 	}
 	bool IsValid() const { return _obj != 0; }
 	iTJSDispatch2* GetDispatch() const { return _obj; }
@@ -735,11 +782,21 @@ struct ncbPropAccessor {
 		return _obj->FuncCall(flag, membername, hint, result, FOREACH_COUNT, params, _obj); \
 	}
 #include FOREACH_INCLUDE
+#undef  FOREACH
+#define FOREACH \
+	tjs_error TJS_INTF_METHOD FuncCall(iTJSDispatch2 *obj, tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, tTJSVariant *result, FOREACH_COMMA_EXT(FCALL_PRM_EXT) ) { \
+		tTJSVariant *params[FOREACH_COUNT]; FOREACH_SPACE_EXT(FCALL_SET_EXT) \
+		return _obj->FuncCall(flag, membername, hint, result, FOREACH_COUNT, params, obj); \
+	}
+#include FOREACH_INCLUDE
 #undef  FCALL_PRM_EXT
 #undef  FCALL_SET_EXT
 	// 引数なしの場合だけ特殊
 	tjs_error TJS_INTF_METHOD FuncCall(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, tTJSVariant *result) {
 		return _obj->FuncCall(flag, membername, hint, result, 0, NULL, _obj);
+	}
+	tjs_error TJS_INTF_METHOD FuncCall(iTJSDispatch2 *obj, tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, tTJSVariant *result) {
+		return _obj->FuncCall(flag, membername, hint, result, 0, NULL, obj);
 	}
 protected:
 	iTJSDispatch2 *_obj;
@@ -2150,7 +2207,7 @@ protected:
 			TVPThrowExceptionMessage(TJS_W("Require class not found."));
 
 		// IDとクラスオブジェクトを登録
-		if (!ClassInfoT::Set(_className, TJSFindNativeClassID(_className), val.AsObectNoAddRef()))
+		if (!ClassInfoT::Set(_className, TJSFindNativeClassID(_className), val.AsObjectNoAddRef()))
 			TVPThrowExceptionMessage(TJS_W("Already registerd class."));
 	}
 	void Unregist() const {}
