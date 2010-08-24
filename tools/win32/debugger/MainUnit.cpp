@@ -750,7 +750,7 @@ void __fastcall TScriptDebuggerForm::ReadProjectFile()
 		UpdateAll();
 		ExecuteDebugAction->Enabled = true;
 		OverWriteAction->Enabled = true;
-		Caption = AnsiString("Emphasis - スクリプト デバッガ - ") + project_file_path_;
+		Caption = AnsiString("krkrdebg - スクリプト デバッガ - ") + project_file_path_;
 	}
 }
 //---------------------------------------------------------------------------
@@ -787,7 +787,7 @@ void __fastcall TScriptDebuggerForm::WriteProjectFile()
 		projFile->WriteString( "Debugee", "ScriptExt", scriptExts );
 
 		OverWriteAction->Enabled = true;
-		Caption = AnsiString("スクリプト デバッガ - ") + project_file_path_;
+		Caption = AnsiString("krkrdebg - スクリプト デバッガ - ") + project_file_path_;
 	}
 }
 //---------------------------------------------------------------------------

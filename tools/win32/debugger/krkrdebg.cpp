@@ -21,7 +21,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	{
 		Application->Initialize();
 		SetApplicationMainFormOnTaskBar(Application, true);
-		Application->Title = "Emphasis - スクリプト デバッガ -";
+		Application->Title = "krkrdebg - スクリプト デバッガ -";
 		Application->CreateForm(__classid(TScriptDebuggerForm), &ScriptDebuggerForm);
 		Application->CreateForm(__classid(TProjectSettingForm), &ProjectSettingForm);
 		Application->CreateForm(__classid(TDubbggerSettingForm), &DubbggerSettingForm);
