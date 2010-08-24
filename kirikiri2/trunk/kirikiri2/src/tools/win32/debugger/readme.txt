@@ -8,7 +8,7 @@ Author: T.Imoto
 
 
 ●使い方
-Emphasis.exe を起動します。
+krkrdebg.exe を起動します。
 設定、プロジェクトの設定を選びます。
 実行ファイルパスに添付のtvpwin32.exeのフルパスを
 引数に -debug を data のフルパスを ( ex. C:\krkr\debugger\data )
