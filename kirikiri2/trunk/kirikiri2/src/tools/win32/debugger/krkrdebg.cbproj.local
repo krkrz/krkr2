@@ -15,5 +15,6 @@
     <Transaction>2010/04/18 16:01:39.359.h,E:\krkr\krkr2\kirikiri2\src\tools\win32\debugger\Unit1.h=E:\krkr\krkr2\kirikiri2\src\tools\win32\debugger\DubbggerSettingUnit.h</Transaction>
     <Transaction>2010/04/18 16:01:39.359.dfm,E:\krkr\krkr2\kirikiri2\src\tools\win32\debugger\Unit1.dfm=E:\krkr\krkr2\kirikiri2\src\tools\win32\debugger\DubbggerSettingUnit.dfm</Transaction>
     <Transaction>2010/04/19 03:01:46.984.cbproj,E:\krkr\krkr2\kirikiri2\src\tools\win32\debugger\scriptbugger.cbproj=E:\krkr\krkr2\kirikiri2\src\tools\win32\debugger\Emphasis.cbproj</Transaction>
+    <Transaction>2010/08/24 23:56:53.750.cbproj,E:\krkr\krkr2\kirikiri2\src\tools\win32\debugger\Emphasis.cbproj=E:\krkr\krkr2\kirikiri2\src\tools\win32\debugger\krkrdebg.cbproj</Transaction>
   </Transactions>
 </BorlandProject>
