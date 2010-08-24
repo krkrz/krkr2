@@ -1,7 +1,7 @@
 object ScriptDebuggerForm: TScriptDebuggerForm
   Left = 0
   Top = 0
-  Caption = 'Emphasis - '#12473#12463#12522#12503#12488' '#12487#12496#12483#12460' -'
+  Caption = 'krkrdebg - '#12473#12463#12522#12503#12488' '#12487#12496#12483#12460' -'
   ClientHeight = 889
   ClientWidth = 1280
   Color = clBtnFace
