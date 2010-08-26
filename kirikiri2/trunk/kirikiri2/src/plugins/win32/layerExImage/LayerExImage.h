@@ -46,6 +46,11 @@ public:
 	 * @param level ノイズレベル 0 (no noise) ～ 255 (lot of noise).
 	 */
 	void noise(int level);
+
+	/**
+	 * ノイズ生成（元の画像を無視してグレースケールのホワイトノイズを描画／α情報は維持）
+	 */
+	void generateWhiteNoise();
 };
 
 #endif

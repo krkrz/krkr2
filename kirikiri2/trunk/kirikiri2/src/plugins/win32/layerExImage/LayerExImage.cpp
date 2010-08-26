@@ -343,3 +343,21 @@ layerExImage::noise(int level)
 	}
 	redraw();
 }
+
+/**
+ * ノイズ生成（元の画像を無視してグレースケールのホワイトノイズを描画／α情報は維持）
+ */
+void
+layerExImage::generateWhiteNoise()
+{
+	BYTE *src = (BYTE*)_buffer;
+	for (int y=0; y<_height; y++){
+		BYTE *p = src;
+		for (int x=0; x<_width; x++,p+=4){
+			BYTE n = (BYTE)(rand()/(RAND_MAX/255));
+			p[2] = p[1] = p[0] = n;
+		}
+		src += _pitch;
+	}
+	redraw();
+}
