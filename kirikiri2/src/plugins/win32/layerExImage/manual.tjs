@@ -26,6 +26,11 @@ class Layer {
     function noise(level);
 
 	/**
+	 * ノイズ生成（元の画像を無視してグレースケールのホワイトノイズを描画／α情報は維持）
+	 */
+    function generateWhiteNoise();
+
+	/**
 	 * 色相と彩度と輝度の変更
 	 * @param hue 色相 -180～180 (度)
 	 * @param saturation 彩度 -100～100 (%)
