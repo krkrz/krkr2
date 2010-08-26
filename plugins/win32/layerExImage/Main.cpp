@@ -36,6 +36,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(layerExImage, Layer) {
 	NCB_METHOD(colorize);
 	NCB_METHOD(modulate);
 	NCB_METHOD(noise);
+	NCB_METHOD(generateWhiteNoise);
 }
 
 void init()
