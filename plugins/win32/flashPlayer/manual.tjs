@@ -161,7 +161,7 @@ class FlashPlayer {
 	 * 描画内容が更新された場合に呼び出されるイベント
 	 * 通常はこのイベントがきた場合に draw() で描画内容を取得します
 	 */
-	function onUpdateFrame();
+	function onFrameUpdate();
 
 	// -------------------------------------------------
 	// Flash プロパティ
