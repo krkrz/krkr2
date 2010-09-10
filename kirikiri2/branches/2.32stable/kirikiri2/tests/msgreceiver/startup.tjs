@@ -1,0 +1,53 @@
+Plugins.link("msgreceiver.dll");
+
+var WIDTH=640;
+var HEIGHT=480;
+
+class MyWindow extends Window
+{
+    //  メニュ
+    var filemenu;
+    var exitmenu;
+    
+    // ベースレイヤ
+    var base;
+
+    function MyWindow() {
+
+        super.Window();
+
+        caption = "MSG受信テスト";
+        
+        menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+        filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
+
+        // ベースレイヤ
+        base = new Layer(this,null);
+        base.visible=true;
+        base.setSize(WIDTH,HEIGHT);
+        base.fillRect(0,0,WIDTH,HEIGHT,0xffffff);
+        setInnerSize(base.width, base.height);
+        add(base);
+        wmrStart(this);
+    }
+    
+    function finalize() {
+        wmrStop(this);
+        super.finalize();
+    }
+
+    function onCopyData(msg) {
+        System.inform(msg);
+    }
+    
+	function action(ev)
+	{
+        if(ev.type == "onClick" && ev.target == exitmenu) {
+            close();
+        }
+	}
+}
+
+// 窓
+var win = new MyWindow();
+win.visible=true;

@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="..\..\..\..\bin\win32\tools\krdevui.dll"/>
+    <OBJFILES value="intermediate\FolderSelectorUnit.obj intermediate\ConfSettingsUnit.obj 
+      intermediate\ConfMainFrameUnit.obj intermediate\RelFolderSelectorUnit.obj 
+      intermediate\RelSettingsUnit.obj intermediate\RelDirSearchUnit.obj 
+      intermediate\FontMakerUnit.obj intermediate\FontMakerWriteUnit.obj 
+      intermediate\FontPreviewUnit.obj intermediate\RelMain.obj 
+      intermediate\ConfMain.obj intermediate\MainUnit.obj 
+      intermediate\ProgressUnit.obj intermediate\TPCMainUnit.obj 
+      intermediate\JPEGQualityUnit.obj intermediate\LogViewerUnit.obj 
+      intermediate\DeePNGUnit.obj intermediate\DeePSDUnit.obj 
+      intermediate\slide.obj intermediate\TLG5Saver.obj 
+      intermediate\SignUnit.obj intermediate\KrkrExecutableUnit.obj 
+      intermediate\RandomizeFormUnit.obj intermediate\SignMainFormUnit.obj 
+      intermediate\TLG6Saver.obj intermediate\GolombTable.obj 
+      intermediate\TLGMetaInfo.obj intermediate\DSound.obj 
+      intermediate\EditLabelAttribUnit.obj intermediate\EditLinkAttribUnit.obj 
+      intermediate\LabelDetailUnit.obj intermediate\LinkDetailUnit.obj 
+      intermediate\looptune.obj intermediate\LoopTunerMainUnit.obj 
+      intermediate\RIFFWaveContext.obj intermediate\TSSWaveContext.obj 
+      intermediate\WaveReader.obj intermediate\WaveView.obj 
+      intermediate\CharacterSet.obj intermediate\tvpsnd.obj 
+      intermediate\TotalView.obj intermediate\WaveLoopManager.obj"/>
+    <RESFILES value="krdevui.res"/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) FolderSelectorUnit.dfm ConfSettingsUnit.dfm 
+      ConfMainFrameUnit.dfm RelFolderSelectorUnit.dfm RelSettingsUnit.dfm 
+      RelDirSearchUnit.dfm FontMakerUnit.dfm FontMakerWriteUnit.dfm 
+      FontPreviewUnit.dfm tpc\ProgressUnit.dfm tpc\TPCMainUnit.dfm 
+      tpc\JPEGQualityUnit.dfm tpc\LogViewerUnit.dfm RandomizeFormUnit.dfm 
+      SignMainFormUnit.dfm looptuner2\EditLabelAttribUnit.dfm 
+      looptuner2\EditLinkAttribUnit.dfm looptuner2\LabelDetailUnit.dfm 
+      looptuner2\LinkDetailUnit.dfm looptuner2\LoopTunerMainUnit.dfm"/>
+    <LIBFILES value="..\..\..\..\..\Lib\zlib.lib ..\..\..\..\..\Lib\deelibpng.lib 
+      ..\..\..\..\..\..\..\Lib\libtomcrypt1.lib"/>
+    <LIBRARIES value="shlbpk.lib VCLX50.lib shlibbpk.lib Vcl50.lib"/>
+    <SPARELIBS value="Vcl50.lib shlibbpk.lib VCLX50.lib shlbpk.lib"/>
+    <PACKAGES value="Vcl50.bpi Vclx50.bpi shlbpk.bpi"/>
+    <PATHCPP value=".;tpc;tpc\png;tpc\psd;tpc\tlg5;tpc\tlg6;looptuner2;..\..\..\core\base;..\..\..\core\sound\win32"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="krdevui.bpf"/>
+    <INCLUDEPATH value="..\..\..\core\sound\win32;$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2"/>
+    <LIBPATH value="..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\core\sound\win32;..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-WD -O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -ff -X- -pr -a8 -6 -b- -k- -y 
+      -v -vi -tWD -tWM -c"/>
+    <PFLAGS value="-N2intermediate -N0intermediate -$Y- -$L- -$D- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-Iintermediate -D&quot;&quot; -aa -Tpd -GD -x -Gn -Gi -v"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0d32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=1
+MajorVer=1
+MinorVer=4
+Release=6
+Build=84
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1041
+CodePage=932
+
+[Version Info Keys]
+CompanyName=
+FileDescription=TVP Development User Interface DLL
+FileVersion=1.4.6.84
+InternalName=
+LegalCopyright=(C)2001-2009, W.Dee All rights reserved.
+LegalTrademarks=
+OriginalFilename=krdevui.dll
+ProductName=
+ProductVersion=1.0.0.0
+Comments=TVP(krkr.eXe) needs this DLL in some developing-phase occasions.
+
+[Excluded Packages]
+$(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
+$(BCB)\Bin\bcbsmp50.bpl=Borland C++ Sample Components
+$(BCB)\Bin\dclqrt50.bpl=QuickReport Components
+$(BCB)\Bin\dclbde50.bpl=Borland BDE DB Components
+$(BCB)\Bin\dcldb50.bpl=Borland Database Components
+$(BCB)\Bin\dcltee50.bpl=TeeChart 5.0 Components
+$(BCB)\Bin\dcltqr50.bpl=TeeChart 5.0 for QuickReport Components Design Package
+$(BCB)\Bin\dclib50.bpl=InterBase Data Access Components
+$(BCB)\Bin\bcbie50.bpl=Borland C++Builder Internet Explorer 5 Components Package
+$(BCB)\Bin\dclnet50.bpl=Borland Internet Components
+$(BCB)\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
+$(BCB)\Bin\DCLNMF50.bpl=NetMasters Fastnet Tools
+$(BCB)\Bin\dclocx50.bpl=Borland Sample Imported ActiveX Controls
+$(BCB)\Bin\bcb2kaxserver50.bpl=Borland C++Builder COM Server Components Sample Package
+$(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
+
+[HistoryLists\hlIncludePath]
+Count=17
+Item0=..\..\..\core\sound\win32;$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
+Item1=$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
+Item2=$(BCB)\include\tomcrypt1;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
+Item3=$(BCB)\include\tomcrypt;$(BCB)\include\vcl;$(BCB)\projects\comps\o\shlib;$(BCB)\include;..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;..\..\..\..;..\..\..\core\tjs2
+Item4=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt;..\..\..\core\tjs2
+Item5=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt;..\..\..\core\tjs
+Item6=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item7=..\..\..\sound\win32;..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item8=..\..\..\core\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item9=..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item10=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\include\tomcrypt
+Item11=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item12=..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item13=..\..\..\..\..\Bin;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item14=$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item15=;;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item16=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=9
+Item0=..\..\..\core\sound;..\..\..\core\base;looptuner2;..\..\..\core\sound\win32;..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\..\core\sound\win32;..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\..\sound\win32;looptune;tpc\tlg6;tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib
+Item3=tpc\tlg5;tpc\psd;tpc\png;tpc;..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\fgconvert\psd;..\fgconvert\png;..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..\..\..\..\..\Bin;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib
+Item6=$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib
+Item7=;;$(BCB)\Projects\Lib;$(BCB)\projects\comps\o\shlib;..\..\..\..;$(BCB)\lib\obj;$(BCB)\lib
+Item8=$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=7
+Item0=NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER
+Item1=NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER;_DEBUG
+Item2=NO_WIN32_LEAN_AND_MEAN;TVP_IN_LOOP_TUNER;_MSC_VER
+Item3=NO_WIN32_LEAN_AND_MEAN
+Item4=NO_WIN32_LEAN_AND_MEAN;_DEBUG
+Item5=_DEBUG;NO_WIN32_LEAN_AND_MEAN
+Item6=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=2
+Item0=intermediate
+Item1=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\krdevui\intermediate
+
+[HistoryLists\hlFinalOutputDir]
+Count=4
+Item0=..\..\..\..\bin\win32\tools\
+Item1=..\..\..\..\bin\win32\tools
+Item2=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32\
+Item3=c:\Program Files\Borland\CBuilder5\Projects\tvp2win32\environ\win32
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=C:\Program Files\Borland\CBuilder5\Projects\tvp2win32\kirikiri2\bin\win32\tools\krkrrel.exe
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+  </IDEOPTIONS>
+</PROJECT>

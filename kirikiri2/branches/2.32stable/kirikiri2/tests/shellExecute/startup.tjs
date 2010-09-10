@@ -1,0 +1,72 @@
+Plugins.link("shellExecute.dll");
+
+function ToString(dic, level = 0, add = 2) {
+	var ret = "";
+	if (typeof dic !== "Object" || !(dic instanceof "Dictionary")) return ret;
+	var items = [];
+	items.assign(dic);
+	for (var i = 0; i < items.count; i+=2) {
+		var key = items[i], val = items[i+1];
+		ret += " ".repeat(level) + key + ": ";
+		if (typeof val === "Object") {
+			if (val instanceof "Array") {
+				ret += "[ " + val.join(", ") + " ]\n";
+				continue;
+			} else if (val instanceof "Dictionary") {
+				ret += "%[\n" + ToString(val, level + add, add);
+				ret += " ".repeat(level) + "]\n";
+				continue;
+			}
+		}
+		val = "void" if (val === void);
+		ret += val + "\n";
+	}
+	return ret;
+}
+class TestWindow extends Window {
+	function TestWindow() {
+		super.Window();
+		menu.add(new MenuItem(this, "test"));
+		menu.add(new MenuItem(this, "term"));
+		menu.add(new MenuItem(this, "console"));
+		menu.add(new MenuItem(this, "bgconsole"));
+		caption = "shellExecute.dllƒeƒXƒg";
+		innerSunken = false;
+		setInnerSize(320, 1);
+		visible = true;
+	}
+	var lastproc;
+	function action(ev) {
+		if (ev.type == "onClick" && typeof ev.target == "Object" && ev.target instanceof "MenuItem") {
+			switch (ev.target.caption) {
+			case "test":
+				var file = Storages.getPlacedPath("test.bat");
+				lastproc = shellExecute("cmd.exe", @'/c "${Storages.getLocalName(file)}"');
+				break;
+			case "term":
+				if (lastproc !== void) terminateProcess(lastproc, -4);
+				break;
+			case "console":
+				var file = Storages.getPlacedPath("console.bat");
+				var ret = System.commandExecute("cmd.exe", @'/c "${Storages.getLocalName(file)}"');
+				Debug.console.visible = true;
+				Debug.message("\n"+ToString(ret));
+				break;
+			case "bgconsole":
+				var file = Storages.getPlacedPath("console.bat");
+				lastproc = commandExecute("cmd.exe", @'/c "${Storages.getLocalName(file)}"');
+				break;
+			}
+		}
+	}
+	function onShellExecuted(proc, code) {
+		lastproc = void;
+		System.inform(@"onShellExecuted ${proc}/${code}");
+	}
+	function onCommandLineOutput(line, text) {
+		Debug.console.visible = true;
+		Debug.message(line, text);
+	}
+}
+
+var win = new TestWindow();

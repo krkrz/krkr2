@@ -1,0 +1,78 @@
+/*------------------ player ------------------*/
+class MyWindow extends Window
+{
+	var primlayer;
+	var buf;
+
+	var timer;
+
+	var p = 1;
+
+	function MyWindow()
+	{
+		super.Window();
+		width=400;
+		height=70;
+		visible = true;
+		add(primlayer = new Layer(this, null));
+		add(buf = new WaveSoundBuffer(this));
+		primlayer.left = primlayer.top = 0;
+		primlayer.width = 400;
+		primlayer.height = 70;
+
+		add(timer = new Timer(play, ''));
+		timer.interval = 50;
+		timer.enabled = true;
+	}
+
+	function play()
+	{
+		if(p)
+		{
+			Debug.message("p");
+			Debug.message(buf.status);
+			if(Math.random() < 0.5)
+			{
+				switch(int(Math.random() * 2))
+				{
+				case 0:
+					Debug.message("0"); buf.open("c:/mss/k3o3wmtm.wav"); break;
+				case 1:
+					Debug.message("1"); buf.open("c:/mss/are.wav"); break;
+				}
+			}
+			Debug.message("play");
+			buf.play();
+			Debug.message("s");
+			timer.interval = Math.random() * 4500 + 10;
+		}
+		else
+		{
+			Debug.message("np");
+			buf.stop();
+			Debug.message("n");
+			timer.interval = Math.random() * 100 + 10;
+		}
+		p = !p;
+	}
+
+	function action(ev)
+	{
+		if(ev.type == "onFileDrop" && ev.target == this)
+		{
+			buf.open(ev.files[0]);
+		}
+		else if(ev.type == "onClick" && ev.target == primlayer)
+		{
+			play();
+		}
+	}
+}
+
+Plugins.link("wuvorbis.dll");
+Plugins.link("wutcwf.dll");
+Plugins.link("wumsadp.dll");
+
+var a = new MyWindow();
+
+/*------------------ player ------------------*/

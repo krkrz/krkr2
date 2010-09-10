@@ -1,0 +1,19 @@
+<table width="100%">
+<tr><td bgcolor="#ffc0c0"><span class="script">
+*部分その1<br />
+@cm<br />
+ここは部分その1です。[l][r]<br />
+普通は次のラベルまでが一つの「部分」となります。[p][r]<br />
+</span></td></tr>
+<tr><td bgcolor="#c0ffc0"><span class="script">
+*部分その2<br />
+@cm<br />
+ここは部分その2です。[p][r]<br />
+</span></td></tr>
+<tr><td bgcolor="#c0c0ff"><span class="script">
+*部分その3<br />
+@cm<br />
+ここは部分その3です。[l][r]<br />
+[[s]タグまでも一つの「部分」となります。[s]<br />
+</span></td></tr>
+</table>

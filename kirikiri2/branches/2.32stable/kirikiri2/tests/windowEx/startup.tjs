@@ -1,0 +1,2 @@
+Storages.addAutoPath(System.exePath + "/../../src/plugins/win32/windowEx/");
+Scripts.execStorage("testscript.tjs");

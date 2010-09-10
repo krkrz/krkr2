@@ -1,0 +1,34 @@
+Plugins.link('encode.dll');
+
+Debug.console.visible = true;
+var win = new Window();
+win.visible=true;
+
+var count = 0;
+var failed = 0;
+function ok(expected, actual) {
+    if (expected === actual) {
+        Debug.message('.');
+    }
+    else {
+        Debug.message('Failed test ', count);
+        ++failed;
+    }
+
+    count++;
+}
+
+
+ok(<% 61 62 63 e3 81 82 e3 81 84 e3 81 86 61 62 63 %>, Encode.encode('abc‚ ‚¢‚¤abc', 'UTF-8'));
+ok(<% 61 62 63 82 a0 82 a2 82 a4 61 62 63 %>, Encode.encode('abc‚ ‚¢‚¤abc', 'Shift_JIS'));
+ok(<% 61 62 63 a4 a2 a4 a4 a4 a6 61 62 63 %>, Encode.encode('abc‚ ‚¢‚¤abc', 'EUC-JP'));
+
+ok('abc‚ ‚¢‚¤abc', Encode.decode(<% 61 62 63 e3 81 82 e3 81 84 e3 81 86 61 62 63 %>, 'UTF-8'));
+ok('abc‚ ‚¢‚¤abc', Encode.decode(<% 61 62 63 82 a0 82 a2 82 a4 61 62 63 %>, 'Shift_JIS'));
+ok('abc‚ ‚¢‚¤abc', Encode.decode(<% 61 62 63 a4 a2 a4 a4 a4 a6 61 62 63 %>, 'EUC-JP'));
+
+if (failed > 0) {
+    Debug.message('@@@@@@@@@@@@@@@@@@@@@@@@@');
+    Debug.message('@@@@@ test failed!! @@@@@');
+    Debug.message('@@@@@@@@@@@@@@@@@@@@@@@@@');
+}
