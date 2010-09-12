@@ -370,3 +370,51 @@ CopyBlueToAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJ
 
 NCB_ATTACH_FUNCTION(copyBlueToAlpha, Layer, CopyBlueToAlpha);
 
+/**
+ * Layer.isBlank = function(x,y,w,h);
+ * 指定領域がブランクデータかどうか確認する
+ */
+static tjs_error TJS_INTF_METHOD
+isBlank(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	if (numparams < 4) {
+		return TJS_E_BADPARAMCOUNT;
+	}
+
+	// 読み込みもと
+	BufRefT sbuf = 0;
+	long sw, sh, spitch;
+	if (!GetLayerBufferAndSize(objthis, sw, sh, sbuf, spitch)) {
+		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
+	}
+
+	tjs_int left   = *param[0];
+	tjs_int top    = *param[1];
+	tjs_int width  = *param[2];
+	tjs_int height = *param[3];
+	
+	// 範囲チェック
+	if (left < 0 || top < 0 || width < 0 || top < 0 ||
+		left + width > sw || top + height > sh)
+		TVPThrowExceptionMessage(L"invalid layer range");
+
+	// 判定処理
+	for (tjs_int y = top; y < top + height; y++) {
+		BufRefT buffer = sbuf + left * 4 + spitch * y;
+		for (tjs_int x = left; x < left + width; x++, buffer += 4) {
+			if (*buffer) {
+				if (result) {
+					*result = 0;
+				}
+				return TJS_S_OK;
+			}
+		}
+	}
+	
+	if (result) {
+		*result = 1;
+	}
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(isBlank, Layer, isBlank);

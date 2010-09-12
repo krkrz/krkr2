@@ -106,4 +106,10 @@ class Layer {
 	 * @param src コピー元レイヤ
 	 */
 	function copyBlueToAlpha(src);
+
+	/**
+	 * レイヤの指定領域がブランクデータかどうか確認します
+	 * @return ブランクデータなら true
+	 */
+	function isBlank(x, y, w, h);
 };
