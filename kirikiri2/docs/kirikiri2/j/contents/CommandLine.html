@@ -95,7 +95,7 @@ Releaser や krkrconf.exe ( エンジン設定.exe ) では、吉里吉里の実行可能ファイルや
 <dt>-<a id="id14" name="id14" class="targanchor"><dfn>timerprec</dfn></a> (タイマの精度)</dt>
 <dd>　タイマの精度の高さの設定です。<br />
 　設定可能な値は <em>'normal' (通常)</em> あるいは <em>'higher' (やや高い)</em> あるいは <em>'high' (高い)</em> で、このオプションを指定しないと 'normal' が指定されたものと見なされます。<br />
-　このオプションは NT 系 OS ( NT/2000/XP/Vista ) でのみ意味を持ちます。Win9x 系の OS ( 95/98/98SE/ME ) ではこのオプションは無視されます。<br />
+　このオプションは NT 系 OS ( NT/2000/XP/Vista/7 ) でのみ意味を持ちます。Win9x 系の OS ( 95/98/98SE/ME ) ではこのオプションは無視されます。<br />
 　'higher' や 'high' を指定すると全体的にタイマ ( 時間やタイミングに関する物のほとんども含む ) の精度が高くなり、KAG での文字表示のもたつき感や MIDI 再生のもたつき感が解消される可能性がありますが、パフォーマンスが低下する可能性もあります。</dd>
 <dt>-<a id="id15" name="id15" class="targanchor"><dfn>laxtimer</dfn></a> (タイマイベント許容量制限)</dt>
 <dd>　一度にシステムに蓄えられるタイマイベントの数 ( 最大発生許容量 ) を制限し、タイマイベントが溜まりすぎて処理できなくなる状況を回避するかどうかの設定です。<br />
@@ -308,76 +308,84 @@ Releaser や krkrconf.exe ( エンジン設定.exe ) では、吉里吉里の実行可能ファイルや
 <dt>-<a id="id51" name="id51" class="targanchor"><dfn>jpegdec</dfn></a> (JPEG画像デコード精度)</dt>
 <dd>　JPEG画像のデコード(展開)の精度の設定です。<br />
 　設定可能な値は <em>'high' (高い)</em>, <em>'normal' (標準)</em>, <em>'low' (低い)</em> のいずれかで、このオプションを指定しないと 'normal' が指定されたものと見なされます。<br />
-　'high' を指定するとデコードは低速になりますが、画質は高くなります。'low' を指定するとデコードは高速になりますが画質は低くなります。しかし、見た目ではほとんど違いはありません。</dd></dl></div></div>
+　'high' を指定するとデコードは低速になりますが、画質は高くなります。'low' を指定するとデコードは高速になりますが画質は低くなります。しかし、見た目ではほとんど違いはありません。</dd>
+<dt>-<a id="id52" name="id52" class="targanchor"><dfn>drawthread</dfn></a> (描画スレッド数)</dt>
+<dd>　描画処理時に、使用するスレッドの数の設定です。<br />
+　設定可能な値は<em>任意の数値</em>もしくは<em>'auto' (自動)</em>のいずれかで、このオプションを指定しないと '1'が指定されたものと見なされます。<br />
+　'auto'を指定すると、OSの認識するプロセッサ数と同数のスレッドが自動的に割り当てられます。<br />
+　描画スレッドを複数設定することで、マルチコア環境での描画パフォーマンスを向上させられる可能性がありますが、逆にパフォーマンスが低下する場合もあります。<br />
+　描画面積が大きい処理、Affine系の高負荷な処理、演算の重いレイヤ合成処理などに適用することで、良好な結果を得られる可能性があります。<br />
+　マルチスレッドを使用するように設定しても、描画処理の負荷が軽くマルチスレッド化の効果が得られないとシステムが判断した場合は、マルチスレッドで実行されない場合があります。<br />
+</dd></dl></div></div>
 
-<h1><a id="id52" name="id52">CPU 機能関連のオプション</a>
+<h1><a id="id53" name="id53">CPU 機能関連のオプション</a>
 </h1><div class="para"><div>
 　以下のオプションはすべて設定可能な値は <em>'yes' (使用可能であれば使用する)</em>, <em>'no' (使用可能であっても使用しない)</em>, <em>'force' (強制的に使用する)</em> のいずれかで、オプションを指定しないと 'yes' が指定されたものと見なされます。<br />
 　CPU の認識トラブルが起こった場合に 'no' に設定するとその機能を用いません。<br />
 　'force' は、その CPU 機能を検出しなくても強制的に使用するようになりますが、CPU にその機能がついていない場合はもちろん正常に動作しません。<br />
 　吉里吉里本体には -cpummx -cpucmov -cpusse -cpuemmx のオプションのみが影響を与えます。OggVorbis デコーダ (wuvorbis.dll) には -cpusse と -cpummx と -cpu3dn のオプションが影響を与えます。そのほかの(サードパーティーの)プラグインの中にも CPU 機能の設定の影響を受けるものがあるかも知れません。<br />
 <br />
-<ul><li>-<a id="id53" name="id53" class="targanchor"><dfn>cpummx</dfn></a> (MMX)</li><li>-<a id="id54" name="id54" class="targanchor"><dfn>cpu3dn</dfn></a> (3DNow!)</li><li>-<a id="id55" name="id55" class="targanchor"><dfn>cpusse</dfn></a> (SSE)</li><li>-<a id="id56" name="id56" class="targanchor"><dfn>cpucmov</dfn></a> (CMOVcc)</li><li>-<a id="id57" name="id57" class="targanchor"><dfn>cpue3dn</dfn></a> (Enhanced 3DNow!)</li><li>-<a id="id58" name="id58" class="targanchor"><dfn>cpuemmx</dfn></a> (EMMX (MMX2))</li><li>-<a id="id59" name="id59" class="targanchor"><dfn>cpusse2</dfn></a> (SSE2)</li></ul></div></div>
+<ul><li>-<a id="id54" name="id54" class="targanchor"><dfn>cpummx</dfn></a> (MMX)</li><li>-<a id="id55" name="id55" class="targanchor"><dfn>cpu3dn</dfn></a> (3DNow!)</li><li>-<a id="id56" name="id56" class="targanchor"><dfn>cpusse</dfn></a> (SSE)</li><li>-<a id="id57" name="id57" class="targanchor"><dfn>cpucmov</dfn></a> (CMOVcc)</li><li>-<a id="id58" name="id58" class="targanchor"><dfn>cpue3dn</dfn></a> (Enhanced 3DNow!)</li><li>-<a id="id59" name="id59" class="targanchor"><dfn>cpuemmx</dfn></a> (EMMX (MMX2))</li><li>-<a id="id60" name="id60" class="targanchor"><dfn>cpusse2</dfn></a> (SSE2)</li></ul></div></div>
 
 
-<h1><a id="id60" name="id60">デバッグ関連のオプション</a>
+<h1><a id="id61" name="id61">デバッグ関連のオプション</a>
 </h1><div class="para"><div>
 <dl>
-<dt>-<a id="id61" name="id61" class="targanchor"><dfn>debug</dfn></a> (デバッグモード)</dt>
+<dt>-<a id="id62" name="id62" class="targanchor"><dfn>debug</dfn></a> (デバッグモード)</dt>
 <dd>　吉里吉里をデバッグモード <span class="comlink"> ( → <a target="main" class="jump" href="Debug.html">デバッグ</a> ) </span> で動作させるかどうかの設定です。<br />
 　設定可能な値は <em>'no' (無効)</em>, <em>'yes' (有効)</em>のいずれかで、このオプションを指定しないと 'no' が指定されたものと見なされます。<br />
 　有効にすると、吉里吉里はデバッグモードで動作し、いくつかのデバッグ支援機能が有効になりますが、通常のモードよりも実行速度は低下します。</dd>
 
-<dt>-<a id="id62" name="id62" class="targanchor"><dfn>forcelog</dfn></a> (ファイルへのログ)</dt>
+<dt>-<a id="id63" name="id63" class="targanchor"><dfn>forcelog</dfn></a> (ファイルへのログ)</dt>
 <dd>　コンソールのログをファイルに出力するかどうかの設定です。<br />
 　設定可能な値は <em>'no' (出力しない)</em>, <em>'yes' (既存のファイルに追加して出力する)</em>, <em>'clear' (既存のファイルをクリアしてから出力する)</em> のいずれかで、このオプションを指定しないと 'no' が指定されたものと見なされます。
 </dd>
-<dt>-<a id="id63" name="id63" class="targanchor"><dfn>logerror</dfn></a> (エラー時のファイルへのログ)</dt>
+<dt>-<a id="id64" name="id64" class="targanchor"><dfn>logerror</dfn></a> (エラー時のファイルへのログ)</dt>
 <dd>　エラー時にコンソールのログをファイルに出力するかどうかの設定です。<br />
 　設定可能な値は <em>'no' (出力しない)</em>, <em>'yes' (既存のファイルに追加して出力する)</em>, <em>'clear' (既存のファイルをクリアしてから出力する)</em> のいずれかで、このオプションを指定しないと 'yes' が指定されたものと見なされます。
 </dd>
-<dt>-<a id="id64" name="id64" class="targanchor"><dfn>debugwin</dfn></a> (デバッグ支援ウィンドウ)</dt>
+<dt>-<a id="id65" name="id65" class="targanchor"><dfn>debugwin</dfn></a> (デバッグ支援ウィンドウ)</dt>
 <dd>　デバッグ支援ウィンドウ(コンソール、監視式など)を有効にするかどうかの設定です。<br />
 　設定可能な値は <em>'yes' (有効)</em>, <em>'no' (無効)</em> のいずれかで、このオプションを指定しないと 'yes' が指定されたものと見なされます。<br />
 　ユーザにデバッグ支援ウィンドウを使用させたくないときに 'no' を指定します。</dd></dl></div></div>
 
 
-<h1><a id="id65" name="id65">ホットキー関連のオプション</a>
+<h1><a id="id66" name="id66">ホットキー関連のオプション</a>
 </h1><div class="para"><div>
 　以下のオプションは、吉里吉里の<a target="main" class="jump" href="HotKeys.html">ホットキー</a>関連のオプションです。<br />
 　設定できる値は<a class="jump" href="f_MenuItem_shortcut.html">MenuItem.shortcut</a> プロパティで指定できる文字列と同様です。<br />
 　空文字列を指定すると(入力欄を空にしておくと)、その機能に対するホットキーは無効になります。<br />
 　他のホットキーと重複したキーを指定しないでください。<br />
 <br />
-<ul><li>-<a id="id66" name="id66" class="targanchor"><dfn>hkcontroller</dfn></a> (コントローラ)</li><li>-<a id="id67" name="id67" class="targanchor"><dfn>hkeditor</dfn></a> (スクリプトエディタ)</li><li>-<a id="id68" name="id68" class="targanchor"><dfn>hkwatch</dfn></a> (監視式)</li><li>-<a id="id69" name="id69" class="targanchor"><dfn>hkconsole</dfn></a> (コンソール)</li><li>-<a id="id70" name="id70" class="targanchor"><dfn>hkclipenvinfo</dfn></a> (環境情報のコピー)</li><li>-<a id="id71" name="id71" class="targanchor"><dfn>hkabout</dfn></a> (著作権情報の表示)</li><li>-<a id="id72" name="id72" class="targanchor"><dfn>hkupdaterect</dfn></a> (更新矩形の表示)</li><li>-<a id="id73" name="id73" class="targanchor"><dfn>hkdumplayer</dfn></a> (レイヤ構造のダンプ)</li></ul></div></div>
+<ul><li>-<a id="id67" name="id67" class="targanchor"><dfn>hkcontroller</dfn></a> (コントローラ)</li><li>-<a id="id68" name="id68" class="targanchor"><dfn>hkeditor</dfn></a> (スクリプトエディタ)</li><li>-<a id="id69" name="id69" class="targanchor"><dfn>hkwatch</dfn></a> (監視式)</li><li>-<a id="id70" name="id70" class="targanchor"><dfn>hkconsole</dfn></a> (コンソール)</li><li>-<a id="id71" name="id71" class="targanchor"><dfn>hkclipenvinfo</dfn></a> (環境情報のコピー)</li><li>-<a id="id72" name="id72" class="targanchor"><dfn>hkabout</dfn></a> (著作権情報の表示)</li><li>-<a id="id73" name="id73" class="targanchor"><dfn>hkupdaterect</dfn></a> (更新矩形の表示)</li><li>-<a id="id74" name="id74" class="targanchor"><dfn>hkdumplayer</dfn></a> (レイヤ構造のダンプ)</li></ul></div></div>
 
 
 
 
 
-<h1><a id="id74" name="id74">システム互換性関連のオプション</a>
+<h1><a id="id75" name="id75">システム互換性関連のオプション</a>
 </h1><div class="para"><div>
 <dl>
-<dt>-<a id="id75" name="id75" class="targanchor"><dfn>arcdelim</dfn></a> (アーカイブデリミタ)</dt>
+<dt>-<a id="id76" name="id76" class="targanchor"><dfn>arcdelim</dfn></a> (アーカイブデリミタ)</dt>
 <dd>　アーカイブデリミタ (アーカイブストレージ名と、アーカイブ内ストレージ名の間を区切る文字) を指定します。<br />
 　設定可能な値は <em>'&gt;' ('&gt;'を使う)</em>, <em>'#' ('#'を使う)</em> のいずれかで、このオプションを指定しないと '&gt;' が指定されたものと見なされます。<br />
 　アーカイブデリミタは、吉里吉里２ 2.19 beta 14 で、従来の '#' から '&gt;' に変更されました。<br />
 　2.19 beta 14 未満で動作していたアプリケーションはこの変更のため動作しなくなる可能性がありますが、このオプションでデリミタを '#' に変更することで動作させることができます。<br />
 </dd>
 
-<dt>-<a id="id76" name="id76" class="targanchor"><dfn>evalcontext</dfn></a> (後置'!'演算子の動作)</dt>
+<dt>-<a id="id77" name="id77" class="targanchor"><dfn>evalcontext</dfn></a> (後置'!'演算子の動作)</dt>
 <dd>　TJS2の後置'!'演算子の動作を指定します。<br />
 　設定可能な値は <em>'this' (this上で式を評価)</em>, <em>'global' (global上で式を評価)</em> のいずれかで、このオプションを指定しないと 'this' が指定されたものと見なされます。<br />
 　TJS2の後置'!'演算子は式をglobalコンテキスト上で実行していましたが、2.21 beta 9 より、this コンテキスト上で実行するようになりました。<br />
 2.21 beta 9 未満を想定しているアプリケーションでは、この設定を「global上で式を評価」にしないと動作しない可能性があります。</dd>
 
-<dt>-<a id="id77" name="id77" class="targanchor"><dfn>holdalpha</dfn></a> (Layer.holdAlpha プロパティのデフォルトの値)</dt>
+<dt>-<a id="id78" name="id78" class="targanchor"><dfn>holdalpha</dfn></a> (Layer.holdAlpha プロパティのデフォルトの値)</dt>
 <dd>　<a target="main" class="jump" href="f_Layer_holdAlpha.html">Layer.holdAlpha</a> プロパティのデフォルト値を指定します。<br />
 　設定可能な値は <em>'false' (偽)</em>, <em>'true' (真)</em> のいずれかで、このオプションを指定しないと 'false' が指定されたものと見なされます。<br />
 　吉里吉里２ 2.23 beta 4 で、各種演算関数に指定していた hda (アルファチャンネルを保護するか) オプションがなくなり、代わりに Layer.holdAlpha プロパティが作られました。この時点では Layer.holdAlpha のデフォルト値は真でした。Layer.holdAlpha が真の場合は過去のアプリケーションの動作に影響を与えません。<br />
 　吉里吉里２ 2.23 beta 5 で、このデフォルト値が偽になりました。吉里吉里２ 2.23 beta 5 未満を想定しているアプリケーションを動作させたい場合は、このオプションに「真」を指定しないと正常に動作しない可能性があります。</dd>
 
-<dt>-<a id="id78" name="id78" class="targanchor"><dfn>unaryaster</dfn></a> (前置'*'演算子の動作)</dt>
+<dt>-<a id="id79" name="id79" class="targanchor"><dfn>unaryaster</dfn></a> (前置'*'演算子の動作)</dt>
 <dd>　TJS2の前置'*'演算子の動作を指定します。<br />
 　設定可能な値は <em>'default' (2.25以降の動作)</em>, <em>'compat' (2.25未満の動作)</em> のいずれかで、このオプションを指定しないと 'default' が指定されたものと見なされます。<br />
 　TJS2の前置'*'演算子は、プロパティオブジェクトそのものを、プロパティハンドラを介さずに取り出す演算子でしたが、2.25 beta 1 より、この機能を持つ演算子は前置の'&amp;'となり、前置'*'演算子はプロパティオブジェクトのプロパティハンドラを動作させるための演算子となりました。2.25 beta 1 未満を想定しているアプリケーションでは、この設定を「2.25未満と互換」にしないと正常に動作しない可能性があります。</dd>
