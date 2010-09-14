@@ -340,7 +340,9 @@ psdarken	:%[type:ltPsDarken			],\
 psdiff		:%[type:ltPsDifference		],\
 psdiff5		:%[type:ltPsDifference5		],\
 psexcl		:%[type:ltPsExclusion		],\
-]\
+],\
+/* draw thread num */\
+ dtnAuto=0\
 ;");
 //---------------------------------------------------------------------------
 
