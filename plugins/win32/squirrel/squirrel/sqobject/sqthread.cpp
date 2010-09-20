@@ -847,6 +847,53 @@ Thread::global_trigger(HSQUIRRELVM v)
 }
 
 /**
+ * ベースVM上でスクリプトを実行する。
+ * この呼び出しはスレッドによるものではないため、処理中に suspend() / wait() を
+ * 呼ぶとエラーになるので注意してください。必ず1度で呼びきれるものを渡す必要があります。
+ * @param func グローバル関数。※ファイルは指定できません
+ * @param ... 引数
+ */
+SQRESULT
+Thread::global_execOnBase(HSQUIRRELVM v)
+{
+	SQInteger max = sq_gettop(v);
+	if (max <= 1) {
+		return ERROR_INVALIDPARAM(v);
+	}
+	HSQUIRRELVM gv = getGlobalVM();
+	SQRESULT result = SQ_OK;
+	if (gv == v) {
+		sq_push(gv, 2);
+		sq_pushroottable(gv); // 引数:self(root)
+		int argc = 1;
+		for (int i=3;i<=max;i++) {
+			sq_push(v, i);
+			argc++;
+		}
+		if (SQ_SUCCEEDED(result = sq_call(gv, argc, SQTrue, SQTrue))) {
+			sq_remove(gv, -2); // func
+		} else {
+			sq_pop(gv, 1); // func
+		}
+	} else {
+		sq_move(gv, v, 2);    // func
+		sq_pushroottable(gv); // 引数:self(root)
+		int argc = 1;
+		for (int i=3;i<=max;i++) {
+			sq_move(gv, v, i);
+			argc++;
+		}
+		if (SQ_SUCCEEDED(result = sq_call(gv, argc, SQTrue, SQTrue))) {
+			sq_move(v, gv, sq_gettop(gv));
+			sq_pop(gv, 2);
+		} else {
+			sq_pop(gv, 1); // func
+		}
+	}
+	return result;
+}
+
+/**
  * グローバルメソッド登録
  */
 void
@@ -878,6 +925,7 @@ Thread::registerGlobal()
 	REGISTERMETHODNAME(system, global_system);
 	REGISTERMETHODNAME(wait, global_wait);
 	REGISTERMETHODNAME(notify, global_trigger);
+	REGISTERMETHODNAME(execOnBase, global_execOnBase);
 	sq_pop(v, 1); // root
 	
 	// 定数の登録
