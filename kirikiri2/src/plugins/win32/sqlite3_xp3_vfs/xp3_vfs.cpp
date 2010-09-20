@@ -187,9 +187,9 @@ static int xp3FileSize(sqlite3_file *id, sqlite3_int64 *pSize)
 	xp3File*	file = (xp3File*)id;
 	if( file->stream_ ) {
 		STATSTG		statData;
-		HRESULT		hr = file->stream_->Stat( &statData, STATFLAG_DEFAULT );
+		HRESULT		hr = file->stream_->Stat( &statData, STATFLAG_NONAME );
 		if( S_OK == hr ) {
-			*pSize = (((sqlite3_int64)statData.cbSize.HighPart)<<32) + statData.cbSize.LowPart;
+			*pSize = statData.cbSize.QuadPart;
 			return SQLITE_OK;
 		} else {
 			return SQLITE_IOERR_FSTAT;
