@@ -587,7 +587,8 @@ public:
 												) {
 		//log(L"enumMemberCallback");
 		if (numparams > 1) {
-			if ((int)param[1] != TJS_HIDDENMEMBER) {
+			tTVInteger flag = param[1]->AsInteger();
+			if (!(flag & TJS_HIDDENMEMBER)) {
 				methodEnums->push_back(getAtom(param[0]->GetString()));
 			}
 		}

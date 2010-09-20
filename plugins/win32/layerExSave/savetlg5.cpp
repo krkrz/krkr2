@@ -207,7 +207,8 @@ bool CompressTLG5::compress(long width, long height, BufRefT buffer, long pitch,
 														iTJSDispatch2 *objthis		// object as "this"
 														) {
 				if (numparams > 1) {
-					if ((int)param[1] != TJS_HIDDENMEMBER) {
+					tTVInteger flag = param[1]->AsInteger();
+					if (!(flag & TJS_HIDDENMEMBER)) {
 						ttstr name  = *param[0];
 						ttstr value = *param[2];
 						*store += ttstr(name.GetNarrowStrLen()) + ":" + name + "=" +	ttstr(value.GetNarrowStrLen()) + ":" + value + ",";

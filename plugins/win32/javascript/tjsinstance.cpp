@@ -80,7 +80,7 @@ public:
 												iTJSDispatch2 *objthis		// object as "this"
 												) {
 		if (numparams > 1) {
-			if (/**(int)param[1] != TJS_HIDDENMEMBER &&*/ param[2]->Type() == tvtObject) {
+			if (param[2]->Type() == tvtObject) {
 				const tjs_char *name = param[0]->GetString();
 				tTVInteger flag = param[1]->AsInteger();
 				bool staticMember = (flag & TJS_STATICMEMBER) != 0;
