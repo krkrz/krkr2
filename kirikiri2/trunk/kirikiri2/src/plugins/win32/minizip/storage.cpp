@@ -64,10 +64,16 @@ public:
 	/**
 	 * 個別の展開用ファイルを開く
 	 */
-	unzData open(const ttstr &srcname) {
+	unzData open(const ttstr &srcname, ULONG *size) {
 		if (uf) {
 			lock();
 			if (unzLocateFile(uf, NarrowString(srcname), CASESENSITIVITY) == UNZ_OK) {
+				if (size) {
+					unz_file_info file_info;
+					if (unzGetCurrentFileInfo(uf, &file_info, NULL,0,NULL,0,NULL,0) == UNZ_OK) {
+						*size = file_info.uncompressed_size;
+					}
+				}
 				unzData data = NULL;
 				if (unzOpenData(uf, &data, NULL, NULL, 0, NULL) == UNZ_OK) {
 					return data;
@@ -235,6 +241,7 @@ public:
 
 	// IStream
 	HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER dlibMove,	DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) {
+		// 先頭にだけ戻せる
 		if (dwOrigin == STREAM_SEEK_SET && dlibMove.QuadPart == 0) {
 			rewind();
 			if (plibNewPosition) {
@@ -269,7 +276,38 @@ public:
 	}
 	
 	HRESULT STDMETHODCALLTYPE Stat(STATSTG *pstatstg, DWORD grfStatFlag) {
-		return E_NOTIMPL;
+		if(pstatstg) {
+			ZeroMemory(pstatstg, sizeof(*pstatstg));
+
+			// pwcsName
+			// this object's storage pointer does not have a name ...
+			if(!(grfStatFlag &  STATFLAG_NONAME)) {
+				// anyway returns an empty string
+				LPWSTR str = (LPWSTR)CoTaskMemAlloc(sizeof(*str));
+				if(str == NULL) return E_OUTOFMEMORY;
+				*str = L'\0';
+				pstatstg->pwcsName = str;
+			}
+
+			// type
+			pstatstg->type = STGTY_STREAM;
+			
+			// cbSize
+			pstatstg->cbSize.QuadPart = size;
+			
+			// mtime, ctime, atime unknown
+
+			// grfMode unknown
+			pstatstg->grfMode = STGM_DIRECT | STGM_READ | STGM_SHARE_DENY_WRITE ;
+			
+			// grfLockSuppoted
+			pstatstg->grfLocksSupported = 0;
+			
+			// grfStatBits unknown
+		} else {
+			return E_INVALIDARG;
+		}
+		return S_OK;
 	}
 
 	HRESULT STDMETHODCALLTYPE Clone(IStream **ppstm) {
@@ -278,7 +316,7 @@ public:
 
 	bool init(const ttstr filename) {
 		bool ret = false;
-		if ((ret = (data = unzip->open(filename)) != NULL)) {
+		if ((ret = (data = unzip->open(filename, &size)) != NULL)) {
 			this->filename = filename;
 		}
 		return ret;
@@ -302,7 +340,7 @@ protected:
 	
 	void rewind() {
 		close();
-		data = unzip->open(filename);
+		data = unzip->open(filename, &size);
 	}
 	
 private:
@@ -310,6 +348,7 @@ private:
 	ttstr filename;
 	UnzipBase *unzip;
 	unzData data;
+	ULONG size;
 };
 
 /**
@@ -383,26 +422,23 @@ public:
 	// name does not contain in-archive storage name but
 	// is normalized.
 	virtual tTJSBinaryStream * TJS_INTF_METHOD Open(const ttstr & name, tjs_uint32 flags) {
-		// 書き込みは禁止
-		if (flags == TJS_BS_WRITE || flags == TJS_BS_APPEND) {
-			TVPThrowExceptionMessage(TJS_W("cannot write to memfile:%1"), name);
-		}
-		tTJSBinaryStream *ret = NULL;
-		ttstr fname;
-		UnzipBase *unzip = getUnzip(name, fname);
-		if (unzip) {
-			UnzipStream *stream = new UnzipStream(unzip);
-			if (stream) {
-				if (stream->init(fname)) {
-					ret = TVPCreateBinaryStreamAdapter(stream);
+		if (flags == TJS_BS_READ) { // 読み込みのみ
+			ttstr fname;
+			UnzipBase *unzip = getUnzip(name, fname);
+			if (unzip) {
+				UnzipStream *stream = new UnzipStream(unzip);
+				if (stream) {
+					if (stream->init(fname)) {
+						tTJSBinaryStream *ret = TVPCreateBinaryStreamAdapter(stream);
+						stream->Release();
+						return ret;
+					}
+					stream->Release();
 				}
-				stream->Release();
 			}
 		}
-		if (!ret) {
-			TVPThrowExceptionMessage(TJS_W("cannot open memfile:%1"), name);
-		}
-		return ret;
+		TVPThrowExceptionMessage(TJS_W("%1:cannot open zipfile"), name);
+		return NULL;
 	}
 
 	// list files at given place
