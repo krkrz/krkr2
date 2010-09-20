@@ -67,7 +67,8 @@ public:
 												iTJSDispatch2 *objthis		// object as "this"
 												) {
 		if (numparams > 1) {
-			if ((int)param[1] != TJS_HIDDENMEMBER) {
+			tTVInteger flag = param[1]->AsInteger();
+			if (!(flag & TJS_HIDDENMEMBER)) {
 				xml_node *prop = doc.allocate_node(rapidxml::node_element, L"property");
 				prop->append_attribute(doc.allocate_attribute(L"id", param[0]->GetString()));
 				prop->append_node(createNodeFromVariant(*param[2], doc));
