@@ -95,7 +95,8 @@ public:
 												iTJSDispatch2 *objthis		// object as "this"
 												) {
 		if (numparams > 1) {
-			if ((int)param[1] != TJS_HIDDENMEMBER) {
+			tTVInteger flag = param[1]->AsInteger();
+			if (!(flag & TJS_HIDDENMEMBER)) {
 				errorCode = bindParam(stmt, *param[1], getBindPos(stmt, *param[0]));
 			}
 		}
