@@ -149,7 +149,7 @@ void sqstd_seterrorhandlers(HSQUIRRELVM v)
 	sq_createslot(v, -3);
 	sq_pushstring(v, _SC("notifyAllExceptions"), -1);
 	sq_newclosure(v, notifyAllExceptions, 0);
-	sq_setparamscheck(v, 2, _SC(".n"));
+	sq_setparamscheck(v, 2, _SC(".n|b"));
 	sq_createslot(v, -3);
 	sq_pop(v,1);
 }

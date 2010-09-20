@@ -34,6 +34,8 @@ class Object {
 	/**
 	 * コンストラクタ
 	 * @param delegate 処理を委譲するオブジェクトを指定します。
+	 * Object の諸機能が正常に動作するためには
+	 * 継承クラスのコンストラクタではかならず Object.constructor() を呼び出す必要があります。
 	 */
 	constructor(delegate=null);
 
@@ -279,3 +281,17 @@ function removeContinuousHandler(func, type=1);
  * 全 continuous handler を解除する
  */
 function clearContinuousHandler();
+
+
+// ------------------------------------------------
+// ベースVM操作
+// ------------------------------------------------
+
+/**
+ * ベースVM上でスクリプトを実行する。
+ * この呼び出しはスレッドによるものではないため、処理中に suspend() / wait() を
+ * 呼ぶとエラーになるので注意してください。必ず1度で呼びきれるものを渡す必要があります。
+ * @param func グローバル関数。※ファイルは指定できません
+ * @param ... 引数
+ */
+function execOnBase(func);

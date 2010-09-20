@@ -386,6 +386,14 @@ protected:
 	 */
 	static SQRESULT global_trigger(HSQUIRRELVM v);
 
+	/**
+	 * ベースVM上でスクリプトを実行する。
+	 * この呼び出しはスレッドによるものではないため、処理中に suspend() / wait() を
+	 * 呼ぶとエラーになるので注意してください。必ず1度で呼びきれるものを渡す必要があります。
+	 * @param func グローバル関数。※ファイルは指定できません
+	 */
+	static SQRESULT global_execOnBase(HSQUIRRELVM v);
+	
 public:
 	/**
 	 * グローバルメソッドの登録

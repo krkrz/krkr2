@@ -75,6 +75,16 @@ public:
 	return sq_gettype(v, idx);
   }
 
+  // int値
+  SQInteger intValue() const {
+	return (SQInteger)*this;
+  }
+
+  // flaot値
+  SQFloat floatValue() const {
+	return (SQFloat)*this;
+  }
+
 private:
   HSQUIRRELVM v;
   int idx;
@@ -457,12 +467,10 @@ public:
 		ObjectInfoReference operator[](K key) {
 			HSQOBJECT target;
 			HSQUIRRELVM gv = getGlobalVM();
-			int top = sq_gettop(gv);
 			pushData(gv);
 			sq_getstackobj(gv, -1, &target);
 			ObjectInfoReference ret = ObjectInfoReference(target, key);
 			sq_pop(gv, 1);
-			top = sq_gettop(gv);
 			return ret;
 		}
 		
@@ -819,20 +827,18 @@ bool pushObject(HSQUIRRELVM v, Object *obj);
 
 // 値の push
 void pushValue(HSQUIRRELVM v, bool value);
-void pushValue(HSQUIRRELVM v, SQBool value);
 void pushValue(HSQUIRRELVM v, SQInteger value);
 void pushValue(HSQUIRRELVM v, SQFloat value);
 void pushValue(HSQUIRRELVM v, const SQChar *value);
 void pushValue(HSQUIRRELVM v, SQUserPointer value);
-void pushValue(HSQUIRRELVM v, ObjectInfo &obj);
-void pushValue(HSQUIRRELVM v, StackValue &sv);
-void pushValue(HSQUIRRELVM v, std::basic_string<SQChar> &value);
+void pushValue(HSQUIRRELVM v, const ObjectInfo &obj);
+void pushValue(HSQUIRRELVM v, const StackValue &sv);
+void pushValue(HSQUIRRELVM v, const std::basic_string<SQChar> &value);
 void pushValue(HSQUIRRELVM v, SQFUNCTION func);
 void pushValue(HSQUIRRELVM v, HSQOBJECT obj);
 
 // 値の取得
 SQRESULT getValue(HSQUIRRELVM v, bool *value, int idx=-1);
-SQRESULT getValue(HSQUIRRELVM v, SQBool *value, int idx=-1);
 SQRESULT getValue(HSQUIRRELVM v, SQInteger *value, int idx=-1);
 SQRESULT getValue(HSQUIRRELVM v, SQFloat *value, int idx=-1);
 SQRESULT getValue(HSQUIRRELVM v, const SQChar **value, int idx=-1);
@@ -933,7 +939,6 @@ SQRESULT getValue(HSQUIRRELVM v, T **value, int idx=-1) {
 
 // 値の強制初期化
 void clearValue(bool *value);
-void clearValue(SQBool *value);
 void clearValue(SQInteger *value);
 void clearValue(SQFloat *value);
 void clearValue(const SQChar **value);
@@ -949,7 +954,6 @@ void clearValue(T **value) {
 
 // 値の取得：基本 getValue のコピペ。文字列は安全でない場合があるので排除する必要あり
 SQRESULT getResultValue(HSQUIRRELVM v, bool *value);
-SQRESULT getResultValue(HSQUIRRELVM v, SQBool *value);
 SQRESULT getResultValue(HSQUIRRELVM v, SQInteger *value);
 SQRESULT getResultValue(HSQUIRRELVM v, SQFloat *value);
 SQRESULT getResultValue(HSQUIRRELVM v, SQUserPointer *value);
