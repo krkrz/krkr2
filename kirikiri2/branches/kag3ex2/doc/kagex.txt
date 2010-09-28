@@ -70,6 +70,33 @@ Storages.addAutoPath("thum/"); // サムネール画像用フォルダ
 
 ◇制御系拡張
 
+◆待ちコマンド全般 (拡張)
+
+wait パラメータが指定された待ち命令は、規定の待ち動作のあと、
+さらに追加で指定された「時間」分待ちます。
+クリックで動作キャンセルされた場合はこの追加の待ちはありません。
+
+属性
+	wait	追加待ち指定 (ms単位)
+
+※ wait, wd, waituntil ではこの拡張は無効です
+
+◆待ちありコマンド全般(拡張)
+
+動作に対して対応する待ちがあるコマンドに自動的に待ち動作を実行する
+属性が追加されています。canskipは未指定時は一括で true 扱いになります。
+
+属性
+	sync	待ち実行
+	wait	追加待ち指定(ms単位)
+
+対応するコマンド
+
+ quake, animstart, trans, move, action, 
+ fadeinbgm, fadeoutbgm, fadepausebgm, fadebgm, xchgbgm, 
+ fadeinse, fadeoutse, fadese,
+ playvideo
+
 ◆コマンド全般 (拡張)
 
 delayrun パラメータが指定されたコマンドは、待ち処理中に遅延実行されます。
@@ -107,12 +134,6 @@ lineModeによる改ページ処理前(クリック待ちの後)、
 属性
 	ラベル名=遅延時間	の形で任意のラベルを登録できます。
 
-◆wait (拡張)
-
-属性
-    trans   待ちがキャンセルされたときにトランジションを解除する
-    action  待ちがキャンセルされたときにアクションを解除する
-    
 ◆waituntil (新規)
 
 機能的には waittag の until パラメータと等価。
@@ -162,23 +183,97 @@ KAGEX では、レベル」という概念を持ち、レベル単位で表示順が決定されます。
 前景レイヤに対して、従来の image に加えて
 以下の属性を追加で利用できるようになります。
 
-color, storage, tile, movie は排他で、この順で有効です。
+color, storage, tile, flip は排他で、この順で有効です。
 レイヤのサイズは自動的に読み込まれた素材のサイズになります。
 
 属性
+	storage	画像指定(拡張)
+		・*.emf / *.wmf ベクタ画像も扱えます
+		・*.psb 指定時はモーションデータを読み込みます
+		  以下の追加パラメータを同時に指定します
+			chara			キャラ指定
+			motion			モーション指定
+			stealthchara	キャラの隠し差し替え
+			stealthmotion	モーションの隠し差し替え
+			flags			モーション再生フラグ
+			tickcount		モーションのtick値	
+			speed			再生速度指定
+
     color   塗りつぶし色
     width   塗りつぶし時サイズ横幅
     height  塗りつぶし時サイズ縦幅
+
     tile    画像タイル敷き詰めファイル名。color, storageがあると無効
-    movie   動画再生指定。color, storage, tile があると無効
-    loop    動画がループ再生するかどうかを指定
-    alpha   0:通常の動画
-            1:α動画。画面上半分をRGB、下半分をαとみなす
-            2:α動画。画面左半分をRGB、右半分をαとみなす
-    rotate  回転角度
-    zoomx   横方向拡大率
-    zoomy   縦方向拡大率
-    zoom    拡大率
+    tilex   タイル位置X
+    tiley   タイル位置Y
+
+	clipimage		クリッピング画像指定
+	clipimageleft	クリッピング画像配置位置X
+	clipimagetop	クリッピング画像配置位置Y
+		実際に画面表示する際に指定した画像のα情報で切り抜いて表示します。
+　　　	※クリップ画像の座標値は画面に対する絶対座標指定です
+
+	flip		フリップ描画対象ファイル。color, storage, tile があると無効
+	fliptype	フリップの種別を指定 
+				※未指定時は flipで指定したファイルの拡張子も参照されます
+				movie:  .mpeg .mpg .wmv
+				flash:  .swf
+				particle: .tjs
+				fire: 未指定
+    movie   flip指定＋fliptype:movie と等価　※互換用
+    fire    flip指定＋fliptype:fire  と等価  ※互換用
+
+
+	movie用オプションパラメータ
+	    loop    動画がループ再生するかどうかを指定
+	    alpha   0:通常の動画
+    	        1:α動画。画面上半分をRGB、下半分をαとみなす
+        	    2:α動画。画面左半分をRGB、右半分をαとみなす
+
+	fire用オプションパラメータ
+	    firecolor   炎エフェクトカラー指定 red, blue, white または 
+    	        0xRRGGBB で色指定。色指定を 0xRRGGBB:0xRRGGBB と ":" で
+	            連ねると、そのグラデーションになります。
+        	    先に記述したほうが温度が高い部分の色です。
+            	平均的に色配置されますが、":" を複数記述するとその
+    	        部分の領域が長くなります。α値は線形になります
+	    firegamma   firecolor で直接色指定した場合、それのα値の変動を
+	            線形でなくする場合に指定します。
+	    firelayer   256×1 サイズのレイヤで炎の色マップ画像を直接指定します
+	    firewidth   炎エフェクト領域サイズ指定。省略時は元ファイルサイズ
+	    fireheight  炎エフェクト領域サイズ指定。省略時は元ファイルサイズ
+	    fireleft    炎エフェクト種画像配置位置
+	    firetop     炎エフェクト種画像配置位置
+	    firemargin  炎エフェクト画像領域を前後左右にこれだけ拡張
+	    forceh  横方向フォース指定(-8～8)
+	    forcev  縦方向フォース指定(-8～8)
+	    boundRangeH 横方向バウンドレンジ 0～16
+	    boundRangeV 縦方向バウンドレンジ 0～16
+	    scalingCoeff    スケーリング係数 0～0.01
+	    numOfBlurForCoolMap ブラー適用回数 0～
+   		textureFilterType テクスチャフィルタ　0:ニアレスネイバー, 1:バイリニア
+	    coolRange   強さの振れ幅を設定 0～256
+    	coolStrength    強さ 0～255
+	    coolParticleDensityDenominator  冷却粒子濃度分母 0>
+    	coolParticleDensityNumerator    冷却粒子濃度分子 0>
+	    edgeSmoothing　炎の端を目立ちにくくするかどうか
+
+	flas用オプションパラメータ
+		flashwidth
+		flashheight
+
+	particle用オプションパラメータ
+		genratio
+		ptidx
+
+	flipx	横方向反転(true/false)
+	flipy	縦方向反転(true/false)
+	slantx	横方法傾斜率(%)
+	slanty	縦方向傾斜率(%)
+    zoomx   横方向拡大率(%)
+    zoomy   縦方向拡大率(%)
+    zoom    拡大率(%) XY同時指定
+    rotate  回転角度(度)
     afx     回転・拡大原点X座標 center/left/right 
             または数値でレイヤの左上隅からの座標
     afy     回転・拡大原点Y座標 center/top/bottom
@@ -189,37 +284,9 @@ color, storage, tile, movie は排他で、この順で有効です。
             ※http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/index.html
     reset   アクションと属性指定をすべて初期化する
             ※opacity と type は画像ロード時のものに初期化されます
-    tilex   タイル位置X
-    tiley   タイル位置Y
 
-    fire    炎エフェクト種画像指定。color, storage, tile, movie があると無効
-    firecolor   炎エフェクトカラー指定 red, blue, white または 
-            0xRRGGBB で色指定。色指定を 0xRRGGBB:0xRRGGBB と ":" で
-            連ねると、そのグラデーションになります。
-            先に記述したほうが温度が高い部分の色です。
-            平均的に色配置されますが、":" を複数記述するとその
-            部分の領域が長くなります。α値は線形になります
-    firegamma   firecolor で直接色指定した場合、それのα値の変動を
-            線形でなくする場合に指定します。
-    firelayer   256×1 サイズのレイヤで炎の色マップ画像を直接指定します
-    firewidth   炎エフェクト領域サイズ指定。省略時は元ファイルサイズ
-    fireheight  炎エフェクト領域サイズ指定。省略時は元ファイルサイズ
-    fireleft    炎エフェクト種画像配置位置
-    firetop     炎エフェクト種画像配置位置
-    firemargin  炎エフェクト画像領域を前後左右にこれだけ拡張
-    forceh  横方向フォース指定(-8～8)
-    forcev  縦方向フォース指定(-8～8)
-    boundRangeH 横方向バウンドレンジ 0～16
-    boundRangeV 縦方向バウンドレンジ 0～16
-    scalingCoeff    スケーリング係数 0～0.01
-    numOfBlurForCoolMap ブラー適用回数 0～
-    textureFilterType テクスチャフィルタ　0:ニアレスネイバー, 1:バイリニア
-    coolRange   強さの振れ幅を設定 0～256
-    coolStrength    強さ 0～255
-    coolParticleDensityDenominator  冷却粒子濃度分母 0>
-    coolParticleDensityNumerator    冷却粒子濃度分子 0>
-    edgeSmoothing　炎の端を目立ちにくくするかどうか
- 
+	※アフィン変形は flip → slant → zoom → rotate の順に処理されます
+
 ◆layopt (拡張)
 
 前景レイヤに対して、従来の layopt に加えて
@@ -253,8 +320,11 @@ color, storage, tile, movie は排他で、この順で有効です。
     rastercycle ラスタースクロールの周期
     tilex   タイル位置X
     tiley   タイル位置Y
+	clipimage		クリッピング画像指定
+	clipimageleft	クリッピング画像配置位置X
+	clipimagetop	クリッピング画像配置位置Y
 
-　　＋炎エフェクトのパラメータも指定可能
+　　＋各種flipエフェクトのパラメータも調整指定可能
 
 ◆laylevel (新規)
 
@@ -330,6 +400,18 @@ layer パラメータを指定すると、前景レイヤの動画再生完了を待ちます
 
 指定されたレイヤのアクションの終了を待ちます。
 指定を省略した場合は全レイヤのアクションの終了を待ちます。
+nowait 指定されたアクションは待つことができません。
+
+属性
+    layer   レイヤの指定（前景のみ)
+    page    表裏の指定
+    canskip 値 true(デフォルト) または false
+            true を指定するとクリックで待ちをスキップできます
+
+◆wat (新規)
+
+指定されたレイヤのアクションおよびトランジションの終了を待ちます。
+指定を省略した場合は全レイヤのアクションおよびトランジションの終了を待ちます。
 nowait 指定されたアクションは待つことができません。
 
 属性
@@ -1051,33 +1133,5 @@ KAGEX ではデバッグメニューが従来の KAG から拡張されています
 全部別々に記録されるようになります。
 
 記録されたログは、「KAGEXログを出力する」で、デバッグログフォルダ
-（通常 savedata 以下）にそれぞれ
-・
-・
-・
-として出力されます。素材関係の動作チェックに利用できます
-
-◇自動ラベルによる特殊デバッグ
-
-「デバッグ/自動ラベルセーブ」を有効にすると、
-「前のラベルに戻る」が利用可能になります。
-
-これは、プレイ中にラベルを発見するごとにセーブして、
-デバッグ作業中に直前のラベルからロードすることで
-そこに戻ることができる機能です。
-
-この機能を使う場合は
-
-・msgreceiver.dll
-・searchprev.exe
-
-が必要になるのでご注意ください。
-
-msgreceiver.dll は吉里吉里を外部制御する機能を追加する
-プラグインです。実行ファイル.hwnd というファイルに、
-現在有効なウインドウハンドルが記録されているので、
-そのハンドルに対して WM_COPYDATA でコマンドを送ることができます。
-
-searchprev は、シナリオファイルの現在行から一番近い
-以前のラベルを検索して、その部分にジャンプするように
-吉里吉里に指示を出すコマンドです。
+（通常 savedata 以下）にそれぞれ出力されます。
+素材関係の動作チェックに利用できます

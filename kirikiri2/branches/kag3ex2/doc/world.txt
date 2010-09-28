@@ -79,6 +79,7 @@ KAGEX ‚Ìƒ^ƒO‚Ìˆ—‚ªŽŸ‚Ì‚æ‚¤‚ÉŠg’£‚³‚ê‚Ü‚·
 begintrans‚Ì‘®«
     trans   ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“–¼Žw’èi¦Ú×‚ÍŒãqj
     fade    ƒtƒF[ƒhŽw’èƒVƒ‡[ƒgƒJƒbƒgi¦Ú×‚ÍŒãqj
+	nosync	‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ð”ñ“¯ŠúŽÀs‚µ‚Ü‚·
 
  ¦ltbegin/ltend ‚à“¯—l‚É‹@”\‚·‚é‚æ‚¤‚É’²®‚³‚ê‚Ä‚¢‚Ü‚·
 
@@ -301,12 +302,19 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
                 ¶ã‚·‚Ý‚©‚çŽžŒv‚Ü‚í‚è‚É 123456789(9‚Í’†‰›)
                 ƒfƒtƒHƒ‹ƒg‚Í‰æ–Ê’†‰›
 
-    xpos        XˆÊ’uŽw’èB‰Šú‰»E‘Š‘ÎŽw’è—LŒø
-    ypos        YˆÊ’uŽw’èB‰Šú‰»E‘Š‘ÎŽw’è—LŒø
+    xpos        XˆÊ’uŽw’èB‰Šú‰»E‘Š‘ÎŽw’è—LŒø ¦ƒAƒNƒVƒ‡ƒ“ƒpƒ‰ƒ[ƒ^–¼‚Í left
+    ypos        YˆÊ’uŽw’èB‰Šú‰»E‘Š‘ÎŽw’è—LŒø ¦ƒAƒNƒVƒ‡ƒ“ƒpƒ‰ƒ[ƒ^–¼‚Í top
 
     opacity     •s“§–¾“x(0-255)B‰Šú‰»E‘Š‘ÎŽw’è—LŒø
+
+	flipx		‰¡”½“] true/false
+	flipy		c”½“] true/false
+	slantx		‰¡ŒXŽÎ—¦i“)B‰Šú‰»E‘Š‘ÎŽw’è—LŒø
+	slanty		cŒXŽÎ—¦i“)B‰Šú‰»E‘Š‘ÎŽw’è—LŒø
+    zoomx       ‰¡Šg‘å—¦i“jB‰Šú‰»E‘Š‘ÎŽw’è—LŒø
+    zoomy       cŠg‘å—¦i“jB‰Šú‰»E‘Š‘ÎŽw’è—LŒø
+    zoom        Šg‘å—¦i“jB‰Šú‰»E‘Š‘ÎŽw’è—LŒø ¦XY“¯ŽžŽw’è
     rotate      ‰ñ“]Šp“xi“xjB‰Šú‰»E‘Š‘ÎŽw’è—LŒø
-    zoom        Šg‘å—¦i“jB‰Šú‰»E‘Š‘ÎŽw’è—LŒø
 
     afx         ‰ñ“]Œ´“_Žw’èXÀ•W center/left/right/”’l
     afy         ‰ñ“]Œ´“_Žw’èYÀ•W center/top/bottom/”’l
@@ -323,6 +331,8 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 
     action      ƒAƒNƒVƒ‡ƒ“–¼Žw’èi¦Ú×Œãq)
     stopaction  ƒAƒNƒVƒ‡ƒ“‹­§’âŽ~
+	path		moveŒÝŠ·ˆÚ“®ˆ—‚ðƒAƒNƒVƒ‡ƒ“ŽÀsB
+    spline		ƒAƒNƒVƒ‡ƒ“‚ÌƒpƒXˆÚ“®Žw’è‚ÌƒXƒvƒ‰ƒCƒ“‰»
 
     trans       ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“–¼Žw’èi¦Ú×Œãqj
     notrans     ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“–³ŒøŽw’è
@@ -337,6 +347,8 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
     sync        ƒAƒNƒVƒ‡ƒ“/ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Ì“¯ŠúŽw’è
     nosync      ƒAƒNƒVƒ‡ƒ“/ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Ì”ñ“¯ŠúŽw’è
     nowait      ƒAƒNƒVƒ‡ƒ“/ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Ì‹­§“¯Šú‚Ì‰ñ”ð
+	wait		“¯ŠúŒã‚Ì‘Ò‚¿Žw’è’Ç‰ÁBƒpƒ‰ƒ[ƒ^–³‚µ‚¾‚Æsync‚Æ“™‰¿
+				wait=”’l ‚Å’Ç‰ÁŽžŠÔ‘Ò‚¿Žw’è‚ð’Ç‰Á
     waitmovie   ƒŒƒCƒ„ƒ€[ƒr[Ä¶‘Ò‚¿
     waitanim    ƒŒƒCƒ„ƒAƒjƒÄ¶‘Ò‚¿
 
@@ -350,9 +362,13 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
     ‚±‚ê‚ç‚Ìˆ—‚Í‰æ‘œ‚ª“®“I‚É‰ÁHˆ—‚³‚ê‚Ü‚·B
     ˆ—‚Ì‚½‚ß‚â‚âŽžŠÔ‚ª‚©‚©‚è‚Ü‚·B
 
-    script      envscript.tjs ‚Å’è‹`‚³‚ê‚½ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚ðŒÄ‚Ño‚µ‚Ä
+    script      ‰æ‘œ‰ÁHƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚ðŒÄ‚Ño‚µ‚Ä
                 ‰æ‘œ‰ÁH‚µ‚Ü‚·BƒJƒ“ƒ}‹æØ‚è‚ÅÅ‰‚Ìƒpƒ‰ƒ[ƒ^‚ªŠÖ”–¼A
-                Žc‚è‚Íˆø”‚É‚È‚è‚Ü‚·
+                Žc‚è‚Íˆø”‚É‚È‚è‚Ü‚·B
+
+	@@@@@@ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“’è‹`‚ÍAenvscript.tjs ‚É–¼‘O‚Æ‘Î‰ž‚µ‚½
+                Ž«‘‚Æ‚µ‚Ä‹Lq‚·‚é‚©Ascript_–¼‘O.tjs ‚ÌŒ`‚Å
+                ŒÂ•Ê‚ÌŠÖ”’è‹`ƒtƒ@ƒCƒ‹‚ðì¬‚µ‚Ü‚·
     
     noise       ‰æ‘œ‚ÉƒmƒCƒYˆ—‚ðs‚¢‚Ü‚· 0`255
 
@@ -629,6 +645,17 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 
     color   FŽw’è 0xAARRGGBB ‚ÅŽw’è
 
+	mask	‰æ‘œ‚ðŽw’è‰æ‘œ‚Ìƒ¿‚ÅØ‚è”²‚­
+	maskleft ƒ}ƒXƒNˆÊ’u’²®
+	masktop  ƒ}ƒXƒNˆÊ’u’²®
+
+ 	clip    ‰æ‘œ‚Å•\Ž¦‚ðƒNƒŠƒbƒsƒ“ƒO‚·‚é
+	xclip   •\Ž¦ƒNƒŠƒbƒsƒ“ƒO‰æ‘œ‚ÌXˆÊ’u ¦ƒAƒNƒVƒ‡ƒ“ƒpƒ‰ƒ[ƒ^–¼‚Í clipImageLeft
+	yclip   •\Ž¦ƒNƒŠƒbƒsƒ“ƒO‰æ‘œ‚ÌYˆÊ’u ¦ƒAƒNƒVƒ‡ƒ“ƒpƒ‰ƒ[ƒ^–¼‚Í clipImageTop
+
+	¦mask‚Í‰æ‘œ‚»‚Ì‚à‚Ì‚ð‰ÁH‚µ‚Ü‚·B
+@@@clip‚ÍŠY“–ƒIƒuƒWƒFƒNƒg‚Ì•\Ž¦—Ìˆæ‚ðƒŠƒAƒ‹ƒ^ƒCƒ€‚ÅƒNƒŠƒbƒv‚µ‚Ü‚·
+
     movie   “®‰æŽw’è
     loop    “®‰æƒ‹[ƒvŽw’è
     alpha   “®‰æƒAƒ‹ƒtƒ@Žw’è 0:ƒ¿‚È‚µ 1:ƒ¿‰æ‘œic”z’u) 2:ƒ¿‰æ‘œi‰¡”z’uj
@@ -761,7 +788,9 @@ accel ƒpƒ‰ƒ[ƒ^‚ÅƒAƒNƒVƒ‡ƒ“‚Ì‰ÁŒ¸‘¬‚ªŽw’è‰Â”\‚Å‚·B
 ƒAƒNƒVƒ‡ƒ“’è‹`‚ðs‚¤‚±‚Æ‚ÅA‚“x‚ÈƒAƒNƒVƒ‡ƒ“‚ð“K—p‚Å‚«‚Ü‚·B
 ‚±‚¿‚ç‚Ì’è‹`‚Å‚Í•¡”‚Ìƒpƒ‰ƒ[ƒ^‚É‘Î‚·‚é‘€ì‚ð‹Lq‚Å‚«‚Ü‚·B
 
-1. envinit.tjs ‚Ì actions ‚É–¼‘O‚Æƒpƒ‰ƒ[ƒ^‚ð’è‹`‚·‚é
+1. envinit.tjs ‚Ì actions ‚É–¼‘O‚Æƒpƒ‰ƒ[ƒ^‚ð’è‹`‚·‚éA‚Ü‚½‚Í
+@ action_–¼Ì.tjs ‚ÌŒ`‚Å’è‹`ƒtƒ@ƒCƒ‹‚ðì¬‚·‚éB
+
 2. action ƒpƒ‰ƒ[ƒ^‚ÅŽw’è
 
 ¦Šù’è‚Ìƒpƒ‰ƒ[ƒ^‚Í‘¼‚Ìƒpƒ‰ƒ[ƒ^Žw’è‚Åã‘‚«‚Å‚«‚Ü‚·
@@ -796,22 +825,26 @@ sync Žw’è‚Å“¯Šú“®ì‚µ‚Ä‚¢‚éƒAƒNƒVƒ‡ƒ“‚ÍAƒNƒŠƒbƒN‘€ì‚É‚æ‚Á‚ÄƒLƒƒƒ“ƒZƒ‹‚³‚ê‚Ü‚·
 
 ƒ[ƒ‹ƒhŠg’£‚Å‚ÍAŒ´‘¥A‚»‚ê‚¼‚ê‚ÌƒIƒuƒWƒFƒNƒg‚Ì•\Ž¦‚É‘Î‚µ‚ÄŒÂ•Ê‚É
 ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŽw’è‚Å‚«‚Ü‚·B‚½‚¾‚µAƒIƒuƒWƒFƒNƒg‚Ì•\Ž¦ƒŒƒxƒ‹‚ª
-•Ï‚í‚éê‡‚É‚Í‚±‚Ì‹@”\‚Í—˜—p‚Å‚«‚¸AŽw’è‚³‚ê‚Ä‚àAŽ©“®“I‚ÉA
-‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Æ‚µ‚Äˆµ‚í‚ê‚Ü‚·B
+•Ï‚í‚éê‡‚âA‘¼‚ÌƒIƒuƒWƒFƒNƒg‚É‚à‰e‹¿‚ª‹y‚Ô–½—ß‚Ìê‡‚ÍŒÂ•ÊŽw’è‚Í
+—˜—p‚Å‚«‚¸AŽ©“®“I‚É‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Æ‚µ‚Äˆµ‚í‚ê‚Ü‚·B
+‚Ü‚½Atrans.transall ƒpƒ‰ƒ[ƒ^‚ªŽw’è‚³‚ê‚Ä‚¢‚éƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚à
+‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ˆµ‚¢‚É‚È‚è‚Ü‚·B
 
-‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÍA‰æ–Ê‘S‘Ì‚ðˆê“x‚Éƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚·‚é
-ˆ—‚Å‚·B‚±‚Ìˆ—‚Í•K‚¸“¯ŠúŽÀs‚³‚ê‚Ü‚·B
+‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÍA‰æ–Ê‘S‘Ì‚ðˆê“x‚Éƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚·‚éˆ—‚Å‚·B
+‘Oq‚ÌŽ©“®ˆ—‚Ì‘¼Abegintrans/endtrans ‚Å–¾Ž¦“I‚ÉŽÀs‚Å‚«‚Ü‚·B
 
 žŽw’è•û–@
 
-1. envinit.tjs ‚Ì transitions ‚É–¼‘O‚Æƒpƒ‰ƒ[ƒ^‚ð’è‹`‚·‚é
+1. envinit.tjs ‚Ì transitions ‚É–¼‘O‚Æƒpƒ‰ƒ[ƒ^‚ð’è‹`‚·‚éA‚Ü‚½‚Í
+@ trans_–¼Ì.tjs ‚ÌŒ`‚Å’è‹`ƒtƒ@ƒCƒ‹‚ðì¬‚·‚éB
+
 2. trans ƒpƒ‰ƒ[ƒ^‚ÅŽw’è
 
 ¦Šù’è‚Ìƒpƒ‰ƒ[ƒ^‚Í‘¼‚Ìƒpƒ‰ƒ[ƒ^Žw’è‚Åã‘‚«‚Å‚«‚Ü‚·
 
 žƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Ì“¯Šú
 
-ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÍƒfƒtƒHƒ‹ƒg‚Å‚Í•K‚¸Š®—¹‚·‚é‚Ü‚Åˆ—‚ð‘Ò‚¿‚Ü‚·(syncó‘Ô)
+ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÍƒfƒtƒHƒ‹ƒg‚Å‚ÍŠ®—¹‚·‚é‚Ü‚Åˆ—‚ð‘Ò‚¿‚Ü‚·(syncó‘Ô)
 ‚½‚¾‚µAnosync Žw’è‚ðs‚Á‚½ê‡‚ÍA”ñ“¯Šú‚Å‚ÌŽÀs‚É‚È‚è‚Ü‚·B
 ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŽÀs’†‚ÌƒŒƒCƒ„‚Éƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŽÀs‚·‚é‚ÆA
 ˆÈ‘O‚Ì‚à‚Ì‚ªƒLƒƒƒ“ƒZƒ‹‚³‚ê‚Ä‚©‚ç‚ÌŽÀs‚Æ‚È‚è‚Ü‚·B
@@ -829,6 +862,17 @@ sync Žw’è‚Å“¯Šú“®ì‚µ‚Ä‚¢‚éƒAƒNƒVƒ‡ƒ“‚ÍAƒNƒŠƒbƒN‘€ì‚É‚æ‚Á‚ÄƒLƒƒƒ“ƒZƒ‹‚³‚ê‚Ü‚·
 ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŒp‘±‚µ‚½‚¢ê‡‚ÍAnowait ƒpƒ‰ƒ[ƒ^‚ðŽw’è‚µ‚Ü‚·B
 
 stoptrans ‚ðŽg‚¤‚ÆAnowait Žw’è‚ÌƒAƒNƒVƒ‡ƒ“‚à‹­§“I‚É’âŽ~‚Æ‚È‚è‚Ü‚·B
+
+‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚àŒÂ•Êƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Æ“¯—l‚É nosync Žw’è‚Å
+”ñ“¯ŠúŽÀs‰Â”\‚Å‚·‚ªA‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÍŒ´—“I‚Éˆê“x‚É‚P‚Â‚µ‚©
+ŽÀs‚Å‚«‚Ü‚¹‚ñB‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“’†‚ÉA‘¼‚Ì‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚âA
+ŒÂ•ÊƒIƒuƒWƒFƒNƒg‚Ì•`‰æXVˆ—(ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚âƒAƒNƒVƒ‡ƒ“‚à‚ë‚à‚ë)‚ð
+ŽÀs‚µ‚½ê‡‚ÍA•s®‡‚ð–h‚®‚½‚ß‚ÉŒ»ÝŽÀs’†‚Ì‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Í
+“®ìƒLƒƒƒ“ƒZƒ‹‚³‚ê‚Ü‚·B
+
+¦ƒƒO‚ÉŒxƒƒbƒZ[ƒW‚ª•\Ž¦‚³‚ê‚Ü‚·B
+@‚±‚ê‚ªo‚½ê‡‚Íƒ^ƒCƒ~ƒ“ƒOŽw’è‚É–³—‚ª‚ ‚éó‘Ô‚È‚Ì‚ÅA
+@‹Lq‚ðŒ©’¼‚·‚±‚Æ‚ðƒIƒXƒXƒ‚µ‚Ü‚·B
 
 œdelayrun
 

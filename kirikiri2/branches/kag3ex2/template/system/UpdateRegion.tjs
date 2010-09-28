@@ -39,6 +39,13 @@ class UpdateRegion {
 	function update(left, top, width, height) {
 		var right  = left + width - 1;
 		var bottom = top + height - 1;
+		update2(left, top, left+width-1, top+height-1);
+	}
+
+	/**
+	 * 領域更新
+	 */
+	function update2(left, top, right, bottom) {
 		if (this.left === void || left < this.left) {
 			this.left = left;
 		}
@@ -52,21 +59,14 @@ class UpdateRegion {
 			this.bottom = bottom;
 		}
 	}
-
-	/**
-	 * 領域更新
-	 */
-	function update2(left, top, right, bottom) {
-		this.left = left;
-		this.right = right;
-		this.top = top;
-		this.bottom = bottom;
-	}
 	
 	// 更新領域の横幅
 	property width {
 		getter() {
 			return left === void ? 0 : right - left + 1;
+		}
+		setter(v) {
+			right = left + v - 1;
 		}
 	}
 
@@ -74,6 +74,16 @@ class UpdateRegion {
 	property height {
 		getter() {
 			return top === void ? 0 : bottom - top + 1;
+		}
+		setter(v) {
+			bottom = top + v - 1;
+		}
+	}
+
+	function clearTarget(target) {
+		if (left !== void && top !== void && right !== void && bottom !== void) {
+			(global.Layer.fillRect incontextof target)(left, top, width, height, target.neutralColor);
+			clear();
 		}
 	}
 };

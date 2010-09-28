@@ -14,8 +14,6 @@ class KAGEnvBgm {
 	var pause;
 	var resume;
 	var fade;
-	var wait;
-    var waitFade;
 
     /**
      * セーブ処理
@@ -135,40 +133,14 @@ class KAGEnvBgm {
 		fade.time   = elm.time;
     }
 
-    /**
-     * 終了まち
-     * @param param フェード時間
-     */
-    function setWait(param, elm) {
-        wait = %[];
-        (Dictionary.assign incontextof wait)(elm, false);
-        if (wait.canskip === void) {
-            wait.canskip = true;
-        }
-    }
-
-    /**
-     * 終了まち
-     * @param param フェード時間
-     */
-    function setWaitFade(param, elm) {
-        waitFade = %[];
-        (Dictionary.assign incontextof waitFade)(elm, false);
-        if (waitFade.canskip === void) {
-            waitFade.canskip = true;
-        }
-    }
-
     var bgmcommands = %[
-    tagname : null, 
+	tagname : null, 
 	storage : setPlay incontextof this,
     play : setPlay incontextof this,
     stop : setStop incontextof this,
     pause : setPause incontextof this,
 	resume : setResume incontextof this,
     fade : setFade incontextof this,
-    wait : setWait incontextof this,
-    waitfade : setWaitFade incontextof this,
     noxchg : null,
     loop : null,
     time : null,
@@ -180,6 +152,8 @@ class KAGEnvBgm {
     canskip : null,
 	noflag : null,
     nosync : null,
+	sync : null,
+	wait : null,
         ];
 
     var doflag;
@@ -211,30 +185,40 @@ class KAGEnvBgm {
     function tagfunc(elm) {
         //dm("BGM 用ファンクション呼び出し!");
 		doflag = false;
-        wait = void;
-        waitFade = void;
         foreach(elm, doCommand);
         // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
 		if (!doflag && elm.tagname != "bgm") {
 			setPlay(elm.tagname, elm);
-        }
-		sync();
-		if (waitFade !== void) {
-			return kag.waitBGMFade(waitFade); // [NGK]
-		} else  if (wait !== void) {
-			return kag.waitBGMStop(wait); // [NGK]
 		}
-        return 0;
-    }
+		var wait = elm.wait !== void ? +elm.wait : elm.sync !== void ? 0 : void;
+		if (wait == 1) {
+			wait = 0;
+		}
+		var canskip = elm.canskip !== void ? +elm.canskip : true;
+		var fading = sync();
+		if (wait !== void) {
+			switch (fading) {
+			case 0:
+				return 0;
+			case 1:
+				return kag.waitBGMFade(%[canskip:canskip, wait:wait]);
+			case 2:
+				return kag.waitBGMStop(%[canskip:canskip, wait:wait]);
+			}
+		}
+		return 0;
+	}
 
 	function sync() {
 		var bgm = kag.bgm, skipMode = kag.skipMode; // [NGK]
+		var fading = 0;
 		if (!kag.skipNoDisp) { // [NGK]
 			if (fade !== void) {
-				if (fade.time === void) {
-					bgm.setVolume(fade.volume * 1000); 
-				} else {
+				if (fade.time !== void) {
 					bgm.fade(fade);
+					fading = 1;
+				} else {
+					bgm.setVolume(fade.volume * 1000);
 				}
 				fade = void;
 			}
@@ -244,12 +228,15 @@ class KAGEnvBgm {
 					if (play.noxchg) {
 						if (skipMode == SKIP_NONE && time > 0)  {
 							bgm.fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
+							fading = 1;
 						} else {
 							bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
 						}
 					} else {
 						if (skipMode == SKIP_NONE && (time > 0 || +play.intime > 0)) {
-							bgm.exchange(%[ storage:name, loop:play.loop, time:time, intime:play.intime, outtime:play.outtime, overlap:play.overlap, start:play.start]);
+							var overlap = play.overlap !== void ? +play.overlap : play.time;
+							bgm.exchange(%[ storage:name, loop:play.loop, time:play.time, intime:play.intime, outtime:play.outtime, overlap:overlap, start:play.start]);
+							fading = 1;
 						} else {
 							bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
 						}
@@ -262,6 +249,7 @@ class KAGEnvBgm {
 			if (pause !== void) {
 				if (pause > 1) {
 					bgm.fadePause(%[ time: +pause ]);
+					fading = 1;
 				} else {
 					bgm.pause();
 				}
@@ -269,6 +257,7 @@ class KAGEnvBgm {
 			} else if (resume !== void) {
 				if (resume > 1) {
 					bgm.fadeResume(%[ time: +resume ]);
+					fading = 1;
 				} else {
 					bgm.resume();
 				}
@@ -278,10 +267,12 @@ class KAGEnvBgm {
 		if (stop !== void) {
 			if (skipMode == SKIP_NONE && stop > 0) {
 				bgm.fadeOut(%[ time:stop ]);
+				fading = 2;
 			} else {
 				bgm.stop();
 			}
 			stop = void;
 		}
+		return fading;
 	}
 };

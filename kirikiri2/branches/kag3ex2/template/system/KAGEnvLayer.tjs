@@ -1,3 +1,13 @@
+// モーションパラメータ
+var motionParamList = ["chara", "stealthchara",
+					   "motion", "stealthmotion",
+					   "flags", "tickcount", "speed"];
+var motionParams = %[];
+for (var i=0;i<motionParamList.count;i++) {
+	motionParams[motionParamList[i]] = true;
+}
+
+
 /**
  * レイヤ系基底クラス
  * 画像表示処理が実装されている
@@ -12,7 +22,9 @@ class KAGEnvLayer extends KAGEnvImage {
     }
 
     /// 描画中画像
-    var imageFile;
+	var imageFile;
+	var motionUpdate = %[];
+	var motionUpdateFlag;
 	/// 色指定塗りつぶし
 	var imageColor;
 	/// マスク画像
@@ -107,8 +119,12 @@ class KAGEnvLayer extends KAGEnvImage {
 	}
 
     function onStore(f) {
-        super.onStore(f);
-		f.imageFile = imageFile;
+		super.onStore(f);
+		if (imageFile !== void) {
+			(Dictionary.assign incontextof (f.imageFile=%[]))(imageFile);
+		} else {
+			f.imageFile = void;
+		}
 		f.imageColor = imageColor;
 		f.maskFile = maskFile;
 		f.maskLeft = maskLeft;
@@ -132,7 +148,13 @@ class KAGEnvLayer extends KAGEnvImage {
     }
     
     function onRestore(f) {
-		imageFile = f.imageFile;
+		if (f.imageFile === void) {
+			imageFile = void;
+		} else if (typeof f.imageFile == "String") {
+			imageFile = %[storage:f.imageFile];
+		} else {
+			(Dictionary.assign incontextof (imageFile = %[]))(f.imageFile);
+		}
 		imageColor = f.imageColor;
 		maskFile = f.maskFile;
 		maskLeft = f.maskLeft;
@@ -158,7 +180,11 @@ class KAGEnvLayer extends KAGEnvImage {
 
 	function copy(orig) {
 		if (orig instanceof "KAGEnvLayer") {
-			imageFile = orig.imageFile;
+			if (orig.imageFile === void) {
+				imageFile = void;
+			} else {
+				(Dictionary.assign incontextof (imageFile = %[]))(orig.imageFile);
+			}
 			imageColor = orig.imageColor;
 			maskFile = orig.maskFile;
 			maskLeft = orig.maskLeft;
@@ -184,6 +210,8 @@ class KAGEnvLayer extends KAGEnvImage {
 
 	function clearFileState() {
 		imageFile  = void;
+		motionUpdateFlag = false;
+		(Dictionary.clear incontextof motionUpdate)();
 		imageColor = void;
 		maskFile = void;
 		maskLeft = 0;
@@ -215,7 +243,15 @@ class KAGEnvLayer extends KAGEnvImage {
 
 		initFile(elm);
 		clearFileState();
-		imageFile  = file;
+
+		// モーションパラメータ転送
+		imageFile = %[storage:file];
+		for (var i=0;i<motionParamList.count;i++) {
+			var param = motionParamList[i];
+			if (elm[param] !== void) {
+				imageFile[param] = elm[param];
+			}
+		}
 
 		initMask(elm);
 		initPosAndShow(elm);
@@ -258,7 +294,9 @@ class KAGEnvLayer extends KAGEnvImage {
 		return true;
 	}
 	function updateFlipFile(elm) {
-		(Dictionary.assign incontextof flipInfo)(elm,  false);
+		if (elm !== void) {
+			(Dictionary.assign incontextof flipInfo)(elm,  false);
+		}
 		flipUpdateFlag = updateFlag = true;
 	}
 
@@ -291,10 +329,16 @@ class KAGEnvLayer extends KAGEnvImage {
 	file : function(param, elm) {
 		setImageFile(param, elm);
 	} incontextof this,
+	storage : function(param, elm) {
+		setImageFile(param, elm);
+	} incontextof this,
+
 	color : function(param, elm) {
 		setImageColor(param, elm);
 	} incontextof this,
 	mask : null,
+	maskleft : null,
+	masktop : null,
 	tile : function(param, elm) {
 		setTileFile(param, elm);
 	} incontextof this,
@@ -329,12 +373,23 @@ class KAGEnvLayer extends KAGEnvImage {
 		
 		// レイヤ共通コマンド
         var func;
-        if ((func = _layerCommands[cmd]) !== void) {
+		if ((func = _layerCommands[cmd]) !== void) {
             if (func != null) {
                 func(param, elm);
             }
             return true;
         }
+		
+		// モーションパラメータ
+		if (motionParams[cmd] !== void) {
+			if (elm.storage === void && elm.file === void && imageFile !== void) {
+				imageFile[cmd] = param;
+				motionUpdate[cmd] = param;
+				motionUpdateFlag = true;
+			}
+			return true;
+		}
+		
         // レイヤ拡張コマンド用
         if ((func = layerCommands[cmd]) !== void) {
             if (func != null) {
@@ -378,6 +433,11 @@ class KAGEnvLayer extends KAGEnvImage {
 			targetLayer.setFlipOptions(flipInfo) if (isShowBU() && targetLayer !== void);
 			flipUpdateFlag = void;
 		}
+		if (motionUpdateFlag) {
+			targetLayer.setOptions(motionUpdate) if (isShowBU() && targetLayer !== void);
+			(Dictionary.clear incontextof motionUpdate)();
+			motionUpdateFlag = void;
+		}
 		return ret;
 	}
 	
@@ -415,17 +475,17 @@ class KAGEnvLayer extends KAGEnvImage {
 						}
 					}
 				} catch (e) {
-					errorLayer(layer, imageFile + ":タイル画像がロードできません:" + e.message);
+					errorLayer(layer, tileFile + ":タイル画像がロードできません:" + e.message);
 				}
 			} else if (imageFile !== void) {
 				// 画像のロード
 				try {
-					layer.loadImages(%[ "storage" => imageFile]);
+					layer.loadImages(imageFile);
 					_width  = layer.width;
 					_height = layer.height;
 					maskLayer(layer);
 				} catch (e) {
-					errorLayer(layer, imageFile + ":画像がロードできません:" + e.message);
+					errorLayer(layer, name + ":画像がロードできません:" + e.message);
 				}
 			} else if (imageColor !== void) {
 				// 塗りつぶし

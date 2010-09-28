@@ -588,9 +588,14 @@ class uiEntryNormal {
 		if (links === void) return;
 		var cnt = layer.numLinks - links;
 		if (cnt > 0) {
-			var min = layer.links[links].object.order;
-			for (var i = 0; i < cnt; i++)
-				layer.links[links + i].object.order = min;
+			var min;
+			for (var i = 0; i < cnt; i++) {
+				var obj = layer.links[links + i].object;
+				if (obj !== void) with (obj) {
+					if (min === void) min = .order;
+					.order = min;
+				}
+			}
 		}
 	}
 

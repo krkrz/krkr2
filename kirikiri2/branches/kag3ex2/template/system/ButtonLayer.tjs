@@ -187,8 +187,8 @@ class ButtonLayer extends AnimKAGLayer
 		var base = w * (Butt_showFocusImage ? 4 : 3);
 		imageWidth *= 2;
 		copyRect(base + 0,   0, this, w,   0, w, h);
-		copyRect(base + w,   0, this, w,   0, w, h);
-		copyRect(base + w+w, 0, this, 0,   0, w, h);
+		copyRect(base + w,   0, this, 0,   0, w, h);
+		copyRect(base + w+w, 0, this, w+w, 0, w, h);
 		copyRect(base + w*3, 0, this, w*3, 0, w, h) if Butt_showFocusImage;
 		toggleButton = true;
 	}

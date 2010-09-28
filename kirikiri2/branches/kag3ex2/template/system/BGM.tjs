@@ -564,7 +564,7 @@ class BGM
 
 	property canWaitStop // BGM ‚ÌI—¹‚ğ‘Ò‚Ä‚é‚©‚Ç‚¤‚©‚ğ•Ô‚·
 	{
-		getter { return currentBuffer.status == "play" && !currentBuffer.looping; }
+		getter { return currentBuffer.inFadeAndStop || (currentBuffer.status == "play" && !currentBuffer.looping); }
 	}
 
 	// ƒ‰ƒxƒ‹‘Ò‚¿

@@ -166,6 +166,7 @@ Storages.addAutoPath("data/"); // data フォルダ
 		"evimage",  // イベント画像
 		"thum",     // サムネイル
 		"uipsd",    // ユーザーインターフェース用パーツ画像
+		"motion",   // モーションデータ
 		];
 	for (var i = 0; i < subfolders.count; i++) {
 		var name = subfolders[i];
@@ -348,6 +349,7 @@ KAGLoadScript("GFX_Fire.tjs")     if (KAGConfigEnabled("gfxFireEnabled",     tru
 KAGLoadScript("GFX_Movie.tjs")    if (KAGConfigEnabled("gfxMovieEnabled",    true));
 KAGLoadScript("GFX_Flash.tjs")    if (KAGConfigEnabled("gfxFlashEnabled",    true) && CanLoadPlugin("flashPlayer.dll"));
 KAGLoadScript("GFX_Particle.tjs") if (KAGConfigEnabled("gfxParticleEnabled", true));
+KAGLoadScript("motion.tjs") if (KAGConfigEnabled("motionEnabled", true) && CanLoadPlugin("motionplayer.dll"));
 KAGLoadScript("MessageLayer.tjs");
 KAGLoadScript("Menus.tjs");
 KAGLoadScript("DefaultMover.tjs");
@@ -416,8 +418,8 @@ var tf = kag.tflags; // 一時変数 (一時フラグ)
 var mp_dummy = %[], mp_target;
 property mp {
 	getter {
-		var macroParams;
-		return mp_target && (macroParams = mp_target.macroParams) ? macroParams : mp_dummy;
+		var macroParams = mp_target ? mp_target.macroParams : void;
+		return macroParams  ? /*dict*/macroParams : /*null or void*/mp_dummy;
 	}
 }
 

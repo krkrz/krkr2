@@ -351,8 +351,9 @@ class BaseConductor extends global.BaseConductorExtendClass
 						//dm("遅延タグ登録:" + obj.tagname + ":" + obj.delayrun);
 						var o = %[];
 						(Dictionary.assign incontextof o)(obj, false);
-						// 遅延タグはシンクロ禁止
+						// 遅延タグはシンクロ動作禁止
 						delete o.sync;
+						delete o.wait;
 						o.nosync = true;
 						delaytags.add(o);
 						callOwnerMethod("flipStart");
@@ -841,9 +842,20 @@ class Conductor extends BaseConductor
 		if(func !== void)
 		{
 			var arg = waitUntil[name + '_arg'];
-			if(arg !== void) func(arg); else func();
-			(Dictionary.clear incontextof waitUntil)();
-			run();
+			var waittime  = arg !== void ? func(arg) : func();
+			if (waittime !== void && waittime > 0) {
+				// 追加待ち処理
+				var w = %[timeout : function(arg) {}];
+				if (waitUntil.click !== void) {
+					w.click = function() {};
+				}
+				(Dictionary.clear incontextof waitUntil)();
+				waitWithTimeOut(w, waittime);
+			} else {
+				// 待ち終了
+				(Dictionary.clear incontextof waitUntil)();
+				run();
+			}
 			return true;
 		}
 		else

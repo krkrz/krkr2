@@ -12,7 +12,8 @@ class PropActionInfo {
 	var propName;      // プロパティ名
 	var absolute;      // 絶対アクションハンドラ
 	var relative = []; // 相対アクションハンドラ
-    var first;     // 初回実行
+	var first;     // 初回実行
+	var done;      // 実行終了
 	var startTime; // 開始時刻
 	
     /**
@@ -21,11 +22,13 @@ class PropActionInfo {
 	function PropActionInfo(propName) {
 		this.propName = propName;
 		first = true;
+		done  = false;
 	}
 
 	// やり直し用
 	function next() {
 		first = true;
+		done  = false;
 		startTime = void;
 	}
 
@@ -39,6 +42,7 @@ class PropActionInfo {
 			ret.relative.add(relative[i]);
 		}
 		ret.first = this.first;
+		ret.done  = this.done;
 		ret.startTime = this.startTime;
 		return ret;
 	}
@@ -56,6 +60,7 @@ class PropActionInfo {
 				// 絶対アクションは１つだけ設定可能
 				absolute = new handler(target, propName, elm);
 				first = true;
+				done  = false;
 				startTime = void;
 			} else if (typeof handler.RelativeActionHandler != "undefined") {
 				// デフォルトアクション登録
@@ -79,11 +84,9 @@ class PropActionInfo {
 	/**
 	 * アクションの実行結果を返す
 	 */
-	function getResultValue() {
+	function getResultValue(result) {
 		if (absolute !== void) {
-			return absolute.getResultValue();
-		} else {
-			return void;
+			absolute.getResultValue(result, propName);
 		}
 	}
 
@@ -95,6 +98,9 @@ class PropActionInfo {
      * @return 終了したら true
      */
     function doAction(target, now, stopFlag) {
+		if (this.done) {
+			return true;
+		}
 		if (first) {
 			//dm("アクション初回");
 			if (startTime === void) {
@@ -110,20 +116,20 @@ class PropActionInfo {
 		}
 		now -= startTime;
 		//dm("アクション状態:"+ now + " stop:" + stopFlag);
-        var done = true;
-        if (absolute !== void) {
-            if (!absolute.action(target, propName, now, stopFlag)) {
-                done = false;
-            }
+		done = true;
+		if (absolute !== void) {
+			if (!absolute.action(target, propName, now, stopFlag)) {
+				done = false;
+			}
         }
-        if (!stopFlag) {
-            for (var i=0;i<relative.count;i++) {
-                if (!relative[i].action(target, propName, now)) {
-                    done = false;
-                }
-            }
+		if (!stopFlag) {
+			for (var i=0;i<relative.count;i++) {
+				if (!relative[i].action(target, propName, now)) {
+					done = false;
+				}
+			}
 		}
-        return done;
+		return done;
     }
 };
 
@@ -182,8 +188,8 @@ class ActionInfo {
      * @param elm 初期化パラメータ
      */
     function addAction(target, propName, handler, elm) {
-        var info = getPropActionInfo(propName);
-        info.addAction(target, handler, elm);
+		var info = getPropActionInfo(propName);
+		info.addAction(target, handler, elm);
     }
 
     /**
@@ -205,10 +211,7 @@ class ActionInfo {
 	function getResultValue(ret) {
 		for (var i=0;i<actionList.count;i++) {
 			var info = actionList[i];
-			var result = info.getResultValue();
-			if (result !== void) {
-				ret[info.propName] = result;
-			}
+			info.getResultValue(ret);
 		}
 		return ret;
 	}
@@ -240,6 +243,45 @@ class ActionInfo {
 	}
 
 };
+
+class ActionWaitInfo {
+
+	var wait;
+	var first;
+	var startTime;
+
+	function ActionWaitInfo(wait) {
+		this.wait = wait;
+		first = true;
+	}
+
+	/**
+	 * 複製の生成
+	 */
+	function clone() {
+		return new global.ActionWaitInfo(wait);
+	}
+
+	/**
+	 * アクション処理
+	 * 指定 wait だけ待つ
+	 */
+	function doAction(target, now) {
+		if (!isvalid target) return true; // 対象が無効なら終了
+		if (startTime === void) {
+			startTime = now;
+		}
+		now -= startTime;
+		return now >= wait;		
+	}
+
+	/**
+	 * リセット用
+	 */
+	function next() {
+		startTime = void;
+	}
+}
 
 class ActionLoopInfo {
 
@@ -338,7 +380,7 @@ class ActionSequense {
      * @param elm 初期化パラメータ
      */
     function addAction(propName, handler, elm) {
-        if (typeof target[propName] == "undefined") {
+		if (typeof target[propName] == "undefined" && handler != MotionAction) {
 			dm("指定されたプロパティは存在しません:" + target + ":" + propName);
         } else {
             if (create) {
@@ -355,8 +397,18 @@ class ActionSequense {
 	 * @param count ループ回数 (省略すると無限)
 	 */
 	function addLoop(point, count) {
-		dm("ループアクションを追加");
+		//dm("ループアクションを追加");
 		actions.add(new ActionLoopInfo(point, count));
+		create = true;
+	}
+
+	/**
+	 * 待ち追加
+	 * @param wait 待ち時間(ms)
+	 */
+	function addWait(wait) {
+		//dm("時間待ちを追加");
+		actions.add(new ActionWaitInfo(wait));
 		create = true;
 	}
 
@@ -380,6 +432,15 @@ class ActionSequense {
 		var accel = dict.accel;
 		var starttime = dict.starttime;
 
+		if (dict.path !== void) {
+			var e = %[];
+			(Dictionary.assign incontextof e)(dict, false);
+			createMoveAction(e);
+			delete e.path;
+			delete e.spline;
+			dict = e;
+		}
+		
 		var names = [];
 		names.assign(dict);
 		for (var i=0; i<names.count; i+= 2) {
@@ -451,6 +512,11 @@ class ActionSequense {
 			var action = actions[cur];
 			if (action instanceof "ActionInfo") {
 				if (action.doAction(target, now, stopFlag)) {
+					action.next();
+					cur++;
+				}
+			} else if (action instanceof "ActionWaitInfo") {
+				if (stopFlag || action.doAction(target, now)) {
 					action.next();
 					cur++;
 				}
@@ -592,21 +658,35 @@ class DefaultAction extends AbsoluteActionHandler {
 	/**
 	 * 移動の結果
 	 */
-	function getResultValue() {
-		return initValue;
+	function getResultValue(ret, propName) {
+		ret[propName]= initValue;
 	}
 
 	function doAction(target, propName, now, stopFlag) {
-        target[propName] = initValue;
-        // 常に終わる
+		target[propName] = initValue;
+		// 常に終わる
         return true;
     }
 }
 
-
 /**
  * 基本移動アクション（絶対アクション）
- * @param 
+ * @param start 初期値指定(未指定時は現在の値)
+ * @param value 設定値
+ * @param accel 加速度指定
+ *  文字列指定
+ *   "accel" 加速
+ *   "decel" 減速
+ *   "acdec" 加減速
+ *   "accos" コサインカーブ
+ *   "const" 等速
+ *  関数指定
+ *   そのまま移動関数として指定可能
+ *   function move(t); t,帰り値 いずれも時間指定 0～1.0
+ *  数値指定
+ *   0:等速
+ *   1:加速
+ *   -1:減速
  */
 class MoveAction extends AbsoluteActionHandler {
 
@@ -614,7 +694,6 @@ class MoveAction extends AbsoluteActionHandler {
 	var setstart;     // 始点指定 
 	var start;
 	var value;     // 終点指定
-	var accel;     // 加減速指定
 	var diff;      // 移動差分
 	var moveFunc;  // 移動関数
     
@@ -622,9 +701,10 @@ class MoveAction extends AbsoluteActionHandler {
 		super.AbsoluteActionHandler(target, propName, elm);
 		initValue = target[propName];
 		setstart  = elm.start !== void ? getRelative(elm.start, initValue) : void;
-		value     = getRelative(elm.value, initValue);
 
-		accel = elm.accel;
+		value = createValue(elm.value, initValue);
+
+		var accel = elm.accel;
 		moveFunc = void;
 		if (typeof accel == "String") {
 			// accelに渡された文字で移動関数を決定
@@ -646,11 +726,16 @@ class MoveAction extends AbsoluteActionHandler {
 		//dm("MoveAction", typeof accel, accel, moveFunc);
 	}
 
+	// 移動用パラメータ生成
+	function createValue(value, initValue) {
+		return getRelative(value, initValue);
+	}
+	
 	/**
 	 * 移動の結果
 	 */
-	function getResultValue() {
-		return value;
+	function getResultValue(ret, propName) {
+		ret[propName] = value;
 	}
 	
 	/**
@@ -683,6 +768,65 @@ class MoveAction extends AbsoluteActionHandler {
 }
 
 /**
+ * 複数点移動アクション（絶対アクション）
+ * @param 
+ */
+class PathAction extends MoveAction {
+
+	function PathAction(target, propName, elm) {
+		super.MoveAction(target, propName, elm);
+	}
+
+	// 移動用パラメータ生成
+	function createValue(value, initValue) {
+		var ret;
+		if (value.indexOf(",") >= 0){
+			ret = value.split(",");
+			for (var i=ret.count-1;i>=0;i--) {
+				ret[i+1] = getRelative(ret[i], initValue);
+			}
+			ret[0] = void;
+		} else {
+			ret = [void, getRelative(value, initValue)];
+		}
+		return ret;
+	}
+	
+	/**
+	 * 移動の結果
+	 */
+	function getResultValue(ret, propName) {
+		ret[propName] = value[value.count-1];
+	}
+	
+	/**
+	 * 実行初回処理
+	 */
+	function init(target, propName) {
+		if (setstart !== void) {
+			value[0] = setstart;
+		} else {
+			value[0] = target[propName];
+		}
+	}
+
+	function doAction(target, propName, now, stopFlag) {
+		if (time == 0 || stopFlag) {
+			target[propName] = value[value.count-1];
+			return true;
+		} else {
+			var l = value.count - 1;
+			var t = moveFunc(now/time) * l;
+			var n = (int)t;
+			var tdiff = t - n;
+			var diff  = n >= l ? 0 : value[n+1] - value[n];
+			target[propName] = value[n] + diff * tdiff;
+			return false;
+		}
+	}
+}
+
+/**
  * 二次関数移動アクション（絶対アクション）
  * ※指定にかかわらず left/top 操作
  */
@@ -704,10 +848,11 @@ class ParabolaMoveAction extends AbsoluteActionHandler {
     }
 
 	/**
-	 * 最終値 XXX
+	 * 最終値
 	 */
-	function getResultValue() {
-		return start_x + diff_x * 2;
+	function getResultValue(ret, propName) {
+		ret["left"] = start_x + diff_x * 2;
+		ret["top"]  = start_y + diff;
 	}
 	
     function doAction(target, propName, now, stopFlag) {
@@ -757,8 +902,8 @@ class LoopMoveAction extends AbsoluteActionHandler {
 	/**
 	 * 最終値
 	 */
-	function getResultValue() {
-		return initValue;
+	function getResultValue(ret, propName) {
+		ret[propName] = initValue;
 	}
 	
 	/**
@@ -786,6 +931,136 @@ class LoopMoveAction extends AbsoluteActionHandler {
     }
 }
 
+/**
+ * モーション移動アクション（絶対アクション）
+ * 複数パラメータの一括制御になるので注意が必要
+ * @param storage モーションデータファイル
+ * @param chara モーションキャラ指定
+ * @param motion モーション指定
+ * @param tickcount 再生開始位置
+ * @param speed 再生スピード
+ * @param layer 参照レイヤ名
+ * @param left モーション再生原点(未指定時は現在の対象のleft。相対表記可)
+ * @param top モーション再生原点(未指定時は現在の対象のleft。相対表記可)
+ */
+class MotionAction extends AbsoluteActionHandler {
+
+	// 結果情報
+	var motion_manager;
+	var storage;
+	var layerName;
+	var player;
+	var motion;
+	var result = %[];
+	var startTickCount;
+	var lastTime;
+	
+	// コンストラクタ
+	function MotionAction(target, propName, elm) {
+		super.AbsoluteActionHandler(target, propName, elm);
+		motion_manager = target.window.motion_manager;
+		storage = elm.storage;
+		layerName = elm.layer;
+		if (storage !== void) {
+			// プレイヤー生成
+			motion_manager.load(storage);
+			player = new Motion.Player(motion_manager.resourceManager);
+			
+			// 再生対象を選択
+			player.chara  = elm.chara;
+			player.play((motion = elm.motion), 1);
+			player.speed  = +elm.speed if elm.speed !== void;
+
+			// 座標基準値指定
+			player.setCoord(elm.left === void ? target.left : getRelative(elm.left, target.left),
+							elm.top  === void ? target.top  : getRelative(elm.top,  target.top));
+
+			// 最終結果を取得しておく
+			player.tickCount = player.lastTime;
+			player.progress(0);
+			setResult(result);
+			
+			// 初期化
+			startTickCount = +elm.tickcount;
+		}
+	}
+
+	// ファイナライザ
+	function finalize() {
+		if (storage !== void) {
+			motion_manager.unload(storage);
+			if (player !== void) {
+				invalidate player;
+			}
+		}
+	}
+
+	/**
+	 * 結果情報
+	 */
+	function getResultValue(ret, propName) {
+		(Dictionary.assign incontextof ret)(result, false);
+	}
+	
+	/**
+	 * 実行初回処理
+	 */
+	function init(target, propName) {
+		if (player) {
+			player.play(motion, 1);
+			player.tickCount = startTickCount;
+			//dm("motion start:" + player.lastTime);
+		}
+		lastTime = void;
+	}
+
+	// プレイヤーから指定レイヤの結果を吸い出す
+	function setResult(result) {
+		var layer = player.getLayerGetter(layerName);
+		if (layer !== void) {
+			//result.type    = layer.type;
+			result.visible = layer.visible;
+			result.afx = result.defaultAfx;
+			result.afy = result.defaultAfy;
+			result.afx += layer.originX;
+			result.afy += layer.originY;
+			result.left    = layer.left;
+			result.top     = layer.top;
+			result.flipx   = layer.flipX;
+			result.flipy   = layer.flipY;
+			result.zoomx   = layer.zoomX * 100;
+			result.zoomy   = layer.zoomY * 100;
+			result.slantx  = layer.slantX * 100;
+			result.slanty  = layer.slantY * 100;
+			result.rotate  = -layer.angleDeg;
+			result.opacity = layer.opacity;
+			//dm("origin:%d,%d".sprintf(layer.originX,layer.originY));
+		}
+	}
+	
+	// アクション実行
+	function doAction(target, propName, now, stopFlag) {
+		if (!player) {
+			return true;
+		}
+		if (stopFlag || !player.playing) {
+			player.tickCount = player.lastTime;
+			player.progress(0);
+			setResult(target);
+			return true;
+		} else {
+			if (lastTime == void) {
+				lastTime = now;
+			}
+			var diff = now - lastTime;
+			player.progress(diff);
+			lastTime = now;
+			setResult(target);
+			//dm("%d:(%f,%f)(%f,%f)".sprintf(player.tickCount, target.afx, target.afy, target.left, target.top));
+			return false;
+		}
+	}
+}
 
 /**
  * 振動アクション（相対アクション）
@@ -1128,4 +1403,118 @@ function LayerQuakeActionModule(info, elm) {
 	yvib = elm.yvibration if (elm.yvibration !== void);
 	info.addAction("camerax",  RandomAction, %[vibration:xvib/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]) if (xvib != 0);
 	info.addAction("cameray",  RandomAction, %[vibration:yvib/2, waittime:elm.waittime, time:elm.time, delay:elm.delay]) if (yvib != 0);
+}
+
+
+// path 
+function createMoveAction(elm)
+{
+	// path の分解
+	var path = (typeof elm.path == "Object" && elm.path instanceof "Array") ? elm.path :  [].split("(), ", elm.path, , true);
+	
+	// 座標情報リスト
+	var left    = "";
+	var top     = "";
+	var opacity = "";
+
+	if (elm.spline !== void && +elm.spline) {
+
+		if (path.count < 6)	{
+			// 3 点以下 ( 指定するのはそのうちの2点 ) は補完できない
+			throw new Exception("2 点以上を指定してください");
+		}
+
+		var x = [0]; 
+		var y = [0];
+		var n = path.count;
+		for (var i=0;i<n;i+=3) {
+			if (i > 0) {
+				opacity += ",";
+			}
+			x.add(+path[i]);
+			y.add(+path[i+1]);
+			opacity += path[i+2];
+		}
+		
+		// スプライン補間に必要なワークを計算
+		var points = x.count;
+		var tmpx = [], tmpy = [];
+		var tx = [];
+		var ty = [];
+		tx[0] = 0;
+		ty[0] = 0;
+		tx[points-1] = 0;
+		ty[points-1] = 0;
+
+		for(var i = points-2, pi = x.count-2; i >= 0; i--, pi --)
+		{
+			tmpx[i+1] = (x[pi+1] - x[pi]);
+			tmpy[i+1] = (y[pi+1] - y[pi]);
+		}
+
+		tx[1] = tmpx[2] - tmpx[1] - tx[0];
+		ty[1] = tmpy[2] - tmpy[1] - ty[0];
+
+		tmpx[1] = 4;
+		tmpy[1] = 4;
+
+		var lim = points - 2;
+		for(var i = 1; i < lim; i++)
+		{
+			var x = 1 / tmpx[i];
+			var y = 1 / tmpy[i];
+			tx[i+1] = tmpx[i+2] - tmpx[i+1] - tmpx[i] * x;
+			ty[i+1] = tmpy[i+2] - tmpy[i+1] - tmpy[i] * y;
+			tmpx[i+1] = 4 - x;
+			tmpy[i+1] = 4 - y;
+		}
+
+		tx[points-2] -= tx[points-1];
+		ty[points-2] -= ty[points-1];
+
+		for(var i = points-2; i>0; i--)
+		{
+			tx[i] = (tx[i] - tx[i+1]) / tmpx[i];
+			ty[i] = (ty[i] - ty[i+1]) / tmpy[i];
+		}
+
+		// 10倍で補間
+		var l = (points-1) * 10;
+		for (var i=1;i<=l;i++) {
+			var index =  i \ 10;
+			var d = (i % 10) / 10;
+			var l = (((tx[index+1] - tx[index])*d +
+					  tx[index]*3)*d +
+					 ((x[index + 1] - x[index]) -
+					  (tx[index]*2 + tx[index+1]))) * d + x[index];
+			var t = (((ty[index+1] - ty[index])*d +
+					  ty[index]*3)*d +
+					 ((y[index + 1] - y[index]) -
+					  (ty[index]*2 + ty[index+1]))) * d + y[index];
+			if (i > 1) {
+				left += ",";
+				top += ",";
+			}
+			left += "@+"+(int)l;
+			top  += "@+"+(int)t;
+		}
+
+	} else {
+		// 単純移動
+		var n = path.count;
+		for (var i=0;i<n;i+=3) {
+			if (i > 0) {
+				left += ",";
+				top += ",";
+				opacity += ",";
+			}
+			left += "@+"+path[i];
+			top  += "@+"+path[i+1];
+			opacity += path[i+2];
+		}
+	}
+	// アクションとして組み直し
+	elm.left    = %[handler:"PathAction", value:left];
+	elm.top     = %[handler:"PathAction", value:top];
+	elm.opacity = %[handler:"PathAction", value:opacity];
 }

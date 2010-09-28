@@ -369,6 +369,7 @@ class AnimationLayer extends AffineLayer
 		// 画像を解放
 		clearAnim();
 		clearImage();
+		clearClipImage();
 		Anim_loadParams = void;
 		Anim_partialImageInfo = void;
 	}
@@ -519,7 +520,7 @@ class AnimationLayer extends AffineLayer
 		} else {
 			// 画像を読み込む
 			if (elm.storage !== void) {
-				var taginfo = superLoadImages(elm.storage, elm.key);
+				var taginfo = superLoadImages(elm.storage, elm.key, elm);
 				// 画像のタグ情報をデフォルト値として採用
 				if(taginfo)	{
 					(Dictionary.assign incontextof taginfo)(elm, false);
@@ -585,7 +586,6 @@ class AnimationLayer extends AffineLayer
 		}
 
 		// 色補正
-		face = dfAuto;
 		applyColorCorrection(this, elm);
 
 		// 可視不可視、位置、不透明度、インデックス
@@ -828,17 +828,23 @@ class AnimationLayer extends AffineLayer
 
 	function applyColorCorrection(layer, param)
 	{
-		if (param === void) return;
+		if (param === void || !layer.isBitmap()) return;
 		// layer に対して色補正を行う
 		var orgface = layer.face;
 		var orgholdlpha = layer.holdAlpha;
 		layer.face = dfAuto;
-		if(param.grayscale !== void && +param.grayscale) layer.doGrayScale();
-		layer.adjustGamma(
-			param.rgamma, param.rfloor, param.rceil,
-			param.ggamma, param.gfloor, param.gceil,
-			param.bgamma, param.bfloor, param.bceil);
-
+		if(param.grayscale !== void && +param.grayscale)
+		{
+			layer.doGrayScale();
+		}
+		if (param.rgamma !== void || param.rfloor !== void || param.rceil !== void ||
+			param.ggamma !== void || param.gfloor !== void || param.gceil !== void ||
+			param.bgamma !== void || param.bfloor !== void || param.bceil !== void) {
+			layer.adjustGamma(
+				param.rgamma, param.rfloor, param.rceil,
+				param.ggamma, param.gfloor, param.gceil,
+				param.bgamma, param.bfloor, param.bceil);
+		}
 		if(param.mcolor !== void)
 		{
 			// 色重ね合わせ
@@ -849,14 +855,30 @@ class AnimationLayer extends AffineLayer
 		}
 		if (param.lightcolor !== void) {
 			// レイヤ合成
+			var mode = ltAlpha;
+			if(param.lighttype !== void)
+			{
+				var layertypeinfo = imageTagLayerType[param.lighttype];
+				if(layertypeinfo !== void)
+					mode = layertypeinfo.type;
+			}
 			layer.holdAlpha = true;
 			layer.fillOperateRect(0,0,layer.imageWidth, layer.imageHeight,
 								  +param.lightcolor,
-								  param.lighttype);
+								  mode);
 		}
 		if (param.brightness !== void || param.contrast !== void) {
 			// 明度補正
 			layer.light(+param.brightness, +param.contrast);
+		}
+		if (param.shadow !== void) {
+			// 影つけ
+			var dx = param.shadowx !== void ? +param.shadowx : 10;
+			var dy = param.shadowy !== void ? +param.shadowy : 10;
+			var blur = param.shadowblur !== void ? +param.shadowblur : 3;
+			var color = param.shadow === true ? 0 : +param.shadow;
+			var opacity = param.shadowopacity !== void ? +param.shadowopacity : 200;
+			layer.doDropShadow(dx, dy, blur, color, opacity);
 		}
 		layer.face = orgface;
 		layer.holdAlpha = orgholdlpha;
@@ -1074,7 +1096,7 @@ class AnimationLayer extends AffineLayer
 		var key = (elm.key !== void) ? elm.key : lp.key;
 		var storage = elm.storage;
 		var otype = type;
-		superLoadImages(storage, key);
+		superLoadImages(storage, key, elm);
 		type = otype;
 		applyColorCorrection(this, lp);
 		// 上下反転
@@ -1270,6 +1292,7 @@ class ClickGlyphLayer extends KAGLayer
 		"clip",
 		"wait",
 		"eval",
+		"option",
 		];
 
 	// 不要機能メソッドを一応生やしておく

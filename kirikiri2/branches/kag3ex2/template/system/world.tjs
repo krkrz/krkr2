@@ -48,7 +48,7 @@ class EnvGraphicLayer extends GraphicLayerEx
 		yoffset = 0;
 		levelxoffset = 0;
 		levelyoffset = 0;
-
+		
 		hint = name if (ownerenv.setHintForDebug);
 	}
 
@@ -204,38 +204,20 @@ class EnvGraphicLayer extends GraphicLayerEx
 	// ----------------------------------------------------------
 
 	/**
-	 * カメラの配置基準になる座標値x
-	 */
-	property xpos {
-		getter() {
-			return left;
-		}
-	}
-
-	/**
-	 * カメラの配置基準になる座標値y
-	 */
-	property ypos {
-		getter() {
-			return top;
-		}
-	}
-
-	/**
 	 * 配置位置調整
 	 */
 	function recalcPosition() {
 		var cz = nocameraMode ? 1 : (real)ownerenv.camerazoom / 100.0;
 		var cx = nocameraMode ? 0 : ownerenv.camerax;
-		var cy = nocameraMode ? 0 : ownerenv.cameray;
+		var cy = nocameraMode ? 0 : -ownerenv.cameray;
 		var cox = nocameraMode ? 0 : ownerenv.cameraox;
-		var coy = nocameraMode ? 0 : ownerenv.cameraoy;
+		var coy = nocameraMode ? 0 : -ownerenv.cameraoy;
 		var z  = nocameraMode ? 1 : +levelz / 100.0;
 		var sx = noshiftMode  ? 0 : ownerenv.shiftx;
 		var sy = noshiftMode  ? 0 : ownerenv.shifty;
-		//dm(name + ":位置情報:%d,%d pos:%d,%d cx:%d,%d%,%f z:%f sx:%d,%d af:%d,%d off:%d,%d loff:%d,%d".sprintf(originx, originy, xpos, ypos, cx, cy, cz, z, sx, sy, afx, afy, xoffset, yoffset, levelxoffset, levelyoffset));
-		var l = originx + ((int)(cox * (1-z)) + ((xpos - cx) * z +(int)(xoffset * z)) + +levelxoffset) * cz - sx;
-		var t = originy + ((int)(coy * (1-z)) + ((ypos - cy) * z +(int)(yoffset * z)) + +levelyoffset) * cz - sy;
+		//dm(name + ":位置情報:%d,%d pos:%d,%d cx:%d,%d%,%f z:%f sx:%d,%d af:%d,%d off:%d,%d loff:%d,%d".sprintf(originx, originy, left, top, cx, cy, cz, z, sx, sy, afx, afy, xoffset, yoffset, levelxoffset, levelyoffset));
+		var l = originx + (int)(cox * (1-z*cz)) + (((left - cx) * z +(int)(xoffset * z)) + +levelxoffset) * cz - sx;
+		var t = originy + (int)(coy * (1-z*cz)) + (((-top - cy) * z +(int)(yoffset * z)) + +levelyoffset) * cz - sy;
 		//dm(name + ":位置再計算:" + l + "," + t);
 		super.left = l;
 		super.top  = t;
@@ -245,11 +227,11 @@ class EnvGraphicLayer extends GraphicLayerEx
 
 	function getCenterCamera(xpos,ypos) {
 		var cox = ownerenv.cameraox;
-		var coy = ownerenv.cameraoy;
+		var coy = -ownerenv.cameraoy;
 		var z   = +levelz / 100.0;
 		return %[x:+levelxoffset/z + (int)(cox/z - cox) + (int)xoffset + xpos,
 			     y:+levelyoffset/z + (int)(coy/z - coy) + (int)yoffset + ypos,
-				 zoom:10000.0/+levelz];
+			 zoom:10000.0/+levelz];
 	}
 };
 
@@ -380,7 +362,8 @@ var transitionParam = %[
     "charoff" => true,
     "transwait" => true,
 	"showaction" => true,
-	"hideaction" => true
+	"hideaction" => true,
+	"wait" => true
     ];
 
 var actionParam = %[
@@ -424,7 +407,6 @@ KAGLoadScript('KAGEnvironment.tjs');
   クラス名                親クラス                       使用用途
  ----------------------------------------------------------------
  EmotionLayer             EnvGraphicLayer               エモレイヤ
- EnvBaseGraphicLayer      EnvGraphicLayer               KAGEnvBaseLayer用createLayerターゲット
  EnvCharacterGraphicLayer EnvGraphicLayer               KAGEnvCharacter用createLayerターゲット
  KAGEnvImage                                            環境画像の基底クラス(レイヤの実体はtargetLayerに持つ)
  KAGEnvLevelLayer                                       前景レイヤのレベル制御用(レイヤの実体は持たない)
@@ -493,7 +475,7 @@ class KAGWorldPlugin extends KAGPlugin
 			.unknownHandler     = env.unknown;
 			.seStopHandler      = env.onSeStop;
 			.stopActionHandler  = env.onStopAction;
-			.stopTransitionHandler = env.onStopTransition;
+			.onLayerCommandHandler = env.onLayerCommand;
 			.syncHandler        = env.syncAll;
 			.clearLayersHandler = env.clearLayers;
 			.updateVoice        = env.updateVoice;
@@ -512,8 +494,8 @@ class KAGWorldPlugin extends KAGPlugin
 			if (.stopActionHandler === env.onStopAction) {
 				delete .stopActionHandler;
 			}
-			if (.stopTransitionHandler === env.onStopTransition) {
-				delete .stopTransitionHandler;
+			if (.onLayerCommandHandler === env.onLayerCommand) {
+				delete .onLayerCommandHandler;
 			}
 			if (.voiceUpdateHandler === env.resetAllVoiceVolume) {
 				delete .voiceUpdateHandler;

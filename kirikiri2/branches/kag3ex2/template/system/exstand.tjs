@@ -26,7 +26,7 @@ if (typeof WaveSoundBuffer.setDefaultAheads == "undefined") {
 }
 
 // 立ち絵基本情報の読み込み
-var allStandInfoMap;
+var allStandInfoMap, allStandInfoList;
 var allStandLevelMap;
 var allStandAnimMap;
 {
@@ -45,7 +45,7 @@ if (typeof global.Layer.shrinkCopy == "undefined") {
  */
 class ExStandInfoParser extends CSVParser 
 {
-	var result;
+	var result, chlist = [];
 
 	/**
 	 * コンストラクタ
@@ -78,6 +78,7 @@ class ExStandInfoParser extends CSVParser
 			} else {
 				var chinfo = result[chname];
 				if (chinfo == void) {
+					chlist.add(chname);
 					chinfo = %[name:chname, map:%[], list:[], allDressNameList:[], allDressNameMap:%[]];
 					result[chname] = chinfo;
 				}
@@ -429,7 +430,9 @@ class ExStandAnimParser extends CSVParser
 	// 立ち絵情報
 	var parser = new ExStandInfoParser();
 	parser.parseStorage("charinit.csv");
-	allStandInfoMap = parser.result;
+	allStandInfoMap  = parser.result;
+	allStandInfoList = parser.chlist;
+
 	invalidate parser;
 
 	// レベル情報
@@ -584,52 +587,158 @@ function getFixedFaceName(info, currentFaceName, faceName)
  */
 function checkStandLayerLevel(level, levelMax, standInfo, levels, searchSmallLevel=true)
 {
-	var currentImageLevel = void;
+	var imageLevel = void;
 	for (var l=(int)level;l<levelMax;l++) {
 		var levelInfo;
 		var levelName;
 		if (levels !== void && (levelInfo = levels[l]) !== void && (levelName = levelInfo.name) !== void) {
 			var file = standInfo.filename + "_" + levelName + ".txt";
 			if (Storages.isExistentStorage(file)) {
-				currentImageLevel = l;
+				imageLevel = l;
 				break;
 			}
 		}
 		var file = standInfo.filename + "_" + l + ".txt";
 		if (Storages.isExistentStorage(file)) {
-			currentImageLevel = l;
+			imageLevel = l;
 			break;
 		}
 	}
-	if (searchSmallLevel && currentImageLevel === void) {
+	if (searchSmallLevel && imageLevel === void) {
 		for (var l=level;l>=0;l--) {
 			var levelInfo;
 			var levelName;
 			if (levels !== void && (levelInfo = levels[l]) !== void && (levelName = levelInfo.name) !== void) {
 				var file = standInfo.filename + "_" + (levelInfo.name) + ".txt";
 				if (Storages.isExistentStorage(file)) {
-					currentImageLevel = l;
+					imageLevel = l;
 					break;
 				}
 			}
 			var file = standInfo.filename + "_" + l + ".txt";
 			if (Storages.isExistentStorage(file)) {
-				currentImageLevel = l;
+				imageLevel = l;
 				break;
 			}
 		}
 	}
-	return currentImageLevel;
+	return imageLevel;
 }
 
 /**
- * 立ち絵用データレイヤ
+ * 立ち絵画像情報管理
+ */
+class StandPSDInfo extends PSDInfo {
+
+	var info;
+	var imageLevel; // 実際に読み込まれてるレベル(nullなら100%画像)
+	
+	function StandPSDInfo(window, standinfo, imageLevel, levels) {
+		super.PSDInfo(window);
+		this.info = standinfo;
+		setIgnoreLayer("背景", "原点", "領域");
+		this.imageLevel = imageLevel;
+		var filename;
+		if (imageLevel === void) {
+			filename = info.filename + ".txt";
+		} else {
+			var levelInfo;
+			var levelName;
+			if (levels !== void && (levelInfo = levels[imageLevel]) !== void && (levelName = levelInfo.name) !== void) {
+				filename = info.filename + "_" + levelName + ".txt";
+			} else {
+				filename = info.filename + "_" + imageLevel + ".txt";
+			}
+		}
+		try {
+			loadImages(filename, true);
+		} catch(e) {
+			//throw new Exception("キャラクタ:" + name + "のポーズ:" + poseName + "の画像ファイル:" + standinfo.filename + "の読み込みに失敗しました");
+			var msg = "キャラクタ[" + info.name + "] の ポーズ[" + info.pose + "] の画像ファイル [" + filename + "] の読み込みに失敗しました:" + e.message;
+			dm(msg);
+		}
+	}
+
+	/**
+	 * 表情展開の実行
+	 */
+	function extractFace(face) {
+		with (face) {
+			.defaultEye = "";
+			.defaultLip = "";
+
+			//dm("表情:" + .name + " 目ベース:" + .eyebase + " 口ベース:" + .lipbase);
+			
+			// 目のチェック
+			for (var i=0;i<groups.count;i++) {
+				var group = groups[i];
+				if (.eyebase !== void && group.name == .eyebase) {
+					if (group.layers.count > 0) {
+						.defaultEye = .eyebase + "/" + group.layers[0].name;
+						if (group.layerMap["閉じ目"] !== void &&
+							(group.layerMap["半閉じ目"] !== void || group.layerMap["半開き目"] !== void) &&
+							group.layerMap["開き目"] !== void
+							) {
+							.eyes = [];
+							.eyes[0] = .eyebase + "/閉じ目";
+							if (group.layerMap["半閉じ目"] !== void) {
+								.eyes[1] = .eyebase + "/半閉じ目";
+							} else if (group.layerMap["半開き目"] !== void) {
+								.eyes[1] = .eyebase + "/半開き目";
+							}
+							.eyes[2] = .eyebase + "/開き目";
+						}
+						//dm("デフォルト目:" + .defaultEye + (.eyes !== void ? " 目ぱちあり":""));
+					}
+					break;
+				}
+			}
+			// 口のチェック
+			for (var i=0;i<groups.count;i++) {
+				var group = groups[i];
+				if (.lipbase !== void && group.name == .lipbase) {
+					if (group.layers.count > 0) {
+						.defaultLip = .lipbase + "/" + group.layers[0].name;
+						if (group.layerMap["閉じ口"] !== void &&
+							(group.layerMap["半閉じ口"] !== void || group.layerMap["半開き口"] !== void) &&
+							group.layerMap["開き口"] !== void
+							) {
+							.lips = [];
+							.lips[0] = .lipbase + "/閉じ口";
+							if (group.layerMap["半閉じ口"] !== void) {
+								.lips[1] = .lipbase + "/半閉じ口";
+							} else if (group.layerMap["半開き口"] !== void) {
+								.lips[1] = .lipbase + "/半開き口";
+							}
+							.lips[2] = .lipbase + "/開き口";
+						}
+						//dm("デフォルト口:" + .defaultLip + (.lips !== void ? " 口ぱくあり":""));
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	// 表情情報を取得
+	function getFaceInfo(faceName) {
+		var faceInfo = info.faceMap[faceName];
+		if (faceInfo !== void && faceInfo.defaultEye === void) {
+			extractFace(faceInfo);
+		}
+		return faceInfo;
+	}
+};
+
+/**
+ * 立ち絵用画像レイヤ
  * 差分の表示状態 ON/OFF をサポートします
  */
 class StandLayer extends PSDLayer {
 
-	var info; // 立ち絵基本情報
-
+	var poseName;
+	var level;
+	
 	var currentDressName; //< 現在のドレス名
 	var currentDiffName;  //< 現在の差分名
 	var currentFaceName;  //< 現在の表情名
@@ -644,16 +753,33 @@ class StandLayer extends PSDLayer {
 	/**
 	 * コンストラクタ
 	 * @param parent 親レイヤ
-	 * @param standinfo 立ち絵情報
+	 * @param psdinfo PSD情報
 	 */
-	function StandLayer(parent, standinfo) {
-		super.PSDLayer(parent.window, parent);
-		setIgnoreLayer("背景", "原点", "領域");
-		info = standinfo;
+	function StandLayer(parent, psdinfo, poseName, level) {
+		super.PSDLayer(parent.window, parent, psdinfo);
 		diffNames = [];
 		faceNames = [];
 		addNames = [];
 		addFaceNames = [];
+		this.poseName = poseName;
+		this.level    = level;
+	}
+
+	function clone(instance) {
+		if (instance == void) {
+			instance = new global.StandLayer(parent, psdinfo, poseName, level);
+		}
+		super.clone(instance);
+		instance.currentDressName = currentDressName;
+		instance.currentDiffName  = currentDiffName;
+		instance.currentFaceName  = currentFaceName;
+		instance.currentLipLevel  = currentLipLevel;
+		instance.currentEyeLevel  = currentEyeLevel;
+		(Array.assign incontextof instance.diffNames)(diffNames);
+		(Array.assign incontextof instance.faceNames)(faceNames);
+		(Array.assign incontextof instance.addNames)(addNames);
+		(Array.assign incontextof instance.addFaceNames)(addFaceNames);
+		return instance;
 	}
 
 	function finalize() {
@@ -668,53 +794,6 @@ class StandLayer extends PSDLayer {
 		super.finalize();
 	}
 
-	var currentLevel;      // 現在指定されてるレベル
-	var currentImageLevel; // 実際に読み込まれてるレベル(nullなら100%画像)
-	var currentFilename;   // 現在読み込まれてるファイル名
-
-	/**
-	 * レベル指定
-	 * @param level レベル
-	 * @param imageLevel 実画像のレベル指定
-	 */
-	function setLevel(level, imageLevel, levels) {
-		//dm("レベル指定:" + level);
-		if (level !== currentLevel) {
-			currentLevel = level;
-			currentImageLevel = imageLevel;
-			var filename;
-			if (imageLevel === void) {
-				filename = info.filename + ".txt";
-			} else {
-				var levelInfo;
-				var levelName;
-				if (levels !== void && (levelInfo = levels[imageLevel]) !== void && (levelName = levelInfo.name) !== void) {
-					filename = info.filename + "_" + levelName + ".txt";
-				} else {
-					filename = info.filename + "_" + imageLevel + ".txt";
-				}
-			}
-			//dm("発見ファイル:" + filename);
-			if (currentFilename != filename) {
-				//dm("レイヤの読み込み:" + filename);
-				clear();
-				try {
-					loadImages(filename, true);
-				} catch(e) {
-					//throw new Exception("キャラクタ:" + name + "のポーズ:" + poseName + "の画像ファイル:" + standinfo.filename + "の読み込みに失敗しました");
-					var msg = "キャラクタ[" + info.name + "] の ポーズ[" + info.pose + "] の画像ファイル [" + filename + "] の読み込みに失敗しました:" + e.message;
-					dm(msg);
-				}
-				currentDressName = void;
-				currentDiffName  = void;
-				currentFaceName  = void;
-				currentLipLevel  = void;
-				currentEyeLevel  = void;
-				currentFilename = filename;
-			}
-		}
-	}
-
 	/**
 	 * 全レイヤを隠す
 	 */
@@ -722,15 +801,13 @@ class StandLayer extends PSDLayer {
 		// 全レイヤは表示OFF
 		for (var i=0;i<layers.count;i++) {
 			var layer = layers[i];
-			setProp(layer, "visible", false);
+			setVisibleInfo(layer, false);
 		}
 		// 全グループの表示を有効化
 		for (var i=0;i<groups.count;i++) {
 			var group = groups[i];
-			group.visible = true;
+			setVisibleInfo(group, true);
 		}
-		// 強制全更新
-		update();
 	}
 	
 	/**
@@ -847,76 +924,6 @@ class StandLayer extends PSDLayer {
 	// 目のレベル指定
 	function setEyeLevel(eyeLevel) {
 		this.eyeLevel = eyeLevel;
-	}
-
-	/**
-	 * 表情展開の実行
-	 */
-	function extractFace(face) {
-		with (face) {
-			.defaultEye = "";
-			.defaultLip = "";
-
-			//dm("表情:" + .name + " 目ベース:" + .eyebase + " 口ベース:" + .lipbase);
-			
-			// 目のチェック
-			for (var i=0;i<groups.count;i++) {
-				var group = groups[i];
-				if (.eyebase !== void && group.name == .eyebase) {
-					if (group.layers.count > 0) {
-						.defaultEye = .eyebase + "/" + group.layers[0].name;
-						if (group.layerMap["閉じ目"] !== void &&
-							(group.layerMap["半閉じ目"] !== void || group.layerMap["半開き目"] !== void) &&
-							group.layerMap["開き目"] !== void
-							) {
-							.eyes = [];
-							.eyes[0] = .eyebase + "/閉じ目";
-							if (group.layerMap["半閉じ目"] !== void) {
-								.eyes[1] = .eyebase + "/半閉じ目";
-							} else if (group.layerMap["半開き目"] !== void) {
-								.eyes[1] = .eyebase + "/半開き目";
-							}
-							.eyes[2] = .eyebase + "/開き目";
-						}
-						//dm("デフォルト目:" + .defaultEye + (.eyes !== void ? " 目ぱちあり":""));
-					}
-					break;
-				}
-			}
-			// 口のチェック
-			for (var i=0;i<groups.count;i++) {
-				var group = groups[i];
-				if (.lipbase !== void && group.name == .lipbase) {
-					if (group.layers.count > 0) {
-						.defaultLip = .lipbase + "/" + group.layers[0].name;
-						if (group.layerMap["閉じ口"] !== void &&
-							(group.layerMap["半閉じ口"] !== void || group.layerMap["半開き口"] !== void) &&
-							group.layerMap["開き口"] !== void
-							) {
-							.lips = [];
-							.lips[0] = .lipbase + "/閉じ口";
-							if (group.layerMap["半閉じ口"] !== void) {
-								.lips[1] = .lipbase + "/半閉じ口";
-							} else if (group.layerMap["半開き口"] !== void) {
-								.lips[1] = .lipbase + "/半開き口";
-							}
-							.lips[2] = .lipbase + "/開き口";
-						}
-						//dm("デフォルト口:" + .defaultLip + (.lips !== void ? " 口ぱくあり":""));
-					}
-					break;
-				}
-			}
-		}
-	}
-
-	// 表情情報を取得
-	function getFaceInfo(faceName) {
-		var faceInfo = info.faceMap[faceName];
-		if (faceInfo !== void && faceInfo.defaultEye === void) {
-			extractFace(faceInfo);
-		}
-		return faceInfo;
 	}
 
 	// フォルダ指定がある場合はそちらを優先処理する仕組み
@@ -1095,6 +1102,10 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	var currentFaceNameMap  = %[];
 	var currentFaceNameList = [];
 
+	// 参照中立ち絵レイヤ画像
+	var standlayer;
+	var facelayer;
+	
 	/**
 	 * コンストラクタ
 	 */
@@ -1111,6 +1122,10 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		if (chstandinfo !== void && chstandinfo.allDressNameList.count > 0) {
 			_setDress(chstandinfo.allDressNameList[0]);
 		}
+
+		// フリップ用の値の初期化
+		eyeflipTime = global.eyeFlipTime;
+		lipflipTime = global.lipFlipTime;
 	}
 
 	function clearListMap(list,map) {
@@ -1135,6 +1150,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	function finalize() {
 		stopAnim();
 		System.removeContinuousHandler(updateHandler);
+		invalidate standlayer if standlayer !== void;
+		invalidate facelayer if facelayer !== void;
 		super.finalize();
 		invalidateListMap(standlayerList, standlayerMap);
 		invalidateListMap(currentPoseNameList, currentPoseNameMap);
@@ -1178,20 +1195,15 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 		return standinfo;
 	}
-	
+
 	/**
-	 * 指定した名前に該当する基礎立ち絵レイヤを取得
-	 * @param name ポーズ名
+	 * 指定した名前に該当する立ち絵表示情報を返す
+	 * @param poseName ポーズ名
 	 * @param level レベル
-	 * @return 立ち絵レイヤ
+	 * @return 立ち絵表示情報
 	 */
-	function getStandLayer(poseName, level) {
-		// 立ち絵情報
-		var standInfo = getStandInfo(poseName);
-		// 実画像のレベルを取得
-		var l = env.camerazoom > 100 && level < env.levels.count-1 ? level + 1 : level;
-		var imageLevel = checkStandLayerLevel(l, env.levels.count, standInfo, env.levels, env.searchSmallLevel);
-		//dm("立ち絵レイヤ取得 name:%s cz:%d level:%d l:%d imageLevel:%d".sprintf(name, env.camerazoom, level, l, imageLevel));
+	function getStandLayerInfo(poseName, level) {
+
 		// 該当ポーズの立ち絵リスト
 		var standlayers = standlayerMap[poseName];
 		if (standlayers === void) {
@@ -1199,26 +1211,49 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			standlayerMap[poseName] = standlayers;
 			standlayerList.add(standlayers);
 		}
-		for (var i=0;i<standlayers.count;i++) {
-			var standlayer = standlayers[i];
-			if (standlayer.currentImageLevel === imageLevel) { // 既にロード済み
+
+		// 立ち絵情報
+		var standInfo = getStandInfo(poseName);
+		// 実画像のレベルを取得
+		var l = env.camerazoom > 100 && level < env.levels.count-1 ? level + 1 : level;
+		var imageLevel = checkStandLayerLevel(l, env.levels.count, standInfo, env.levels, env.searchSmallLevel);
+		//dm("立ち絵レイヤ取得 name:%s cz:%d level:%d l:%d imageLevel:%d".sprintf(name, env.camerazoom, level, l, imageLevel));
+		
+		var psdinfo;
+		var count = standlayers.count;
+		for (var i=0;i<count;i++) {
+			var info = standlayers[i];
+			if (info.imageLevel === imageLevel) { // 既にロード済み
+				psdinfo = info;
 				if (i != 0) {
 					// 先頭に移動させる
-					with (standlayers) .unshift(.pop()); //standlayers.erase(i); standlayers.insert(0, standlayer);
+					standlayers.erase(i); standlayers.unshift(psdinfo);
 				}
-				standlayer.setLevel(level, imageLevel, env.levels);
-				return standlayer;
+				break;
 			}
 		}
-		// 見つからない場合は新規に作成
-		var standlayer = new StandLayer(kag.temporaryLayer, standInfo); // kag === property super.kag
-		standlayer.name = name + "_" + poseName;
-		standlayer.setLevel(level, imageLevel, env.levels);
-		while (standlayers.count > 3) { // キャッシュは4つまで
-			var old = standlayers.pop(); //erase(standlayers.count - 1);
-			invalidate old;
+		if (psdinfo === void) {
+			// 見つからない場合は新規に作成
+			psdinfo = new StandPSDInfo(kag, standInfo, imageLevel, env.levels);
+			while (standlayers.count > 3) { // キャッシュは4つまで
+				standlayers.pop();
+			}
+			standlayers.unshift(psdinfo);
 		}
-		standlayers.unshift(standlayer); // insert(0,standlayer);
+
+		return psdinfo;
+	}
+	
+	/**
+	 * 指定した名前に該当する基礎立ち絵レイヤを生成
+	 * @param poseName ポーズ名
+	 * @param level レベル
+	 * @return 立ち絵レイヤ
+	 */
+	function createStandLayer(poseName, level) {
+		var psdinfo = getStandLayerInfo(poseName, level);
+		var standlayer = new StandLayer(kag.temporaryLayer, psdinfo, poseName, level);
+		standlayer.name = name + "_" + poseName;
 		return standlayer;
 	}
 
@@ -1257,6 +1292,9 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		f.eyestate = eyestate;
 		f.lipstate = lipstate;
 		f.eyeflip = eyeflip;
+		f.eyeflipTime = eyeflipTime;
+		f.lipflip = lipflip;
+		f.lipflipTime = lipflipTime;
     }
 
     /**
@@ -1272,6 +1310,9 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 		if (isShow()) {
 			eyeflip = f.eyeflip;
+			eyeflipTime = f.eyeflipTime;
+			lipflip = f.lipflip;
+			lipflipTime = f.lipflipTime;
 			setEyeState(f.eyestate);
 			setLipState(f.lipstate); 
 		}
@@ -1325,22 +1366,20 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	}
 
 	function setEyeLipState() {
-		//dm("立ち絵生成呼び出し:" + Scripts.getTraceString());
-		//dm("表情指定:" + face);
-		var standlayer = getStandLayer(pose, level);
-		if (standlayer !== void) {
-			var faceInfo = standlayer.getFaceInfo(face);
+		var psdinfo = getStandLayerInfo(pose, level);
+		if (psdinfo !== void) {
+			var faceInfo = psdinfo.getFaceInfo(face);
 			if (faceInfo !== void) {
 				// パターンが存在すれば目ぱち・口ぱくともに有効
-				setEyeState(faceInfo.eyes !== void ? 3 : 0);
-				setLipState(faceInfo.lips !== void ? 3 : 0); 
+				setEyeState(faceInfo.eyes !== void ? 6 : 0);
+				setLipState(faceInfo.lips !== void ? 6 : 0); 
 			} else if (face !== void) {
 				var eyes = false;
 				var lips = false;
 				var faces = face.split(":");
 				for (var i=0;i<faces.count;i++) {
 					if (faces[i].length > 0) {
-						var fgName = standlayer.info.fgNameMap[faces[i]];
+						var fgName = psdinfo.info.fgNameMap[faces[i]];
 						if (fgName !== void) {
 							if (fgName.eyes) {
 								eyes = true;
@@ -1353,8 +1392,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				}
 				// パターンが存在すれば目ぱち・口ぱくともに有効
 				//dm("eyes:" + eyes +  " lips:" + lips);
-				setEyeState(eyes ? 3 : 0);
-				setLipState(lips ? 3 : 0); 
+				setEyeState(eyes ? 6 : 0);
+				setLipState(lips ? 6 : 0); 
 			}
 		}
 	}
@@ -1429,6 +1468,10 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
     function setDress(dressName, elm) {
 
 		if (dressName != dress || isClear()) {
+			// 服装変更時はエモーション消去
+			if (elm.emotion === void) {
+				hideEmotion();
+			}
 			initFile(elm);
 			disp = SHOW;
 			redraw = true;
@@ -1455,6 +1498,10 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
     function setPose(poseName, elm) {
 
 		if (poseName != pose || isClear()) {
+			// ポーズ変更時はエモーション消去
+			if (elm.emotion === void) {
+				hideEmotion();
+			}
 			initFile(elm);
 			disp = SHOW;
 			redraw = true;
@@ -1703,28 +1750,115 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
      */
     function doAnimCommand(cmd, param, elm) {
 		if (chstandanim !== void && chstandanim[cmd] !== void) {
+			stopAnim();
 			animCmd = cmd;
 			startAnim(chstandanim[cmd]);
+			ret = kag.waitFunc(elm, waitAnim);
 			return true;
 		}
 		return false;
     }
 
+	var faceAnimeCommands = [];
+
+	function initFaceAnime() {
+		faceAnimeCommands.clear();
+	}
+
+	function addFaceAnime(param) {
+		faceAnimeCommands.add(param);
+	}
+	
+	// 表情変更時に一旦目を閉じる処理を追加させる処理
+	function doneFaceAnime(elm) {
+
+		if (faceAnimeCommands.count == 0) {
+			return;
+		}
+		
+		//dm("目とじアニメ実行");
+		// 目のアニメ処理を一時停止
+		setEyeState(-1, elm);
+		animCmd = void;
+		animInfo = [];
+		// 目を閉じる処理を直接アニメ実行
+		if (eyeLevel !== void && eyeLevel > 0) {
+			for (var i=eyeLevel-1;i>=0;i--) {
+				animInfo.add(%[name:"eyelevel", time:eyeflipTime, level:i]);
+			}
+		}
+		// 表情変更を追加
+		// この中で通常ステートは6になる
+		var faceCmd = "";
+		for (var i=0;i<faceAnimeCommands.count;i++) {
+			if (i != 0) {
+				faceCmd += " ";
+			}
+			faceCmd += faceAnimeCommands[i];
+		}
+		// アニメ同期
+		animInfo.add(%[name:faceCmd, time:0]);
+		animInfo.add(%[name:"sync", time:0]);
+		// ステート指定を追加
+		if (elm.eyeopen || elm.eyeopento) {
+			animInfo.add(%[name:"eyestate", state:4, time:0]);
+		} else if (elm.eyeclose || elm.eyecloseto) {
+			animInfo.add(%[name:"eyestate", state:2, time:0]);
+		}
+		delete elm.eyeopen;
+		delete elm.eyeclose;
+		delete elm.eyeopento;
+		delete elm.eyecloseto;
+		if (elm.lipopen || elm.lipopento) {
+			animInfo.add(%[name:"lipstate", state:4, time:0]);
+		} else if (elm.lipclose || elm.lipcloseto) {
+			animInfo.add(%[name:"lipstate", state:2, time:0]);
+		}
+		delete elm.lipopen;
+		delete elm.lipclose;
+		delete elm.lipopento;
+		delete elm.lipcloseto;
+		// アニメ開始
+		animCur = 0;
+		animStartTime = void;
+		startUpdateHandler();
+		
+		ret = kag.waitFunc(elm, waitAnim);
+	}
+
+	// 表情変更判定
+	function doFaceAnimeCommand(cmd, param, elm) {
+		if (cmd == "xface") {
+			addFaceAnime(param);
+			return true;
+		}
+		if (cmd.charAt(0) == "x") {
+			cmd = cmd.substr(1);
+			if (currentFaceNameMap[cmd] !== void) {
+				addFaceAnime(cmd);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	var exCharCommands = %[
 	image   : this.setImage incontextof this,
-	eyeflipoff : function() {setEyeState(0);} incontextof this,
-	eyeopen    : function() {setEyeState(1);} incontextof this,
-	eyeclose   : function() {setEyeState(2);} incontextof this,
-	eyeflipon  : function() {setEyeState(3);} incontextof this,
-	eyeopento  : function() {setEyeState(4);} incontextof this,
-	eyecloseto : function() {setEyeState(5);} incontextof this,
-	eyeflip : function(param) { eyeflip=+param; setEyeState(1); } incontextof this,
-	lipflipoff : function() {setLipState(0);} incontextof this,
-	lipopen    : function() {setLipState(1);} incontextof this,
-	lipclose   : function() {setLipState(2);} incontextof this,
-	lipflipon  : function() {setLipState(3);} incontextof this,
-	lipopento  : function() {setLipState(4);} incontextof this,
-	lipcloseto : function() {setLipState(5);} incontextof this,
+	eyeflipoff : function(param, elm) {setEyeState(0, elm);} incontextof this,
+	eyeopen    : function(param, elm) {setEyeState(1, elm);} incontextof this,
+	eyeclose   : function(param, elm) {setEyeState(2, elm);} incontextof this,
+	eyeflipon  : function(param, elm) {setEyeState(6, elm);} incontextof this,
+	eyeopento  : function(param, elm) {setEyeState(4, elm); ret=kag.waitFunc(elm, waitEyeOpen);} incontextof this,
+	eyecloseto : function(param, elm) {setEyeState(5, elm); ret=kag.waitFunc(elm, waitEyeClose);} incontextof this,
+	eyeflip : function(param, elm) { eyeflip=+param; setEyeState(1, elm); ret=kag.waitFunc(elm, waitEyeFlip); } incontextof this,
+	lipflipoff : function(param, elm) {setLipState(0, elm);} incontextof this,
+	lipopen    : function(param, elm) {setLipState(1, elm);} incontextof this,
+	lipclose   : function(param, elm) {setLipState(2, elm);} incontextof this,
+	lipflipon  : function(param, elm) {setLipState(6, elm);} incontextof this,
+	lipopento  : function(param, elm) {setLipState(4, elm); ret=kag.waitFunc(elm, waitLipOpen);} incontextof this,
+	lipcloseto : function(param, elm) {setLipState(5, elm); ret=kag.waitFunc(elm, waitLipClose);} incontextof this,
+	lipflip : function(param, elm) { lipflip=+param; setLipState(0, elm); ret=kag.waitFunc(elm, waitLipFlip); } incontextof this,
+	fliptime : null,
 		];
 	
     /**
@@ -1792,29 +1926,46 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 	}
 
-	function doPoseFaceCommand(e) {
-		var names = [], name, count, dress = 0, pose = 0, diff = 0;
-		names.assign(e);
-		count = names.count;
+	function doPoseFaceCommand(e, stop=false) {
+		var names = [], name, count;
+		var dress = 0, pose = 0, diff = 0, face = 0;
 
 		// 服装指定コマンドの処理
+		names.assign(e);
+		count = names.count;
 		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doDressCommand, names, i, e)) dress++;
 
 		// ポーズ指定コマンドの処理
+		names.assign(e);
+		count = names.count;
 		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doPoseCommand,  names, i, e)) pose++;
 
 		// 差分指定コマンドの処理
+		names.assign(e);
+		count = names.count;
 		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doDiffCommand,  names, i, e)) diff++;
 
 		// 表情指定コマンドの処理
-		for (var i=0; i<count; i+=2) _doPoseFaceCommandOne(doFaceCommand,    names, i, e);
+		names.assign(e);
+		count = names.count;
+		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doFaceCommand,    names, i, e)) face++;
 
+		// 表情指定アニメコマンドの処理
+		names.assign(e);
+		count = names.count;
+		initFaceAnime();
+		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doFaceAnimeCommand, names, i, e)) face++;
+		
 		// 追加パーツ指定コマンドの処理
-		for (var i=0; i<count; i+=2) _doPoseFaceCommandOne(doAddCommand,     names, i, e);
+		names.assign(e);
+		count = names.count;
+		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doAddCommand, names, i, e)) face++;
 
 		// 追加表情指定コマンドの処理
-		for (var i=0; i<count; i+=2) _doPoseFaceCommandOne(doAddFaceCommand, names, i, e);
-
+		names.assign(e);
+		count = names.count;
+		for (var i=0; i<count; i+=2) if (_doPoseFaceCommandOne(doAddFaceCommand, names, i, e)) face++;
+		
 		if (dress > 1 || pose > 1 || diff > 1) {
 			var tags = [];
 			tags.add("服装")   if (dress > 1);
@@ -1822,6 +1973,15 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			tags.add("差分")   if (diff  > 1);
 			exStandError(tags.join("/")+"が多重指定されています。結果不定です。");
 		}
+
+		// 一つでも更新対象がある場合はアニメ停止
+		if (stop && (dress > 0 || pose > 0 || diff > 0 || face > 0)) {
+			stopAnim();
+			stopUpdateHandler();
+		}
+		
+		// 特殊目ぱちアニメ処理開始
+		doneFaceAnime(e);
 	}
 	
 
@@ -1833,12 +1993,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		var e = %[];
 		(Dictionary.assign incontextof e)(elm); 
 
-		// KAGのタグが呼ばれた時点でアニメは停止する
-		stopAnim();
-		stopUpdateHandler();
-
+		//stopAnim();
+		//stopUpdateHandler();
+		
 		// ポーズ・表情系
-		doPoseFaceCommand(e);
+		doPoseFaceCommand(e, true);
 
 		// アニメ処理
 		var names = [];
@@ -1851,6 +2010,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		
 		// その他のコマンドを処理
 		global.KAGEnvImage.command(e);
+
+		// 描画時は表示レベル初期化
+		if (redraw) {
+			initEyeLip();
+		}
 	}
 
 	// ----------------------------------------------------------------
@@ -1872,8 +2036,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		
 		if (pose !== void && dress !== void && diff !== void && face !== void) {
 
-			// 描画状態更新
-			var standlayer = getStandLayer(pose, level);
+			// レイヤ組み替え
+			if (standlayer === void || standlayer.poseName != pose || standlayer.level != level) {
+				invalidate standlayer if standlayer !== void;
+				standlayer = createStandLayer(pose, level);
+			}
 			standlayer.setDress(dress);
 			standlayer.setDiff(diff);
 			standlayer.setAdd(addimage, true);
@@ -1881,17 +2048,14 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			standlayer.setLipLevel(lipLevel);
 			standlayer.setEyeLevel(eyeLevel);
 			standlayer.setFace(face);
-
+			
 			var levelInfo = env.levels[level];
 			var imgzoom = levelInfo.imgzoom !== void ? levelInfo.imgzoom : 100;
 			
 			// オフセット指定調整
 			var standinfo = chstandinfo.map[pose];
-			xoffset = standinfo.xoffset * imgzoom / levelInfo.zoom;
-			yoffset = standinfo.yoffset * imgzoom / levelInfo.zoom;
-			//xoffset = 0;
-			//yoffset = 0;
-			//dm(name + ":" + pose + ":" + xoffset + "," + yoffset);
+			xoffset = 0;
+			yoffset = 0;
 			
 			// レベル/ポーズ別補正
 			var levels;
@@ -1902,21 +2066,17 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				yoffset -= (levels[level].y * 100 / levelInfo.zoom);
 				xoffset += (levels[level].x * 100 / levelInfo.zoom);
 			}
-			if (standlayer.callOnPaint) {
-				standlayer.onPaint(); // XXX
-				standlayer.callOnPaint = false;
-			}
 			layer.type = ltAlpha;
 			var z; // 画像拡大縮小処理
-			if (standlayer.currentImageLevel === void) {
+			if (standlayer.imageLevel === void) {
 				// 基準サイズからの拡大/縮小
 				z = imgzoom;
-			} else if (standlayer.currentImageLevel == level) {
+			} else if (standlayer.imageLevel == level) {
 				// 縮小済み素材
 				z = 100;
 			} else {
 				// 最も近い素材からの縮小
-				var levelInfo2 = env.levels[standlayer.currentImageLevel];
+				var levelInfo2 = env.levels[standlayer.imageLevel];
 				var imgzoom2 = levelInfo2.imgzoom !== void ? levelInfo2.imgzoom : 100;
 				z = imgzoom * 100.0 / imgzoom2;
 			}
@@ -1924,23 +2084,16 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				//var xoff = standinfo.xoffset * levelInfo.zoom / 100;
 				//var yoff = standinfo.yoffset * levelInfo.zoom / 100;
 				layer.assignImages(standlayer);
-				layer.setSizeToImageSize();
 				layer.resolution = 10000 / z;
-				afx = defaultAfx = (int)((standlayer.pageWidth/2 - standlayer.offsetX) * z / 100);
-				if (env.envinfo.charCenterZoom) {
-					var h = (int)(standlayer.pageHeight * z / 100) / 2;
-					afy = defaultAfy = (int)((standlayer.pageHeight - standlayer.offsetY) * z / 100) - h;
-					yoffset -= h;
-				} else {
-					afy = defaultAfy = (int)((standlayer.pageHeight - standlayer.offsetY) * z / 100);
-				}
+				var xoff = standinfo.xoffset * levelInfo.zoom / imgzoom;
+				var yoff = standinfo.yoffset * levelInfo.zoom / imgzoom;
+				afx = defaultAfx = (int)((standlayer.pageWidth/2 - standlayer.offsetX - xoff) * z / 100);
+				afy = defaultAfy = (int)((standlayer.pageHeight/2 - standlayer.offsetY - yoff) * z / 100);
 				//dm("width:%d height:%d afx:%s afy:%s".sprintf(layer.width, layer.height, afx, afy));
 			}
 			//dm("元のサイズ:" + standlayer.imageWidth + "," + standlayer.imageHeight);
 			//dm("解像度:" + layer.resolution);
 			//dm("変換後サイズ:" + layer.imageWidth + "," + layer.imageHeight);
-			// カラー適応
-			applyColor(layer);
 			return true;
 		} else {
 			dm("立ち絵が表示できません chname:" + name + " pose:" + pose + " dress:" + dress + " diff:" + diff + " face:" + face);
@@ -1965,14 +2118,16 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	 * 顔領域を取得する
 	 */
 	function getFaceArea(standlayer) {
-		var info = standlayer.getPropInfo(dress + "顔領域");
+		var faceArea = init.faceArea;
+		var tag = (faceArea !== void && faceArea.name != "") ? faceArea.name : "顔領域";
+		var info = standlayer.getPropInfo(dress + tag);
 		if (info === void) {
-			info = standlayer.getPropInfo("顔領域");
+			info = standlayer.getPropInfo(tag);
 			//dm("通常顔領域");
 		}
-		if (info === void && (init.faceArea !== void || env.envinfo.faceArea !== void)) {
+		if (info === void &&      (faceArea !== void || env.envinfo.faceArea !== void)) {
 			var fca = (env.envinfo.faceArea !== void) ? env.envinfo.faceArea : %[];
-			(Dictionary.assign incontextof fca)(init.faceArea, false) if (init.faceArea !== void);
+			(Dictionary.assign incontextof fca)(faceArea, false) if (faceArea !== void);
 			var point = getFacePoint(standlayer, fca);
 			if (point !== void) {
 				var x = point.left + fca.xoffset, y = point.top + fca.yoffset, w = fca.width, h = fca.height;
@@ -1998,8 +2153,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		//dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
 		if (pose !== void && dress !== void && diff !== void && face !== void) {
 			var standInfo = getStandInfo(pose);
-			var standlayer = getStandLayer(pose, faceLevelName);
-			var info = getFaceArea(standlayer);
+			if (facelayer === void || facelayer.poseName != pose || facelayer.level != faceLevelName) {
+				invalidate facelayer if facelayer !== void;
+				facelayer = createStandLayer(pose, faceLevelName);
+			}
+			var info = getFaceArea(facelayer);
 			if (info !== void) {
 				//dm("顔領域:%d %d %d %d".sprintf(info.left, info.top, info.width, info.height));
 				var d;
@@ -2012,88 +2170,62 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					d = diff;
 				}
 				//dm("差分指定 %s -> %s".sprintf(diff, d));
-				standlayer.setDress(dress);
-				standlayer.setDiff(d);
-				standlayer.setAdd(addimage, true);
-				standlayer.setAddFace(addface, true);
-				standlayer.setLipLevel(lipLevel);
-				standlayer.setEyeLevel(eyeLevel);
-				standlayer.setFace(face);
-				if (standlayer.callOnPaint) {
-					standlayer.onPaint(); // XXX
-					standlayer.callOnPaint = false;
+				facelayer.setDress(dress);
+				facelayer.setDiff(d);
+				facelayer.setAdd(addimage, true);
+				facelayer.setAddFace(addface, true);
+				facelayer.setLipLevel(lipLevel);
+				facelayer.setEyeLevel(eyeLevel);
+				facelayer.setFace(face);
+				facelayer.updateImage();
+
+				// faceLayerがRelativeLayer前提
+				//dm("%s:表情表示 %d %d %d".sprintf(name, standInfo.facexoff, standInfo.faceyoff, standInfo.facezoom));
+				
+				var left  = info.left + standInfo.facexoff;
+				var top   = info.top;
+				var width = info.width;
+				var height = info.height + standInfo.faceyoff;
+				var ox, oy, px, py;
+				
+				if (left < 0) {
+					width -= (ox = -left);
+					left = 0;
 				}
-				//layer.fillRect(0,0,layer.width,layer.height,0);
-				if (0) {
-					if (layer.width > info.width && layer.height < info.height) { // おさまる
-						// センタリグ
-						layer.fillRect(0,0,layer.width,layer.height,0);
-						layer.copyRect((layer.width-info.width)/2,
-									   (layer.height-info.height)/2,
-									   standlayer,info.left,info.top,info.width,info.height);
+				if (top < 0) {
+					height -= (oy = -top);
+					top = 0;
+				}
+				if (left+width >= facelayer.width) {
+					width -= (px = (left+width - facelayer.width));
+				}
+				if (top+height >= facelayer.height) {
+					height -= (py = (top+height - facelayer.height));
+				}
+				
+				var dwidth = width * standInfo.facezoom / 100.0;
+				var dheight = height * standInfo.facezoom / 100.0;
+				var envfz = init.faceZoom !== void ? init.faceZoom : env.envinfo.faceZoom;
+				if (envfz !== void) {
+					var z = envfz / 100.0;
+					dwidth  *= z;
+					dheight *= z;
+					ox *= z, oy *= z, px *= z, py *= z;
+				}
+				//dm("%s:表情表示 %d %d %d %d  %d %d\n".sprintf(name,left,top,width,height, facelayer.width, facelayer.height));
+				
+				with (layer) {
+					.setImageSize(dwidth + ox+px, dheight + oy+py);
+					.setSizeToImageSize();
+					.repos() if (typeof .repos == "Object");
+					.fillRect(0,0,.width,.height,0);
+					if (envfz < 50) {
+						.shrinkCopy(ox, oy, dwidth, dheight, facelayer, left, top, width, height);
 					} else {
-						// はみ出るので縮小
-						var rw = layer.width / info.width;
-						var rh = layer.height / info.height;
-						if (rw < rh) {
-							rh = info.height * rw;
-							rw = info.width  * rw;
-						} else {
-							rw = info.width  * rh;
-							rh = info.height * rh;
-						}
-						layer.fillRect(0,0,layer.width,layer.height,0);
-						layer.stretchCopy((layer.width - rw)/2, (layer.height - rh)/2, rw, rh,
-										  standlayer,info.left,info.top,info.width,info.height,stCubic);
-					}
-				} else {
-					// faceLayerがRelativeLayer前提
-					//dm("%s:表情表示 %d %d %d".sprintf(name, standInfo.facexoff, standInfo.faceyoff, standInfo.facezoom));
-
-					var left  = info.left + standInfo.facexoff;
-					var top   = info.top;
-					var width = info.width;
-					var height = info.height + standInfo.faceyoff;
-					var ox, oy, px, py;
-
-					if (left < 0) {
-						width -= (ox = -left);
-						left = 0;
-					}
-					if (top < 0) {
-						height -= (oy = -top);
-						top = 0;
-					}
-					if (left+width >= standlayer.width) {
-						width -= (px = (left+width - standlayer.width));
-					}
-					if (top+height >= standlayer.height) {
-						height -= (py = (top+height - standlayer.height));
-					}
-
-					var dwidth = width * standInfo.facezoom / 100.0;
-					var dheight = height * standInfo.facezoom / 100.0;
-					var envfz = init.faceZoom !== void ? init.faceZoom : env.envinfo.faceZoom;
-					if (envfz !== void) {
-						var z = envfz / 100.0;
-						dwidth  *= z;
-						dheight *= z;
-						ox *= z, oy *= z, px *= z, py *= z;
-					}
-					//dm("%s:表情表示 %d %d %d %d  %d %d\n".sprintf(name,left,top,width,height, standlayer.width, standlayer.height));
-
-					with (layer) {
-						.setImageSize(dwidth + ox+px, dheight + oy+py);
-						.setSizeToImageSize();
-						.repos() if (typeof .repos == "Object");
-						.fillRect(0,0,.width,.height,0);
-						if (envfz < 50) {
-							.shrinkCopy(ox, oy, dwidth, dheight, standlayer, left, top, width, height);
-						} else {
-							.stretchCopy(ox, oy, dwidth, dheight, standlayer, left, top, width, height, stCubic);
-						}
+						.stretchCopy(ox, oy, dwidth, dheight, facelayer, left, top, width, height, stCubic);
 					}
 				}
+
 				if (env.envinfo.faceApplyColor) {
 					applyColor(layer);
 				}
@@ -2173,18 +2305,24 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	 * アニメーション状態更新用
 	 */
 	function updateAnim(tick) {
+		var update = false;
 		if (animStartTime === void) {
 			animStartTime = tick;
 			animNextTime = 0;
 		}
 		var animTime = tick - animStartTime;
 		var newimage;
+		var sync = false;
 		while (animTime >= animNextTime) {
+			if (sync) {
+				break;
+			}
 			if (animCur >= animInfo.count) {
 				stopAnim();
-				return;
+				break;
 			}
 			var info = animInfo[animCur];
+			//dm("アニメ更新:" + animCur + ":" + info.name);
 			switch (info.name) {
 			case "loop":
 				if (info.time < animInfo.count) {
@@ -2196,6 +2334,35 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				continue;
 			case "wait":
 				animNextTime += info.time;
+				animCur++;
+				break;
+			case "eyelevel":
+				animNextTime += info.time;
+				if (eyeLevel != info.level) {
+					eyeLevel = info.level;
+					update = true;
+				}
+				animCur++;
+				break;
+			case "liplevel":
+				animNextTime += info.time;
+				if (lipLevel != info.level) {
+					lipLevel = info.level;
+					update = true;
+				}
+				animCur++;
+				break;
+			case "sync":
+				//強制同期用
+				animCur++;
+				sync = true;
+				break;
+			case "eyestate":
+				setEyeState(info.state);
+				animCur++;
+				break;
+			case "lipstate":
+				setLipState(info.state);
 				animCur++;
 				break;
 			default:
@@ -2222,8 +2389,9 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			}
 			//dm("アニメ実行:" + newimage);
 			doPoseFaceCommand(e);
-			return true;
+			update = true;
 		}
+		return update;
     }
 
 	/*
@@ -2233,6 +2401,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		animCmd = void;
 		animInfo = void;
 		animStartTime = void;
+		kag.trigger(name + "_anim");
 	}
 
 	/**
@@ -2254,19 +2423,71 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 	}
 
+	// アニメを待てるか
+	function canWaitAnim() {
+		if (animInfo === void) return false;
+		for (var i=0;i<animInfo.count;i++) {
+			if (animInfo[i].name == "loop") {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	function waitAnim(elm) {
+		if (canWaitAnim()) {
+			var canskip = elm.canskip !== void ? elm.canskip : true;
+			if (canskip && kag.clickSkipEnabled) {
+				if(kag.skipMode){
+					stopAnim();
+					return 0;
+				}
+				kag.conductor.wait(%[
+				    click : function(arg)
+					{
+						arg();
+					} incontextof this,
+					click_arg : stopAnim,
+					elm.name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					elm.name + "_arg" => +elm.wait
+						]);
+			} else {
+				kag.conductor.wait(%[
+					elm.name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					elm.name + "_arg" => +elm.wait
+						]);
+			}
+			return -2;
+		} else {
+			return 0;
+		}
+	}
+	
 	// ---------------------------------------------
 	// 目ぱち口ぱく処理
 	// ---------------------------------------------
 
 	// 強制目ぱち。指定回数繰り返す
 	var eyeflip;
+	var eyeflipTime;
+
+	// 強制口ぱく。指定回数繰り返す
+	var lipflip;
+	var lipflipTime;
 	
 	// 目の状態
-	// 0:デフォルト 1:開く 2:閉じる 3:目ぱち 4:開く状態に移行 5:閉じる状態に移行
-	var eyestate;
-	// 口ぱく
-	// 0:デフォルト 1:開く 2:閉じる 3:口ぱく 4:開く状態に移行 5:閉じる状態に移行
-	var lipstate;
+	// 0:デフォルト 1:開く 2:閉じる 3:目ぱち 4:開く状態に移行 5:閉じる状態に移行 6:開いた後目ぱち -1:何もしない
+	var eyestate = 0;
+
+	// 口の状態
+	// 0:デフォルト 1:開く 2:閉じる 3:口ぱく 4:開く状態に移行 5:閉じる状態に移行 6:閉じた後口ぱく -1:何もしない
+	var lipstate = 0;
 
 	// 目パチ用
 	var eyePatterns = [2,1,0,1,2];
@@ -2274,9 +2495,60 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	// 目ぱち用制御
 	var eyePattern;
 
+	// 口ぱく用
+	var lipPatterns = [0,1,2,1,0];
+	
+	// 目ぱく制御
+	var lipPattern;
+	
 	// タイミング制御用
 	var flipEyeNextTime;
 	var flipLipNextTime;
+
+	function initEyeLip() {
+		switch (eyestate) {
+		case 0: // デフォルト
+			if (eyeLevel !== void) {
+				eyeLevel = void;
+			}
+			break;
+		case 1: // 開く
+		case 3:
+		case 4:
+		case 6:
+			if (eyeLevel !== 2) {
+				eyeLevel = 2;
+			}
+			break;
+		case 2: // 閉じる
+		case 5:
+			if (eyeLevel !== 0) {
+				eyeLevel = 0;
+			}
+			break;
+		}
+		switch (lipstate) {
+		case 0: // デフォルト
+			if (lipLevel !== void) {
+				lipLevel = void;
+			}
+			break;
+		case 1: // 開く
+		case 4:
+			if (lipLevel !== 2) {
+				lipLevel = 2;
+			}
+			break;
+		case 2: // 閉じる
+		case 3:
+		case 5:
+		case 6:
+			if (lipLevel !== 0) {
+				lipLevel = 0;
+			}
+			break;
+		}
+	}
 
 	/**
 	 * 目ぱち状態の更新
@@ -2284,8 +2556,6 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	function updateEye(tick) {
 		var updateFlag = false;
 		
-		//dm("目ぱち更新確認 " + name + " eyestate:" + eyestate  +  " lipstate:" + lipstate);
-
 		// 強制まばたき処理
 		if (eyeflip > 0) {
 			//dm("強制瞬き処理!");
@@ -2300,6 +2570,9 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				if (eyePattern >= eyePatterns.count) {
 					eyePattern = void;
 					eyeflip--;
+					if (eyeflip == 0) {
+						kag.trigger(name + "_eyeflip");
+					}
 				}
 			}
 			return updateFlag;
@@ -2356,6 +2629,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					updateFlag = true;
 				} else {
 					eyestate = 1;
+					kag.trigger(name + "_eyeopen");
 				}
 				break;
 			}
@@ -2372,6 +2646,25 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					updateFlag = true;
 				} else {
 					eyestate = 2;
+					kag.trigger(name + "_eyeclose");
+				}
+				break;
+			}
+			break;
+		case 6: // 開いたあと目ぱち
+			switch (eyeLevel) {
+			case 0:
+				eyeLevel = 1;
+				updateFlag = true;
+				break;
+			default:
+				if (eyeLevel !== 2) {
+					eyeLevel = 2;
+					updateFlag = true;
+				} else {
+					eyestate = 3;
+					eyePattern = void;
+					kag.trigger(name + "_eyeopen");
 				}
 				break;
 			}
@@ -2385,6 +2678,28 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	 */
 	function updateLip(tick) {
 		var updateFlag = false;
+
+		// 強制処理
+		if (lipflip > 0) {
+			//dm("強制瞬き処理!");
+			if (lipPattern === void) {
+				lipPattern = 0;
+			} else {
+				var level = lipPatterns[lipPattern++];
+				if (lipLevel !== level) {
+					lipLevel = level;
+					updateFlag = true;
+				}
+				if (lipPattern >= lipPatterns.count) {
+					lipPattern = void;
+					lipflip--;
+					if (lipflip == 0) {
+						kag.trigger(name + "_lipflip");
+					}
+				}
+			}
+			return updateFlag;
+		}
 		
 		switch (lipstate) {
 		case 0: // デフォルト
@@ -2444,6 +2759,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					updateFlag = true;
 				} else {
 					lipstate = 1;
+					kag.trigger(name + "_lipopen");
 				}
 				break;
 			}
@@ -2460,6 +2776,25 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					updateFlag = true;
 				} else {
 					lipstate = 2;
+					kag.trigger(name + "_lipclose");
+				}
+				break;
+			}
+			break;
+		case 6: // 閉じた後口ぱく
+			switch (lipLevel) {
+			case 2:
+				lipLevel = 1;
+				updateFlag = true;
+				break;
+			default:
+				if (lipLevel !== 0) {
+					lipLevel = 0;
+					updateFlag = true;
+				} else {
+					lipstate = 3;
+					lipPattern = void;
+					kag.trigger(name + "_lipclose");
 				}
 				break;
 			}
@@ -2467,20 +2802,239 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 		return updateFlag;
 	}
-	
-	// 目ぱち状態の指定
-	function setEyeState(state){
-		if (kag.drawspeed > 0 || state != 3) {
-			eyestate = state;
-			//dm("eyeState設定:" + state);
-			startUpdateHandler();
+
+	function waitEyeOpen(elm) {
+		if (eyestate == 4) {
+			var canskip = elm.canskip !== void ? elm.canskip : true;
+			var name = this.name + "_eyeopen";
+			if (canskip && kag.clickSkipEnabled) {
+				if(kag.skipMode){
+					eyestate = 1;
+					return 0;
+				}
+				kag.conductor.wait(%[
+				    click : function(arg)
+					{
+						eyestate = 1;
+					} incontextof this,
+					click_arg : stopAnim,
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			} else {
+				kag.conductor.wait(%[
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			}
+			return -2;
+		} else {
+			return 0;
 		}
 	}
 
+	function waitLipOpen(elm) {
+		if (lipstate == 4) {
+			var canskip = elm.canskip !== void ? elm.canskip : true;
+			var name = this.name + "_lipopen";
+			if (canskip && kag.clickSkipEnabled) {
+				if(kag.skipMode){
+					lipstate = 1;
+					return 0;
+				}
+				kag.conductor.wait(%[
+				    click : function(arg)
+					{
+						lipstate = 1;
+					} incontextof this,
+					click_arg : stopAnim,
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			} else {
+				kag.conductor.wait(%[
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			}
+			return -2;
+		} else {
+			return 0;
+		}
+	}
+
+	function waitEyeClose(elm) {
+		if (eyestate == 5) {
+			var canskip = elm.canskip !== void ? elm.canskip : true;
+			var name = this.name + "_eyeclose";
+			if (canskip && kag.clickSkipEnabled) {
+				if(kag.skipMode){
+					eyestate = 2;
+					return 0;
+				}
+				kag.conductor.wait(%[
+				    click : function(arg)
+					{
+						eyestate = 2;
+					} incontextof this,
+					click_arg : stopAnim,
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			} else {
+				kag.conductor.wait(%[
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			}
+			return -2;
+		} else {
+			return 0;
+		}
+	}
+
+	function waitLipClose(elm) {
+		if (lipstate == 5) {
+			var canskip = elm.canskip !== void ? elm.canskip : true;
+			var name = this.name + "_lipclose";
+			if (canskip && kag.clickSkipEnabled) {
+				if(kag.skipMode){
+					lipstate = 2;
+					return 0;
+				}
+				kag.conductor.wait(%[
+				    click : function(arg)
+					{
+						lipstate = 2;
+					} incontextof this,
+					click_arg : stopAnim,
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			} else {
+				kag.conductor.wait(%[
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			}
+			return -2;
+		} else {
+			return 0;
+		}
+	}
+
+	function waitEyeFlip(elm) {
+		if (eyeflip > 0) {
+			var canskip = elm.canskip !== void ? elm.canskip : true;
+			var name = this.name + "_eyeflip";
+			if (canskip && kag.clickSkipEnabled) {
+				if(kag.skipMode){
+					eyeflip = 0;
+					return 0;
+				}
+				kag.conductor.wait(%[
+				    click : function(arg)
+					{
+						eyeflip = 0;
+					} incontextof this,
+					click_arg : stopAnim,
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			} else {
+				kag.conductor.wait(%[
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			}
+			return -2;
+		} else {
+			return 0;
+		}
+	}
+
+	function waitLipFlip(elm) {
+		if (lipflip > 0) {
+			var canskip = elm.canskip !== void ? elm.canskip : true;
+			var name = this.name + "_lipflip";
+			if (canskip && kag.clickSkipEnabled) {
+				if(kag.skipMode){
+					lipflip = 0;
+					return 0;
+				}
+				kag.conductor.wait(%[
+				    click : function(arg)
+					{
+						lipflip = 0;
+					} incontextof this,
+					click_arg : stopAnim,
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			} else {
+				kag.conductor.wait(%[
+					name => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					name + "_arg" => +elm.wait
+						]);
+			}
+			return -2;
+		} else {
+			return 0;
+		}
+	}
+
+	// 目ぱち状態の指定
+	function setEyeState(state, elm){
+		//dm("目ステート指定:" + state);
+		eyeflipTime = elm !== void && elm.fliptime !== void ? +elm.fliptime : eyeFlipTime;
+		if (kag.drawspeed > 0 || state != 3) {
+			eyestate = state;
+			startUpdateHandler();
+		}
+	}
+	
 	// 口ぱく状態の指定
-	function setLipState(state) {
+	function setLipState(state, elm) {
+		lipflipTime = elm !== void && elm.fliptime !== void ? +elm.fliptime : lipFlipTime;
 		if (kag.drawspeed > 0 || state != 3) {
 			lipstate = state;
+			startUpdateHandler();
 		}
 	}
 
@@ -2489,7 +3043,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
      */
 	function playVoice(voicename=void) {
 		var ret = super.playVoice(voicename);
-		if (ret > 0) {
+		if (ret > 0 && lipstate == 3) {
 			startUpdateHandler();
 		}
 		return ret;
@@ -2505,6 +3059,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			return;
 		}
 
+		// トランジション中は何もしない
+		if (targetLayer !== void && targetLayer.inTransition) {
+			return;
+		}
+
 		var updateFlag = false;
 		var updatePos  = false;
 
@@ -2517,7 +3076,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			}
 		}
 		while (flipEyeNextTime <= tick) {
-			flipEyeNextTime += eyeFlipTime;
+			flipEyeNextTime += eyeflipTime;
 		}
 
 		if (flipLipNextTime === void) {
@@ -2530,7 +3089,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 		// 次のフリップどき
 		while (flipLipNextTime <= tick) {
-			flipLipNextTime += lipFlipTime;
+			flipLipNextTime += lipflipTime;
 		}
 
 		// アニメ処理
@@ -2544,55 +3103,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		// 画像更新
 		if (updateFlag) {
 			// 描画対象が表画面なら強制再描画
-			if (/*layerOn && */ targetLayer !== void && targetLayer.parent == kag.fore.base) {
-				var layer = targetLayer; //getLayer(kag.fore);
-				drawLayer(layer);
-				if (grayscale) {
-					layer.doGrayScale();
-				}
-				if (rgamma != void || ggamma != void || bgamma != void) {
-					layer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
-									  ggamma == void ? 1.0 : ggamma, 0, 255,
-									  bgamma == void ? 1.0 : bgamma, 0, 255);
-				}
-				setSize(layer);
-
-				//calcPosition(layer);
+			if (targetLayer !== void && targetLayer.parent == kag.fore.base) {
+				drawLayer(targetLayer);
+				setSize(targetLayer);
 				if (updatePos) {
-					layer.updateOffsetInfo();
-
-					/*
-					var basexoff = init.xoffset !== void ? +init.xoffset : +env.xoffset;
-					var baseyoff = init.yoffset !== void ? +init.yoffset : +env.yoffset;
-		
-					if (levels !== void) {
-						// 強制全レベルオフセット指定モード
-						var levelInfo = levels[level];
-						var xoff = (levelInfo !== void ? levelInfo.xoffset : 0) + basexoff;
-						var yoff = (levelInfo !== void ? levelInfo.yoffset : 0) + baseyoff;
-						//dm("強制全レベルオフセット指定:" + xoff + "," + yoff);
-						var l = env.xmax + (xoff + (int)xpos) - layer.width / 2;
-						var t = env.ymax + (yoff - (int)ypos) - layer.height;
-						layer.setPos(l, t);
-					} else {
-						var xoff = (xoffset !== void ? +xoffset : 0) + basexoff;
-						var yoff = (yoffset !== void ? +yoffset : 0) + baseyoff;
-						//dm("通常オフセット指定:" + xoff + "," + yoff);
-						// レベル別座標補正処理。とりあえず適当で画面中央に向かって縮小処理してある
-						var zoom = 100;
-						var levelYoffset = 0;
-						var levelXoffset = 0;
-						var levelInfo = env.levels[level];
-						if (levelInfo !== void) {
-							zoom         = (int)levelInfo.zoom    if levelInfo.zoom    !== void;
-							levelYoffset = (int)levelInfo.yoffset if levelInfo.yoffset !== void;
-							levelXoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
-						}
-						var l = env.xmax + ((xoff + (int)xpos) * zoom / 100) - layer.width / 2 + levelXoffset;
-						var t = env.ymax + ((yoff - (int)ypos) * zoom / 100) - layer.height    + levelYoffset;
-						layer.setPos(l, t);
-					}
-					  */
+					targetLayer.updateOffsetInfo();
 				}
 			}
 		}
@@ -2602,19 +3117,17 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 
 	// 表示更新の停止
 	function stopUpdateHandler() {
-		if (animInfo === void && eyeflip <= 0 && eyestate < 3 && !(lipstate == 3 && soundBuffer !== void && soundBuffer.status == "play")) {
+		if (animInfo === void && eyeflip <= 0 && lipflip <= 0 && eyestate < 3 && lipstate <3 && !(lipstate == 3 && soundBuffer !== void && soundBuffer.status == "play")) {
 			System.removeContinuousHandler(updateHandler);
 			flipEyeNextTime = void;
 			flipLipNextTime = void;
-			lipLevel = void;
-			eyeLevel = void;
 		}
 	}
 
 	// 表示更新の開始
 	function startUpdateHandler() {
 		System.removeContinuousHandler(updateHandler);
-		if (kag.drawspeed > 0 && !isSkip()) {
+		if (kag.drawspeed > 0) {
 			System.addContinuousHandler(updateHandler);
 			return true;
 		}
@@ -2627,21 +3140,25 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	 * emoX, emoY, emoRev
 	 */
 	function getEmotionInfo(emotion) {
-		var standlayer = getStandLayer(pose, level);
+
 		var info;
-		var addflag = false;
-		if (emotion !== void) {
-			var name = emotion.name;
-			info = standlayer.getPropInfo(name + "エモーション原点");
-			if (info === void) {
-				name = name.replace(/[a-zA-Z]/, ""); // 英字を消す
+
+		if (standlayer !== void) {
+			var addflag = false;
+			if (emotion !== void) {
+				var name = emotion.name;
 				info = standlayer.getPropInfo(name + "エモーション原点");
+				if (info === void) {
+					name = name.replace(/[a-zA-Z]/, ""); // 英字を消す
+					info = standlayer.getPropInfo(name + "エモーション原点");
+				}
+			}
+			if (info === void) {
+				info = standlayer.getPropInfo("エモーション原点");
+				addflag = true;
 			}
 		}
-		if (info === void) {
-			info = standlayer.getPropInfo("エモーション原点");
-			addflag = true;
-		}
+
 		if (info === void) {
 			return super.getEmotionInfo(emotion);
 		}
@@ -2693,15 +3210,15 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		var emoRev = standinfo.emoRev;
 
 		var z; // 画像拡大縮小処理
-		if (standlayer.currentImageLevel === void) {
+		if (standlayer.imageLevel === void) {
 			// 基準サイズからの拡大/縮小
 			z = imgzoom;
-		} else if (standlayer.currentImageLevel == level) {
+		} else if (standlayer.imageLevel == level) {
 			// 縮小済み素材
 			z = 100;
 		} else {
 			// 最も近い素材からの縮小
-			var levelInfo2 = env.levels[standlayer.currentImageLevel];
+			var levelInfo2 = env.levels[standlayer.imageLevel];
 			var imgzoom2 = levelInfo2.imgzoom !== void ? levelInfo2.imgzoom : 100;
 			z = levelInfo.imgzoom * 100.0 / imgzoom2;
 		}

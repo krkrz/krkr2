@@ -116,16 +116,6 @@ class EmotionLayer extends EnvGraphicLayer {
 			zoom = zoom / basezoom * 100;
 		}
 	}
-
-	/**
-	 * カメラの配置基準になる座標値y
-	 * ※反転してある
-	 */
-	property ypos {
-		getter() {
-			return -top;
-		}
-	}
 };
 
 
@@ -170,16 +160,6 @@ class EnvCharacterGraphicLayer extends EnvGraphicLayer {
 			//dm("owner offset:" + owner.xoffset + "," + owner.yoffset);
 			//dm("offset:" + xoffset + "," + yoffset);
 			//dm("levelz:" + levelz);
-		}
-	}
-
-	/**
-	 * カメラの配置基準になる座標値y
-	 * ※反転してある
-	 */
-	property ypos {
-		getter() {
-			return -top;
 		}
 	}
 };
@@ -412,6 +392,10 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			var info = poses[poseName];
 			if (info !== void) {
 				if (poseName != pose || isClear()) {
+					// ポーズ変更時はエモーション消去
+					if (elm.emotion === void) {
+						hideEmotion();
+					}
 					initFile(elm);
 					_setPose(poseName);
 					//dm(poseName + ":レベル設定:" + levels);
@@ -443,6 +427,10 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      */
     function setDress(dressName, elm) {
 		if (dressName != dress || isClear()) {
+			// 服装変更時はエモーション消去
+			if (elm.emotion === void) {
+				hideEmotion();
+			}
 			initFile(elm);
 			dress = dressName;
 			disp = SHOW;
@@ -621,7 +609,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			//dm("エモーション名:" + emoMapName + ":" + name);
 		}
 		if (!elm.hideemotion && env.emotions !== void && (info = env.emotions[name]) !== void) {
-			hideemo = false;
+			hideemo = void;
 			emotion = %[];
 			(Dictionary.assign incontextof emotion)(info, false);
 			if (emotion.name === void) {
@@ -639,9 +627,15 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     /**
      * エモーションの解除
      */
-	function hideEmotion(name, elm) {
+	function hideEmotion(param, elm) {
 		if (emotionLayer !== void && emotionLayer.visible) {
-			hideemo = true;
+			if (param === void) {
+				hideemo = env.envinfo.emoHideTime !== void ? +env.envinfo.emoHideTime : 500;
+			} else if (param == "true") {
+				hideemo = elm.time !== void ? +elm.time : env.envinfo.emoHideTime !== void ? +env.envinfo.emoHideTime : 500;
+			} else {
+				hideemo = +param;
+			}
 			updateFlag = true;
 		}
 		return 0;
@@ -792,34 +786,38 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
         return find;
     };
 
-    var imageFile;
+	var imageFile;
+	var timeInfo;
 
-	function applyColorInfo(elm) {
-		var timeInfo;
-		if ((timeInfo = env.currentTime) !== void) {
-			elm.lightcolor = timeInfo.charLightColor;
-			elm.lighttype  = timeInfo.charLightType;
-			elm.brightness = timeInfo.charBrightness;
-			elm.contrast   = timeInfo.charContrast;
+	function applyColor(layer) {
+		if (timeInfo !== void) {
+			with (layer) {
+				// 環境光合成
+				if (timeInfo.charLightColor !== void) {
+					.holdAlpha = true;
+					.fillOperateRect(0,0,
+									 .imageWidth, .imageHeight,
+									 timeInfo.charLightColor,
+									 timeInfo.charLightType);
+				}
+				// 明度補正
+				if (timeInfo.charBrightness !== void) {
+					.light(timeInfo.charBrightness, timeInfo.charContrast);
+				}
+			}
 		}
 	}
+
+	function getRedrawContext() {
+		var context = global.KAGEnvImage.getRedrawContext();
+		context.timeInfo = timeInfo;
+		context.applyColor = applyColor;
+		return context;
+	}
 	
-	function applyColor(layer) {
-		var timeInfo;
-		if ((timeInfo = env.currentTime) !== void) {
-			// 環境光合成
-			if (timeInfo.charLightColor !== void) {
-				layer.holdAlpha = true;
-				layer.fillOperateRect(0,0,
-									  layer.imageWidth,layer.imageHeight,
-									  timeInfo.charLightColor,
-									  timeInfo.charLightType);
-			}
-			// 明度補正
-			if (timeInfo.charBrightness !== void) {
-				layer.light(timeInfo.charBrightness, timeInfo.charContrast);
-			}
-        }
+	function layerRedrawFunction(layer) {
+		applyColor(layer);
+		global.KAGEnvImage.layerRedrawFunction(layer);
 	}
 	
     /**
@@ -893,9 +891,9 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
                     } 
                 }
                 
-                // 画像をレイヤに割り当てる
-                layer.assignImages(baseImage);
-                // 初期化処理XXX ちょっと再検討必要かも
+				// 画像をレイヤに割り当てる
+				layer.assignImages(baseImage);
+				// 初期化処理XXX ちょっと再検討必要かも
                 layer.type    = layer._initType    = baseImage.type;
                 layer.opacity = layer._initOpacity = baseImage.opacity;
 
@@ -942,15 +940,14 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
                             }
                         }
                     }
+					var operateMode = omPsNormal;
 					if (imageInfo && imageInfo.offs_x !== void) {
-                        layer.operateRect(imageInfo.offs_x, imageInfo.offs_y,
-                                          faceImage, 0, 0, faceImage.imageWidth, faceImage.imageHeight);
+						layer.operateRect(imageInfo.offs_x, imageInfo.offs_y,
+										  faceImage, 0, 0, faceImage.imageWidth, faceImage.imageHeight, operateMode);
                     } else {
-                        layer.operateRect(0,0,faceImage,0,0,faceImage.imageWidth, faceImage.imageHeight);
+                        layer.operateRect(0,0,faceImage,0,0,faceImage.imageWidth, faceImage.imageHeight, operateMode);
                     }
 				}
-				// 色情報反映
-				applyColor(layer);
 				return true;
                 
             } else {
@@ -968,11 +965,9 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
                 try {
 					if (layer instanceof "AnimationLayer") {
 						var elm = %[ storage:imageFile ];
-						applyColorInfo(elm);
 						layer.loadImages(elm);
                     } else {
 						layer.loadImages(imageFile);
-						applyColor(layer);
                     }
                 } catch (e) {
                     return false;
@@ -996,11 +991,9 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
             try {
 				if (layer instanceof "AnimationLayer") {
 					var elm = %[ storage:image ];
-					applyColorInfo(elm);
 					layer.loadImages(elm);
                 } else {
 					layer.loadImages(image);
-					applyColor(layer);
 				}
             } catch (e) {
 				kag.errorImage(image+ ":立ち絵画像がロードできません name:" + name);
@@ -1023,7 +1016,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      * @param layer 描画対象レイヤ
      */
 	function drawLayer(layer) {
-		if (emotionLayer !== void) {
+		if (emotionLayer !== void && emotionLayer.visible == false) {
 			invalidate emotionLayer;
 			emotionLayer = void;
 		}
@@ -1052,9 +1045,12 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      * 表情を描画する
      */
     function drawFace(layer, faceLevelName) {
-        //dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
+		//dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
 		if (poses !== void) {
 			_drawLayer(layer, faceLevelName);
+			if (env.envinfo.faceApplyColor) {
+				applyColor(layer);
+			}
 			layer.visible = true;
         } else {
             layer.visible = false;
@@ -1129,17 +1125,17 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 		global.KAGEnvImage.updateLayer(...);
 		
 		// エモーション消去処理
-		if (hideemo) {
+		if (hideemo !== void) {
 			if (emotionLayer !== void && emotionLayer.visible) {
-				if (!isSkip()) {
-					var time = env.envinfo.emoHideTime !== void ? +env.envinfo.emoHideTime : 500;
-					emotionLayer.beginAction(%[visvalue:%[handler:"MoveAction", value:0, time:time, hide:true]]);
+				if (!isSkip() && hideemo > 1) {
+					emotionLayer.stopAction();
+					emotionLayer.beginAction(%[visvalue:%[handler:"MoveAction", value:0, time:hideemo, hide:true]]);
 				} else {
 					emotionLayer.stopAction();
 					emotionLayer.visible = false;
 				}
 			}
-			hideemo = false;
+			hideemo = void;
 		}
 		
 		// 新規エモーション処理
@@ -1225,6 +1221,8 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	 * 更新処理
 	 */
 	function _update() {
+		timeInfo = env.currentTime;
+
 		// 立ち絵系更新
 		var ret = global.KAGEnvImage._update(...);
 
