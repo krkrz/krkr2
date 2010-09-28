@@ -197,7 +197,7 @@ class SESoundBuffer extends WaveSoundBuffer
 	function canWaitStop()
 	{
 		// I—¹‚ğ‘Ò‚Ä‚é‚©
-		return status == "play" && !looping;
+		return inFadeAndStop || (status == "play" && !looping);
 	}
 
 	property volume

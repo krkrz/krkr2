@@ -398,6 +398,8 @@ class StandViewWindow extends KAGWindow
 	var limitMenuNames;
 	var limitfaceitem;
 	var limitFaceNames;
+	var hideposeitem;
+	var hidePoseMenu;
 
 	var currentCh; //< 現在選択中のキャラクタオブジェクト
 	var currentLevel; //< 現在選択中のレベル
@@ -468,6 +470,7 @@ class StandViewWindow extends KAGWindow
 		filemenu.add(item = new svmi(this, "全キャラ削除",         clearAllCharacters));  item.shortcut="Shift+D";
 		filemenu.add(new MenuItem(this, "-"));
 
+		filemenu.add(hideposeitem  = new svmi(this, "ポーズ選択を隠す(&P)",               toggleHidePoseMenu));
 		filemenu.add(limitmenuitem = new svmi(this, "リスト表示を限定(&L)",               toggleLimitMenuNames));
 		filemenu.add(limitfaceitem = new svmi(this, "表情リスト表示を限定(&L)",           toggleLimitFaceNames));
 		filemenu.add(modelessDialogVisibleMenu = new svmi(this, "サブウィンドウ表示(&V)", toggleModelessDialog));
@@ -493,8 +496,13 @@ class StandViewWindow extends KAGWindow
 		filemenu.children[filemenu.children.count-1].shortcut = global.StandViewWindow.OpenCloseShortcut;
 		
 		menu.add(charmenu  = new StandMenuItem(this, "キャラ(&C)", "char"));
-		for (var i=0, list=env.getPoseCharacterNames(); i<list.count; i++) with (list[i]) {
-			charmenu.add(new StandChMenuItem(this, .name, "setCharacter", .initName));
+		if (typeof global.allStandInfoList == "Object") {
+			// for exstand
+			for (var i=0, list=allStandInfoList; i<list.count; i++)
+				charmenu.add(new StandChMenuItem(this, list[i], "setCharacter", list[i]));
+		} else {
+			for (var i=0, list=env.getPoseCharacterNames(); i<list.count; i++) with (list[i])
+				charmenu.add(new StandChMenuItem(this, .name, "setCharacter", .initName));
 		}
 		menu.add(vposmenu  = new StandMenuItem(this, "位置(&V)",   "vpos"));
 		menu.add(dressmenu = new StandMenuItem(this, "服装(&W)",   "dres"));
@@ -900,7 +908,7 @@ class StandViewWindow extends KAGWindow
 					tmp.add(currentYPosName)  if (currentYPosName  != "");
 
 					tmp.add(.dress) if (.dress != "");
-					tmp.add(.pose)  if (.pose  != "");
+					tmp.add(.pose)  if (.pose  != "" && !hidePoseMenu);
 					tmp.add(.diff)  if (typeof .diff != "undefined" && .diff != "");
 					if (.face != "") {
 						if (.face.indexOf(":")) {
@@ -1194,7 +1202,12 @@ class StandViewWindow extends KAGWindow
 		// メニュー再設定
 		if (currentCh !== void) {
 			if (remenu) with (currentCh) {
-				createMenu(    posemenu,  .getPoseNames (limitMenuNames), "setPose",  .pose,  forceReset);
+				if (!hidePoseMenu) {
+					createMenu(    posemenu,  .getPoseNames (limitMenuNames), "setPose",  .pose,  forceReset);
+				} else {
+					posemenu.clear();
+					posemenu.visible = false;
+				}
 				createMenu(    dressmenu, .getDressNames(limitMenuNames), "setDress", .dress, forceReset);
 				createMenu(    facemenu,  .getFaceNames (limitFaceNames), "setFace",  .face,  forceReset);
 				if (typeof .diff != "undefined") {
@@ -1254,6 +1267,15 @@ class StandViewWindow extends KAGWindow
 	}
 	function toggleLimitFaceNames() { setLimitFaceNames(!limitFaceNames); }
 
+	// ポーズを隠すモード
+	function setHidePoseMenu(en) {
+		hidePoseMenu = en;
+		var item = hideposeitem;
+		item.checked = en if (item !== void);
+		store();
+	}
+	function toggleHidePoseMenu() { setHidePoseMenu(!hidePoseMenu); }
+	
 	// -------------------------------------------------------
 	// キャラ指定
 	// -------------------------------------------------------
@@ -1550,8 +1572,10 @@ class StandViewWindow extends KAGWindow
 		with (dic) {
 			enableClipboard((.clipCopyMode    !== void ? .clipCopyMode    : 2), 0);
 			enableClipboard((.clipCopyModeSft !== void ? .clipCopyModeSft : 3), 1);
-			setLimitMenuNames(.limitMenuNames !== void ? .limitMenuNames : true);
+			setLimitMenuNames(.limitMenuNames !== void ? .limitMenuNames : false);
 			setLimitFaceNames(.limitFaceNames !== void ? .limitFaceNames : true);
+			setHidePoseMenu  (.hidePoseMenu   !== void ? .hidePoseMenu   : (typeof global.KAGEnvCharacterEx != "undefined"));
+			setLimitMenuNames(.limitMenuNames !== void ? .limitMenuNames : false);
 			setZoom(.zoomNumer, .zoomDenom) if (.zoomNumer !== void && .zoomDenom !== void);
 			if (.left !== void && .top !== void) with (fixWindowPos(.left, .top, width, height)) setPos(.x, .y);
 
@@ -1583,6 +1607,7 @@ class StandViewWindow extends KAGWindow
 			.clipCopyModeSft= clipCopyModeSft;
 			.limitMenuNames = limitMenuNames;
 			.limitFaceNames = limitFaceNames;
+			.hidePoseMenu   = hidePoseMenu;
 			.zoomNumer = zoomNumer;
 			.zoomDenom = zoomDenom;
 

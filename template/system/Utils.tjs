@@ -439,3 +439,53 @@ function getSystemMouseCursor(tag, noValue) {
 	return Storages.isExistentStorage(file) ? file : noValue;
 }
 
+/**
+ * 辞書や配列のテキスト出力用配列を作成する
+ * elm: %[ target:出力する辞書または配列, indent:インデント文字列 ]
+ * output:出力用配列, 
+ */
+
+function       makeDictionaryOutputTexts(elm, output = []) {
+	var self = makeDictionaryOutputTexts;
+	var target = elm.target;
+	var level  = (int)elm.level, offset;
+	var indent = (typeof elm.indent == "String") ? elm.indent : " ";
+	var line   = offset = indent.repeat(level);
+
+	if (elm.key != "") line += '"'+elm.key.escape()+'" => ';
+	switch (typeof target) {
+	default: line += @"/* InvalidType:${typeof target} */void"; break;
+	case "void":    line += "void"; break;
+	case "Real":
+	case "Integer": line += (string)target; break;
+	case "String":  line += '"'+target.escape()+'"'; break;
+	case "Object":
+		if (target instanceof "Dictionary") {
+			var items = [], keys = [];
+			items.assign(target);
+			for (var i = 0; i < items.count; i+=2) keys.add(items[i]) if (items[i] != "");
+			keys.sort();
+			line += "(const) %[";
+			output.add(line);
+			for (var i = 0, cnt = keys.count; i < cnt; i++) {
+				var key = keys[i];
+				var subelm = %[ target:target[key], key:key, comma:(i<cnt-1), level:level+1 ];
+				self(subelm, output);
+			}
+			line = offset+"]";
+		} else if (target instanceof "Array") {
+			line += "(const) [";
+			output.add(line);
+			for (var i = 0, cnt = target.count; i < cnt; i++) {
+				var subelm = %[ target:target[i], comma:(i<cnt-1), level:level+1 ];
+				self(subelm, output);
+			}
+			line = offset+"]";
+		} else line += "/* UnknownObject */void";
+		break;
+	}
+	if (elm.comma) line += ",";
+	output.add(line);
+	return output;
+}
+

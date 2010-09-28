@@ -149,8 +149,9 @@ class ParticleController extends GenericFlip, Layer {
 			units.remove(void, true) if (reset);
 
 			flipAssign(this);
+
+			lastTick = tick;
 		}
-		lastTick = tick;
 	}
 	function createUnit(time) {
 		var pos = genpos();

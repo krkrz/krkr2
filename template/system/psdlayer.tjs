@@ -1,344 +1,134 @@
-/**
- * 親への更新通知機能を持つレイヤ
- */
-class NotifyParentLayer extends Layer {
-
-	var groupName; // グループ名
-	
-	/**
-	 * コンストラクタ
-	 */
-	function NotifyParentLayer() {
-		super.Layer(...);
-	}
-
-	// 更新通知処理用
-	function updateParent(left=0, top=0, width, height) {
-		if (visible) {
-			width  = this.width if width === void;
-			height = this.height if height === void;
-			//dm("親領域更新:"+name + " pos:" + left + "," + top + "," + width + "," + height);
-			parent.update(this.left + left, this.top + top, width, height);
-		}
-	}
-
-	function adjustGamma() {
-		super.adjustGamma(...);
-		updateParent();
-	}
-	function affineBlend() {
-		super.affineBlend(...);
-		updateParent();
-	}
-	function affineCopy() {
-		super.affineCopy(...);
-		updateParent();
-	}
-	function affinePile() {
-		super.affinePile(...);
-		updateParent();
-	}
-	function assignImages() {
-		super.assignImages(...);
-		updateParent();
-	}
-	function blendRect(dleft, dtop, src, sleft, stop, swidth, sheight, opa=255) {
-		super.blendRect(...);
-		updateParent(dleft, dtop, swidth, sheight);
-	}
-	function bringToBack() {
-		super.bringToBack(...);
-		updateParent();
-	}
-	function bringToFront() {
-		super.bringToFront(...);
-		updateParent();
-	}
-	function colorRect(left, top, width, height, value, opa=255) {
-		super.colorRect(...);
-		updateParent(left,top, width, height);
-	}
-	function convertType() {
-		super.convertType(...);
-		updateParent();
-	}
-	function copyRect(dleft, dtop, src, sleft, stop, swidth, sheight) {
-		super.copyRect(...);
-		updateParent(dleft, dtop, swidth, sheight);
-	}
-	function doBoxBlur() {
-		super.doBoxBlur(...);
-		updateParent();
-	}
-	function doGrayScale() {
-		super.doGrayScale(...);
-		updateParent();
-	}
-	function drawText() {
-		super.drawText(...);
-		updateParent();
-	}
-	function fillRect(left, top, width, height, value) {
-		super.fillRect(...);
-		updateParent(left, top, width, height);
-	}
-	function flipLR() {
-		super.flipLR(...);
-		updateParent();
-	}
-	function flipUD() {
-		super.flipUD(...);
-		updateParent();
-	}
-	function loadImages() {
-		super.loadImages(...);
-		updateParent();
-	}
-	function loadProvinceImage() {
-		super.loadProvinceImage(...);
-		updateParent();
-	}
-	function moveBefore() {
-		super.moveBefore(...);
-		updateParent();
-	}
-	function moveBehind() {
-		super.moveBehind(...);
-		updateParent();
-	}
-	function operateAffine() {
-		super.operateAffine(...);
-		updateParent();
-	}
-	function operateRect(dleft, dtop, src, sleft, stop, swidth, sheight, mode=omAuto, opa=255) {
-		super.operateRect(...);
-		updateParent(dleft, dtop, swidth, sheight);
-	}
-	function operateStretch(dleft, dtop, dwidth, dheight, src, sleft, stop, swidth, sheight, mode=omAuto, opa=255, type=stNearest) {
-		super.operateStretch(...);
-		updateParent(dleft, dtop, dwidth, dheight);
-	}
-	function pileRect(dleft, dtop, src, sleft, stop, swidth, sheight, opa=255) {
-		super.pileRect(...);
-		updateParent(dleft, dtop, swidth, sheight);
-	}
-	function piledCopy(dleft, dtop, src, sleft, stop, swidth, sheight) {
-		super.piledCopy(...);
-		updateParent(dleft, dtop, swidth, sheight);
-	}
-	function setImagePos() {
-		super.setImagePos(...);
-		updateParent();
-	}
-	function setImageSize() {
-		super.setImageSize(...);
-		updateParent();
-	}
-	function setMainPixel(x, y, color) {
-		super.setMainPixel(...);
-		updateParent(x, y, 1, 1);
-	}
-	function setMaskPixel(x, y, value) {
-		super.setMaskPixel(...);
-		updateParent(x, y, 1, 1);
-	}
-	function setPos() {
-		updateParent();
-		super.setPos(...);
-		updateParent();
-	}
-	function setProvincePixel(x, y, value) {
-		super.setProvincePixel(...);
-		updateParent(x, y, 1, 1);
-	}
-	function setSize() {
-		updateParent();
-		super.setSize(...);
-		updateParent();
-	}
-	function setSizeToImageSize() {
-		updateParent();
-		super.setSizeToImageSize(...);
-		updateParent();
-	}
-	function stretchBlend(dleft, dtop, dwidth, dheight, src, sleft, stop, swidth, sheight, opa=255, type=stNearest) {
-		super.stretchBlend(...);
-		updateParent(dleft, dtop, dwidth, dheight);
-	}
-	function stretchCopy(dleft, dtop, dwidth, dheight, src, sleft, stop, swidth, sheight, type=stNearest) {
-		super.stretchCopy(...);
-		updateParent(dleft, dtop, dwidth, dheight);
-	}
-	function stretchPile(dleft, dtop, dwidth, dheight, src, sleft, stop, swidth, sheight, opa=255, type=stNearest) {
-		super.stretchPile(...);
-		updateParent(dleft, dtop, dwidth, dheight);
-	}
-	function update(left,top,width,height) {
-		super.update(...);
-		updateParent(...);
-	}
-
-	property absolute {
-		getter() {return super.absolute; }
-		setter(v) {
-			if (v != super.absolute) {
-				super.absolute = v;
-				updateParent();
-			}
-		}
-	}
-
-	property order {
-		getter() {return super.order; }
-		setter(v) {
-			if (v != super.order) {
-				super.order = v;
-				updateParent();
-			}
-		}
-	}
-
-	property visible {
-		getter() {return super.visible; }
-		setter(v) {
-			if (v != super.visible) {
-				updateParent();
-				super.visible = v;
-				updateParent();
-			}
-		}
-	}
-	
-	property face {
-		getter() {return super.face; }
-		setter(v) {
-			if (v != super.face) {
-				super.face = v;
-				updateParent();
-			}
-		}
-	}
-
-	property type {
-		getter() {return super.type; }
-		setter(v) {
-			if (v != super.type) {
-				super.type = v;
-				updateParent();
-			}
-		}
-	}
-
-	property opacity {
-		getter() {return super.opacity; }
-		setter(v) {
-			if (v != super.opacity) {
-				super.opacity = v;
-				updateParent();
-			}
-		}
-	}
-	
-	property left {
-		getter() {return super.left; }
-		setter(v) {
-			if (v != super.left) {
-				updateParent();
-				super.left = v;
-				updateParent();
-			}
-		}
-	}
-
-	property top {
-		getter() {return super.top; }
-		setter(v) {
-			if (v != super.top) {
-				updateParent();
-				super.top = v;
-				updateParent();
-			}
-		}
-	}
-
-	property width {
-		getter() {return super.width; }
-		setter(v) {
-			if (v != super.width) {
-				updateParent();
-				super.width = v;
-				updateParent();
-			}
-		}
-	}
-
-	property height {
-		getter() {return super.height; }
-		setter(v) {
-			if (v != super.height) {
-				updateParent();
-				super.height = v;
-				updateParent();
-			}
-		}
-	}
-};
-
-/**
- * 子レイヤ更新に対する再描画処理をサポートするレイヤ
- */
-class RepaintLayer extends Layer {
-
-	var _region; // 更新領域保持用
-
-	/**
-	 * コンストラクタ
-	 * @param window ウインドウ
-	 * @param parent 親レイヤ
-	 */
-	function RepaintLayer(window, layer) {
-		super.Layer(...);
-		type = ltAlpha;
-	}
-
-	/**
-	 * ファイナライザ
-	 */
-	function finalize() {
-		if (_region !== void) {
-			invalidate _region;
-		}
-		super.finalize();
-	}
-	
-	/**
-	 * 領域更新処理
-	 */
-	function updateRegion(left=0, top=0, width, height) {
-		//dm("更新領域追加:" + left + "," + top + " (" + width + "," + height + ")");
-		//dm("呼び出し元:" + Scripts.getTraceString());
-		width  = this.width if width === void;
-		height = this.height if height === void;
-		if (_region === void) {
-			_region = new UpdateRegion(left, top, width, height);
-		} else {
-			_region.update(left, top, width, height);
-		}
-	}
-
-	/**
-	 * 領域更新処理
-	 */
-	function update() {
-		super.update(...);
-		updateRegion(...);
+// 部分画像ロードプラグイン読み込み
+if (typeof global.Layer.loadSubImage == "undefined") {
+	try {
+		Plugins.link("layerExSubImage.dll");
+	} catch(e) {
 	}
 }
 
 /**
- * フォトショップ互換機能を持つレイヤ
+ * PSDInfoが保持するレイヤ情報
  */
-class PSDLayer extends RepaintLayer {
+class PSDInfoLayer extends Layer {
+
+	var images;    // 分割画像情報
+	var ymax;      // 分割画像用情報
+	var base;
+	var layerBasename;
+
+	/**
+	 * コンストラクタ
+	 */
+	function PSDInfoLayer(window) {
+		var pool;
+		if (typeof window._psdpoollayer == "undefined") {
+			pool = new global.Layer(window, window.primaryLayer);
+			pool.hasImage = false;
+			window.add(pool);
+			window._psdpoollayer = pool;
+		} else {
+			pool = window._psdpoollayer;
+		}
+		super.Layer(window, pool);
+	}
+
+	// 更新通知処理用
+	function updateRegion(region) {
+		if (images === void) {
+			region.update(this.left, this.top, width, height);
+		} else {
+			// 全領域
+			for (var y=0;y<ymax;y++) {
+				var dy = y * base;
+				if (images[y].file != null && images[y].disp) {
+					region.update(this.left, this.top + dy, this.width, base);
+				}
+			}
+		}
+	}
+
+	// 読み込み画像の指定
+	// 分割画像・単独画像
+	function setImageInfo(info) {
+		if (info.images !== void) {
+			// 分割画像は読み込み用の情報を生成
+			base = info.base;
+			ymax = info.height / base;
+			layerBasename = info.layerBasename;
+			images = [];
+			for (var i=0;i<ymax;i++) {
+				images[i] = %[file:info.images[i], disp:false];
+			}
+		} else {
+			// 単独画像はすぐ読み込む
+			images = void;
+			try {
+				super.loadImages(info.layerFilename);
+			} catch(e) {
+				dm("画像ロード失敗:" + info.layerFilename);
+				super.setSize(info.width, info.height);
+				super.fillRect(0,0,info.width,info.height,0x88000000);
+				super.drawText(0,0,info.layerFilename,0xffffff);
+			}
+		}
+	}
+	
+	/**
+	 * 表示対象領域を更新
+	 * @param rect 表示対象領域 void:何もしない null:全部 UpdateRegion:その領域のみ
+	 * @return 画像ロードが発生したら true
+	 */
+	function updateDispRect(rect) {
+		// 処理対象は複合画像のみ
+		if (images !== void && rect !== void) {
+			// 読み込んでない画像が残ってる
+			var update = false;
+			for (var y=0;y<ymax;y++) {
+				var f = images[y].file;
+				if (f != null && !images[y].disp) {
+					var dy = y * base;
+					var ly = this.top + dy;
+					if (rect == null || (ly <= rect.bottom && ly+base > rect.top)) {
+						var filename = layerBasename + f + ".siz";
+						try {
+							loadSubImage(filename, 0, dy);
+							parent.update(this.left, ly, this.width, base);
+							//dm("画像ロード:%s %d/%d".sprintf(filename, y, ymax-1));
+						} catch (e) {
+							dm("画像ロード失敗:%s %d".sprintf(filename, y));
+						}
+						images[y].disp = true;
+					}
+					update = true;
+				}
+			}
+			if (!update) {
+				images = void;
+				//dm(name + ":全読み込み");
+			}
+		}
+	}
+
+	function setLayerInfo(info) {
+		super.left    = info.left;
+		super.top     = info.top;
+		super.width   = info.width;
+		super.height  = info.height;
+		super.type    = info.type;
+		if (super.type == ltPsNormal) {
+			super.type = ltAlpha;
+		}
+		super.opacity = info.opacity;
+		super.name    = info.name;
+		super.absolute = info.absolute;
+	}
+	
+};
+
+/**
+ * PSDファイル情報管理クラス
+ */
+class PSDInfo {
 
 	// レイヤ情報保存用パラメータ
 	var infonames = [
@@ -352,7 +142,9 @@ class PSDLayer extends RepaintLayer {
 		%[type:0,name:"opacity"],
 		%[type:0,name:"visible"],
 		%[type:0,name:"layer_id"],
-		%[type:0,name:"group_layer_id"]
+		%[type:0,name:"group_layer_id"],
+		%[type:0,name:"base"],
+		%[type:2,name:"images"]
 	];
 	
 	var layers;     // レイヤ情報一覧
@@ -363,18 +155,22 @@ class PSDLayer extends RepaintLayer {
 	var groupNames; // グループ辞書(名前ベース)
 	var layerFullnames; // レイヤ名（完全名)辞書
 
+
+	var width; // 画像サイズ情報
+	var height;
 	var pageWidth;   // 仮想サイズ情報
 	var pageHeight;
 	var offsetX;
 	var offsetY;
+	var trimBase;   // トリミング処理の基準サイズ
 
+	var window;
+	
 	/**
 	 * コンストラクタ
-	 * @param window ウインドウ
-	 * @param parent 親レイヤ
 	 */
-	function PSDLayer(window, layer) {
-		super.RepaintLayer(...);
+	function PSDInfo(window, trimBase) {
+		this.window = window;
 		layers = [];
 		layerIds = %[];
 		layerNames = %[];
@@ -382,6 +178,7 @@ class PSDLayer extends RepaintLayer {
 		groupIds = %[];
 		groupNames = %[];
 		layerFullnames = %[];
+		this.trimBase = trimBase;
 	}
 
 	function clearLayerData() {
@@ -471,7 +268,6 @@ class PSDLayer extends RepaintLayer {
 		invalidate groupIds;
 		invalidate groupNames;
 		invalidate layerFullnames;
-		super.finalize();
 	}
 
 	/**
@@ -567,147 +363,19 @@ class PSDLayer extends RepaintLayer {
 	}
 	
 	/**
-	 * 指定したレイヤまたはグループの表示の有効・無効を設定する
-	 * @param name グループまたはレイヤの指定(名前またはID)
-	 * @return 表示状態
+	 * 実レイヤを全取得
+	 * @param info レイヤ情報
+	 * @param dispRect 表示対象領域 void:なにもしない null:全部 UpdateRect:指定領域のみ
 	 */
-	function getVisible(name) {
-		return getPropName(name, "visible");
-	}
-
-	/**
-	 * 指定したレイヤまたはグループの表示の有効・無効を設定する
-	 * @param name グループまたはレイヤの指定(名前またはID)
-	 * @param visible 表示状態
-	 */
-	function setVisible(name, visible) {
-		setPropName(name, "visible", visible, true);
-	}
-
-	/**
-	 * 全レイヤを隠す
-	 */
-	function hideAll() {
-		for (var i=0;i<layers.count;i++) {
-			var layer = layers[i];
-			// グループに属してないレイヤのみ処理
-			if (layer.group === void) {
-				setProp(layer, "visible", false);
-			}
-		}
-		// 全グループを表示解除
-		for (var i=0;i<groups.count;i++) {
-			var group = groups[i];
-			group.visible = false;
-		}
-		// 強制全更新
-		update(0,0,width,height);
-	}
-	
-	/**
-	 * 表示されているレイヤかどうかの判定
-	 */
-	function isShowLayer(info) {
-		if (info.group === void || isShowLayer(info.group)) {
-			// レイヤ情報
-			return info.visible;
-		}
-		return false;
-	}
-
-	function _setLayerInfo(layer, info) {
-		layer.left    = info.left;
-		layer.top     = info.top;
-		layer.width   = info.width;
-		layer.height  = info.height;
-		layer.type    = info.type;
-		if (layer.type == ltPsNormal) {
-			layer.type = ltAlpha;
-		}
-		layer.opacity = info.opacity;
-		layer.visible = info.visible;
-		layer.name    = info.name;
-		layer.absolute = info.absolute;
-	}
-
-	
-	/**
-	 * 実レイヤを取得
-	 */
-	function getDispLayer(info) {
+	function getDispLayer(info, dispRect) {
 		if (info.layer === void) {
-			// 画像がロードされてないので生成
-			var layer = new NotifyParentLayer(window, this);
-			try {
-				layer.loadImages(info.layerFilename);
-			} catch(e) {
-				// ロード失敗なのでダミー画像化
-				dm("画像ロード失敗:" + info.layerFilename);
-				layer.setSize(info.width, info.height);
-				layer.fillRect(0,0,info.width,info.height,0x88000000);
-				layer.drawText(0,0,info.layerFilename,0xffffff);
-			}
-			_setLayerInfo(layer, info);
+			var layer = new PSDInfoLayer(window);
+			layer.setLayerInfo(info);
+			layer.setImageInfo(info);
 			info.layer = layer;
 		}
+		info.layer.updateDispRect(dispRect);
 		return info.layer;
-	}
-
-	/**
-	 * 再描画処理
-	 */
-	function onPaint() {
-		//dm("onPaint開始:" + Scripts.getTraceString());
-		// 更新レイヤ一覧取得
-		// ※この中で副作用で画像レイヤが読み込まれて
-		// 更新領域がかわることがあるのでここに必要
-		//dm("描画対象レイヤ");
-		for (var i=0;i<layers.count;i++) {
-			var info = layers[i];
-			if (isShowLayer(info)) {
-				getDispLayer(info);
-				info.layer.visible = true;
-				//dm("描画対象レイヤ:%s:%d:%d".sprintf(info.name, info.absolute, info.layer.absolute));
-			} else {
-				if (info.layer !== void) {
-					info.layer.visible = false;
-				}
-			}
-		}
-		if (_region !== void) {
-			// piled copy できるといいんだけど、そうすると、素体レイヤがせっかくもってる
-			// アルファ保護情報がロストするのでこの処理以外の形にできない。残念。
-			//dm("レイヤ描画更新:%d,%d,%d,%d".sprintf(_region.left, _region.top, _region.width, _region.height));
-			fillRect(_region.left, _region.top, _region.width, _region.height, 0x00000000);
-			var first = true;
-			for (var i=layers.count-1;i>=0;i--) {
-				var info = layers[i];
-				if (isShowLayer(info) && info.layer) {
-					if (first) {
-						holdAlpha = false;
-						copyRect(_region.left, _region.top,
-								 info.layer,
-								 _region.left - info.left,
-								 _region.top  - info.top,
-								 _region.width, _region.height);
-						first = false;
-						holdAlpha = true;
-					} else {
-						operateRect(_region.left,
-									_region.top,
-									info.layer,
-									_region.left - info.left,
-									_region.top  - info.top,
-									_region.width, _region.height, omAuto, info.opacity);
-					}
-				}
-			}
-			_region = void;
-		} else {
-			//dm("レイヤが更新されてません");
-		}
-		super.onPaint(...);
-		//dm("onPaint終了");
 	}
 
 	/**
@@ -716,7 +384,7 @@ class PSDLayer extends RepaintLayer {
 	 * @param height 画像縦幅
 	 * @param trim トリミング処理をするかどうか
 	 */
-	function initLayers(width, height,trim=false) {
+	function initLayers(width, height, trim=false) {
 		pageWidth  = width;
 		pageHeight = height;
 		if (trim) {
@@ -727,21 +395,55 @@ class PSDLayer extends RepaintLayer {
 					region.update(info.left, info.top, info.width, info.height);
 				}
 			}
-			offsetX = region.left;
-			offsetY = region.top;
+
+			//dm("%s:元レイヤ領域:%d,%d size:%d,%d".sprintf(name,region.left, region.top, region.width, region.height));
+			// 領域を加工用に一回り広げる
+			if (region.left > 20) {
+				region.left -= 20;
+			} else {
+				region.left = 0;
+			}
+			if (region.top > 20) {
+				region.top -= 20;
+			} else {
+				region.left = 0;
+			}
+			if (region.right < width - 21) {
+				region.right += 20;
+			} else {
+				region.right = width-1;
+			}
+			if (region.bottom < height - 21) {
+				region.bottom += 20;
+			} else {
+				region.right = width-1;
+			}
+
+			// ベース部補正
+			var cx = region.left;
+			var cy = region.top;
+			var cw = region.width;
+			var ch = region.height;
+			//var x = cx \ trimBase * trimBase;
+			//var y = cy \ trimBase * trimBase;
+			//var w = (cw + (cx - x) + (trimBase-1)) \ trimBase * trimBase;
+			//var h = (ch + (cy - y) + (trimBase-1)) \ trimBase * trimBase;
+			offsetX = cx;
+			offsetY = cy;
 			for (var i=0;i<layers.count;i++) {
 				var info = layers[i];
-				info.left -= offsetX;
-				info.top  -= offsetY;
+				info.left -= cx;
+				info.top  -= cy;
 			}
-			setSize(region.width, region.height);
+			this.width  = cw;
+			this.height = ch;
 		} else {
 			offsetX = 0;
 			offsetY = 0;
-			setSize(width, height);
+			this.width = width;
+			this.height = height;
 		}
-		setImageSize(this.width, this.height);
-		fillRect(0,0,this.width,this.height,0);
+		//dm("off:%d,%d  size:%d,%d".sprintf(offsetX, offsetY, width, height));
 		
 		// グループ参照を登録
 		for (var i=0;i<groups.count;i++) {
@@ -782,7 +484,6 @@ class PSDLayer extends RepaintLayer {
 			var name = getFullname(info);
 			info.fullname = name;
 			layerFullnames[name] = info;
-//			dm("レイヤフルネーム:" + name);
 		}
 		for (var i=0;i<groups.count;i++) {
 			var info = groups[i];
@@ -818,7 +519,7 @@ class PSDLayer extends RepaintLayer {
 			switch (info.layer_type) {
 			case PSD.layer_type_normal:
 				{
-					var layer = new NotifyParentLayer(window, this);
+					var layer = new PSDInfoLayer(window);
 					psd.getLayerData(layer, i);
 					if (layer.type == ltPsNormal) {
 						layer.type = ltAlpha;
@@ -832,7 +533,7 @@ class PSDLayer extends RepaintLayer {
 				break;
 			}
 		}
-		initLayers(psd.width, psd.height,trim);
+		initLayers(psd.width, psd.height, trim);
 
 		invalidate psd;
 	}
@@ -865,6 +566,7 @@ class PSDLayer extends RepaintLayer {
 					//dm("レイヤ追加:" + info.name);
 					layers.add(info);
 					info.layerFilename = getLayerImageName(basename, info.layer_id);
+					info.layerBasename = Storages.extractStoragePath(basename);
 					break;
 				case 2: //PSD.layer_type_folder
 					//dm("グループ追加:" + info.name);
@@ -892,6 +594,13 @@ class PSDLayer extends RepaintLayer {
 		}
 	}
 
+	// TJS式解析
+	function parseTJSString(ret, line, num, name) {
+		if (num < line.count && line[num].length > 0) {
+			ret[name] = Scripts.eval(line[num]);
+		}
+	}
+
 	/**
 	 * テキスト状態の行データから元の情報に戻す
 	 * @param line 行情報
@@ -908,6 +617,9 @@ class PSDLayer extends RepaintLayer {
 				break;
 			case 1:
 				parseTxtString(ret, line, i, info.name);
+				break;
+			case 2:
+				parseTJSString(ret, line, i, info.name);
 				break;
 			}
 		}
@@ -974,8 +686,6 @@ class PSDLayer extends RepaintLayer {
 		} else {
 			throw new Exception("複合画像の読み込みに失敗しました:"+ storage);
 		}
-		// 画像情報更新
-		//onPaint();
 	}
 
 	// ---------------------------------------------------
@@ -1005,18 +715,51 @@ class PSDLayer extends RepaintLayer {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * 画像データの保存処理
 	 */
-	function saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType, noimage) {
+	function saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType, noimage, split) {
+
 		var savelayer;
-		if (zoom == 100) {
-			// サイズ調整がない場合はそのまま保存
-			for (var i=0;i<layers.count;i++) {
-				var info = layers[i];
-				if (info.layer !== void) {
-					if (!noimage && !isIgnoreLayer(info.name)) {
+		// ズーム処理対応
+		var w = (int)(width  * zoom / 100);
+		var h = (int)(height * zoom / 100);
+		var ooze = Math.ceil(150.0/zoom)+1;
+		for (var i=0;i<layers.count;i++) {
+			var info = %[];
+			(Dictionary.assign incontextof info)(layers[i]);
+			if (zoom != 100 && info.layer !== void) {
+				// 複製
+				var layer = new PSDInfoLayer(window);
+				layer.assignImages(info.layer);
+				layer.setLayerInfo(info);
+				info.layer = layer;
+				cropLayer(info, 0, 0, width, height, ooze);
+				scaleLayer(info, w, h, zoomType);
+				trimLayer(info);
+			}
+			if (info.layer !== void) {
+				if (!noimage && !isIgnoreLayer(info.name)) {
+					if (split && trimBase > 0) {
+						// 分割画像
+						// トリム処理で適切なサイズになってるので確実に保存できる
+						var images = [];
+						for (var y=0;y<info.height;y+=trimBase) {
+							// とりあえず横のクロップは配慮せず
+							if (info.layer.isBlank(0,y,info.layer.width,trimBase)) {
+								images.add(null);
+							} else {
+								var base = System.createUUID();
+								var filename = Storages.extractStoragePath(basename) + base + ".siz";
+								info.layer.saveSubImage(filename, 0, y, info.layer.width, trimBase);
+								images.add(base);
+							}
+						}
+						info.base = trimBase;
+						info.images = images;
+					} else {
+						// 単独画像
 						var filename = getLayerImageName(basename, info.layer_id) + ".tlg";
 						if (typeof window.addSaveLayer != "undefined") {
 							window.addSaveLayer(info.layer, filename);
@@ -1029,40 +772,8 @@ class PSDLayer extends RepaintLayer {
 						}
 					}
 				}
-				savedata.add(getSaveData(info));
 			}
-		} else {
-			// ズーム処理対応
-			var w = (int)(width  * zoom / 100);
-			var h = (int)(height * zoom / 100);
-			var ooze = Math.ceil(150.0/zoom)+1;
-			for (var i=0;i<layers.count;i++) {
-				var info = %[];
-				(Dictionary.assign incontextof info)(layers[i]);
-				if (info.layer !== void) {
-					// 複製
-					var layer = new NotifyParentLayer(window, this);
-					layer.assignImages(info.layer);
-					_setLayerInfo(layer, info);
-					info.layer = layer;
-					cropLayer(info, 0, 0, width, height, ooze);
-					scaleLayer(info, w, h, zoomType);
-					trimLayer(info);
-					if (!noimage && !isIgnoreLayer(info.name)) {
-						var filename = getLayerImageName(basename, info.layer_id) + ".tlg";
-						if (typeof window.addSaveLayer != "undefined") {
-							window.addSaveLayer(info.layer, filename);
-						} else {
-							if (savelayer === void) {
-								savelayer = new global.Layer(window, this);
-							}
-							savelayer.assignImages(info.layer);
-							savelayer.saveLayerImageTlg5(filaname);
-						}
-					}
-				}
-				savedata.add(getSaveData(info));
-			}
+			savedata.add(getSaveData(info));
 		}
 		if (savelayer !== void) {
 			invalidate savelayer;
@@ -1072,7 +783,7 @@ class PSDLayer extends RepaintLayer {
 			savedata.add(getSaveData(info));
 		}
 	}
-	
+
 	// ---------------------------------------------------
 
 	// プロパティが存在してたらコピー
@@ -1098,13 +809,13 @@ class PSDLayer extends RepaintLayer {
 	 * レイヤ構造データのセーブ
 	 * @param storage 画像構造情報ファイル
 	 */
-	function saveTJS(storage, zoom=100, zoomType=stLinear, noimage=false) {
+	function saveTJS(storage, zoom=100, zoomType=stLinear, noimage=false, split=false) {
 		var basename = Storages.chopStorageExt(storage);
 		var savedata = [];
 		var w = (int)(width  * zoom / 100);
 		var h = (int)(height * zoom / 100);
 		savedata.add(%[width:w, height:h]);
-		saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType, noimage);
+		saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType, noimage, split);
 		savedata.saveStruct2(storage);
 	}
 
@@ -1116,11 +827,38 @@ class PSDLayer extends RepaintLayer {
 		var count = infonames.count;
 		for (var i=0;i<count;i++) {
 			var name = infonames[i].name;
+			var type = infonames[i].type;
 			if (info === void) {
 				ret += (string)name;
 			} else{
 				if (info[name] !== void) {
-					ret += (string)info[name];
+					switch (type) {
+					case 0:
+					case 1:
+						ret += (string)info[name];
+						break;
+					case 2:
+						{
+							var array = info[name];
+							if (typeof array == "Object" && array instanceof "Array") {
+								var str = "[";
+								for (var i=0;i<array.count;i++) {
+									var o = array[i];
+									if (i != 0) {
+										str += ",";
+									}
+									if (o === null) {
+										str += "null";
+									} else {
+										str += "\"%s\"".sprintf(o);
+									}
+								}
+								str += "]";
+								ret += str;
+							}
+						}
+						break;
+					}
 				}
 			}
 			ret += "\t";
@@ -1132,14 +870,14 @@ class PSDLayer extends RepaintLayer {
 	 * レイヤ構造データのセーブ
 	 * @param storage 画像構造情報ファイル
 	 */
-	function saveTXT(storage, zoom=100, zoomType=stLinear, noimage=false) {
+	function saveTXT(storage, zoom=100, zoomType=stLinear, noimage=false, split=false) {
 		var basename = Storages.chopStorageExt(storage);
 		var savedata = [];
 		var w = (int)(width  * zoom / 100);
 		var h = (int)(height * zoom / 100);
 		savedata.add("#" + getTxtSaveData());
 		savedata.add(getTxtSaveData(%[width:w, height:h]));
-		saveImageAll(basename, layers, groups, savedata, getTxtSaveData, zoom, zoomType, noimage);
+		saveImageAll(basename, layers, groups, savedata, getTxtSaveData, zoom, zoomType, noimage, split);
 		savedata.save2(storage);
 	}
 
@@ -1152,7 +890,7 @@ class PSDLayer extends RepaintLayer {
 	 * @param zoomType 保存時サイズ調整用（拡大方式)
 	 * @param noimage 画像自体は保存しない
 	 */
-	function saveImages(storage, zoom=100, zoomType=stLinear, noimage=false) {
+	function saveImages(storage, zoom=100, zoomType=stLinear, noimage=false, split=false) {
 		
 		// 保存用プラグインロード
 		useSaveStruct();
@@ -1160,9 +898,9 @@ class PSDLayer extends RepaintLayer {
 
 		var ext = Storages.extractStorageExt(storage).toUpperCase();
 		if (ext == ".TXT") {
-			saveTXT(storage, zoom, zoomType, noimage);
+			saveTXT(storage, zoom, zoomType, noimage, split);
 		} else if (ext == ".TJS") {
-			saveTJS(storage, zoom, zoomType, noimage);
+			saveTJS(storage, zoom, zoomType, noimage, split);
 		} else {
 			throw new Exception("保存する場合は拡張子を指定してください:"+ storage);
 		}
@@ -1217,51 +955,23 @@ class PSDLayer extends RepaintLayer {
 	 */
 	function cropLayer(info, x, y, w, h, ooze=4) {
 		//dm("cropLayer:" + info.name + ":" + ooze);
-		getDispLayer(info);
+		getDispLayer(info, null);
 
 		var layer, opr = omAlpha; //omPsNormal;
 
-		if (false) {
-			var work = new global.Layer(window, this);
-			work.setSize(w, h);
-			work.fillRect(0,0,work.width,work.height,0);
-			with (info.layer) {
-				for (var diff=4;diff>0;diff--) {
-					work.operateRect(.left - x -diff, .top - y, info.layer, 0, 0, .width, .height, opr);
-					work.operateRect(.left - x +diff, .top - y, info.layer, 0, 0, .width, .height, opr);
-					work.operateRect(.left - x, .top - y-diff,  info.layer, 0, 0, .width, .height, opr);
-					work.operateRect(.left - x, .top - y+diff,  info.layer, 0, 0, .width, .height, opr);
-				}
-				work.operateRect(.left - x, .top - y, info.layer, 0, 0, .width, .height, opr);
-			}
-
-			layer = new NotifyParentLayer(window, this);
-			layer.setSize(w, h);
-			layer.fillRect(0,0,layer.width,layer.height,0);
-			
-			with (info.layer) {
-				layer.type = ltOpaque;
-				layer.copyRect(.left - x, .top - y, info.layer, 0, 0, .width, .height);
-				//layer.holdAlpha = true;
-				layer.copyRect(0, 0, work, 0, 0, work.width, work.height);
-				layer.type = ltAlpha;
-			}
-
-		} else {
-			layer = new NotifyParentLayer(window, this);
-			layer.setSize(w, h);
-			layer.fillRect(0,0,w,h,0);
-			with (info.layer) {
+		layer = new PSDInfoLayer(window);
+		layer.setSize(w, h);
+		layer.fillRect(0,0,w,h,0);
+		with (info.layer) {
 //				layer.operateRect(.left - x, .top - y, info.layer, 0, 0, .width, .height, opr);
-				layer.copyRect(.left - x, .top - y, info.layer, 0, 0, .width, .height);
-			}
-			layer.oozeColor(ooze);
+			layer.copyRect(.left - x, .top - y, info.layer, 0, 0, .width, .height);
 		}
+		layer.oozeColor(ooze);
 		info.left   = 0;
 		info.top    = 0;
 		info.width  = w;
 		info.height = h;
-		_setLayerInfo(layer, info);
+		layer.setLayerInfo(info);
 		invalidate info.layer;
 		info.layer = layer;
 	}
@@ -1274,7 +984,7 @@ class PSDLayer extends RepaintLayer {
 	 * @param type 縮小方式
 	 */
 	function scaleLayer(info, w, h, type) {
-		var layer = new NotifyParentLayer(window, this);
+		var layer = new PSDInfoLayer(window);
 		layer.setSize(w, h);
 		with (info.layer) {
 			layer.stretchCopy(0, 0, w, h, info.layer, 0, 0, .width, .height, type);
@@ -1283,7 +993,7 @@ class PSDLayer extends RepaintLayer {
 		info.top  = 0;
 		info.width  = w;
 		info.height = h;
-		_setLayerInfo(layer, info);
+		layer.setLayerInfo(info);
 		invalidate info.layer;
 		info.layer = layer;
 	}
@@ -1293,24 +1003,53 @@ class PSDLayer extends RepaintLayer {
 	 * @param info レイヤ情報
 	 */
 	function trimLayer(info) {
-		var layer = new NotifyParentLayer(window, this);
+		var layer;
 		var crop = info.layer.getCropRect();
 		if (crop === void) {
 			info.width = 0;
 			info.height = 0;
+			layer = new PSDInfoLayer(window);
 		} else {
-			info.left   += crop.x;
-			info.top    += crop.y;
-			info.width  = crop.w;
-			info.height = crop.h;
-			layer.setSize(crop.w, crop.h);
-			layer.copyRect(0, 0, info.layer, crop.x, crop.y, crop.w, crop.h);
+			if (trimBase === void) {
+				if (info.width != crop.w || info.height != crop.h) {
+					info.left   += crop.x;
+					info.top    += crop.y;
+					info.width  = crop.w;
+					info.height = crop.h;
+					layer = new PSDInfoLayer(window);
+					layer.setSize(crop.w, crop.h);
+					layer.copyRect(0, 0, info.layer, crop.x, crop.y, crop.w, crop.h);
+				}
+			} else {
+				// Y方向だけ正規化
+				var cx = info.left + crop.x;
+				var cy = info.top  + crop.y;
+				var cw = crop.w;
+				var ch = crop.h;
+				var x = cx;
+				var y = cy \ trimBase * trimBase;
+				var w = cw;
+				var h = (ch + (cy - y) + (trimBase-1)) \ trimBase * trimBase;
+				//dm("レイヤ:%s (%d,%d,%d,%d)→(%d,%d,%d,%d)".sprintf(info.name, cx, cy, cw, ch, x, y, w, h));
+				if (info.left != x || info.top != y || info.width != w || info.width != h) {
+					info.left   = x;
+					info.top    = y;
+					info.width  = w;
+					info.height = h;
+					layer = new PSDInfoLayer(window);
+					layer.setSize(w, h);
+					layer.copyRect(0, 0, info.layer, crop.x, crop.y - (cy-y), w, h);
+				}
+			}
 		}
-		_setLayerInfo(layer, info);
-		invalidate info.layer;
-		info.layer = layer;
+		// 実際にトリミングされた
+		if (layer !== void) {
+			layer.setLayerInfo(info);
+			invalidate info.layer;
+			info.layer = layer;
+		}
 	}
-	
+
 	/**
 	 * 画像全体を縮小する
 	 * @param percent パーセント指定
@@ -1328,7 +1067,6 @@ class PSDLayer extends RepaintLayer {
 		width  = w;
 		height = h;
 		setImageSize(w,h);
-		update(0,0,width,height);
 	}
 
 	/**
@@ -1348,7 +1086,6 @@ class PSDLayer extends RepaintLayer {
 		width  = w;
 		height = h;
 		setImageSize(w,h);
-		update(0,0,width,height);
 	}
 
 	/**
@@ -1361,7 +1098,6 @@ class PSDLayer extends RepaintLayer {
 			cropLayer(info, 0, 0, width, height);
 			trimLayer(info);
 		}
-		update(0,0,width,height);
 	}
 
 	/**
@@ -1371,18 +1107,18 @@ class PSDLayer extends RepaintLayer {
 		useLayerExSave();
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
-			getDispLayer(info);
+			getDispLayer(info, null);
 			if (info.layer) with (info.layer) {
 				if (false) {
-					var layer = new NotifyParentLayer(window, this);
+					var layer = new PSDInfoLayer(window);
 					layer.setSize(.width, .height);
 					layer.fillRect(0,0, layer.width, layer.height,0);
 					layer.operateRect(0, 0, info.layer, 0, 0, .width, .height, omAlpha);
-					_setLayerInfo(layer, info);
+					layer.setLayerInfo(info);
 					invalidate info.layer;
 					info.layer = layer;
 				} else {
-					var layer = new NotifyParentLayer(window, this);
+					var layer = new PSDInfoLayer(window);
 					layer.setImageSize(.imageWidth, .imageHeight);
 					layer.fillRect(0,0,.imageWidth, .imageHeight,0);
 					.getDiffPixel(layer, 0x00000000, void);
@@ -1390,7 +1126,6 @@ class PSDLayer extends RepaintLayer {
 				}
 			}
 		}
-		update(0,0,width,height);
 	}
 
 	/**
@@ -1398,5 +1133,230 @@ class PSDLayer extends RepaintLayer {
 	 */
 	function useLayerExSave() { Plugins.link("layerExSave.dll") if (typeof global.Layer.saveLayerImageTlg5 != "Object"); }
 	function useSaveStruct()  { Plugins.link("savestruct.dll")  if (typeof global.Array.save2              != "Object"); }
+};
 
+/**
+ * PSDレイヤクラス
+ */
+class PSDLayer extends Layer {
+	
+	var psdinfo; // PSD情報
+	var visibleInfo = %[]; // 個別レイヤ情報のvisible指定状態を保持
+	var layvisible  = %[]; // レイヤの visible 状態を保持
+	
+	/**
+	 * @param window ウインドウ
+	 * @param parent 親レイヤ
+	 */
+	function PSDLayer(window, parent, psdinfo, trimBase) {
+		super.Layer(window, parent);
+		if (psdinfo === void) {
+			this.psdinfo = new PSDInfo(window, trimBase);
+		} else {
+			this.psdinfo = psdinfo;
+		}
+		type = ltAlpha;
+		Scripts.setCallMissing(this);
+		resetSize();
+	}
+
+	/**
+	 * 複製を返す
+	 */
+	function clone(instance) {
+		if (instance == void) {
+			instance = new global.PSDLayer(window, parent, psdinfo);
+		}
+		instance.assignImages(this);
+		(Dictionary.assign incontextof instance.visibleInfo)(visibleInfo);
+		(Dictionary.assign incontextof instance.layvisible)(layvisible);
+		return instance;
+	}
+
+	function copyVisible(src) {
+		(Dictionary.assign incontextof visibleInfo)(src.visibleInfo);
+	}
+
+	function resetSize() {
+		if (psdinfo.width > 0 && psdinfo.height > 0) {
+			setSize(psdinfo.width, psdinfo.height);
+			setImagePos(0,0);
+			setImageSize(width, height);
+			fillRect(0,0,width,height,neutralColor);
+		}
+	}
+	
+	// XXX なぜか存在してて missing 対象にならない
+	function clear() {
+		psdinfo.clear();
+	}
+
+	// 画像ロード差し替え
+	function loadImages(storage, trim) {
+		dm("画像読み込み:" + storage);
+		psdinfo.loadImages(...);
+		resetSize();
+	}
+
+	// psdconv用
+	function fix() {
+		psdinfo.fix(...);
+	}
+
+	// 処理をスルーする処理
+	function missing(set, name, value) {
+		//dm("missing:" + set  + ":" + name);
+		if (!set) {
+			if (typeof psdinfo[name] != "undefined") {
+				*value = psdinfo[name];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// 表示状態確認
+	function hasDisp() {
+		for (var i=0;i<layers.count;i++) {
+			var info = layers[i];
+			if (isShowLayer(info) && info.images !== void && (info.layer === void || info.layer.images !== void)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// 画像用の visible情報を取得
+	function getVisibleInfo(info) {
+		if (info !== void) {
+			var name = (string)info;
+			var v = visibleInfo[name];
+			if (v === void) {
+				visibleInfo[name] = info.visible;
+			}
+			return visibleInfo[name];
+		}
+		return false;
+	}
+
+	function setVisibleInfo(info, value) {
+		if (info !== void) {
+			var name = (string)info;
+			visibleInfo[name] = value;
+		}
+	}
+	
+	/**
+	 * 全レイヤを隠す
+	 */
+	function hideAll() {
+		for (var i=0;i<layers.count;i++) {
+			var layer = layers[i];
+			// グループに属してないレイヤのみ処理
+			if (layer.group === void) {
+				setVisibleInfo(layer, false);
+			}
+		}
+		// 全グループを表示解除
+		for (var i=0;i<groups.count;i++) {
+			var group = groups[i];
+			setVisibleInfo(group, false);
+		}
+	}
+	
+	/**
+	 * 表示されているレイヤかどうかの判定
+	 */
+	function isShowLayer(info) {
+		if (info.group === void || isShowLayer(info.group)) {
+			// レイヤ情報
+			return getVisibleInfo(info);
+		}
+		return false;
+	}
+
+	/**
+	 * 再描画処理
+	 * @return 画像内で更新された領域
+	 */
+	function updateImage(dispRect=null) {
+
+		// 更新領域
+		var region;
+		
+		// 表示状態が変わった領域を計算する
+		for (var i=0;i<layers.count;i++) {
+			var info = layers[i];
+			if (isShowLayer(info)) {
+				var layer = psdinfo.getDispLayer(info, dispRect);
+				var layerName = (string)layer;
+				if (!layvisible[layerName]) {
+					// レイヤが表示される
+					layvisible[layerName] = true;
+					region = new UpdateRegion() if region === void;
+					layer.updateRegion(region);
+				}
+			} else {
+				var layer = info.layer;
+				var layerName = (string)layer;
+				if (layer !== void && layvisible[layerName]) {
+					// レイヤが消える
+					layvisible[layerName] = false;
+					region = new UpdateRegion() if region === void;
+					layer.updateRegion(region);
+				}
+			}
+		}
+		
+		// 更新領域に対する描画を実行
+		if (region !== void) {
+			fillRect(region.left, region.top, region.width, region.height, neutralColor);
+			var first = true;
+			for (var i=layers.count-1;i>=0;i--) {
+				var info = layers[i];
+				if (isShowLayer(info) && info.layer) {
+					if (first) {
+						holdAlpha = false;
+						copyRect(region.left, region.top,
+								 info.layer,
+								 region.left - info.left,
+								 region.top  - info.top,
+								 region.width, region.height);
+						first = false;
+						holdAlpha = true;
+					} else {
+						operateRect(region.left,
+									region.top,
+									info.layer,
+									region.left - info.left,
+									region.top  - info.top,
+									region.width, region.height, omAuto, info.opacity);
+					}
+				}
+			}
+		}
+
+		return region;
+	}
+
+	// --------------------------------------------------------
+	// exstand用
+
+	/**
+	 * 指定したレイヤまたはグループの表示の有効・無効を設定する
+	 * @param name グループまたはレイヤの指定(名前またはID)
+	 * @return 表示状態
+	 */
+	function getVisible(name) {
+		return getVisibleInfo(psdinfo.getPropInfo(name));
+	}
+
+	/**
+	 * 指定したレイヤまたはグループの表示の有効・無効を設定する
+	 * @param name グループまたはレイヤの指定(名前またはID)
+	 * @param visible 表示状態
+	 */
+	function setVisible(name, visible) {
+		setVisibleInfo(psdinfo.getPropInfo(name), visible);
+	}
 };

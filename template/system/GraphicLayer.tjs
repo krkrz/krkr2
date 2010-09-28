@@ -594,7 +594,7 @@ class GraphicLayerEx extends GraphicLayer {
 	}
 
 	function _setOptions(elm) {
-        if(elm.type !== void)
+		if(elm.type !== void)
         {
         	if(/^[0-9]+$/.test(elm.type))
         		type	= +elm.type;
@@ -608,6 +608,15 @@ class GraphicLayerEx extends GraphicLayer {
 			afy = defaultAfy = elm.dafy    if elm.dafy    !== void;
 			afx    = elm.afx    if elm.afx    !== void;
 			afy    = elm.afy    if elm.afy    !== void;
+			flipx = +elm.flipx if elm.flipx !== void;
+			flipy = +elm.flipy if elm.flipy !== void;
+			if (elm.clipimage !== void) {
+				if (elm.clipimage != "") {
+					loadClipImage(elm.clipimage);
+				} else {
+					clearClipImage();
+				}
+			}
 			if (elm.time !== void && elm.time > 0) {
 				if (elm.left !== void || elm.top !== void) {
 					setMove(elm.left !== void ? +elm.left : left,
@@ -630,6 +639,12 @@ class GraphicLayerEx extends GraphicLayer {
 						setZoomYTime(+elm.zoomy, +elm.time, +elm.accel, +elm.nowait);
 					}
 				}
+				if (elm.slantx !== void) {
+					setSlantXTime(+elm.slantx, +elm.time, +elm.accel, +elm.nowait);
+				}
+				if (elm.slanty !== void) {
+					setSlantYTime(+elm.slanty, +elm.time, +elm.accel, +elm.nowait);
+				}
 				if (elm.raster !== void) {
 					setRasterTime(+elm.raster, elm.rasterlines, elm.rastercycles, +elm.time, +elm.accel, +elm.nowait);
 				}
@@ -637,6 +652,11 @@ class GraphicLayerEx extends GraphicLayer {
 					setTilePos(elm.tilex !== void ? +elm.tilex : tilex,
 							   elm.tiley !== void ? +elm.tiley : tiley,
 							   +elm.time, +elm.accel, +elm.nowait);
+				}
+				if (elm.clipimageleft !== void || elm.clipimagetop !== void) {
+					setClipImageMove(elm.clipimageleft !== void ? +elm.clipimageleft : clipImageLeft,
+									 elm.clipimagetop  !== void ? +elm.clipimagetop  : clipImageTop,
+									 +elm.time, +elm.accel, +elm.nowait);
 				}
 			} else {
 				rotate = +elm.rotate if elm.rotate !== void;
@@ -646,11 +666,17 @@ class GraphicLayerEx extends GraphicLayer {
 					zoomx  = +elm.zoomx  if elm.zoomx  !== void;
 					zoomy  = +elm.zoomy  if elm.zoomy  !== void;
 				}
+
+				slantx  = +elm.slantx  if elm.slantx  !== void;
+				slanty  = +elm.slanty  if elm.slanty  !== void;
+
 				raster = +elm.raster if elm.raster !== void;
 				rasterLines = +elm.rasterlines if elm.rasterlines !== void;
 				rasterCycle = +elm.rastercycle if elm.rastercycle !== void;
 				tilex = +elm.tilex if elm.tilex !== void;
 				tiley = +elm.tiley if elm.tiley !== void;
+				clipImageLeft = +elm.clipimageleft if elm.clipimageleft !== void;
+				clipImageTop  = +elm.clipimagetop  if elm.clipimagetop  !== void;
 			}
 		}
 		visvalue = +elm.visvalue if elm.visvalue !== void;
@@ -682,9 +708,9 @@ class GraphicLayerEx extends GraphicLayer {
 				} else if (elm.flip !== void) {
 					startFlip(elm.flip, elm);
 				} else if (elm.movie !== void) {
-					startFlip(elm.movie, elm); // 旧KAG記述互換用
+					startFlip(elm.movie, elm, "movie"); // 旧KAG記述互換用
 				} else if (elm.fire !== void) {
-					startFlip(elm.movie, elm); // 旧KAG記述互換用
+					startFlip(elm.fire, elm, "fire"); // 旧KAG記述互換用
 				}
 			}
 			_setOptions(elm);
@@ -706,6 +732,8 @@ class GraphicLayerEx extends GraphicLayer {
         dic.rotate = rotate;
         dic.zoomx  = zoomx;
         dic.zoomy  = zoomy;
+		dic.slantx  = slantx;
+        dic.slanty  = slanty;
         dic.afx    = afx;
 		dic.afy    = afy;
 		dic.hide   = hide;
@@ -733,6 +761,8 @@ class GraphicLayerEx extends GraphicLayer {
 		rotate = dic.rotate if dic.rotate !== void; 
 		zoomx  = dic.zoomx  if dic.zoomx  !== void;
 		zoomy  = dic.zoomy  if dic.zoomy  !== void;
+		slantx  = dic.slantx  if dic.slantx  !== void;
+		slanty  = dic.slanty  if dic.slanty  !== void;
 		afx    = dic.afx    if dic.afx    !== void;
 		afy    = dic.afy    if dic.afy    !== void;
 		hide   = dic.hide   if dic.hide   !== void;
@@ -992,7 +1022,33 @@ class GraphicLayerEx extends GraphicLayer {
 		if (time) {
 			beginAction(%[zoomy:%[handler:MoveAction, value:z, time:time, accel:accel, nowait:nowait]]);
 		} else {
-			zoom = z;
+			zoomy = z;
+		}
+	}
+
+    /**
+	 * slantxを指定する
+     * @param slant 回転量
+     * @time 変更にかかる時間
+     */
+	function setSlantXTime(slant, time, accel=0, nowait=false) {
+		if (time) {
+			beginAction(%[slantx:%[handler:MoveAction, value:slant, time:time, accel:accel, nowait:nowait]]);
+		} else {
+			slantx = slant;
+		}
+	}
+
+	/**
+	 * slantyを指定する
+     * @param slant 回転量
+     * @time 変更にかかる時間
+     */
+	function setSlantYTime(slant, time, accel=0, nowait=false) {
+		if (time) {
+			beginAction(%[slanty:%[handler:MoveAction, value:slant, time:time, accel:accel, nowait:nowait]]);
+		} else {
+			slanty = slant;
 		}
 	}
 	
@@ -1214,7 +1270,7 @@ class CharacterLayer extends GraphicLayerEx
 	function setOptions(elm)
 	{
 		// setOptions オーバーライド
-        super.setOptions(elm);
+		super.setOptions(elm);
 		autoHide = +elm.autohide if elm.autohide !== void;
 	}
 

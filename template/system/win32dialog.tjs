@@ -447,15 +447,22 @@ class WIN32DialogEX extends WIN32Dialog {
 	function RText(          text, id,    x, y, w, h, style=WS_GROUP,   ex=0) { return Control(text, id, STATIC, style|SS_RIGHT,           x, y, w, h, ex); }
 	function Icon(           text, id,    x, y, w, h, style=0,          ex=0) { return Control(text, id, STATIC, style|SS_ICON,            x, y, 0, 0, ex); } // w,h は無視される
 
+	var DefaultStyles = %[
+	EditText: ES_LEFT     |WS_BORDER           |WS_TABSTOP,
+	ListBox:  LBS_NOTIFY  |WS_BORDER|WS_VSCROLL|WS_TABSTOP,
+	ComboBox: CBS_DROPDOWN          |WS_VSCROLL|WS_TABSTOP,
+	ListView: LVS_REPORT  |WS_BORDER,
+		];
+
 	// エディット系列 EDITTEXT, BEDIT, HEDIT, or IEDIT. 
-	function EditText(             id,    x, y, w, h, style=ES_LEFT|WS_BORDER|WS_TABSTOP, ex=0) { return Control(, id, EDIT,      style, x, y, w, h, ex); } // ES_*,  WS_TABSTOP, WS_GROUP, WS_VSCROLL, WS_HSCROLL, WS_DISABLED
+	function EditText(             id,    x, y, w, h, style=DefaultStyles.EditText, ex=0) { return Control(, id, EDIT,      style, x, y, w, h, ex); } // ES_*,  WS_TABSTOP, WS_GROUP, WS_VSCROLL, WS_HSCROLL, WS_DISABLED
 	// リストボックス系列
-	function ListBox(              id,    x, y, w, h, style=LBS_NOTIFY|WS_BORDER|WS_TABSTOP,ex=0){return Control(, id, LISTBOX,   style, x, y, w, h, ex); } // LBS_*, WS_BORDER, WS_VSCROLL
+	function ListBox(              id,    x, y, w, h, style=DefaultStyles.ListBox,  ex=0) { return Control(, id, LISTBOX,   style, x, y, w, h, ex); } // LBS_*, WS_BORDER, WS_VSCROLL
 	// コンボボックス系列
-	function ComboBox(             id,    x, y, w, h, style=CBS_DROPDOWN|WS_TABSTOP,      ex=0) { return Control(, id, COMBOBOX,  style, x, y, w, h, ex); } // CBS_*, WS_TABSTOP, WS_GROUP, WS_VSCROLL, WS_DISABLED
+	function ComboBox(             id,    x, y, w, h, style=DefaultStyles.ComboBox, ex=0) { return Control(, id, COMBOBOX,  style, x, y, w, h, ex); } // CBS_*, WS_TABSTOP, WS_GROUP, WS_VSCROLL, WS_DISABLED
 
 	// リストビュー（要initCommonControlsEx(ICC_LISTVIEW_CLASSES);）
-	function ListView(             id,    x, y, w, h, style=LVS_REPORT|WS_BORDER,         ex=0) { return Control(, id, LISTVIEW,  style, x, y, w, h, ex); } // LVS_*, WS_TABSTOP, WS_GROUP, WS_VSCROLL
+	function ListView(             id,    x, y, w, h, style=DefaultStyles.ListView, ex=0) { return Control(, id, LISTVIEW,  style, x, y, w, h, ex); } // LVS_*, WS_TABSTOP, WS_GROUP, WS_VSCROLL
 
 	// スクロールバー系列
 }

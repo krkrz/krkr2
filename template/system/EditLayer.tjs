@@ -14,11 +14,11 @@ class EditLayer extends KAGLayer
 	var Edit_selAnchor = 0; // 範囲選択アンカー位置
 	var Edit_scrollPos = 0; // 表示されている左端の文字位置
 	var Edit_caretLayer; // キャレット用レイヤ
-	var Edit_color = clWindow; // 背景色
+	var Edit_color = System.toActualColor(clWindow); // 背景色
 	var Edit_antialiased = true; // アンチエイリアスをかけるか
 	var Edit_opacity = 192; // 不透明度
 	var Edit_maxChars = 0; // 最大文字数 ( 0 = 無制限 )
-	var Edit_textColor = clWindowText;
+	var Edit_textColor = System.toActualColor(clWindowText);
 	var Edit_blinkTimer;
 	var Edit_vertical = false;
 	var Edit_mouseDown = false;
@@ -27,6 +27,10 @@ class EditLayer extends KAGLayer
 	var Edit_textOffsetY = 0;
 	var Edit_passwordView = false; // パスワードモード
 	var Edit_passwordMark = "*";   // パスワードモード時のマスク文字
+
+	// 文字選択用色
+	var Edit_highlightColor     = System.toActualColor(clHighlight);
+	var Edit_highlightTextColor = System.toActualColor(clHighlightText);
 
 	var Edit_selLength = 0; // 廃止しました。
 							// 使わないでください。
@@ -569,8 +573,8 @@ class EditLayer extends KAGLayer
 		var text = _viewtext;
 		var textlen = text.length;
 		// var selstart = Edit_selStart;
-		var highlightbg = 0xff000000 | clHighlight;
-		var highlighttext = clHighlightText;
+		var highlightbg = 0xff000000 | Edit_highlightColor;
+		var highlighttext = Edit_highlightTextColor;
 		var anti = Edit_antialiased;
 		var textcolor = Edit_textColor;
 		var tx = "";

@@ -1,29 +1,4 @@
 /**
- * キャラクタ用座標補正対応レイヤ
- */
-class EnvBaseGraphicLayer extends EnvGraphicLayer {
-
-	/**
-	 * コンストラクタ
-	 */
-	function EnvBaseGraphicLayer(win, par, owner) {
-		// 親コンストラクタ
-		super.EnvGraphicLayer(win, par, owner);
-	}
-
-	/**
-	 * オフセット情報の初期化
-	 */
-	function updateOffsetInfo() {
-		if (owner !== void) {
-			// カメラ原点補正の逆補正
-			xoffset = ownerenv.cameraox * (1 - 100.0 / levelz);
-			yoffset = ownerenv.cameraoy * (1 - 100.0 / levelz);
-		}
-	}
-};
-
-/**
  * ベースになっているレイヤ
  * event レイヤの参照に用いる
  */
@@ -44,7 +19,6 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 	function KAGEnvBaseLayer(env, name, absolute) {
 		super.KAGEnvLayer(env, name);
 		this.absolute = absolute;
-		layerClass = global.EnvBaseGraphicLayer;
 	}
 
     function setImageFile(file, elm) {
@@ -60,11 +34,11 @@ class KAGEnvBaseLayer extends KAGEnvLayer {
 		}
 		if (eventInfo !== void) {
 			eventTrans = eventInfo.trans;
-			imageFile = eventInfo.image !== void ? eventInfo.image : v;
+			imageFile = %[storage:eventInfo.image !== void ? eventInfo.image : v];
 			xpos = elm.xpos !== void ? (int)elm.xpos : eventInfo.xoff;
 			ypos = elm.ypos !== void ? (int)elm.ypos : eventInfo.yoff;
 		} else {
-			imageFile = file;
+			imageFile = %[storage:file];
 			xpos = elm.xpos !== void ? (int)elm.xpos : void;
 			ypos = elm.ypos !== void ? (int)elm.ypos : void;
 		}

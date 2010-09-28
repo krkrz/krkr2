@@ -29,8 +29,6 @@ class KAGEnvironment extends KAGEnvImage {
     var stages;       //< 舞台情報
     var events;       //< イベント絵情報
     var positions;    //< 配置情報
-    var actions;      //< アクション情報
-	var transitions;  //< トランジション情報
     var defaultTime;  //< デフォルトの時間
 	var yoffset;      //< キャラクタ配置のyoffset 値
 	var xoffset;      //< キャラクタ配置のyoffset 値
@@ -44,8 +42,6 @@ class KAGEnvironment extends KAGEnvImage {
 	var emotionmap;
 	var searchSmallLevel; //< 拡張立ち絵で小さい立ち絵を探索するかどうか
 
-	var scripts = %[];      //< 画像加工スクリプト群
-	
     /// キャラクタ初期化情報一覧
     var characterInits;
     /// キャラクタ情報
@@ -142,8 +138,8 @@ class KAGEnvironment extends KAGEnvImage {
 
     function resetColor(param, elm) {
         _grayscale = void;
-        _rgamma = void;
-        _ggamma = void;
+		_rgamma = void;
+		_ggamma = void;
         _bgamma = void;
 		_blurx = void;
 		_blury = void;
@@ -153,10 +149,13 @@ class KAGEnvironment extends KAGEnvImage {
 		_saturation = void;
 		_luminance = void;
 		_noise = void;
+		_filter = void;
+		_script = void;
+		_clip = void;
 		if (colorall) {
 			setColorAll(true);
-        }
-        redraw = true;
+		}
+		redraw = true;
     }
 
     function setColorAll(param) {
@@ -183,7 +182,6 @@ class KAGEnvironment extends KAGEnvImage {
 
 		super.KAGEnvImage(this, "env");
 		absolute = 100;
-		layerClass = global.EnvBaseGraphicLayer;
 //		defaultLayerType = ltOpaque; // ステージはltOpaqueがデフォルト[XXX]トランジションがおかしいので保留
 		
         xmax = kag.scWidth / 2;
@@ -208,7 +206,7 @@ class KAGEnvironment extends KAGEnvImage {
 		resetEnv();
 		//dm("環境初期化完了");
     }
-
+	
     /**
      * ファイナライザ
      */
@@ -222,6 +220,60 @@ class KAGEnvironment extends KAGEnvImage {
 		//dm("環境終了");
     }
 
+	/**
+	 * システム定義パラメータの取得
+	 * @param name 識別名
+	 * @param base 区分名 (transitions とか actions とか)
+	 * @param prefix ファイルからさがす場合のプレフィックス @"${prefix}name.tjs" が処理対象
+	 */
+	function getParameter(name, base, prefix) {
+		// 登録済み情報
+		if (envinfo[base] !== void && envinfo[base][name] !== void) {
+			return envinfo[base][name];
+		}
+		// 個別ファイルから読み込む
+		var filename = @"${prefix}${name}.tjs";
+		if (Storages.isExistentStorage(filename)) {
+			try {
+@if (DEBUG)
+	            // デバッグ時はファイルの日付を見て差し替え判定
+				Plugins.link("fstat.dll") if (typeof Storages.dirlist == "undefined");
+				var timeinfo;
+				if ((timeinfo = envinfo[base + "_time"]) === void)  {
+					timeinfo = %[];
+					envinfo[base + "_time"] = timeinfo;
+				}
+				var time = timeinfo[name];
+				var lasttime = Storages.getLastModifiedFileTime(Storages.getPlacedPath(filename));
+				//dm("lasttime:%s time:%s".sprintf(lasttime, time !== void ? time.time : void));
+				if (time === void || time.time != lasttime) {
+					//dm("新規にパース");
+					var info = Scripts.evalStorage(filename);
+					timeinfo[name] = %[time:lasttime, info:info];
+					return info;
+				} else {
+					//dm("既存情報を返す");
+					return time.info;
+				}
+@endif
+@if (!DEBUG)
+                // リリース時は一度でも読んだらそのまま記録
+				var ret = Scripts.evalStorage(filename);
+				if (envinfo[base] === void) {
+					envinfo[base] = %[];
+				}
+				envinfo[base][name] = ret;
+				//dm("%s:%s を記録".sprintf(base, name));
+				return ret;
+@endif
+			} catch (e) {
+				kag.error("%s情報の読み込みに失敗しました:%s".sprintf(base, name));
+			}
+		}
+		return void;
+
+	}
+	
     /**
      * セーブ処理
      */
@@ -380,10 +432,8 @@ class KAGEnvironment extends KAGEnvImage {
             stages      = envinfo.stages;
             events      = envinfo.events;
             positions   = envinfo.positions;
-            actions     = envinfo.actions;
 			emotions    = envinfo.emotions;
             emotionmap  = envinfo.emotionmap;
-			transitions = envinfo.transitions;
 			defaultTime = envinfo.defaultTime;
             yoffset     = (int)envinfo.yoffset;
             xoffset     = (int)envinfo.xoffset;
@@ -419,10 +469,8 @@ class KAGEnvironment extends KAGEnvImage {
 			stages = void;
 			events = void;
 			positions = void;
-			actions   = void;
 			emotions  = void;
 			emotionmap = void;
-			transitions = void;
 			defaultTime = void;
 			yoffset = 0;
 			xoffset = 0;
@@ -434,8 +482,8 @@ class KAGEnvironment extends KAGEnvImage {
 		}
 
 		// スクリプト
-		if (Storages.isExistentStorage(   "envscript.tjs")) try {
-			scripts = Scripts.evalStorage("envscript.tjs");
+		if (Storages.isExistentStorage("envscript.tjs")) try {
+			envinfo.scripts = Scripts.evalStorage("envscript.tjs");
 		} catch(e) {
 			Debug.message("envscript.tjs の読み込みに失敗しました:" + e.message);
 		}
@@ -504,6 +552,8 @@ class KAGEnvironment extends KAGEnvImage {
 		});
 		layers = %[];
 
+		clearBGCache();
+		
 		stagelayers = [];
 		nostagelayer = false;
 		
@@ -714,20 +764,19 @@ class KAGEnvironment extends KAGEnvImage {
      * @param elm コマンドのほかの要素
      */
 	function setStage(stageName, elm) {
-		if (stages[stageName] === void) {
-			kag.errorCmd("舞台指定が不明です: " + stageName);
+		if (stageName == "" || stages[stageName] === void) {
+			kag.errorCmd("舞台指定が不明です: " + stageName) if (stageName != "");
 			return;
 		}
 		if (stageName != stage || isClear() || event.isShow()) {
 
-			initFile(elm);
-			
 			//dm("舞台指定:" + stageName);
 			stage = stageName;
 			time = defaultTime if time === void;
 
 			// ev ではじまるファイル名はCGとして登録
-			var image = stages[stage].image;
+			var info = stages[stage];
+			var image = info.image;
 			if (image !== void && image.substring(0,2).toUpperCase() == "EV") {
 				kag.sflags["cg_" + (image.toUpperCase())] = true;
 			}
@@ -735,9 +784,12 @@ class KAGEnvironment extends KAGEnvImage {
 			disp = SHOW;
 			redraw = true;
 			reposition = true;
-			
-			var cox = stages[stage].cox !== void ? +stages[stage].cox : 0;
-			var coy = stages[stage].coy !== void ? +stages[stage].coy : 0;
+
+			defaultAfx = info.cox !== void ? "center + " + (int)(info.cox * (1-levelz/100)) : "center";
+			defaultAfy = info.coy !== void ? "center - " + (int)(info.coy * (1-levelz/100)) : "center";
+			var cox = info.cox !== void ? +info.cox : 0;
+			var coy = info.coy !== void ? +info.coy : 0;
+
 			if (cameraox != cox) {
 				cameraox = cox;
 				transall = true;
@@ -746,10 +798,12 @@ class KAGEnvironment extends KAGEnvImage {
 				cameraoy = coy;
 				transall = true;
 			}
+
+			initFile(elm);
 			
-            // 背景指定時に座標指定がなければ場所情報を初期化する
-            if (elm.xpos === void) {
-                xpos = void;
+			// 背景指定時に座標指定がなければ場所情報を初期化する
+			if (elm.xpos === void) {
+				xpos = void;
             }
             if (elm.ypos === void) {
                 ypos = void;
@@ -757,16 +811,9 @@ class KAGEnvironment extends KAGEnvImage {
 
 			// ステージ変更時フック
 			if (typeof global.setStageHook != "undefined") {
-                global.setStageHook(stageName, elm);
+				global.setStageHook(stageName, elm);
             }
 
-			// 舞台変更時はキャラの余分な情報を破棄する
-			foreach(characters, function(name, value, dict, base) {
-				if (!value.isShow()) {
-					value.clearStandLayers();
-				}
-			}, this);
-			
 			// 舞台レイヤ更新
 			nostagelayer = elm.nolayer;
 			initStageLayer(false, false);
@@ -836,6 +883,16 @@ class KAGEnvironment extends KAGEnvImage {
         }
     }
 
+	// 立ち絵キャッシュをクリア
+	function clearStandCache(param, elm) {
+		foreach(characters, function(name, value, dict, base) {
+			if (!value.isShow()) {
+				value.clearStandLayers();
+			}
+		}, this);
+		System.doCompact(clIdle);
+	}
+	
     // トランジションモード
     var transMode;
 
@@ -897,7 +954,7 @@ class KAGEnvironment extends KAGEnvImage {
 		ret = void;
 		trans = void;
 		foreach(elm, checkTrans);
-		beginTransition(trans);
+		beginTransition(trans, getSyncMode(elm, trans));
 		hideMessage(trans);
         return ret;
     }
@@ -907,10 +964,14 @@ class KAGEnvironment extends KAGEnvImage {
 	 */
 	function newLayer(elm, tagfunc=true) {
 		// 既存データは廃棄
-		delLayer(elm);
-		// 新規生成
 		if (elm.name !== void) {
-			var lay = getEnvLayer(elm.name, true);
+			var lay = layers[elm.name];
+			if (lay !== void) {
+				lay.initImage();
+				lay.clearFileState();
+			} else {
+				lay = getEnvLayer(elm.name, true);
+			}
 			if (lay != null) {
 				delete elm.tagname;
 				delete elm.name;
@@ -984,9 +1045,9 @@ class KAGEnvironment extends KAGEnvImage {
 
 		ret = void;
 		trans = void;
-        if (!transMode && !isSkip() && elm.nofade === void) {
-            foreach(elm, checkTrans);
-            if (trans !== void && trans.method !== void && !isSkip()) {
+		if (!transMode && !isSkip() && elm.nofade === void) {
+			foreach(elm, checkTrans);
+			if (trans !== void && trans.method !== void && !isSkip()) {
 				kag.updateBeforeCh = 1;
 				kag.stopAllTransitions();
 				kag.backupLayer(EMPTY, true);
@@ -994,7 +1055,7 @@ class KAGEnvironment extends KAGEnvImage {
 				beginTransition(trans);
 				return ret;
 			} else {
-				return kag.setCurrentMessageLayerVisible(v) ? -2 : 0;
+				return kag.setCurrentMessageLayerVisible(v, elm.time) ? -2 : 0;
 			}
 		}
 		kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, v);
@@ -1038,8 +1099,9 @@ class KAGEnvironment extends KAGEnvImage {
      * 全体の初期化処理
      */
     init : this.initEnv incontextof this,
-    stage : this.setStage incontextof this,
-    stime : this.setTime incontextof this,
+	stage : this.setStage incontextof this,
+	stime : this.setTime incontextof this,
+	clearstandcache : this.clearStandCache incontextof this,
     hidebase : this.hideBase incontextof this,
     hideevent : this.hideEvent incontextof this,
     hidecharacters : this.hideCharacters incontextof this,
@@ -1112,6 +1174,41 @@ class KAGEnvironment extends KAGEnvImage {
         return find;
     }
 
+	// 背景キャッシュ
+	// 直近の背景を5枚保持
+	var bgcache = [];
+	
+	function loadBGFromCache(layer, storage) {
+		for (var i=bgcache.count-1;i>=0;i--) {
+			var cache = bgcache[i];
+			if (cache.name == storage) {
+				bgcache.erase(i);
+				bgcache.add(cache);
+				layer.assignImages(cache.layer);
+				layer.setSizeToImageSize();
+				return;
+			}
+		}
+		var lay = new global.Layer(layer.window, layer.window.primaryLayer);
+		lay.loadImages(storage);
+		//dm("背景画像ロード:" + storage);
+		lay.setSizeToImageSize();
+		layer.assignImages(lay);
+		layer.setSizeToImageSize();
+		bgcache.add(%[name:storage, layer:lay]);
+		if (bgcache.count > 5) {
+			bgcache.erase(0);
+		}
+	}
+
+	function clearBGCache() {
+		var count = bgcache.count;
+		for (var i=0;i<count;i++) {
+			invalidate bgcache[i];
+		}
+		bgcache.clear();
+	}
+
     /**
      * 舞台画像の描画
      * @param layer 描画先レイヤ
@@ -1127,7 +1224,7 @@ class KAGEnvironment extends KAGEnvImage {
 
 				// 画像のロードと座標補正処理
                 try {
-                    layer.loadImages(%[ "storage" => image ]);
+					loadBGFromCache(layer, image);
 					stageFile = image;
                    
 					if (reposition) {
@@ -1145,7 +1242,7 @@ class KAGEnvironment extends KAGEnvImage {
                     image = image.replace(/TIME/, times[defaultTime].prefix);
 
                     try {
-                        layer.loadImages(%[ "storage" => image ]);
+						loadBGFromCache(layer, image);
 						stageFile = image;
                         
                         // 色補正処理
@@ -1184,6 +1281,18 @@ class KAGEnvironment extends KAGEnvImage {
                     }
                 }
 			}
+			var blurx = stages[stage].blurx;
+			var blury = stages[stage].blury;
+			//dm("blur", stage, blurx, blury);
+			if (blurx !== void || blury !== void) layer.doBoxBlur(blurx, blury);
+
+			var res = stages[stage].resolution;
+			//dm("resolution", stage, res);
+			if (res !== void) layer.resolution = res;
+			/**/res = stages[stage].resolutionx;
+			if (res !== void) layer.resolutionx = res;
+			/**/res = stages[stage].resolutiony;
+			if (res !== void) layer.resolutiony = res;
 		}
 	}
 
@@ -1483,11 +1592,11 @@ class KAGEnvironment extends KAGEnvImage {
     }
 
     function quake(elm) {
-        // 揺れをのっとる
+		// 揺れをのっとる
 		if (!isSkip()) {
-            kag.doQuake(elm);
-        }
-        return 0;
+			kag.doQuake(elm);
+		}
+		return kag.waitFunc(elm, kag.waitQuake);
     }
     
     function getMessageLayer(base) {
@@ -2029,17 +2138,17 @@ class KAGEnvironment extends KAGEnvImage {
     }
 
 	/**
-	 * 全トランジション停止
-     */
-	function onStopTransition(all) {
-		stopTransition(all);
-		event.stopTransition(all);
-		foreach(characters, function(name, value, dict, all) {
-			value.stopTransition(all);
-		});
-		foreach(layers, function(name, value, dict, all) {
-			value.stopTransition(all);
-		});
+	 * 全レイヤコマンド発行
+	 */
+	function onLayerCommand(param) {
+		this[param.command](param.args*);
+		event[param.command](param.args*);
+		foreach(characters, function(name, value, dict, param) {
+			value[param.command](param.args*);
+		}, param);
+		foreach(layers, function(name, value, dict, param) {
+			value[param.command](param.args*);
+		}, param);
 	}
 	
     /**
@@ -2162,8 +2271,8 @@ class KAGEnvironment extends KAGEnvImage {
 		if (updateCameraFlag) {
 			updateCamera();
 		}
-		if (actionCameraFlag && elm.sync) {
-			ret = kag.waitAction(this);
+		if (actionCameraFlag && (elm.sync || elm.wait)) {
+			ret = kag.waitSingleAction(this, true, +elm.wait);
 		}
 		return ret;
 	}
@@ -2344,23 +2453,21 @@ class KAGEnvironment extends KAGEnvImage {
      * @param elm パラメータ
      */
 	function actionCamera(name, elm) {
-		if (env.actions !== void) {
-			var action = createAction(name, elm);
-			if (action !== void) {
-				kag.beginAction(this, action);
-				if (action instanceof "Dictionary") {
-					if (action.time == 0) {
-						//dm("アクションを記録:" + i);
-						cameraCurrentActionList.add(action);
-					}
-				} else if (action instanceof "Array") {
-					if (action.count > 0 && action[action.count - 1].time == 0) {
-						//dm("アクションを記録:" + i + " count:" + action.count);
-						cameraCurrentActionList.add(action);
-					}
+		var action = createAction(name, elm);
+		if (action !== void) {
+			kag.beginAction(this, action);
+			if (action instanceof "Dictionary") {
+				if (action.time == 0) {
+					//dm("アクションを記録:" + i);
+					cameraCurrentActionList.add(action);
 				}
-				actionCameraFlag = true;
+			} else if (action instanceof "Array") {
+				if (action.count > 0 && action[action.count - 1].time == 0) {
+					//dm("アクションを記録:" + i + " count:" + action.count);
+					cameraCurrentActionList.add(action);
+				}
 			}
+			actionCameraFlag = true;
 		}
 		return 0;
 	}

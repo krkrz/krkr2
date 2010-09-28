@@ -266,7 +266,7 @@ class Movie extends VideoOverlay
 		super.close();
 	}
 
-	var _aspectZoom, _aspectZoomEnabled, _aspectZoomWidth, _aspectZoomHeight, _aspectZoomPrimary;
+	var _aspectZoom, _aspectZoomEnabled, _aspectZoomWidth, _aspectZoomHeight, _aspectZoomPrimary, _aspectZoomVertCoef,  _aspectZoomHorzCoef;
 	property aspectZoom {
 		getter { return _aspectZoom; }
 		setter(v) {
@@ -278,8 +278,22 @@ class Movie extends VideoOverlay
 				_aspectZoomWidth  = +m[1];
 				_aspectZoomHeight = +m[2];
 
+				_aspectZoomVertCoef = 1.0;
+				_aspectZoomHorzCoef = 1.0;
+				_aspectZoomPrimary = false;
 				var opt = (m[3] != "") ? m[3].toLowerCase().split(":",, true) : [];
-				_aspectZoomPrimary = (opt.find("primary") >= 0);
+				for (var i = opt.count-1; i >= 0; i--) {
+					var tag = opt[i], value = true, eq;
+					if ((eq = tag.indexOf("=")) > 0) value = tag.substr(eq+1), tag = tag.substr(0, eq);
+					switch (tag) {
+					case "primary":  _aspectZoomPrimary  = value; break;
+					case "vertcoef": _aspectZoomVertCoef = Scripts.eval(value); break;
+					case "horzcoef": _aspectZoomHorzCoef = Scripts.eval(value); break;
+					default:
+						dm(@"unknown aspectzoom option : ${tag} = ${value}");
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -295,8 +309,8 @@ class Movie extends VideoOverlay
 			var vert = (w/h > _aspectZoomWidth/_aspectZoomHeight);
 			var z = (vert) ? (h / _aspectZoomHeight) : (w / _aspectZoomWidth);
 
-			var zw = Math.ceil(_aspectZoomWidth  * z);
-			var zh = Math.ceil(_aspectZoomHeight * z);
+			var zw = Math.ceil(_aspectZoomWidth  * z * _aspectZoomHorzCoef);
+			var zh = Math.ceil(_aspectZoomHeight * z * _aspectZoomVertCoef);
 			x = /* vert ?*/ (w - zw) \ 2 /*: 0*/;
 			y = /*!vert ?*/ (h - zh) \ 2 /*: 0*/;
 			w = zw, h = zh;

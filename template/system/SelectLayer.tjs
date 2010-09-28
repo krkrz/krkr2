@@ -103,8 +103,8 @@ class SelectButtonLayer extends ButtonLayer
 
 	function onMouseEnter()
 	{
-        if(onenter !== void) Scripts.eval(onenter);
-        super.onMouseEnter(...);
+		if(onenter !== void) Scripts.eval(onenter);
+		super.onMouseEnter(...);
 		_ignoreFocusJump = true;
         focus();
 		_ignoreFocusJump = void;
@@ -139,7 +139,7 @@ class SelectButtonLayer extends ButtonLayer
 		if (window.preProcessKeys(key, shift)) return;
 		switch (key) {
 		case VK_SPACE: case VK_RETURN:
-			onButtonClick() if (nodeEnabled);
+			onButtonClick() if (nodeEnabled && !(shift && ssRepeat));
 			break;
 		case VK_ESCAPE:
 			return window.processKeys(key, shift);
@@ -150,13 +150,10 @@ class SelectButtonLayer extends ButtonLayer
 	var _ignoreFocusJump;
 	function onFocus(prevfocused, direction)
 	{
-        // キー操作によるフォーカス変動の場合にマウスカーソルも移動
-        var sgks = window.getKeyState;
-        var process = !_ignoreFocusJump && (sgks(VK_LEFT) || sgks(VK_UP) || sgks(VK_RIGHT) ||
-											sgks(VK_DOWN) || sgks(VK_TAB));
-        if(process) {
-            cursorX = (width>>1);
-            cursorY = (height>>1);
+		// キー操作によるフォーカス変動の場合にマウスカーソルも移動
+		if(!_ignoreFocusJump) {
+			cursorX = (width>>1);
+			cursorY = (height>>1);
 			releaseCapture();
         }
 		return super.onFocus(...);
@@ -168,8 +165,8 @@ class SelectButtonLayer extends ButtonLayer
 		enabled   = _enabled;
 		focusable = _focusable;
 	} }
-	property enabled   { getter { return _enabled   && !_forceDisabled; } setter(v) { super.enabled   = (_enabled   = v) && !_forceDisabled; } }
-	property focusable { getter { return _focusable && !_forceDisabled; } setter(v) { super.focusable = (_focusable = v) && !_forceDisabled; } }
+	property enabled   { getter { return _enabled   && !_forceDisabled; } setter(v) { super.enabled   = ((_enabled   = v) != 0) && !_forceDisabled; } }
+	property focusable { getter { return _focusable && !_forceDisabled; } setter(v) { super.focusable = ((_focusable = v) != 0) && !_forceDisabled; } }
 	var     _enabled;
 	var     _focusable;
 }
