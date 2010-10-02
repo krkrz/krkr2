@@ -16,7 +16,7 @@ Author: わたなべごう
 描画先レイヤの width は VideoOverlay クラスによって動画のサイズに
 拡張されてるので、このタイミングで半分に再調整してください。
 
-例
+例１
 class AlphaVideo extends VideoOverlay
 {
   function AlphaVideo(window) {
@@ -28,9 +28,23 @@ class AlphaVideo extends VideoOverlay
     if (layer1) {
       layer1.width = layer1.imageWidth / 2;
       layer1.copyRightBlueToLeftAlpha();
+      layer1.type = ltAlpha; // VideoOverlayが毎フレームltOpaqueに書き戻すため
     }
   }
 }
+
+例２
+Movie.tjs をアルファムービー対応に改造したサンプルです。
+変更点は Movie.patch を参照してください。
+
+[video]タグに alphatype と alphamode のオプションが拡張されます。
+
+alphatype=1 で copyRightBlueToLeftAlpha を使用（右側にアルファ）
+alphatype=2 で copyBottomBlueToTopAlpha を使用（下側にアルファ）
+
+alphamode=アルファムービーの透過モード（imageタグの mode 属性を参照）
+初期値はalphaです。
+
 
 ●ライセンス
 
