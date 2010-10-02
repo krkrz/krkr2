@@ -28,7 +28,6 @@ class AlphaVideo extends VideoOverlay
     if (layer1) {
       layer1.width = layer1.imageWidth / 2;
       layer1.copyRightBlueToLeftAlpha();
-      layer1.type = ltAlpha; // VideoOverlayが毎フレームltOpaqueに書き戻すため
     }
   }
 }
@@ -37,13 +36,15 @@ class AlphaVideo extends VideoOverlay
 Movie.tjs をアルファムービー対応に改造したサンプルです。
 変更点は Movie.patch を参照してください。
 
-[video]タグに alphatype と alphamode のオプションが拡張されます。
+video タグに alphatype のオプションが拡張されます。
 
+alphatype=0 で アルファを使用しない通常のモード
 alphatype=1 で copyRightBlueToLeftAlpha を使用（右側にアルファ）
 alphatype=2 で copyBottomBlueToTopAlpha を使用（下側にアルファ）
 
-alphamode=アルファムービーの透過モード（imageタグの mode 属性を参照）
-初期値はalphaです。
+アルファムービーは mode=layer でしか機能しないことにご注意ください。
+また、image タグの mode 属性で、あらかじめ対象のレイヤの透過モードを
+変更しておかないと、正しくアルファが出ない場合があります。
 
 
 ●ライセンス

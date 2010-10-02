@@ -11,7 +11,6 @@ class Movie extends VideoOverlay
 	var layerPage = [];
 	var storageName;
 	var useLayerAlpha; // LayerExBTOAを使用してアルファムービーを表示するフラグ
-	var layerAlphaType = ltAlpha; // アルファムービー時のレイヤのタイプ（毎フレームltOpaqueに上書きされるため）
 
 	function Movie(owner,id=0)
 	{
@@ -35,7 +34,6 @@ class Movie extends VideoOverlay
 			dic.visible = visible;
 			dic.loop = loop;
 			dic.useLayerAlpha = useLayerAlpha;
-			dic.layerAlphaType = layerAlphaType;
 			dic.frame = frame;
 
 			if( numberOfAudioStream > 0 ) {
@@ -68,7 +66,6 @@ class Movie extends VideoOverlay
 			mode = vomLayer;
 			loop = dic.loop;
 			useLayerAlpha = dic.useLayerAlpha;
-			layerAlphaType = dic.layerAlphaType;
 			layerNumber[0] = dic.layerNumber[0];
 			layerNumber[1] = dic.layerNumber[1];
 			layerPage[0] = dic.layerPage[0];
@@ -181,12 +178,12 @@ class Movie extends VideoOverlay
 	function copyRightBlueToLeftAlpha(layer)
 	{
 		(global.Layer.copyRightBlueToLeftAlpha incontextof layer)();
-		with (layer) .width = .imageWidth\2, .type = layerAlphaType;
+		with (layer) .width = .imageWidth\2;
 	}
 	function copyBottomBlueToTopAlpha(layer)
 	{
 		(global.Layer.copyBottomBlueToTopAlpha incontextof layer)();
-		with (layer) .height = .imageHeight\2, .type = layerAlphaType;
+		with (layer) .height = .imageHeight\2;
 	}
 
 	property canWaitStop
@@ -310,14 +307,6 @@ class Movie extends VideoOverlay
 				}
 			}
 		}
-		if( elm.alphamode !== void )
-		{
-			var mode = elm.alphamode;
-			layerAlphaType =
-				(mode != "" && imageTagLayerType[mode] !== void)
-					?          imageTagLayerType[mode].type : ltAlpha;
-		}
-
 		frame = +elm.frame if elm.frame !== void;
 		if( elm.mode !== void )
 		{
