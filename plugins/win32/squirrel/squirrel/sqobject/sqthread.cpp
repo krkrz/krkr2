@@ -583,28 +583,32 @@ Thread::update(long diff)
  * @return “®ì’†‚ÌƒXƒŒƒbƒh‚Ì”
  */
 int
-Thread::main()
+Thread::main(ThreadCallback *onThreadDone, void *userData)
 {
+	threadList.appendArray(newThreadList);
+	newThreadList.clearData();
 	SQInteger i=0;
 	SQInteger max = threadList.len();
 	while (i < max) {
-		Thread *th = threadList.get(i);
+		ObjectInfo thObj = threadList.get(i);
+		Thread *th = thObj;
 		if (!th || th->_main(diffTick)) {
+			if (onThreadDone) {
+				onThreadDone(thObj, userData);
+			}
 			threadList.remove(i);
 			max--;
 		} else {
 			i++;
 		}
 	}
-	threadList.appendArray(newThreadList);
-	newThreadList.clearData();
-	return (int)threadList.len();
+	return getThreadCount();
 };
 
 int
 Thread::getThreadCount()
 {
-	return (int)threadList.len();
+	return (int)threadList.len() + (int)newThreadList.len();
 }
 
 /**

@@ -578,3 +578,13 @@ sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result)
 	}
 	return SQ_ERROR;
 }
+
+SQRESULT
+sq_getvariant(sqobject::ObjectInfo &obj, tTJSVariant *result)
+{
+	HSQUIRRELVM gv = sqobject::getGlobalVM();
+	obj.push(gv);
+	SQRESULT ret = sq_getvariant(gv, -1, result);
+	sq_pop(gv, 1);
+	return ret;
+}
