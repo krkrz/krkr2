@@ -50,6 +50,10 @@ HSQUIRRELVM getGlobalVM()
 /// vm 終了
 void done()
 {
+	// クラス参照を解放
+	SQClassType<Thread>::done(vm);
+	SQClassType<Object>::done(vm);
+	
 	// ルートテーブルをクリア
 	sq_pushroottable(vm);
 	sq_clear(vm,-1);
@@ -65,7 +69,7 @@ void done()
 
 static SQRESULT Object_notify(HSQUIRRELVM v)
 {
-	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	Object *instance = SQClassType<Object>::getInstance(v);
 	if (instance) {
 		instance->notify();
 		return SQ_OK;
@@ -75,7 +79,7 @@ static SQRESULT Object_notify(HSQUIRRELVM v)
 
 static SQRESULT Object_notifyAll(HSQUIRRELVM v)
 {
-	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	Object *instance = SQClassType<Object>::getInstance(v);
 	if (instance) {
 		instance->notifyAll();
 		return SQ_OK;
@@ -85,7 +89,7 @@ static SQRESULT Object_notifyAll(HSQUIRRELVM v)
 
 static SQRESULT Object_hasSetProp(HSQUIRRELVM v)
 {
-	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	Object *instance = SQClassType<Object>::getInstance(v);
 	if (instance) {
 		return instance->hasSetProp(v);
 	}
@@ -94,7 +98,7 @@ static SQRESULT Object_hasSetProp(HSQUIRRELVM v)
 
 static SQRESULT Object_setDelegate(HSQUIRRELVM v)
 {
-	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	Object *instance = SQClassType<Object>::getInstance(v);
 	if (instance) {
 		return instance->setDelegate(v);
 	}
@@ -103,7 +107,7 @@ static SQRESULT Object_setDelegate(HSQUIRRELVM v)
 
 static SQRESULT Object_getDelegate(HSQUIRRELVM v)
 {
-	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	Object *instance = SQClassType<Object>::getInstance(v);
 	if (instance) {
 		return instance->getDelegate(v);
 	}
@@ -112,7 +116,7 @@ static SQRESULT Object_getDelegate(HSQUIRRELVM v)
 
 static SQRESULT Object_get(HSQUIRRELVM v)
 {
-	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	Object *instance = SQClassType<Object>::getInstance(v);
 	if (instance) {
 		return instance->_get(v);
 	}
@@ -121,7 +125,7 @@ static SQRESULT Object_get(HSQUIRRELVM v)
 
 static SQRESULT Object_set(HSQUIRRELVM v)
 {
-	Object *instance = SQTemplate<Object,BaseClass>::getInstance(v);
+	Object *instance = SQClassType<Object>::getInstance(v);
 	if (instance) {
 		return instance->_set(v);
 	}
@@ -167,7 +171,7 @@ Object::registerClass()
 
 static SQRESULT Thread_exec(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		return instance->exec(v);
 	}
@@ -176,7 +180,7 @@ static SQRESULT Thread_exec(HSQUIRRELVM v)
 
 static SQRESULT Thread_exit(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		return instance->exit(v);
 	}
@@ -185,7 +189,7 @@ static SQRESULT Thread_exit(HSQUIRRELVM v)
 
 static SQRESULT Thread_stop(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		instance->stop();
 		return SQ_OK;
@@ -195,7 +199,7 @@ static SQRESULT Thread_stop(HSQUIRRELVM v)
 
 static SQRESULT Thread_run(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		instance->run();
 		return SQ_OK;
@@ -205,7 +209,7 @@ static SQRESULT Thread_run(HSQUIRRELVM v)
 
 static SQRESULT Thread_getCurrentTick(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		sq_pushinteger(v,instance->getCurrentTick());
 		return 1;
@@ -215,7 +219,7 @@ static SQRESULT Thread_getCurrentTick(HSQUIRRELVM v)
 
 static SQRESULT Thread_getStatus(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		sq_pushinteger(v,instance->getStatus());
 		return 1;
@@ -225,7 +229,7 @@ static SQRESULT Thread_getStatus(HSQUIRRELVM v)
 
 static SQRESULT Thread_getExitCode(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		return instance->getExitCode(v);
 	}
@@ -234,7 +238,7 @@ static SQRESULT Thread_getExitCode(HSQUIRRELVM v)
 
 static SQRESULT Thread_wait(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		return instance->wait(v);
 	}
@@ -243,7 +247,7 @@ static SQRESULT Thread_wait(HSQUIRRELVM v)
 
 static SQRESULT Thread_cancelWait(HSQUIRRELVM v)
 {
-	Thread *instance = SQTemplate<Thread,Object>::getInstance(v);
+	Thread *instance = SQClassType<Thread>::getInstance(v);
 	if (instance) {
 		instance->cancelWait();
 		return SQ_OK;

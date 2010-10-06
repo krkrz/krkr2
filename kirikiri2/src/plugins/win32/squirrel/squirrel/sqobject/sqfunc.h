@@ -19,7 +19,13 @@ public:
 		return classObj;
 	}
 
-	static T* getInstance(HSQUIRRELVM vm, SQInteger idx) {
+	static void done(HSQUIRRELVM vm) {
+		HSQOBJECT &classObj = ClassObject();
+		sq_release(vm, &classObj);
+		sq_resetobject(&classObj);
+	}
+
+	static T* getInstance(HSQUIRRELVM vm, SQInteger idx=-1) {
 		SQUserPointer typetag = NULL;
 		sq_getobjtypetag(&ClassObject(),&typetag);
 		SQUserPointer up;
@@ -81,13 +87,15 @@ public:
 	 * @param v squirrelVM
 	 * @param typeName 登録型名
 	 */
-	SQTemplate(HSQUIRRELVM v, const SQChar *typeName) : v(v) {
+	SQTemplate(HSQUIRRELVM v, const SQChar *typeName=NULL) : v(v) {
 		
 		HSQOBJECT& classObj  = SQClassType<T>::ClassObject();
 		HSQOBJECT& parentObj = SQClassType<P>::ClassObject();
-
-		sq_pushroottable(v); // root
-		sq_pushstring(v, typeName, -1); // typeName
+		
+		if (typeName) {
+			sq_pushroottable(v); // root
+			sq_pushstring(v, typeName, -1); // typeName
+		}
 		if (!sq_isnull(parentObj)) {
 			// 親クラスが指定されてる場合は継承処理
 			sq_pushobject(v, parentObj);
@@ -100,9 +108,14 @@ public:
 		sq_settypetag(v, -1, (SQUserPointer)&classObj);
 		// クラスオブジェクト取得
 		sq_getstackobj(v, -1, &classObj);
-		
-		sq_createslot(v, -3);
-		sq_pop(v, 1); // root
+		sq_addref(v, &classObj); // must addref before the pop!
+
+		if (typeName) {
+			sq_createslot(v, -3);
+			sq_pop(v, 1); // root
+		} else {
+			sq_pop(v, 1); // classobject
+		}
 		
 		// コンストラクタ・デストラクタを登録
 		Register(destructor, _SC("destructor"));

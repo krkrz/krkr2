@@ -59,6 +59,7 @@ static void printFunc(HSQUIRRELVM v, const SQChar* format, ...)
 
 extern void sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant);
 extern SQRESULT sq_getvariant(HSQUIRRELVM v, int idx, tTJSVariant *result);
+extern SQRESULT sq_getvariant(sqobject::ObjectInfo &obj, tTJSVariant *result);
 extern void SQEXCEPTION(HSQUIRRELVM v);
 
 /**
@@ -361,8 +362,6 @@ getVariantString(tTJSVariant &var, IWriter *writer)
 
 //---------------------------------------------------------------------------
 
-
-
 /**
  * Scripts クラスへの Squirrel 実行メソッドの追加
  */
@@ -374,6 +373,7 @@ public:
 	/**
 	 * squirrel スクリプトの読み込み
 	 * @param script スクリプト
+	 * @throw コンパイルに失敗
 	 * @return 読み込まれたスクリプト
 	 */
 	static tjs_error TJS_INTF_METHOD load(tTJSVariant *result,
@@ -395,6 +395,8 @@ public:
 	 * squirrel スクリプトの実行
 	 * @param script スクリプト
 	 * @param ... 引数
+	 * @throw コンパイルに失敗
+	 * @throw 実行に失敗
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD exec(tTJSVariant *result,
@@ -426,6 +428,7 @@ public:
 	/**
 	 * squirrel スクリプトのファイルからの読み込み
 	 * @param filename ファイル名
+	 * @throw ファイルの読み込みに失敗
 	 * @return 読み込まれたスクリプト
 	 */
 	static tjs_error TJS_INTF_METHOD loadStorage(tTJSVariant *result,
@@ -446,6 +449,8 @@ public:
 	 * squirrel スクリプトのファイルからの実行
 	 * @param filename ファイル名
 	 * @param ... 引数
+	 * @throw ファイルの読み込みに失敗
+	 * @throw 呼び出しに失敗
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD execStorage(tTJSVariant *result,
@@ -478,6 +483,8 @@ public:
 	 * Squirrel スクリプトのスレッド実行。
 	 * @param text スクリプトが格納された文字列
 	 * @param ... 引数
+	 * @throw コンパイルに失敗
+	 * @throw スレッド生成に失敗
 	 * @return Threadオブジェクト
 	 */
 	static tjs_error TJS_INTF_METHOD fork(tTJSVariant *result,
@@ -496,14 +503,19 @@ public:
 				}
 				if (SQ_SUCCEEDED(sq_call(vm, numparams+2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 					sq_getvariant(vm, -1, result);
-					sq_pop(vm, 1); // thread
+					sq_pop(vm, 3); // thread, class, root
+				} else {
+					sq_pop(vm, 2); // class, root
+					SQEXCEPTION(vm);
 				}
 			} else {
-				sq_pop(vm, 2); // delegate, self
+				sq_pop(vm, 4); // delegate, self, class, root
+				SQEXCEPTION(vm);
 			}
-			sq_pop(vm, 1); // class
+		} else {
+			sq_pop(vm,1); // root
+			SQEXCEPTION(vm);
 		}
-		sq_pop(vm,1); // root
 		return TJS_S_OK;
 	}
 
@@ -511,6 +523,7 @@ public:
 	 * Squirrel スクリプトのファイルからのスレッド実行。
 	 * @param filename スクリプトが格納されたファイル
 	 * @param ... 引数
+	 * @throw スレッド生成に失敗
 	 * @return Threadオブジェクト
 	 */
 	static tjs_error TJS_INTF_METHOD forkStorage(tTJSVariant *result,
@@ -529,14 +542,92 @@ public:
 			}
 			if (SQ_SUCCEEDED(sq_call(vm, numparams+2, SQTrue, SQTrue))) { // コンストラクタ呼び出し
 				sq_getvariant(vm, -1, result);
-				sq_pop(vm, 1); // thread
+				sq_pop(vm, 3); // thread, class, root
+			} else {
+				sq_pop(vm, 2); // class, root
+				SQEXCEPTION(vm);
 			}
-			sq_pop(vm, 1); // class
+		} else {
+			sq_pop(vm,1); // root
+			SQEXCEPTION(vm);
 		}
-		sq_pop(vm,1); // root
 		return TJS_S_OK;
 	}
 
+	/**
+	 * スレッド終了コールバックを呼び出す
+	 */
+	static void onThreadDone(sqobject::ObjectInfo th, void *userData) {
+		tTJSVariant *method = (tTJSVariant*)userData;
+		th.push(vm);
+
+		// TJSの例外回避呼び出し処理用
+		class FuncInfo {
+			
+		public:
+			/**
+			 * コンストラクタ
+			 * @param method 呼び出し対象メソッド
+			 * @param HSQUIRRELVM v 引数参照用VM
+			 * @param argc PUSHしてある引数の数
+			 */
+			FuncInfo(tTJSVariant &method, HSQUIRRELVM v, int argc) : method(method), argc(argc), args(NULL) {
+				// 引数生成
+				if (argc > 0) {
+					args = new tTJSVariant*[(size_t)argc];
+					for (tjs_int i=0;i<argc;i++) {
+						args[i] = new tTJSVariant();
+						sq_getvariant(v, i-argc, args[i]);
+					}
+					sq_pop(v, argc);
+				}
+			}
+			
+			// デストラクタ
+			~FuncInfo() {
+				// 引数破棄
+				if (args) {
+					for (int i=0;i<argc;i++) {
+						delete args[i];
+					}
+					delete[] args;
+				}
+			}
+			
+			void exec() {
+				TVPDoTryBlock(TryExec, Catch, Finally, (void *)this);
+			}
+			
+		private:
+			
+			void _TryExec() {
+				tjs_error error;
+				if (TJS_SUCCEEDED(error = method.AsObjectClosureNoAddRef().FuncCall(0, NULL, NULL, NULL, argc, args, NULL))) {
+				}
+			}
+			
+			static void TJS_USERENTRY TryExec(void * data) {
+				FuncInfo *info = (FuncInfo*)data;
+				info->_TryExec();
+			}
+			
+			static bool TJS_USERENTRY Catch(void * data, const tTVPExceptionDesc & desc) {
+				FuncInfo *info = (FuncInfo*)data;
+				TVPAddLog(desc.message.c_str());
+				return false;
+			}
+			
+			static void TJS_USERENTRY Finally(void * data) {
+			}
+
+		private:
+			tjs_int argc;
+			tTJSVariant **args;
+			tTJSVariant method;
+		} func(*method, vm, 1);
+		func.exec();
+	}
+	
 	/**
 	 * squirrelスレッドの実行
 	 */
@@ -547,7 +638,12 @@ public:
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		sqobject::Thread::update((int)*param[0]);
 		sqobject::beforeContinuous();
-		int count = sqobject::Thread::main();
+		int count;
+		if (numparams > 1) {
+			count = sqobject::Thread::main(onThreadDone, param[1]);
+		} else {
+			count = sqobject::Thread::main();
+		}
 		sqobject::afterContinuous();
 		if (result) {
 			*result = count;
@@ -572,6 +668,8 @@ public:
 	 * squirrel グローバルメソッドの呼び出し
 	 * @param name メソッド名
 	 * @param ... 引数
+	 * @throw メソッドの取得に失敗
+	 * @throw メソッドの呼び出しに失敗
 	 * @return 実行結果
 	 */
 	static tjs_error TJS_INTF_METHOD call(tTJSVariant *result,
@@ -608,6 +706,8 @@ public:
 	 * squirrel スクリプトのコンパイル処理
 	 * @param text スクリプトが格納された文字列
 	 * @store store バイナリクロージャ格納先ファイル
+	 * @throw コンパイルに失敗
+	 * @throw 書き出しに失敗
 	 * @return エラー文字列または void
 	 */
 	static tjs_error TJS_INTF_METHOD compile(tTJSVariant *result,
@@ -633,6 +733,8 @@ public:
 	 * Squirrel コードのコンパイル処理
 	 * @param コンパイル元ファイル
 	 * @store バイナリクロージャ格納先ファイル
+	 * @throw ファイルの読み込みに失敗
+	 * @throw 書き出しに失敗
 	 * @return エラー文字列または void
 	 */
 	static tjs_error TJS_INTF_METHOD compileStorage(tTJSVariant *result,
@@ -728,6 +830,41 @@ public:
 		unregisterglobal(vm, param[0]->GetString());
 		return TJS_S_OK;
 	}
+
+	/**
+	 * @return squirrelのスレッド数を返す
+	 */
+	static tjs_error TJS_INTF_METHOD getThreadCount(tTJSVariant *result,
+													  tjs_int numparams,
+													  tTJSVariant **param,
+													  iTJSDispatch2 *objthis) {
+		if (result) {
+			*result = sqobject::Thread::getThreadCount();
+		}
+		return TJS_S_OK;
+	}
+
+	/**
+	 * Squirrel用比較
+	 * 2つのオブジェクトを squirrel 的に比較します
+	 * @param obj1 オブジェクトその1
+	 * @param obj2 オブジェクトその2
+	 * @return 比較結果 >0: obj1>obj2 ==0:obj1==obj2 <0:obj1<obj2
+	 */
+	static tjs_error TJS_INTF_METHOD compare(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis) {
+		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+		if (result) {
+			sq_pushvariant(vm, *param[0]);
+			sq_pushvariant(vm, *param[1]);
+			*result = sq_cmp(vm);
+			sq_pop(vm, 2);
+		}
+		return TJS_S_OK;
+	}
+
 };
 
 NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
@@ -747,6 +884,8 @@ NCB_ATTACH_CLASS(ScriptsSquirrel, Scripts) {
 	RawCallback("unregisterSQ",     &ScriptsSquirrel::unregisterSQ,    TJS_STATICMEMBER);
 	RawCallback("compileSQ",        &ScriptsSquirrel::compile,        TJS_STATICMEMBER);
 	RawCallback("compileStorageSQ", &ScriptsSquirrel::compileStorage, TJS_STATICMEMBER);
+	RawCallback("getThreadCountSQ", &ScriptsSquirrel::getThreadCount, TJS_STATICMEMBER);
+	RawCallback("compareSQ", &ScriptsSquirrel::compare, TJS_STATICMEMBER);
 };
 
 /**
@@ -916,20 +1055,17 @@ static void PreRegistCallback()
 	sqstd_register_bloblib(vm);
 	sq_pop(vm, 1);
 	
-	sqobject::registerContinuous();
-	
 	// オブジェクト機構初期化
 	sqobject::Object::registerClass();
 	sqobject::Thread::registerClass();
 	sqobject::Thread::registerGlobal();
-	TJSObject::init(vm);
-}
 
-/**
- * 登録処理後
- */
-static void PostRegistCallback()
-{
+	TJSObject::init(vm);
+	
+	// スレッド機構初期化
+	sqobject::Thread::init();
+ 	sqobject::registerContinuous();
+	
 	// TJS のグローバルオブジェクトを取得する
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
 	if (global) {
@@ -962,21 +1098,13 @@ static void PostRegistCallback()
 		}
 		ArrayCountProp = val.AsObject();
 	}
-
-	// スレッド機構初期化
-	sqobject::Thread::init();
 }
 
 /**
  * 開放処理前
  */
-static void PreUnregistCallback()
+static void PostUnregistCallback()
 {
-	// スレッド系停止
-	sqobject::doneContinuous();
-	sqobject::Thread::done();
-	TJSObject::done();
-	
 	if (ArrayCountProp) {
 		ArrayCountProp->Release();
 		ArrayCountProp = NULL;
@@ -991,18 +1119,16 @@ static void PreUnregistCallback()
 		global->DeleteMember(0, SQUIRREL_GLOBAL, NULL, global);
 		global->Release();
 	}
-}
 
-/**
- * 開放処理後
- */
-static void PostUnregistCallback()
-{
+	// スレッド系停止
+	sqobject::doneContinuous();
+	sqobject::Thread::done();
+
+	TJSObject::done(vm);
+
 	// squirrel 終了
 	sqobject::done();
 }
 
 NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
-NCB_POST_REGIST_CALLBACK(PostRegistCallback);
-NCB_PRE_UNREGIST_CALLBACK(PreUnregistCallback);
 NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
