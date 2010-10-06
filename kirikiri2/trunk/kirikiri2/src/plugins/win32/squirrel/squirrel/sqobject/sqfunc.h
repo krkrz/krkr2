@@ -25,7 +25,7 @@ public:
 		sq_resetobject(&classObj);
 	}
 
-	static T* getInstance(HSQUIRRELVM vm, SQInteger idx=-1) {
+	static T* getInstance(HSQUIRRELVM vm, SQInteger idx=1) {
 		SQUserPointer typetag = NULL;
 		sq_getobjtypetag(&ClassObject(),&typetag);
 		SQUserPointer up;
