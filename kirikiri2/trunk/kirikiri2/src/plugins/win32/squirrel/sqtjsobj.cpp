@@ -129,7 +129,13 @@ int TJSObject::classId;
 void
 TJSObject::init(HSQUIRRELVM vm)
 {
+	// squirrel インスタンスを TJS側で保持するためのIDを取得
 	classId = TJSRegisterNativeClass(L"SquirrelClass");
+	
+	// TJSObjectクラスを定義
+	SQTemplate<TJSObject, sqobject::Object> cls(vm);
+
+	// メソッド登録
 	sq_pushroottable(vm);
 	sq_pushstring(vm, _SC("createTJSClass"), -1);
 	sq_newclosure(vm, createTJSClass, 0);
@@ -142,8 +148,10 @@ TJSObject::init(HSQUIRRELVM vm)
 
 // 初期化用
 void
-TJSObject::done()
+TJSObject::done(HSQUIRRELVM vm)
 {
+	// クラス参照を解放
+	SQClassType<TJSObject>::done(vm);
 }
 
 /**
@@ -158,14 +166,9 @@ TJSObject::createTJSClass(HSQUIRRELVM v)
 		return sq_throwerror(v, _SC("invalid param"));
 	}
 
-	HSQOBJECT& classObj  = SQClassType<TJSObject>::ClassObject();
-	HSQOBJECT& parentObj = SQClassType<sqobject::Object>::ClassObject();
-	
 	// クラスを生成
-	sq_pushobject(v, parentObj);
+	sq_pushobject(v, SQClassType<TJSObject>::ClassObject());
 	sq_newclass(v, true); // 継承する
-	sq_settypetag(v, -1, (SQUserPointer)&classObj);
-	sq_getstackobj(v, -1, &classObj);
 
 	// メンバ登録
 	const tjs_char *tjsClassName = NULL;

@@ -17,7 +17,7 @@ public:
 	/**
 	 * ”pŠü—p
 	 */
-	static void done();
+	static void done(HSQUIRRELVM vm);
 
 	// ---------------------------------------------------------------
 

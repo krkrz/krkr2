@@ -267,6 +267,13 @@ public:
 	 * @param diff 経過時間
 	 */
 	static void update(long diff);
+
+	/**
+	 * スレッド処理用コールバック
+	 * @param th スレッドオブジェクト
+	 * @param userData ユーザデータ
+	 */
+	typedef void ThreadCallback(ObjectInfo th, void *userData);
 	
 	/*
 	 * 実行処理メインループ
@@ -275,9 +282,11 @@ public:
 	 * から1度だけ呼び出すことで機能する。それぞれのスレッドは、
 	 * 自分から明示的に suspend() または wait系のメソッドを呼び出して処理を
 	 * 次のスレッドに委譲する必要がある。
+	 * @param onThreadDone スレッド終了時に呼び出されるコールバック
+	 * @param userData コールバックに渡すユーザデータ引数
 	 * @return 動作中のスレッドの数
 	 */
-	static int main();
+	static int main(ThreadCallback *onThreadDone=NULL, void *userData=NULL);
 
 	/**
 	 * スクリプト実行開始用

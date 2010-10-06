@@ -6,6 +6,7 @@ class Scripts {
 	/**
 	 * Squirrel スクリプトの読み込み
 	 * @param text スクリプトが格納された文字列
+	 * @throw コンパイルに失敗
 	 * @return 読み込まれたスクリプト
 	 */
 	function loadSQ(text);
@@ -15,6 +16,8 @@ class Scripts {
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param text スクリプトが格納された文字列
 	 * @param ... 引数
+	 * @throw コンパイルに失敗
+	 * @throw 実行に失敗
 	 * @return スクリプトの実行結果
 	 */
 	function execSQ(text, ...);
@@ -22,6 +25,7 @@ class Scripts {
 	/**
 	 * Squirrel スクリプトの読み込み
 	 * @param filename スクリプトが格納されたファイル
+	 * @throw ファイルの読み込みに失敗
 	 * @return 読み込まれたスクリプト
 	 */
 	function loadStorageSQ(filename);
@@ -31,6 +35,8 @@ class Scripts {
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param filename スクリプトが格納されたファイル
 	 * @param ... 引数
+	 * @throw ファイルの読み込みに失敗
+	 * @throw 呼び出しに失敗
 	 * @return スクリプトの実行結果
 	 */
 	function execStorageSQ(filename, ...);
@@ -40,6 +46,8 @@ class Scripts {
 	 * このメソッドによる実行中では Object/Thread 拡張による wait は利用できません
 	 * @param name メソッド名
 	 * @param ... 引数
+	 * @throw メソッドの取得に失敗
+	 * @throw メソッドの呼び出しに失敗
 	 * @return スクリプトの実行結果
 	 */
 	function callSQ(name, ...);
@@ -49,6 +57,8 @@ class Scripts {
 	 * @param text スクリプトが格納された文字列
 	 * @param store バイナリクロージャ格納先ファイル
 	 * @param endian エンディアン指定 0:デフォルト 1:little 2:big
+	 * @throw コンパイルに失敗
+	 * @throw 書き出しに失敗
 	 * @return エラー文字列または void
 	 */
 	function compileSQ(text, store, endian=0)
@@ -58,6 +68,8 @@ class Scripts {
 	 * @param filename コンパイル元ファイル
 	 * @param store バイナリクロージャ格納先ファイル
 	 * @param endian エンディアン指定 0:デフォルト 1:little 2:big
+	 * @throw ファイルの読み込みに失敗
+	 * @throw 書き出しに失敗
 	 * @return エラー文字列または void
 	 */
 	function compileStorageSQ(filename, store, endian=0)
@@ -99,6 +111,8 @@ class Scripts {
 	 * Squirrel スクリプトのスレッド実行。
 	 * @param text スクリプトが格納された文字列
 	 * @param ... 引数
+	 * @throw コンパイルに失敗
+	 * @throw スレッド生成に失敗
 	 * @return Threadオブジェクト
 	 */
 	function forkSQ(text, ...);
@@ -107,6 +121,7 @@ class Scripts {
 	 * Squirrel スクリプトのファイルからのスレッド実行。
 	 * @param filename スクリプトが格納されたファイル
 	 * @param ... 引数
+	 * @throw スレッド生成に失敗
 	 * @return Threadオブジェクト
 	 */
 	function forkStorageSQ(filename, ...);
@@ -114,15 +129,33 @@ class Scripts {
 	/**
 	 * Squirrel疑似スレッド処理の稼働
 	 * @param diff 経過tick
+	 * @param onThreadDone スレッド終了時コールバック。第一引数にスレッドオブジェクトが渡ってくる
 	 * @return 動作しているスレッドの数
 	 */
-	function driveSQ(diff);
+	function driveSQ(diff, onThreadDone);
 
 	/**
 	 * Squirrel疑似スレッド用のトリガ呼び出し
 	 * @param name トリガ名
 	 */
 	function triggerSQ(name);
+
+	/**
+	 * @return squirrelのスレッド数を返す
+	 */
+	property threadCountSQ;
+
+
+	// -------------------------------------------------------
+
+	/**
+	 * Squirrel用比較
+	 * 2つのオブジェクトを squirrel 的に比較します
+	 * @param obj1 オブジェクトその1
+	 * @param obj2 オブジェクトその2
+	 * @return 比較結果 >0: obj1>obj2 ==0:obj1==obj2 <0:obj1<obj2
+	 */
+	function compareSQ(obj1, obj2);
 }
 
 /**
