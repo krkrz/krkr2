@@ -670,7 +670,7 @@ struct ncbPropAccessor {
 			return defaultValue;
 		}
 	}
-	ttstr getStrValue(IndexT ofs, ttstr &defaultValue=ttstr("")) {
+	ttstr getStrValue(IndexT ofs, ttstr const &defaultValue=ttstr("")) {
 		if (HasValue(ofs)) {
 			return GetValue(ofs, DefsT::Tag<ttstr>());
 		} else {
@@ -703,7 +703,7 @@ struct ncbPropAccessor {
 			return defaultValue;
 		}
 	}
-	ttstr getStrValue(KeyT key, ttstr &defaultValue=ttstr("")) {
+	ttstr getStrValue(KeyT key, ttstr const &defaultValue=ttstr("")) {
 		if (HasValue(key)) {
 			return GetValue(key, DefsT::Tag<ttstr>());
 		} else {
