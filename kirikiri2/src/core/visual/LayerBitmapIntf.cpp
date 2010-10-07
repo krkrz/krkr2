@@ -1775,7 +1775,38 @@ bool tTVPBaseBitmap::StretchBlt(tTVPRect cliprect,
 
 	if(!Is32BPP()) TVPThrowExceptionMessage(TVPInvalidOperationFor8BPP);
 
+	// check for special case noticed above
+	
+	//--- extract stretch type
+	tTVPBBStretchType type = (tTVPBBStretchType)(mode & stTypeMask);
 
+	//--- pull the dimension
+	tjs_int w = GetWidth();
+	tjs_int h = GetHeight();
+	tjs_int refw = ref->GetWidth();
+	tjs_int refh = ref->GetHeight();
+
+	//--- clop clipping rectangle with the image
+	tTVPRect cr = cliprect;
+	if(cr.left < 0) cr.left = 0;
+	if(cr.top < 0) cr.top = 0;
+	if(cr.right > w) cr.right = w;
+	if(cr.bottom > h) cr.bottom = h;
+
+	//--- check mode and other conditions
+	if((type == stLinear || type == stCubic) && !hda && opa==255 && method==bmCopy
+		&& dw > 0 && dh > 0 && rw > 0 && rh > 0 &&
+		destrect.left >= cr.left && destrect.top >= cr.top &&
+		destrect.right <= cr.right && destrect.bottom <= cr.bottom)
+	{
+		// takes another routine
+		TVPResampleImage(this, destrect, ref, refrect, type==stLinear?1:2);
+		return true;
+	}
+
+
+
+	// pass to affine operation routine
 	tTVPPointD points[3];
 	points[0].x = (double)destrect.left - 0.5;
 	points[0].y = (double)destrect.top - 0.5;
