@@ -890,7 +890,7 @@ void pushValue(HSQUIRRELVM v, T *value) {
 		if (pushObject(v, value)) {
 			return;
 		}
-		Sqrat::Var<T*>::pushInit(v, value);
+		Sqrat::Var<T*>::push(v, value);
 		return;
 	}
 	sq_pushnull(v);
@@ -900,7 +900,7 @@ void pushValue(HSQUIRRELVM v, T *value) {
 template<typename T>
 void pushOtherValue(HSQUIRRELVM v, T *value) {
 	if (value) {
-		Sqrat::Var<T*>::pushInit(v, value);
+		Sqrat::Var<T*>::push(v, value);
 		return;
 	}
 	sq_pushnull(v);
