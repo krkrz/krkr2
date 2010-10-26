@@ -1,6 +1,6 @@
 // Config.tjs - KAG 設定
 // Copyright (C) 2001-2009 W.Dee and contributors  改変・配布は自由です
-;global.config_version = "3.29-dev.20071022"; // この行を消さないでください
+;global.config_version = "3.32 stable rev. 2"; // この行を消さないでください
 
 // このファイル内で設定できる項目は、すべて
 // ;設定名 = 値;
@@ -184,6 +184,15 @@ function KAGWindow_config()
 ;cursorPointed = crHandPoint; // リンクなどをポイントしたとき
 ;cursorWaitingClick = crArrow; // クリック待ちの時
 ;cursorDraggable = crSizeAll; // メッセージレイヤをドラッグ可能なとき
+
+
+// ◆ 追加の読み進みキーコード
+// VK_RETURN は指定しても意味がありません。
+// このキーは常に読み進みのキーとして処理します。
+// ここに指定できる値の一覧は以下のＵＲＬを参照してください。
+// http://devdoc.kikyou.info/tvp/docs/kr2doc/contents/KeyCodes.html
+// デフォルトは VK_SPACE です。
+;supportReadingKey = VK_SPACE;
 
 
 // ◆ ラベル記録
