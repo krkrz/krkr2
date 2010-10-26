@@ -127,8 +127,8 @@ class BinaryStream
 			noCopy       = !!elm.getIntValue(TJS_W("nocopy"));
 		}
 		virtual void detailOptionSave(ncbPropAccessor &elm) {
-			elm.SetValue(TJS_W("read"),    rcount);
-			elm.SetValue(TJS_W("adler32"), adler);
+			elm.SetValue(TJS_W("read"), rcount);
+			elm.SetValue(TJS_W("hash"), adler);
 		}
 
 		tjs_int64 write(tjs_uint8 *buf, tjs_uint len) {
@@ -215,7 +215,7 @@ class BinaryStream
 		}
 		virtual void detailOptionLoad(ncbPropAccessor &elm) {
 			ZlibCommand::detailOptionLoad(elm);
-			complv = elm.getIntValue(TJS_W("complv"), complv);
+			complv = elm.getIntValue(TJS_W("comp_lv"), complv);
 		}
 	};
 	class DecompressCommand : public ZlibCommand {
