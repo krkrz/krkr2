@@ -26,8 +26,10 @@ class BinaryStream
 	function read(size);
 	/**
 	 * データを書き込む
-	 * @param data 書き込むデータ（octet形式）
+	 * @param data 書き込むデータ（octet形式または文字列）
 	 * @return     書き込んだバイト数
+	 *
+	 * dataが文字列の場合は wchar で書き込まれます（コード変換はサポートされません）
 	 */
 	function write(data);
 
