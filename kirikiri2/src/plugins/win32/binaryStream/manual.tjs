@@ -4,7 +4,7 @@ class BinaryStream
 	 * コンストラクタ／デストラクタ
 	 */
 	function BinaryStream(storage, mode) { if (storage != "") open(storage, mode); }
-	function finalize() { if (isvalid this) close(), setCopyFilter(); }
+	function finalize() { if (isvalid this) close(), setFilter(); }
 
 	/**
 	 * ストレージを開く
@@ -92,6 +92,7 @@ class BinaryStream
 	 * @param storage コピー元のストレージ（現在開いているストレージと同じ場合は例外）
 	 * @param elm     動作指定用の辞書（in/out）内容は copy() と同じものに加えて下記：
 	 *        comp_lv :[in] zlibによる圧縮レベル（1～9）省略時，またはelmそのものの指定がない場合は 9
+	 * @return              書き込んだバイト数
 	 *
 	 * 対象ストレージを zlib/deflate で圧縮しつつ，現在のストリームのポジションから書き込みます
 	 * フィルタ関数は圧縮前のバイナリに対して適用されます
@@ -102,6 +103,7 @@ class BinaryStream
 	 * 別のストレージからデータを展開しつつコピー
 	 * @param storage コピー元のストレージ（現在開いているストレージと同じ場合は例外）
 	 * @param elm     動作指定用の辞書（in/out）内容は copy() と同じ
+	 * @return        書き込んだバイト数
 	 *
 	 * 対象ストレージを zlib/inflate で展開しつつ，現在のストリームのポジションから書き込みます
 	 * 展開に失敗すると例外が発生します
