@@ -113,6 +113,21 @@ class BinaryStream
 	function decompress(storage, elm = void);
 
 	/**
+	 * プログレスコールバックを設定する
+	 * @param callback コールバック関数 function(storage, read_size) { return true_if_cancel; }
+	 *                 voidの場合は解除
+	 *
+	 * copy/compress/decompress の処理中からコールバックする関数を設定します。
+	 * コールバックは（現在の実装では） 1MiB 読む毎時および最後まで読んだ時に呼び返されます。
+	 * コールバックから true を返すと処理がキャンセルできます。
+	 * ※コールバックの間隔は変更される場合があります
+	 *
+	 * TJS的には処理が固まってしまうのは仕様ですが，別途 windowExProgress プラグインなどを
+	 * 使用することで，ユーザーからのキャンセルを受け付けられるようになります。
+	 */
+	function setProgressCallback(callback);
+
+	/**
 	 * フィルタDLLを設定する
 	 * @param dll 対象のDLLファイル（voidの場合は設定解除）
 	 *
