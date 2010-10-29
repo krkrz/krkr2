@@ -14,6 +14,8 @@ class BinaryStream
 	ttstr storage;
 	int mode;
 	HMODULE    filterDLL;
+	bool hasCallback;
+	tTJSVariantClosure callback;
 
 	template <typename T>
 	void _swap(T *p, int cnt) {
@@ -99,6 +101,7 @@ class BinaryStream
 
 						wcount += doCopy(rcount, buf, len);
 						rcount += len;
+						if (owner->progress(file, rcount)) break;
 						if (remain > 0) {
 							if (remain <= len) break;
 							remain -= len;
@@ -202,7 +205,7 @@ class BinaryStream
 	class CompressCommand   : public ZlibCommand {
 		int complv;
 	public:
-		CompressCommand(BinaryStream *owner, tjs_char const *name) : ZlibCommand(owner, name), complv(9) {}
+		CompressCommand(BinaryStream *owner, tjs_char const *name) : ZlibCommand(owner, name), complv(Z_BEST_COMPRESSION) {}
 	protected:
 		virtual int zinit(z_stream *z)           { return ::deflateInit(z, complv); }
 		virtual int zmain(z_stream *z, int flag) { return ::deflate(z, flag); }
@@ -238,7 +241,7 @@ class BinaryStream
 	//--------------------------------------------------------------
 
 public:
-	BinaryStream() : stream(0), storage(), mode(-1), filterDLL(0) {}
+	BinaryStream() : stream(0), storage(), mode(-1), filterDLL(0), hasCallback(false), callback(0,0) {}
 	virtual ~BinaryStream() {
 		resetCopyFilter();
 		close();
@@ -248,7 +251,7 @@ public:
 		if (inst) {
 			BinaryStream *self = *inst = new BinaryStream();
 			if (n >= 1) {
-				tjs_int mode = (n >= 2) ? (tjs_int)p[1] : TJS_BS_READ;
+				tjs_int mode = (n >= 2) ? (tjs_int)*p[1] : TJS_BS_READ;
 				try {
 					self->open(p[0]->GetString(), mode);
 				} catch (...) {
@@ -501,6 +504,17 @@ public:
 		return cmd.execute(r, n, p);
 	}
 
+	void setProgressCallback(tTJSVariant cb) {
+		hasCallback = (cb.Type() == tvtObject && cb.AsObjectNoAddRef() != 0);
+		callback = hasCallback ? cb.AsObjectClosureNoAddRef() : tTJSVariantClosure(0, 0);
+	}
+	bool progress(ttstr const &file, tjs_int64 read) {
+		if (!hasCallback) return false;
+		tTJSVariant result, vf = file, vr = read;
+		tTJSVariant *p[] = { &vf, &vr };
+		return TJS_SUCCEEDED(callback.FuncCall(0, NULL, NULL, &result, 2, p, NULL)) && result.operator bool();
+	}
+
 	void setFilter(tjs_char const *dll) {
 		resetCopyFilter();
 		if (!dll || dll[0] == 0) return;
@@ -566,7 +580,8 @@ NCB_REGISTER_CLASS(BinaryStream)
 	RawCallback(TJS_W("copy"),       &Class::copy,       0);
 	RawCallback(TJS_W("compress"),   &Class::compress,   0);
 	RawCallback(TJS_W("decompress"), &Class::decompress, 0);
-	Method(TJS_W("setFilter"),  &Class::setFilter);
+	Method(TJS_W("setProgressCallback"),  &Class::setProgressCallback);
+	Method(TJS_W("setFilter"),            &Class::setFilter);
 
 	RawCallback(TJS_W("readI8"),    &Class::readI8,     0);
 	RawCallback(TJS_W("readI16LE"), &Class::readI16LE,  0);
