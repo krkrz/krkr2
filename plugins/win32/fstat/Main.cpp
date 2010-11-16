@@ -46,7 +46,7 @@ class StoragesFstat {
 	 * @param store 格納先
 	 * @param filetime ファイル時刻
 	 */
-	static void storeDate(tTJSVariant &store, FILETIME &filetime, iTJSDispatch2 *objthis)
+	static void storeDate(tTJSVariant &store, FILETIME const &filetime, iTJSDispatch2 *objthis)
 	{
 		// ファイル生成時
 		tjs_uint64 ft = filetime.dwHighDateTime;
@@ -390,8 +390,25 @@ public:
 	 * @param dir ディレクトリ名
 	 * @return ファイル名一覧が格納された配列
 	 */
-	static tTJSVariant dirlist(ttstr dir) {
+	static tTJSVariant dirlist(tjs_char const *dir) {
+		return _dirlist(dir, &setDirListFile);
+	}
 
+	/**
+	 * 指定ディレクトリのファイル一覧と詳細情報を取得する
+	 * @param dir ディレクトリ名
+	 * @return ファイル情報一覧が格納された配列
+	 *         [ %[ name:ファイル名, size, attrib, mtime, atime, ctime ], ... ]
+	 * dirlistと違いnameにおいてフォルダの場合の末尾"/"追加がないので注意(attribで判定のこと)
+	 */
+	static tTJSVariant dirlistEx(tjs_char const *dir) {
+		return _dirlist(dir, &setDirListInfo);
+	}
+
+	typedef bool (*DirListCallback)(iTJSDispatch2 *array, tjs_int count, ttstr const &file, WIN32_FIND_DATA const *data);
+private:
+	static tTJSVariant _dirlist(ttstr dir, DirListCallback cb)
+	{
 		// OSネイティブな表現に変換
 		dir = TVPNormalizeStorageName(dir);
 		if (dir.GetLastChar() != TJS_W('/')) {
@@ -402,7 +419,7 @@ public:
 		// Array クラスのオブジェクトを作成
 		iTJSDispatch2 * array = TJSCreateArrayObject();
 		tTJSVariant result;
-		
+
 		try {
 			ttstr wildcard = dir + "*.*";
 			WIN32_FIND_DATA data;
@@ -410,19 +427,12 @@ public:
 			if (handle != INVALID_HANDLE_VALUE) {
 				tjs_int count = 0;
 				do {
-					ttstr file = dir;
-					file += data.cFileName;
-					if (GetFileAttributes(file.c_str()) & FILE_ATTRIBUTE_DIRECTORY) {
+					ttstr file = data.cFileName;
+					if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 						// ディレクトリの場合は最後に / をつける
-						file = data.cFileName;
 						file += "/";
-					} else {
-						// 普通のファイルの場合はそのまま
-						file = data.cFileName;
 					}
-					// 配列に追加する
-					tTJSVariant val(file);
-					array->PropSetByNum(0, count++, &val, array);
+					if ((*cb)(array, count, file, &data)) count++;
 				} while(FindNextFile(handle, &data));
 				FindClose(handle);
 			} else {
@@ -437,6 +447,49 @@ public:
 
 		return result;
 	}
+	static bool setDirListFile(iTJSDispatch2 *array, tjs_int count, ttstr const &file, WIN32_FIND_DATA const *data) {
+		// [dirlist] 配列に追加する
+		tTJSVariant val(file);
+		array->PropSetByNum(0, count, &val, array);
+		return true;
+	}
+	static bool setDirListInfo(iTJSDispatch2 *array, tjs_int count, ttstr const &file, WIN32_FIND_DATA const *data) {
+		// [dirlistEx] 配列に追加する
+		iTJSDispatch2 *dict = TJSCreateDictionaryObject();
+		if (dict != NULL) try {
+			{
+				ttstr fname = data->cFileName;
+				tTJSVariant name = fname;
+				dict->PropSet(TJS_MEMBERENSURE, L"name", NULL, &name, dict);
+			} {
+				tjs_int64 fsize = data->nFileSizeHigh;
+				fsize <<= 32;
+				fsize  |= data->nFileSizeLow;
+				tTJSVariant size = fsize;
+				dict->PropSet(TJS_MEMBERENSURE, L"size", NULL, &size, dict);
+			} {
+				tTJSVariant attrib = (tjs_int)data->dwFileAttributes;
+				dict->PropSet(TJS_MEMBERENSURE, L"attrib", NULL, &attrib, dict);
+			} {
+				tTJSVariant ctime, atime, mtime;
+				storeDate(ctime, data->ftCreationTime,   NULL);
+				storeDate(atime, data->ftLastAccessTime, NULL);
+				storeDate(mtime, data->ftLastWriteTime,  NULL);
+				dict->PropSet(TJS_MEMBERENSURE, L"mtime", NULL, &mtime, dict);
+				dict->PropSet(TJS_MEMBERENSURE, L"ctime", NULL, &ctime, dict);
+				dict->PropSet(TJS_MEMBERENSURE, L"atime", NULL, &atime, dict);
+			}
+			tTJSVariant val(dict, dict);
+			array->PropSetByNum(0, count, &val, array);
+			dict->Release();
+		} catch(...) {
+			dict->Release();
+			throw;
+		}
+		return true;
+	}
+
+public:
 
 	/**
 	 * 指定ディレクトリを削除する
@@ -813,6 +866,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(deleteFile);
 	NCB_METHOD(moveFile);
 	NCB_METHOD(dirlist);
+	NCB_METHOD(dirlistEx);
 	NCB_METHOD(removeDirectory);
 	NCB_METHOD(createDirectory);
 	NCB_METHOD(setFileAttributes);
