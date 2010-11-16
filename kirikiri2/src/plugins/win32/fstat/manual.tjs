@@ -48,6 +48,15 @@ class Storages {
 	function dirlist(dir);
 
 	/**
+	 * 指定ディレクトリのファイル一覧と詳細情報を取得する
+	 * @param dir ディレクトリ名
+	 * @return ファイル情報一覧が格納された配列
+	 *         [ %[ name:ファイル名, size, attrib, mtime, atime, ctime ], ... ]
+	 * dirlistと違いnameにおいてフォルダの場合の末尾"/"追加がないので注意(attribで判定のこと)
+	 */
+	function dirlistEx(dir);
+
+	/**
 	 * 指定ディレクトリを削除する
 	 * @param dir ディレクトリ名
 	 * @return 実際に削除されたら true
