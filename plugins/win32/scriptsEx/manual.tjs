@@ -1,0 +1,14 @@
+class Scripts {
+
+	/**
+	 * オブジェクトのメンバ名一覧を返す
+	 * @return キーが格納された配列
+	 */
+	function getObjectKeys(obj);
+
+	/**
+	 * オブジェクトのメンバ個数を返す
+	 * @return 個数を返す
+	 */
+	function getObjectCount(obj);
+}
