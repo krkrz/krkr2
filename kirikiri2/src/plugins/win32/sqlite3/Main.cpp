@@ -132,10 +132,12 @@ bindParams(sqlite3_stmt *stmt, const tTJSVariant &params)
 		}
 		return ret;
 	} else {
-		BindCaller caller(stmt);
-		tTJSVariantClosure closure(&caller);
+		BindCaller *caller = new BindCaller(stmt);
+		tTJSVariantClosure closure(caller);
 		vc.EnumMembers(TJS_IGNOREPROP, &closure, NULL);
-		return caller.getErrorCode();
+		int errorCode = caller->getErrorCode();
+		caller->Release();
+		return errorCode;
 	}
 }
 
@@ -297,6 +299,10 @@ public:
 		return sqlite3_exec(db, "ROLLBACK;", NULL, NULL, NULL) == SQLITE_OK;
 	}
 
+	tjs_int64 getLastInsertRowId() const {
+		return db ? sqlite3_last_insert_rowid(db) : 0;
+	}
+
 	int getErrorCode() const {
 		return db ? sqlite3_errcode(db) : -1;
 	}
@@ -363,6 +369,7 @@ NCB_REGISTER_CLASS(Sqlite) {
 	NCB_METHOD(begin);
 	NCB_METHOD(commit);
 	NCB_METHOD(rollback);
+	NCB_PROPERTY_RO(lastInsertRowId, getLastInsertRowId);
 	NCB_PROPERTY_RO(errorCode, getErrorCode);
 	NCB_PROPERTY_RO(errorMessage, getErrorMessage);
 };

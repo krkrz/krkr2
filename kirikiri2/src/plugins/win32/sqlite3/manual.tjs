@@ -47,6 +47,11 @@ class Sqlite
 	function rollback();
 
 	/**
+	 * 直前の挿入の行ID
+	 */
+	property lastInsertRowId;
+	
+	/**
 	 * 直前のコマンド実行のエラーコード
 	 */
 	property errorCode;
