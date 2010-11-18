@@ -56,6 +56,7 @@ public:
 			param[0]->AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
 			caller->Release();
 			*result = tTJSVariant(array, array);
+			array->Release();
 		}
 		return TJS_S_OK;
 	}

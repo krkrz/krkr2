@@ -201,11 +201,16 @@ class SqliteStatement
 	
 	/**
 	 * 結果の取得。
-	 * @param column カラム番号またはカラム名
+	 * @param column カラム番号またはカラム名。未指定の場合は、行全てを配列で返します
 	 * @param defaultValue デフォルト値。カラムが NULL の場合にこの値を返します
-	 * @return 指定カラムの値
+	 * @return 行、または指定カラムの値
 	 */
-	function get(column, defaultValue=void);
+	function get(column=void, defaultValue=void);
+
+	/**
+	 * このクラスのメンバ名とかぶらないカラムのデータについては
+	 * state.名前 で直接参照可能です
+	 */
 };
 
 /**

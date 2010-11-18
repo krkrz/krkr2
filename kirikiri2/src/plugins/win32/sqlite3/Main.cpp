@@ -499,18 +499,29 @@ public:
 
 	// ’l‚ÌŽæ“¾
 	static tjs_error get(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, SqliteStatement *self) {
-		if (numparams < 1) {
-			return TJS_E_BADPARAMCOUNT;
-		}
-		int col = self->getColumnNo(*params[0]);
-		if (sqlite3_column_type(self->stmt, col) == SQLITE_NULL) {
-			if (numparams > 1) {
-				*result = *params[1];
+		if (result) {
+			if (numparams == 0) {
+				int count = sqlite3_column_count(self->stmt);
+				iTJSDispatch2 *line = TJSCreateArrayObject();
+				for (int i=0;i<count;i++) {
+					tTJSVariant col, *param = &col;
+					::getColumnData(self->stmt, col, i);
+					line->FuncCall(0, L"add", NULL, NULL, 1, &param, line);
+				}
+				*result = tTJSVariant(line, line);
+				line->Release();
 			} else {
-				result->Clear();
+				int col = self->getColumnNo(*params[0]);
+				if (sqlite3_column_type(self->stmt, col) == SQLITE_NULL) {
+					if (numparams > 1) {
+						*result = *params[1];
+					} else {
+						result->Clear();
+					}
+				} else {
+					::getColumnData(self->stmt, *result, col);
+				}
 			}
-		} else {
-			::getColumnData(self->stmt, *result, col);
 		}
 		return TJS_S_OK;
 	}
@@ -878,6 +889,7 @@ protected:
 				line->FuncCall(0, L"add", NULL, NULL, 1, params, line);
 			}
 			tTJSVariant l(line,line);
+			line->Release();
 			tTJSVariant *params[] = { &l };
 			vc.FuncCall(0, L"add", NULL, NULL, 1, params, NULL);
 			n++;
@@ -906,6 +918,7 @@ protected:
 	void startSelectThread() {
 		iTJSDispatch2 *array = TJSCreateArrayObject();
 		selectResult = tTJSVariant(array, array);
+		array->Release();
 		errorCode = SQLITE_OK;
 		canceled = false;
 		threadHandle = (HANDLE)_beginthreadex(NULL, 0, selectThreadFunc, this, 0, NULL);
