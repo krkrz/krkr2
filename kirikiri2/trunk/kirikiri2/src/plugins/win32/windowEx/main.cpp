@@ -1891,6 +1891,9 @@ struct System
 		delete[] tmp;
 		return TJS_S_OK;
 	}
+
+	static void breathe() { TVPBreathe(); }
+	static bool isBreathing() { return TVPGetBreathing(); }
 };
 
 // SystemÇ…ä÷êîÇí«â¡
@@ -1901,6 +1904,8 @@ NCB_ATTACH_FUNCTION(setCursorPos,       System, System::setCursorPos);
 NCB_ATTACH_FUNCTION(getSystemMetrics,   System, System::getSystemMetrics);
 NCB_ATTACH_FUNCTION(readEnvValue,       System, System::readEnvValue);
 NCB_ATTACH_FUNCTION(expandEnvString,    System, System::expandEnvString);
+NCB_ATTACH_FUNCTION(breathe,            System, System::breathe);
+NCB_ATTACH_FUNCTION(isBreathing,        System, System::isBreathing);
 
 ////////////////////////////////////////////////////////////////
 

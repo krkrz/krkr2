@@ -454,6 +454,12 @@ class System
 	 * @return “WŠJŒã•¶Žš—ñ
 	 */
 	function expandEnvString(text);
+
+	/**
+	 * TVPBreathe, TVPGetBreathing ‚Ìƒ‰ƒbƒp
+	 */
+	function breathe();
+	function isBreathing();
 }
 
 /**
