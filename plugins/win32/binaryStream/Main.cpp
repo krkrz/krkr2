@@ -522,6 +522,7 @@ public:
 		ttstr file = TVPGetPlacedPath(dll);
 		TVPGetLocalName(file);
 		filterDLL = ::LoadLibraryW(file.c_str());
+		if (!filterDLL) error(ttstr(TJS_W("filter DLL not found: ")) + dll);
 	}
 	FilterProc getFilterProc(ttstr const &proc) {
 		if (!filterDLL || !proc.length()) return 0;
