@@ -206,9 +206,9 @@ public:
 					sqlite3_open16(filename.c_str(), &db);
 				}
 			}
-			if (db) {
-				initContainFunc(db);
-			}
+		}
+		if (db) {
+			initContainFunc(db);
 		}
 	}
 
