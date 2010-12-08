@@ -1165,7 +1165,7 @@ void TVPAfterSystemInit()
 		else if(TVPTotalPhysMemory <= 512*1024*1024)
 			TVPGraphicCacheSystemLimit = 40;
 		else
-			TVPGraphicCacheSystemLimit = 64;
+			TVPGraphicCacheSystemLimit = int(TVPTotalPhysMemory / (1024*1024*10));	// cachemem = physmem / 10
 		TVPGraphicCacheSystemLimit *= 1024*1024;
 	}
 	else
