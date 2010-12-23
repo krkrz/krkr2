@@ -213,7 +213,9 @@ public:
 			tTJSVariant v(value.c_str());
 			dict->PropSet(TJS_MEMBERENSURE, name.c_str(), NULL, &v, dict);
 		}
-		return tTJSVariant(dict,dict);
+		tTJSVariant ret(dict,dict);
+		dict->Release();
+		return ret;
 	}
 
 	/**
