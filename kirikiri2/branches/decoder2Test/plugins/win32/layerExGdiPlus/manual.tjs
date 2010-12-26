@@ -1,0 +1,111 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+
+
+/**
+ * GDI+ ブラシオブジェクト
+ */
+class Layer.Brush {
+    
+    /**
+     * コンストラクタ指定した色で塗りつぶすブラシを生成する
+     * @param argb 色指定 0xAARRGGBB
+     */
+    function Brush(argb=0);
+
+    /**
+     * 指定した色で塗りつぶすブラシに変更する
+     * @param argb 色指定 0xAARRGGBB
+     */
+    function setSolidBrush(argb);
+    
+};
+
+
+/**
+ * GDI+ ペンオブジェクト
+ */
+class Layer.Pen {
+
+    /**
+     * コンストラクタ指定した色で塗りつぶすペンを生成する
+     * @param argb 色指定 0xAARRGGBB
+     * @param width ペンの幅
+     */
+    function Pen(argb=0, width=1.0);
+
+    /**
+     * コンストラクタ 指定したブラシで塗りつぶすペンを生成する
+     * @param brush ブラシ
+     * @param width ペンの幅
+     */
+    function Pen(brush, width=1.0);
+
+    /**
+     * ペンのアラインメントを指定する
+     * @param align アラインメント
+     */
+    function setAlignMent(align);
+
+    /**
+     * 指定したブラシで塗りつぶすペンに変更する
+     * @param brush ブラシ
+     */
+    function setBrush(brush);
+    
+    /**
+     * 指定した色で塗りつぶすペンに変更する
+     * @param argb 色指定 0xAARRGGBB
+     */
+    function setColor(argb);
+
+    /**
+     * ペン幅を指定する
+     * @param width ペン幅
+     */
+    function setWidth(width);
+};
+
+/**
+ * GDI+ フォントオブジェクト
+ */
+class Layer.Font {
+
+    /**
+     * コンストラクタ
+     * @param familyName フォントファミリー名
+     * @param emSize サイズ指定(pixel単位)
+     * @param style フォントスタイル
+     */
+    function Font(familyName, emSize=12.0, style=FontStyleRegular);
+
+
+    
+}
+
+
+
+class Layer {
+
+    function drawEllipse(x,y,width,height,pen);
+
+    function fillEllipse();
+
+    function drawLine();
+
+    function drawRectangle();
+
+    function fillRectangle();
+
+    function drawBezier();
+
+    function drawBeziers();
+
+    function drawString();
+
+    function drawImage();
+
+    
+
+};
