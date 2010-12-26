@@ -801,6 +801,157 @@ void __RPC_STUB ITSSWaveDecoder_SetPosition_Stub(
 
 #endif 	/* __ITSSWaveDecoder_INTERFACE_DEFINED__ */
 
+#ifndef __ITSSWaveDecoder2_INTERFACE_DEFINED__
+#define __ITSSWaveDecoder2_INTERFACE_DEFINED__
+
+/* interface ITSSWaveDecoder */
+/* [object][helpstring][version][uuid] */ 
+
+
+EXTERN_C const IID IID_ITSSWaveDecoder2;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("313864E2-910E-496F-8A6D-43465C105B58")
+    ITSSWaveDecoder2 : public ITSSWaveDecoder
+    {
+    public:
+        virtual /* [helpstring][id] */ HRESULT __stdcall SetAttribute( 
+            /* [in] */ const wchar_t __RPC_FAR *name,
+            /* [in] */ const wchar_t __RPC_FAR *value) = 0;
+    };
+    
+#else 	/* C style interface */
+
+    typedef struct ITSSWaveDecoder2Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *QueryInterface )( 
+            ITSSWaveDecoder __RPC_FAR * This,
+            /* [in] */ REFIID riid,
+            /* [iid_is][out] */ void __RPC_FAR *__RPC_FAR *ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE __RPC_FAR *AddRef )( 
+            ITSSWaveDecoder __RPC_FAR * This);
+        
+        ULONG ( STDMETHODCALLTYPE __RPC_FAR *Release )( 
+            ITSSWaveDecoder __RPC_FAR * This);
+        
+        /* [helpstring][id] */ HRESULT ( __stdcall __RPC_FAR *GetFormat )( 
+            ITSSWaveDecoder __RPC_FAR * This,
+            /* [in] */ TSSWaveFormat __RPC_FAR *format);
+        
+        /* [helpstring][id] */ HRESULT ( __stdcall __RPC_FAR *Render )( 
+            ITSSWaveDecoder __RPC_FAR * This,
+            /* [in] */ void __RPC_FAR *buf,
+            /* [in] */ unsigned long bufsamplelen,
+            /* [out] */ unsigned long __RPC_FAR *rendered,
+            /* [retval][out] */ unsigned long __RPC_FAR *status);
+        
+        /* [helpstring][id] */ HRESULT ( __stdcall __RPC_FAR *SetPosition )( 
+            ITSSWaveDecoder __RPC_FAR * This,
+            /* [in] */ unsigned __int64 samplepos);
+
+        /* [helpstring][id] */ HRESULT ( __stdcall __RPC_FAR *SetAttribute )( 
+            ITSSWaveDecoder __RPC_FAR * This,
+            /* [in] */ const wchar_t *name,
+            /* [in] */ const wchar_t *value);
+		
+        END_INTERFACE
+    } ITSSWaveDecoderVtbl;
+
+    interface ITSSWaveDecoder2
+    {
+        CONST_VTBL struct ITSSWaveDecoder2Vtbl __RPC_FAR *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define ITSSWaveDecoder2_QueryInterface(This,riid,ppvObject)	\
+    (This)->lpVtbl -> QueryInterface(This,riid,ppvObject)
+
+#define ITSSWaveDecoder2_AddRef(This)	\
+    (This)->lpVtbl -> AddRef(This)
+
+#define ITSSWaveDecoder2_Release(This)	\
+    (This)->lpVtbl -> Release(This)
+
+
+#define ITSSWaveDecoder2_GetFormat(This,format)	\
+    (This)->lpVtbl -> GetFormat(This,format)
+
+#define ITSSWaveDecoder2_Render(This,buf,bufsamplelen,rendered,status)	\
+    (This)->lpVtbl -> Render(This,buf,bufsamplelen,rendered,status)
+
+#define ITSSWaveDecoder2_SetPosition(This,samplepos)	\
+    (This)->lpVtbl -> SetPosition(This,samplepos)
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+/* [helpstring][id] */ HRESULT __stdcall ITSSWaveDecoder2_GetFormat_Proxy( 
+    ITSSWaveDecoder2 __RPC_FAR * This,
+    /* [in] */ TSSWaveFormat __RPC_FAR *format);
+
+
+void __RPC_STUB ITSSWaveDecoder2_GetFormat_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT __stdcall ITSSWaveDecoder2_Render_Proxy( 
+    ITSSWaveDecoder2 __RPC_FAR * This,
+    /* [in] */ void __RPC_FAR *buf,
+    /* [in] */ unsigned long bufsamplelen,
+    /* [out] */ unsigned long __RPC_FAR *rendered,
+    /* [retval][out] */ unsigned long __RPC_FAR *status);
+
+
+void __RPC_STUB ITSSWaveDecoder2_Render_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT __stdcall ITSSWaveDecoder2_SetPosition_Proxy( 
+    ITSSWaveDecoder2 __RPC_FAR * This,
+    /* [in] */ unsigned __int64 samplepos);
+
+
+void __RPC_STUB ITSSWaveDecoder2_SetPosition_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id] */ HRESULT __stdcall ITSSWaveDecoder2_SetAttribute_Proxy( 
+    ITSSWaveDecoder2 __RPC_FAR * This,
+    /* [in] */ const wchar_t *name,
+	/* [in] */ const wchar_t *value);
+
+
+void __RPC_STUB ITSSWaveDecoder2_SetPosition_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+
+#endif 	/* __ITSSWaveDecoder2_INTERFACE_DEFINED__ */
+
 #endif /* __TVPSndSysLib_LIBRARY_DEFINED__ */
 
 /* Additional Prototypes for ALL interfaces */

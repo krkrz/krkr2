@@ -276,6 +276,8 @@ protected:
 public:
 	tjs_int GetVisBuffer(tjs_int16 *dest, tjs_int numsamples, tjs_int channels,
 		tjs_int aheadsamples);
+
+	void SetDecoderAttribute(const tjs_char *name, const tjs_char *value);
 };
 //---------------------------------------------------------------------------
 
