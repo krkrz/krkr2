@@ -263,6 +263,16 @@ public:
 		if(FAILED(hr)) return false;
 		return true;
 	}
+
+	void SetAttribute(const tjs_char *name, const tjs_char *value) {
+		ITSSWaveDecoder2 *Decoder2;
+		HRESULT hr = Decoder->QueryInterface(IID_ITSSWaveDecoder2, (void**)&Decoder2);
+		if(SUCCEEDED(hr)) {
+			Decoder2->SetAttribute(name, value);
+			Decoder2->Release();
+		}
+	};
+
 };
 //---------------------------------------------------------------------------
 class tTVPTSSWaveDecoderCreator : public tTVPWaveDecoderCreator
@@ -3317,6 +3327,13 @@ tjs_int tTJSNI_WaveSoundBuffer::GetVisBuffer(tjs_int16 *dest, tjs_int numsamples
 	return writtensamples;
 }
 //---------------------------------------------------------------------------
+void tTJSNI_WaveSoundBuffer::SetDecoderAttribute(const tjs_char *name, const tjs_char *value)
+{
+	if (Decoder) {
+		Decoder->SetAttribute(name, value);
+	}
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -3374,6 +3391,18 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/getVisBuffer)
 }
 TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
 	/*func. name*/getVisBuffer)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/setDecoderAttribute)
+{
+	// get samples for visualization 
+	TJS_GET_NATIVE_INSTANCE(/*var. name*/_this,
+		/*var. type*/tTJSNI_WaveSoundBuffer);
+	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
+	_this->SetDecoderAttribute(param[0]->GetString(), param[1]->GetString());
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_METHOD_DECL_OUTER(/*object to register*/cls,
+	/*func. name*/setDecoderAttribute)
 //----------------------------------------------------------------------
 
 

@@ -170,4 +170,17 @@ library TVPSndSysLib
     HRESULT _stdcall SetPosition([in] unsigned __int64 samplepos );
   };
 
+  [
+    uuid(313864E2-910E-496F-8A6D-43465C105B59), 
+    version(1.0), 
+    helpstring("TVP Sound System Wave Decoder Interface 2")
+  ]
+   interface ITSSWaveDecoder2: ITSSWaveDecoder
+  {
+    [
+    id(0x00000004), 
+    helpstring("デコーダ属性の設定")
+    ]
+    HRESULT _stdcall GetFormat([in] const wchar_t *name, const wchar_t *value );
+  };
 }; 

@@ -98,6 +98,8 @@ public:
 			Seek to "samplepos". "samplepos" must be given in unit of sample granule.
 			returns whether the seeking is succeeded.
 		*/
+
+	virtual void SetAttribute(const tjs_char *name, const tjs_char *value) {};
 };
 //---------------------------------------------------------------------------
 class tTVPWaveDecoderCreator

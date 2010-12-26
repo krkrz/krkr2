@@ -77,7 +77,7 @@ public:
 
 
 //---------------------------------------------------------------------------
-class VorbisWaveDecoder : public ITSSWaveDecoder // decoder interface
+class VorbisWaveDecoder : public ITSSWaveDecoder2 // decoder interface
 {
 	ULONG RefCount; // refernce count
 	bool InputFileInit; // whether InputFile is inited
@@ -101,9 +101,12 @@ public:
 	HRESULT __stdcall Render(void *buf, unsigned long bufsamplelen,
             unsigned long *rendered, unsigned long *status);
 	HRESULT __stdcall SetPosition(unsigned __int64 samplepos);
-
+	HRESULT __stdcall SetAttribute(const wchar_t *name, const wchar_t *value);
+	
 	// others
 	HRESULT SetStream(IStream *stream, LPWSTR url);
+
+	void SetGain(float db);
 
 private:
 	size_t static _cdecl read_func(void *ptr, size_t size, size_t nmemb, void *datasource);
@@ -262,6 +265,8 @@ HRESULT VorbisWaveDecoder::QueryInterface(REFIID iid, void ** ppvObject)
 	*ppvObject=NULL;
 	if(!memcmp(&iid,&IID_IUnknown,16))
 		*ppvObject=(IUnknown*)this;
+	else if(!memcmp(&iid,&IID_ITSSWaveDecoder2,16))
+		*ppvObject=(ITSSWaveDecoder2*)this;
 	else if(!memcmp(&iid,&IID_ITSSWaveDecoder,16))
 		*ppvObject=(ITSSWaveDecoder*)this;
 
@@ -358,6 +363,19 @@ HRESULT __stdcall VorbisWaveDecoder::SetPosition(unsigned __int64 samplepos)
 	return S_OK;
 }
 //---------------------------------------------------------------------------
+HRESULT __stdcall VorbisWaveDecoder::SetAttribute(const wchar_t *name, const wchar_t *value)
+{
+	// set decode attribute
+	if(!InputFileInit) return E_FAIL;
+	// gain control
+	if (name && value) {
+		if (wcscmp(name, L"gain") == 0) {
+			SetGain((float)_wtof(value));
+		}
+	}
+	return S_OK;
+}
+//---------------------------------------------------------------------------
 HRESULT VorbisWaveDecoder::SetStream(IStream *stream, LPWSTR url)
 {
 	// set input stream
@@ -421,30 +439,40 @@ HRESULT VorbisWaveDecoder::SetStream(IStream *stream, LPWSTR url)
 		}
 	}
 
-	if(Look_Replay_Gain)
-	{
-		for(int i = 0; i < InputFile.links; i++)
-		{
-			// for each stream
-			float gain = 1.0;
-			vorbis_comment *vc = ov_comment(&InputFile, i);
-			const char * track = vorbis_comment_query(vc, "replaygain_track_gain", 0);
-			const char * album = vorbis_comment_query(vc, "replaygain_album_gain", 0);
-
-			const char * sel = Use_Album_Gain ? ( album ? album : track ) : track;
-			if(sel)
-			{
-				float db = (float)atof(sel); // in db
-				gain *= (float)pow(10.0, db / 20); // convert db to multiplier
-			}
-			
-			vorbis_info_set_global_gain(ov_info(&InputFile, i), gain);
-		}
+	if(Look_Replay_Gain) {
+		SetGain(0);
 	}
 #endif
 
 	return S_OK;
 }
+//---------------------------------------------------------------------------
+void VorbisWaveDecoder::SetGain(float db)
+{
+	if(InputFileInit) {
+		float setGain = 1.0;
+		setGain *= (float)pow((float)10.0, (float)db / 20); // convert db to multiplier
+		for(int i = 0; i < InputFile.links; i++)
+		{
+			float gain = setGain;
+			if(Look_Replay_Gain) {
+				// for each stream
+				vorbis_comment *vc = ov_comment(&InputFile, i);
+				const char * track = vorbis_comment_query(vc, "replaygain_track_gain", 0);
+				const char * album = vorbis_comment_query(vc, "replaygain_album_gain", 0);
+
+				const char * sel = Use_Album_Gain ? ( album ? album : track ) : track;
+				if(sel)
+				{
+					float db = (float)atof(sel); // in db
+					gain *= (float)pow((float)10.0, (float)db / 20); // convert db to multiplier
+				}
+			}
+			vorbis_info_set_global_gain(ov_info(&InputFile, i), gain);
+		}
+	}
+}
+
 //---------------------------------------------------------------------------
 size_t _cdecl VorbisWaveDecoder::read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
@@ -556,7 +584,7 @@ static void InternalSetCPUType(tjs_uint32 cputype)
 	if(CPU_SSE && CPU_3DN) CPU_SSE = 0; // Athlon XP; 3DNow! is faster than SSE on this decoder.
 }
 //---------------------------------------------------------------------------
-extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
+extern "C" HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
 {
 #ifndef NOT_HAVE_TP_STUB
 	// exported function, only called by kirikiri ver 2+
@@ -630,7 +658,7 @@ extern "C" HRESULT _stdcall _export V2Link(iTVPFunctionExporter *exporter)
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-extern "C" HRESULT _stdcall _export V2Unlink()
+extern "C" HRESULT _stdcall V2Unlink()
 {
 #ifndef NOT_HAVE_TP_STUB
 	TVPUninitImportStub();
@@ -645,7 +673,7 @@ extern "C" HRESULT _stdcall _export V2Unlink()
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-extern "C" const wchar_t * _stdcall _export GetOptionDesc()
+extern "C" const wchar_t * _stdcall GetOptionDesc()
 {
 	if(GetACP() == 932) // 932 == Japan
 	{
@@ -755,7 +783,7 @@ void * dee_ogg_realloc(void *block, size_t bytes)
 //---------------------------------------------------------------------------
 // ##########################################################################
 //---------------------------------------------------------------------------
-extern "C" int _stdcall _export Query_sizeof_OggVorbis_File()
+extern "C" int _stdcall Query_sizeof_OggVorbis_File()
 {
 	// returns sizeof(OggVorbis_File)
 	return sizeof(OggVorbis_File);

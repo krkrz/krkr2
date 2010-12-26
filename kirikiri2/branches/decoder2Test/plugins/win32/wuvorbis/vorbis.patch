@@ -1781,6 +1781,7 @@ Index: lib/mdct.c
 +__declspec(align(16)) static int neg_1_3[] = {0x0, 0x80000000, 0x0, 0x80000000};
 +__declspec(align(16)) static int neg_0_1[] = {0x80000000, 0x80000000, 0x0, 0x0};
 +__declspec(align(16)) static int neg_0[] = {0x80000000, 0x0, 0x0, 0x0};
++__declspec(align(16)) static int zero[] = {0x0, 0x0, 0x0, 0x0};
  
 -	   x[6] = r0   + r2;
 -	   x[4] = r0   - r2;
@@ -1964,9 +1965,8 @@ Index: lib/mdct.c
 +	shufps		xmm1,	xmm1,	3*64+2*16+1*4+1		// b xmm1 =	d		c		b		b
 +	xorps		xmm2,	neg_0						// a xmm2 =	-c		d		a		-a
 +	xorps		xmm1,	neg_0						// b xmm1 =	d		c		b		-b
-+	xorps		xmm6,	xmm6						// b xmm6 =	0		0		0		0
-+	movhps		xmm2,	xmm6						// a xmm2 =	0		0		a		-a
-+	movhps		xmm1,	xmm6						// b xmm1 =	0		0		b		-b
++	movhps		xmm2,	zero						// a xmm2 =	0		0		a		-a
++	movhps		xmm1,	zero						// b xmm1 =	0		0		b		-b
 +
 +	subps		xmm3,	xmm2						// a xmm3 =	-c		d		b-a		b+a
 +	addps		xmm7,	xmm1						// b xmm7 = d		c		a+b		a-b
