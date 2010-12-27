@@ -890,7 +890,7 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	tjs_int pixelsize = (Is32BPP()?sizeof(tjs_uint32):sizeof(tjs_uint8));
         bool backwardCopy = (ref == this && rect.top > refrect.top);
 
-        tjs_int taskNum = GetAdaptiveThreadNum(w * h, 66);
+        tjs_int taskNum = (ref == this) ? 1 : GetAdaptiveThreadNum(w * h, 66);
         BeginThreadTask(taskNum);
         PartialCopyRectParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
