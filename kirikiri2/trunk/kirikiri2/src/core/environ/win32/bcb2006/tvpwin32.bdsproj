@@ -151,6 +151,7 @@
           <property category="win32.*.win32b.bcc32" name="option.D.arg.11" value="__USE_OLD_RW_STL"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.12" value="TJS_DEBUG_DUMP_STRING"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.13" value="BOOST_REGEX_NO_LIB"/>
+          <property category="win32.*.win32b.bcc32" name="option.D.arg.14" value="NO_WIN32_LEAN_AND_MEAN"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.2" value="TJS_TEXT_OUT_CRLF"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.3" value="TJS_JP_LOCALIZED"/>
           <property category="win32.*.win32b.bcc32" name="option.D.arg.4" value="TJS_NO_DEBUG_PROFILE_TIME"/>
@@ -457,7 +458,7 @@
           <property category="win32.*.win32b.ilink32" name="option.outputdir.arg.merge" value="1"/>
           <property category="win32.*.win32b.ilink32" name="option.outputdir.enabled" value="1"/>
           <property category="win32.*.win32b.ilink32" name="option.v.enabled" value="1"/>
-          <property category="win32.*.win32b.ilink32" name="param.deffile.1" value="E:\krkr\krkr2trunk\core\environ\win32\tvpwin32.def"/>
+          <property category="win32.*.win32b.ilink32" name="param.deffile.1" value="E:\work\kirikiri2\kirikiri2\src\core\environ\win32\tvpwin32.def"/>
           <property category="win32.*.win32b.ilink32" name="param.deffile.merge" value="1"/>
           <property category="win32.*.win32b.ilink32" name="param.libfiles.1" value="$(LIBRARIES)"/>
           <property category="win32.*.win32b.ilink32" name="param.libfiles.2" value="import32.lib"/>
@@ -676,11 +677,14 @@
           <VersionInfoKeys Name="FileDescription">TVP(KIRIKIRI) 2 core / Scripting Platform for Win32</VersionInfoKeys>
           <VersionInfoKeys Name="FileVersion">2.29.2007.1022</VersionInfoKeys>
           <VersionInfoKeys Name="InternalName">tvp2/win32</VersionInfoKeys>
-          <VersionInfoKeys Name="LegalCopyright">(KIRIKIRI core) (C) 1997-2009 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.</VersionInfoKeys>
+          <VersionInfoKeys Name="LegalCopyright">(KIRIKIRI core) (C) 1997-2008 W.Dee and Contributors All Rights Reserved. This software is based in part on the work of Independent JPEG Group. For details: Run this program with '-about' option.</VersionInfoKeys>
           <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
           <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
           <VersionInfoKeys Name="ProductName"></VersionInfoKeys>
           <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+          <VersionInfoKeys Name="Comments"></VersionInfoKeys>
+          <VersionInfoKeys Name="PrivateBuild"></VersionInfoKeys>
+          <VersionInfoKeys Name="SpecialBuild"></VersionInfoKeys>
         </VersionInfoKeys>
         <HistoryLists_hlIncludePath>
           <HistoryLists_hlIncludePath Name="Count">6</HistoryLists_hlIncludePath>
