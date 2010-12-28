@@ -77,9 +77,11 @@ class BinaryStream
 	 *        fparam  :[in] フィルタに渡すパラメータ値(int)
 	 *
 	 *        nocopy  :[in] trueを指定すると出力を書き込まない（省略時はfalse，hashのみ取得したい場合などに指定）
+	 *        md5     :[in] trueを指定すると出力のMD5ダイジェストを返す
 	 *
 	 *        hash    :[out]読み込んだファイルのハッシュ値（Adler32）
 	 *        read    :[out]読み込んだバイト数
+	 *        digest  :[out]書き込んだデータのMD5ダイジェスト（octet） ※md5がtrueの場合にのみ有効
 	 * @return              書き込んだバイト数
 	 *
 	 * 対象ストレージのoffsetからlength分の内容が，現在のストリームのポジションから書き込まれます

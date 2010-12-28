@@ -38,7 +38,9 @@ class BinaryStream
 		FilterProc filterProc;
 		tjs_uint32 filterValue;
 
-		bool noCopy;
+		TVP_md5_state_t md5;
+
+		bool noCopy, calcMD5;
 	public:
 		CopyCommand(BinaryStream *owner, tjs_char const *name)
 			:   owner(owner), name(name),
@@ -46,7 +48,7 @@ class BinaryStream
 				rcount(0), wcount(0),
 				inputOffset(0), inputMaxsize(0),
 				filterProc(0), filterValue(0),
-				noCopy(false)
+				noCopy(false), calcMD5(false)
 		{
 			adler = ::adler32(0L, Z_NULL, 0);
 		}
@@ -128,17 +130,31 @@ class BinaryStream
 			filterProc   = owner->getFilterProc(elm.getStrValue(TJS_W("filter")));
 			filterValue  = elm.getIntValue(TJS_W("fparam"));
 			noCopy       = !!elm.getIntValue(TJS_W("nocopy"));
+			calcMD5      = !!elm.getIntValue(TJS_W("md5"));
+			if (calcMD5) TVP_md5_init(&md5);
 		}
 		virtual void detailOptionSave(ncbPropAccessor &elm) {
 			elm.SetValue(TJS_W("read"), rcount);
 			elm.SetValue(TJS_W("hash"), adler);
+			if (calcMD5) {
+				tjs_uint8 digest[16];
+				TVP_md5_finish(&md5, digest);
+
+				tTJSVariantOctet *oct = TJSAllocVariantOctet(digest, 16);
+				tTJSVariant voct;
+				voct = oct;
+				elm.SetValue(TJS_W("digest"), voct);
+				oct->Release();
+			}
 		}
 
 		tjs_int64 write(tjs_uint8 *buf, tjs_uint len) {
 			onWrite(wcount, buf, len);
 			return noCopy ? len : owner->streamWrite(owner->stream, buf, len);
 		}
-		virtual void     onWrite(tjs_int64 ofs, tjs_uint8 *buf, tjs_uint len) {}
+		virtual void     onWrite(tjs_int64 ofs, tjs_uint8 *buf, tjs_uint len) {
+			if (calcMD5) TVP_md5_append(&md5, buf, len);
+		}
 		virtual tjs_int64 doCopy(tjs_int64 ofs, tjs_uint8 *buf, tjs_uint len) {
 			calcSum(buf, len);
 			filter(ofs, buf, len);
@@ -235,6 +251,7 @@ class BinaryStream
 		virtual void onWrite(tjs_int64 ofs, tjs_uint8 *buf, tjs_uint len) {
 			filter(ofs, buf, len);
 			calcSum(buf, len);
+			ZlibCommand::onWrite(ofs, buf, len);
 		}
 	};
 
