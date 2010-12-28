@@ -2800,7 +2800,7 @@ int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *r
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
           y0 = ych * i / taskNum;
-          y1=  ych * (i + 1) / taskNum;
+          y1=  ych * (i + 1) / taskNum - 1;
           PartialAffineBltParam *param = params + i;
           param->self = this;
           param->dest = dest + destpitch * y0;
@@ -2950,7 +2950,7 @@ void tTVPBaseBitmap::PartialAffineBlt(PartialAffineBltParam *param)
   tjs_int &mostbottom = param->mostbottom;
   bool &firstline = param->firstline;
 
-	for(; yc < yclim; yc+=65536, dest += destpitch)
+	for(; yc <= yclim; yc+=65536, dest += destpitch)
 	{
 		// transfer a line
 
