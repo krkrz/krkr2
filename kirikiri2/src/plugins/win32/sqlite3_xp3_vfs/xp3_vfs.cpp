@@ -87,7 +87,7 @@ static int xp3Close( sqlite3_file *id )
 {
 	xp3File*	file = (xp3File*)id;
 	if( file->stream_ ) {
-		delete file->stream_;
+		file->stream_->Release();
 		file->stream_ = NULL;
 	}
 	return SQLITE_OK;
