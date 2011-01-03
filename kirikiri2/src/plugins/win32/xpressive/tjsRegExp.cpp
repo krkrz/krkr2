@@ -386,7 +386,12 @@ void tTJSNI_RegExp::Split(iTJSDispatch2 ** array, const ttstr &target, bool purg
 //---------------------------------------------------------------------------
 // tTJSNC_RegExp : TJS Native Class : RegExp
 //---------------------------------------------------------------------------
-tTJSVariant tTJSNC_RegExp::LastRegExp;
+//tTJSVariant tTJSNC_RegExp::LastRegExp;
+tTJSVariant& tTJSNC_RegExp::LastRegExp()
+{
+	static tTJSVariant LastRegExp;
+	return LastRegExp;
+}
 //---------------------------------------------------------------------------
 tjs_uint32 tTJSNC_RegExp::ClassID = (tjs_uint32)-1;
 tTJSNC_RegExp::tTJSNC_RegExp() :
@@ -489,7 +494,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/test)
 	tTJSRegExMatch what;
 	bool matched = tTJSNC_RegExp::Exec(what, target, _this);
 
-	tTJSNC_RegExp::LastRegExp = tTJSVariant(objthis, objthis);
+	tTJSNC_RegExp::LastRegExp() = tTJSVariant(objthis, objthis);
 
 	if(result)
 	{
@@ -549,7 +554,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 	tTJSRegExMatch what;
 	tTJSNC_RegExp::Exec(what, target, _this);
 
-	tTJSNC_RegExp::LastRegExp = tTJSVariant(objthis, objthis);
+	tTJSNC_RegExp::LastRegExp() = tTJSVariant(objthis, objthis);
 
 	if(result)
 	{
@@ -774,7 +779,7 @@ TJS_BEGIN_NATIVE_PROP_DECL(last)
 {
 	TJS_BEGIN_NATIVE_PROP_GETTER
 	{
-		*result = tTJSNC_RegExp::LastRegExp;;
+		*result = tTJSNC_RegExp::LastRegExp();
 		return TJS_S_OK;
 	}
 	TJS_END_NATIVE_PROP_GETTER

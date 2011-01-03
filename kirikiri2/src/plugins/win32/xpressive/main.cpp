@@ -24,14 +24,28 @@ public:
 		self = 0;
 	}
 
+	// Array.split オーバーライド
+	static tjs_error TJS_INTF_METHOD FuncCall(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		return self ? self->Split(r, n, p, objthis) : TJS_E_FAIL;
+	}
+
 private:
 	static tTJSNativeClassForRegExp * self;
 	static iTJSNativeInstance * TJS_INTF_METHOD _CreateNativeInstance() {
 		return self ? self->CreateNativeInstance() : NULL;
 	}
 	static void Initialize();
+
+private:
+	tTJSVariant origRegEx, arraySplit;
 	void Setup(iTJSDispatch2 *global) {
-		tTJSVariant val(classobj);
+		tTJSVariant val;
+		if (TJS_SUCCEEDED(global->PropGet(0, TJS_W("RegEx"), NULL, &val, global))) {
+			origRegEx = val;
+		}
+
+		val.Clear();
+		val = tTJSVariant(classobj, NULL);
 		global->PropSet(
 			TJS_MEMBERENSURE, // メンバがなかった場合には作成するようにするフラグ
 			classname, // メンバ名 ( かならず TJS_W( ) で囲む )
@@ -40,6 +54,16 @@ private:
 			global // コンテキスト ( global でよい )
 			);
 		classobj->Release();
+
+		val.Clear();
+		if (TJS_SUCCEEDED(global->PropGet(0, TJS_W("Array"), NULL, &val, global))) {
+			iTJSDispatch2 *array = val.AsObjectNoAddRef();
+			if (TJS_SUCCEEDED(array->PropGet(0, TJS_W("split"), NULL, &arraySplit, array))) {
+				val.Clear();
+				val = tTJSVariant(this, NULL);
+				array->PropSet(0, TJS_W("split"), NULL, &val, array);
+			}
+		}
 	}
 	void Terminate(iTJSDispatch2 *global) {
 		global->DeleteMember(
@@ -48,6 +72,38 @@ private:
 			NULL, // ヒント
 			global // コンテキスト
 			);
+
+		if (origRegEx.Type() == tvtObject) {
+			global->PropSet(TJS_MEMBERENSURE, TJS_W("RegExp"), NULL, &origRegEx, global);
+		}
+
+		if (arraySplit.Type() == tvtObject) {
+			tTJSVariant val;
+			if (TJS_SUCCEEDED(global->PropGet(0, TJS_W("Array"), NULL, &val, global))) {
+				iTJSDispatch2 *array = val.AsObjectNoAddRef();
+				array->PropSet(0, TJS_W("split"), NULL, &arraySplit, array);
+			}
+		}
+	}
+
+	tjs_error Split(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+		if(n >= 2 && p[0]->Type() == tvtObject) {
+			tTJSVariantClosure clo = p[0]->AsObjectClosureNoAddRef();
+			if(clo.Object) {
+				// func call split(targetstring, reserved, purgeempty, this);
+				tTJSVariant array(objthis, objthis), tvoid, dummy;
+				tTJSVariant *params[] = { p[1], &tvoid, &tvoid, &array };
+				if (n >= 3)  params[1] = p[2];
+				if (n >= 4)  params[2] = p[3];
+				static ttstr split(TJS_W("split"));
+				if(TJS_SUCCEEDED(clo.FuncCall(0, split.c_str(), split.GetHint(),
+											  &dummy, 4, params, NULL))) {
+					if(r) *r = tTJSVariant(objthis, objthis);
+					return TJS_S_OK;
+				}
+			}
+		}
+		return (arraySplit.AsObjectNoAddRef())->FuncCall(0, NULL, NULL, r, n, p, objthis);
 	}
 
 protected:

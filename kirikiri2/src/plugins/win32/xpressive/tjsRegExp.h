@@ -108,7 +108,8 @@ private:
 public:
 	static tjs_uint32 ClassID;
 
-	static tTJSVariant LastRegExp;
+//	static tTJSVariant LastRegExp;
+	static tTJSVariant& LastRegExp();
 };
 //---------------------------------------------------------------------------
 extern iTJSDispatch2 * TJSCreateRegExpClass();
