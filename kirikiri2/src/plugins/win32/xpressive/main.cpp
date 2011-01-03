@@ -40,7 +40,7 @@ private:
 	tTJSVariant origRegEx, arraySplit;
 	void Setup(iTJSDispatch2 *global) {
 		tTJSVariant val;
-		if (TJS_SUCCEEDED(global->PropGet(0, TJS_W("RegEx"), NULL, &val, global))) {
+		if (TJS_SUCCEEDED(global->PropGet(0, classname, NULL, &val, global))) {
 			origRegEx = val;
 		}
 
@@ -74,7 +74,7 @@ private:
 			);
 
 		if (origRegEx.Type() == tvtObject) {
-			global->PropSet(TJS_MEMBERENSURE, TJS_W("RegExp"), NULL, &origRegEx, global);
+			global->PropSet(TJS_MEMBERENSURE, classname, NULL, &origRegEx, global);
 		}
 
 		if (arraySplit.Type() == tvtObject) {
