@@ -420,15 +420,6 @@ protected:
 	// スレッド処理
 	// -----------------------------------------------
 
-	// メッセージ送信
-	void postMessage(UINT msg, WPARAM wparam=NULL, LPARAM lparam=NULL) {
-		// ウィンドウハンドルを取得して通知
-		tTJSVariant val;
-		window->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
-		HWND hwnd = reinterpret_cast<HWND>((tjs_int)(val));
-		::PostMessage(hwnd, msg, wparam, lparam);
-	}
-
 	/**
 	 * ファイル送信処理
 	 * @param buffer 読み取りバッファ
@@ -451,7 +442,7 @@ protected:
 		if (size > 0) {
 			inputSize += size;
 			int percent = (inputLength > 0) ? inputSize * 100 / inputLength : 0;
-			postMessage(WM_HTTP_PROGRESS, (WPARAM)this, 0x0100 | percent);
+			::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, 0x0100 | percent);
 		}
 		return !canceled;
 	}
@@ -494,7 +485,7 @@ protected:
 		}
 		outputSize += size;
 		int percent = (outputLength > 0) ? outputSize * 100 / outputLength : 0;
-		postMessage(WM_HTTP_PROGRESS, (WPARAM)this, percent);
+		::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, percent);
 		return !canceled;
 	}
 	
@@ -511,7 +502,14 @@ protected:
 	 * バックグラウンドで実行する処理
 	 */
 	void threadMain() {
-		postMessage(WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_SENT);
+
+		{
+			tTJSVariant val;
+			window->PropGet(0, TJS_W("HWND"), NULL, &val, objthis);
+			hwnd = reinterpret_cast<HWND>((tjs_int)(val));
+		}
+
+		::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_SENT);
 		inputSize = 0;
 		int errorCode;
 		if ((errorCode = http.request(uploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
@@ -519,7 +517,7 @@ protected:
 			http.queryInfo();
 			outputSize = 0;
 			outputLength = http.getContentLength();
-			postMessage(WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
+			::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
 			errorCode = http.response(downloadCallback, (void*)this);
 		} else {
 			clearInput();
@@ -538,7 +536,7 @@ protected:
 			statusText = http.getErrorMessage();
 			break;
 		}
-		postMessage(WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_LOADED);
+		::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_LOADED);
 	}
 
 	// 実行スレッド
@@ -559,6 +557,8 @@ protected:
 	void stopThread() {
 		if (threadHandle) {
 			canceled = true;
+			// 強制破棄!
+			http.closeHandle();
 			WaitForSingleObject(threadHandle, INFINITE);
 			CloseHandle(threadHandle);
 			threadHandle = 0;
@@ -568,7 +568,8 @@ protected:
 private:
 	iTJSDispatch2 *objthis; ///< 自己オブジェクト情報の参照
 	iTJSDispatch2 *window; ///< ウインドウオブジェクト情報の参照(イベント取得に必要)
-
+	HWND hwnd; ///< ウインドウハンドラ。メインスレッド停止中に Window にアクセスすると固まるので処理前にとっておく
+	
 	// HTTP通信処理用
 	HttpConnection http;
 
