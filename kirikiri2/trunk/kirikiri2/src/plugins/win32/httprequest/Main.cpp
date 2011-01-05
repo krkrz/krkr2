@@ -181,11 +181,15 @@ public:
 		inputSize = inputLength = 0;
 	}
 
-	void clearOutput() {
+	void closeOutput() {
 		if (outputStream) {
 			outputStream->Release();
 			outputStream = NULL;
 		}
+	}
+	
+	void clearOutput() {
+		closeOutput();
 		outputData.clear();
 		outputSize = outputLength = 0;
 	}
@@ -518,7 +522,11 @@ protected:
 			outputSize = 0;
 			outputLength = http.getContentLength();
 			::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
-			errorCode = http.response(downloadCallback, (void*)this);
+			if ((errorCode = http.response(downloadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+				closeOutput();
+			} else {
+				clearOutput();
+			}
 		} else {
 			clearInput();
 		}
