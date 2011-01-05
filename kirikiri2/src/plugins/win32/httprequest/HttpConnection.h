@@ -72,8 +72,8 @@ public:
 	// ハンドルをクリア
 	void closeHandle() {
 		if (hReq) { InternetCloseHandle(hReq);hReq=NULL; }
-		if (hConn) { InternetCloseHandle(hConn);hReq=NULL; }
-		if (hInet) { InternetCloseHandle(hInet);hReq=NULL; }
+		if (hConn) { InternetCloseHandle(hConn);hConn=NULL; }
+		if (hInet) { InternetCloseHandle(hInet);hInet=NULL; }
 	}
 
 	// 送信パラメータをクリア(名前を変えただけで、実体は送信データクリア)
