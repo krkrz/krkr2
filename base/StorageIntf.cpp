@@ -1481,6 +1481,13 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/chopStorageExt)
 }
 TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/chopStorageExt)
 //----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/clearArchiveCache)
+{
+	TVPClearArchiveCache();
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/clearArchiveCache)
+//----------------------------------------------------------------------
 	TJS_END_NATIVE_MEMBERS
 }
 //---------------------------------------------------------------------------
