@@ -2980,7 +2980,7 @@ void tTVPBaseBitmap::PartialAffineBlt(PartialAffineBltParam *param)
 			tjs_int ip1 = (code + 1) & 3;
 			if     (points_y[ip0] == yl && points_y[ip1] == yl)
 			{
-				where = points_x[ip1] > points_x[ip0] ? 0 : 65536 - 1;
+				where = points_x[ip1] > points_x[ip0] ? 0 : 65536;
 				code += 8;
 				break;
 			}
@@ -2991,13 +2991,7 @@ void tTVPBaseBitmap::PartialAffineBlt(PartialAffineBltParam *param)
 			{
 				tjs_int ip0 = code;
 				tjs_int ip1 = (code + 1) & 3;
-				if     (points_y[ip0] == yl && points_y[ip1] == yl)
-				{
-					where = points_x[ip1] > points_x[ip0] ? 0 : 65536 - 1;
-					code += 4;
-					break;
-				}
-				else if(points_y[ip0] <= yl && points_y[ip1] > yl)
+				if(points_y[ip0] <= yl && points_y[ip1] > yl)
 				{
 					where = div_16(yl - points_y[ip0], points_y[ip1] - points_y[ip0]);
 					break;
@@ -3021,7 +3015,7 @@ void tTVPBaseBitmap::PartialAffineBlt(PartialAffineBltParam *param)
 				tjs_int ip1 = (code + 1) & 3;
 				if     (points_y[ip0] == yl && points_y[ip1] == yl)
 				{
-					where = points_x[ip1] > points_x[ip0] ? 0 : 65536 - 1;
+					where = points_x[ip1] > points_x[ip0] ? 0 : 65536;
 					break;
 				}
 				else if(points_y[ip0] <= yl && points_y[ip1] >  yl)
@@ -3042,7 +3036,7 @@ void tTVPBaseBitmap::PartialAffineBlt(PartialAffineBltParam *param)
 		{
 			line_code0 &= 3;
 			line_code1 = line_code0;
-			where1 = 65535 - where0;
+			where1 = 65536 - where0;
 		}
 
 		// compute intersection point
