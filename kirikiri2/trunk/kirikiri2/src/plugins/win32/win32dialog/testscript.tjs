@@ -198,6 +198,15 @@ with (win) {
 		dlg.open(win);
 		invalidate dlg;
 	}));
+	add(createMenuItem(win, "PropSheetTest",      function{
+		var sheets = [
+			new MyDialog(0),
+			new MyDialog(1) ];
+		WIN32Dialog.openPropertySheet(null, sheets, %[ caption:"PropSheet" ]);
+		for (var i = 0; i < sheets.count; i++) {
+			invalidate sheets[i];
+		}
+	}));
 
 	.add(new global.Layer(win, null));
 	var w = 640, h = 480;
