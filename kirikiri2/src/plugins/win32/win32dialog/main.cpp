@@ -225,7 +225,7 @@ public:
 	static tjs_error TJS_INTF_METHOD loadResource(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self) {
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		if (param[0]->Type() == tvtString) self->_loadResource(param[0]->GetString());
-		if (numparams >= 2) self->_setResource(param[1]);
+		self->_setResource(numparams >= 2 ? param[1] : NULL);
 		return TJS_S_OK;
 	}
 protected:
@@ -239,7 +239,15 @@ protected:
 	}
 	void _setResource(VarT *id) {
 		resid.Clear();
-		resid = *id;
+		if (id) resid = *id;
+	}
+	LPCWSTR getResourceName() const {
+		if (resource) {
+			tTJSVariantType type = resid.Type();
+			if (type != tvtVoid)
+				return (type == tvtString) ? (LPCWSTR)resid.GetString() : (LPCWSTR)MAKEINTRESOURCE(resid.AsInteger());
+		}
+		return 0;
 	}
 
 public:
@@ -443,18 +451,17 @@ protected:
 			} else {
 				hwnd = TVPGetApplicationWindowHandle();
 			}
-			if (!icon) icon = LoadIcon(hinst, IDI_APPLICATION);
+			if (!icon) icon = LoadIcon(hinst, L"MAINICON");
 		}
 		int ret;
-		LPCTSTR resname = 0;
-		if (resource) resname = (resid.Type() == tvtString) ? (LPWSTR)resid.GetString() : MAKEINTRESOURCE(resid.AsInteger());
+		LPCWSTR resname = getResourceName();
 
 		if (!modeless) {
-			ret = resource ?
+			ret = resname ?
 				DialogBoxParamW(resource, resname, hwnd, (DLGPROC)DlgProc, (LPARAM)this) :
 			/**/DialogBoxIndirectParam(hinst, (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this);
 		} else {
-			dialogHWnd = resource ?
+			dialogHWnd = resname ?
 				CreateDialogParam(resource, resname, hwnd, (DLGPROC)DlgProc, (LPARAM)this) :
 			/**/CreateDialogIndirectParam(hinst, (LPCDLGTEMPLATE)ref, hwnd, (DLGPROC)DlgProc, (LPARAM)this);
 			ret = dialogHWnd ? 0 : -1;
@@ -484,7 +491,7 @@ public:
 			inst = (WIN32Dialog *)lparam;
 			if (inst) {
 				inst->dialogHWnd = hwnd;
-				if (inst->icon && !inst->propsheet) SendMessage(hwnd, WM_SETICON, 0, (LPARAM)inst->icon);
+				if (inst->icon && !inst->propsheet) SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)inst->icon);
 				return inst->callback(TJS_W("onInit"),    msg, wparam, lparam);
 			}
 			break;
@@ -520,11 +527,11 @@ public:
 			ZeroMemory(&page, sizeof(page));
 			page.dwSize =     sizeof(page);
 			page.dwFlags = PSP_DEFAULT;
-			if (resource) {
+			page.pszTemplate = getResourceName();
+			if (page.pszTemplate) {
 				page.hInstance = (HINSTANCE)resource;
-				page.pszTemplate = (resid.Type() == tvtString) ? (LPWSTR)resid.GetString() : MAKEINTRESOURCE(resid.AsInteger());
 			} else {
-			page.dwFlags |= PSP_DLGINDIRECT;
+				page.dwFlags |= PSP_DLGINDIRECT;
 				page.hInstance = GetModuleHandle(0);
 				page.pResource = (LPCDLGTEMPLATE)ref;
 			}
@@ -593,8 +600,13 @@ public:
 		ZeroMemory(&head, sizeof(head));
 		head.dwSize =     sizeof(head);
 		head.dwFlags = PSH_DEFAULT;
-
 		head.hInstance = GetModuleHandle(0);
+
+		tjs_int pcnt = 0;
+		PropT pages(vpages), elm(velm);
+		if (!pages.IsValid() || (pcnt = pages.GetArrayCount()) <= 0)
+			TVPThrowExceptionMessage(TJS_W("invalid property sheet pages."));
+
 		if (win.Type() == tvtObject) {
 			DspT *obj = win.AsObjectNoAddRef();
 			if (obj) {
@@ -604,14 +616,9 @@ public:
 			} else {
 				head.hwndParent = TVPGetApplicationWindowHandle();
 			}
-			head.hIcon = LoadIcon(head.hInstance, IDI_APPLICATION);
+			head.hIcon = LoadIcon(head.hInstance, L"MAINICON");
 			head.dwFlags |= PSH_USEHICON;
 		}
-
-		tjs_int pcnt = 0;
-		PropT pages(vpages), elm(velm);
-		if (!pages.IsValid() || (pcnt = pages.GetArrayCount()) <= 0)
-			TVPThrowExceptionMessage(TJS_W("invalid property sheet pages."));
 
 		tjs_int64 ret = -1;
 		ttstr caption;
