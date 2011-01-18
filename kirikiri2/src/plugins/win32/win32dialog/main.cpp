@@ -1,3 +1,9 @@
+#ifdef _MSC_VER
+#define ISOLATION_AWARE_ENABLED 1
+#pragma comment(lib, "comctl32.lib")
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
+
 #include "ncbind.hpp"
 #include <commctrl.h>
 
@@ -129,6 +135,7 @@ private:
 	HWND dialogHWnd;
 	HICON icon;
 	HMODULE resource;
+	HPROPSHEETPAGE propsheet;
 	DspT *owner, *objthis;
 	bool modeless;
 	BYTE *buf;
@@ -140,6 +147,7 @@ public:
 		:	dialogHWnd(0),
 			icon(0),
 			resource(0),
+			propsheet(0),
 			owner(_owner),
 			objthis(0),
 			modeless(false),
@@ -149,6 +157,9 @@ public:
 	// destructor
 	virtual ~WIN32Dialog() {
 		//TVPAddLog(TJS_W("# WIN32Dialog.finalize()"));
+
+		if (propsheet) DestroyPropertySheetPage(propsheet);
+		propsheet = 0;
 
 		if (modeless) close(IDCANCEL);
 
@@ -387,6 +398,7 @@ public:
 	}
 
 	void close(DWORD id) {
+		if (propsheet) return;
 		if (dialogHWnd) {
 			if (!modeless) EndDialog(dialogHWnd, id);
 			else DestroyWindow(dialogHWnd);
@@ -419,6 +431,7 @@ protected:
 	// -------------------------------------------------------------
 	// ダイアログを開く
 	int _open(VarT win) {
+		if (propsheet) TVPThrowExceptionMessage(TJS_W("Dialog is already opened by property sheet."));
 		HWND hwnd = 0;
 		HINSTANCE hinst = GetModuleHandle(0);
 		if (win.Type() == tvtObject) {
@@ -471,7 +484,7 @@ public:
 			inst = (WIN32Dialog *)lparam;
 			if (inst) {
 				inst->dialogHWnd = hwnd;
-				if (inst->icon) SendMessage(hwnd, WM_SETICON, 0, (LPARAM)inst->icon);
+				if (inst->icon && !inst->propsheet) SendMessage(hwnd, WM_SETICON, 0, (LPARAM)inst->icon);
 				return inst->callback(TJS_W("onInit"),    msg, wparam, lparam);
 			}
 			break;
@@ -493,6 +506,157 @@ public:
 	static LRESULT NormalCallback(NameT cbn, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 		WIN32Dialog *inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER);
 		return (inst != 0) ? inst->callback(cbn, msg, wparam, lparam) : FALSE;
+	}
+
+	// -------------------------------------------------------------
+	// プロパティシート用
+
+	bool isPropertySheet() const { return propsheet != 0; }
+
+	HPROPSHEETPAGE setupPropSheet(iTJSDispatch2 *objthis, LPCWSTR titleov = 0) {
+		this->objthis = objthis;
+		if (!propsheet) {
+			PROPSHEETPAGE page;
+			ZeroMemory(&page, sizeof(page));
+			page.dwSize =     sizeof(page);
+			page.dwFlags = PSP_DEFAULT;
+			if (resource) {
+				page.hInstance = (HINSTANCE)resource;
+				page.pszTemplate = (resid.Type() == tvtString) ? (LPWSTR)resid.GetString() : MAKEINTRESOURCE(resid.AsInteger());
+			} else {
+			page.dwFlags |= PSP_DLGINDIRECT;
+				page.hInstance = GetModuleHandle(0);
+				page.pResource = (LPCDLGTEMPLATE)ref;
+			}
+			if (titleov) {
+				page.dwFlags |= PSP_USETITLE;
+				page.pszTitle = titleov;
+			}
+			if (icon) {
+				page.dwFlags |= PSP_USEHICON;
+				page.hIcon = icon;
+			}
+			page.pfnDlgProc = (DLGPROC)PropSheetProc;
+			page.lParam = (LPARAM)this;
+
+			propsheet = CreatePropertySheetPage(&page);
+			if (!propsheet) ThrowLastError();
+		}
+		return propsheet;
+	}
+
+	static LRESULT CALLBACK PropSheetProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+		if (msg == WM_INITDIALOG) lparam = ((LPPROPSHEETPAGE)lparam)->lParam;
+		return DlgProc(hwnd, msg, wparam, lparam);
+	}
+
+	LRESULT propSheetMessage(int msg, VarT wp, VarT lp) {
+		if (IsValid() && propsheet) {
+			HWND owner = GetParent(dialogHWnd);
+			
+			switch (msg) {
+			case PSM_SETTITLE:
+			case PSM_SETFINISHTEXT:
+#ifdef           PSM_SETHEADERTITLE
+			case PSM_SETHEADERTITLE:
+			case PSM_SETHEADERSUBTITLE:
+#endif
+#ifdef           PSM_SETNEXTTEXT
+			case PSM_SETNEXTTEXT:
+			case PSM_SETBUTTONTEXT:
+#endif
+				
+				return SendMessage(owner, msg, (WPARAM)wp.AsInteger(), (LPARAM)lp.GetString());
+			case PSM_CHANGED:
+			case PSM_UNCHANGED:
+#ifdef           PSM_HWNDTOINDEX
+			case PSM_HWNDTOINDEX:
+#endif
+				{
+					HWND hwnd = (HWND)wp.AsInteger();
+					if (!hwnd) hwnd = dialogHWnd;
+					return SendMessage(owner, msg, (WPARAM)hwnd, (LPARAM)lp.AsInteger());
+				}
+			default:
+				return SendMessage(owner, msg, (WPARAM)wp.AsInteger(), (LPARAM)lp.AsInteger());
+			}
+		}
+		return -1;
+	}
+
+	void setMessageResult(LONG result) {
+		if (IsValid()) SetWindowLong(dialogHWnd, DWL_MSGRESULT, result);
+	}
+
+	static tjs_int64  OpenPropertySheet(VarT win, VarT vpages, VarT velm) {
+		PROPSHEETHEADER head;
+		ZeroMemory(&head, sizeof(head));
+		head.dwSize =     sizeof(head);
+		head.dwFlags = PSH_DEFAULT;
+
+		head.hInstance = GetModuleHandle(0);
+		if (win.Type() == tvtObject) {
+			DspT *obj = win.AsObjectNoAddRef();
+			if (obj) {
+				VarT val;
+				obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
+				head.hwndParent = (HWND)((tjs_int64)(val));
+			} else {
+				head.hwndParent = TVPGetApplicationWindowHandle();
+			}
+			head.hIcon = LoadIcon(head.hInstance, IDI_APPLICATION);
+			head.dwFlags |= PSH_USEHICON;
+		}
+
+		tjs_int pcnt = 0;
+		PropT pages(vpages), elm(velm);
+		if (!pages.IsValid() || (pcnt = pages.GetArrayCount()) <= 0)
+			TVPThrowExceptionMessage(TJS_W("invalid property sheet pages."));
+
+		tjs_int64 ret = -1;
+		ttstr caption;
+		HPROPSHEETPAGE *hpages = 0;
+		WIN32Dialog   **sheets = 0;
+		try {
+			ncbTypedefs::Tag<WIN32Dialog*> tagDlg;
+			ncbTypedefs::Tag<iTJSDispatch2*> tagObj;
+			hpages = new HPROPSHEETPAGE[pcnt];
+			sheets = new WIN32Dialog*[pcnt];
+			for (tjs_int i = 0; i < pcnt; i++) {
+				WIN32Dialog *sheet = sheets[i] = pages.GetValue(i, tagDlg);
+				if (sheet) {
+					UINT cnt = head.nPages++;
+					hpages[cnt] = sheet->setupPropSheet(pages.GetValue(i, tagObj));
+				}
+			}
+			head.phpage = hpages;
+
+			if (elm.IsValid()) {
+				if (elm.HasValue(TJS_W("caption"))) {
+					caption = elm.getStrValue(TJS_W("caption"));
+					head.pszCaption = caption.c_str();
+					head.dwFlags |= PSH_PROPTITLE;
+				}
+				if (elm.HasValue(TJS_W("page"))) {
+					tjs_int page = elm.getIntValue(TJS_W("page"));
+					if (page >= 0 && (UINT)page < head.nPages) head.nStartPage = page;
+				}
+
+				ret = PropertySheet(&head);
+				// 後始末
+				for (tjs_int i = 0; i < pcnt; i++) {
+					if (sheets[i]) sheets[i]->propsheet = 0;
+				}
+			}
+		} catch (...) {
+			delete[] hpages;
+			delete[] sheets;
+			throw;
+		}
+		delete[] hpages;
+		delete[] sheets;
+
+		return ret;
 	}
 
 	// -------------------------------------------------------------
@@ -1923,5 +2087,117 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("getStringAddress"),     &Class::GetStringAddress);
 
 	RawCallback(TJS_W("chooseColor"), &Class::chooseColor, TJS_STATICMEMBER);
+
+
+	////////////////
+	// PropertySheet用
+
+	ENUM(PSN_SETACTIVE);
+	ENUM(PSN_KILLACTIVE);
+	ENUM(PSN_APPLY);
+	ENUM(PSN_RESET);
+	ENUM(PSN_HELP);
+	ENUM(PSN_WIZBACK);
+	ENUM(PSN_WIZNEXT);
+	ENUM(PSN_WIZFINISH);
+	ENUM(PSN_QUERYCANCEL);
+#ifdef   PSN_GETOBJECT
+	ENUM(PSN_GETOBJECT);
+#endif
+#ifdef   PSN_TRANSLATEACCELERATOR
+	ENUM(PSN_TRANSLATEACCELERATOR);
+	ENUM(PSN_QUERYINITIALFOCUS);
+#endif
+
+	ENUM(PSNRET_NOERROR);
+	ENUM(PSNRET_INVALID);
+	ENUM(PSNRET_INVALID_NOCHANGEPAGE);
+	ENUM(PSNRET_MESSAGEHANDLED);
+
+	ENUM(PSM_SETCURSEL);
+	ENUM(PSM_REMOVEPAGE);
+	ENUM(PSM_ADDPAGE);
+	ENUM(PSM_CHANGED);
+	ENUM(PSM_RESTARTWINDOWS);
+	ENUM(PSM_REBOOTSYSTEM);
+	ENUM(PSM_CANCELTOCLOSE);
+	ENUM(PSM_QUERYSIBLINGS);
+	ENUM(PSM_UNCHANGED);
+	ENUM(PSM_APPLY);
+	ENUM(PSM_SETTITLE);
+	ENUM(PSM_SETWIZBUTTONS);
+	ENUM(PSM_PRESSBUTTON);
+	ENUM(PSM_SETCURSELID);
+	ENUM(PSM_SETFINISHTEXT);
+	ENUM(PSM_GETTABCONTROL);
+	ENUM(PSM_ISDIALOGMESSAGE);
+	ENUM(PSM_GETCURRENTPAGEHWND);
+	ENUM(PSM_INSERTPAGE);
+#ifdef   PSM_SETHEADERTITLE
+	ENUM(PSM_SETHEADERTITLE);
+	ENUM(PSM_SETHEADERSUBTITLE);
+	ENUM(PSM_HWNDTOINDEX);
+	ENUM(PSM_INDEXTOHWND);
+	ENUM(PSM_PAGETOINDEX);
+	ENUM(PSM_INDEXTOPAGE);
+	ENUM(PSM_IDTOINDEX);
+	ENUM(PSM_INDEXTOID);
+	ENUM(PSM_GETRESULT);
+	ENUM(PSM_RECALCPAGESIZES);
+#endif
+#ifdef   PSM_SETNEXTTEXT
+	ENUM(PSM_SETNEXTTEXT);
+	ENUM(PSM_SHOWWIZBUTTONS);
+	ENUM(PSM_ENABLEWIZBUTTONS);
+	ENUM(PSM_SETBUTTONTEXT);
+#endif
+#ifdef   PSM_SETHEADERBITMAP
+	ENUM(PSM_SETHEADERBITMAP);
+	ENUM(PSM_SETHEADERBITMAPRESOURCE);
+#endif
+
+	ENUM(PSWIZB_BACK);
+	ENUM(PSWIZB_NEXT);
+	ENUM(PSWIZB_FINISH);
+	ENUM(PSWIZB_DISABLEDFINISH);
+	ENUM(PSWIZBF_ELEVATIONREQUIRED);
+#ifdef   PSWIZB_CANCEL
+	ENUM(PSWIZB_CANCEL);
+	ENUM(PSWIZB_SHOW);
+	ENUM(PSWIZB_RESTORE);
+#endif
+#ifdef   PSWIZF_SETCOLOR
+	ENUM(PSWIZF_SETCOLOR);
+#endif
+
+	ENUM(PSBTN_BACK);
+	ENUM(PSBTN_NEXT);
+	ENUM(PSBTN_FINISH);
+	ENUM(PSBTN_OK);
+	ENUM(PSBTN_APPLYNOW);
+	ENUM(PSBTN_CANCEL);
+	ENUM(PSBTN_HELP);
+	ENUM(PSBTN_MAX);
+
+	ENUM(ID_PSRESTARTWINDOWS);
+	ENUM(ID_PSREBOOTSYSTEM);
+
+	ENUM(WIZ_CXDLG);
+	ENUM(WIZ_CYDLG);
+	ENUM(WIZ_CXBMP);
+	ENUM(WIZ_BODYX);
+	ENUM(WIZ_BODYCX);
+
+	ENUM(PROP_SM_CXDLG);
+	ENUM(PROP_SM_CYDLG);
+	ENUM(PROP_MED_CXDLG);
+	ENUM(PROP_MED_CYDLG);
+	ENUM(PROP_LG_CXDLG);
+	ENUM(PROP_LG_CYDLG);
+
+	Method(TJS_W("openPropertySheet"), &Class::OpenPropertySheet);
+	Method(TJS_W("propSheetMessage"),  &Class::propSheetMessage);
+	Method(TJS_W("setMessageResult"),  &Class::setMessageResult);
+	Property(TJS_W("propsheet"),       &Class::isPropertySheet, 0);
 }
 

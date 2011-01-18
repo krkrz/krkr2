@@ -277,6 +277,20 @@ class WIN32Dialog {
 	function InitCommonControlsEx(icc);
 
 	/**
+	 * プロパティシートを表示する（常にモーダル：モードレスは未実装）
+	 * @param window  オーナーwindow（指定しない場合はnullを渡すこと）
+	 * @param sheets  シート情報（WIN32Dialogインスタンスの配列）
+	 * @param elm     オプション（辞書または省略可能）
+	 *                %[ caption:プロパティシートタイトル, page:初期ページ番号 ]
+	 * @return        ::PropertySheetの返り値
+	 */
+	/*static*/function openPropertySheet(window, sheets, elm);
+
+	function propSheetMessage(msg, wparam, lparam); //< PSM_* メッセージをプロパティシートウィンドウに送信する
+	function setMessageResult(value); //< DWL_MSGRESULTの値を設定する
+	property propsheet { getter; } //< プロパティシートとして表示中かどうか
+
+	/**
 	 * ウィンドウスタイル等の定数
 	 * 詳細は API マニュアルなどを参照のこと
 	 */
@@ -337,6 +351,10 @@ class WIN32Dialog {
 	var MB_*;
 	// InitCommonControlsEx parameters
 	var ICC_*;
+
+	// PropertySheet notifications/messages
+	var PSN_*;
+	var PSM_*;
 }
 
 /**
