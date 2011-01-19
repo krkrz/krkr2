@@ -289,7 +289,7 @@ class WIN32Dialog {
 	 * @param window  オーナーwindow（指定しない場合はnullを渡すこと）
 	 * @param sheets  シート情報（WIN32Dialogインスタンスの配列）
 	 * @param elm     オプション（辞書または省略可能）
-	 *                %[ caption:プロパティシートタイトル, page:初期ページ番号 ]
+	 *                %[ caption:プロパティシートタイトル, page:初期ページ番号, icon:アイコン ]
 	 * @return        ::PropertySheetの返り値
 	 */
 	/*static*/function openPropertySheet(window, sheets, elm);
