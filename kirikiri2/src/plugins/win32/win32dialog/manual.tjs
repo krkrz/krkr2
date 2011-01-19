@@ -291,6 +291,25 @@ class WIN32Dialog {
 	property propsheet { getter; } //< プロパティシートとして表示中かどうか
 
 	/**
+	 * プログレスダイアログを表示する
+	 * @param id      プログレスバーのダイアログアイテムID（progressValueプロパティで更新される対象）
+	 * @param window  [optional] オーナーwindow (void=オーナーなし)
+	 * @param dsapp   [optional] プログレス表示中はアプリケーションウィンドウを無効にするか
+	 * @param breathe [optional] progressValueのsetterでbreatheするかどうか
+	 * @return        成功したらtrue
+	 *
+	 * プログレスダイアログのstyleにはWS_VISIBLEを指定しないこと
+	 * 閉じるときは必ず closeProgress() を使用すること
+	 * プログレス表示の場合，onInit以外のコールバックは来ないので注意
+	 */
+	function openProgress(id, window, dsapp, breathe);
+
+	function closeProgress();                     //< プログレスダイアログを閉じる
+	property progress         {         getter; } //< プログレス状態かどうか
+	property progressValue    { setter; getter; } //< プログレスバーを更新する（0-100の数値 or 負数の場合マーキー状態の速度）
+	property progressCanceled { setter; getter; } //< プログレスがキャンセルされたかどうか（※対象ボタンはIDCANCEL固定）
+
+	/**
 	 * ウィンドウスタイル等の定数
 	 * 詳細は API マニュアルなどを参照のこと
 	 */

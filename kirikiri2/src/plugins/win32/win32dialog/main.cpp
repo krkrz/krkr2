@@ -10,11 +10,14 @@
 // CreateDialogIndirect のテーブル書き出し用クラス
 #include "dialog.hpp"
 
+#include "simplethread.hpp"
+
 // MessageBoxでダイアログをオーナーセンター表示にする独自フラグ
 #define MB_OWNER_CENTER 0x40000000L
 
 struct Header;
 struct Items;
+class Progress;
 
 // BITMAPラッパ
 struct Bitmap {
@@ -123,6 +126,8 @@ public:
 	typedef tTJSVariant     VarT;
 	typedef iTJSDispatch2   DspT;
 
+	typedef float ProgressValueT;
+
 	typedef DialogConfig::SizeT   SizeT;
 	typedef DialogConfig::NameT   NameT;
 	typedef DialogConfig::StringT StringT;
@@ -136,6 +141,7 @@ private:
 	HICON icon;
 	HMODULE resource;
 	HPROPSHEETPAGE propsheet;
+	Progress *progress;
 	DspT *owner, *objthis;
 	bool modeless;
 	BYTE *buf;
@@ -148,6 +154,7 @@ public:
 			icon(0),
 			resource(0),
 			propsheet(0),
+			progress(0),
 			owner(_owner),
 			objthis(0),
 			modeless(false),
@@ -157,6 +164,9 @@ public:
 	// destructor
 	virtual ~WIN32Dialog() {
 		//TVPAddLog(TJS_W("# WIN32Dialog.finalize()"));
+
+		if (progress) closeProgress();
+		progress = 0;
 
 		if (propsheet) DestroyPropertySheetPage(propsheet);
 		propsheet = 0;
@@ -406,7 +416,7 @@ public:
 	}
 
 	void close(DWORD id) {
-		if (propsheet) return;
+		if (propsheet || progress) return;
 		if (dialogHWnd) {
 			if (!modeless) EndDialog(dialogHWnd, id);
 			else DestroyWindow(dialogHWnd);
@@ -440,19 +450,8 @@ protected:
 	// ダイアログを開く
 	int _open(VarT win) {
 		if (propsheet) TVPThrowExceptionMessage(TJS_W("Dialog is already opened by property sheet."));
-		HWND hwnd = 0;
 		HINSTANCE hinst = GetModuleHandle(0);
-		if (win.Type() == tvtObject) {
-			DspT *obj = win.AsObjectNoAddRef();
-			if (obj) {
-				VarT val;
-				obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
-				hwnd = (HWND)((tjs_int64)(val));
-			} else {
-				hwnd = TVPGetApplicationWindowHandle();
-			}
-			if (!icon) icon = LoadIcon(hinst, L"MAINICON");
-		}
+		HWND hwnd = _getOpenParent(win, hinst);
 		int ret;
 		LPCWSTR resname = getResourceName();
 
@@ -468,6 +467,21 @@ protected:
 		}
 		if (ret == -1) ThrowLastError();
 		return ret;
+	}
+	HWND _getOpenParent(VarT const &win, HINSTANCE hinst) {
+		HWND hwnd = 0;
+		if (win.Type() == tvtObject) {
+			DspT *obj = win.AsObjectNoAddRef();
+			if (obj) {
+				VarT val;
+				obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
+				hwnd = (HWND)((tjs_int64)(val));
+			} else {
+				hwnd = TVPGetApplicationWindowHandle();
+			}
+			if (!icon) icon = LoadIcon(hinst, L"MAINICON");
+		}
+		return hwnd;
 	}
 	// GetLastErrorのエラーメッセージを取得して投げる
 	static inline void ThrowLastError() {
@@ -665,6 +679,19 @@ public:
 
 		return ret;
 	}
+
+	// -------------------------------------------------------------
+	// プログレスダイアログ用インターフェース
+
+	ProgressValueT getProgressValue() const;
+	void           setProgressValue(ProgressValueT);
+	bool           getProgressCanceled() const;
+	void           setProgressCanceled(bool);
+	static tjs_error TJS_INTF_METHOD openProgress(VarT *result, tjs_int num, VarT **param, iTJSDispatch2 *objthis);
+	bool _openProgress(iTJSDispatch2*, VarT const&, int, bool, bool);
+	void closeProgress();
+	bool isProgress() const { return progress != 0; }
+	void checkProgress() const { if (!isProgress()) TVPThrowExceptionMessage(TJS_W("dialog is not progress mode.")); }
 
 	// -------------------------------------------------------------
 	// テンプレート値書き出し用
@@ -952,6 +979,243 @@ tjs_error TJS_INTF_METHOD WIN32Dialog::makeTemplate(VarT *result, tjs_int numpar
 	delete[] items;
 	return TJS_S_OK;
 }
+
+// -------------------------------------------------------------
+// プログレス用
+
+struct ProgressParam {
+	bool   isResource;
+	HWND   parent;
+	HINSTANCE handle;
+	HICON  icon;
+	void   *data;
+};
+class Progress : public SimpleThreadBase<ProgressParam const*> {
+public:
+	typedef SimpleThreadBase BaseClass;
+	typedef WIN32Dialog::ProgressValueT PrgValueT;
+	enum { ProgressMax = 10000, TimeOut = INFINITE }; //5000 };
+
+	virtual ~Progress() { _close(true); }
+	Progress(int prgid, bool dsapp, bool breathe)
+		:   BaseClass(TimeOut),
+			prgid(prgid),
+			dsapp(dsapp), breathe(breathe), setmax(false), cancel(false),
+			progress(0.0), target(0)
+	{
+		doneInit = createEvent();
+	}
+
+	HWND open(HWND parent, bool isResource, HINSTANCE handle, void *data, HICON icon) {
+		ProgressParam param = { isResource, parent, handle, icon, data };
+		threadStart(&param);
+		TVPBreathe();
+
+		HANDLE handles[] = { threadHandle,  doneInit };
+		::WaitForMultipleObjects(2, handles, FALSE, threadTimeout);
+		if (target) {
+			if (param.icon) SendMessage(target, WM_SETICON, ICON_SMALL, (LPARAM)param.icon);
+			if (dsapp) setEnableAppWindow(false);
+		}
+		return target;
+	}
+
+	void setProgress(PrgValueT value) {
+		HWND item = getDlgItem(prgid);
+		if (!item) return;
+		if (!setmax ||
+			(value <  0.0 && progress >= 0.0) ||
+			(value >= 0.0 && progress <  0.0))
+		{
+			if(!setmax) {
+				setmax = true;
+				::SendMessage(item, PBM_SETRANGE, 0, MAKELPARAM(0, ProgressMax));
+			}
+			DWORD style = ::GetWindowLong(item, GWL_STYLE);
+			::SetWindowLong(item, GWL_STYLE, value < 0 ?
+							(style |  PBS_MARQUEE) :
+							(style & ~PBS_MARQUEE));
+		}
+		progress = value;
+		if (value < 0.0) {
+			int marquee = (int)(-value);
+			::SendMessage(item, PBM_SETMARQUEE, (WPARAM)!!marquee, (LPARAM)marquee);
+		} else {
+			value /= 100.0;
+			if (value > 1.0) value = 1.0;
+			int pos = (int)(value * ProgressMax);
+			::SendMessage(item, PBM_SETPOS, (WPARAM)pos, 0);
+		}
+		if (breathe) TVPBreathe();
+	}
+	PrgValueT getProgress() const { return progress; }
+	void close() { _close(false); }
+
+	bool isCanceled() const { return cancel; }
+	void resetCancel() { setCancelState(false); }
+	void onCancel()    { setCancelState(true);  }
+	void setCancelState(bool c) {
+		cancel = c;
+		::EnableWindow(getDlgItem(IDCANCEL), c ? FALSE : TRUE);
+	}
+
+	void onInit(HWND hwnd) {
+		target = hwnd;
+		::SetEvent(doneInit);
+	}
+
+protected:
+
+	virtual unsigned threadMain(HANDLE prepare, HANDLE stop, ProgressParam const *param)
+	{
+		::SetEvent(prepare);
+		HWND hwnd = createDialog(param);
+		if (hwnd) {
+			MSG msg;
+			HANDLE handles[] = { stop };
+			bool loop = true;
+			while (loop) {
+				switch (::MsgWaitForMultipleObjects(1, handles, FALSE, INFINITE, QS_ALLINPUT)) {
+				case WAIT_OBJECT_0:
+					loop = false;
+					break;
+				case WAIT_OBJECT_0 + 1:
+					while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+						if(!::IsDialogMessage(hwnd, &msg)) {
+							::TranslateMessage(&msg);
+							::DispatchMessage(&msg);
+						}
+					}
+					break;
+				default:
+					TVPAddLog("Unexpected result from MsgWaitForMultipleObjects");
+					break;
+				}
+			}
+			target = NULL;
+			if (::IsWindow(hwnd)) {
+				::DestroyWindow(hwnd);
+			}
+		} else {
+			::SetEvent(doneInit);
+		}
+		return hwnd ? 0 : 1;
+	}
+
+private:
+	static LRESULT CALLBACK ProgressProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+		switch (msg) {
+		case WM_INITDIALOG:
+			::SetWindowLong(hwnd, DWL_USER, (LONG)lparam);
+			{
+				Progress* self = (Progress*)::GetWindowLong(hwnd, DWL_USER);
+				if (self) self->onInit(hwnd);
+			}
+			break;
+		case WM_COMMAND:
+			if (LOWORD(wparam) == IDCANCEL &&
+				HIWORD(wparam) == BN_CLICKED)
+			{
+				Progress* self = (Progress*)::GetWindowLong(hwnd, DWL_USER);
+				if (self) self->onCancel();
+			}
+			break;
+		case WM_CLOSE:
+			{
+				Progress* self = (Progress*)::GetWindowLong(hwnd, DWL_USER);
+				if (self) self->onCancel();
+			}
+			::DestroyWindow(hwnd);
+			break;
+		}
+		return FALSE;
+	}
+	HWND createDialog(ProgressParam const *p) {
+		if (p->isResource) {
+			return ::CreateDialogParam(p->handle, (LPCWSTR)p->data, p->parent, (DLGPROC)ProgressProc, (LPARAM)this);
+		} else {
+			return ::CreateDialogIndirectParam(p->handle, (LPCDLGTEMPLATEW)p->data, p->parent, (DLGPROC)ProgressProc, (LPARAM)this);
+		}
+	}
+
+	void _close(bool isDestruct) {
+		if (dsapp) setEnableAppWindow(true);
+		if (target) ::PostMessage(target, WM_CLOSE, 0, 0);
+		if (!isDestruct) threadStop(threadTimeout);
+	}
+
+	void setEnableAppWindow(bool en) const {
+		::EnableWindow(TVPGetApplicationWindowHandle(), en ? TRUE : FALSE);
+	}
+	HWND getDlgItem(int id) const {
+		return ::GetDlgItem(target, id);
+	}
+
+	int prgid;
+	bool dsapp, breathe, setmax, cancel;
+	PrgValueT progress;
+	HWND target;
+	HANDLE doneInit;
+};
+
+tjs_error TJS_INTF_METHOD
+WIN32Dialog::openProgress(VarT *result, tjs_int num, VarT **param, iTJSDispatch2 *objthis)
+{
+	if (num < 1) return TJS_E_BADPARAMCOUNT;
+	WIN32Dialog *self = SelfAdaptorT::GetNativeInstance(objthis); 
+	if (!self) return TJS_E_NATIVECLASSCRASH;
+	bool defdsapp = !(num>=2 && param[0]->Type() == tvtObject);
+	bool succeeded = self->_openProgress
+		(   objthis,
+			(num >= 2 ? *param[0] : VarT()),
+			(int)param[0]->AsInteger(),
+			(num >= 3 ? param[2]->operator bool() :  defdsapp),
+			(num >= 4 ? param[3]->operator bool() : !defdsapp)
+			);
+	if (result) *result = succeeded;
+	return  TJS_S_OK;
+}
+bool WIN32Dialog::_openProgress(iTJSDispatch2 *objthis, VarT const &win, int prgid, bool appDisable, bool breathe) {
+	bool ret = false;
+	if (IsValid() || propsheet || progress)
+		TVPThrowExceptionMessage(TJS_W("dialog already used."));
+
+	progress = new Progress(prgid, appDisable, breathe);
+	if (progress) {
+		HINSTANCE hinst = GetModuleHandle(0);
+		HWND parent = _getOpenParent(win, hinst);
+		LPCWSTR resname = getResourceName();
+		if (resname) {
+			dialogHWnd = progress->open(parent, true, resource, (void*)resname, icon);
+		} else {
+			dialogHWnd = progress->open(parent, false, hinst, (void*)ref, icon);
+		}
+		if (dialogHWnd) {
+			this->objthis = objthis;
+			callback(TJS_W("onInit"), WM_INITDIALOG, 0, 0);
+			::ShowWindow(dialogHWnd, SW_SHOW);
+			ret = true;
+		} else {
+			delete progress;
+			progress = 0;
+		}
+	}
+	return ret;
+}
+void WIN32Dialog::closeProgress() {
+	if (progress) {
+		delete progress;
+		progress = 0;
+		dialogHWnd = 0;
+	}
+}
+WIN32Dialog::ProgressValueT
+/**/ WIN32Dialog::getProgressValue() const           { checkProgress(); return progress ? progress->getProgress() : 0; }
+void WIN32Dialog::setProgressValue(ProgressValueT v) { checkProgress();    if (progress)  progress->setProgress(v); }
+bool WIN32Dialog::getProgressCanceled() const        { checkProgress(); return progress ? progress->isCanceled() : false; }
+void WIN32Dialog::setProgressCanceled(bool b)        { checkProgress();    if (progress)  progress->setCancelState(b); }
+
+// -------------------------------------------------------------
 
 #define ENUM(n) Variant(#n, (long)n, 0)
 
@@ -1704,7 +1968,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Variant(TJS_W("HOTKEY"),         HOTKEY_CLASSW, 0);			// "msctls_hotkey32"
 
 	// [XXX] コモンコントロールのメッセージ用ENUMが必要
-	// 取り急ぎトラックバー・リストビューのみ
+	// 取り急ぎトラックバー・プログレス・リストビュー・のみ
 
 	// Trackbar Styles
 	ENUM(TBS_AUTOTICKS);
@@ -1797,6 +2061,41 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 #endif
 #ifdef   TRBN_THUMBPOSCHANGING
 	ENUM(TRBN_THUMBPOSCHANGING);
+#endif
+
+	// Progress
+#ifdef   PBS_SMOOTH
+	ENUM(PBS_SMOOTH);
+	ENUM(PBS_VERTICAL);
+#endif
+	ENUM(PBM_SETRANGE);
+	ENUM(PBM_SETPOS);
+	ENUM(PBM_DELTAPOS);
+	ENUM(PBM_SETSTEP);
+	ENUM(PBM_STEPIT);
+//	ENUM(PBM_SETRANGE32);
+	ENUM(PBM_GETRANGE);
+	ENUM(PBM_GETPOS);
+#ifdef   PBM_SETBARCOLOR
+	ENUM(PBM_SETBARCOLOR);
+#endif
+#ifdef   PBM_SETBKCOLOR
+	ENUM(PBM_SETBKCOLOR);
+#endif
+#ifdef   PBS_MARQUEE
+	ENUM(PBS_MARQUEE);
+	ENUM(PBM_SETMARQUEE);
+#endif
+#ifdef   PBS_SMOOTHREVERSE
+	ENUM(PBS_SMOOTHREVERSE);
+	ENUM(PBM_GETSTEP);
+	ENUM(PBM_GETBKCOLOR);
+	ENUM(PBM_GETBARCOLOR);
+	ENUM(PBM_SETSTATE);
+	ENUM(PBM_GETSTATE);
+	ENUM(PBST_NORMAL);
+	ENUM(PBST_ERROR);
+	ENUM(PBST_PAUSED);
 #endif
 
 	// ListView
@@ -2206,5 +2505,15 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("propSheetMessage"),  &Class::propSheetMessage);
 	Method(TJS_W("setMessageResult"),  &Class::setMessageResult);
 	Property(TJS_W("propsheet"),       &Class::isPropertySheet, 0);
+
+	////////////////
+	// Progress用
+
+	RawCallback(TJS_W("openProgress"),  &Class::openProgress, 0);
+	Property(TJS_W("progress"),         &Class::isProgress, (int)0);
+	Property(TJS_W("progressValue"),    &Class::getProgressValue,    &Class::setProgressValue   );
+	Property(TJS_W("progressCanceled"), &Class::getProgressCanceled, &Class::setProgressCanceled);
+	Method(TJS_W("closeProgress"),      &Class::closeProgress);
+
 }
 
