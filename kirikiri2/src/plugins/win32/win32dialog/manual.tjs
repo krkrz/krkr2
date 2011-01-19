@@ -262,6 +262,14 @@ class WIN32Dialog {
 	property HWND { getter; }
 
 	/**
+	 * ダイアログのアイコン画像
+	 *   WIN32Dialog.Bitmapクラスのインスタンス:その画像
+	 *   null:実行ファイルのアイコン
+	 *   void:アイコンなし
+	 */
+	property icon { setter; getter; }
+
+	/**
 	 * ShowWindow のラッパー
 	 * @param nCmdShow SW_*フラグ
 	 * 主にモードレスダイアログ用です。

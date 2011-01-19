@@ -24,43 +24,72 @@ struct Bitmap {
 	typedef unsigned char PIX;
 	iTJSDispatch2 *lay;
 	HBITMAP bitmap;
-	tjs_int bmpw, bmph;
-	Bitmap(iTJSDispatch2 *layer) : lay(layer), bitmap(0), bmpw(0), bmph(0) { lay->AddRef(); }
-	~Bitmap() {                          removeBitmap();   lay->Release(); }
+	HICON icon;
+	Bitmap(iTJSDispatch2 *layer) : lay(layer), bitmap(0), icon(0) { lay->AddRef();  }
+	~Bitmap() {                          removeBitmap();            lay->Release(); }
 	void removeBitmap() {
 		if (bitmap) ::DeleteObject(bitmap);
 		bitmap = NULL;
+		if (icon)   ::DestroyIcon(icon);
+		icon = NULL;
 	}
-	HBITMAP createBitmap(HWND hwnd) {
+	HBITMAP createBitmap(HWND hwnd, tjs_int *pBmpW=0, tjs_int *pBmpH=0, bool withAlpha=false) {
+		removeBitmap();
+
 		ncbPropAccessor obj(lay);
-		bmpw = obj.getIntValue(TJS_W("imageWidth"));
-		bmph = obj.getIntValue(TJS_W("imageHeight"));
-		tjs_int ln = obj.getIntValue(TJS_W("mainImageBufferPitch"));
+		tjs_int bmpw = obj.getIntValue(TJS_W("imageWidth"));
+		tjs_int bmph = obj.getIntValue(TJS_W("imageHeight"));
+		tjs_int ln   = obj.getIntValue(TJS_W("mainImageBufferPitch"));
 		PIX *pw, *pr = reinterpret_cast<PIX*>(obj.getIntValue(TJS_W("mainImageBuffer")));
 
-		BITMAPINFO info;
-		ZeroMemory(&info, sizeof(info));
-		info.bmiHeader.biSize = sizeof(BITMAPINFO);
-		info.bmiHeader.biWidth = bmpw;
-		info.bmiHeader.biHeight = bmph;
-		info.bmiHeader.biPlanes = 1;
-		info.bmiHeader.biBitCount = 24;
 
-		removeBitmap();
+		BITMAPV5HEADER bh;
+		ZeroMemory(&bh, sizeof(bh));
+		bh.bV5Size    = sizeof(bh);
+		bh.bV5Width   = bmpw;
+		bh.bV5Height  = bmph;
+		bh.bV5Planes  = 1;
+		int byte = 3;
+		if (withAlpha) {
+			byte = 4;
+			bh.bV5Compression = BI_BITFIELDS;
+			bh.bV5RedMask     = 0x00FF0000;
+			bh.bV5GreenMask   = 0x0000FF00;
+			bh.bV5BlueMask    = 0x000000FF;
+			bh.bV5AlphaMask   = 0xFF000000;
+		}
+		bh.bV5BitCount = byte*8;
+
 		HDC dc = GetDC(hwnd);
-		if ((bitmap = CreateDIBSection(dc, (LPBITMAPINFO)&info, DIB_RGB_COLORS, (LPVOID*)&pw, NULL, 0)) != NULL) {
+		if ((bitmap = CreateDIBSection(dc, (LPBITMAPINFO)&bh, DIB_RGB_COLORS, (LPVOID*)&pw, NULL, 0)) != NULL) {
 			for (int y = bmph-1; y >= 0; y--) {
 				PIX *src = pr + (y * ln);
-				PIX *dst = pw + ((bmph-1 - y) * ((bmpw*3+3) & ~3L));
-				for (int n = bmpw-1; n >= 0; n--, src+=4, dst+=3) {
-					dst[0] = src[0];
-					dst[1] = src[1];
-					dst[2] = src[2];
+				PIX *dst = pw + ((bmph-1 - y) * ((bmpw*byte+3) & ~3L));
+				for (int n = bmpw-1; n >= 0; n--, src+=4, dst+=byte) {
+					for (int b = 0; b < byte; b++) dst[b] = src[b];
 				}
 			}
 		}
 		ReleaseDC(hwnd, dc);
+		if (pBmpW) *pBmpW = bmpw;
+		if (pBmpH) *pBmpH = bmph;
 		return bitmap;
+	}
+	HICON createIcon(HWND hwnd) {
+		tjs_int w = 0, h = 0;
+		if (createBitmap(hwnd, &w, &h, true)) {
+			ICONINFO info;
+			ZeroMemory(&info, sizeof(info));
+			info.fIcon    = TRUE;
+			info.hbmMask  = CreateBitmap(w, h, 1, 1, NULL);
+			info.hbmColor = bitmap;
+
+			icon = CreateIconIndirect(&info);
+			DeleteObject(info.hbmMask);
+			DeleteObject(bitmap);
+			bitmap = NULL;
+		}
+		return icon;
 	}
 };
 
@@ -88,12 +117,13 @@ struct DrawItem {
 	}
 	void draw(Bitmap *bmp, tjs_int x, tjs_int y) {
 		if (!bmp) return;
-		HBITMAP bitmap = bmp->createBitmap(ref->hwndItem);
+		tjs_int w = 0, h = 0;
+		HBITMAP bitmap = bmp->createBitmap(ref->hwndItem, &w, &h);
 		if (bitmap) {
 			HDC bmpdc = ::CreateCompatibleDC(ref->hDC);
 			if (bmpdc) {
 				::SelectObject(bmpdc, bitmap);
-				::BitBlt(ref->hDC, x, y, bmp->bmpw, bmp->bmph, bmpdc, 0, 0, SRCCOPY);
+				::BitBlt(ref->hDC, x, y, w, h, bmpdc, 0, 0, SRCCOPY);
 				::DeleteDC(bmpdc);
 			}
 		}
@@ -146,7 +176,7 @@ private:
 	bool modeless;
 	BYTE *buf;
 	BYTE *ref;
-	VarT resid;
+	VarT resid, iconBitmap;
 public:
 	// constructor
 	WIN32Dialog(DspT *_owner = 0)
@@ -451,7 +481,7 @@ protected:
 	int _open(VarT win) {
 		if (propsheet) TVPThrowExceptionMessage(TJS_W("Dialog is already opened by property sheet."));
 		HINSTANCE hinst = GetModuleHandle(0);
-		HWND hwnd = _getOpenParent(win, hinst);
+		HWND hwnd = _getOpenParent(win);
 		int ret;
 		LPCWSTR resname = getResourceName();
 
@@ -468,21 +498,18 @@ protected:
 		if (ret == -1) ThrowLastError();
 		return ret;
 	}
-	HWND _getOpenParent(VarT const &win, HINSTANCE hinst) {
-		HWND hwnd = 0;
-		if (win.Type() == tvtObject) {
-			DspT *obj = win.AsObjectNoAddRef();
-			if (obj) {
-				VarT val;
-				obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
-				hwnd = (HWND)((tjs_int64)(val));
-			} else {
-				hwnd = TVPGetApplicationWindowHandle();
-			}
-			if (!icon) icon = LoadIcon(hinst, L"MAINICON");
-		}
-		return hwnd;
+	static HWND _getOpenParent(VarT const &win) {
+		return (win.Type() == tvtObject) ? _getOpenParent(win.AsObjectNoAddRef()) : NULL;
 	}
+	static HWND _getOpenParent(iTJSDispatch2 *obj) {
+		if (obj) {
+			VarT val;
+			obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
+			return (HWND)((tjs_int64)(val));
+		}
+		return TVPGetApplicationWindowHandle();
+	}
+
 	// GetLastErrorのエラーメッセージを取得して投げる
 	static inline void ThrowLastError() {
 		LPVOID lpMessageBuffer;
@@ -610,29 +637,17 @@ public:
 	}
 
 	static tjs_int64  OpenPropertySheet(VarT win, VarT vpages, VarT velm) {
-		PROPSHEETHEADER head;
-		ZeroMemory(&head, sizeof(head));
-		head.dwSize =     sizeof(head);
-		head.dwFlags = PSH_DEFAULT;
-		head.hInstance = GetModuleHandle(0);
-
 		tjs_int pcnt = 0;
 		PropT pages(vpages), elm(velm);
 		if (!pages.IsValid() || (pcnt = pages.GetArrayCount()) <= 0)
 			TVPThrowExceptionMessage(TJS_W("invalid property sheet pages."));
 
-		if (win.Type() == tvtObject) {
-			DspT *obj = win.AsObjectNoAddRef();
-			if (obj) {
-				VarT val;
-				obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
-				head.hwndParent = (HWND)((tjs_int64)(val));
-			} else {
-				head.hwndParent = TVPGetApplicationWindowHandle();
-			}
-			head.hIcon = LoadIcon(head.hInstance, L"MAINICON");
-			head.dwFlags |= PSH_USEHICON;
-		}
+		PROPSHEETHEADER head;
+		ZeroMemory(&head, sizeof(head));
+		head.dwSize =     sizeof(head);
+		head.dwFlags = PSH_DEFAULT;
+		head.hInstance = GetModuleHandle(0);
+		head.hwndParent = _getOpenParent(win);
 
 		tjs_int64 ret = -1;
 		ttstr caption;
@@ -662,12 +677,20 @@ public:
 					tjs_int page = elm.getIntValue(TJS_W("page"));
 					if (page >= 0 && (UINT)page < head.nPages) head.nStartPage = page;
 				}
-
-				ret = PropertySheet(&head);
-				// 後始末
-				for (tjs_int i = 0; i < pcnt; i++) {
-					if (sheets[i]) sheets[i]->propsheet = 0;
+				if (elm.HasValue(TJS_W("icon"))) {
+					VarT bmp = elm.GetValue(TJS_W("icon"), ncbTypedefs::Tag<VarT>());
+					HICON icon = getIconHandle(head.hwndParent, bmp);
+					if (icon) {
+						head.hIcon = icon;
+						head.dwFlags |= PSH_USEHICON;
+					}
 				}
+			}
+
+			ret = PropertySheet(&head);
+			// 後始末
+			for (tjs_int i = 0; i < pcnt; i++) {
+				if (sheets[i]) sheets[i]->propsheet = 0;
 			}
 		} catch (...) {
 			delete[] hpages;
@@ -692,6 +715,28 @@ public:
 	void closeProgress();
 	bool isProgress() const { return progress != 0; }
 	void checkProgress() const { if (!isProgress()) TVPThrowExceptionMessage(TJS_W("dialog is not progress mode.")); }
+
+	// -------------------------------------------------------------
+	// アイコン書き換え
+
+	static HICON getIconHandle(HWND hwnd, VarT const &bmp) {
+		if (bmp.Type() == tvtObject) {
+			iTJSDispatch2 *dsp = bmp.AsObjectNoAddRef();
+			if (!dsp) return LoadIcon(GetModuleHandle(0), L"MAINICON");
+			else {
+				Bitmap *bmp = BitmapAdaptorT::GetNativeInstance(dsp, true);
+				if (bmp) return bmp->createIcon(hwnd);
+			}
+		}
+		return NULL;
+	}
+	void setDialogIcon(VarT bmp) {
+		icon = getIconHandle(dialogHWnd ? dialogHWnd : TVPGetApplicationWindowHandle(), bmp);
+		iconBitmap.Clear();
+		if (icon) iconBitmap = bmp;
+		if (dialogHWnd) SendMessage(dialogHWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+	}
+	VarT getDialogIcon() const { return iconBitmap; }
 
 	// -------------------------------------------------------------
 	// テンプレート値書き出し用
@@ -719,12 +764,7 @@ public:
 	// メッセージボックス表示
 	static int MessageBox(iTJSDispatch2* obj, NameT text, NameT caption, UINT type) {
 		bool useHook = false;
-		HWND hwnd = 0;
-		if (obj) {
-			VarT val;
-			obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
-			hwnd = (HWND)((tjs_int64)(val));
-		} else hwnd = TVPGetApplicationWindowHandle();
+		HWND hwnd = _getOpenParent(obj);
 		if (hwnd && MessageBoxHook == 0 && (type & MB_OWNER_CENTER)) {
 			MessageBoxOwnerHWND = hwnd;
 			MessageBoxHook = SetWindowsHookEx(WH_CBT, MessageBoxHookProc,
@@ -835,15 +875,7 @@ public:
 		ccol.lStructSize = sizeof(ccol);
 		ccol.lpCustColors = CustomColors;
 
-		HWND hwnd = 0;
-		if (num >= 1) {
-			DspT *obj = param[0]->AsObjectNoAddRef();
-			if (obj) {
-				VarT val;
-				obj->PropGet(0, TJS_W("HWND"), NULL, &val, obj);
-				hwnd = (HWND)((tjs_int64)(val));
-			} else hwnd = TVPGetApplicationWindowHandle();
-		}
+		HWND hwnd = (num >= 1) ? _getOpenParent(*param[0]) : 0;
 		ccol.hwndOwner = hwnd;
 		bool hasPalette = false;
 		if (num >= 2) {
@@ -1111,13 +1143,14 @@ private:
 				Progress* self = (Progress*)::GetWindowLong(hwnd, DWL_USER);
 				if (self) self->onInit(hwnd);
 			}
-			break;
+			return TRUE;
 		case WM_COMMAND:
 			if (LOWORD(wparam) == IDCANCEL &&
 				HIWORD(wparam) == BN_CLICKED)
 			{
 				Progress* self = (Progress*)::GetWindowLong(hwnd, DWL_USER);
 				if (self) self->onCancel();
+				return TRUE;
 			}
 			break;
 		case WM_CLOSE:
@@ -1126,7 +1159,7 @@ private:
 				if (self) self->onCancel();
 			}
 			::DestroyWindow(hwnd);
-			break;
+			return TRUE;
 		}
 		return FALSE;
 	}
@@ -1183,7 +1216,7 @@ bool WIN32Dialog::_openProgress(iTJSDispatch2 *objthis, VarT const &win, int prg
 	progress = new Progress(prgid, appDisable, breathe);
 	if (progress) {
 		HINSTANCE hinst = GetModuleHandle(0);
-		HWND parent = _getOpenParent(win, hinst);
+		HWND parent = _getOpenParent(win);
 		LPCWSTR resname = getResourceName();
 		if (resname) {
 			dialogHWnd = progress->open(parent, true, resource, (void*)resname, icon);
@@ -1304,6 +1337,8 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("show"),            &Class::show);
 	Property(TJS_W("modeless"),      &Class::getModeless, &Class::setModeless);
 	Property(TJS_W("HWND"),          &Class::getHWND, (int)0);
+
+	Property(TJS_W("icon"),          &Class::getDialogIcon, &Class::setDialogIcon);
 
 	// 定数定義
 
