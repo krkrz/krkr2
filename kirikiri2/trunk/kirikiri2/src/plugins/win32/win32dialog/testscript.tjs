@@ -111,6 +111,7 @@ class MyDialog extends WIN32DialogEX {
 			// ‰Šú‰»ƒpƒ‰ƒ[ƒ^‚ğİ’è
 			setInitParams(initParams);
 		}
+		icon = isRes ? null : new global.WIN32Dialog.Bitmap(global.bitmapLayer);
 	}
 	function onInit() {
 		super.onInit(...);
@@ -208,7 +209,7 @@ with (win) {
 		var sheets = [
 			new MyDialog(0),
 			new MyDialog(1) ];
-		WIN32Dialog.openPropertySheet(null, sheets, %[ caption:"PropSheet" ]);
+		WIN32Dialog.openPropertySheet(null, sheets, %[ caption:"PropSheet", icon:null ]);
 		for (var i = 0; i < sheets.count; i++) {
 			invalidate sheets[i];
 		}
