@@ -43,6 +43,7 @@ class MyDialog extends WIN32DialogEX {
 	var ID_CMB = 1003;
 	var ID_COMCTL = 1004;
 	var ID_BITMAP = 1005;
+	var ID_PROGRESS = 1006;
 
 	var template = %[
 	helpID:0,
@@ -68,6 +69,8 @@ class MyDialog extends WIN32DialogEX {
 			ListBox(               ID_LST, 10, 40, 80, 40),
 			ComboBox(              ID_CMB, 10, 80, 80, 80, CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP),
 			Control("", ID_BITMAP, STATIC, SS_BITMAP|SS_CENTERIMAGE, 0, 0, 20, 20, 0),
+
+			Control("", ID_PROGRESS, PROGRESS, 0, 0, 95, 100, 5, 0),
 		]
 	];
 
@@ -139,7 +142,7 @@ function createMenuItem(win, caption, onclick) {
 	var menuItem = new MenuItem(win, caption);
 	with (menuItem) {
 		.visible = true;
-		.onClick = onclick incontextof win;
+		if (onclick) .onClick = onclick incontextof win;
 	}
 	return menuItem;
 }
@@ -180,8 +183,10 @@ with (win) {
 	var add = .testMenus.add;
 	add(createMenuItem(win, "MyDialogTest",       function{ testMyDialog(win, 0); }));
 	add(createMenuItem(win, "LoadResourceTest",   function{ testMyDialog(win, 1); }));
+	add(createMenuItem(win, "-"));
 	add(createMenuItem(win, "ModeLess::MyDialog", function{ testModeless(win, 0); }));
 	add(createMenuItem(win, "ModeLess::LoadRes",  function{ testModeless(win, 1); }));
+	add(createMenuItem(win, "-"));
 	add(createMenuItem(win, "MessageBoxTest",     function{
 		with (WIN32Dialog) dm(.messageBox(global.win, "テキスト", "キャプション", .MB_OKCANCEL|.MB_ICONEXCLAMATION|.MB_OWNER_CENTER) == .IDOK);
 	}));
@@ -198,6 +203,7 @@ with (win) {
 		dlg.open(win);
 		invalidate dlg;
 	}));
+	add(createMenuItem(win, "-"));
 	add(createMenuItem(win, "PropSheetTest",      function{
 		var sheets = [
 			new MyDialog(0),
@@ -206,6 +212,26 @@ with (win) {
 		for (var i = 0; i < sheets.count; i++) {
 			invalidate sheets[i];
 		}
+	}));
+	add(createMenuItem(win, "ProgressTest",      function{
+		var test = new MyDialog(0);
+		test.parent = this; //[XXX]
+		var canceled = false;
+		var prg = test.openProgress(test.ID_PROGRESS);
+		if (prg) {
+			var max = 50000;
+			for (var i = 0; i < max; i++) {
+				test.progressValue = i/max*100;
+				if (test.progressCanceled) {
+					canceled = true;
+					break;
+				}
+			}
+			test.progressValue = -50;
+		}
+		System.inform(canceled ?"CANCEL" : prg?"OK":"NG");
+		test.closeProgress();
+		invalidate test;
 	}));
 
 	.add(new global.Layer(win, null));
