@@ -545,6 +545,7 @@ static iTJSDispatch2 * Create_NC_CSVParser()
 
 #undef TJS_NATIVE_CLASSID_NAME
 
+#ifndef CSVPARSER_NO_V2LINK
 //---------------------------------------------------------------------------
 
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason,
@@ -618,3 +619,5 @@ extern "C" __declspec(dllexport) HRESULT _stdcall V2Unlink()
 
 	return S_OK;
 }
+
+#endif // CSVPARSER_NO_V2LINK
