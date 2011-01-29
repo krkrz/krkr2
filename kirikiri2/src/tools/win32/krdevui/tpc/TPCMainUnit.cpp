@@ -990,7 +990,7 @@ bool __fastcall TTPCMainForm::ProcessFile(AnsiString infile)
 		}
 
 		// expand full transparent color
-		if(inbmp->PixelFormat == pf32bit && output_type == "ltAlpha" && 
+		if(inbmp->PixelFormat == pf32bit && output_type == "alpha" && 
 			!TranspOutputAddAlphaFormatCheckBox->Checked)
 		{
 			switch(TranspFullTranspColorMethodComboBox->ItemIndex)
