@@ -120,6 +120,50 @@ GetCropRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDis
 NCB_ATTACH_FUNCTION(getCropRect, Layer, GetCropRect);
 
 /**
+ * 不透明チェック関数
+ */
+static bool
+CheckZerop(BufRefT p, long next, long count)
+{
+	for (; count > 0; count--, p+=next) if (p[3] != 0 || p[2] != 0 || p[1] != 0 || p[0] != 0) return true;
+	return false;
+}
+
+/**
+ * レイヤイメージをクロップ（上下左右の完全透明部分を切り取る）したときのサイズを取得する
+ *
+ * Layer.getCropRectZero = function();
+ * @return %[ x, y, w, h] 形式の辞書，またはvoid（全部透明のとき）
+ */
+static tjs_error TJS_INTF_METHOD
+GetCropRectZero(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	// レイヤバッファの取得
+	BufRefT p, r = 0;
+	long w, h, nl, nc = 4;
+	if (!GetLayerBufferAndSize(lay, w, h, r, nl))
+		TVPThrowExceptionMessage(TJS_W("Invalid layer image."));
+
+	// 結果領域
+	long x1=0, y1=0, x2=w-1, y2=h-1;
+	result->Clear();
+
+	for (p=r;             x1 <  w; x1++,p+=nc) if (CheckZerop(p, nl,  h)) break; // 左から透明領域を調べる
+	/*                                      */ if (x1 >= w) return TJS_S_OK;      // 全部透明なら void を返す
+	for (p=r+x2*nc;       x2 >= 0; x2--,p-=nc) if (CheckZerop(p, nl,  h)) break; // 右から透明領域を調べる
+	/*                                      */ long rw = x2 - x1 + 1;             // 左右に挟まれた残りの幅
+	for (p=r+x1*nc;       y1 <  h; y1++,p+=nl) if (CheckZerop(p, nc, rw)) break; // 上から透明領域を調べる
+	for (p=r+x1*nc+y2*nl; y2 >= 0; y2--,p-=nl) if (CheckZerop(p, nc, rw)) break; // 下から透明領域を調べる
+
+	// 結果を辞書に返す
+	MakeResult(result, x1, y1, rw, y2 - y1 + 1);
+
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(getCropRectZero, Layer, GetCropRectZero);
+
+/**
  * 色比較関数
  */
 #define IS_SAME_COLOR(A1,R1,G1,B1, A2,R2,G2,B2) \
@@ -418,3 +462,35 @@ isBlank(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatc
 }
 
 NCB_ATTACH_FUNCTION(isBlank, Layer, isBlank);
+
+/**
+ * Layer.clearAlpha = function (threthold)
+ * αが指定より小さい部分を完全透明化する
+ */
+static tjs_error TJS_INTF_METHOD
+clearAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
+{
+	int threthold = numparams <= 0 ? 0 : *param[0];
+
+	// 書き込み先
+	WrtRefT dbuf = 0;
+	long w, h, pitch;
+	if (!GetLayerBufferAndSize(lay, w, h, dbuf, pitch)) {
+		TVPThrowExceptionMessage(TJS_W("dest must be Layer."));
+	}
+
+	// コピー
+	for (int i=0;i<h;i++) {
+		WrtRefT q = dbuf;   // A領域
+		for (int j=0;j<w;j++) {
+			if (q[3] <= threthold) {
+				q[0] = q[1] = q[2] = q[3] = 0;
+			}
+			q += 4;
+		}
+		dbuf += pitch;
+	}
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(clearAlpha, Layer, clearAlpha);

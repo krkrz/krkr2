@@ -79,6 +79,13 @@ class Layer {
 	function getCropRect();
 
 	/**
+	 * レイヤイメージをクロップ（上下左右の完全透明部分(0x00000000)を切り取る）したときの
+	 * サイズを取得します。
+	 * @return %[ x, y, w, h] 形式の辞書，またはvoid（全部透明のとき）
+	 */
+	function getCropRectZero();
+	
+	/**
 	 * レイヤの差分領域を取得します。
 	 * @param base 差分元となるベース用の画像
 	 * @return %[ x, y, w, h ] 形式の辞書，またはvoid（完全に同じ画像のとき）
@@ -112,4 +119,10 @@ class Layer {
 	 * @return ブランクデータなら true
 	 */
 	function isBlank(x, y, w, h);
+
+	/**
+	 * αが指定以下の部分を完全透明化(0x00000000)する
+	 * @param threthold αの下限
+	 */
+	function clearAlpha(threthold=0);
 };

@@ -219,9 +219,10 @@ bool CompressTLG5::compress(long width, long height, BufRefT buffer, long pitch,
 				}
 				return TJS_S_OK;
 			}
-		} caller(&tags);
-		tTJSVariantClosure closure(&caller);
+		} *caller = new TagsCaller(&tags);
+		tTJSVariantClosure closure(caller);
 		tagsDict->EnumMembers(TJS_IGNOREPROP, &closure, tagsDict);
+		caller->Release();
 	}
 
 	ULONG tagslen = tags.GetNarrowStrLen(); 
