@@ -318,11 +318,9 @@ public:
 	 * @param src 保存元ファイル
 	 * @param dest 保存先ファイル
 	 */
-	static void exportFile(const char *src, const char *dest) {
-		ttstr filename = src;
+	static void exportFile(ttstr filename, ttstr storename) {
 		IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
 		if (in) {
-			ttstr storename = dest;
 			IStream *out = TVPCreateIStream(storename, TJS_BS_WRITE);
 			if (out) {
 				BYTE buffer[1024*16];
