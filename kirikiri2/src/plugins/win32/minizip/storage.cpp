@@ -17,13 +17,17 @@
 
 #define BASENAME L"zip"
 
+// UTF8なファイル名かどうかのフラグ
+#define FLAG_UTF8 (1<<11)
+extern void storeFilename(ttstr &name, const char *narrowName, bool utf8);
+
 /**
  * Zip 展開処理クラス
  */
 class UnzipBase {
 
 public:
-	UnzipBase() : refCount(1), uf(NULL) {
+	UnzipBase() : refCount(1), uf(NULL), utf8(false) {
 		::InitializeCriticalSection(&cs);
 	}
 
@@ -45,14 +49,21 @@ public:
 	 */
 	bool init(const ttstr &filename) {
 		done();
-		if ((uf = unzOpen(NarrowString(filename))) != NULL) {
+		if ((uf = unzOpen64((const void*)filename.c_str())) != NULL) {
 			lock();
 			unzGoToFirstFile(uf);
+			unz_file_info file_info;
+			// UTF8判定
+			if (unzGetCurrentFileInfo(uf, &file_info,NULL,0,NULL,0,NULL,0) == UNZ_OK) {
+				utf8 = (file_info.flag & FLAG_UTF8) != 0;
+			}
 			do {
 				char filename_inzip[1024];
 				unz_file_info file_info;
 				if (unzGetCurrentFileInfo(uf, &file_info, filename_inzip, sizeof(filename_inzip),NULL,0,NULL,0) == UNZ_OK) {
-					entryName(ttstr(filename_inzip));
+					ttstr filename;
+					storeFilename(filename, filename_inzip, utf8);
+					entryName(filename);
 				}
 			} while (unzGoToNextFile(uf) == UNZ_OK);
 			unlock();
@@ -67,7 +78,7 @@ public:
 	unzData open(const ttstr &srcname, ULONG *size) {
 		if (uf) {
 			lock();
-			if (unzLocateFile(uf, NarrowString(srcname), CASESENSITIVITY) == UNZ_OK) {
+			if (unzLocateFile(uf, NarrowString(srcname, utf8), CASESENSITIVITY) == UNZ_OK) {
 				if (size) {
 					unz_file_info file_info;
 					if (unzGetCurrentFileInfo(uf, &file_info, NULL,0,NULL,0,NULL,0) == UNZ_OK) {
@@ -115,7 +126,7 @@ public:
 		bool ret = true;
 		if (uf) {
 			lock();
-			ret = unzLocateFile(uf, NarrowString(name), CASESENSITIVITY) == UNZ_OK;
+			ret = unzLocateFile(uf, NarrowString(name, utf8), CASESENSITIVITY) == UNZ_OK;
 			unlock();
 		}
 		return ret;
@@ -167,7 +178,7 @@ protected:
 		const tjs_char *p = name.c_str();
 		const tjs_char *q;
 		if ((q = wcsrchr(p, '/'))) {
-			dname += ttstr(p, q-p);
+			dname += ttstr(p, q-p+1);
 			fname = ttstr(q+1);
 		} else {
 			fname = name;
@@ -179,6 +190,7 @@ private:
 	int refCount;
 	// zipファイル情報
 	unzFile uf;
+	bool utf8;
 	CRITICAL_SECTION cs;
 
 	// ディレクトリ別ファイル名エントリ情報

@@ -34,6 +34,9 @@ static const char *copyright =
 #define CASESENSITIVITY (0)
 #define MAXFILENAME (256)
 
+// UTF8なファイル名かどうかのフラグ
+#define FLAG_UTF8 (1<<11)
+
 // Date クラスメンバ
 static iTJSDispatch2 *dateClass = NULL;    // Date のクラスオブジェクト
 static iTJSDispatch2 *dateSetTime = NULL;  // Date.setTime メソッド
@@ -191,7 +194,7 @@ public:
 			}
 		}
 
-		if ((self->zf = zipOpen(NarrowString(filename), (overwrite==2) ? 2 : 0)) == NULL) {
+		if ((self->zf = zipOpen64((const void*)filename.c_str(), (overwrite==2) ? 2 : 0)) == NULL) {
 			// オープン失敗
 			ttstr msg = filename + " can't open.";
 			TVPThrowExceptionMessage(msg.c_str());
@@ -294,13 +297,14 @@ public:
 				in->Seek(move, STREAM_SEEK_CUR, &newposition);
 			}
 			// ファイルの追加
-			if (zipOpenNewFileInZip3(self->zf, NarrowString(destname), &zi,
+			// UTF8で格納する
+			if (zipOpenNewFileInZip4(self->zf, NarrowString(destname, true), &zi,
 									 NULL,0,NULL,0,NULL /* comment*/,
 									 (compressLevel != 0) ? Z_DEFLATED : 0,
 									 compressLevel, 0,
 									 -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY,
 									 usePassword ? (const char*)NarrowString(password) : NULL,
-									 crcFile) == ZIP_OK) {
+									 crcFile, 0, FLAG_UTF8) == ZIP_OK) {
 				char buf[BUFFERSIZE];
 				DWORD size;
 				while (in->Read(buf, sizeof buf, &size) == S_OK && size > 0) {
@@ -322,6 +326,27 @@ public:
 	}
 };
 
+#include <vector>
+
+// ファイル名変換処理
+void
+storeFilename(ttstr &name, const char *narrowName, bool utf8)
+{
+	if (utf8) {
+		int	len = ::MultiByteToWideChar(CP_UTF8, 0, narrowName, -1, NULL, 0);
+		if (len > 0) {
+			std::vector<tjs_char> outbuf( len+1, 0 );
+			int ret = ::MultiByteToWideChar(CP_UTF8, 0, narrowName, -1, &(outbuf[0]), len);
+			if (ret) {
+				outbuf[ret] = '\0';
+				name = &(outbuf[0]);
+			}
+		}
+	} else {
+		name = narrowName;
+	}
+}
+
 /**
  * Zip 展開クラス
  */
@@ -329,11 +354,12 @@ class Unzip {
 
 protected:
 	unzFile uf;
-
+	bool utf8;
+	
 public:
-	Unzip() : uf(NULL) {
+	Unzip() : uf(NULL), utf8(false) {
 	}
-
+	
 	~Unzip() {
 		close();
 	}
@@ -342,11 +368,17 @@ public:
 	 * ZIPファイルを開く
 	 * @param filename ファイル名
 	 */
-	void open(const char *filename) {
-		if ((uf = unzOpen(filename)) == NULL) {
+	void open(const tjs_char *filename) {
+		if ((uf = unzOpen64((const void*)filename)) == NULL) {
 			ttstr msg = filename;
 			msg += L" can't open.";
 			TVPThrowExceptionMessage(msg.c_str());
+		}
+		// UTF8なファイル名かどうかの判定。最初のファイルで決める
+		unzGoToFirstFile(uf);
+		unz_file_info file_info;
+		if (unzGetCurrentFileInfo(uf,&file_info, NULL,0,NULL,0,NULL,0) == UNZ_OK) {
+			utf8 = (file_info.flag & FLAG_UTF8) != 0;
 		}
 	}
 
@@ -385,7 +417,10 @@ public:
 				iTJSDispatch2 *obj;
 				if ((obj = TJSCreateDictionaryObject()) != NULL) {
 					
-					setStrProp(obj, L"filename", ttstr(filename_inzip));
+					ttstr filename;
+					storeFilename(filename, filename_inzip, self->utf8);
+					
+					setStrProp(obj, L"filename", filename);
 					setIntProp(obj, L"uncompressed_size", file_info.uncompressed_size);
 					setIntProp(obj, L"compressed_size", file_info.compressed_size);
 					setIntProp(obj, L"crypted", (file_info.flag & 1) ? 1 : 0);
@@ -451,7 +486,7 @@ public:
 
 		bool ret;
 		
-		if (unzLocateFile(self->uf, NarrowString(srcname), CASESENSITIVITY) == UNZ_OK) {
+		if (unzLocateFile(self->uf, NarrowString(srcname, self->utf8), CASESENSITIVITY) == UNZ_OK) {
 			int result = usePassword ? unzOpenCurrentFilePassword(self->uf,NarrowString(password))
 				: unzOpenCurrentFile(self->uf);
 			if (result == UNZ_OK) {

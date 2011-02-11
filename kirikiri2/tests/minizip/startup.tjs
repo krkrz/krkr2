@@ -12,13 +12,14 @@ win.visible = true;
 Debug.console.visible = true;
 
 var zip = new Zip();
-zip.open("test.zip", true);
-zip.add("file1.txt", "zipfile1.txt");
+zip.open("てすと.zip", true);
+zip.add("file1.txt", "filex.txt");
+zip.add("file1.txt", "ファイル\x2661.txt");
 zip.add("file2.txt", "folder/zipfile2.txt");
 zip.close();
 
 var unzip = new Unzip();
-unzip.open("test.zip");
+unzip.open("てすと.zip");
 var list = unzip.list();
 for (var i=0;i<list.count;i++) {
 	var info = list[i];
@@ -35,9 +36,13 @@ for (var i=0;i<list.count;i++) {
 }
 unzip.close();
 
-Storages.mountZip("test", "test.zip");
-Storages.exportFile("zip://test/zipfile1.txt", "export_file1.txt");
-Storages.exportFile("zip://test/folder/zipfile2.txt", "export_file2.txt");
-Storages.addAutoPath("zip://test/");
-Storages.exportFile("zipfile1.txt", "export_zipfile1.txt");
-Storages.unmountZip("test");
+Storages.mountZip("てすと", "てすと.zip");
+Storages.exportFile("zip://てすと/filex.txt", "export_file1.txt");
+Storages.exportFile("zip://てすと/ファイル\x2661.txt", "export_ファイル１.txt");
+Storages.exportFile("zip://てすと/folder/zipfile2.txt", "export_file2.txt");
+Storages.addAutoPath("zip://てすと/");
+Storages.addAutoPath("zip://てすと/folder/");
+Storages.exportFile("filex.txt", "export2_file1.txt");
+Storages.exportFile("ファイル\x2661.txt", "export2_ファイル\x2661.txt");
+Storages.exportFile("zipfile2.txt", "export2_file2.txt");
+Storages.unmountZip("てすと");
