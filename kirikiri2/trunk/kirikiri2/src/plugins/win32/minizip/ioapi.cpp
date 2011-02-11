@@ -113,7 +113,7 @@ static voidpf ZCALLBACK fopen64_file_func (voidpf opaque, const void* filename, 
 		tjsmode = TJS_BS_WRITE;
 	
 	if ((filename!=NULL)) {
-		file = TVPCreateIStream(ttstr((const char*)filename), tjsmode);
+		file = TVPCreateIStream(ttstr((const tjs_char*)filename), tjsmode);
 	}
     return file;
 }
