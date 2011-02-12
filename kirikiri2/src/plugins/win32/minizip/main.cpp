@@ -37,6 +37,9 @@ static const char *copyright =
 // UTF8なファイル名かどうかのフラグ
 #define FLAG_UTF8 (1<<11)
 
+// ファイルアクセス用
+extern zlib_filefunc64_def TVPZlibFileFunc;
+
 // Date クラスメンバ
 static iTJSDispatch2 *dateClass = NULL;    // Date のクラスオブジェクト
 static iTJSDispatch2 *dateSetTime = NULL;  // Date.setTime メソッド
@@ -194,7 +197,7 @@ public:
 			}
 		}
 
-		if ((self->zf = zipOpen64((const void*)filename.c_str(), (overwrite==2) ? 2 : 0)) == NULL) {
+		if ((self->zf = zipOpen2_64((const void*)filename.c_str(), (overwrite==2) ? 2 : 0, NULL, &TVPZlibFileFunc)) == NULL) {
 			// オープン失敗
 			ttstr msg = filename + " can't open.";
 			TVPThrowExceptionMessage(msg.c_str());
@@ -369,7 +372,7 @@ public:
 	 * @param filename ファイル名
 	 */
 	void open(const tjs_char *filename) {
-		if ((uf = unzOpen64((const void*)filename)) == NULL) {
+		if ((uf = unzOpen2_64((const void*)filename, &TVPZlibFileFunc)) == NULL) {
 			ttstr msg = filename;
 			msg += L" can't open.";
 			TVPThrowExceptionMessage(msg.c_str());

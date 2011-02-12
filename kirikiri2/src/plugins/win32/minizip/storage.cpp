@@ -21,6 +21,9 @@
 #define FLAG_UTF8 (1<<11)
 extern void storeFilename(ttstr &name, const char *narrowName, bool utf8);
 
+// ファイルアクセス用
+extern zlib_filefunc64_def TVPZlibFileFunc;
+
 /**
  * Zip 展開処理クラス
  */
@@ -49,7 +52,7 @@ public:
 	 */
 	bool init(const ttstr &filename) {
 		done();
-		if ((uf = unzOpen64((const void*)filename.c_str())) != NULL) {
+		if ((uf = unzOpen2_64((const void*)filename.c_str(), &TVPZlibFileFunc)) != NULL) {
 			lock();
 			unzGoToFirstFile(uf);
 			unz_file_info file_info;
