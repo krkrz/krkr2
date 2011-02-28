@@ -121,9 +121,10 @@ createNodeFromVariant(tTJSVariant &var, xml_document &doc)
 			} else {
 				// Ž«‘
 				xml_node *node = doc.allocate_node(rapidxml::node_element, L"object");
-				DictMemberDispCaller caller(doc, node);
-				tTJSVariantClosure closure(&caller);
+				DictMemberDispCaller *caller = new DictMemberDispCaller(doc, node);
+				tTJSVariantClosure closure(caller);
 				obj->EnumMembers(TJS_IGNOREPROP, &closure, obj);
+				caller->Release();
 				return node;
 			}
 		}
