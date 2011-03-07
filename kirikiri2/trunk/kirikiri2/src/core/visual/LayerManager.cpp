@@ -357,6 +357,7 @@ void tTVPLayerManager::PrimaryDoubleClick(tjs_int x, tjs_int y)
 void tTVPLayerManager::PrimaryMouseDown(tjs_int x, tjs_int y, tTVPMouseButton mb,
 	tjs_uint32 flags)
 {
+	PrimaryMouseMove(x, y, flags);
 	tTJSNI_BaseLayer * l = CaptureOwner ? CaptureOwner : GetMostFrontChildAt(x, y);
 	if(l)
 	{
