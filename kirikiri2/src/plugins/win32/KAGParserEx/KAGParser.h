@@ -165,16 +165,53 @@ public:
 			iTJSDispatch2 *tjs_obj);
 	void TJS_INTF_METHOD Invalidate();
 
+	static void initMethod();
+	static void doneMethod();
+	
 private:
 	iTJSDispatch2 * Owner; // owner object
 
-	iTJSDispatch2 * DicClear; // Dictionary.Clear method pointer
-	iTJSDispatch2 * DicAssign; // Dictionary
-	iTJSDispatch2 * DicObj; // DictionaryObject
+	static iTJSDispatch2 * DicClear; // Dictionary.Clear method pointer
+	static iTJSDispatch2 * DicAssign; // Dictionary
+	static iTJSDispatch2 * ArrayClear; // Array.Clear method pointer
+	static iTJSDispatch2 * ArrayAssign; // Array.Assign method pointer
+	static iTJSDispatch2 * ArrayPush; // Array.Append method pointer
 
+	struct ArgValue {
+		iTJSDispatch2 *dic;
+		iTJSDispatch2 *array;
+		ArgValue();
+		ArgValue(const ArgValue &orig);
+		ArgValue(tTJSVariant &arrayVar);
+		~ArgValue();
+
+		void clear();
+		void add(ttstr &name, tTJSVariant &value);
+		void add(tTJSVariant &name, tTJSVariant &value);
+		tjs_error getProp(ttstr &name, tTJSVariant &value) const;
+		iTJSDispatch2 *getReturn();
+		
+		template <class Iterator>
+		void extract(Iterator &store) const {
+			int count = TJSGetArrayElementCount(array);
+			for (int i=0;i<count;i++) {
+				tTJSVariant name;
+				tTJSVariant value;
+				if (TJS_SUCCEEDED(array->PropGetByNum(0, i, &name, array))) {
+					ttstr strName = name;
+					if (TJS_SUCCEEDED(dic->PropGet(0, strName.c_str(), strName.GetHint(), &value, dic))) {
+						store(name, value);
+					}
+				}
+			}
+		}
+		tTJSVariant getArray();
+	};
+
+	ArgValue args; // current args
 	iTJSDispatch2 * Macros; // Macro Dictionary Object
 
-	std::vector<iTJSDispatch2 *> MacroArgs; // Macro arguments
+	std::vector<ArgValue> MacroArgs; // Macro arguments
 	tjs_uint MacroArgStackDepth;
 	tjs_uint MacroArgStackBase;
 
@@ -268,7 +305,7 @@ public:
 private:
 	bool SkipCommentOrLabel(); // skip comment or label and go to next line
 
-	void PushMacroArgs(iTJSDispatch2 *args);
+	void PushMacroArgs(ArgValue &value);
 public:
 	void PopMacroArgs();
 private:
@@ -291,7 +328,7 @@ public:
 	void ResetInterrupt() { Interrupted = false; };
 
 private:
-	iTJSDispatch2 * _GetNextTag();
+	void operator()(tTJSVariant &name, tTJSVariant &value);
 
 public:
 	iTJSDispatch2 * GetNextTag();
