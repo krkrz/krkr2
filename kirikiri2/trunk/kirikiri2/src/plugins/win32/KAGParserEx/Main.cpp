@@ -20,6 +20,8 @@ EXPORT(HRESULT) V2Link(iTVPFunctionExporter *exporter)
 {
 	TVPInitImportStub(exporter);
 
+	tTJSNI_KAGParser::initMethod();
+	
 	iTJSDispatch2 * global = TVPGetScriptDispatch();
 	if (global) {
 		tTJSVariant val;
@@ -53,6 +55,8 @@ EXPORT(HRESULT) V2Unlink()
 		global->Release();
 	}
 
+	tTJSNI_KAGParser::doneMethod();
+	
 	TVPUninitImportStub();
 	return S_OK;
 }
