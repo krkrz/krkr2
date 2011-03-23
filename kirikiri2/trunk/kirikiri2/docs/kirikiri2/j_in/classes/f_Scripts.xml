@@ -17,6 +17,20 @@
 				　実行するストレージを指定します。<r/>
 			</desc>
 		</argitem>
+		<argitem>
+			<name>mode</name>
+			<default>''</default>
+			<desc>
+				　ファイルを読み込む際のモード文字列を指定します。"o" に続いてオフセットを10進で指定するとファイルのそのバイト位置からの読み込みになります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>context</name>
+			<default>global</default>
+			<desc>
+				　実行コンテキストを指定します。<r/>
+			</desc>
+		</argitem>
 	</arg>
 	<result>スクリプトを実行した結果が戻ります。</result>
 	<desc>
@@ -37,6 +51,20 @@
 			<default></default>
 			<desc>
 				　評価するストレージを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>mode</name>
+			<default>''</default>
+			<desc>
+				　ファイルを読み込む際のモード文字列を指定します。"o" に続いてオフセットを10進で指定するとファイルのそのバイト位置からの読み込みになります。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>context</name>
+			<default>global</default>
+			<desc>
+				　実行コンテキストを指定します。<r/>
 			</desc>
 		</argitem>
 	</arg>
@@ -61,6 +89,27 @@
 				　実行するスクリプトを文字列で指定します。<r/>
 			</desc>
 		</argitem>
+		<argitem>
+			<name>name</name>
+			<default>''</default>
+			<desc>
+				　エラーメッセージ用ファイル名の指定
+			</desc>
+		</argitem>
+		<argitem>
+			<name>linesof</name>
+			<default>0</default>
+			<desc>
+				　エラーメッセージ用行番号の指定
+			</desc>
+		</argitem>
+		<argitem>
+			<name>context</name>
+			<default>global</default>
+			<desc>
+				　実行コンテキストを指定します。<r/>
+			</desc>
+		</argitem>
 	</arg>
 	<result>スクリプトを実行した結果が戻ります。</result>
 	<desc>
@@ -82,6 +131,27 @@
 			<default></default>
 			<desc>
 				　実行する式を文字列で指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>name</name>
+			<default>''</default>
+			<desc>
+				　エラーメッセージ用ファイル名の指定
+			</desc>
+		</argitem>
+		<argitem>
+			<name>linesof</name>
+			<default>0</default>
+			<desc>
+				　エラーメッセージ用行番号の指定
+			</desc>
+		</argitem>
+		<argitem>
+			<name>context</name>
+			<default>global</default>
+			<desc>
+				　実行コンテキストを指定します。<r/>
 			</desc>
 		</argitem>
 	</arg>
