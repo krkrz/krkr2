@@ -604,12 +604,12 @@ void TVPExecuteScript(const ttstr& content, const ttstr &name, tjs_int lineofs, 
 //---------------------------------------------------------------------------
 void TVPExecuteExpression(const ttstr& content, tTJSVariant *result)
 {
-	return TVPExecuteExpression(content, NULL, result);
+	TVPExecuteExpression(content, NULL, result);
 }
 //---------------------------------------------------------------------------
 void TVPExecuteExpression(const ttstr& content, const ttstr &name, tjs_int lineofs, tTJSVariant *result)
 {
-	return TVPExecuteExpression(content, name, lineofs, NULL, result);
+	TVPExecuteExpression(content, name, lineofs, NULL, result);
 }
 //---------------------------------------------------------------------------
 void TVPExecuteExpression(const ttstr& content, iTJSDispatch2 *context, tTJSVariant *result)
