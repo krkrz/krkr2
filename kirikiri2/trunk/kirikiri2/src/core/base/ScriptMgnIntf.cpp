@@ -604,48 +604,12 @@ void TVPExecuteScript(const ttstr& content, const ttstr &name, tjs_int lineofs, 
 //---------------------------------------------------------------------------
 void TVPExecuteExpression(const ttstr& content, tTJSVariant *result)
 {
-	if(TVPScriptEngine)
-	{
-		iTJSConsoleOutput *output = TVPScriptEngine->GetConsoleOutput();
-		TVPScriptEngine->SetConsoleOutput(NULL); // once set TJS console to null
-		try
-		{
-			TVPScriptEngine->EvalExpression(content, result);
-		}
-		catch(...)
-		{
-			TVPScriptEngine->SetConsoleOutput(output);
-			throw;
-		}
-		TVPScriptEngine->SetConsoleOutput(output);
-	}
-	else
-	{
-		TVPThrowInternalError;
-	}
+	return TVPExecuteExpression(content, NULL, result);
 }
 //---------------------------------------------------------------------------
 void TVPExecuteExpression(const ttstr& content, const ttstr &name, tjs_int lineofs, tTJSVariant *result)
 {
-	if(TVPScriptEngine)
-	{
-		iTJSConsoleOutput *output = TVPScriptEngine->GetConsoleOutput();
-		TVPScriptEngine->SetConsoleOutput(NULL); // once set TJS console to null
-		try
-		{
-			TVPScriptEngine->EvalExpression(content, result, NULL, &name, lineofs);
-		}
-		catch(...)
-		{
-			TVPScriptEngine->SetConsoleOutput(output);
-			throw;
-		}
-		TVPScriptEngine->SetConsoleOutput(output);
-	}
-	else
-	{
-		TVPThrowInternalError;
-	}
+	return TVPExecuteExpression(content, name, lineofs, NULL, result);
 }
 //---------------------------------------------------------------------------
 void TVPExecuteExpression(const ttstr& content, iTJSDispatch2 *context, tTJSVariant *result)
@@ -702,34 +666,7 @@ void TVPExecuteExpression(const ttstr& content, const ttstr &name, tjs_int lineo
 void TVPExecuteStorage(const ttstr &name, tTJSVariant *result, bool isexpression,
 	const tjs_char * modestr)
 {
-	// execute storage which contains script
-	if(!TVPScriptEngine) TVPThrowInternalError;
-
-	ttstr place(TVPSearchPlacedPath(name));
-	ttstr shortname(TVPExtractStorageName(place));
-
-	iTJSTextReadStream * stream = TVPCreateTextStreamForRead(place, modestr);
-	ttstr buffer;
-	try
-	{
-		stream->Read(buffer, 0);
-	}
-	catch(...)
-	{
-		stream->Destruct();
-		throw;
-	}
-	stream->Destruct();
-
-	if(TVPScriptEngine)
-	{
-		if(!isexpression)
-			TVPScriptEngine->ExecScript(buffer, result, NULL,
-				&shortname);
-		else
-			TVPScriptEngine->EvalExpression(buffer, result, NULL,
-				&shortname);
-	}
+	TVPExecuteStorage(name, NULL, result, isexpression, modestr);
 }
 //---------------------------------------------------------------------------
 void TVPExecuteStorage(const ttstr &name, iTJSDispatch2 *context, tTJSVariant *result, bool isexpression,
