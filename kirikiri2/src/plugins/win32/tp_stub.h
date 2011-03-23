@@ -1849,10 +1849,15 @@ extern void * TVPImportFuncPtrf27f455c8f30cbaf1706faac3c7b8e02;
 extern void * TVPImportFuncPtr78ec453a50b2800bb01347e8ebbac000;
 extern void * TVPImportFuncPtr0936d0f6fc53339d255893e58bcc6699;
 extern void * TVPImportFuncPtrf4f7181b7fd679784c50b0cc7ba4c60e;
+extern void * TVPImportFuncPtr79816d7e5741c2416fefe2c2a8baef00;
 extern void * TVPImportFuncPtr42a3d248fab928f16555abcceca62834;
+extern void * TVPImportFuncPtr926d6212b8b1b238e7bef9b17a3ee643;
 extern void * TVPImportFuncPtr236e3d626784d80ca2cc5b2fe14cd9c6;
+extern void * TVPImportFuncPtr1bfac11a5f95c842f97a8bb57d4019de;
 extern void * TVPImportFuncPtr198ce21c54b0cea4c1bf5eeba35349ab;
+extern void * TVPImportFuncPtr590a1ec7f64904eaa32b5c771bb5f8cd;
 extern void * TVPImportFuncPtrdd13d4bc2b48540a92f047bf015b829b;
+extern void * TVPImportFuncPtr0ff502d492598d2211405180bfb4d1e1;
 extern void * TVPImportFuncPtrcf5401746759bfe38918087aaab6c57b;
 extern void * TVPImportFuncPtr449039d3afbfbd52a63130a3b227a490;
 extern void * TVPImportFuncPtr347a4fa85af84e223c4b61d33ead694a;
@@ -7247,6 +7252,16 @@ inline void TVPExecuteScript(const ttstr & content , tTJSVariant * result = NULL
 	typedef void (__stdcall * __functype)(const ttstr &, tTJSVariant *);
 	((__functype)(TVPImportFuncPtrf4f7181b7fd679784c50b0cc7ba4c60e))(content, result);
 }
+inline void TVPExecuteScript(const ttstr & content , iTJSDispatch2 * context , tTJSVariant * result = NULL)
+{
+	if(!TVPImportFuncPtr79816d7e5741c2416fefe2c2a8baef00)
+	{
+		static char funcname[] = "void ::TVPExecuteScript(const ttstr &,iTJSDispatch2 *,tTJSVariant *)";
+		TVPImportFuncPtr79816d7e5741c2416fefe2c2a8baef00 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(const ttstr &, iTJSDispatch2 *, tTJSVariant *);
+	((__functype)(TVPImportFuncPtr79816d7e5741c2416fefe2c2a8baef00))(content, context, result);
+}
 inline void TVPExecuteExpression(const ttstr & content , tTJSVariant * result = NULL)
 {
 	if(!TVPImportFuncPtr42a3d248fab928f16555abcceca62834)
@@ -7256,6 +7271,16 @@ inline void TVPExecuteExpression(const ttstr & content , tTJSVariant * result = 
 	}
 	typedef void (__stdcall * __functype)(const ttstr &, tTJSVariant *);
 	((__functype)(TVPImportFuncPtr42a3d248fab928f16555abcceca62834))(content, result);
+}
+inline void TVPExecuteExpression(const ttstr & content , iTJSDispatch2 * context , tTJSVariant * result = NULL)
+{
+	if(!TVPImportFuncPtr926d6212b8b1b238e7bef9b17a3ee643)
+	{
+		static char funcname[] = "void ::TVPExecuteExpression(const ttstr &,iTJSDispatch2 *,tTJSVariant *)";
+		TVPImportFuncPtr926d6212b8b1b238e7bef9b17a3ee643 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(const ttstr &, iTJSDispatch2 *, tTJSVariant *);
+	((__functype)(TVPImportFuncPtr926d6212b8b1b238e7bef9b17a3ee643))(content, context, result);
 }
 inline void TVPExecuteScript(const ttstr & content , const ttstr & name , tjs_int lineofs , tTJSVariant * result = NULL)
 {
@@ -7267,6 +7292,16 @@ inline void TVPExecuteScript(const ttstr & content , const ttstr & name , tjs_in
 	typedef void (__stdcall * __functype)(const ttstr &, const ttstr &, tjs_int , tTJSVariant *);
 	((__functype)(TVPImportFuncPtr236e3d626784d80ca2cc5b2fe14cd9c6))(content, name, lineofs, result);
 }
+inline void TVPExecuteScript(const ttstr & content , const ttstr & name , tjs_int lineofs , iTJSDispatch2 * context , tTJSVariant * result = NULL)
+{
+	if(!TVPImportFuncPtr1bfac11a5f95c842f97a8bb57d4019de)
+	{
+		static char funcname[] = "void ::TVPExecuteScript(const ttstr &,const ttstr &,tjs_int,iTJSDispatch2 *,tTJSVariant *)";
+		TVPImportFuncPtr1bfac11a5f95c842f97a8bb57d4019de = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(const ttstr &, const ttstr &, tjs_int , iTJSDispatch2 *, tTJSVariant *);
+	((__functype)(TVPImportFuncPtr1bfac11a5f95c842f97a8bb57d4019de))(content, name, lineofs, context, result);
+}
 inline void TVPExecuteExpression(const ttstr & content , const ttstr & name , tjs_int lineofs , tTJSVariant * result = NULL)
 {
 	if(!TVPImportFuncPtr198ce21c54b0cea4c1bf5eeba35349ab)
@@ -7277,6 +7312,16 @@ inline void TVPExecuteExpression(const ttstr & content , const ttstr & name , tj
 	typedef void (__stdcall * __functype)(const ttstr &, const ttstr &, tjs_int , tTJSVariant *);
 	((__functype)(TVPImportFuncPtr198ce21c54b0cea4c1bf5eeba35349ab))(content, name, lineofs, result);
 }
+inline void TVPExecuteExpression(const ttstr & content , const ttstr & name , tjs_int lineofs , iTJSDispatch2 * context , tTJSVariant * result = NULL)
+{
+	if(!TVPImportFuncPtr590a1ec7f64904eaa32b5c771bb5f8cd)
+	{
+		static char funcname[] = "void ::TVPExecuteExpression(const ttstr &,const ttstr &,tjs_int,iTJSDispatch2 *,tTJSVariant *)";
+		TVPImportFuncPtr590a1ec7f64904eaa32b5c771bb5f8cd = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(const ttstr &, const ttstr &, tjs_int , iTJSDispatch2 *, tTJSVariant *);
+	((__functype)(TVPImportFuncPtr590a1ec7f64904eaa32b5c771bb5f8cd))(content, name, lineofs, context, result);
+}
 inline void TVPExecuteStorage(const ttstr & name , tTJSVariant * result = NULL , bool isexpression = false , const tjs_char * modestr = NULL)
 {
 	if(!TVPImportFuncPtrdd13d4bc2b48540a92f047bf015b829b)
@@ -7286,6 +7331,16 @@ inline void TVPExecuteStorage(const ttstr & name , tTJSVariant * result = NULL ,
 	}
 	typedef void (__stdcall * __functype)(const ttstr &, tTJSVariant *, bool , const tjs_char *);
 	((__functype)(TVPImportFuncPtrdd13d4bc2b48540a92f047bf015b829b))(name, result, isexpression, modestr);
+}
+inline void TVPExecuteStorage(const ttstr & name , iTJSDispatch2 * context , tTJSVariant * result = NULL , bool isexpression = false , const tjs_char * modestr = NULL)
+{
+	if(!TVPImportFuncPtr0ff502d492598d2211405180bfb4d1e1)
+	{
+		static char funcname[] = "void ::TVPExecuteStorage(const ttstr &,iTJSDispatch2 *,tTJSVariant *,bool,const tjs_char *)";
+		TVPImportFuncPtr0ff502d492598d2211405180bfb4d1e1 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(const ttstr &, iTJSDispatch2 *, tTJSVariant *, bool , const tjs_char *);
+	((__functype)(TVPImportFuncPtr0ff502d492598d2211405180bfb4d1e1))(name, context, result, isexpression, modestr);
 }
 inline void TVPDumpScriptEngine()
 {
