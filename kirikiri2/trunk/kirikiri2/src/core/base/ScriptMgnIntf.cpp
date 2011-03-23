@@ -580,6 +580,22 @@ void TVPExecuteScript(const ttstr& content, const ttstr &name, tjs_int lineofs, 
 		TVPThrowInternalError;
 }
 //---------------------------------------------------------------------------
+void TVPExecuteScript(const ttstr& content, iTJSDispatch2 *context, tTJSVariant *result)
+{
+	if(TVPScriptEngine)
+		TVPScriptEngine->ExecScript(content, result, context);
+	else
+		TVPThrowInternalError;
+}
+//---------------------------------------------------------------------------
+void TVPExecuteScript(const ttstr& content, const ttstr &name, tjs_int lineofs, iTJSDispatch2 *context, tTJSVariant *result)
+{
+	if(TVPScriptEngine)
+		TVPScriptEngine->ExecScript(content, result, context, &name, lineofs);
+	else
+		TVPThrowInternalError;
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -632,6 +648,52 @@ void TVPExecuteExpression(const ttstr& content, const ttstr &name, tjs_int lineo
 	}
 }
 //---------------------------------------------------------------------------
+void TVPExecuteExpression(const ttstr& content, iTJSDispatch2 *context, tTJSVariant *result)
+{
+	if(TVPScriptEngine)
+	{
+		iTJSConsoleOutput *output = TVPScriptEngine->GetConsoleOutput();
+		TVPScriptEngine->SetConsoleOutput(NULL); // once set TJS console to null
+		try
+		{
+			TVPScriptEngine->EvalExpression(content, result, context);
+		}
+		catch(...)
+		{
+			TVPScriptEngine->SetConsoleOutput(output);
+			throw;
+		}
+		TVPScriptEngine->SetConsoleOutput(output);
+	}
+	else
+	{
+		TVPThrowInternalError;
+	}
+}
+//---------------------------------------------------------------------------
+void TVPExecuteExpression(const ttstr& content, const ttstr &name, tjs_int lineofs, iTJSDispatch2 *context, tTJSVariant *result)
+{
+	if(TVPScriptEngine)
+	{
+		iTJSConsoleOutput *output = TVPScriptEngine->GetConsoleOutput();
+		TVPScriptEngine->SetConsoleOutput(NULL); // once set TJS console to null
+		try
+		{
+			TVPScriptEngine->EvalExpression(content, result, context, &name, lineofs);
+		}
+		catch(...)
+		{
+			TVPScriptEngine->SetConsoleOutput(output);
+			throw;
+		}
+		TVPScriptEngine->SetConsoleOutput(output);
+	}
+	else
+	{
+		TVPThrowInternalError;
+	}
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -666,6 +728,39 @@ void TVPExecuteStorage(const ttstr &name, tTJSVariant *result, bool isexpression
 				&shortname);
 		else
 			TVPScriptEngine->EvalExpression(buffer, result, NULL,
+				&shortname);
+	}
+}
+//---------------------------------------------------------------------------
+void TVPExecuteStorage(const ttstr &name, iTJSDispatch2 *context, tTJSVariant *result, bool isexpression,
+	const tjs_char * modestr)
+{
+	// execute storage which contains script
+	if(!TVPScriptEngine) TVPThrowInternalError;
+
+	ttstr place(TVPSearchPlacedPath(name));
+	ttstr shortname(TVPExtractStorageName(place));
+
+	iTJSTextReadStream * stream = TVPCreateTextStreamForRead(place, modestr);
+	ttstr buffer;
+	try
+	{
+		stream->Read(buffer, 0);
+	}
+	catch(...)
+	{
+		stream->Destruct();
+		throw;
+	}
+	stream->Destruct();
+
+	if(TVPScriptEngine)
+	{
+		if(!isexpression)
+			TVPScriptEngine->ExecScript(buffer, result, context,
+				&shortname);
+		else
+			TVPScriptEngine->EvalExpression(buffer, result, context,
 				&shortname);
 	}
 }
@@ -982,7 +1077,9 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/execStorage)
 	if(numparams >=2 && param[1]->Type() != tvtVoid)
 		modestr = *param[1];
 
-	TVPExecuteStorage(name, result, false, modestr.c_str());
+	iTJSDispatch2 *context = numparams >= 3 && param[2]->Type() != tvtVoid ? param[2]->AsObjectNoAddRef() : NULL;
+	
+	TVPExecuteStorage(name, context, result, false, modestr.c_str());
 
 	return TJS_S_OK;
 }
@@ -999,7 +1096,9 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/evalStorage)
 	if(numparams >=2 && param[1]->Type() != tvtVoid)
 		modestr = *param[1];
 
-	TVPExecuteStorage(name, result, true, modestr.c_str());
+	iTJSDispatch2 *context = numparams >= 3 && param[2]->Type() != tvtVoid ? param[2]->AsObjectNoAddRef() : NULL;
+
+	TVPExecuteStorage(name, context, result, true, modestr.c_str());
 
 	return TJS_S_OK;
 }
@@ -1014,12 +1113,13 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 
 	ttstr name;
 	tjs_int lineofs = 0;
-	if(numparams >= 2) name = *param[1];
-	if(numparams >= 3) lineofs = *param[2];
+	if(numparams >= 2 && param[1]->Type() != tvtVoid) name = *param[1];
+	if(numparams >= 3 && param[2]->Type() != tvtVoid) lineofs = *param[2];
 
-
+	iTJSDispatch2 *context = numparams >= 4 && param[3]->Type() != tvtVoid ? param[3]->AsObjectNoAddRef() : NULL;
+	
 	if(TVPScriptEngine)
-		TVPScriptEngine->ExecScript(content, result, NULL,
+		TVPScriptEngine->ExecScript(content, result, context,
 			&name, lineofs);
 	else
 		TVPThrowInternalError;
@@ -1037,11 +1137,13 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/eval)
 
 	ttstr name;
 	tjs_int lineofs = 0;
-	if(numparams >= 2) name = *param[1];
-	if(numparams >= 3) lineofs = *param[2];
+	if(numparams >= 2 && param[1]->Type() != tvtVoid) name = *param[1];
+	if(numparams >= 3 && param[2]->Type() != tvtVoid) lineofs = *param[2];
 
+	iTJSDispatch2 *context = numparams >= 4 && param[3]->Type() != tvtVoid ? param[3]->AsObjectNoAddRef() : NULL;
+	
 	if(TVPScriptEngine)
-		TVPScriptEngine->EvalExpression(content, result, NULL,
+		TVPScriptEngine->EvalExpression(content, result, context,
 			&name, lineofs);
 	else
 		TVPThrowInternalError;

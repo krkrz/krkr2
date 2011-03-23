@@ -28,10 +28,16 @@ extern void TVPRestartScriptEngine();
 extern tTJS*  TVPGetScriptEngine();
 TJS_EXP_FUNC_DEF(iTJSDispatch2 *, TVPGetScriptDispatch, ());
 TJS_EXP_FUNC_DEF(void, TVPExecuteScript, (const ttstr& content, tTJSVariant *result = NULL));
+TJS_EXP_FUNC_DEF(void, TVPExecuteScript, (const ttstr& content, iTJSDispatch2 *context, tTJSVariant *result = NULL));
 TJS_EXP_FUNC_DEF(void, TVPExecuteExpression, (const ttstr &content, tTJSVariant *result = NULL));
+TJS_EXP_FUNC_DEF(void, TVPExecuteExpression, (const ttstr &content, iTJSDispatch2 *context, tTJSVariant *result = NULL));
 TJS_EXP_FUNC_DEF(void, TVPExecuteScript, (const ttstr& content, const ttstr &name, tjs_int lineofs, tTJSVariant *result = NULL));
+TJS_EXP_FUNC_DEF(void, TVPExecuteScript, (const ttstr& content, const ttstr &name, tjs_int lineofs, iTJSDispatch2 *context, tTJSVariant *result = NULL));
 TJS_EXP_FUNC_DEF(void, TVPExecuteExpression, (const ttstr &content, const ttstr &name, tjs_int lineofs, tTJSVariant *result = NULL));
+TJS_EXP_FUNC_DEF(void, TVPExecuteExpression, (const ttstr &content, const ttstr &name, tjs_int lineofs, iTJSDispatch2 *context, tTJSVariant *result = NULL));
 TJS_EXP_FUNC_DEF(void, TVPExecuteStorage, (const ttstr &name, tTJSVariant *result = NULL,
+	bool isexpression = false, const tjs_char *modestr = NULL));
+TJS_EXP_FUNC_DEF(void, TVPExecuteStorage, (const ttstr &name, iTJSDispatch2 *context, tTJSVariant *result = NULL,
 	bool isexpression = false, const tjs_char *modestr = NULL));
 TJS_EXP_FUNC_DEF(void, TVPDumpScriptEngine, ());
 
