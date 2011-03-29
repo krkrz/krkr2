@@ -1225,6 +1225,18 @@ tTJSNI_KAGParser::ArgValue::ArgValue(const ArgValue &orig)
 	ArrayAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, array);
 }
 
+tTJSNI_KAGParser::ArgValue&
+tTJSNI_KAGParser::ArgValue::operator=(const ArgValue& right)
+{
+	tTJSVariant dsrc(right.dic, right.dic);
+	tTJSVariant *psrc = &dsrc;
+	DicAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, dic);
+	tTJSVariant asrc(right.array, right.array);
+	psrc = &asrc;
+	ArrayAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, array);
+	return *this;
+}
+
 // construct from save array
 tTJSNI_KAGParser::ArgValue::ArgValue(tTJSVariant &arrayVar)
 {
@@ -1235,8 +1247,8 @@ tTJSNI_KAGParser::ArgValue::ArgValue(tTJSVariant &arrayVar)
 	for (int i=0;i<count;i+=2) {
 		tTJSVariant name;
 		tTJSVariant value;
-		if (TJS_SUCCEEDED(array->PropGetByNum(0, i, &name, src)) &&
-			TJS_SUCCEEDED(array->PropGetByNum(0, i+1, &value, src))) {
+		if (TJS_SUCCEEDED(src->PropGetByNum(0, i, &name, src)) &&
+			TJS_SUCCEEDED(src->PropGetByNum(0, i+1, &value, src))) {
 			add(name, value);
 		}
 	}
@@ -1296,7 +1308,7 @@ tTJSVariant tTJSNI_KAGParser::ArgValue::getArray()
 	struct ArrayStore {
 		iTJSDispatch2 *array;
 		ArrayStore() {
-			array = TJSCreateDictionaryObject();
+			array = TJSCreateArrayObject();
 		}
 		~ArrayStore() {
 			array->Release();

@@ -184,7 +184,8 @@ private:
 		ArgValue(const ArgValue &orig);
 		ArgValue(tTJSVariant &arrayVar);
 		~ArgValue();
-
+		ArgValue& operator=(const ArgValue& right);
+		
 		void clear();
 		void add(ttstr &name, tTJSVariant &value);
 		void add(tTJSVariant &name, tTJSVariant &value);
