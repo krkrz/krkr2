@@ -316,6 +316,10 @@ again:
 
 	// リクエスト完了
 	if (!HttpEndRequest(hReq, NULL, 0, NULL)) {
+		DWORD dwError = GetLastError();
+		if (dwError == ERROR_INTERNET_FORCE_RETRY)
+		  goto again;
+
 		storeErrorMessage(GetLastError(), errorMessage);
 		closeHandle();
 		return ERROR_INET;

@@ -440,7 +440,7 @@ protected:
 				size = s;
 			}
 			if (size > 0) {
-				memcpy(buffer, &inputData[size], size);
+				memcpy(buffer, &inputData[inputSize], size);
 			}
 		}
 		if (size > 0) {
