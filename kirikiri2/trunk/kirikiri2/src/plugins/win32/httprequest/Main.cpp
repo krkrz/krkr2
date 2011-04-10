@@ -120,9 +120,11 @@ public:
 					int enc = getEncoding(http.getRequestEncoding());
 					inputLength = ::getWCToMBLen(enc, *str, str->GetLength());
 					inputData.resize(inputLength);
-					UINT wlen = str->GetLength();
-					UINT blen = inputData.size();
-					::convWCToMB(enc, *str, &wlen, (char*)&inputData[0], &blen);
+					if (inputLength) {
+					  UINT wlen = str->GetLength();
+					  UINT blen = inputData.size();
+					  ::convWCToMB(enc, *str, &wlen, (char*)&inputData[0], &blen);
+					}
 				}
 				break;
 			case tvtOctet:
@@ -425,6 +427,27 @@ protected:
 	// -----------------------------------------------
 
 	/**
+	 * ファイル送信処理を巻き戻し
+	 */
+        void rewindUpload(void) {
+	  if (inputStream) {
+	    LARGE_INTEGER pos;
+	    pos.QuadPart = 0;
+	    inputStream->Seek(pos, STREAM_SEEK_SET, NULL);
+	  }
+	  inputSize = 0;
+	}
+  
+        /**
+	 * 送信巻き戻しのコールバック処理
+	 */
+        static void rewindUploadCallback(void *context) {
+	  HttpRequest *self = (HttpRequest*)context;
+	  if (self)
+	    self->rewindUpload();
+	}
+    
+	/**
 	 * ファイル送信処理
 	 * @param buffer 読み取りバッファ
 	 * @param size 読み出したサイズ
@@ -516,7 +539,7 @@ protected:
 		::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_SENT);
 		inputSize = 0;
 		int errorCode;
-		if ((errorCode = http.request(uploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+		if ((errorCode = http.request(uploadCallback, rewindUploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
 			clearInput();
 			http.queryInfo();
 			outputSize = 0;
