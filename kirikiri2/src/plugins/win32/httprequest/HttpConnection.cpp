@@ -206,7 +206,7 @@ retry:
  * リクエスト送信
  */
 int
-HttpConnection::request(RequestCallback callback, void *context)
+HttpConnection::request(RequestCallback requestCallback, RetryCallback retryCallback, void *context)
 {
 	if (!isValid()) {
 		return ERROR_INET;
@@ -252,9 +252,13 @@ HttpConnection::request(RequestCallback callback, void *context)
 		}
 	}
 
+	INTERNET_BUFFERS BufferIn = {0};
+	BufferIn.dwStructSize = sizeof( INTERNET_BUFFERS );
+	BufferIn.dwBufferTotal = requestContentLength;
+
 	// リクエスト送信開始
 again:
-	if (!HttpSendRequestEx(hReq, NULL, NULL, 0, 0)) {
+	if (!HttpSendRequestEx(hReq, &BufferIn, NULL, 0, 0)) {
 		DWORD dwError = GetLastError();
 		
 		// 証明書関連エラーの復帰処理
@@ -287,12 +291,12 @@ again:
 	}
 
 	// ファイル書き出し
-	if (callback) {
+	if (requestCallback) {
 		DWORD len;
 		do {
 			BYTE work[BUFSIZE];
 			len = sizeof work;
-			if (!callback(context, work, len)) {
+			if (!requestCallback(context, work, len)) {
 				closeHandle();
 				return ERROR_CANCEL;
 			}
@@ -317,8 +321,11 @@ again:
 	// リクエスト完了
 	if (!HttpEndRequest(hReq, NULL, 0, NULL)) {
 		DWORD dwError = GetLastError();
-		if (dwError == ERROR_INTERNET_FORCE_RETRY)
+		if (dwError == ERROR_INTERNET_FORCE_RETRY) {
+		  if (retryCallback) 
+		    retryCallback(context);
 		  goto again;
+		}
 
 		storeErrorMessage(GetLastError(), errorMessage);
 		closeHandle();

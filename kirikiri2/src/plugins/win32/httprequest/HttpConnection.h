@@ -35,6 +35,14 @@ public:
 	 * @return 中断する場合は true を返す
 	 */
 	typedef bool (*RequestCallback)(void *context, void *buffer, DWORD &size);
+
+
+	/**
+	 * リトライ用コールバック処理
+	 * @param context コンテキスト
+	 * @return 中断する場合は true を返す
+	 */
+	typedef void (*RetryCallback)(void *context);
 	
 	/**
 	 * レスポンス用コールバック処理
@@ -115,7 +123,7 @@ public:
 	 * @param context コールバック用コンテキスト
 	 * @return エラー
 	 */
-	int request(RequestCallback callback=NULL, void *context=NULL);
+	int request(RequestCallback requestCallback=NULL, RetryCallback retryCalblack = NULL, void *context=NULL);
 
 
 	/**
