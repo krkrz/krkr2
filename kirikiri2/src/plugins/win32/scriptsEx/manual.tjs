@@ -11,4 +11,29 @@ class Scripts {
 	 * @return 個数を返す
 	 */
 	function getObjectCount(obj);
+
+	/**
+	 * オブジェクト同士を比較する。辞書/配列の場合は中身の要素が再帰的に比較されます
+	 * @param obj1 オブジェクトその1
+	 * @param obj2 オブジェクトその2
+	 * @return 等しければ true
+	 */
+	function equalStruct(obj1, obj2);
+
+	/**
+	 * オブジェクト同士を比較する。辞書/配列の場合は中身の要素が再帰的に比較されます
+	 * 数値がゆるく比較されます(0.0 と 0 を等しいとして扱います)
+	 * @param obj1 オブジェクトその1
+	 * @param obj2 オブジェクトその2
+	 * @return 等しければ true
+	 */
+	function equalStructNumericLoose(obj1, obj2);
+
+	/**
+	 * オブジェクトを総なめ操作する
+	 * @param obj 処理対象オブジェクト(辞書または配列)
+	 * @param func 呼び出し関数。func(key, value, args*) の形で呼ばれます
+	 * @param args 追加引数
+	 */
+	function foreach(obj, func, args*);
 }
