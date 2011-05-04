@@ -1,5 +1,5 @@
 Title: ScriptsEx Plugin
-Author: ‚í‚½‚È‚×‚²‚¤
+Author: ‚í‚½‚È‚×‚²‚¤/‚ä‚ñ‚ä‚ñ’T’ã
 
 œ‚±‚ê‚Í‚È‚ÉH
 
