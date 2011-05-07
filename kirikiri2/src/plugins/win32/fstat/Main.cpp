@@ -372,7 +372,7 @@ public:
 		filename = TVPGetPlacedPath(filename);
 		if (filename.length() && !wcschr(filename.c_str(), '>')) {
 			TVPGetLocalName(filename);
-			HANDLE hFile = _getFileHandle(filename, false);
+			HANDLE hFile = _getFileHandle(filename, true);
 			if (hFile != INVALID_HANDLE_VALUE) {
 				LARGE_INTEGER ofs;
 				ofs.QuadPart = size;
