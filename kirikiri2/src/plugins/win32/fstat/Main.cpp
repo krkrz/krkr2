@@ -361,6 +361,36 @@ public:
 	}
 
 	/**
+	 * 吉里吉里のストレージ空間中の指定ファイルのサイズを変更する(切り捨てる)
+	 * @param file ファイル
+	 * @param size 指定サイズ
+	 * @return サイズ変更できたら true
+	 * 実ファイルがある場合のみ処理されます
+	 */
+	static bool truncateFile(ttstr filename, tjs_int size) {
+		BOOL r = false;
+		filename = TVPGetPlacedPath(filename);
+		if (filename.length() && !wcschr(filename.c_str(), '>')) {
+			TVPGetLocalName(filename);
+			HANDLE hFile = _getFileHandle(filename, false);
+			if (hFile != INVALID_HANDLE_VALUE) {
+				LARGE_INTEGER ofs;
+				ofs.QuadPart = size;
+				if (SetFilePointerEx(hFile, ofs, NULL, FILE_BEGIN) &&
+					SetEndOfFile(hFile)) {
+					r = true;
+				} else {
+					ttstr mes;
+					getLastError(mes);
+					TVPAddLog(ttstr(TJS_W("truncateFile : ")) + filename + TJS_W(" : ") + mes);
+				}
+				CloseHandle(hFile);
+			}
+		}
+		return !! r;
+	}
+	
+	/**
 	 * 指定ファイルを移動する。
 	 * @param fromFile 移動対象ファイル
 	 * @param toFile 移動先パス
@@ -382,7 +412,7 @@ public:
 		}
 		return !! r;
 	}
-  
+
 	/**
 	 * 指定ディレクトリのファイル一覧を取得する
 	 * @param dir ディレクトリ名
@@ -862,6 +892,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(setLastModifiedFileTime);
 	NCB_METHOD(exportFile);
 	NCB_METHOD(deleteFile);
+	NCB_METHOD(truncateFile);
 	NCB_METHOD(moveFile);
 	NCB_METHOD(dirlist);
 	NCB_METHOD(dirlistEx);

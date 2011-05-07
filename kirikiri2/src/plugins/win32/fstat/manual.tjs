@@ -32,6 +32,15 @@ class Storages {
 	function deleteFile(file);
 
 	/**
+	 * 吉里吉里のストレージ空間中の指定ファイルのサイズを変更する(切り捨てる)
+	 * @param file ファイル
+	 * @param size 指定サイズ
+	 * @return サイズ変更できたら true
+	 * 実ファイルがある場合のみ処理されます
+	 */
+	function truncateFile(file, size);
+	
+	/**
 	 * 指定ファイルを移動する。
 	 * @param fromFile 移動対象ファイル
 	 * @param toFile 移動先パス
