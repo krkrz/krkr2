@@ -433,7 +433,7 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 			// read index information from memory
 			tjs_uint ch_file_start = 0;
 			tjs_uint ch_file_size = index_size;
-			Count = 0;
+			//Count = 0;
 			for(;;)
 			{
 				// find 'File' chunk
@@ -589,7 +589,7 @@ bool tTVPXP3Archive::FindChunk(const tjs_uint8 *data, const tjs_uint8 * name,
 			return true;
 		}
 		start += size_chunk;
-		pos += size_chunk;
+		pos += size_chunk + 4 + 8;
 	}
 
 	start = start_save;
