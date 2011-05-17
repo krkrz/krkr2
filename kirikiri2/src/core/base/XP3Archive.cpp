@@ -488,7 +488,6 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
 					else
 						TVPThrowExceptionMessage(TVPReadError); // unknown encode method
 						
-					seg.IsCompressed = flags & 1;
 					seg.Start = ReadI64FromMem(indexdata + pos_base + 4) + offset;
 						// data offset in archive
 					seg.Offset = offset_in_archive; // offset in in-archive storage
