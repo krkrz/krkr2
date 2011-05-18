@@ -355,6 +355,9 @@ public:
 				ttstr mes;
 				getLastError(mes);
 				TVPAddLog(ttstr(TJS_W("deleteFile : ")) + filename + TJS_W(" : ") + mes);
+			} else {
+				// 削除に成功した場合はストレージキャッシュをクリア
+				TVPClearStorageCaches();
 			}
 		}
 		return !! r;
@@ -408,6 +411,8 @@ public:
 				ttstr mes;
 				getLastError(mes);
 				TVPAddLog(ttstr(TJS_W("moveFile : ")) + fromFile + ", " + toFile + TJS_W(" : ") + mes);
+			} else {
+				TVPClearStorageCaches();
 			}
 		}
 		return !! r;
@@ -763,8 +768,10 @@ public:
 		{
 			TVPGetLocalName(from);
 			TVPGetLocalName(to);
-			if(CopyFile(from.c_str(), to.c_str(), failIfExist))
+			if(CopyFile(from.c_str(), to.c_str(), failIfExist)) {
+				TVPClearStorageCaches();
 				return true;
+			}
 		}
 		return false;
 	}
