@@ -119,7 +119,7 @@ class StoragesFstat {
 			hFile = CreateFile(filename.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL ,
 							   OPEN_EXISTING,    isdir ? FILE_FLAG_BACKUP_SEMANTICS : FILE_ATTRIBUTE_NORMAL , NULL);
 		} else {
-			hFile = CreateFile(filename.c_str(), isdir ? READ_CONTROL               : GENERIC_READ, 0, NULL ,
+			hFile = CreateFile(filename.c_str(), isdir ? READ_CONTROL               : GENERIC_READ, FILE_SHARE_READ, NULL ,
 							   OPEN_EXISTING,    isdir ? FILE_FLAG_BACKUP_SEMANTICS : FILE_ATTRIBUTE_NORMAL , NULL);
 		}
 		return hFile;
