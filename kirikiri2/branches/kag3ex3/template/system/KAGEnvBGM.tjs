@@ -1,0 +1,278 @@
+/**
+ * 環境BGMオブジェクト
+ */
+class KAGEnvBgm {
+	
+	var env;
+	var name;
+	var loop;
+	var paused;
+	var volume;
+	
+	var play;
+	var stop;
+	var pause;
+	var resume;
+	var fade;
+
+    /**
+     * セーブ処理
+     */
+    function onStore(f) {
+		//dm("BGM保存:" + name);
+		f.name = name;
+		f.loop = loop;
+		f.paused = paused;
+		f.volume = volume;
+	}
+
+	function onRestore(f) {
+		if (f !== void) {
+			//dm("BGM復帰:" + f.name);
+			name = f.name;
+			loop = f.loop;
+			paused = f.paused;
+			if (name != "") {
+				setPlay(name, %[loop:loop]);
+				if (f.volume !== void) {
+					fade.volume = f.volume;
+				}
+				if (paused) {
+					setPause(0);
+				}
+			}
+		}
+	}
+	
+    /**
+     * コンストラクタ
+     */
+	var kag;
+    function KAGEnvBgm(env) {
+		this.env = env;
+		this.kag = env.kag;
+    }
+
+    /**
+     * 再生処理
+     * @param param 再生対象ファイル
+     */
+    function setPlay(param, elm) {
+		if (param !== void) {
+			stop = void;
+			pause = void;
+			resume = void;
+			name = param;
+			loop = elm.loop;
+			paused = false;
+			play = %[];
+			(Dictionary.assign incontextof play)(elm, false);
+			if (play.fade === void && play.time === void) {
+				fade = %[];
+				fade.volume = volume = 100;
+			}
+			// 再生既読フラグ
+			if (elm.noflag === void) {
+				kag.sflags["bgm_" + (param.toUpperCase())] = true; // [NGK] means Non Global Kag.
+			}
+			doflag = true;
+        }
+    }
+
+	function _getTimeParam(param, elm) {
+		return (elm !== void && elm.time !== void) ? +elm.time : +param;
+	}
+
+    /**
+     * 停止処理
+     * @param param フェードアウト時間
+     */
+    function setStop(param, elm) {
+		play = void;
+		fade = void;
+		pause = void;
+		resume = void;
+		name = void;
+		paused = false;
+		stop = _getTimeParam(param, elm);
+		doflag = true;
+    }
+
+    /**
+     * ポーズ処理
+     * @param param フェードアウト時間
+     */
+	function setPause(param, elm) {
+		if (name !== void) {
+			resume = void;
+			pause = _getTimeParam(param, elm);
+			paused = true;
+			doflag = true;
+		}
+    }
+
+    /**
+	 * 再開
+	 */
+	function setResume(param, elm) {
+		if (name !== void) {
+			pause = void;
+			resume = _getTimeParam(param, elm);
+			paused = false;
+			doflag = true;
+		}
+    }
+
+    /**
+     * 音量フェード
+     * @param param フェード時間
+     */
+	function setFade(param, elm) {
+		fade = %[];
+		fade.volume = volume = +param;
+		fade.time   = elm.time;
+    }
+
+    var bgmcommands = %[
+	tagname : null, 
+	storage : setPlay incontextof this,
+    play : setPlay incontextof this,
+    stop : setStop incontextof this,
+    pause : setPause incontextof this,
+	resume : setResume incontextof this,
+    fade : setFade incontextof this,
+    noxchg : null,
+    loop : null,
+    time : null,
+    start : null,
+    paused : null,
+    intime : null,
+    outtime : null,
+    overlap : null,
+    canskip : null,
+	noflag : null,
+    nosync : null,
+	sync : null,
+	wait : null,
+        ];
+
+    var doflag;
+    
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+        var func;
+        if ((func = bgmcommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+            }
+            return true;
+        }
+        // 再生コマンドとみなす
+		setPlay(cmd, elm);
+        return true;
+    }
+
+    /**
+     * KAG タグ処理
+     * @param elm 引数
+     */
+    function tagfunc(elm) {
+        //dm("BGM 用ファンクション呼び出し!");
+		doflag = false;
+        foreach(elm, doCommand);
+        // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
+		if (!doflag && elm.tagname != "bgm") {
+			setPlay(elm.tagname, elm);
+		}
+		var wait = elm.wait !== void ? +elm.wait : elm.sync !== void ? 0 : void;
+		if (wait == 1) {
+			wait = 0;
+		}
+		var canskip = elm.canskip !== void ? +elm.canskip : true;
+		var fading = sync();
+		if (wait !== void) {
+			switch (fading) {
+			case 0:
+				return 0;
+			case 1:
+				return kag.waitBGMFade(%[canskip:canskip, wait:wait]);
+			case 2:
+				return kag.waitBGMStop(%[canskip:canskip, wait:wait]);
+			}
+		}
+		return 0;
+	}
+
+	function sync() {
+		var bgm = kag.bgm, skipMode = kag.skipMode; // [NGK]
+		var fading = 0;
+		if (!kag.skipNoDisp) { // [NGK]
+			if (fade !== void) {
+				if (fade.time !== void) {
+					bgm.fade(fade);
+					fading = 1;
+				} else {
+					bgm.setVolume(fade.volume * 1000);
+				}
+				fade = void;
+			}
+			if (play !== void) {
+				if (bgm.playingStorage != name) {
+					var time = +play.time;
+					if (play.noxchg) {
+						if (skipMode == SKIP_NONE && time > 0)  {
+							bgm.fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
+							fading = 1;
+						} else {
+							bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
+						}
+					} else {
+						if (skipMode == SKIP_NONE && (time > 0 || +play.intime > 0)) {
+							var overlap = play.overlap !== void ? +play.overlap : play.time;
+							bgm.exchange(%[ storage:name, loop:play.loop, time:play.time, intime:play.intime, outtime:play.outtime, overlap:overlap, start:play.start]);
+							fading = 1;
+						} else {
+							bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
+						}
+					}
+				}
+				kag.clearBgmStop(); // [NGK]
+				kag.clearBgmLabel(); // [NGK]
+				play = void;
+			}
+			if (pause !== void) {
+				if (pause > 1) {
+					bgm.fadePause(%[ time: +pause ]);
+					fading = 1;
+				} else {
+					bgm.pause();
+				}
+				pause = void;
+			} else if (resume !== void) {
+				if (resume > 1) {
+					bgm.fadeResume(%[ time: +resume ]);
+					fading = 1;
+				} else {
+					bgm.resume();
+				}
+				resume = void;
+			}
+		}
+		if (stop !== void) {
+			if (skipMode == SKIP_NONE && stop > 0) {
+				bgm.fadeOut(%[ time:stop ]);
+				fading = 2;
+			} else {
+				bgm.stop();
+			}
+			stop = void;
+		}
+		return fading;
+	}
+};

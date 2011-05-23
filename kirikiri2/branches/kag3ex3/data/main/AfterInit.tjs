@@ -1,0 +1,54 @@
+/**
+ * キー関数
+ * AfterInit.tjs でこれを KAG に登録して機能を横取りする
+ */
+function keyFunc(key, shift)
+{
+    if (key == VK_F1 && shift < 1) {
+        kag.onHelpAboutMenuItemClick();
+        return true;
+    } else if (key == VK_F2 && shift == 0 ) {
+        startSave();
+        return true;
+    } else if (key == VK_F3 && shift == 0) {
+        startLoad();
+        return true;
+    } else if (key == VK_F5 && kag.displayMenu.enabled && shift == 0) {
+        if (kag.fullScreened) {
+            kag.onWindowedMenuItemClick();
+        } else {
+            kag.onFullScreenMenuItemClick();
+        }
+        return true;
+    } else if (key == VK_F6 && shift == 0) {
+        kag.skipToNextStopByKey();
+        return true;
+    } else if (key == VK_F7 && shift == 0) {
+        kag.showHistoryByKey();
+        return true;
+    } else if (key == VK_F8 && shift == 0) {
+        kag.switchAutoModeByKey();
+        return true;
+    } else if (key == VK_F4 && shift == 0) {
+        startConfig();
+        return true;
+    }
+    return false;
+}
+
+//　キーバインドの登録
+kag.keyDownHook.add(keyFunc);
+
+// セーブとロードを制限
+kag.origCanStore   = kag.canStore;
+kag.origCanRestore = kag.canRestore;
+
+kag.canStore = function()
+{
+    return origCanStore() && !inSystemMenu(this);
+} incontextof kag;
+
+kag.canRestore = function()
+{
+    return origCanRestore() && !inSystemMenu(this);
+} incontextof kag;

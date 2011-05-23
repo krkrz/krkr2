@@ -1,0 +1,238 @@
+/**
+ * 環境SEオブジェクト
+ */
+class KAGEnvSE {
+
+    var env;
+    var id;
+	var name;  // 参照しているファイル名
+	var loop;  // ループしてるか
+	var volume;
+	var count; // 参照されたカウント値
+	
+	var play;
+	var stop;
+	var fade;
+
+    /**
+     * セーブ処理
+     */
+    function onStore(f) {
+		f.name  = name;
+		f.loop  = loop;
+		f.volume = volume;
+		f.id    = id;
+		f.count = count;
+	}
+
+	function onRestore(f) {
+		if (f !== void) {
+			kag.se[id].stop(); // 確実に止める（onSeStopでname=voidにされるので注意）
+			name = f.name;
+			loop = f.loop;
+			id   = f.id;
+			count = f.count;
+			if (name != "" && loop) {
+				setPlay(name, %[loop:loop]);
+				if (f.volume !== void) {
+					fade = %[] if (fade === void);
+					fade.volume = f.volume;
+				}
+			}
+		}
+	}
+	
+    /**
+     * コンストラクタ
+     */
+	var kag;
+	function KAGEnvSE(env, id) {
+		this.env = env;
+		this.kag = env.kag;
+		this.id = id;
+	}
+
+    /**
+     * 再生処理
+     * @param param 再生対象ファイル
+     */
+	function setPlay(param, elm) {
+		if (param !== void) {
+			stop = void;
+			if (kag.skipMode<SKIP_STOP || elm.loop) {
+				name = param;
+				loop = elm.loop;
+				play = %[];
+				(Dictionary.assign incontextof play)(elm, false);
+				if (play.fade === void && play.time === void) {
+					fade = %[];
+					fade.volume = volume = 100;
+				}
+			} else {
+				stop = 0 if (loop); // ループSE再生中の場合は確実に止める
+				play = void;
+				name = void;
+				loop = void;
+			}
+			doflag = true;
+		}
+    }
+
+    /**
+     * 停止処理
+     * @param param フェードアウト時間
+     */
+	function setStop(param, elm) {
+		play = void;
+		fade = void;
+		name = void;
+		loop = void;
+		var time;
+		if (elm !== void && elm.time !== void) {
+			time = +elm.time;
+		} else {
+			time = +param;
+		}
+		stop = time;
+		doflag = true;
+    }
+
+    /**
+     * 音量フェード
+     * @param param フェード時間
+     */
+	function setFade(param, elm) {
+		fade = %[];
+		fade.volume = volume = +param;
+		fade.time   = elm.time;
+    }
+
+    var secommands = %[
+    tagname : null, 
+    storage : setPlay incontextof this,
+    play : setPlay incontextof this,
+    stop : setStop incontextof this,
+    fade : setFade incontextof this,
+    loop : null,
+    time : null,
+    start : null,
+    canskip : null,
+    buf : null,
+    name : null,
+    nosync : null,
+	sync : null,
+	wait : null,
+        ];
+
+    var doflag;
+
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+        var func;
+        if ((func = secommands[cmd]) !== void) {
+            if (func != null) {
+                func(param, elm);
+            }
+            return true;
+        }
+        // 再生コマンドとみなす
+		setPlay(cmd, elm);
+        return true;
+    }
+
+    /**
+     * KAG タグ処理
+     * @param elm 引数
+     */
+    function tagfunc(elm) {
+		// dm("SE 用ファンクション呼び出し!");
+		doflag = false;
+		foreach(elm, doCommand);
+		var tagname = elm.tagname;
+		if (!doflag && checkTagNamePlay(tagname)) {
+			setPlay(tagname, elm); 
+		}
+		// 待ちチェック
+		var wait = elm.wait !== void ? +elm.wait : elm.sync !== void ? 0 : void;
+		if (wait == 1) {
+			wait = 0;
+		}
+		var canskip = elm.canskip !== void ? +elm.canskip : true;
+		var fading = sync();
+		if (wait !== void) {
+			switch(fading) {
+			case 0:
+				return 0;
+			case 1:
+				return kag.waitSEFade(%[id:id, canskip:canskip, wait:wait]);
+			case 2:
+				return kag.waitSEStop(%[id:id, canskip:canskip, wait:wait]);
+			}
+		}
+		return 0;
+    }
+
+	// タグ名をファイル名とみなして再生できるかどうか
+	function checkTagNamePlay(tagname) {
+		switch (tagname) {
+		case "se":
+		case "allse":
+			// 標準タグなので無効
+			return false;
+
+		default:
+			// ループSEの場合は同じタグ名による再度再生をさせいない
+			if (loop && name == tagname)
+				return false;
+			break;
+		}
+		return true;
+	}
+
+	function sync() {
+		var fading = 0;
+		if (!kag.skipNoDisp) {
+			if (fade !== void) {
+				if (fade.time === void || fade.time == 0 || play !== void) {
+					kag.se[id].volume = fade.volume;
+				} else {
+					kag.se[id].fade(fade);
+					fading = 1;
+				}
+				fade = void;
+			}
+			if (play !== void) {
+				var origName = name; // [XXX]再生中の効果音に再度再生するとonSeStopが呼ばれname=voidにされるので
+				if (kag.skipMode<SKIP_STOP || play.loop || !kag.nosewhenskip) {
+					var time = +play.time;
+					if (time > 0)  {
+						if (kag.se[id].volume <= 1) kag.se[id].volume = 100;
+						kag.se[id].fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
+					} else {
+						kag.se[id].play(%[ storage:name, loop:play.loop, start:play.start]);
+					}
+					fading = 2; // sync時は停止待ち扱い
+				}
+				name = origName; // [XXX]もう一度設定しなおす
+				play = void;
+			}
+		}
+		if (stop !== void) {
+			if (kag.skipMode == SKIP_NONE && stop > 0) {
+				kag.se[id].fadeOut(%[time:stop]);
+				fading = 2;
+			} else {
+				kag.se[id].stop();
+			}
+			stop = void;
+		}
+		return fading;
+	}
+
+};

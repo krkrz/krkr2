@@ -1,0 +1,46 @@
+/**
+ * 単独レイヤ
+ */
+class KAGEnvSimpleLayer extends KAGEnvLayer, KAGEnvLevelLayer {
+
+	/**
+	 * 表示処理用の自動トランジションの指定
+	 */
+	function setDispAutoTrans(elm) {
+		setAutoTrans([env.envinfo.layerDispTrans], elm);
+	}
+
+	/**
+	 * コンストラクタ
+	 * @param env
+	 * @param name
+	 * @param level
+	 */
+	function KAGEnvSimpleLayer(env, name) {
+		global.KAGEnvLayer.KAGEnvLayer(env, name);
+		global.KAGEnvLevelLayer.KAGEnvLevelLayer();
+	}
+
+    function finalize() {
+        // 順番変更不可
+        global.KAGEnvLevelLayer.finalize();
+        global.KAGEnvLayer.finalize();
+    }
+
+	function onStore(f) {
+		global.KAGEnvLayer.onStore(f);
+		global.KAGEnvLevelLayer.onStore(f);
+    }
+
+    function onRestore(f) {
+		global.KAGEnvLayer.onRestore(f);
+		global.KAGEnvLevelLayer.onRestore(f);
+    }
+
+    var layerCommands = %[
+	front : this.setFront incontextof this,
+	back : this.setBack incontextof this,
+    level : this.setLevel incontextof this,
+	levelz: function (param, elm) { this.levelz = +param; } incontextof this,
+        ];
+}

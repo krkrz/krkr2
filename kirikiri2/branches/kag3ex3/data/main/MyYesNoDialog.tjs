@@ -1,0 +1,305 @@
+//
+// YesNoDialog の改変
+// レイヤダイアログで処理可能にする
+//
+
+/**
+ * ウインドウ版
+ * ムービー再生中などはこちらを利用
+ */
+class MyYesNoDialogWindow extends Window
+{
+	var yesButton; // [はい] ボタン
+	var noButton; // [いいえ] ボタン
+
+    var tempLayer; // テンポラリレイヤ
+
+    var result = false; // no:false yes:true
+
+	property temporaryLayer
+	{
+		// ワークエリアとして一時的に使用できるレイヤを返す
+		getter()
+		{
+			if(tempLayer === void)
+			{
+				tempLayer = new KAGLayer(this, primaryLayer);
+				tempLayer.name = "一時ワークレイヤ";
+			}
+			return tempLayer;
+		}
+	}
+
+    var baseStorage;
+    
+    function MyYesNoDialogWindow(baseStorage)
+	{
+        super.Window();
+
+        this.baseStorage = baseStorage;
+        
+		// メインウィンドウから cursor**** の情報をとってくる
+		if(global.Window.mainWindow !== null &&
+			typeof global.Window.mainWindow.cursorDefault != "undefined")
+			this.cursorDefault = global.Window.mainWindow.cursorDefault;
+		if(global.Window.mainWindow !== null &&
+			typeof global.Window.mainWindow.cursorPointed != "undefined")
+			this.cursorPointed = global.Window.mainWindow.cursorPointed;
+
+		// 外見の調整
+        borderStyle = bsNone;
+        innerSunken = false;
+		showScrollBars = false;
+
+		// プライマリレイヤの作成
+        add(new Layer(this, null));
+        
+		// プライマリのマウスカーソルを設定
+		if(typeof this.cursorDefault !== "undefined")
+			primaryLayer.cursor = cursorDefault;
+
+		// 拡大率の設定
+		if (kag.fullScreen) {
+			if (kag.innerWidth / kag.scWidth < kag.innerHeight / kag.scHeight)
+				setZoom(kag.innerWidth, kag.scWidth);
+			else
+				setZoom(kag.innerHeight, kag.scHeight);
+		} else {
+			setZoom(kag.zoomNumer, kag.zoomDenom);
+		}
+		
+		primaryLayer.loadImages(baseStorage);
+		primaryLayer.setSizeToImageSize();
+		setInnerSize(primaryLayer.width * zoomNumer / zoomDenom,
+					 primaryLayer.height * zoomNumer / zoomDenom);
+        setMaskRegion();
+        
+		// ウィンドウ位置の調整
+		if(global.Window.mainWindow !== null && global.Window.mainWindow isvalid)
+		{
+			var win = global.Window.mainWindow;
+			var l, t;
+			l = ((win.width - width)>>1) + win.left;
+			t = ((win.height - height)>>1) + win.top;
+			if(l < 0) l = 0;
+			if(t < 0) t = 0;
+			if(l + width > System.screenWidth) l = System.screenWidth - width;
+			if(t + height > System.screenHeight) t = System.screenHeight - height;
+			setPos(l, t);
+		}
+		else
+		{
+			setPos((System.screenWidth - width)>>1, (System.screenHeight - height)>>1);
+		}
+
+		// Yesボタン
+        add(yesButton = new ButtonLayer(this, primaryLayer));
+		yesButton.loadButtons("dialog_yes_normal", "dialog_yes_over", "dialog_yes_over");
+		yesButton.top  = 305;
+		yesButton.left = 325;
+		yesButton.visible = true;
+
+		// Noボタン
+		add(noButton = new ButtonLayer(this, primaryLayer));
+        noButton.loadButtons("dialog_no_normal", "dialog_no_over", "dialog_no_over");
+        noButton.top  = 305;
+		noButton.left = 411;
+		noButton.visible = true;
+
+	}
+
+	function finalize()
+	{
+		invalidate tempLayer if tempLayer !== void;
+		super.finalize(...);
+	}
+
+	function action(ev)
+	{
+		// action
+		if(ev.type == "onClick")
+		{
+			if(ev.target == yesButton)
+			{
+				result = true;
+				close();
+			}
+			else if(ev.target == noButton)
+			{
+				result = false;
+				close();
+			}
+		}
+		else if(ev.type == "onKeyDown" && ev.target === this)
+		{
+			// パッド入力に対応する処理
+			switch(ev.key)
+			{
+			case VK_PADLEFT:
+				yesButton.focus();
+				break;
+			case VK_PADRIGHT:
+				noButton.focus();
+				break;
+			case VK_PAD1:
+				if(focusedLayer == yesButton)
+				{
+					result = true;
+					close();
+				}
+				else if(focusedLayer == noButton)
+				{
+					result = false;
+					close();
+				}
+				break;
+			case VK_PAD2:
+				result = false;
+				close();
+				break;
+			}
+		}
+	}
+
+	function onKeyDown(key, shift)
+	{
+		super.onKeyDown(...);
+		if(key == VK_ESCAPE)
+		{
+			// ESC キーが押された
+			// 「いいえ」として処理
+			result = false;
+			close();
+		}
+	}
+
+	function onMouseDown(x, y, button)
+	{
+        if(button == mbRight) {
+            result = false;
+            close();
+        }
+    }
+}
+
+/**
+ * ダイアログ版
+ */
+class MyYesNoDialogLayer extends DialogLayer
+{
+    var baseStorage;
+    var result = false;
+
+    var yesFunc;
+    var noFunc;
+    var param;
+    var doneFunc;
+    
+    function MyYesNoDialogLayer(baseStorage, yesFunc, noFunc, param, doneFunc) {
+        super.DialogLayer(kag, kag.primaryLayer, baseStorage + "ダイアログ");
+
+        this.yesFunc = yesFunc;
+        this.noFunc  = noFunc;
+        this.param   = param;
+        this.doneFunc = doneFunc;
+        this.baseStorage = baseStorage;
+
+        setOption(%[frame : baseStorage]);
+        addButton(%[ x : 325, y : 305, normal:"dialog_yes_normal", over:"dialog_yes_over", on:"dialog_yes_over"]);
+        addButton(%[ x : 411, y : 305, normal:"dialog_no_normal", over:"dialog_no_over",  on:"dialog_no_over"]);
+    }
+
+    function finalize() {
+        super.finalize();
+    }
+
+    /**
+     * オープン直後によばれる
+     */
+    function onOpen() {
+        setFocusToLink(1,true);
+    }
+    
+    function processLink(num) {
+        super.processLink(num);
+        if (num == 0) {
+            result = true;
+            if (yesFunc !== void) {
+                yesFunc(param);
+            }
+        } else {
+            if (noFunc !== void) {
+                noFunc(param);
+            }
+        }
+        if (this isvalid) {
+            if (doneFunc !== void) {
+                doneFunc(param);
+            }
+            close();
+        }
+    }
+}
+
+KAGLoadScript("YesNoDialog.tjs");
+
+var origAskYesNo = askYesNo;
+
+var yesnoMap = %[
+    "最初に戻ります。よろしいですか ?" => "dialog_title_base",
+    "終了しますか？" => "dialog_exit_base",
+    "上書きしてよろしいですか？" => "dialog_overwrite_base",
+    "ロードしますか？" => "dialog_load_base",
+    "初期化" => "dialog_configini_base"
+    ];
+
+// Yes か No かはっきりさせる関数をのっとる
+var askYesNo = function(message, caption = "確認", yesFunc, noFunc, param, doneFunc)
+{
+    if (kag.isMoviePlaying()) {
+
+        var win;
+        if (message.indexOf("まで戻りますか?") >= 0) {
+            win = new MyYesNoDialogWindow("dialogprev");
+        } else {
+            var msg = yesnoMap[message];
+            if (msg !== void) {
+                win = new MyYesNoDialogWindow(msg);
+            } else {
+                win = new YesNoDialogWindow(message, caption);
+            }
+        }
+
+        win.showModal();
+        var res = win.result;
+        invalidate win;
+
+        if (res) {
+            if (yesFunc !== void) {
+                yesFunc(param);
+            }
+        } else {
+            if (noFunc !== void) {
+                noFunc(param);
+            }
+        }
+        if (doneFunc !== void) {
+            doneFunc(param);
+        }
+
+    } else {
+
+        if (message.indexOf("まで戻りますか?") >= 0) {
+            var dialog = new MyYesNoDialogLayer("dialogprev", yesFunc, noFunc, param, doneFunc);
+            dialog.open();
+        } else {
+            var msg = yesnoMap[message];
+            if (msg !== void) {
+                var dialog = new MyYesNoDialogLayer(msg, yesFunc, noFunc, param, doneFunc);
+                dialog.open();
+            } else {
+                origAskYesNo(message, caption, yesFunc, noFunc, param, doneFunc);
+            }
+        }
+    }
+};

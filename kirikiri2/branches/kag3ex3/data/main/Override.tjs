@@ -1,0 +1,1064 @@
+KAGLoadScript("MyHistoryLayer.tjs");
+KAGLoadScript("MyYesNoDialog.tjs");
+
+/**
+ * 現在システムメニューを実行中かどうかの判定
+ */
+function inSystemMenu(kag)
+{
+    return (kag.currentStorage == "config.ks"    ||
+            kag.currentStorage == "musicmode.ks" ||
+            kag.currentStorage == "cgmode.ks"    ||
+            kag.currentStorage == "replay.ks" ||
+            kag.currentStorage == "save.ks" ||
+            kag.currentStorage == "load.ks" ||
+            kag.conductor == kag.extraConductor);
+};
+
+/**
+ * メッセージレイヤのボタンの有効制御
+ * @param layer メッセージレイヤ
+ * @param name ボタン名
+ * @param enabled 有効なら true
+ */
+function setLayerButtonEnabled(layer, name, enabled)
+{
+    if (layer !== void && layer.buttons[name] !== void) {
+        layer.buttons[name].enabled = enabled;
+    }
+}
+
+/**
+ * メッセージレイヤ０のボタンの有効制御
+ * @param kag KAGのウインドウ
+ * @param name ボタン名
+ * @param enabled 有効なら true
+ */
+function setButtonEnabled(kag, name, enabled)
+{
+    setLayerButtonEnabled(kag.fore.messages[0], name, enabled);
+    setLayerButtonEnabled(kag.back.messages[0], name, enabled);
+}
+
+/**
+ * メッセージレイヤのボタンのモード (ON/通常) の切り替え
+ * 画像ファイル名として 通常:msg_名前_normal / オーバー時:msg_名前_over / ＯＮ:msg_名前_on を期待している
+ * @param layer メッセージレイヤ
+ * @param name ボタン名
+ * @param mode ON なら true
+ */
+function setLayerButtonMode(layer, name, mode)
+{
+    if (layer !== void && layer.buttons[name] !== void) {
+        if (mode) {
+            layer.buttons[name].loadButtons(name + "_on", name + "_over");
+        } else {
+            layer.buttons[name].loadButtons(name + "_normal", name + "_over");
+        }
+    }
+}
+
+/**
+ * メッセージレイヤ０のボタンのモード (ON/通常) を切り替える
+ * @param kag KAGのウインドウ
+ * @param name ボタン名
+ * @param mode ON なら true
+ */
+function setButtonMode(kag, name, mode)
+{
+    setLayerButtonMode(kag.fore.messages[0], name, mode);
+    setLayerButtonMode(kag.back.messages[0], name, mode);
+}
+
+/**
+ * モード変更
+ * システム状態が変わったときに MainWindow から呼び出されます
+ * @param kag KAGウインドウ
+ * @param autoMode オートモードの状態
+ * @param skipMode スキップモードの状態
+ * @param canAuto オートモードが有効
+ * @param canSkip スキップモードが有効
+ * @param selectShowing 選択窓が表示されている
+ * @param modal
+ */
+function onModeChange(kag, autoMode, skipMode, canAuto, canSkip, selectShowing, modal)
+{
+    // auto / skip のモード調整
+    setButtonMode(kag, "msg_auto", autoMode);
+    setButtonMode(kag, "msg_skip", skipMode);
+
+    // メッセージ窓のボタンの調整
+    setButtonEnabled(kag, "msg_save", kag.storeMenu.enabled);
+    setButtonEnabled(kag, "msg_load", kag.restoreMenu.enabled);
+    setButtonEnabled(kag, "msg_log",  kag.showHistoryMenuItem.enabled);
+    setButtonEnabled(kag, "msg_auto", kag.autoModeMenuItem.enabled);
+    setButtonEnabled(kag, "msg_skip", kag.skipToNextStopMenuItem.enabled);
+
+    // コンフィグメニューも同期
+    if (typeof kag.configMenuItem != "undefined") {
+        kag.configMenuItem.enabled = !inSystemMenu(kag) && !modal && kag.inStable;
+        setButtonEnabled(kag, "config", kag.configMenuItem.enabled);
+    }
+}
+
+/**
+ * メニューのっとり
+ */
+
+// Menus.tjs - メニュー作成関数の定義
+// Copyright (C)2001-2009, W.Dee and contributors  改変・配布は自由です
+
+function KAGWindow_createMenus()
+{
+	// この関数は MainWindow クラスのオブジェクトのコンテキスト上で実行されます
+
+	menu.add(this.systemMenu = new KAGMenuItem(this, "SYSTEM(&S)", 0, "", false));
+
+	systemMenu.add(this.storeMenu   = new KAGMenuItem(this, "SAVE(F2)", 0,"startSave()",false));
+	systemMenu.add(this.restoreMenu = new KAGMenuItem(this, "LOAD(F3)", 0,"startLoad()",false));
+
+    systemMenu.add(this.configMenuItem  = new KAGMenuItem(this, "CONFIG(F4)", 0, "startConfig()", false));
+	systemMenu.add(new MenuItem(this, "-"));
+	systemMenu.add(this.goToStartMenuItem = new KAGMenuItem(this, "TITLE(&R)", 0,
+		onGoToStartMenuItemClick, false));
+	systemMenu.add(new MenuItem(this, "-"));
+	systemMenu.add(this.exitMenuItem = new KAGMenuItem(this, "EXIT(&X)", 0, onExitMenuItemClick, false));
+
+	systemMenu.add(this.rightClickMenuItem = new KAGMenuItem(this, "メッセージを消す(&S)", 0,
+		onRightClickMenuItemClick, false));
+
+	systemMenu.add(this.skipToNextStopMenuItem = new KAGMenuItem(this,
+		autoRecordPageShowing?"次の選択肢/未読まで進む(&F)":"次の選択肢まで進む(&F)", 0,
+		onSkipToNextStopMenuItemClick, false));
+
+	systemMenu.add(this.autoModeMenuItem = new KAGMenuItem(this, "自動的に読み進む(&A)", 0,
+		onAutoModeMenuItemClick, false));
+
+	menu.add(this.displayMenu = new KAGMenuItem(this, "DISPLAY(F5)", 0, void, false));
+		displayMenu.add(this.windowedMenuItem = new KAGMenuItem(this, "WINDOW(&W)", 1,
+			onWindowedMenuItemClick, false));
+		displayMenu.add(this.fullScreenMenuItem = new KAGMenuItem(this, "FULLSCREEN(&F)", 1,
+			onFullScreenMenuItemClick, false));
+
+		displayMenu.add(new MenuItem(this, "-"));
+
+		displayMenu.add(this.resetWindowSizeMenuItem = new KAGMenuItem(this, "DEFAULT SIZE(&R)", 0,
+			/**/           onResetWindowSizeMenuItemClick, false));
+		displayMenu.add(this.disableWindowResizeMenuItem = new KAGMenuItem(this, "DISABLE RESIZE(&Z)", 0,
+			/**/           onDisableWinwodResizeMenuItemClick, false));
+
+	menu.add(this.skipToNextStopMenuItem = new KAGMenuItem(this, "SKIP(F6)", 0, onSkipToNextStopMenuItemClick, false));
+	menu.add(this.showHistoryMenuItem = new KAGMenuItem(this, "BACKLOG(F7)", 0, onShowHistoryMenuItemClick, false));
+	menu.add(this.autoModeMenuItem = new KAGMenuItem(this, "AUTO(F8)", 0, onAutoModeMenuItemClick, false));
+
+	menu.add(this.helpMenu = new KAGMenuItem(this, "HELP(&H)", 0, void, false));
+
+		helpMenu.add(this.helpIndexMenuItem = new KAGMenuItem(this, "MANUAL", 0,
+			onHelpIndexMenuItemClick, false));
+
+		helpMenu.add(this.helpAboutMenuItem = new KAGMenuItem(this, "ABOUT(F1) ", 0,
+		onHelpAboutMenuItemClick, false));
+
+	menu.add(this.debugMenu = new KAGMenuItem(this, "デバッグ(&D)", 0, void, false));
+
+		debugMenu.add(this.loadScenarioMenuItem = new KAGMenuItem(this, "シナリオの読込み(&R)", 1,
+			onExecDialogMenuItemClick, false));
+		debugMenu.add(this.reloadScenarioMenuItem = new KAGMenuItem(this, "シナリオの再読込み(&R)", 1,
+			onReloadScenarioMenuItemClick, false));
+		debugMenu.add(this.showConsoleMenuItem = new KAGMenuItem(this, "コンソール(&C)\tShift+F4", 1,
+			onShowConsoleMenuItemClick, false));
+		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "コントローラ(&S)\tShift+F1", 1,
+			onShowContollerMenuItemClick, false));
+
+        debugMenu.add(new MenuItem(this, "-"));
+
+		debugMenu.add(this.showControllerMenuItem = new KAGMenuItem(this, "システムリセット", 1,
+																	resetAll, false));
+        debugMenu.add(new MenuItem(this, "-"));
+
+		debugMenu.add(this.debugLevelNoneMenuItem = new KAGMenuItem(this, "デバッグレベル:なし", 2,
+			onDebugLevelNoneMenuItemClick, false));
+		debugMenu.add(this.debugLevelSimpleMenuItem = new KAGMenuItem(this, "デバッグレベル:シンプル", 2,
+			onDebugLevelSimpleMenuItemClick, false));
+		debugMenu.add(this.debugLevelVerboseMenuItem = new KAGMenuItem(this, "デバッグレベル:詳細", 2,
+			onDebugLevelVerboseMenuItemClick, false));
+
+        debugMenu.add(new MenuItem(this, "-"));
+
+		debugMenu.add(this.debugWinMenuItem = new KAGMenuItem(this, "デバッグ窓表示", 0,
+			onDebugWinMenuItemClick, false));
+    
+        debugMenu.add(this.backToAutoLabelStoreMenuItem = new KAGMenuItem(this, "直前の通過記録に戻る\tShift+BS", 0,
+			onBackToAutoLabelStoreMenuItemClick, false));
+
+        debugMenu.add(new MenuItem(this, "-"));
+
+		debugMenu.add(this.chDebugLogMenuItem = new KAGMenuItem(this, "KAGEXログモード", 0,
+			onChDebugLogMenuItemClick, false));
+
+        debugMenu.add(this.outputDebugLogMenuItem = new KAGMenuItem(this, "KAGEXログを出力する", 0,
+			onOutputDebugLogMenuItemClick, false));
+
+        debugMenu.add(new MenuItem(this, "-"));
+    
+		debugMenu.add(this.voiceSpeedMenu = new KAGMenuItem(this, "ボイス速度(&V)", 0, void, false));
+			voiceSpeedMenu.add(this.voiceNormalSpeedMenuItem = new KAGMenuItem(this, "通常(&N)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceNormalSpeedMenuItem.speed = 1.0;
+			voiceSpeedMenu.add(this.voiceOneHalfSpeedMenuItem = new KAGMenuItem(this, "1.5倍速(&F)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceOneHalfSpeedMenuItem.speed = 1.5;
+			voiceSpeedMenu.add(this.voiceDoubleSpeedMenuItem = new KAGMenuItem(this, "2倍速(&D)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceDoubleSpeedMenuItem.speed = 2.0;
+			voiceSpeedMenu.add(this.voiceDoubleHalfSpeedMenuItem = new KAGMenuItem(this, "2.5倍速(&E)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceDoubleHalfSpeedMenuItem.speed = 2.5;
+			voiceSpeedMenu.add(this.voiceTripleSpeedMenuItem = new KAGMenuItem(this, "3倍速(&T)", 1,
+				onVoiceSpeedMenuItemClick, false));
+			voiceTripleSpeedMenuItem.speed = 3.0;
+}
+
+// ---------------------------------------------------------
+// 基本機能メソッド
+// メッセージ窓のメニューやメニューなどから呼び出される
+// ---------------------------------------------------------
+
+/**
+ * ロード実行
+ * @param work
+ */
+function loadFunction(work)
+{
+    kag.process('loadinit.ks', '', true, true);
+    kag.loadBookMark(work);
+}
+
+/**
+ * セーブ処理実行
+ * @param work
+ */
+function saveFunction(work)
+{
+    kag.saveBookMark(work);
+}
+
+/**
+ * セーブ画面呼び出し
+ */
+function startSave()
+{
+    if (kag.storeMenu.enabled) {
+        kag.lockMessageLayerSelProcess();
+        kag.callExtraConductor('save.ks', '*startFromGame');
+    }
+}
+
+/**
+ * ロード画面呼び出し
+ */
+function startLoad()
+{
+    if (kag.restoreMenu.enabled) {
+        kag.lockMessageLayerSelProcess();
+        if (kag.conductor.curStorage == "title.ks") {
+            kag.process('load.ks', '*startFromTitle');
+        } else {
+            if (kag.conductor !== kag.extraConductor) {
+                kag.callExtraConductor('load.ks', '*startFromGame');
+            }
+        }
+    }
+}
+
+/**
+ * システム画面呼び出し
+ */
+function startConfig()
+{
+    if (kag.configMenuItem.enabled) {
+        kag.lockMessageLayerSelProcess();
+        if (kag.conductor.curStorage == "title.ks") {
+            kag.process('config.ks', '*startFromTitle');
+        } else {
+            if (kag.conductor !== kag.extraConductor) {
+                kag.callExtraConductor('config.ks', '*startFromGame');
+            }
+        }
+    }
+
+}
+
+/**
+ * クイックロード実行
+ */
+function quickloadAction()
+{
+    var work = kag.numBookMarks - 1;
+    if (Storages.isExistentStorage(kag.getBookMarkFileNameAtNum(work))) {
+        askYesNo("クイックロードしますか？", "確認", loadFunction, void, work);
+    }
+}
+
+/**
+ * クイックセーブを実行
+ */
+function quicksaveAction(map=false)
+{
+    saveFunction(kag.numBookMarks - 1);
+    if (global.qsavenotify_object !== void) {
+        global.qsavenotify_object.start(map);
+    }
+}
+
+/**
+ * 名前表示処理用フィルタ
+ */
+function dispNameFilter(dispName)
+{
+    if (dispName.length <= 1) {
+        dispName = "　" + dispName + "　";
+    }
+    return "【" + dispName + "】";
+}
+
+
+/**
+ * カレントメッセージレイヤのボタンの状態設定(normal/over)を行う
+ * @param name ボタン名
+ * @param mode true なら over 状態になる
+ */
+function setButtonOver(name, mode)
+{
+    var button = kag.current.names[name];
+    if (button !== void) {
+        button.loadButtons(name + (mode ? "_over" : "_normal"), name + "_over");
+    }
+}
+
+// ---------------------------------------------------------
+// セーブ処理関係
+// ---------------------------------------------------------
+
+/**
+ * ボタンの描画処理
+ * @param name "save" または "load"
+ * @param work ボタン番号
+ */
+function fileDataButton(name, work) 
+{
+    var savedatanum = (sf.loadpage - 1) * 10 + work;
+    var savefilename = kag.getBookMarkFileNameAtNum(savedatanum);
+    var target = kag.current.names[name + work];
+
+    // ボタン再描画
+    target.holdAlpha = false;
+    target.loadButtons("sl_win_base", name + "_win_over");
+
+    // サムネール切り抜き用マスク
+    var layer = new global.Layer(kag, kag.fore.base);
+    layer.loadImages("sl_win_base", name + "_win_over");
+
+    layer.holdAlpha = true;
+    var w = layer.imageWidth;
+    var h = layer.imageHeight;
+    
+    if (Storages.isExistentStorage(savefilename)) {
+        
+        // 文字描画
+        var savedatadate = kag.getBookMarkDate(savedatanum);
+        var savedatatitle = kag.getBookMarkPageName(savedatanum);
+        savedatatitle = savedatatitle.substring(0,9);
+        target.font.height=24;
+        target.font.face = "ＭＳ ゴシック";
+
+        // サムネール画像きりぬき
+        var thum = new global.Layer(kag, kag.fore.base);
+        thum.loadImages(savefilename);
+        layer.operateRect(7,7,thum,0,0,thum.imageWidth, thum.imageHeight,omPsNormal);
+
+        var thum2 = new global.Layer(kag, kag.fore.base);
+        thum2.loadImages("newdata");
+        if (savedatanum == sf.newsavedata) {
+            layer.operateRect(82,62,thum2,0,0,thum2.imageWidth, thum2.imageHeight,omPsNormal);
+        }
+
+        // ボタンに合成
+        target.holdAlpha = true;	
+        target.operateRect(w,  0,layer,0,0,w,h,omPsNormal); // over
+        target.operateRect(w*2,0,layer,0,0,w,h,omPsNormal); // on
+        layer.colorRect(0,0,layer.imageWidth,layer.imageHeight,0xffffff,64); // 白をかぶせる
+        target.operateRect(0,  0,layer,0,0,w,h,omPsNormal); // normal
+
+        target.drawText( 123,16,savedatatitle,  0x000000,255,true);
+        target.drawText( 123,58,savedatadate,  0x000000,255,true);
+        target.drawText( 491,16,savedatatitle,  0x000000,255,true);
+        target.drawText( 491,58,savedatadate,  0x000000,255,true);
+        target.drawText( 859,16,savedatatitle,  0x000000,255,true);
+        target.drawText( 859,58,savedatadate,  0x000000,255,true);
+
+        invalidate thum;
+        
+    } else {
+
+        // サムネール画像きりぬき
+        var thum = new global.Layer(kag, kag.fore.base);
+        thum.loadImages("sl_win_base");
+        layer.operateRect(0,0,thum,0,0,thum.imageWidth, thum.imageHeight,omPsNormal);
+
+        // ボタンに合成
+        target.holdAlpha = true;
+        target.operateRect(w,  0,layer,0,0,w,h,omPsNormal); // over
+        target.operateRect(w*2,0,layer,0,0,w,h,omPsNormal); // on
+        target.operateRect(0,  0,layer,0,0,w,h,omPsNormal); // normal
+
+        invalidate thum;
+    }
+
+    invalidate layer;
+}
+
+/**
+ * ページボタンの描画処理
+ */
+function setSavePageButton(work=void)
+{
+    sf.loadpage = work if work !== void;
+    for (var i=1;i<10;i++) {
+        setButtonOver("page" + i, i == sf.loadpage);
+    }
+    for (var i=0;i<10;i++) {
+        fileDataButton("save", i);
+    }
+}
+
+/**
+ * セーブ処理用
+ */
+function saveFunction2(work)
+{
+    var savedatanum = (sf.loadpage - 1) * 10 + work;
+    sf.newsavedata = savedatanum;
+    saveFunction(savedatanum);
+    setSavePageButton();
+}
+
+/**
+ * セーブを実行
+ */
+function saveAction(work)
+{
+    var savedatanum = (sf.loadpage - 1) * 10 + work;
+    if (Storages.isExistentStorage(kag.getBookMarkFileNameAtNum(savedatanum))) {
+        askYesNo("上書きしてよろしいですか？", "確認", saveFunction2, void, work);
+    } else {
+        saveFunction2(work);
+    }
+}
+
+// ---------------------------------------------------------
+// ロード処理関係
+// ---------------------------------------------------------
+
+/**
+ * ページボタンの描画処理
+ */
+function setLoadPageButton(work=void)
+{
+    sf.loadpage = work if work !== void;
+    for (var i=1;i<10;i++) {
+        setButtonOver("page" + i, i == sf.loadpage);
+    }
+    for (var i=0;i<10;i++) {
+        fileDataButton("load", i);
+    }
+}
+
+/**
+ * ロードを実行
+ */
+function loadAction(work)
+{
+    var loaddatanum = (sf.loadpage - 1) * 10 + work;
+    if (Storages.isExistentStorage(kag.getBookMarkFileNameAtNum(loaddatanum))) {
+        askYesNo("ロードしますか？", "確認", loadFunction, void, loaddatanum);
+    }
+}
+
+// ---------------------------------------------------------
+// コンフィグ処理関係
+// ---------------------------------------------------------
+
+/**
+ * ウインドウ/フルスクリーン　ボタン状態の設定
+ */
+function setScreenButton(work=void) 
+{
+    if (work !== void) {
+        if (work) {
+            kag.onWindowedMenuItemClick();
+        } else {
+            kag.onFullScreenMenuItemClick();
+		}
+	}
+    setButtonOver("config_window",    !kag.fullScreened);
+    setButtonOver("config_fullscreen", kag.fullScreened);
+}
+
+/**
+ * エフェクトON/エフェクトOFF ボタン状態の設定
+ */
+function setNoEffectButton(work=void) 
+{
+    kag.noeffect = work if work !== void;
+    setButtonOver("config_effecton", !kag.noeffect);
+    setButtonOver("config_effectoff", kag.noeffect);
+}
+
+/**
+ * すべてスキップ/既読スキップ ボタン状態の設定
+ */
+function setSkipButton(work=void)
+{
+    kag.allskip = work if work !== void;
+    setButtonOver("config_skipall",    kag.allskip);
+    setButtonOver("config_skipalrdy", !kag.allskip);
+}
+
+/**
+ * キャラ別ボイス音量設定
+ * @paran name キャラ名
+ * @param init 初期化時は true
+ */
+function setVoiceOnButton(name, init=void)
+{
+    if (!init) {
+        kag.setVoiceOn(name, !kag.getVoiceOn(name));
+    }
+    var btnname = "config_" + name;
+    var button = kag.current.names[btnname];
+    if (button !== void) {
+        button.loadButtons(btnname + (kag.getVoiceOn(name) ? "_on" : "_off"));
+    }
+}
+
+/**
+ * 変数の初期化
+ */
+function initial()
+{
+    askYesNo('初期化', '確認', function() {
+        initialEnvironment();
+        kag.process("", "*buttons");
+    });
+}
+
+/**
+ * タイトルへ戻る
+ */
+function gotoTitle()
+{
+    askYesNo("最初に戻ります。よろしいですか ?", "確認", kag.goToStart);
+}
+
+/**
+ * コンフィグ画面初期化処理
+ */
+function configInit()
+{
+    setScreenButton();
+    setNoEffectButton();
+    setSkipButton();
+    setVoiceOnButton("voice0", true);
+    setVoiceOnButton("voice1", true);
+    setVoiceOnButton("voice2", true);
+    setVoiceOnButton("voice3", true);
+    setVoiceOnButton("voice4", true);
+    setVoiceOnButton("voice5", true);
+}
+
+// --------------------------------------------------------
+// CGモード用処理
+// --------------------------------------------------------
+
+class CgListParser extends CSVParser {
+
+    // 結果保持用
+    var result;
+
+    /**
+     * 行毎に呼び出される
+     * @param columns カラムデータ(Array)
+     * @param lineNo 論理行番号(1～)
+     */
+    function doLine(columns, lineNo) {
+        if (columns[0].charAt(0) != '#') {
+            var info = %[];
+            info.page = columns[0];
+            info.cglist = [];
+            for (var i=1;i<columns.count;i++) {
+                info.cglist.add(columns[i]);
+            }
+            result.add(info);
+        }
+    }
+
+    function parseStorage(filename,utf8=false) {
+        result = [];
+        super.parseStorage(...);
+        return result;
+    } 
+
+    function CgListParser() {
+        super.CSVParser();
+    }
+};
+
+/**
+ * CGモード初期化処理
+ */
+function cgInit()
+{
+    var cgParser = new CgListParser();
+    tf.cgmodelist = cgParser.parseStorage("cglist.csv");
+    invalidate cgParser;
+
+    tf.extramode = 1;
+    tf.cgpagenum = 6;
+    tf.cgbtnnum  = 16;
+    tf.cgmodepage = 0 if tf.cgmodepage === void;
+}
+
+/**
+ * CGをみたか？
+ * @param num ＣＧ番号
+ * @param i 差分番号
+ */
+function isCgSeenOne(num, i)
+{
+    if (num < tf.cgmodelist.count) {
+        var list = tf.cgmodelist[num].cglist;
+        if (i < list.count) {
+            var base = list[i];
+            if (tf.allseen || base !== void && sf["cg_" + base.toUpperCase()]) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * CGをみたか？
+ * @param num ＣＧ番号
+ */
+function isCgSeen(num)
+{
+    if (num < tf.cgmodelist.count) {
+        var list = tf.cgmodelist[num].cglist;
+        for (var i=0; i<list.count; i++) {
+            if (isCgSeenOne(num, i)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// ボタン画像の差し替え
+function setCGImage(target, filename)
+{
+    var layer = new global.Layer(kag, kag.fore.base);
+    var layer2 = new global.Layer(kag, kag.fore.base);
+
+    if (Storages.isExistentStorage("thum_"+filename+".png")) {
+        layer.loadImages("thum_"+filename);
+        layer2.loadImages("cgmode_thum_normal");
+        layer2.setSizeToImageSize();
+        layer2.operateStretch(0,0,116,87,layer,0,0,116,87,omAuto,255,stNearest);
+        layer2.imageWidth=116;
+        layer2.imageHeight=87;
+    } else {
+	    layer.loadImages(filename);
+        layer2.loadImages("cgmode_thum_normal");
+        layer2.imageWidth=116;
+        layer2.imageHeight=87;
+        layer2.operateStretch(0,0,116,87,layer,0,0,800,600,omAuto,255,stNearest);
+    }
+    
+    target.operateRect(               2,  2,layer2,0,0,layer2.imageWidth,layer2.imageHeight,omPsNormal);
+    target.operateRect(target.width  +2,  2,layer2,0,0,layer2.imageWidth,layer2.imageHeight,omPsNormal);
+    target.operateRect(target.width*2+2,  2,layer2,0,0,layer2.imageWidth,layer2.imageHeight,omPsNormal);
+
+    if (tf.viewcgfilename) {
+	    target.font.face = "MS ゴシック";
+	    target.font.height = 14;
+	    target.drawText(2,2,filename,0x000000,255,true,255,0x000000,2,2);
+    }
+    invalidate layer;
+}
+
+/**
+ * CGモード用ページ更新
+ */
+function setCgmodePageButton(work=void)
+{
+    tf.cgmodepage = work if work !== void;
+
+    // ページボタンの表示変更
+    for (var i=0; i<tf.cgpagenum; i++) {
+        var pagename = "cgmode_page" + i;
+        var button = kag.current.names[pagename];
+        if (button !== void) {
+            button.loadButtons(pagename + (i == tf.cgmodepage ? "_over" : "_normal"), pagename + "_over");
+        }
+    }
+
+    // いったんボタンを全部非表示にする
+    for (var i=0;i<tf.cgbtnnum;i++) {
+        var button = kag.current.names["cg" + i];
+        if (button !== void) {
+            button.enabled = false;
+            button.visible = false;
+        }
+    }
+
+    // リストでページに該当するものを探索
+    tf.cgviewlist = [];
+    var pagename = "page" + tf.cgmodepage;
+    var cgnum = 0;
+    for (var i=0;i<tf.cgmodelist.count && cgnum < tf.cgbtnnum;i++) {
+        var info = tf.cgmodelist[i];
+        if (info.page == pagename) {
+            var button = kag.current.names["cg" + cgnum];
+            if (button !== void) {
+                if (isCgSeen(i) ) {
+                    setCGImage(button, info.cglist[0]);
+                    tf.cgviewlist[cgnum] = i;
+                    button.enabled = true;
+                } else {
+                    button.loadButtons("cgmode_thum_normal");
+                    button.enabled = false;
+                }
+            }
+            cgnum++;
+            button.visible = true;
+        }
+    }
+}
+
+/**
+ * 閲覧用リスト初期化
+ * tf.cgnum に CG番号を設定しておく
+ */
+function cgViewInit()
+{
+    var num = tf.cgviewlist[tf.cgnum];
+    tf.cgcnt = 0;
+    tf.cgviewlist2 = [];
+    var list = tf.cgmodelist[num].cglist;
+    for (var i=0;i<list.count;i++) {
+        if (isCgSeenOne(num, i)) {
+            tf.cgviewlist2.add(list[i]);
+        }
+    }
+}
+
+/**
+ * まだ閲覧リストの画像があるか？
+ */
+function isCgView()
+{
+    return tf.cgcnt < tf.cgviewlist2.count;
+}
+
+/**
+ * CGを表示
+ * 本当は専用パーツつかうべきかな
+ */
+function cgView()
+{
+    kag.current.loadImages(tf.cgviewlist2[tf.cgcnt++]);
+}
+
+// --------------------------------------------------------
+// リプレイモード
+// --------------------------------------------------------
+
+class ReplayListParser extends CSVParser {
+
+    // 結果保持用
+    var result;
+
+    /**
+     * 行毎に呼び出される
+     * @param columns カラムデータ(Array)
+     * @param lineNo 論理行番号(1～)
+     */
+    function doLine(columns, lineNo) {
+        if (columns[0].charAt(0) != '#') {
+            var info = %[];
+            info.page   = columns[0];
+            info.scene  = columns[1];
+            info.target = columns[2];
+            info.thum   = columns[3];
+            result.add(info);
+        }
+    }
+
+    function parseStorage(filename,utf8=false) {
+        result = [];
+        super.parseStorage(...);
+        return result;
+    } 
+
+    function ReplayListParser() {
+        super.CSVParser();
+    }
+};
+
+function replayInit()
+{
+    var replayParser = new ReplayListParser();
+    tf.replaymodelist = replayParser.parseStorage("replaylist.csv");
+    invalidate replayParser;
+
+    tf.extramode = 2;
+    tf.cgpagenum = 6;
+    tf.cgbtnnum  = 16;
+    tf.cgmodepage = 0 if tf.cgmodepage === void;
+}
+
+function setReplaymodePageButton(work=void)
+{
+    tf.cgmodepage = work if work !== void;
+
+    for (var i=0;i<tf.cgpagenum; i++) {
+        var pagename = "cgmode_page" + i;
+        var button = kag.current.names[pagename];
+        if (button !== void) {
+            button.loadButtons(pagename + (i == tf.cgmodepage ? "_over" : "_normal"), pagename + "_over");
+        }
+    }
+
+    // いったんボタンを全部非表示にする
+    for (var i=0;i<tf.cgbtnnum;i++) {
+        var button = kag.current.names["cg" + i];
+        if (button !== void) {
+            button.enabled = false;
+            button.visible = false;
+        }
+    }
+
+    tf.replaylist = [];
+    var pagename = "page" + tf.cgmodepage;
+    var cgnum = 0;
+    for (var i=0;i<tf.replaymodelist.count && cgnum < tf.cgbtnnum;i++) {
+        var info = tf.replaymodelist[i];
+        var flagname = 'trail_' + info.scene + '_' + (info.target !== void ? info.target : "start");
+        if (info.page == pagename) {
+            var button = kag.current.names["cg" + cgnum];
+            if (button !== void) {
+                if (tf.allseen || sf[flagname]) {
+                    if (info.thum) {
+                        setCGImage(button, info.thum);
+                    } else {
+                        button.loadButtons("cgmode_thum_normal");
+                    }
+                    tf.replaylist[cgnum] = info;
+                    button.enabled = true;
+                } else {
+                    button.loadButtons("cgmode_thum_normal");
+                    button.enabled = false;
+                }
+            }
+            cgnum++;
+            button.visible = true;
+        }
+    }
+}
+
+/**
+ * 回想処理起動
+ */
+function recollect(index)
+{
+    var info = tf.replaylist[index];
+    tf.recollect = 1;
+    kag.process('loadinit.ks', '', true, true);
+    var elm = %[];
+    elm.doneStorage = 'title.ks'; // 終了時はタイトルに戻す
+    elm.doneTarget  = '*start';
+    elm.storage = info.scene + ".ks";
+    elm.target  = "*" + info.target if info.target !== void;
+    kag.startRecollection(elm);
+}
+
+class MusicListParser extends CSVParser {
+
+    // 結果保持用
+    var result;
+
+    /**
+     * 行毎に呼び出される
+     * @param columns カラムデータ(Array)
+     * @param lineNo 論理行番号(1～)
+     */
+    function doLine(columns, lineNo) {
+        if (columns[0].charAt(0) != '#') {
+            var info = %[];
+            info.filename = columns[0];
+            info.title    = columns[1];
+            result.add(info);
+        }
+    }
+
+    function parseStorage(filename,utf8=false) {
+        result = [];
+        super.parseStorage(...);
+        return result;
+    } 
+
+    function MusicListParser() {
+        super.CSVParser();
+    }
+};
+
+// --------------------------------------------------------
+// ミュージックモード用処理
+// --------------------------------------------------------
+
+/**
+ * ミュージックモード初期化
+ */
+function musicInit()
+{
+    var musicParser = new MusicListParser();
+    tf.musicmodelist = musicParser.parseStorage("musiclist.csv");
+    invalidate musicParser;
+
+    tf.extramode = 3;
+    tf.musicbtnnum  = 12;
+    tf.playbgmnum   = void;
+    tf.beforemusic  = void;
+    tf.musicrepeat  = true;
+    tf.musicplaying = false;
+    
+    // 既に再生されたかのチェック用フラグ
+    tf.bgmplayflag = [];
+    for (var i=0;i<tf.musicmodelist.count;i++) {
+        var name = tf.musicmodelist[i].filename.toUpperCase();
+        var cond = tf.allseen || sf["bgm_" + name];
+        tf.bgmplayflag[i] = cond;
+        if (cond && tf.playbgmnum === void) {
+            tf.playbgmnum = i;
+        }
+    }
+}
+
+/**
+ * ミュージックモード終了
+ */
+function musicEnd()
+{
+    kag.bgm.setLoop(true);
+    kag.clearBgmStop();
+}
+
+/**
+ * リピートボタン処理
+ */
+function setRepeat(work=void)
+{
+    tf.musicrepeat = work if work !== void;
+    setButtonOver("musicmode_repeat",    tf.musicrepeat);
+    setButtonOver("musicmode_allrepeat", !tf.musicrepeat);
+    kag.bgm.setLoop(tf.musicrepeat);
+}
+
+/**
+ * ページ表示指定
+ */
+function setMusicmodePageButton()
+{
+    // 再生ボタンの変更
+    for (var i=0;i<tf.musicbtnnum;i++) {
+        var name = "track%02d".sprintf(i + 1);
+        var target = kag.current.names[name];
+        if (target !== void) {
+            if (i < tf.musicmodelist.count) {
+                target.visible = true;
+                if (tf.bgmplayflag[i]) {
+                    target.enabled = true;
+                    if (i == tf.beforemusic) {
+                        setButtonOver(name, false);
+                    } else if (i == tf.playbgmnum) {
+                        setButtonOver(name, tf.musicplaying);
+                    }
+                } else {
+                    target.enabled = false;
+                }
+            } else {
+                target.visible = false;
+                target.enabled = false;
+            }
+        }
+    }
+
+    // 再生状態
+    setButtonOver("musicmode_play", tf.musicplaying);
+}
+
+/**
+ * BGM の状態更新
+ */
+function updateBgm()
+{
+    if (tf.musicplaying) {
+        kag.clearBgmStop();
+        kag.bgm.exchange(%[ storage:tf.musicmodelist[tf.playbgmnum].filename, time:1000]);
+        kag.bgm.setLoop(tf.musicrepeat);
+        kag.setBgmStop(%[ exp:'playNext();']);
+    } else {
+        kag.clearBgmStop();
+        kag.bgm.fadeOut(%[ time:1000]);
+    }
+    setMusicmodePageButton();
+    tf.beforemusic = tf.playbgmnum;
+}
+
+function startBgm()
+{
+    tf.musicplaying = true;
+    updateBgm();
+}
+
+function stopBgm ()
+{
+    tf.musicplaying = false;
+    updateBgm();
+}
+
+function playBgm(work)
+{
+    tf.playbgmnum = work;
+    startBgm();
+}
+
+/**
+ * 曲の再生が終了した場合の処理
+ */
+function playNext()
+{
+    if (!tf.musicrepeat) {
+        do {
+            tf.playbgmnum++;
+            if (tf.playbgmnum >=  tf.musicmodelist.count) {
+                tf.playbgmnum = 0;
+            }
+        } while (!tf.bgmplayflag[tf.playbgmnum]);
+        updateBgm();
+    } else {
+        stopBgm();
+    }
+}

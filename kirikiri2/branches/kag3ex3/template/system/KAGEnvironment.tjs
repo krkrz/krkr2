@@ -1,0 +1,2531 @@
+/**
+ * 環境オブジェクト
+ */
+class KAGEnvironment extends KAGEnvImage {
+	
+    /// KAG本体の参照
+    var kag;
+    var xmax;
+    var ymax;
+	var defaultHitThreshold = 256;
+	var setHintForDebug = false;
+
+    // フェード指定のデフォルト値
+    // envinit.tjs で定義するか、システムのデフォルトを使う
+    property fadeValue {
+        getter() {
+            if (envinfo !== void && envinfo.fadeValue !== void) {
+                return envinfo.fadeValue;
+            } else {
+                return 500;
+            }
+        }
+    }
+    
+    /// 初期化情報
+    var envinfo;
+
+    var times;        //< 時間情報
+    var stages;       //< 舞台情報
+    var events;       //< イベント絵情報
+    var positions;    //< 配置情報
+    var defaultTime;  //< デフォルトの時間
+	var yoffset;      //< キャラクタ配置のyoffset 値
+	var xoffset;      //< キャラクタ配置のyoffset 値
+    var defaultXpos;  //< キャラクタ配置の初期X位置
+    var defaultYpos;  //< キャラクタ配置の初期Y位置
+    var defaultLevel; //< キャラクタレベルのデフォルト値
+	var eventLevel;   //< イベント絵のレベル位置指定
+    var levels;       //< キャラクタレベル別補正情報
+    var faceLevelName;//< フェイスウインドウ用の表示名
+    var emotions;
+	var emotionmap;
+	var searchSmallLevel; //< 拡張立ち絵で小さい立ち絵を探索するかどうか
+
+    /// キャラクタ初期化情報一覧
+    var characterInits;
+    /// キャラクタ情報
+    var characters;
+    /// レイヤ情報
+    var layers;
+
+    /// イベントレイヤ
+    var event;
+
+    // BGM 系
+    var bgm;
+
+    // SE 系
+    var ses;
+    
+    //　現在時刻
+    property currentTime {
+        getter() {
+            if (times !== void && time !== void) {
+                return times[time];
+            }
+        }
+    }
+
+    // メッセージ窓処理対象になるデフォルトのオブジェクト
+    // 名前表示のあと設定される
+    // 環境系命令の後は解除される
+    var currentNameTarget;
+    // コマンド実行毎に表情処理を行うモード
+    var showFaceMode;
+    // 表情のフェード指定
+    var faceFadeTime;
+
+    // 表情表示を立ち絵同時可能に
+    var bothFace;
+    
+    // 全カラー制御
+    var colorall;
+
+    // 画像補整指定
+
+    property grayscale {
+        getter() {
+            return _grayscale;
+        }
+        setter(v) {
+            _grayscale = v;
+            if (colorall) {
+                setColorAll(true);
+            }
+            redraw = true;
+        }
+    }
+
+    property rgamma {
+        getter() {
+            return _rgamma;
+        }
+        setter(v) {
+            _rgamma = v;
+            if (colorall) {
+                setColorAll(true);
+            }
+            redraw = true;
+        }
+    }
+
+    property ggamma {
+        getter() {
+            return _ggamma;
+        }
+        setter(v) {
+            _ggamma = v;
+            if (colorall) {
+                setColorAll(true);
+            }
+            redraw = true;
+        }
+    }
+    
+    property bgamma {
+        getter() {
+            return _bgamma;
+        }
+        setter(v) {
+            _bgamma = v;
+            if (colorall) {
+                setColorAll(true);
+            }
+            redraw = true;
+        }
+    }
+
+    function resetColor(param, elm) {
+        _grayscale = void;
+		_rgamma = void;
+		_ggamma = void;
+        _bgamma = void;
+		_blurx = void;
+		_blury = void;
+		_contrast = void;
+		_brightness = void;
+		_hue = void;
+		_saturation = void;
+		_luminance = void;
+		_noise = void;
+		_filter = void;
+		_script = void;
+		_clip = void;
+		if (colorall) {
+			setColorAll(true);
+		}
+		redraw = true;
+    }
+
+    function setColorAll(param) {
+        colorall = param;
+        // すべて再描画処理
+        event.setRedraw();
+        foreach(characters, function(name, value, dict) {
+            value.setRedraw();
+        });
+        foreach(layers, function(name, value, dict) {
+			value.setRedraw();
+        });
+		redraw = true;
+		transall = true;
+    }
+
+    
+    /**
+     * コンストラクタ
+     * @param kag KAG本体
+     */
+	function KAGEnvironment(kag) {
+		this.kag = kag;
+
+		super.KAGEnvImage(this, "env");
+		absolute = 100;
+//		defaultLayerType = ltOpaque; // ステージはltOpaqueがデフォルト[XXX]トランジションがおかしいので保留
+		
+        xmax = kag.scWidth / 2;
+        ymax = kag.scHeight / 2;
+
+		characters = %[];
+		layers = %[];
+		event = new KAGEnvBaseLayer(env, "event", 6 * 100000 - 100); // イベントレイヤ
+		event.nocameraMode = true;
+		event.noshiftMode  = true;
+
+		// BGM オブジェクト
+		bgm = new KAGEnvBgm(env);
+		// SE 保持用。配列
+		ses = [];
+		for (var i=0; i<kag.numSEBuffers; i++) {
+			ses[i] = new KAGEnvSE(env, i);
+        }
+
+		cameraCurrentActionList = new Array();
+		
+		resetEnv();
+		//dm("環境初期化完了");
+    }
+	
+    /**
+     * ファイナライザ
+     */
+    function finalize() {
+		initEnv();
+		invalidate characters;
+		invalidate layers;
+		invalidate event;
+		invalidate cameraCurrentActionList;
+		super.finalize();
+		//dm("環境終了");
+    }
+
+	/**
+	 * システム定義パラメータの取得
+	 * @param name 識別名
+	 * @param base 区分名 (transitions とか actions とか)
+	 * @param prefix ファイルからさがす場合のプレフィックス @"${prefix}name.tjs" が処理対象
+	 */
+	function getParameter(name, base, prefix) {
+		// 登録済み情報
+		if (envinfo[base] !== void && envinfo[base][name] !== void) {
+			return envinfo[base][name];
+		}
+		// 個別ファイルから読み込む
+		var filename = @"${prefix}${name}.tjs";
+		if (Storages.isExistentStorage(filename)) {
+			try {
+@if (DEBUG)
+	            // デバッグ時はファイルの日付を見て差し替え判定
+				Plugins.link("fstat.dll") if (typeof Storages.dirlist == "undefined");
+				var timeinfo;
+				if ((timeinfo = envinfo[base + "_time"]) === void)  {
+					timeinfo = %[];
+					envinfo[base + "_time"] = timeinfo;
+				}
+				var time = timeinfo[name];
+				var lasttime = Storages.getLastModifiedFileTime(Storages.getPlacedPath(filename));
+				//dm("lasttime:%s time:%s".sprintf(lasttime, time !== void ? time.time : void));
+				if (time === void || time.time != lasttime) {
+					//dm("新規にパース");
+					var info = Scripts.evalStorage(filename);
+					timeinfo[name] = %[time:lasttime, info:info];
+					return info;
+				} else {
+					//dm("既存情報を返す");
+					return time.info;
+				}
+@endif
+@if (!DEBUG)
+                // リリース時は一度でも読んだらそのまま記録
+				var ret = Scripts.evalStorage(filename);
+				if (envinfo[base] === void) {
+					envinfo[base] = %[];
+				}
+				envinfo[base][name] = ret;
+				//dm("%s:%s を記録".sprintf(base, name));
+				return ret;
+@endif
+			} catch (e) {
+				kag.error("%s情報の読み込みに失敗しました:%s".sprintf(base, name));
+			}
+		}
+		return void;
+
+	}
+	
+    /**
+     * セーブ処理
+     */
+    function onStore(f) {
+        super.onStore(f);
+        f.time = time;
+		f.stage = stage;
+		f.stagelayers = [];
+		f.stagelayers.assign(stagelayers);
+		f.nostagelayer = nostagelayer;
+
+		var chars = %[];
+        foreach(characters, function(name, value, dict) {
+            var fch = %[];
+            value.onStore(fch);
+            this[name] = fch;
+        } incontextof chars);
+        f.characters = chars;
+        
+        var lays = %[];
+        foreach(layers, function(name, value, dict) {
+            var fch = %[];
+            value.onStore(fch);
+            this[name] = fch;
+        } incontextof lays);
+        f.layers = lays;
+
+        f.event = %[];
+        event.onStore(f.event);
+
+		// サウンド系情報記録
+        f.ses = [];
+        for (var i=0;i<ses.count;i++) {
+			f.ses[i] = %[];
+			ses[i].onStore(f.ses[i]);
+		}
+		f.bgm = %[];
+		bgm.onStore(f.bgm);
+
+		f.shiftx = shiftx;
+		f.shifty = shifty;
+		f.camerax = camerax;
+		f.cameray = cameray;
+		f.camerazoom = camerazoom;
+		f.cameraox = cameraox;
+		f.cameraoy = cameraoy;
+
+        f.colorall = colorall;
+
+		f.cameraActionList = [];
+		(Array.assign incontextof f.cameraActionList)(cameraCurrentActionList);
+	}
+
+    /**
+     * ロード処理
+     */
+    function onRestore(f) {
+		initEnv();
+		time = f.time;
+		stage = f.stage;
+
+        if (f.characters) {
+			foreach(f.characters, function(name, value, dict) {
+				var ch = getCharacter(value.name, value.initName);
+				if (ch !== void) {
+                    ch.onRestore(value);
+                }
+            } incontextof this);
+        }
+        if (f.layers) {
+            foreach(f.layers, function(name, value, dict) {
+                var l = getEnvLayer(value.name, true);
+                if (l !== void) {
+                    l.onRestore(value);
+                }
+            } incontextof this);
+        }
+        if (f.event) {
+            event.onRestore(f.event);
+        }
+
+		stagelayers.assign(f.stagelayers) if (f.stagelayers !== void);
+		nostagelayer = f.nostagelayer;
+		initStageLayer(false, false);
+
+		// サウンド系情報復帰
+		if (f.ses !== void) {
+			seCount = 0;
+			for (var i=0;i<ses.count;i++) {
+				ses[i].onRestore(f.ses[i]);
+				if (ses[i].count > seCount) {
+					seCount = ses[i].count + 1;
+				}
+			}
+        }
+		if (f.bgm !== void) {
+			bgm.onRestore(f.bgm);
+		}
+        
+        colorall = f.colorall;
+        if (colorall) {
+            setColorAll(colorall);
+		}
+
+		_shiftx = f.shiftx if f.shiftx !== void;
+		_shifty = f.shifty if f.shifty !== void;
+		_camerax = f.camerax if f.camerax !== void;
+		_cameray = f.cameray if f.cameray !== void;
+		_camerazoom = f.camerazoom if f.camerazoom !== void;
+		cameraox = f.cameraox;
+		cameraoy = f.cameraoy;
+		updateCameraFlag = true;
+
+		if (f.cameraActionList !== void) {
+			for (var i=0;i<f.cameraActionList.count;i++) {
+				var action = f.cameraActionList[i];
+				kag.beginAction(this, action);
+			}
+		}
+		
+		super.onRestore(f);
+		syncAll();
+    }
+
+	// ------------------------------------------------------
+
+    /**
+     * 初期化情報のロード
+     */
+    function loadEnvinfo() {
+        try {
+            var yamlFile = 'envinit.yaml';
+            if (Storages.isExistentStorage(yamlFile)) {
+                return YAML.parse([].load(yamlFile));
+            }
+            return Scripts.evalStorage("envinit.tjs");
+        } catch (e) {
+			throw new Exception("初期化情報のパースに失敗しました(詳細はコンソール参照)");
+        }
+    }
+	
+    /**
+	 * 環境のリセット
+	 */
+	function resetEnv() {
+
+		// キャラクタ情報廃棄
+		characterInits = %[];
+		
+		// 初期化情報展開
+		envinfo = loadEnvinfo();
+
+		if (envinfo) {
+            // デバッグ表示 
+            times       = envinfo.times;
+            stages      = envinfo.stages;
+            events      = envinfo.events;
+            positions   = envinfo.positions;
+			emotions    = envinfo.emotions;
+            emotionmap  = envinfo.emotionmap;
+			defaultTime = envinfo.defaultTime;
+            yoffset     = (int)envinfo.yoffset;
+            xoffset     = (int)envinfo.xoffset;
+            defaultXpos = (int)envinfo.defaultXpos;
+            defaultYpos = (int)envinfo.defaultYpos;
+            defaultLevel = (int)envinfo.defaultLevel;
+			eventLevel =   envinfo.eventLevel !== void ? (int)envinfo.eventLevel : 5;
+            levels       = envinfo.levels;
+            faceLevelName = envinfo.faceLevelName;
+            showFaceMode  = envinfo.showFaceMode;
+			faceFadeTime  = envinfo.faceFadeTime;
+			bothFace = envinfo.bothFace !== void ? envinfo.bothFace : true;
+			searchSmallLevel = envinfo.searchSmallLevel !== void ? envinfo.searchSmallLevel : true;
+        
+            // キャラクタ情報初期化処理
+            if (envinfo.characters !== void) {
+				//dm("キャラクタ情報初期化");
+				var chinit = [];
+				chinit.assign(envinfo.characters);
+                //dm("キャラクタ情報個数" + chinit.count);
+                for (var i=0; i<chinit.count; i+=2) {
+                    var name = chinit[i];
+                    var init = chinit[i+1];
+					characterInits[name] = init;
+                }
+			}
+			
+        } else {
+
+			dm("環境情報がありません");
+			envinfo = %[];
+			times  = void;
+			stages = void;
+			events = void;
+			positions = void;
+			emotions  = void;
+			emotionmap = void;
+			defaultTime = void;
+			yoffset = 0;
+			xoffset = 0;
+			levels = void;
+			faceLevelName = void;
+			showFaceMode = void;
+			bothFave = false;
+			eventLevel = 5;
+		}
+
+		// スクリプト
+		if (Storages.isExistentStorage("envscript.tjs")) try {
+			envinfo.scripts = Scripts.evalStorage("envscript.tjs");
+		} catch(e) {
+			Debug.message("envscript.tjs の読み込みに失敗しました:" + e.message);
+		}
+		
+		initEnv();
+	}
+	
+    // -----------------------------------------
+
+    /// 時間
+    var time;
+    /// 舞台
+	var stage, stageFile;
+	/// 舞台レイヤ
+	var stagelayers;
+	/// 舞台レイヤなし指定
+	var nostagelayer;
+	
+    // -----------------------------------------
+
+	/**
+	 * 環境情報の初期化
+     */
+	function initEnv(cmd, elm) {
+
+		//dm("初期化処理");
+		time = void;
+		stage = void;
+		transMode = void;
+		
+		colorall = false;
+		
+		initImage();
+		event.initImage();
+		event.clearFileState();
+		event.absolute = (eventLevel + 1) * 100000 - 100;
+
+		// キャラクタ情報の破棄
+		if (elm && elm.keepvoice) {
+			//dm("キャラボイスをキープして初期化");
+			var chinfos = [];
+			var names = [];
+			names.assign(characters);
+			for (var i=0;i<names.count;i+=2) {
+				var ch = names[i+1];
+				chinfos.add(%[name:ch.name, initName:ch.initName, voice:ch.voice]);
+				invalidate ch;
+			}
+			characters = %[];
+			// ボイス情報だけ再構築
+			for (var i=0;i<chinfos.count;i++) {
+				var info = chinfos[i];
+				var ch = getCharacter(info.name, info.initName);
+				ch.voice = info.voice;
+				//dm("%s voice:%d".sprintf(ch.name, ch.voice));
+			}
+		} else {
+			foreach(characters, function(name,value,dict) {
+				invalidate value;
+			});
+			characters = %[];
+		}
+        // 特殊レイヤ情報の破棄
+        foreach(layers, function(name,value,dict) {
+			invalidate value;
+		});
+		layers = %[];
+
+		clearBGCache();
+		
+		stagelayers = [];
+		nostagelayer = false;
+		
+        // SE 初期化
+		seCount = 0;
+		for (var i=0;i<ses.count;i++) {
+			if ((elm !== void && elm.nostopbgm) && ses[i].name !== void && ses[i].loop) {
+				// ループしてるものはとめずに引き継ぐ
+				if (ses[i].count > seCount) {
+					seCount = ses[i].count;
+				}
+			} else {
+				if (ses[i].name !== void) {
+					ses[i].setStop();
+					ses[i].sync();
+				}
+				ses[i].count = 0;
+			}
+        }
+		if (seCount) {
+			seCount++;
+		}
+
+		if (!(elm !== void && elm.nostopbgm)) {
+			if (bgm.name !== void) {
+				bgm.setStop();
+				bgm.sync();
+			}
+		}
+
+        // カレントオブジェクト初期化
+		currentNameTarget = void;
+		redraw = true;
+        
+		nextVoiceList.clear();
+
+		levelz = envinfo.bglevelz !== void ? +envinfo.bglevelz : 100;
+		
+		_camerax = 0;
+		_cameray = 0;
+		_camerazoom = 100;
+		_shiftx = 0;
+		_shifty = 0;
+		cameraox = 0;
+		cameraoy = 0;
+		stopCamera();
+
+		if (elm && elm.sync) {
+			syncAll();
+		}
+	}
+
+    /**
+     * イベント絵の消去
+     */
+    function hideEvent(param, elm) {
+		if (event.isShow()) {
+			event.disp = CLEAR;
+			transall = true;
+			redraw = true;
+        }
+    }
+
+    /**
+     * 背景とイベント絵の消去
+     */
+    function hideBase(param, elm) {
+		if (event.isShow()) {
+			event.disp = CLEAR;
+			transall = true;
+			redraw = true;
+		} else if (isShow()) {
+			disp = CLEAR;
+        }
+    }
+    
+    /**
+     * 全キャラクタ消去
+     */
+	function hideCharacters(param, elm) {
+		// キャラクタレイヤの消去
+		foreach(characters, function(name,value,dict,param) {
+			if (value.isShow()) {
+				value.disp = CLEAR;
+				redraw = true;
+				transall = true;
+            }
+		} incontextof this, param);
+    }
+
+    /**
+     * 全レイヤ消去
+     */
+    function hideLayers(param, elm) {
+        // 特殊レイヤの消去
+        foreach(layers, function(name,value,dict, param) {
+			if (value.isShow()) {
+				value.disp = CLEAR;
+				redraw = true;
+				transall = true;
+            }
+        } incontextof this, param);
+    }
+
+    /**
+     * 前景要素消去
+     */
+    function hideFore(param, elm) {
+        hideCharacters(param, elm);
+        hideLayers(param, elm);
+    }
+
+    /**
+     * 全要素消去
+     */
+    function hideAll(param, elm) {
+		hideEvent(param, elm);
+		hideBase(param, elm);
+		hideCharacters(param, elm);
+        hideLayers(param, elm);
+    }
+
+	function hideStageLayer() {
+		for (var i=0;i<stagelayers.count;i++) {
+			var lay = getEnvLayer(stagelayers[i]);
+			if (lay != null && lay.isShow()) {
+				lay.disp = CLEAR;
+			}
+		}
+	}
+
+	function showStageLayer() {
+		for (var i=0;i<stagelayers.count;i++) {
+			var lay = getEnvLayer(stagelayers[i]);
+			if (lay != null && !lay.isShow()) {
+				lay.disp = SHOW;
+			}
+		}
+	}
+	
+	/**
+	 * 舞台レイヤ更新
+	 */
+	function initStageLayer(nolayer, tagfunc=true) {
+		
+		nolayer = nolayer || nostagelayer; // XXX
+		
+		// 旧 stagelayer を廃棄
+		for (var i=0;i<stagelayers.count;i++) {
+			if (transMode) {
+				delLayer(%[ name:stagelayers[i] ]);
+			} else {
+				delLayer(%[ name:stagelayers[i], notrash:!nolayer ]);
+			}
+		}
+		stagelayers.clear();
+
+		if (nolayer || stage == "") {
+			return;
+		}
+		if (typeof global.setStageLayerHook != "undefined" &&
+			/**/   global.setStageLayerHook(stage, time)) {
+			return;
+		}
+
+		//dm("新ステージレイヤ生成:" + stage + ":" + time);
+		
+		// 新 stagelayers を生成
+		var stageinfo = stages[stage];
+		if (stageinfo !== void && stageinfo.layers !== void) {
+			var names = [];
+			names.assign(stageinfo.layers);
+			for (var i=0;i<names.count;i+=2) {
+				var name = names[i];
+				var value = names[i+1];
+				if (name != "" && value !== void) {
+					var e = %[];
+					(Dictionary.assign incontextof e)(value);
+					var cond = e.condition;
+					delete     e.condition if (typeof e.condition != "undefined");
+					if (cond != "") {
+						var tmp;
+						switch (typeof cond) {
+						case "Object": tmp = []; tmp.assign(cond); break;
+						case "String": tmp = cond.split(","); break;
+						}
+						// 条件にマッチしない場合は登録しない
+						if (tmp !== void && tmp.find(time) < 0) {
+							name = "";
+						}
+					}
+					if (name != "") {
+						e.name = name if (e.name == "");
+						// マッチしたレイヤを登録
+						stagelayers.add(e.name);
+						newLayer(e, tagfunc);
+					}
+				}
+			}
+		}
+
+		//dm("ステージレイヤ状態:" + stagelayers.count);
+	}
+	
+    /**
+     * 舞台を設定する
+     * @param stageName 舞台名
+     * @param elm コマンドのほかの要素
+     */
+	function setStage(stageName, elm) {
+		if (stageName == "" || stages[stageName] === void) {
+			kag.errorCmd("舞台指定が不明です: " + stageName) if (stageName != "");
+			return;
+		}
+		if (stageName != stage || isClear() || event.isShow()) {
+
+			//dm("舞台指定:" + stageName);
+			stage = stageName;
+			time = defaultTime if time === void;
+
+			// ev ではじまるファイル名はCGとして登録
+			var info = stages[stage];
+			var image = info.image;
+			if (image !== void && image.substring(0,2).toUpperCase() == "EV") {
+				kag.sflags["cg_" + (image.toUpperCase())] = true;
+			}
+			
+			disp = SHOW;
+			redraw = true;
+			reposition = true;
+
+			defaultAfx = info.cox !== void ? "center + " + (int)(info.cox * (1-levelz/100)) : "center";
+			defaultAfy = info.coy !== void ? "center - " + (int)(info.coy * (1-levelz/100)) : "center";
+			var cox = info.cox !== void ? +info.cox : 0;
+			var coy = info.coy !== void ? +info.coy : 0;
+
+			if (cameraox != cox) {
+				cameraox = cox;
+				transall = true;
+			}
+			if (cameraoy != coy) {
+				cameraoy = coy;
+				transall = true;
+			}
+
+			initFile(elm);
+			
+			// 背景指定時に座標指定がなければ場所情報を初期化する
+			if (elm.xpos === void) {
+				xpos = void;
+            }
+            if (elm.ypos === void) {
+                ypos = void;
+            }
+
+			// ステージ変更時フック
+			if (typeof global.setStageHook != "undefined") {
+				global.setStageHook(stageName, elm);
+            }
+
+			// 舞台レイヤ更新
+			nostagelayer = elm.nolayer;
+			initStageLayer(false, false);
+			if (stagelayers.count > 0) {
+				transall = true;
+			}
+			
+			// トランジション指定
+			setAutoTrans([stages[stage].trans, env.envinfo.stageTrans, env.envinfo.envTrans], elm);
+        }
+		// イベント絵は消去
+		if (event.isShow()) {
+			event.disp = CLEAR;
+			transall = true;
+		}
+	}
+
+    /**
+     * 時間を設定する
+     * @param timeName 時間名
+     * @param elm コマンドのほかの要素
+     */
+    function setTime(timeName, elm) {
+		if (timeName == "" || timeName === true) return; // 空指定なら何もしない
+		if (times[timeName] === void) {
+			kag.errorCmd("時間指定が不明です: "+timeName);
+			return;
+		}
+
+		if (timeName != time || isClear() || event.isShow()) {
+
+			initFile(elm);
+			
+			time = timeName;
+
+			disp = SHOW;
+			redraw = true;
+			reposition = true;
+			
+            // 時間変更時フック
+            if (typeof global.setTimeHook != "undefined") {
+                global.setTimeHook(timeName, elm);
+            }
+
+			// 時間変更はキャラの立ち絵も再描画の必要がある
+			foreach(characters, function(name, value, dict, base) {
+				if (value.isShowBU()) {
+					value.setRedraw();
+					base.transall = true;
+				}
+			}, this);
+
+			// 舞台レイヤ更新
+			nostagelayer = elm.nolayer;
+			initStageLayer(false, false);
+			if (stagelayers.count > 0) {
+				transall = true;
+			}
+			
+            // トランジション指定
+			setAutoTrans([times[time].trans, env.envinfo.timeTrans, env.envinfo.stageTrans, env.envinfo.envTrans], elm);
+        }
+        // イベント絵は消去
+		if (event.isShow()) {
+			event.disp = CLEAR;
+			transall = true;
+        }
+    }
+
+	// 立ち絵キャッシュをクリア
+	function clearStandCache(param, elm) {
+		foreach(characters, function(name, value, dict, base) {
+			if (!value.isShow()) {
+				value.clearStandLayers();
+			}
+		}, this);
+		System.doCompact(clIdle);
+	}
+	
+    // トランジションモード
+    var transMode;
+
+    /**
+     * 全体トランジション開始
+     */
+	function beginTrans(elm) {
+		if (transMode) {
+			kag.errorCmd("begintransが多重で使用されました");
+		}
+		kag.stopAllTransitions();
+		kag.backupLayer(EMPTY, true);
+		transMode = true;
+        return 0;
+    }
+
+    /**
+	 * 特殊全体トランジション開始用
+	 */
+	function beginEnvTrans(elm) {
+		kag.stopAllTransitions();
+		kag.backupLayer(EMPTY, true);
+		update(kag.back);
+        return 0;
+    }
+
+	
+    /**
+     * トランジション指定をコマンドから探す処理
+     */
+    function checkTrans(cmd, param, elm) {
+		if (cmd == "tagname") {
+            // ignore
+        } else if (cmd == "trans") {
+			if (typeof param == "Object" && param instanceof "Dictionary") {
+				trans = param;
+			} else {
+				setTrans(param, elm);
+			}
+        } else if (cmd == "fade") {
+			var time = +param;
+			trans = %[ "method" => "crossfade",
+					   "children" => true,
+					   "time" => time > 1 ? time : fadeValue];
+		} else {
+			setTrans(cmd, elm);
+        }
+    }
+
+    /**
+     * 全体トランジション終了
+     */
+    function endTrans(elm) {
+		if (!transMode) {
+			kag.errorCmd("endtransが単体で使用されました");
+		}
+		// まず解除（トランジション処理中で true だと処理が登録されないので)
+		transMode = false;
+		ret = void;
+		trans = void;
+		foreach(elm, checkTrans);
+		beginTransition(trans, getSyncMode(elm, trans));
+		hideMessage(trans);
+        return ret;
+    }
+
+    /**
+     * 新規レイヤ生成
+	 */
+	function newLayer(elm, tagfunc=true) {
+		// 既存データは廃棄
+		if (elm.name !== void) {
+			var lay = layers[elm.name];
+			if (lay !== void) {
+				lay.initImage();
+				lay.clearFileState();
+			} else {
+				lay = getEnvLayer(elm.name, true);
+			}
+			if (lay != null) {
+				delete elm.tagname;
+				delete elm.name;
+				if (tagfunc) {
+					return lay.tagfunc(elm);
+				} else {
+					// 更新しない
+					lay.command(elm);
+				}
+			}
+		} else {
+			kag.errorCmd("レイヤ名が指定されていません");
+		}
+		return 0;
+    }
+
+    /**
+     * 新規レイヤ生成
+     */
+    function delLayer(elm) {
+		if (elm.name !== void && layers[elm.name] !== void) {
+			invalidate layers[elm.name];
+			delete layers[elm.name];
+		}
+        return 0;
+    }
+    
+    /**
+     * 新規キャラクタ生成
+     */
+    function newCharacter(elm) {
+		// 既存データは廃棄
+		delCharacter(elm);
+        // 新規生成
+		if (elm.name !== void && elm.initname !== void) {
+			var ch = getCharacter(elm.name, elm.initname);
+			if (ch !== void) {
+				delete elm.tagname;
+				delete elm.name;
+				delete elm.initname;
+				return ch.tagfunc(elm);
+			} else {
+				throw new Exception(elm.initName + ":指定されたキャラクタ初期化指定の定義がありません。envinit.tjs を確認してください。");
+			}
+		} else {
+			kag.errorCmd("キャラクタ名または初期化名が指定されていません");
+		}
+        return 0;
+    }        
+
+	/**
+     * キャラクタ操作
+     */
+	function delCharacter(elm) {
+		if (elm.name !== void && characters[elm.name] !== void) {
+			invalidate characters[elm.name];
+			delete characters[elm.name];
+		}
+        return 0;
+    }
+
+    
+    /**
+     * メッセージ窓のトランジション処理をくみこんだ ON/OFF
+     */
+	function msgonoff(elm, v) {
+
+		if (kag.skipNoDisp) {
+			return 0;
+		}
+
+		ret = void;
+		trans = void;
+		if (!transMode && !isSkip() && elm.nofade === void) {
+			foreach(elm, checkTrans);
+			if (trans !== void && trans.method !== void && !isSkip()) {
+				kag.updateBeforeCh = 1;
+				kag.stopAllTransitions();
+				kag.backupLayer(EMPTY, true);
+				kag.setCurrentMessageLayerVisibleFast(1, v);
+				beginTransition(trans);
+				return ret;
+			} else {
+				return kag.setCurrentMessageLayerVisible(v, elm.time) ? -2 : 0;
+			}
+		}
+		kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, v);
+		return ret;
+    }
+
+    function msgon(elm) { return msgonoff(elm, true); }
+    function msgoff(elm) { return msgonoff(elm, false); }
+
+    /**
+     * 画面の表示要素の全消去
+     */
+    function clear(elm) {
+        ret = void;
+		trans = void;
+        hideAll();
+
+		if (!kag.skipNoDisp) {
+			if (!transMode && !isSkip()) {
+				foreach(elm, checkTrans);
+				if (trans !== void && trans.method !== void && !isSkip()) {
+					kag.updateBeforeCh = 1;
+					kag.stopAllTransitions();
+					kag.backupLayer(EMPTY, true);
+					kag.setCurrentMessageLayerVisibleFast(1, false);
+					update(kag.back);
+					beginTransition(trans);
+					return ret;
+				}
+			}
+			kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
+			update(kag.fore);
+		} else {
+			kag.setCurrentMessageLayerVisibleFast(transMode ? 1: 0, false);
+		}
+		return ret;
+    }
+
+    var envCommands = %[
+    /**
+     * 全体の初期化処理
+     */
+    init : this.initEnv incontextof this,
+	stage : this.setStage incontextof this,
+	stime : this.setTime incontextof this,
+	clearstandcache : this.clearStandCache incontextof this,
+    hidebase : this.hideBase incontextof this,
+    hideevent : this.hideEvent incontextof this,
+    hidecharacters : this.hideCharacters incontextof this,
+    hidechars : this.hideCharacters incontextof this,
+    hidelayers : this.hideLayers incontextof this,
+    hidefore : this.hideFore incontextof this,
+    hideall : this.hideAll incontextof this,
+    stopallvoice : this.stopAllVoice incontextof this,
+    colorall : this.setColorAll incontextof this,
+	nostopbgm : null,
+	keepvoice: null,
+	// ----------------------------------------------
+	shiftx  : this.setshiftx incontextof this,
+	shifty  : this.setshifty incontextof this,
+	camerax : this.setcamerax incontextof this,
+	cameray : this.setcameray incontextof this,
+	camerazoom : this.setcamerazoom incontextof this,
+	actioncamera : this.actionCamera incontextof this,
+	resetcamera : this.resetCamera incontextof this,
+	stopcamera : this.stopCamera incontextof this,
+	camerach : this.setCameraCh,
+		];
+    
+    /**
+     * コマンドの実行
+     * @param cmd コマンド
+     * @param param パラメータ
+     * @param elm 他のコマンドも含む全パラメータ
+     * @return 実行が行われた場合 true
+     */
+    function doCommand(cmd, param, elm) {
+
+        //dm("環境コマンド実行:" + cmd);
+        
+        if (super.doCommand(cmd, param, elm)) {
+            return true;
+        }
+        
+        var func;
+        if ((func = envCommands[cmd]) !== void) {
+            //dm("登録コマンドが存在:" + cmd);
+            if (func != null) {
+				func(param, elm);
+            }                
+            return true;
+        }
+
+        var find = false;
+
+        // 時間と舞台
+        var info;
+        if (times !== void && (info = times[cmd]) !== void) {
+            setTime(cmd, elm);
+            find = true;
+        } else if (stages !== void && (info = stages[cmd]) !== void) {
+            setStage(cmd, elm);
+            find = true;
+        }
+
+        // アクション
+        if (!find) {
+            find = setAction(cmd, elm);
+        }
+
+        // 更新
+        if (!find) {
+			find = setTrans(cmd, elm);
+        }
+
+        return find;
+    }
+
+	// 背景キャッシュ
+	// 直近の背景を5枚保持
+	var bgcache = [];
+	
+	function loadBGFromCache(layer, storage) {
+		for (var i=bgcache.count-1;i>=0;i--) {
+			var cache = bgcache[i];
+			if (cache.name == storage) {
+				bgcache.erase(i);
+				bgcache.add(cache);
+				layer.assignImages(cache.layer);
+				layer.setSizeToImageSize();
+				return;
+			}
+		}
+		var lay = new global.Layer(layer.window, layer.window.primaryLayer);
+		lay.loadImages(storage);
+		//dm("背景画像ロード:" + storage);
+		lay.setSizeToImageSize();
+		layer.assignImages(lay);
+		layer.setSizeToImageSize();
+		bgcache.add(%[name:storage, layer:lay]);
+		if (bgcache.count > 5) {
+			bgcache.erase(0);
+		}
+	}
+
+	function clearBGCache() {
+		var count = bgcache.count;
+		for (var i=0;i<count;i++) {
+			invalidate bgcache[i];
+		}
+		bgcache.clear();
+	}
+
+    /**
+     * 舞台画像の描画
+     * @param layer 描画先レイヤ
+     */
+	function drawLayer(layer) {
+		var image;
+		if (isShowBU() && stage !== void) {
+			image = stages[stage].image;
+            // 時間情報で上書き
+            time = defaultTime if time === void;
+            if (time !== void) {
+                image = image.replace(/TIME/, times[time].prefix);
+
+				// 画像のロードと座標補正処理
+                try {
+					loadBGFromCache(layer, image);
+					stageFile = image;
+                   
+					if (reposition) {
+						if (xpos === void) {
+							xpos = (int)stages[stage].xoff;
+						}
+                        if (ypos === void) {
+                            ypos = (int)stages[stage].yoff;
+                        }
+					}
+
+                } catch(e) {
+                    // 画像がロードできなかった場合は補正で対応
+                    image = stages[stage].image;
+                    image = image.replace(/TIME/, times[defaultTime].prefix);
+
+                    try {
+						loadBGFromCache(layer, image);
+						stageFile = image;
+                        
+                        // 色補正処理
+                        var timeInfo;
+                        if ((timeInfo = currentTime) !== void) {
+                            // レイヤ合成
+                            if (timeInfo.lightColor !== void) {
+                                layer.holdAlpha = true;
+                                layer.fillOperateRect(0,0,
+                                                      layer.width,layer.height,
+                                                      timeInfo.lightColor,
+                                                      timeInfo.lightType);
+                            }
+                            // 明度補正
+                            if (timeInfo.brightness !== void) {
+                                layer.light(timeInfo.brightness,
+                                            timeInfo.contrast);
+                            }
+                        }
+
+                        if (reposition) {
+                            if (xpos === void) {
+								xpos = (int)stages[stage].xoff;
+                            }
+                            if (ypos === void) {
+                                ypos = (int)stages[stage].yoff;
+                            }
+                        }
+                        
+                    } catch (e) {
+						stageFile = void;
+						var text = image + ":背景画像がロードできません stage:" + stage + " time:" + time;
+						kag.errorImage(text);
+						layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
+						layer.drawText(0,0,text,0xffffff);
+                    }
+                }
+			}
+			var blurx = stages[stage].blurx;
+			var blury = stages[stage].blury;
+			//dm("blur", stage, blurx, blury);
+			if (blurx !== void || blury !== void) layer.doBoxBlur(blurx, blury);
+
+			var res = stages[stage].resolution;
+			//dm("resolution", stage, res);
+			if (res !== void) layer.resolution = res;
+			/**/res = stages[stage].resolutionx;
+			if (res !== void) layer.resolutionx = res;
+			/**/res = stages[stage].resolutiony;
+			if (res !== void) layer.resolutiony = res;
+		}
+	}
+
+	function update(base) {
+		
+		//dm("環境更新処理:" + trans);
+		
+		event._update(base);
+
+		if (event.isShow()) {
+			hideStageLayer();
+		} else {
+			showStageLayer();
+		}
+		
+		// 子要素の再描画
+		foreach(characters, function(name, value, dict, base) {
+			value._update(base);
+		}, base);
+		foreach(layers, function(name, value, dict, base) {
+			value._update(base);
+		}, base);
+
+		// メッセージ窓初期化
+//		if (currentNameTarget == void) {
+//			drawNamePage(base);
+//			if (faceLevelName !== void) {
+//				clearFacePage(base);
+//			}
+//        }
+
+		// 自分の更新
+		return _update(base);
+    }
+
+	function updateSkip() {
+		//dm("環境更新スキップ処理:" + trans);
+		// 子要素の再描画
+		foreach(characters, function(name, value, dict) {
+			value.updateSkip();
+        });
+        foreach(layers, function(name, value, dict) {
+            value.updateSkip();
+        });
+		event.updateSkip();
+		// 自分の更新
+		return super.updateSkip();
+    }
+
+	
+    /**
+	 * 全キャラにコマンド実行
+	 * @param elm 引数
+	 * poscond パラメータで表示場所限定可能
+     */
+	function allchar(elm) {
+		var e = %[];
+		(Dictionary.assign incontextof e)(elm);
+		var force = false;
+		var posName;
+		if (e.poscond !== void) {
+			posName = e.poscond;
+			delete e.poscond;
+		}
+		if (e.force  !== void) {
+			force = true;
+			delete e.force;
+		}
+		trans = void;
+		foreach(elm, checkTrans);
+		delete e.tagname;
+		delete e.trans;
+
+		var sync  = e.sync;
+		delete e.sync;
+
+		var names = [];
+		names.assign(characters);
+		if (names.count > 0) {
+			if (trans !== void) {
+				kag.addTag("begintrans", %[]);
+			} else {
+				e.nosync = true;
+			}
+			for (var i=0; i<names.count; i+= 2) {
+				var name = names[i];
+				var ch = names[i+1];
+				if (posName !== void) {
+					if (ch.posName == posName && (ch.isShowBU() || force)) {
+						kag.addTag(name, e);
+					}
+				} else {
+					if ((ch.isShowBU() || force)) {
+						kag.addTag(name, e);
+					}
+				}
+			}
+			if (trans !== void) {
+				kag.addTag("endtrans", %[trans:trans]);
+			} else {
+				if (sync) {
+					kag.addTag("wat");
+				}
+			}
+		}
+		return 0;
+    }
+
+    /**
+     * 全レイヤにコマンド実行
+     * @param elm 引数
+     */
+    function alllayer(elm) {
+		var e = %[];
+		(Dictionary.assign incontextof e)(elm);
+		var force = false;
+		if (e.force  !== void) {
+			force = true;
+			delete e.force;
+		}
+		trans = void;
+		foreach(elm, checkTrans);
+		delete e.tagname;
+		delete e.trans;
+
+		var sync  = e.sync;
+		delete e.sync;
+		
+		var names = [];
+		names.assign(layers);
+		if (names.count > 0) {
+			if (trans !== void) {
+				kag.addTag("begintrans", %[]);
+			} else {
+				e.nosync = true;
+			}
+			for (var i=0; i<names.count; i+= 2) {
+				var name = names[i];
+				var layer = names[i+1];
+				if ((layer.isShowBU() || force)) {
+					kag.addTag(name, e);
+				}
+			}
+			if (trans !== void) {
+				kag.addTag("endtrans", %[trans:trans]);
+			} else {
+				if (sync) {
+					kag.addTag("wat");
+				}
+			}
+		}
+		return 0;
+    }
+
+    /**
+     * 全SEにコマンド実行
+     * @param elm 引数
+     */
+    function allse(elm) {
+        ret = void;
+        for (var i=0;i<ses.count;i++) {
+            if (ses[i].name !== void) {
+                ret = ses[i].tagfunc(elm);
+            }
+        }
+        return ret;
+    }
+
+	// ------------------------------------------------------------------
+	// 環境レイヤ制御
+	// ------------------------------------------------------------------
+
+	function getLevelLayers() {
+		var ret = [];
+		var works = [];
+		works.assign(characters);
+		for (var i=1; i<works.count; i+= 2) {
+			ret.add(works[i]);
+		}
+		works.assign(layers);
+		for (var i=1; i<works.count; i+= 2) {
+			ret.add(works[i]);
+		}
+		return ret;
+	}
+	
+	/**
+	 * レイヤ一括複製指定
+	 */
+	function onCopyLayer(toback, backlay) {
+		super.onCopyLayer(toback, backlay);
+		event.onCopyLayer(toback, backlay);
+		var names = [];
+		names.assign(characters);
+		for (var i=0; i<names.count; i+= 2) {
+			var value = names[i+1];
+			value.onCopyLayer(toback, backlay);
+		}
+		names.assign(layers);
+		for (var i=0; i<names.count; i+= 2) {
+			var value = names[i+1];
+			value.onCopyLayer(toback, backlay);
+		}
+	}
+
+	/**
+	 * レイヤ消去系処理
+	 */
+	function clearLayers(base) {
+		hideAll();
+		if (!kag.skipNoDisp) {
+			update(base);
+		}
+	}
+
+	// トランジション起動用処理
+	function laytrans(elm) {
+		if (elm.target !== void && elm.target isvalid && elm.src !== void && elm.src isvalid) {
+			elm.target.beginLayerTransition(elm);
+		}
+		return 0;
+	}
+	
+ 	// ------------------------------------------------------------------
+
+	/**
+	 * キャラクタオブジェクトの生成用
+	 */
+	function _getCharacter(name, initName, init) {
+		return new KAGEnvCharacter(this, name, initName, init);
+	}
+	
+    /**
+     * 指定された名前のキャラクタを返す
+     * @param name 名前
+     * @param initName 初期化名
+     */
+    function getCharacter(name, initName) {
+		var ch = characters[name];
+		if (ch === void) {
+			if (initName === void) {
+				initName = name;
+            }
+            var init;
+			if ((init = characterInits[initName]) !== void) {
+				if (init.initName !== void) {
+					initName = init.initName;
+				}
+				ch = _getCharacter(name, initName, init);
+				characters[name] = ch;
+			}
+        }
+        return ch;
+    }
+
+    /**
+     * 指定された名前のレイヤを返す
+     * @param name 名前
+     * @param create 生成モード
+     */
+    function getEnvLayer(name, create=false) {
+        var lay = layers[name];
+        if (lay === void && create) {
+            lay = new KAGEnvSimpleLayer(this, name);
+            layers[name] = lay;
+        }
+        return lay;
+    }
+
+    /**
+     * 全キャラのボイスを停止する
+     */
+    function stopAllVoice() {
+        foreach(characters, function(name, value, dict) {
+            value.stopVoice();
+        });
+    }
+
+    /**
+     * 全キャラのボイスの音量を調整
+     */
+    function resetAllVoiceVolume() {
+        foreach(characters, function(name, value, dict) {
+			value.resetVoiceVolume();
+			value.resetBackVoiceVolume();
+        });
+    }
+    
+    /*
+     * 指定したキャラで指定したボイスファイルを再生
+     */
+    function playVoice(name, voicename) {
+        var ch = getCharacter(name);
+        if (ch !== void && voicename !== void) {
+            return ch.playVoice(voicename);
+        }
+    }
+
+    function quake(elm) {
+		// 揺れをのっとる
+		if (!isSkip()) {
+			kag.doQuake(elm);
+		}
+		return kag.waitFunc(elm, kag.waitQuake);
+    }
+    
+    function getMessageLayer(base) {
+        if (base === void) {
+            base = transMode ? kag.back : kag.fore;
+        }
+        return base.messages[kag.currentNum];
+    }
+
+    function getFaceLayer(base) {
+        return getMessageLayer(base).faceLayer;
+    }
+    
+    /**
+     * 表情表示処理下請け
+     */
+    function loadFacePage(base, name) {
+		var faceLayer = getFaceLayer(base);
+        if (faceLayer !== void) {
+            try {
+                faceLayer.loadImages(name);
+            } catch (e) {
+                kag.errorImage(name + ":表情画像がロードできません");
+            }
+            faceLayer.visible = true;
+        }
+    }
+
+    /**
+     * 表情消去処理下請け
+     */
+    function clearFacePage(base) {
+        if (envinfo.clearFace !== void) {
+            loadFacePage(base, envinfo.clearFace);
+        } else {
+            var faceLayer = getFaceLayer(base);
+			if (faceLayer !== void) {
+	            faceLayer.visible = false;
+			}
+        }
+    }
+    
+    /**
+     * 表情消去処理
+     */
+    function clearFace() {
+        if (!transMode) {
+            clearFacePage(kag.fore);
+        }
+        clearFacePage(kag.back);
+    }
+
+    // 指定されたキャラクタの表情が表示可能なら表示する
+    function drawFacePage(base, ch) {
+		//dm("表情を描画:" + ch);
+		if (faceLevelName !== void) {
+			if (ch !== void) {
+				var layer = getFaceLayer(base);
+				if (layer !== void) {
+					if (ch.isShowFace()) {
+    	                ch.drawFace(layer, faceLevelName);
+        	        } else {
+            	        layer.visible = false;
+                	}
+				} else {
+					//dm("表情窓が無い");
+				}
+			} else {
+				clearFacePage(base);
+            }
+        }
+    }
+
+    /**
+     * 名前の表示（ページ指定あり)
+     */
+    function drawNamePage(base, name="") {
+		if (kag.textWriteEnabled) {
+			var msg = getMessageLayer(base);
+			msg.processName(name);
+		}
+    }
+
+    /**
+     * 名前の表示
+     */
+    function drawName(name = "", nextVoice) {
+
+		// ボイス状態の更新
+		//dm("ボイス状態更新!:" + name + ":" + nextVoice);
+		kag.currentVoice = [];
+		kag.currentVoice.assign(nextVoice) if (nextVoice !== void);
+
+        //dm("名前描画:" + name);
+        if (!transMode) {
+            drawNamePage(kag.fore, name);
+        }
+        drawNamePage(kag.back, name);
+
+        // ヒストリ用
+		if (!kag.skipNoDisp && kag.historyWriteEnabled) {
+            if (typeof kag.historyLayer.storeName !== 'undefined') {
+                kag.historyLayer.storeName(name);
+            } else {
+                if (name != "") {
+                    kag.historyLayer.store(name + " ");
+                }
+            }
+        }
+    }
+
+	// ボイス再生用
+	var nextVoiceList = [];
+
+	/**
+	 * 次回同時に鳴らすボイスの追加
+	 * @param name キャラ名
+	 * @param voice ボイスファイル指定
+	 */
+	function entryNextVoice(name, voice) {
+		var ext, isExist = Storages.isExistentStorage;
+		if (voice != "" && !isExist(voice))  {
+			if (     isExist(voice + ".wav")) ext = ".wav";
+			else if (isExist(voice + ".ogg")) ext = ".ogg";
+			else return kag.errorVoice(name + ":ボイスがロードできません:" + voice);
+		}
+		nextVoiceList.add(%[name:name, voice:voice, ext:ext]);
+	}
+    
+    /**
+	 * 複数ボイスを鳴らす
+     */
+	function playNextVoice() {
+		var ret = void;
+		for (var i=nextVoiceList.count-1;i>=0;i--) {
+			var info = nextVoiceList[i];
+			if (info === void) continue;
+			var voice = info.voice;
+			voice += info.ext if (voice != "");
+			var r = playVoice(info.name, voice);
+			ret = r if (ret === void || (r !== void && r > ret));
+		}
+		nextVoiceList.clear();
+        return ret;
+    }
+    
+    /**
+     * 名前表示処理ハンドラ
+     */
+    function dispname(elm) {
+
+		// 表示処理
+		if (!kag.skipNoDisp) {
+			if (kag.textWriteEnabled && kag.setCurrentMessageLayerVisible(true)) {
+				return -3;
+			}
+		}
+		
+		ret = void;
+
+		// 表情表示部
+        
+        //dm("名前表示ハンドラ");
+        if (elm === void || elm.name === void || elm.name == "") {
+
+			if (!kag.skipNoDisp) {
+				// キャラ指定が無い場合
+				drawName();
+				// 表情処理
+				if (faceLevelName !== void && currentNameTarget !== void && currentNameTarget.isShowFace() && !transMode && !isSkip() && faceFadeTime > 0) {
+					// フェースをフェードで消去する場合
+					kag.backupLayer(EMPTY, true);
+					clearFacePage(kag.back);
+					beginTransition(%[ method: "crossfade", time: faceFadeTime]);
+					
+				} else {
+					if (faceLevelName !== void) {
+						clearFace();
+					}
+				}
+			}
+
+			currentNameTarget = void;
+			dispnameVoice(elm);
+            
+        } else {
+			if (kag.voicecut && !kag.voicecutpage) {
+				stopAllVoice();
+			}
+
+			var name = elm.name;
+			var disp = elm.disp;
+			var voice = elm.voice;
+
+			var ch = getCharacter(name);
+
+			// ボイス登録指定
+			if (ch !== void) {
+				if (voice !== void) {
+					entryNextVoice(name, voice);
+				} else {
+					ch.entryNextVoice();
+				}
+			}
+			
+            // 名前表示処理
+			var dispName;
+			if (disp !== void && disp != "") {
+				dispName = disp;
+			} else if (ch !== void) {
+				var alias = ch.init.nameAlias;
+				dispName = (alias.charAt(0) == "&" ? Scripts.eval(alias.substr(1)) : alias) if (alias != "");
+				dispName = name if (dispName == "");
+			}
+
+			elm.dispName = dispName;
+            
+			// 表情変更処理
+			if (!kag.skipNoDisp && faceLevelName !== void && currentNameTarget != ch &&
+                ((currentNameTarget !== void && currentNameTarget.isShowFace()) || (ch !== void && ch.isShowFace())) &&
+                !transMode && !isSkip() && faceFadeTime > 0) {
+                
+                // フェードで表示する場合
+
+                // XXX 名前消去
+                drawName();
+                
+                currentNameTarget = ch;
+                
+				kag.backupLayer(EMPTY, true);
+                if (ch !== void && ch.isShowFace()) {
+                    drawFacePage(kag.back, ch);
+                } else {
+                    var img;
+                    if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[envinfo.dispNameFace ? dispName : name]) !== void) {
+                        loadFacePage(kag.back, img);
+                    } else {
+                        clearFacePage(kag.back);
+                    }
+                }
+                // 表情変更用トランジション導入
+				beginTransition(%[ method: "crossfade", time: faceFadeTime]);
+				// ボイス再生処理の先送り
+				kag.addTag("dispNameVoice", elm);
+            } else {
+
+                // 瞬間表示する場合
+                // たぶんここのロジック必要ない？
+                
+                currentNameTarget = ch;
+
+				if (!kag.skipNoDisp) {
+					if (ch !== void && ch.isShowFace()) {
+						if (!transMode) {
+							drawFacePage(kag.fore, ch);
+						}
+						drawFacePage(kag.back, ch);
+					} else {
+						var img;
+						if (envinfo.nameFaces !== void && (img = envinfo.nameFaces[envinfo.dispNameFace ? dispName : name]) !== void) {
+							if (!transMode) {
+								loadFacePage(kag.fore, img);
+							}
+							loadFacePage(kag.back, img);
+						} else {
+							clearFace();
+						}
+					}
+				}
+				
+				dispnameVoice(elm);
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * 名前表示＋ボイス再生部分
+     * ボイスの状態に応じた待ち時間補正も行う
+     */
+    function dispnameVoice(elm) {
+
+        // -------  名前表示（瞬間）
+
+		// 履歴にボイス登録
+		if (nextVoiceList.count > 0 && !kag.skipNoDisp && kag.historyWriteEnabled) {
+			kag.historyLayer.setNewAction(kag.getVoicePlayingScript(nextVoiceList));
+		}
+		
+		if (elm === void || elm.name === void || elm.name == "") {
+			
+			// すでに名前表示済み
+            
+		} else {
+			var name     = elm.name;
+			var dispName = elm.dispName;
+            if (dispName === void) {
+                dispName = name;
+            }
+
+			// 名前加工処理
+			if (typeof global.dispNameFilter !== 'undefined') {
+				dispName = global.dispNameFilter(dispName);
+            }
+			
+			if (!kag.skipNoDisp) {
+				drawName(dispName, nextVoiceList);
+			}
+        }
+
+        // -------  ボイス再生
+        
+        // ボイス再生
+		var ret;
+		// ボイス再生がある場合
+		if (nextVoiceList.count > 0) {
+			// ほかのボイスを消去する
+			env.stopAllVoice();
+			// 同時再生ボイスの再生
+			ret = playNextVoice();
+		}
+        kag.addAutoWait(ret);
+		talkWaitOrigin = System.getTickCount();
+		talkWaitCount = 0;
+
+		return 0;
+    }
+
+    /**
+     * 行待ち終了後に呼び出される処理
+     */
+    function afterline(elm) {
+		if (!kag.skipNoDisp && kag.historyWriteEnabled) {
+			kag.historyLayer.clearAction();
+        }
+		return 0;
+    }
+
+	var skipCount = 0;
+	
+    /**
+     * ページ処理後に呼び出される処理
+     */
+    function afterpage(elm) {
+		if (kag.skipNoDisp) {
+			currentNameTarget = void;
+			kag.stopAllActions();
+			kag.stopAllTransitions();
+			if (System.getTickCount() - kag.skipNoDispStartTime > 3000) {
+				skipCount = (skipCount + 1) % 100;
+				return skipCount == 0 ? -4 : 0;
+			}
+			return 0;
+		} else {
+			if (kag.voicecut && kag.voicecutpage) {
+				stopAllVoice();
+			}
+			if (kag.historyWriteEnabled) {
+				kag.historyLayer.clearAction();
+				kag.historyLayer.reline();
+			}
+			currentNameTarget = void;
+			// ページ後に基本的にアクションは停止する
+			kag.stopAllActions();
+			kag.stopAllTransitions();
+			return 0;
+		}
+    }
+    
+    var seCount = 0;
+    /**
+     * SE 処理用オブジェクトの取得
+     * @param id SE番号指定
+     * 一番古いSEがわかるようにカウント処理をしている
+     */
+    function getSe(id) {
+		ses[id].count = seCount++;
+		return ses[id];
+    }
+
+    /**
+     * SE 停止時の処理
+     * 停止中状態にする
+     */
+    function onSeStop(id) {
+        if (id < ses.count) {
+            ses[id].name = void;
+        }
+    }
+
+    /**
+     * SE の ID を決定する
+     * @param buf バッファIDを指定
+     */
+    function getSeId(buf) {
+		// 直接バッファが指定されている場合はそれを返す
+        if (buf !== void && +buf < ses.count) {
+            return +buf;
+        }
+        // 使われてないものをさがす
+        var max = seCount;
+        var old = void;
+        for (var i=0; i<ses.count; i++) {
+            if (ses[i].name == void) {
+				return i;
+            }
+			if (ses[i].count < max) {
+				max = ses[i].count;
+                old = i;
+            }
+        }
+        // 一番古いものを返す
+		return old;
+    }
+
+    /**
+     * SE の ID を決定する
+     * @param name SE の名前
+     */
+	function getSeIdFromName(name) {
+		if (name != "") {
+			name = name.toLowerCase();
+			for (var i=0; i<ses.count; i++) {
+				var sename = ses[i].name;
+				//dm("getSeIdFromName", name, sename);
+				if (sename != "" && sename.toLowerCase() == name) return i;
+			}
+		}
+		// みつからないのであいている番号を返す
+		var ret = getSeId();
+		return ret;
+    }
+    
+    /**
+     * tagnameを変更しつつtagfuncを呼び出す
+     */
+	function invokeTagFunc(target, elm, tagname, origTagName) {
+		elm.tagname = tagname;
+		elm[origTagName] = true;
+//		var order = elm["*order"];
+//		order.unshift(origTagName) if (order !== void);
+		return target.tagfunc(elm);
+	}
+
+    /**
+     * KAG 不明処理ハンドラ
+     */
+    function unknown(tagName, elm) {
+
+		//dm("不明コマンドハンドラ:" + tagName);
+
+		// 自分
+		if (tagName == "stage" || tagName == "bg") {
+			return tagfunc(elm);
+		}
+		
+		// イベント用処理
+		if (tagName == "event" || tagName == "ev") {
+			return event.tagfunc(elm);
+		} else if (tagName.substring(0,2) == "ev" ||
+				   (events !== void && events[tagName] !== void)) {
+			return invokeTagFunc(event, elm, "event", tagName);
+		}
+
+        // BGM 処理用
+        if (tagName == "bgm") {
+            return bgm.tagfunc(elm);
+        } else if (tagName.substring(0,3) == "bgm") {
+            return bgm.tagfunc(elm);
+        }
+
+        // SE 処理用
+        if (tagName == "se") {
+			if (elm.name !== void) {
+				return getSe(getSeIdFromName(elm.name)).tagfunc(elm);
+            } else {
+				return getSe(getSeId(elm.buf)).tagfunc(elm);
+            }
+        } else if (tagName.substring(0,2) == "se") {
+            var se = getSe(getSeIdFromName(tagName));
+            return se.tagfunc(elm);
+        }
+        
+        // キャラクタ
+        if (tagName == "char") {
+            var ch = getCharacter(elm.name);
+            if (ch !== void) {
+                return ch.tagfunc(elm);
+			} else {
+				kag.errorCmd("キャラクタ指定が不明です: " + elm.name);
+			}
+		} else {
+			var ch = getCharacter(tagName);
+			if (ch !== void) {
+				return ch.tagfunc(elm);
+			}
+		}
+
+        if (tagName == "layer") {
+            var lay = getEnvLayer(elm.name);
+            if (lay !== void) {
+                return lay.tagfunc(elm);
+			} else {
+				kag.errorCmd("レイヤ指定が不明です: " + elm.name);
+			}
+		} else { 
+			var lay = getEnvLayer(tagName);
+			if (lay !== void) {
+				return lay.tagfunc(elm);
+			}
+		}
+
+		// 環境のコマンドではなく
+		// カレントのターゲットがある場合はそのコマンドとして実行
+		if (envCommands[tagName] === void && currentNameTarget !== void) {
+			return invokeTagFunc(currentNameTarget, elm, "char"/*ch.name*/, tagName);
+		}
+
+		// いずれの条件にも満たない場合は環境のコマンドとして実行
+		return invokeTagFunc(this, elm, "env", tagName);
+    }
+
+    /**
+     * アクション停止
+     */
+	function onStopAction(all) {
+		clearAction(all);
+		event.clearAction(all);
+		foreach(characters, function(name, value, dict, all) {
+			value.clearAction(all);
+		}, all);
+		foreach(layers, function(name, value, dict, all) {
+			value.clearAction(all);
+		}, all);
+		//dm("アクション停止");
+		if (!kag.skipNoDisp) {
+			update(kag.fore);
+		}
+    }
+
+	/**
+	 * 全レイヤコマンド発行
+	 */
+	function onLayerCommand(param) {
+		this[param.command](param.args*);
+		event[param.command](param.args*);
+		foreach(characters, function(name, value, dict, param) {
+			value[param.command](param.args*);
+		}, param);
+		foreach(layers, function(name, value, dict, param) {
+			value[param.command](param.args*);
+		}, param);
+	}
+	
+    /**
+	 * 全アクション停止
+     */
+	function syncAll() {
+		// すべて再描画
+		event.setRedraw();
+		foreach(characters, function(name, value, dict) {
+			value.setRedraw();
+        });
+        foreach(layers, function(name, value, dict) {
+			value.setRedraw();
+		});
+		redraw = true;
+		// サウンド同期実行
+		for (var i=0; i<ses.count; i++) {
+			ses[i].sync();
+		}
+		bgm.sync();
+		// 画面同期
+		update(kag.fore);
+	}
+	
+	/**
+	 * ボイス更新
+	 */
+    function updateVoice() {
+		foreach(characters, function(name, value, dict) {
+			value.updateVoice();
+		});
+    }
+
+	/**
+	 * ボイス情報表示
+	 */
+	function showVoiceInfo() {
+		foreach(characters, function(name, value, dict) {
+			value.showVoiceInfo();
+        });
+		return 0;
+	}
+
+	var talkWaitOrigin;
+	var talkWaitCount;
+	
+	/**
+	 * 会話タイミング待ち
+	 */
+	function doTalkWait(elm) {
+		talkWaitCount++;
+		if (kag.skipMode == 0) {
+			if (elm.name !== void) {
+				return kag.waitDelay(elm.name, true);
+			} else if (elm.time !== void) {
+				var waittime = talkWaitOrigin + +elm.time - System.getTickCount();
+				if (waittime < 6) {
+					return 0;
+				}
+				return kag.waitTime(waittime, true);
+			} else {
+				return kag.waitDelay("vl" + talkWaitCount, true);
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * 会話タイミング待ち
+	 */
+	function showTalkWait(elm) {
+		dm("showtwait:" + (System.getTickCount() - talkWaitOrigin));
+		return 0;
+	}
+	
+	// -----------------------------------------------------------------
+	// 立ち絵情報参照用
+	// -----------------------------------------------------------------
+
+	/**
+	 * ポーズがあるキャラクタ名一覧の取得
+	 */
+	function getPoseCharacterNames() {
+		var ret = [];
+		var names = [];
+		names.assign(characterInits);
+		for (var i=0;i<names.count;i+=2) {
+			var name = names[i];
+			var init = names[i+1];
+			if (!init.noPose && init.poses !== void) {
+				ret.add(%[name:name, initName:name]);
+			}
+		}
+		ret.sort(function(a,b){return a.name < b.name;});
+		return ret;
+	}
+
+	/**
+	 * ポーズがあるキャラクタ名一覧の取得
+	 */
+	function getCurrentPoseCharacterNames() {
+		var ret = [];
+		var names = [];
+		names.assign(characters);
+		for (var i=0;i<names.count;i+=2) {
+			var name = names[i];
+			var ch = names[i+1];
+			if (!ch.init.noPose && ch.init.poses !== void) {
+				ret.add(%[name:ch.name, initName:ch.initName]);
+			}
+		}
+		ret.sort(function(a,b){return a.name < b.name;});
+		return ret;
+	}
+
+	function tagfunc(elm) {
+		updateCameraFlag = false;
+		actionCameraFlag = false;
+		var ret = super.tagfunc(elm);
+		if (updateCameraFlag) {
+			updateCamera();
+		}
+		if (actionCameraFlag && (elm.sync || elm.wait)) {
+			ret = kag.waitSingleAction(this, true, +elm.wait);
+		}
+		return ret;
+	}
+
+
+	
+	// ------------------------------------------------------
+	// カメラ用機構
+	// ------------------------------------------------------
+
+	var updateCameraFlag = false;
+	var actionCameraFlag = false;
+	
+	// カメラ状態の更新
+	function updateCamera() {
+		// すべて再配置指定
+//		dm("カメラ更新");
+		recalcPosition();
+		event.recalcPosition();
+		foreach(characters, function(name, value, dict) {
+			value.recalcPosition();
+		});
+		foreach(layers, function(name, value, dict) {
+			value.recalcPosition();
+		});
+	}
+
+	var cameraox = 0;
+	var cameraoy = 0;
+
+	var _shiftx;
+	property shiftx {
+		setter(v) {
+			_shiftx = v;
+			updateCamera();
+		}
+		getter() {
+			return _shiftx;
+		}
+	}
+	var _shifty;
+	property shifty {
+		setter(v) {
+			_shifty = v;
+			updateCamera();
+		}
+		getter() {
+			return _shifty;
+		}
+	}
+	var _camerax;
+	property camerax {
+		setter(v) {
+			if (_camerax != v) {
+				_camerax = v;
+				updateCamera();
+			}
+		}
+		getter() {
+			return _camerax;
+		}
+	}
+	var _cameray;
+	property cameray {
+		setter(v) {
+			if (cameray != v) {
+				_cameray = v;
+				updateCamera();
+			}
+		}
+		getter() {
+			return _cameray;
+		}
+	}
+	var _camerazoom = 100;
+	property camerazoom {
+		setter(v) {
+			if (camerazoom != v) {
+				_camerazoom = v;
+				updateCamera();
+			}
+		}
+		getter() {
+			return _camerazoom;
+		}
+	}
+
+	var cameraCurrentActionList;
+	
+	function doCameraAct(name, param, time, elm) {
+		var action = %[name => %[handler:MoveAction, value:param, time:time, accel:elm.accel]];
+		if (elm.nowait) {
+			action.nowait = elm.nowait;
+		}
+		if (elm.actsync) {
+			action.actsync = time;
+		}
+		kag.beginAction(this, action);
+		actionCameraFlag = true;
+	}
+	
+	function setcamerax(param, elm) {
+		if (elm.camerach === void) {
+			var time = isSkip() ? 0 : +elm.time;
+			if (time > 0) {
+				doCameraAct("camerax", getRelative(param,camerax), time, elm);
+			} else {
+				_camerax = +getRelative(param,camerax);
+				updateCameraFlag = true;
+			}
+		}
+		return 0;
+	}
+
+	function setcameray(param, elm) {
+		if (elm.camerach === void) {
+			var time = isSkip() ? 0 : +elm.time;
+			if (time > 0) {
+				doCameraAct("cameray", +getRelative(param,cameray), time, elm);
+			} else {
+				_cameray = +getRelative(param,cameray);
+				updateCameraFlag = true;
+			}
+		}
+		return 0;
+	}
+
+	function setcamerazoom(param, elm) {
+		if (elm.camerach === void) {
+			var time = isSkip() ? 0 : +elm.time;
+			if (time > 0) {
+				doCameraAct("camerazoom", +getRelative(param,camerazoom), time, elm);
+			} else {
+
+
+				var cz = _camerazoom;
+				_camerazoom = +getRelative(param,camerazoom);
+
+				if (transMode && ((cz <= 100 &&  _camerazoom > 100) ||
+								  (cz > 100 && _camerazoom <= 100))) {
+					// カメラが100%境界を越える場合は、
+					// キャラの立ち絵生成レベル画像を1つあげるため再描画する
+					foreach(characters, function(name, value, dict) {
+						value.setRedraw();
+					});
+					redraw = true;
+				} else {
+					updateCameraFlag = true;
+				}
+			}
+		}
+		return 0;
+	}
+	
+	function setCameraCh(param, elm) {
+		var ch = getCharacter(param);
+		if (ch !== void && ch.isShowBU() && ch.targetLayer !== void) {
+			var emo  = ch.getEmotionInfo();
+			var cpos = ch.targetLayer.getCenterCamera(ch.xpos + emo.emoX, ch.ypos - emo.emoY);
+			var time = isSkip() ? 0 : +elm.time;
+			if (time > 0) {
+				if (elm.camerax !== void) doCameraAct("camerax", +getRelative(elm.camerax,cpos.x), time, elm);
+				if (elm.cameray !== void) doCameraAct("cameray", +getRelative(elm.cameray,cpos.y), time, elm);
+				if (elm.camerazoom !== void) doCameraAct("camerazoom", +getRelative(elm.camerazoom,cpos.zoom), time, elm);
+			} else {
+				if (elm.camerax !== void) _camerax = +getRelative(elm.camerax,cpos.x);
+				if (elm.cameray !== void) _cameray = +getRelative(elm.cameray,cpos.y);
+				if (elm.camerazoom !== void) _camerazoom = +getRelative(elm.camerazoom,cpos.zoom);
+				updateCameraFlag = true;
+			}
+		}
+		return 0;
+	}
+
+    /**
+     * カメラアクションを設定
+     * @param name アクション名
+     * @param elm パラメータ
+     */
+	function actionCamera(name, elm) {
+		var action = createAction(name, elm);
+		if (action !== void) {
+			kag.beginAction(this, action);
+			if (action instanceof "Dictionary") {
+				if (action.time == 0) {
+					//dm("アクションを記録:" + i);
+					cameraCurrentActionList.add(action);
+				}
+			} else if (action instanceof "Array") {
+				if (action.count > 0 && action[action.count - 1].time == 0) {
+					//dm("アクションを記録:" + i + " count:" + action.count);
+					cameraCurrentActionList.add(action);
+				}
+			}
+			actionCameraFlag = true;
+		}
+		return 0;
+	}
+	
+	function resetCamera(param, elm) {
+		var time = isSkip() ? 0 : +elm.time;
+		if (time > 0) {
+			doCameraAct("camerax", 0, time, elm);
+			doCameraAct("cameray", 0, time, elm);
+			doCameraAct("camerazoom", 100, time, elm);
+		} else {
+			_camerax = 0;
+			_cameray = 0;
+			_camerazoom = 100;
+			updateCameraFlag = true;
+		}
+		return 0;
+	}
+	
+	function setshiftx(param, elm) {
+		var time = isSkip() ? 0 : +elm.time;
+		if (time > 0) {
+			doCameraAct("shiftx", param, time, elm);
+		} else {
+			_shiftx = +param;
+			updateCameraFlag = true;
+		}
+		return 0;
+	}
+
+	function setshifty(param, elm) {
+		var time = isSkip() ? 0 : +elm.time;
+		if (time > 0) {
+			doCameraAct("shifty", param, time, elm);
+		} else {
+			_shifty = +param;
+			updateCameraFlag = true;
+		}
+		return 0;
+	}
+
+	function stopCamera(elm) {
+		kag.stopAction(this);
+		cameraCurrentActionList.clear();
+		return 0;
+	}
+
+};
+
+// 互換のために残ってるが既に不要
+KAGEnvironment.XPOSITION    = 1;
+KAGEnvironment.LEVEL        = 2;
+KAGEnvironment.DISPPOSITION = 3;
+KAGEnvironment.YPOSITION    = 4;
+
+KAGEnvImage.BOTH      = 1;
+KAGEnvImage.BU        = 2;
+KAGEnvImage.FACE      = 3;
+KAGEnvImage.SHOW      = 4;
+KAGEnvImage.CLEAR     = 5;
+KAGEnvImage.INVISIBLE = 6;
