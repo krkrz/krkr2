@@ -11,7 +11,7 @@
 [endtrans trans=normal time=1000]
 [wait time=3000]
 [begintrans]
-[hideall]
+[allimage delete]
 [endtrans trans=normal time=1000]
 [endskip]
 

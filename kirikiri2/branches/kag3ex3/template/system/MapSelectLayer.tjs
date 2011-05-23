@@ -410,11 +410,12 @@ class MapSelectLayer extends KAGLayer {
                     if (window.getKeyState(VK_RETURN) || window.getKeyState(VK_SPACE) || window.getKeyState(VK_CONTROL))
                         window.hideMouseCursor();
                     // キーボードによる操作の場合はマウスカーソルを隠す
-                    window.process(select.storage, select.target);
-                } else {
-                    window.processGo();
-                }
-                window.insertTag("donemapselect");
+					window.processGo();
+					window.insertTag("donemapselect", %[storage:select.storage, target:select.target]);
+				} else {
+					window.processGo();
+					window.insertTag("donemapselect");
+				}
             }
         }
     }

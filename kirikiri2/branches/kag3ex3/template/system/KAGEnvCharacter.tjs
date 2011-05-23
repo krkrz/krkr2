@@ -3,33 +3,28 @@
  */
 class VoiceTrack extends WaveSoundBuffer
 {
-	var owner, kag;
+	var owner;
 	var labelCount;
+	var mode; // trueなら実行環境に対するラベル処理を行う
 
-	function VoiceTrack(owner, kag) {
+	function VoiceTrack(owner) {
 		this.owner = owner;
-		this.kag   = (kag !== void) ? kag : global.kag;
 		labelCount = 0;
 		super.WaveSoundBuffer(owner);
 		prevstatus = status; //"unload";
 	}
 
+	// 音量制御用
 	function onStartVoice() { owner.onStartVoice(); }
-	function onStopVoice()  { owner.onStopVoice();  }
+	function onStopVoice()  { owner.onStopVoice(); }
 
-	function play() {
-		onStartVoice();
+	function play(mode) {
 		super.play(...);
-		var names = [];
-		names.assign(labels);
-		// ↑WaveSoundBuffer.labels は特殊な EnumMembers が実装されており，
-		//   必ずsamplePositionでソートされた状態assignされる（Dictionaryのように順序不定にならない）
-		var n = 0;
-		var entryDelay = kag.entryDelay; // [NGK]
-		for (var i=0;i<names.count;i+=2) {
-			entryDelay(names[i]);
-			entryDelay("vl" + ++n);
+		onStartVoice();
+		if (mode) {
+			owner.onStartVoiceLabel(labels);
 		}
+		this.mode = mode;
 		labelCount = 0;
 	}
 
@@ -38,13 +33,22 @@ class VoiceTrack extends WaveSoundBuffer
 		super.onStatusChanged(...);
 		var ps = prevstatus;
 		var cs = prevstatus = status;
-		onStopVoice() if(ps == "play" && cs == "stop");
-    }
+		if(ps == "play" && cs == "stop") {
+			if (mode) {
+				owner.onStopVoiceLabel();
+			}
+			onStopVoice();
+		}
+	}
 
 	function onLabel(name) {
-		var extractDelay = kag.extractDelay; // [NGK]
-		extractDelay(name);
-		extractDelay("vl" + ++labelCount);
+		if (mode) {
+			owner.onLabelVoice(name, ++labelCount);
+		}
+	}
+
+	function canWait() {
+		return status == "play";
 	}
 };
 
@@ -59,6 +63,25 @@ class BackVoiceTrack extends VoiceTrack
 
 	function onStartVoice() {}
 	function onStopVoice()  {}
+
+	function play() {
+		if (looping) {
+			// ループボイスでラベルがある場合はランダムで開始場所を変える
+			var names = [];
+			names.assign(labels);
+			if (names.count > 0) {
+				var n = intrandom(names.count\2);
+				//dm("ランダム基準:" + n);
+				if (n > 0) {
+					stop();
+					var label = names[(n-1)*2+1];
+					//dm("bvoice", label.position, label.samplePosition);
+					samplePosition = label.samplePosition if (typeof label == "Object" && label);
+				}
+			}
+		}
+		return super.play(...);
+	}
 
 	function onFadeCompleted() {
 		stop() if (volume == 0);
@@ -96,7 +119,12 @@ class EmotionLayer extends EnvGraphicLayer {
 				var levelInfo = owner.levels[owner.level];
 				xoffset = (int)(levelInfo !== void ? levelInfo.xoffset : 0) + basexoff;
 				yoffset = (int)(levelInfo !== void ? levelInfo.yoffset : 0) + baseyoff;
-				zoom = levelInfo !== void && levelInfo.zoom !== void ? levelInfo.zoom : 100;
+				if (levelInfo !== void) {
+					zoom = levelInfo.emozoom !== void ? levelInfo.emozoom :
+					levelInfo.zoom !== void ? levelInfo.zoom : 100;
+				} else {
+					zoom = 100;
+				}
 			} else {
 				// env 定義によるレベル補正
 				xoffset = (int)(owner.xoffset !== void ? +owner.xoffset : 0) + basexoff;
@@ -107,7 +135,12 @@ class EmotionLayer extends EnvGraphicLayer {
 					levelxoffset = levelInfo.xoffset !== void ? (int)levelInfo.xoffset : 0;
 					levelyoffset = levelInfo.yoffset !== void ? (int)levelInfo.yoffset : 0;
 				}
-				zoom = levelInfo !== void && levelInfo.zoom !== void ? levelInfo.zoom : 100;
+				if (levelInfo !== void) {
+					zoom = levelInfo.emozoom !== void ? levelInfo.emozoom :
+					levelInfo.zoom !== void ? levelInfo.zoom : 100;
+				} else {
+					zoom = 100;
+				}
 			}
 			//dm("リセット処理 level:" + owner.level);
 			//dm("owner offset:" + owner.xoffset + "," + owner.yoffset);
@@ -171,27 +204,29 @@ class EnvCharacterGraphicLayer extends EnvGraphicLayer {
  */
 class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 
-    // kag の参照
-    property kag {
-        getter() {
-            return window; // KAGEnvImage.window == env.kag;
-        }
-    }
-
-    // フェード指定のデフォルト
-    property fadeValue {
+	var deleteFlag;
+	
+	// フェード指定のデフォルト
+	property fadeValue {
         getter() {
 			if (init !== void && init.fadeValue !== void) {
 				return init.fadeValue;
 			} else {
-                if (env.envinfo !== void && env.envinfo.charFadeValue !== void) {
+				if (env.envinfo !== void && env.envinfo.charFadeValue !== void) {
 					return env.envinfo.charFadeValue;
 				} else {
-					return env.fadeValue;
+					return KAGEnvTrans.fadeValue;
 				}
 			}
         }
     }
+
+	// 表情の表示レベル指定
+	property faceLevelName {
+		getter() {
+			return init.faceLevelName !== void ? init.faceLevelName : env.faceLevelName;
+		}
+	}
 
 	/**
 	 * 表示処理用の自動トランジションの指定
@@ -208,8 +243,6 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     /// 初期化情報
     var poses;
 
-    // 画像ファイル直接指定
-    var image;
 	// ポーズ個別オフセット補正
 	var yoffset;
 	var xoffset;
@@ -220,15 +253,20 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     /// 服装
     var dress;
     /// 表情
-    var face;
+	var face;
+	/// 表情用ポーズ
+	var _facepose;
 
+	property facepose {
+		getter() {
+			return _facepose === void ? pose : _facepose;
+		}
+		setter(v) {
+			_facepose = v;
+		}
+	}
+	
     var facePoseMap;
-    
-    /// ボイス情報
-    var voice;
-    var strVoice;
-    var incVoice;   // true なら文字列指定時もカウントする
-    var noincVoice; // true ならカウントしない
     
     // ベース画像名
     var baseImageName;
@@ -279,17 +317,9 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
             }
 
 		}
-
-		if (env.envinfo.voiceInit !== void && init.voiceFile !== void) {
-			voice = env.envinfo.voiceInit;
-		}
     }
-
-	function clearStandLayers() {
-	}
-
+	
 	function finalize() {
-		clearStandLayers();
 		if (baseImage !== void) {
             invalidate baseImage;
         }
@@ -314,39 +344,37 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      * セーブ処理
      */
 	function onStore(f) {
-        global.KAGEnvImage.onStore(f);
+		global.KAGEnvImage.onStore(f);
 		global.KAGEnvLevelLayer.onStore(f);
-        f.initName = initName;
-        f.image = image;
-        f.yoffset = yoffset;
-		f.xoffset = xoffset;
-		f.levels = levels;
-		f.pose = pose;
-		f.dress = dress;
-        f.face = face;
-        f.voice = voice;
-        f.strVoice = strVoice;
-		f.posName = posName;
-		f.backVoiceName = backVoiceName;
-		f.backVoiceLoop = backVoiceLoop;
+		f.initName = initName if initName != name;
+		f.yoffset = yoffset if xoffset != 0;
+		f.xoffset = xoffset if yoffset != 0;
+		f.levels = levels if levels !== void;
+		f.pose = pose if pose !== void ;
+		f.facepose = _facepose if _facepose !== void;
+		f.dress = dress if dress !== void;
+		f.face = face if face !== void;
+		f.posName = posName if posName !== void;
+		f.backVoiceName = backVoiceName if backVoiceName !== void;
+		f.backVoiceLoop = backVoiceLoop if backVoiceName !== void && backVoiceLoop;
+		f.backVoiceType = backVoiceType if backVoiceType != 0;
     }
 
     /**
      * ロード処理
      */
     function onRestore(f) {
-        image = f.image;
-        yoffset = f.yoffset;
-		xoffset = f.xoffset;
+		yoffset = f.yoffset !== void ? f.yoffset : 0;
+		xoffset = f.xoffset !== void ? f.xoffset : 0;
 		levels = f.levels;
 		pose  = f.pose;
-        dress = f.dress;
-        face  = f.face;
-        voice = f.voice;
-        strVoice = f.strVoice;
+		_facepose = f.facepose;
+		dress = f.dress;
+		face  = f.face;
 		posName  = posName;
 		backVoiceName = f.backVoiceName;
-		backVoiceLoop = f.backVoiceLoop;
+		backVoiceLoop = f.backVoiceLoop !== void ? f.backVoiceLoop : false;
+		backVoiceType = f.backVoiceType !== void ? f.backVoiceType : 0;
 		global.KAGEnvImage.onRestore(f);
 		global.KAGEnvLevelLayer.onRestore(f);
     }
@@ -355,25 +383,11 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     var redrawFace;
 
 	function setRedrawFace(elm) {
-		if (!kag.skipNoDisp && isShowFace() && (elm.faceon || env.showFaceMode || env.currentNameTarget === this) && !elm.faceoff) {
+		if (isShowFace() && (elm.faceon || env.isRedrawFace(this)) && !elm.faceoff) {
 			redrawFace = true;
 		}
 	}
 	
-    /**
-     * 直接画像指定
-     */
-    function setImage(imageName, elm) {
-		if (imageName != image || isClear()) {
-			image   = imageName;
-			yoffset = elm.yoffset;
-			xoffset = elm.xoffset;
-			disp = SHOW;
-			redraw  = true;
-			setAutoTrans([init.poseTrans, init.charTrans, env.envinfo.poseTrans, env.envinfo.charTrans], elm);
-		}
-    }
-
 	function _setPose(poseName) {
 		var info = poses[poseName];
 		if (info !== void) {
@@ -416,10 +430,24 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 				}
 			}
 		}
-		// イメージを破棄
-		image = void;
 		// ypos はポーズ設定したときに0に戻す
-		ypos = 0;
+		ypos = 0 if (elm.ypos === void);
+	}
+
+	/**
+	 * 表情用ポーズ指定
+	 */
+	function setFacePose(poseName, elm) {
+		if (poseName === void || poseName == "") {
+			facepose = void;
+			return;
+		}
+		if (poses !== void) {
+			var info = poses[poseName];
+			if (info !== void) {
+				facepose = poseName;
+			}
+		}
 	}
 
     /**
@@ -439,7 +467,8 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			// 表情表示取得
 			setRedrawFace(elm);
 		}
-		image = void;
+		// ypos は服装変更したときに0に戻す
+		ypos = 0 if (elm.ypos === void);
     }
     /**
      * 表情の設定
@@ -453,7 +482,6 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			// 表情表示取得
 			setRedrawFace(elm);
 		}
-		image = void;
     }
 
 	// 表示位置指定
@@ -481,7 +509,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			errorPosCollision("level");
 //			errorPosCollision("disp");
 		} else if (_posCollisionCheck[tag].count > 1) {
-			kag.errorCmd(@"${name}: ${tag}が多重指定されています: " + _posCollisionCheck[tag].join("/"));
+			env.errorCmd(@"${name}: ${tag}が多重指定されています: " + _posCollisionCheck[tag].join("/"));
 		}
 	}
 	function checkPosCollision(elm, cmd) {
@@ -522,7 +550,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 				disp = SHOW;
 			}
 			var posFrom = getFrom(cmd);
-            var fromInfo;
+			var fromInfo;
 			if (posFrom !== void && (fromInfo = env.positions[posFrom]) !== void) {
 				moveTime = info.time !== void ? info.time : elm.time;
 				moveAccel = (elm.accel === void) ? 0 : elm.accel;
@@ -543,11 +571,13 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 				var newxpos = info.xpos !== void ? calcRelative(xpos, info.xpos, env.xmax) : xpos;
 				var newypos = info.ypos !== void ? calcRelative(xpos, info.ypos, env.ymax) : ypos;
 				if (xpos == void || xpos != newxpos || ypos == void || ypos != newypos) {
-					moveTime = info.time !== void ? info.time : elm.time;
-					if (moveTime !== void && xpos === void) {
-						moveTime = 0;
+					if (_prevShow) {
+						moveTime = info.time !== void ? info.time : elm.time;
+						if (moveTime !== void && xpos === void) {
+							moveTime = 0;
+						}
+						moveAccel = (elm.accel === void) ? 0 : elm.accel;
 					}
-					moveAccel = (elm.accel === void) ? 0 : elm.accel;
 					xpos = newxpos;
 					ypos = newypos;
 					reposition = true;
@@ -557,16 +587,13 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 					}
 				}
 			}
-			if (moveTime !== void && isSkip()) {
-				moveTime = 0;
-			}
 		}
 
 		if (info.disp !== void) {
-			if (info.ypos === void && elm.ypos === void && disp == CLEAR && info.disp < BU) {
-				// 表示時はY位置リセットと状態初期化
+			if (disp == CLEAR && info.disp < BU) {
+				// 表示時は状態初期化
 				initFile(elm);
-				ypos = 0;
+				ypos = 0 if info.ypos === void && elm.ypos === void;
 			}
 			disp = info.disp;
 			redraw = true;
@@ -576,18 +603,17 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 		if (info.level !== void) {
 			level = info.level;
 			if (elm.back !== void) toBack(); // [XXX] 評価順が不定のため：レベル変更時には常に手前なのでfrontは不要
-			if (elm.hide === void && disp == CLEAR) {
-				if (info.ypos === void && elm.ypos === void) { // 表示時はY位置リセットと状態初期化
-					initFile(elm);
-					ypos = 0;
-				}
+			if (disp == CLEAR && elm.hide === void) {
+				// 自動表示と状態初期化
+				initFile(elm);
+				ypos = 0 if info.ypos === void && elm.ypos === void;
 				disp = SHOW;
 			}
 			istrans = true;
 		}
 
 		if (info.trans !== void) {
-			setAutoTrans([info.trans], elm);
+			setTrans(info.trans, elm);
 		} else if (istrans) {
 			setAutoTrans([env.envinfo.positionTrans], elm);
 		}
@@ -616,7 +642,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 				emotion.name = name;
 			}
 			emotion.time   = elm.time if elm.time !== void;
-			emotion.nowait = elm.nowait if elm.nowqait !== void;
+			emotion.nowait = elm.nowait if elm.nowait !== void;
 			emotion.hide   = elm.hide if elm.hide !== void;
 			updateFlag = true;
 			return true;
@@ -643,7 +669,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 
 	
     var charCommands = %[
-    image   : this.setImage incontextof this,
+	initname : null,
     dress   : this.setDress incontextof this,
     face    : function(cmd,elm) {
         if (facePoseMap !== void) {
@@ -656,6 +682,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
             setFace(cmd,elm);
         }
     }incontextof this,
+	facepose : this.setFacePose incontextof this,
     pos     : this.setPosition incontextof this,
 	emotion : function(param, elm) { this.setEmotion(param,elm); return 0;} incontextof this,
 	hideemotion : this.hideEmotion incontextof this,
@@ -664,27 +691,30 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     front   : this.setFront incontextof this,
     back    : this.setBack incontextof this,
     level   : this.setLevel incontextof this,
-    voice   : this.setVoice incontextof this,
-    nextvoice : this.entryNextVoice incontextof this,
-    clearvoice : this.clearVoice incontextof this,
-    playvoice : this.playVoice2 incontextof this,
-	stopvoice : this.stopVoice incontextof this,
-    waitvoice : this.waitVoice incontextof this,
+	"delete" => function (param, elm) { deleteFlag=true; disp = CLEAR; } incontextof this,
+	stopvoice : null,
+	playvoice : null,
+	waitvoice : null,
 	facewin : function(param, elm) { disp = FACE; redraw = true; } incontextof this,
 	faceon : null,
 	faceoff : null,
 	loop : null,
-	bvoice : this.setBVoice incontextof this
+	bvoice : function (param, elm) { setBVoice(param, elm, 0); } incontextof this,
+	hvoice : function (param, elm) { setBVoice(param, elm, 1); } incontextof this,
         ];
 
 	
-	function setBVoice(param, elm) {
-		var loop = elm.loop !== void ? +elm.loop : true;
-		if (param == "" || loop || !kag.skipNoDisp) {
+	function setBVoice(param, elm, type) {
+		if (param != "") {
 			backVoiceName = param;
-			backVoiceLoop=loop;
-			updateFlag = true;
+			backVoiceLoop = elm.loop !== void ? +elm.loop : true;
+			backVoiceType = elm.type !== void ? +elm.type : type;
+		} else {
+			backVoiceName = void;
+			backVoiceLoop = false;
+			backVoiceType = 0;
 		}
+		updateFlag = true;
 	}
 
 	/**
@@ -728,10 +758,6 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      */
     function doCommand(cmd, param, elm) {
 
-        if (global.KAGEnvImage.doCommand(cmd, param, elm)) {
-            return true;
-        }
-
         var func;
         if ((func = charCommands[cmd]) !== void) {
             if (func != null) {
@@ -739,11 +765,15 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
             }
             return true;
         }
-        
+
+		if (global.KAGEnvImage.doCommand(cmd, param, elm)) {
+			return true;
+        }
+		
         var info;
         var find = false;
 
-		if (!find && poses !== void && pose !== void && image === void) {
+		if (!find && poses !== void && pose !== void) {
 			var poseInfo;
 			if ((poseInfo = poses[pose]) !== void) {
 				var dresses       = poseInfo.dresses;
@@ -782,7 +812,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
         if (!find) {
             find = setTrans(cmd, elm);
         }
-        
+
         return find;
     };
 
@@ -821,21 +851,21 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	}
 	
     /**
-     * 立ち絵の描画
-     * @param layer 描画対象レイヤ
-     * @param levelName レベル名
+     * 立ち絵の描画下請け
+	 * @param layer 描画対象レイヤ
+	 * @param levelName レベル名
 	 * @param _pose ポーズ指定
-     * @oaram face 顔描画を示すフラグ
-     * @return 成功したら true
-     */
-	function _drawLayerPose(layer, levelName, _pose) {
-
+	 * @param drawFace 表情描画かどうか
+	 * @return 成功したら true
+	 */
+	function _drawLayerPose(layer, levelName, _pose, drawFace=false) {
+		
 		var poseInfo;
 		if (poses !== void && (poseInfo = poses[_pose]) !== void) {
 			
 			// 顔描画の場合は msgImage / msgFaceImage を優先
-			var imageName     = (levelName == env.faceLevelName && poseInfo.msgImage !== void)     ? poseInfo.msgImage : poseInfo.image;
-            var faceImageName = (levelName == env.faceLevelName && poseInfo.msgFaceImage !== void) ? poseInfo.msgFaceImage : poseInfo.faceImage;
+			var imageName     = (drawFace && poseInfo.msgImage !== void)     ? poseInfo.msgImage : poseInfo.image;
+			var faceImageName = (drawFace && poseInfo.msgFaceImage !== void) ? poseInfo.msgFaceImage : poseInfo.faceImage;
             var dresses       = poseInfo.dresses;
             var faces         = poseInfo.faces;
 
@@ -858,18 +888,20 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
             //dm("dress:", dressName, "face:", faceName);
             
             if (faceImageName !== void) {
-                
+
+				var parent = env.temporaryLayer;
+				
                 // 顔分離型立ち絵
 
                 // ベース部分
                 imageFile = imageName.replace(/DRESS/, dressName);
 
                 // ベース画像のロード
-                if (baseImageName != imageFile) {
+				if (baseImageName != imageFile) {
                     baseImageName = imageFile;
 					// 画像ベースのキャッシュ用
 					if (baseImage === void) {
-						baseImage = new global.Layer(kag, kag.fore.base);
+						baseImage = new global.Layer(parent.window, parent);
 						baseImage.name = "立ち絵画像キャッシュ:" + name;
                     }
                     try {
@@ -906,7 +938,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
                     imageFile = imageFile.replace(/FACE/, faceName);
                     var imageInfo;
                     if (faceImage === void) {
-                        faceImage = new global.Layer(kag, kag.fore.base);
+						faceImage = new global.Layer(parent.window, parent);
                         faceImage.name = "立ち絵顔画像処理用:" + name;
                     }
                     try {
@@ -948,7 +980,6 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
                         layer.operateRect(0,0,faceImage,0,0,faceImage.imageWidth, faceImage.imageHeight, operateMode);
                     }
 				}
-				return true;
                 
             } else {
                 // 顔合成型立ち絵
@@ -972,49 +1003,55 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
                 } catch (e) {
                     return false;
                 }
-                return true;
             }
-        }
+
+			defaultAfx = poseInfo.afx !== void ? poseInfo.afx : init.afx !== void ? init.afx : "center";
+			afx = void;
+			defaultAfy = poseInfo.afy !== void ? poseInfo.afy : init.afy !== void ? init.afy : "bottom";
+			afy = void;
+			
+			return true;
+		}
         return false;
     }
 
-    /**
-     * 現在の立ち絵の描画
-     * @param layer 描画対象レイヤ
-     * @param levelName レベル名
-     */
-    function _drawLayer(layer, levelName) {
+	/**
+	 * 立ち絵の描画
+	 * @param layer 描画対象レイヤ
+	 * @param levelName レベル名
+     * @param pose ポーズ指定
+	 * @return 成功したら true
+	 */
+	function drawPose(layer, levelName, pose) {
+		return _drawLayerPose(layer, levelName, pose);
+	}
 
-        imageFile = "";
-        if (image !== void) {
-            var imageName = image.replace(/LEVEL/, levelName);
-            try {
-				if (layer instanceof "AnimationLayer") {
-					var elm = %[ storage:image ];
-					layer.loadImages(elm);
-                } else {
-					layer.loadImages(image);
+    /**
+	 * 表情を描画する
+	 * @parma layer 表情表示先レイヤ
+	 * @return 描画したらtrue
+	 */
+	function drawFace(layer) {
+		//dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
+		if (poses !== void) {
+			imageFile = "";
+			if (_drawLayerPose(layer, faceLevelName, facepose, true) ||
+				(facepose != init.defaultPose && _drawLayerPose(layer, faceLevelName, init.defaultPose, true))) {
+				if (env.envinfo.faceApplyColor) {
+					applyColor(layer);
 				}
-            } catch (e) {
-				kag.errorImage(image+ ":立ち絵画像がロードできません name:" + name);
-                return;
-            }
-		} else {
-			if (!_drawLayerPose(layer, levelName, pose) &&
-				!(pose != init.defaultPose && _drawLayerPose(layer, levelName, init.defaultPose))) {
-				kag.errorImage(imageFile + ":立ち絵画像がロードできません name:" + name + " pose:" + pose + " dress:" + dress + " face:" + face);
-				return;
+				return true;
+			} else {
+				env.errorImage(imageFile + ":表情画像がロードできません name:" + name + " pose:" + facepose + " dress:" + dress + " face:" + face);
 			}
-        }
-
-		// サイズ補正
-		layer.setSizeToImageSize();
+		}
+		return false;
     }
-
-    /**
-     * 現在の立ち絵の描画
-     * @param layer 描画対象レイヤ
-     */
+	
+	/**
+	 * 画像を描画する
+	 * @param layer 描画先レイヤ
+	 */
 	function drawLayer(layer) {
 		if (emotionLayer !== void && emotionLayer.visible == false) {
 			invalidate emotionLayer;
@@ -1029,8 +1066,12 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			if (levelName === void) {
 				levelName = level;
 			}
-			_drawLayer(layer, levelName);
-
+			// 画像をロードする
+			imageFile = "";
+			if (!drawPose(layer, levelName, pose) &&
+				!(pose != init.defaultPose && drawPose(layer, levelName, init.defaultPose))) {
+				env.errorImage(imageFile + ":立ち絵画像がロードできません name:" + name + " pose:" + pose + " dress:" + dress + " face:" + face);
+			}
 			// 未初期化時デフォルト
 			if (xpos === void) {
 				xpos = env.defaultXpos;
@@ -1040,22 +1081,6 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			}
 		}
 	}
-
-    /**
-     * 表情を描画する
-     */
-    function drawFace(layer, faceLevelName) {
-		//dm("表情描画:" + name + " face:" + face + " layer:" + layer.name + " level:" + faceLevelName);
-		if (poses !== void) {
-			_drawLayer(layer, faceLevelName);
-			if (env.envinfo.faceApplyColor) {
-				applyColor(layer);
-			}
-			layer.visible = true;
-        } else {
-            layer.visible = false;
-        }
-    }
 
 	function emoConv(emo) {
 		if (emo instanceof "Array") {
@@ -1108,9 +1133,11 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 		}
 	}
 
+
+	// XXXX 要再考
 	var emotionDone;
-	
-	function updateNoDisp() {
+	function nodisp(elm) {
+		global.KAGEnvImage.nodisp(elm);
 		if (redraw && emotionDone) {
 			emotion = void;
 		}
@@ -1121,13 +1148,13 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
      * レイヤ状態更新処理
      * エモーション処理を追加
      */
-	function updateLayer(layer) {
+	function updateLayer(layer, isSkip) {
 		global.KAGEnvImage.updateLayer(...);
 		
 		// エモーション消去処理
 		if (hideemo !== void) {
 			if (emotionLayer !== void && emotionLayer.visible) {
-				if (!isSkip() && hideemo > 1) {
+				if (!isSkip && hideemo > 1) {
 					emotionLayer.stopAction();
 					emotionLayer.beginAction(%[visvalue:%[handler:"MoveAction", value:0, time:hideemo, hide:true]]);
 				} else {
@@ -1156,7 +1183,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 				
 				// 新規エモーションレイヤ
 				if (emotionLayer === void) {
-					emotionLayer = new EmotionLayer(kag, kag.fore.base, this);
+					emotionLayer = new EmotionLayer(layer.window, layer.parent, this);
 					emotionLayer.name = name + "エモーション";
 				}
 				emotionLayer.stopAction();
@@ -1220,27 +1247,24 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	/**
 	 * 更新処理
 	 */
-	function _update() {
-		timeInfo = env.currentTime;
-
+	function update(base, isSkip) {
+		timeInfo = env.currentTimeInfo;
 		// 立ち絵系更新
-		var ret = global.KAGEnvImage._update(...);
-
+		global.KAGEnvImage.update(...);
 		// 表情更新
 		if (redrawFace) {
-			if (env.currentNameTarget != this) {
-				env.drawName();
-			}
-			env.drawFacePage(kag.fore, this);
-			env.currentNameTarget = this;
+			env.redrawFace(this);
 			redrawFace = false;
 		}
-		
+	}
+
+	function updateSound(skipMode) {
 		// ループボイス対応用
 		if (doBackVoice) {
 			if (backVoiceName === void || backVoiceName == "" || !openBackVoice(backVoiceName, backVoiceLoop)) {
 				stopBackVoice();
 				backVoiceName = void;
+				backVoiceLoop = false;
 			} else {
 				stopVoice();
 				startBackVoice();
@@ -1250,19 +1274,24 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			}
 			doBackVoice = false;
 		}
-		return ret;
 	}
 
+	function initCommand() {
+		global.KAGEnvImage.initCommand();
+		redrawFace = false;
+	}
+
+	
 	/**
 	 * KAG タグ処理
 	 * @param elm コマンドパラメータ
 	 */
 	function command(elm) {
+		// ポーズ指定コマンドを優先処理する
 		var e = %[];
 		(Dictionary.assign incontextof e)(elm); 
 		var names = [];
 		names.assign(e);
-		// ポーズ指定コマンドを優先処理する
 		for (var i=0; i<names.count; i+= 2) {
 			if (doPoseCommand(names[i], names[i+1], e)) {
 				delete e[names[i]];
@@ -1270,7 +1299,32 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 		}
 		global.KAGEnvImage.command(e);
 	}
-	
+
+	function checkSync(elm) {
+		global.KAGEnvImage.checkSync(elm);
+		syncCommand = true if elm.waitvoice;
+	}
+
+	function sync(elm, skipMode) {
+		global.KAGEnvImage.sync(...);
+		if (elm.stopvoice) {
+			stopVoice();
+		} else if (elm.playvoice !== void) {
+			if (!skipMode) {
+				var param = elm.playvoice;
+				if (typeof param == "String") {
+					if (reNumber.test(param)) {
+						param = (int)(cutZero.replace(param, ""));
+					}
+					playVoice(getVoice(param));
+				}
+			}
+		}
+		if (elm.waitvoice) {
+			env.addFastTag("wchvoice", %[target:this]);
+		}
+	}
+
 	// ----------------------------------------------------------
 	// ボイス処理
 	// ----------------------------------------------------------
@@ -1278,79 +1332,6 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	var reNumber = new RegExp("^[0-9][0-9]*$");
 	var cutZero  = new RegExp("^0*", "g"); // 先頭の0の文字カット用（残すと８進数とみなされるので）
 
-    // 加算しないフラグ
-    var noinc;
-    
-    /**
-     * ボイスファイルの指定
-     */
-    function setVoice(param, elm) {
-		// ボイスなし指定
-		if (init.noVoice !== void) {
-			return;
-		}
-		if (typeof param == "Integer") {
-			if (elm !== void && elm.once) {
-				strVoice = getVoice(param);
-			} else {
-				voice = param;
-				strVoice = void;
-			}
-		} else if (typeof param == "String") {
-			if (reNumber.test(param)) {
-				param = (int)(cutZero.replace(param, ""));
-				if (elm !== void && elm.once) {
-					strVoice = getVoice(param);
-				} else {
-					voice = param;
-					strVoice = void;
-                }
-            } else if (param.charAt(0) == "@") {
-				voice += +param.substr(1);
-            } else {
-                strVoice = param;
-            }
-        } else {
-            voice = void;
-            strVoice = void;
-        }
-		incVoice   = elm !== void ? elm.incvoice : false;
-		noincVoice = elm !== void ? elm.noincvoice : false;
-        //dm("ボイス設定:" + param + ":" + voice);
-    }
-
-    /**
-     * ボイスファイル指定＋次回再生エントリ
-     */
-	function entryNextVoice() {
-		var voicename = strVoice == "ignore" ? void : getVoice(strVoice !== void ? strVoice : voice);
-		if (strVoice === void || incVoice) {
-			if (typeof voice == "Integer") {
-				if (!noincVoice) {
-					voice++;
-				}
-			} else {
-				voice = void;
-			}
-		}
-		incVoice   = void;
-		noincVoice = void;
-		strVoice   = void;
-
-		if (voicename !== void) {
-			env.entryNextVoice(name, voicename);
-			kag.sflags["voice_" + init.voiceName] = true if (init.voiceFlag);
-		}
-    }
-    
-    /**
-     * ボイスファイル指定の解除
-     */
-    function clearVoice() {
-        voice = void;
-        strVoice = void;
-    }
-    
     /**
      * ボイスファイル名の取得
      * @param voice パラメータ　数値の場合は書式処理、文字列の場合はそのまま返す
@@ -1360,11 +1341,11 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
             if (init.voiceFile === void) {
                 return void;
             }
-            var voiceBase = kag.flags.voiceBase !== void ? kag.flags.voiceBase : "";
-            // 名前指定がある場合でデフォルト名でない場合は Nつきのファイル名で参照する
-            if (kag.flags.name !== void && (kag.flags.name != kag.defaultName || kag.flags.family != kag.defaultFamily)) {
-                var name = init.voiceFile.sprintf(voiceBase, voice, "N");
-                if (Storages.isExistentStorage(name)) {
+			var voiceBase = env.getVoiceBase();
+			// 名前指定がある場合でデフォルト名でない場合は Nつきのファイル名で参照する
+			if (env.isDefaultName()) {
+				var name = init.voiceFile.sprintf(voiceBase, voice, "N");
+				if (Storages.isExistentStorage(name)) {
                     return name;
                 }
             }
@@ -1376,18 +1357,14 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
         return void;
     }
 
-	function showVoiceInfo() {
-		dm("[" + name + " voice=" + voice + "]");
-	}
-	
 	var initSound;
 	var soundBuffer; // ボイス用サウンドバッファ
-    var voiceEndTime;
 
 	var backVoiceBuffer; //< ループボイス用サウンドバッファ
 	var _backVoiceName; //< ループボイスファイル名
 	var doBackVoice = false; //< ループボイス開始用フラグ
 	var backVoiceLoop = false;
+	var backVoiceType = 0;
 
 	property backVoiceName {
 		getter() {
@@ -1404,37 +1381,62 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     }
     
     /**
-     * ボイス開始時処理
+	 * ボイス開始時処理
+	 * BGM音量制御とBGV制御
      */
-    function onStartVoice() {
+	function onStartVoice() {
 		//dm("ボイス開始ボリューム制御開始");
-        if (kag.bgmdown && !kag.skipMode) {
-            kag.bgm.voldown = true;
-		}
+		env.setBGMDown(true);
 		if (backVoiceName !== void) {
 			stopBackVoice();
 		}
-    }
+	}
 
     /**
      * ボイス停止時処理
+	 * BGM音量制御とBGV制御
      */
-    function onStopVoice() {
+	function onStopVoice() {
 		//dm("ボイス開始ボリューム制御完了");
-		voiceEndTime = void;
-		if (kag.bgm.voldown) {
-			kag.bgm.voldown = false;
-        }
+		env.setBGMDown(false);
 		if (backVoiceName !== void) {
 			if (!doBackVoice) {
 				startBackVoice();
 			}
 		}
     }
+	
+	function onStartVoiceLabel(labels) {
+		var names = [];
+		names.assign(labels);
+		// ↑WaveSoundBuffer.labels は特殊な EnumMembers が実装されており，
+		//   必ずsamplePositionでソートされた状態assignされる（Dictionaryのように順序不定にならない）
+		var entryDelay = env.entryDelay;
+		var n = 0;
+		for (var i=0;i<names.count;i+=2) {
+			entryDelay(names[i]);
+			entryDelay("vl" + ++n);
+		}
+		entryDelay("vlstop");
+	}
 
+	function onStopVoiceLabel() {
+		env.trigger(name + "_voice");
+		env.extractDelay("vlstop");
+	}
+
+	/**
+	 * ボイスラベル時処理
+	 */
+	function onLabelVoice(name, count) {
+		var extractDelay = env.extractDelay;
+		extractDelay(name);
+		extractDelay("vl" + count);
+	}
+	
 	function getVoicename(voicename) {
 		// 拡張子補完処理
-		kag.errorLine(void, name + ":ボイス再生:" + voicename);
+		env.errorLine(void, name + ":ボイス再生:" + voicename);
 		if (!Storages.isExistentStorage(voicename)) {
 			var test;
 			if (test = voicename + ".wav", Storages.isExistentStorage(test)) {
@@ -1442,24 +1444,26 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			} else if(test = voicename + ".ogg", Storages.isExistentStorage(test)) {
 				return test;
 			} else {
-				kag.errorVoice(name + ":ボイスがロードできません:" + voicename);
+				env.errorVoice(name + ":ボイスがロードできません:" + voicename);
 				return void;
 			}
 		}
 		return voicename;
 	}
 
-    /**
-     * ボイスの再生
-     */
-    function playVoice(voicename=void) {
-		voiceEndTime = void;
+	function isVoiceOn() {
+		return env.isVoiceOn(init.voiceName);
+	}
+	
+	/**
+	 * ボイスの再生
+	 */
+	function playVoice(voicename=void, mode=true) {
 		var ret = void;
-		
-		if (!kag.skipNoDisp && voicename !== void && voicename != ""){
+		if (voicename !== void && voicename != ""){
 			//dm("再生処理:" + voicename);
 			voicename = getVoicename(voicename);
-			if (voicename !== void && kag.getVoiceOn(init.voiceName) && !kag.skipMode && kag.voiceenable) {
+			if (voicename !== void && env.isVoiceOn(init.voiceName) && !env.skipMode) {
 				if (initSound) {
                     if (soundBuffer !== void) {
                         invalidate soundBuffer;
@@ -1468,74 +1472,92 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
                     initSound = false;
                 }
                 if (soundBuffer === void) {
-                    soundBuffer = new VoiceTrack(this, kag);
+					soundBuffer = new VoiceTrack(this);
                 }
 				resetVoiceVolume();
 				try {
-                    if (kag.voicespeed != 1.0 && typeof soundBuffer.filters != "undefined") {
+					var voicespeed = env.getVoiceSpeed();
+					if (voicespeed != 1.0 && typeof soundBuffer.filters != "undefined") {
                         soundBuffer.filters.clear();
                         soundBuffer.filters.add(new WaveSoundBuffer.PhaseVocoder());
                         soundBuffer.filters[0].window = 256;
-                        soundBuffer.filters[0].time = 1.0 / kag.voicespeed;
+                        soundBuffer.filters[0].time = 1.0 / voicespeed;
 						soundBuffer.open(voicename);
-                        soundBuffer.play();
-                        ret = (int)(soundBuffer.totalTime / kag.voicespeed);
+						soundBuffer.play(mode);
+                        ret = (int)(soundBuffer.totalTime / voicespeed);
                     } else {
                         soundBuffer.open(voicename);
-                        soundBuffer.play();
+						soundBuffer.play(mode);
                         ret = soundBuffer.totalTime;
                     }
                 } catch (e) {
-                }
+				}
 			}
 		}
-		if (ret) {
-            voiceEndTime = System.getTickCount() + ret;
-		} else {
-			kag.extractDelay("*");
-			onStopVoice();
-		}
-        return ret;
-    }
-
-    /**
-     * ボイスの外部からの再生
-     */
-    function playVoice2(param) {
-        //dm("外部ボイス再生:" + param);
-        if (typeof param == "String") {
-            if (reNumber.test(param)) {
-                param = (int)(cutZero.replace(param, ""));
-            }
-		} else {
-			param = void;
-		}
-		playVoice(getVoice(param));
+		return ret;
     }
 
     /**
      * ボイスの停止
      */
     function stopVoice() {
-        voiceEndTime = void;
-        if (soundBuffer !== void) {
-            soundBuffer.stop();
-            if (typeof soundBuffer.filters != "undefined") {
-                soundBuffer.filters.clear();
+		if (soundBuffer !== void) {
+			soundBuffer.stop();
+			if (typeof soundBuffer.filters != "undefined") {
+				soundBuffer.filters.clear();
             }
         }
     }
 
+	/**
+	 * ボイスのモードをクリアする。
+	 * ※delayrun 関係の反応が止まる
+	 */
+	function clearVoiceMode() {
+		if (soundBuffer !== void) {
+			soundBuffer.mode = false;
+		}
+		if (backVoiceBuffer !== void) {
+			backVoiceBuffer.mode = false;
+		}
+	}
+	
     /**
      * ボイス待ち
-     * @param true の場合スキップ可能（デフォルト）
-     * @param falseの場合スキップ不可能
      */
-    function waitVoice(param) {
-		if (voiceEndTime !== void) {
-			var waitTime = voiceEndTime - System.getTickCount();
-			ret = kag.waitTime(waitTime, +param && kag.clickSkipEnabled);
+	function waitVoice(elm, main) {
+		if (soundBuffer !== void && soundBuffer.canWait()) {
+			var canskip = elm.canskip !== void ? elm.canskip : true;
+			var trigger = name + "_voice";
+			if (canskip && main.clickSkipEnabled) {
+				if (main.skipMode){
+					stopVoice();
+					return 0;
+				}
+				main.conductor.wait(%[
+				    click : function(arg)
+					{
+						arg();
+					} incontextof this,
+					click_arg : stopVoice,
+					trigger => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					trigger + "_arg" => +elm.wait
+						]);
+			} else {
+				main.conductor.wait(%[
+					trigger => function(arg)
+					{
+						return arg;
+					} incontextof this,
+					trigger + "_arg" => +elm.wait
+						]);
+			}
+			return -2;
 		}
+		return 0;
     }
     
     /**
@@ -1544,7 +1566,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
     function resetVoiceVolume() {
 		if (soundBuffer !== void) {
 			var per = init.voiceVolume;
-			var vol = kag.getVoiceVolume(init.voiceName);
+			var vol = env.getVoiceVolume(init.voiceName);
 			soundBuffer.volume2 = ((per !== void) ? (vol * +per / 100) : vol) * 1000;
         }
 	}
@@ -1555,9 +1577,9 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 	function openBackVoice(voicename, loop) {
 		if (voicename !== void && voicename != ""){
 			voicename = getVoicename(voicename);
-			if (voicename !== void && kag.getVoiceOn(init.voiceName) && (loop ? kag.bgvenable : kag.voiceenable)) {
+			if (voicename !== void && env.isVoiceOn(init.voiceName, loop)) {
 				if (backVoiceBuffer === void) {
-					backVoiceBuffer = new BackVoiceTrack(this, kag);
+					backVoiceBuffer = new BackVoiceTrack(this);
 				}
 				resetBackVoiceVolume();
 				backVoiceBuffer.open(voicename);
@@ -1570,13 +1592,13 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 
     /**
 	 * ループボイスのボリュームの再調整
-     */
+	 */
 	function resetBackVoiceVolume() {
 		if (backVoiceBuffer !== void) {
 			var per = init.voiceVolume;
-			var vol = kag.getBGVVolume(init.voiceName);
+			var vol = env.getBGVVolume(backVoiceType, init.voiceName);
 			backVoiceBuffer.volume2 = ((per !== void) ? (vol * +per / 100) : vol) * 1000;
-        }
+		}
 	}
 
 	/**
@@ -1588,7 +1610,7 @@ class KAGEnvCharacter extends KAGEnvImage, KAGEnvLevelLayer {
 			backVoiceBuffer.stopFade();
 			if (backVoiceBuffer.status != "play") {
 				backVoiceBuffer.volume = 0;
-				backVoiceBuffer.play();
+				backVoiceBuffer.play(true);
 			}
 			backVoiceBuffer.fade(100000,300);
 		}

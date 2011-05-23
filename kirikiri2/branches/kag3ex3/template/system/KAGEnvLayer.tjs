@@ -1,12 +1,19 @@
 // モーションパラメータ
 var motionParamList = ["chara", "stealthchara",
 					   "motion", "stealthmotion",
-					   "flags", "tickcount", "speed"];
+					   "flags", "tickcount", "speed", "noseparate"];
 var motionParams = %[];
 for (var i=0;i<motionParamList.count;i++) {
 	motionParams[motionParamList[i]] = true;
 }
 
+// テキストパラメータ
+var textParamList = ["textsize", "textcolor", "rubysize", "rubyoffset", "shadow", "shadowcolor", "edge", "edgecolor", "linespacing", "pitch", "linesize", "fontface"];
+var textStoreParamList = ["size", "color", "rubysize", "rubyoffset", "shadow", "shadowcolor", "edge", "edgecolor", "linespacing", "pitch", "linesize", "fontface"];
+var textParams = %[];
+for (var i=0;i<textParamList.count;i++) {
+	textParams[textParamList[i]] = true;
+}
 
 /**
  * レイヤ系基底クラス
@@ -14,19 +21,14 @@ for (var i=0;i<motionParamList.count;i++) {
  */
 class KAGEnvLayer extends KAGEnvImage {
 
-    // kag の参照
-    property kag {
-        getter() {
-            return window; // KAGEnvImage.window == env.kag;
-        }
-    }
-
-    /// 描画中画像
-	var imageFile;
-	var motionUpdate = %[];
+	/// 描画中画像
+	var imageFile;     // 画像基本名
+	var motionUpdate = %[]; // モーション更新用
 	var motionUpdateFlag;
 	/// 色指定塗りつぶし
 	var imageColor;
+	/// 文字描画
+	var imageText; // テキスト描画情報
 	/// マスク画像
 	var maskFile;
 	var maskLeft;
@@ -91,8 +93,7 @@ class KAGEnvLayer extends KAGEnvImage {
 
 	function KAGEnvLayer(env, name) {
 		super.KAGEnvImage(env, name);
-		redraw = false;
-
+		
 		// 動的にレイヤコマンドを増やす
 		if (typeof global.GenericFlip == "Object") with (global.GenericFlip) {
 			_genericFlipGetEntry = .GetEntry;
@@ -121,17 +122,23 @@ class KAGEnvLayer extends KAGEnvImage {
     function onStore(f) {
 		super.onStore(f);
 		if (imageFile !== void) {
-			(Dictionary.assign incontextof (f.imageFile=%[]))(imageFile);
-		} else {
-			f.imageFile = void;
+			f.imageFile = imageFile;
+			if (Scripts.getObjectCount(motionUpdate) > 0) {
+				f.motionUpdate = %[];
+				(Dictionary.assign incontextof f.motionUpdate)(motionUpdate);
+			}
 		}
-		f.imageColor = imageColor;
-		f.maskFile = maskFile;
-		f.maskLeft = maskLeft;
-		f.maskTop  = maskTop;
+		f.imageColor = imageColor if imageColor !== void;
+		if (imageText !== void) {
+			f.imageText = %[];
+			(Dictionary.assign incontextof f.imageText)(imageText);
+		}
+		f.maskFile = maskFile if maskFile !== void;
+		f.maskLeft = maskLeft if maskLeft != 0;
+		f.maskTop  = maskTop  if maskTop  != 0;
 
-		f.flipFile = flipFile;
 		if (flipFile != "") {
+			f.flipFile = flipFile;
 			f.flipType = flipType;
 			f.flipInfo = %[];
 			(Dictionary.assign incontextof f.flipInfo)(flipInfo);
@@ -140,28 +147,30 @@ class KAGEnvLayer extends KAGEnvImage {
 			}
 		}
 
-		f.tileFile = tileFile;
-		f.tilex = tilex;
-		f.tiley = tiley;
-		f.width  = width;
-		f.height = height;
+		f.tileFile = tileFile if tileFile !== void;
+		f.tilex = tilex if tilex != 0;
+		f.tiley = tiley if tiley != 0;
+		f.width  = width if width !== void;
+		f.height = height if height !== void;
     }
     
     function onRestore(f) {
-		if (f.imageFile === void) {
-			imageFile = void;
-		} else if (typeof f.imageFile == "String") {
-			imageFile = %[storage:f.imageFile];
-		} else {
-			(Dictionary.assign incontextof (imageFile = %[]))(f.imageFile);
+		imageFile  = f.imageFile;
+		if (f.motionUpdate !== void) {
+			(Dictionary.assign incontextof motionUpdate)(f.motionUpdate);
 		}
 		imageColor = f.imageColor;
-		maskFile = f.maskFile;
-		maskLeft = f.maskLeft;
-		maskTop  = f.maskTop;
+		if (f.imageText !== void) {
+			imageText = %[];
+			(Dictionary.assign incontextof imageText)(f.imageText);
+		}
+		
+		maskFile   = f.maskFile;
+		maskLeft   = f.maskLeft;
+		maskTop    = f.maskTop;
 		flipUpdateFlag = void;
-		flipFile = f.flipFile;
-		if (flipFile != "") {
+		if (f.flipFile != "") {
+			flipFile = f.flipFile;
 			flipType = f.flipType;
 			(Dictionary.assign incontextof (flipInfo = %[]))(f.flipInfo);
 			if (f.flipRestore === void) flipRestore = void;
@@ -180,12 +189,15 @@ class KAGEnvLayer extends KAGEnvImage {
 
 	function copy(orig) {
 		if (orig instanceof "KAGEnvLayer") {
-			if (orig.imageFile === void) {
-				imageFile = void;
-			} else {
-				(Dictionary.assign incontextof (imageFile = %[]))(orig.imageFile);
-			}
+			imageFile = orig.imageFile;
+			(Dictionary.assign incontextof motionUpdate)(orig.motionUpdate);
 			imageColor = orig.imageColor;
+			if (orig.imageText !== void) {
+				imageText = %[];
+				(Dictionary.assign incontextof imageText)(orig.imageText);
+			} else {
+				imageText = void;
+			}
 			maskFile = orig.maskFile;
 			maskLeft = orig.maskLeft;
 			maskTop  = orig.maskTop;
@@ -208,11 +220,17 @@ class KAGEnvLayer extends KAGEnvImage {
 		super.copy(orig);
 	}
 
+	function initImage() {
+		super.initImage();
+		clearFileState();
+	}
+	
 	function clearFileState() {
 		imageFile  = void;
 		motionUpdateFlag = false;
 		(Dictionary.clear incontextof motionUpdate)();
 		imageColor = void;
+		imageText = void;
 		maskFile = void;
 		maskLeft = 0;
 		maskTop = 0;
@@ -220,11 +238,10 @@ class KAGEnvLayer extends KAGEnvImage {
 		flipType = flipFile = flipInfo = flipRestore = void;
 	}
 
-	function initPosAndShow(elm) {
+	function initPosAndShow(elm, x, y) {
 		// 背景指定時に座標指定がなければ場所情報を初期化する
-		xpos = void if (elm.xpos === void);
-		ypos = void if (elm.ypos === void);
-
+		xpos = x if (elm.xpos === void);
+		ypos = y if (elm.ypos === void);
 		if (elm.hide === void) {
 			disp = SHOW;
 			redraw = true;
@@ -238,26 +255,35 @@ class KAGEnvLayer extends KAGEnvImage {
 		maskTop  = elm.masktop !== void ? elm.masktop : 0;
 	}
 
+	// 読み込み対象ファイルを指定
+	function setLoadFile(file, elm, x, y) {
+		imageFile = file;
+		initPosAndShow(elm, x, y);
+	}
+	
 	// 画像ファイルを指定
 	function setImageFile(file, elm) {
 
 		initFile(elm);
 		clearFileState();
 
+		setLoadFile(file, elm);
+
 		// モーションパラメータ転送
-		imageFile = %[storage:file];
+		// clearFileState 中でクリアされてしまうので必ず戻す
 		for (var i=0;i<motionParamList.count;i++) {
 			var param = motionParamList[i];
 			if (elm[param] !== void) {
-				imageFile[param] = elm[param];
+				motionUpdate[param] = elm[param];
+				//dm(@"set motionparam:${param} ${elm[param]}");
 			}
 		}
-
+		
 		initMask(elm);
-		initPosAndShow(elm);
+
 		if (elm.noflag === void && file !== void) {
 			// 記録
-			kag.sflags["cg_" + (file.toUpperCase())] = true;
+			env.setSFlag("cg_" + (file.toUpperCase()));
 		}
 
         return true;
@@ -268,13 +294,50 @@ class KAGEnvLayer extends KAGEnvImage {
 
 		initFile(elm);
 		clearFileState();
+
 		imageColor = +color;
+		initPosAndShow(elm);
 
 		initMask(elm);
-		initPosAndShow(elm);
+
 		return true;
     }
 
+	// テキスト描画指定
+	function setImageText(text, elm) {
+
+		//dm(@"テキスト描画指定:${text}");
+		initFile(elm);
+		clearFileState();
+
+		imageText = %[];
+		// スタイル情報コピー
+		if (elm.textstyle !== void) {
+			//dm(@"スタイル指定:${elm.textstyle}");
+			var info = env.getParameter(elm.textstyle, "textstyles", "textstyle_");
+			if (info !== void) {
+				//dm("スタイル発見");
+				(Dictionary.assign incontextof imageText)(info);
+			}
+		}
+		// テキストコピー
+		imageText.text = text;
+		// テキスト用パラメータコピー
+		for (var i=0;i<textParamList.count;i++) {
+			var param = textParamList[i];
+			var store = textStoreParamList[i];
+			if (elm[param] !== void) {
+				imageText[store] = elm[param];
+			}
+		}
+		initPosAndShow(elm);
+
+		initMask(elm);
+
+		return true;
+    }
+
+	
 	function setFlipFile(file, elm, forcetype = void) {
 		initFile(elm);
 		clearFileState();
@@ -286,9 +349,9 @@ class KAGEnvLayer extends KAGEnvImage {
 
 		initPosAndShow(elm);
 		var autoflag;
-		if (!elm.noflag && (autoflag = _genericFlipGetEntry(flipType, "autoflag")) != "") {
+		if (file != "" && !elm.noflag && (autoflag = _genericFlipGetEntry(flipType, "autoflag")) != "") {
 			// 記録
-			kag.sflags[autoflag + "_" + (file.toUpperCase())] = true;
+			env.setSFlag(autoflag + "_" + (file.toUpperCase()));
 		}
 
 		return true;
@@ -314,7 +377,7 @@ class KAGEnvLayer extends KAGEnvImage {
 
 		if (elm.noflag === void) {
 			// 記録
-			kag.sflags["tile_" + (file.toUpperCase())] = true;
+			env.setSFlag("tile_" + (file.toUpperCase()));
 		}
 
         return true;
@@ -336,6 +399,10 @@ class KAGEnvLayer extends KAGEnvImage {
 	color : function(param, elm) {
 		setImageColor(param, elm);
 	} incontextof this,
+	text : function(param, elm) {
+		setImageText(param, elm);
+	} incontextof this,
+	textstyle : null,
 	mask : null,
 	maskleft : null,
 	masktop : null,
@@ -366,11 +433,6 @@ class KAGEnvLayer extends KAGEnvImage {
      */
     function doCommand(cmd, param, elm) {
 
-		// 共通コマンド
-		if (super.doCommand(cmd, param, elm)) {
-            return true;
-        }
-		
 		// レイヤ共通コマンド
         var func;
 		if ((func = _layerCommands[cmd]) !== void) {
@@ -383,10 +445,14 @@ class KAGEnvLayer extends KAGEnvImage {
 		// モーションパラメータ
 		if (motionParams[cmd] !== void) {
 			if (elm.storage === void && elm.file === void && imageFile !== void) {
-				imageFile[cmd] = param;
 				motionUpdate[cmd] = param;
 				motionUpdateFlag = true;
 			}
+			return true;
+		}
+
+		// テキストパラメータをスルー
+		if (textParams[cmd] !== void) {
 			return true;
 		}
 		
@@ -398,6 +464,11 @@ class KAGEnvLayer extends KAGEnvImage {
             return true;
         }
 
+		// 共通コマンド
+		if (super.doCommand(cmd, param, elm)) {
+            return true;
+        }
+		
         var find = false;
         
         // アクション
@@ -418,7 +489,7 @@ class KAGEnvLayer extends KAGEnvImage {
     }
 
 	function errorLayer(layer, text) {
-		kag.errorImage(text);
+		env.errorImage(text);
 		layer.fillRect(0,0,layer.width, layer.height, 0xff000000);
 		layer.drawText(0,0,text,0xffffff);
 	}
@@ -426,19 +497,17 @@ class KAGEnvLayer extends KAGEnvImage {
 	/**
 	 * 更新処理(FlipUpdate用)
 	 */
-	function _update() {
+	function update() {
 		var uf = updateFlag;
-		var ret = super._update(...);
+		super.update(...);
 		if (uf && flipUpdateFlag) {
 			targetLayer.setFlipOptions(flipInfo) if (isShowBU() && targetLayer !== void);
 			flipUpdateFlag = void;
 		}
 		if (motionUpdateFlag) {
 			targetLayer.setOptions(motionUpdate) if (isShowBU() && targetLayer !== void);
-			(Dictionary.clear incontextof motionUpdate)();
 			motionUpdateFlag = void;
 		}
-		return ret;
 	}
 	
 	// マスクでクリップ
@@ -446,7 +515,7 @@ class KAGEnvLayer extends KAGEnvImage {
 		if (maskFile !== void) {
 			//dm("maskFile:" + maskFile);
 			try {
-				var temp = window.temporaryLayer;
+				var temp = env.temporaryLayer;
 				temp.loadImages(maskFile);
 				temp.setSizeToImageSize();
 				//dm("size:" + temp.imageWidth, temp.imageHeight);
@@ -457,6 +526,10 @@ class KAGEnvLayer extends KAGEnvImage {
 		}
 	}
 
+	/**
+	 * 画像を描画する
+	 * @param layer 描画先レイヤ
+	 */
 	function drawLayer(layer) {
 		layer.clearTile();
 		layer.stopFlip();
@@ -479,18 +552,35 @@ class KAGEnvLayer extends KAGEnvImage {
 				}
 			} else if (imageFile !== void) {
 				// 画像のロード
+				var imageData = env.getImageData(imageFile);
+				(Dictionary.assign incontextof imageData)(motionUpdate,false);
+				motionUpdateFlag = false;
+				//dm(@"画像:${imageData.storage} chara:${imageData.chara} motion:${imageData.motion}");
 				try {
-					layer.loadImages(imageFile);
+					layer.loadImages(imageData);
 					_width  = layer.width;
 					_height = layer.height;
 					maskLayer(layer);
 				} catch (e) {
-					errorLayer(layer, name + ":画像がロードできません:" + e.message);
+					errorLayer(layer, imageFile + ":画像がロードできません:" + e.message);
 				}
 			} else if (imageColor !== void) {
 				// 塗りつぶし
 				layer.setSize(_width, _height);
 				layer.fillRect(0, 0, layer.width, layer.height, imageColor);
+				maskLayer(layer);
+			} else if (imageText !== void) {
+				//dm(@"テキスト描画実行:${_width},${_height}:${imageText.text}");
+				layer.setSize(_width, _height);
+				layer.fillRect(0, 0, layer.width, layer.height, 0);
+				var render = new TextRender();
+				render.setDefaultFont(imageText);
+				render.setDefaultStyle(imageText);
+				if (imageText.fontface !== void) {
+					//dm(@"フォントフェース指定:${imageText.fontface}");
+					layer.font.face = imageText.fontface;
+				}
+				render.draw(layer, 0, 0, layer.width, layer.height, imageText.text);
 				maskLayer(layer);
 			} else if (flipFile !== void) {
 				try {

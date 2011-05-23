@@ -3,13 +3,8 @@
  */
 class KAGEnvSimpleLayer extends KAGEnvLayer, KAGEnvLevelLayer {
 
-	/**
-	 * 表示処理用の自動トランジションの指定
-	 */
-	function setDispAutoTrans(elm) {
-		setAutoTrans([env.envinfo.layerDispTrans], elm);
-	}
-
+	var deleteFlag;
+	
 	/**
 	 * コンストラクタ
 	 * @param env
@@ -19,6 +14,7 @@ class KAGEnvSimpleLayer extends KAGEnvLayer, KAGEnvLevelLayer {
 	function KAGEnvSimpleLayer(env, name) {
 		global.KAGEnvLayer.KAGEnvLayer(env, name);
 		global.KAGEnvLevelLayer.KAGEnvLevelLayer();
+		initDisp = true;
 	}
 
     function finalize() {
@@ -42,5 +38,31 @@ class KAGEnvSimpleLayer extends KAGEnvLayer, KAGEnvLevelLayer {
 	back : this.setBack incontextof this,
     level : this.setLevel incontextof this,
 	levelz: function (param, elm) { this.levelz = +param; } incontextof this,
+	"delete" => function (param, elm) { deleteFlag=true; disp = CLEAR; } incontextof this,
         ];
+
+	/**
+	 * ファイル読み込み部差し替え
+	 */
+	function setLoadFile(file, elm) {
+		var info = env.envinfo.layers !== void ? env.envinfo.layers[name] : void;
+		global.KAGEnvLayer.setLoadFile(file, elm);
+		if (info !== void) {
+			setAutoTrans([info.trans, env.envinfo.layerTrans], elm);
+		} else {
+			setAutoTrans([env.envinfo.layerTrans], elm);
+		}
+	}
+
+	/**
+	 * 表示処理用の自動トランジションの指定
+	 */
+	function setDispAutoTrans(elm) {
+		var info = env.envinfo.layers !== void ? env.envinfo.layers[name] : void;
+		if (info !== void) {
+			setAutoTrans([info.dispTrans, env.envinfo.layerDispTrans], elm);
+		} else {
+			setAutoTrans([env.envinfo.layerDispTrans], elm);
+		}
+	}
 }

@@ -1,7 +1,6 @@
 @loadplugin module=wuvorbis.dll
 @loadplugin module=extrans.dll
 @loadplugin module=csvparser.dll
-@call storage="world.ks"
 @call storage="macro.ks"
 
 ; 選択肢配置領域の指定

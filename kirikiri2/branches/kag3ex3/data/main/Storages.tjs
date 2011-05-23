@@ -1,0 +1,27 @@
+/*
+検索パスの追加登録方法：
+ setupSubFolders([ サブフォルダ名, ... ]);
+  サブフォルダ名：data/以下のフォルダ名。サブサブフォルダ以下は"/"で区切る
+ */
+
+setupSubFolders([
+	/* 記述例：
+	"scenario/part1"
+	"scenario/part2"
+
+	"fgimage/chara1",
+	"fgimage/chara2",
+
+	"image/cutin",
+	"image/effect/type1",
+	"image/effect/type2",
+
+	"voice/chara1",
+	"voice/chara2",
+	 ここまでコメント */
+
+	
+
+	]);
+
+

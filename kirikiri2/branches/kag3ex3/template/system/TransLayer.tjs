@@ -105,9 +105,9 @@ class TransLayer
             if (elm.method !== void) {
                 trans = %[];
                 (Dictionary.assign incontextof trans)(elm);
-                dm("トランジション実行:" + trans.method + ":" + trans.rule);
-                trans.selfupdate = true;
-                trans.time = time;
+				//dm("トランジション実行:" + trans.method + ":" + trans.rule);
+				trans.selfupdate = true;
+				trans.time = time;
             }
             maxCount = time;
             if (tlayer === void) {
@@ -128,7 +128,7 @@ class TransLayer
                 layer.opacity = 255;
                 tlayer.opacity = 255;
             }
-            layer.beginTransition(trans.method, true, tlayer, trans);
+			layer.beginTransition(trans.method, true, tlayer, trans);
         } incontextof this,
         effect : function(count) {
             layer.update();
@@ -166,7 +166,7 @@ class TransLayer
             
             // 終了処理
             if (count >= maxCount) {
-                done();
+				done();
                 owner.trigger("layertrans");
             }
         }
@@ -185,11 +185,11 @@ class TransLayer
         if (color === void) {
             color = 0xff000000;
         }
-        info = types[elm.type] if elm.type !== void;
-        if (info === void) {
-            info = types["wipeltor"];
-        }
-        info.init(elm);
+		info = types[elm.type] if elm.type !== void;
+		if (info === void) {
+			info = types["trans"];
+		}
+		info.init(elm);
         layer.visible = true;
         working = true;
         first = true;
@@ -204,9 +204,10 @@ class TransLayer
             layer.fillRect(0,0,width,height,color);
         } else {
             layer.fillRect(0,0,width,height,0);
-            layer.visible = false;
-        }
-    }
+			layer.visible = false;
+		}
+		layer.stopTransition();
+	}
 
     /**
      * 強制終了

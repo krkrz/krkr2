@@ -1,10 +1,20 @@
 /**
  * 環境BGMオブジェクト
  */
-class KAGEnvBgm {
+class KAGEnvBgm extends KAGEnvBase {
 	
-	var env;
-	var name;
+	/**
+	 * コンストラクタ
+	 */
+	function KAGEnvBgm(env) {
+		super.KAGEnvBase(env, "bgm");
+	}
+
+	function finalize() {
+		super.finalize();
+	}
+
+	var filename;
 	var loop;
 	var paused;
 	var volume;
@@ -14,45 +24,49 @@ class KAGEnvBgm {
 	var pause;
 	var resume;
 	var fade;
+	var bgmchangeflag;
 
+	// ボリュームが動画あわせになってるフラグ
+	var mvolumeflag;
+
+	// BGM停止時コールバック
+	function onStop() {
+		if (mvolumeflag) {
+			var bgm = env.getBGMOBJ();
+			bgm.restoreSystemState(kag.scflags);
+			mvolumeflag = false;
+		}
+	}
+	
     /**
      * セーブ処理
      */
     function onStore(f) {
-		//dm("BGM保存:" + name);
-		f.name = name;
-		f.loop = loop;
-		f.paused = paused;
-		f.volume = volume;
+		//dm("BGM保存:" + filename);
+		f.filename = filename if filename !== void;
+		f.loop = loop if loop !== void && loop != true;
+		f.paused = paused if paused !== void && paused != false;
+		f.volume = volume if volume !== void && volume != 100;
 	}
 
 	function onRestore(f) {
 		if (f !== void) {
-			//dm("BGM復帰:" + f.name);
-			name = f.name;
-			loop = f.loop;
-			paused = f.paused;
-			if (name != "") {
-				setPlay(name, %[loop:loop]);
+			//dm("BGM復帰:" + f.filename);
+			filename = f.filename;
+			loop = f.loop !== void ? f.loop : true;
+			paused = f.paused !== void ? f.paused : false;
+			if (f.filename != "") {
+				setPlay(f.filename, %[loop:f.loop]);
 				if (f.volume !== void) {
-					fade.volume = f.volume;
+					fade.volume = volume = f.volume;
 				}
-				if (paused) {
+				if (f.paused) {
 					setPause(0);
 				}
 			}
 		}
 	}
 	
-    /**
-     * コンストラクタ
-     */
-	var kag;
-    function KAGEnvBgm(env) {
-		this.env = env;
-		this.kag = env.kag;
-    }
-
     /**
      * 再生処理
      * @param param 再生対象ファイル
@@ -62,7 +76,7 @@ class KAGEnvBgm {
 			stop = void;
 			pause = void;
 			resume = void;
-			name = param;
+			filename = param;
 			loop = elm.loop;
 			paused = false;
 			play = %[];
@@ -73,7 +87,7 @@ class KAGEnvBgm {
 			}
 			// 再生既読フラグ
 			if (elm.noflag === void) {
-				kag.sflags["bgm_" + (param.toUpperCase())] = true; // [NGK] means Non Global Kag.
+				env.setSFlag("bgm_" + (param.toUpperCase()));
 			}
 			doflag = true;
         }
@@ -92,7 +106,7 @@ class KAGEnvBgm {
 		fade = void;
 		pause = void;
 		resume = void;
-		name = void;
+		filename = void;
 		paused = false;
 		stop = _getTimeParam(param, elm);
 		doflag = true;
@@ -103,7 +117,7 @@ class KAGEnvBgm {
      * @param param フェードアウト時間
      */
 	function setPause(param, elm) {
-		if (name !== void) {
+		if (filename !== void) {
 			resume = void;
 			pause = _getTimeParam(param, elm);
 			paused = true;
@@ -115,7 +129,7 @@ class KAGEnvBgm {
 	 * 再開
 	 */
 	function setResume(param, elm) {
-		if (name !== void) {
+		if (filename !== void) {
 			pause = void;
 			resume = _getTimeParam(param, elm);
 			paused = false;
@@ -154,6 +168,8 @@ class KAGEnvBgm {
     nosync : null,
 	sync : null,
 	wait : null,
+	delayrun : null,
+	mvolume : null, // XXX ムービー音量にあわせて再生
         ];
 
     var doflag;
@@ -178,91 +194,76 @@ class KAGEnvBgm {
         return true;
     }
 
-    /**
-     * KAG タグ処理
-     * @param elm 引数
-     */
-    function tagfunc(elm) {
-        //dm("BGM 用ファンクション呼び出し!");
+	function command(elm) {
 		doflag = false;
-        foreach(elm, doCommand);
-        // 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
+		foreach(elm, doCommand);
+		// 何もしなかった場合、かつ、タグ名が bgm でなければそれを再生する
 		if (!doflag && elm.tagname != "bgm") {
 			setPlay(elm.tagname, elm);
 		}
-		var wait = elm.wait !== void ? +elm.wait : elm.sync !== void ? 0 : void;
-		if (wait == 1) {
-			wait = 0;
-		}
-		var canskip = elm.canskip !== void ? +elm.canskip : true;
-		var fading = sync();
-		if (wait !== void) {
-			switch (fading) {
-			case 0:
-				return 0;
-			case 1:
-				return kag.waitBGMFade(%[canskip:canskip, wait:wait]);
-			case 2:
-				return kag.waitBGMStop(%[canskip:canskip, wait:wait]);
-			}
-		}
-		return 0;
 	}
 
-	function sync() {
-		var bgm = kag.bgm, skipMode = kag.skipMode; // [NGK]
+	function checkSync(elm) {
+		syncCommand = true if (elm.wait || elm.sync);
+	}
+
+	function update(skipMode) {
+		var bgm = env.getBGMOBJ();
 		var fading = 0;
-		if (!kag.skipNoDisp) { // [NGK]
-			if (fade !== void) {
-				if (fade.time !== void) {
-					bgm.fade(fade);
-					fading = 1;
-				} else {
-					bgm.setVolume(fade.volume * 1000);
-				}
-				fade = void;
+		if (fade !== void) {
+			if (skipMode == SKIP_NONE && fade.time !== void) {
+				bgm.fade(fade);
+				fading = 1;
+			} else {
+				bgm.setVolume(fade.volume * 1000);
 			}
-			if (play !== void) {
-				if (bgm.playingStorage != name) {
-					var time = +play.time;
-					if (play.noxchg) {
-						if (skipMode == SKIP_NONE && time > 0)  {
-							bgm.fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
-							fading = 1;
-						} else {
-							bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
-						}
+			fade = void;
+		}
+		if (play !== void) {
+			if (bgm.playingStorage != filename) {
+				var time = +play.time;
+				if (play.mvolume) {
+					// 動画のボリュームに強制であわせる
+					dm("動画ボリュームにあわせる");
+					bgm.restoreSystemState(%[bgm:%[globalVolume:kag.movieAudioVolume*1000]]);
+					mvolumeflag = true;
+				}
+				if (play.noxchg) {
+					if (skipMode == SKIP_NONE && time > 0)  {
+						bgm.fadeIn(%[ storage:filename, loop:play.loop, time:time, start:play.start]);
+						fading = 1;
 					} else {
-						if (skipMode == SKIP_NONE && (time > 0 || +play.intime > 0)) {
-							var overlap = play.overlap !== void ? +play.overlap : play.time;
-							bgm.exchange(%[ storage:name, loop:play.loop, time:play.time, intime:play.intime, outtime:play.outtime, overlap:overlap, start:play.start]);
-							fading = 1;
-						} else {
-							bgm.play(%[ storage:name, loop:play.loop, paused:play.paused, start:play.start]);
-						}
+						bgm.play(%[ storage:filename, loop:play.loop, paused:play.paused, start:play.start]);
+					}
+				} else {
+					if (skipMode == SKIP_NONE && (time > 0 || +play.intime > 0)) {
+						var overlap = play.overlap !== void ? +play.overlap : play.time;
+						bgm.exchange(%[ storage:filename, loop:play.loop, time:play.time, intime:play.intime, outtime:play.outtime, overlap:overlap, start:play.start]);
+						fading = 1;
+					} else {
+						bgm.play(%[ storage:filename, loop:play.loop, paused:play.paused, start:play.start]);
 					}
 				}
-				kag.clearBgmStop(); // [NGK]
-				kag.clearBgmLabel(); // [NGK]
-				play = void;
 			}
-			if (pause !== void) {
-				if (pause > 1) {
-					bgm.fadePause(%[ time: +pause ]);
-					fading = 1;
-				} else {
-					bgm.pause();
-				}
-				pause = void;
-			} else if (resume !== void) {
-				if (resume > 1) {
-					bgm.fadeResume(%[ time: +resume ]);
-					fading = 1;
+			env.onBGMStart();
+			play = void;
+		}
+		if (pause !== void) {
+			if (pause > 1) {
+				bgm.fadePause(%[ time: +pause ]);
+				fading = 1;
+			} else {
+				bgm.pause();
+			}
+			pause = void;
+		} else if (resume !== void) {
+			if (resume > 1) {
+				bgm.fadeResume(%[ time: +resume ]);
+				fading = 1;
 				} else {
 					bgm.resume();
 				}
-				resume = void;
-			}
+			resume = void;
 		}
 		if (stop !== void) {
 			if (skipMode == SKIP_NONE && stop > 0) {
@@ -274,5 +275,24 @@ class KAGEnvBgm {
 			stop = void;
 		}
 		return fading;
+	}
+	
+	function sync(elm, skipMode) {
+		var fading = update(skipMode);
+		var wait = elm.wait !== void ? +elm.wait : elm.sync !== void ? 0 : void;
+		if (wait == 1) {
+			wait = 0;
+		}
+		if (wait !== void) {
+			var canskip = elm.canskip !== void ? +elm.canskip : true;
+			switch (fading) {
+			case 1:
+				env.addFastTag("wb", %[canskip:canskip, wait:wait]);
+				break;
+			default:
+				env.addFastTag("wl", %[canskip:canskip, wait:wait]);
+				break;
+			}
+		}
 	}
 };

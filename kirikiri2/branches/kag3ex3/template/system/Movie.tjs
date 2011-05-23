@@ -31,8 +31,9 @@ class Movie extends VideoOverlay
 		dic.loop = loop;
 		dic.frame = frame;
 
-		dic.audioBalance = audioBalance;
-		dic.audioVolume  = audioVolume;
+		dic.useOwnerVolume = useOwnerVolume;
+		dic.audioBalance   = audioBalance;
+		dic.audioVolume    = audioVolume;
 		if( numberOfAudioStream > 0 ) {
 			dic.enabledAudioStream = enabledAudioStream;
 		}
@@ -89,8 +90,9 @@ class Movie extends VideoOverlay
 			if( dic.frame >= 0 )
 				frame = dic.frame;
 
-			audioBalance = dic.audioBalance;
-			audioVolume = dic.audioVolume;
+			useOwnerVolume = dic.useOwnerVolume;
+			audioBalance   = dic.audioBalance;
+			audioVolume    = dic.audioVolume;
 			if( numberOfAudioStream > 0 && dic.enabledAudioStream >= 0 )
 			{
 				super.selectAudioStream( dic.enabledAudioStream );
@@ -229,6 +231,7 @@ class Movie extends VideoOverlay
 					return;
 				}
 			}
+			setOwnerVolume() if (useOwnerVolume);
 			super.play();
 			opened = false;
 		}
@@ -244,6 +247,7 @@ class Movie extends VideoOverlay
 	{
 		try
 		{
+			setOwnerVolume() if (useOwnerVolume);
 			super.play();
 		}
 		catch(e)
@@ -356,21 +360,21 @@ class Movie extends VideoOverlay
 		frame = +elm.frame if elm.frame !== void;
 		if( elm.mode !== void )
 		{
-            if( elm.mode == "layer" ) {
+			if( elm.mode == "layer" ) {
 				mode = vomLayer;
-            } else if (elm.mode == "mixer") {
-                try {
-                    mode = vomMixer;
-                } catch (e) {
-                    try {
-                        mode = vomOverlay;
-                    } catch (e) {
-                        mode = vomLayer;
-                    }
-                }
-            } else {
+			} else if (elm.mode == "mixer") {
+				try {
+					mode = vomMixer;
+				} catch (e) {
+					try {
+						mode = vomOverlay;
+					} catch (e) {
+						mode = vomLayer;
+					}
+				}
+			} else {
 				mode = vomOverlay;
-            }
+			}
 			dm("video mode:" + ((mode == vomOverlay) ? "overlay" : (mode == vomMixer) ? "mixer" : (mode == vomLayer) ? "layer" : "unknown"));
 
 			layerResizeMode = (mode == vomLayer && elm.laystretch);
@@ -380,7 +384,10 @@ class Movie extends VideoOverlay
 			setBounds(l, t, w, h);
 		}
 		playRate = +elm.playrate if elm.playrate !== void;
-		if (elm.volume !== void) audioVolume  = +elm.volume * 1000;
+		if (elm.volume !== void) {
+			useOwnerVolume = (elm.volume == "");
+			if (!useOwnerVolume) audioVolume  = +elm.volume * 1000;
+		}
 		if (elm.pan    !== void) audioBalance = +elm.pan    * 1000;
 		if( elm.audiostreamnum !== void )
 		{
@@ -388,9 +395,14 @@ class Movie extends VideoOverlay
 		}
 	}
 
-	var _audioVolume, _audioBalance;
+	var useOwnerVolume = true;
+	var _audioVolume, _audioBalance; // ↓音声のないムービーでは例外が発生する場合がある
 	property audioVolume  { setter(v) { _audioVolume  = v; try { super.audioVolume  = v; } catch {} } getter { return _audioVolume;  } }
 	property audioBalance { setter(v) { _audioBalance = v; try { super.audioBalance = v; } catch {} } getter { return _audioBalance; } }
+	function setOwnerVolume() {
+		with (owner) audioVolume = (.waveenable && .movieAudioEnable) ?
+			/**/                   (.wavevolume *  .movieAudioVolume) * 10 : 0; // 通常は *1000 だが vol*vol なので *10 で十分
+	}
 
 	var _layerResizeMode = false, _renderLayer, _layerResizeRect;
 	property layerResizeMode {

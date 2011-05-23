@@ -1,9 +1,9 @@
 // 部分画像ロードプラグイン読み込み
 if (typeof global.Layer.loadSubImage == "undefined") {
-	try {
-		Plugins.link("layerExSubImage.dll");
-	} catch(e) {
-	}
+	var plug = "layerExSubImage.dll";
+	if (CanLoadPlugin(plug)) try {
+		Plugins.link (plug);
+	} catch(e) {}
 }
 
 /**
@@ -23,6 +23,7 @@ class PSDInfoLayer extends Layer {
 		var pool;
 		if (typeof window._psdpoollayer == "undefined") {
 			pool = new global.Layer(window, window.primaryLayer);
+			pool.name = "PSD情報プール用";
 			pool.hasImage = false;
 			window.add(pool);
 			window._psdpoollayer = pool;
@@ -65,7 +66,11 @@ class PSDInfoLayer extends Layer {
 			try {
 				super.loadImages(info.layerFilename);
 			} catch(e) {
-				dm("画像ロード失敗:" + info.layerFilename);
+				var text = "画像ロード失敗:" + info.layerFilename;
+				dm (text);
+				if (typeof window.errorImage == "Object") {
+					/**/   window.errorImage(text);
+				}
 				super.setSize(info.width, info.height);
 				super.fillRect(0,0,info.width,info.height,0x88000000);
 				super.drawText(0,0,info.layerFilename,0xffffff);
@@ -379,71 +384,41 @@ class PSDInfo {
 	}
 
 	/**
+	 * 合成領域のサイズを再計算する
+	 * @param extend 描画領域拡張指定
+	 */
+	function calcArea(extend=0) {
+		var region = new UpdateRegion();
+		for (var i=0;i<layers.count;i++) {
+			var info = layers[i];
+			if (!isIgnoreLayer(info.name) && info.width > 0 && info.height > 0) {
+				region.update(info.left, info.top, info.width, info.height);
+			}
+		}
+		
+		//dm("%s:元レイヤ領域:%d,%d size:%d,%d".sprintf(name,region.left, region.top, region.width, region.height));
+		// 領域を加工用に一回り広げる
+		region.left   -= extend;
+		region.top    -= extend;
+		region.right  += extend;
+		region.bottom += extend;
+
+		offsetX     = region.left;
+		offsetY     = region.top;
+		this.width  = region.width;
+		this.height = region.height;
+		//dm("off:%d,%d  size:%d,%d".sprintf(offsetX, offsetY, width, height));
+	}
+	
+	/**
 	 * レイヤ情報の再構築
 	 * @param width 画像横幅
 	 * @param height 画像縦幅
-	 * @param trim トリミング処理をするかどうか
 	 */
-	function initLayers(width, height, trim=false) {
+	function initLayers(width, height) {
 		pageWidth  = width;
 		pageHeight = height;
-		if (trim) {
-			var region = new UpdateRegion();
-			for (var i=0;i<layers.count;i++) {
-				var info = layers[i];
-				if (!isIgnoreLayer(info.name) && info.width > 0 && info.height > 0) {
-					region.update(info.left, info.top, info.width, info.height);
-				}
-			}
-
-			//dm("%s:元レイヤ領域:%d,%d size:%d,%d".sprintf(name,region.left, region.top, region.width, region.height));
-			// 領域を加工用に一回り広げる
-			if (region.left > 20) {
-				region.left -= 20;
-			} else {
-				region.left = 0;
-			}
-			if (region.top > 20) {
-				region.top -= 20;
-			} else {
-				region.left = 0;
-			}
-			if (region.right < width - 21) {
-				region.right += 20;
-			} else {
-				region.right = width-1;
-			}
-			if (region.bottom < height - 21) {
-				region.bottom += 20;
-			} else {
-				region.right = width-1;
-			}
-
-			// ベース部補正
-			var cx = region.left;
-			var cy = region.top;
-			var cw = region.width;
-			var ch = region.height;
-			//var x = cx \ trimBase * trimBase;
-			//var y = cy \ trimBase * trimBase;
-			//var w = (cw + (cx - x) + (trimBase-1)) \ trimBase * trimBase;
-			//var h = (ch + (cy - y) + (trimBase-1)) \ trimBase * trimBase;
-			offsetX = cx;
-			offsetY = cy;
-			for (var i=0;i<layers.count;i++) {
-				var info = layers[i];
-				info.left -= cx;
-				info.top  -= cy;
-			}
-			this.width  = cw;
-			this.height = ch;
-		} else {
-			offsetX = 0;
-			offsetY = 0;
-			this.width = width;
-			this.height = height;
-		}
-		//dm("off:%d,%d  size:%d,%d".sprintf(offsetX, offsetY, width, height));
+		calcArea();
 		
 		// グループ参照を登録
 		for (var i=0;i<groups.count;i++) {
@@ -496,9 +471,8 @@ class PSDInfo {
 	/**
 	 * PSD 画像のロード処理
 	 * @param storage ロードするPSDファイル
-	 * @param trim トリミング処理をするかどうか
 	 */
-	function loadPSD(storage,trim=false) {
+	function loadPSD(storage) {
 
 		// プラグイン読み込み
 		if (typeof global.PSD == "undefined") {
@@ -533,7 +507,7 @@ class PSDInfo {
 				break;
 			}
 		}
-		initLayers(psd.width, psd.height, trim);
+		initLayers(psd.width, psd.height);
 
 		invalidate psd;
 	}
@@ -549,9 +523,8 @@ class PSDInfo {
 	 * レイヤ構造データのロード
 	 * @param basename ベース名
 	 * @param savedata レイヤ情報データの配列
-	 * @param trim トリミング処理をするかどうか
 	 */
-	function loadDATA(basename, savedata, trim=false) {
+	function loadDATA(basename, savedata) {
 		var count = savedata.count;
 		var width;
 		var height;
@@ -575,7 +548,7 @@ class PSDInfo {
 				}
 			}
 		}
-		initLayers(width, height, trim);
+		initLayers(width, height);
 	}
 
 	// ---------------------------------------------------
@@ -629,9 +602,8 @@ class PSDInfo {
 	/**
 	 * レイヤ構造エータのロード
 	 * @param storage レイヤ構造情報ファイル(タブ区切りテキスト)
-	 * @param trim トリミング処理をするかどうか
 	 */
-	function loadTXT(storage, trim=false) {
+	function loadTXT(storage) {
 		clear();
 		var savedata = [];
 		var data = [];
@@ -643,26 +615,24 @@ class PSDInfo {
 				savedata.add(parseTxtSaveData(line));
 			}
 		}
-		loadDATA(Storages.chopStorageExt(storage), savedata, trim);
+		loadDATA(Storages.chopStorageExt(storage), savedata);
 	}
 	
 	/**
 	 * レイヤ構造データのロード
 	 * @param storage 画像構造情報ファイル(TJS)
-	 * @param trim トリミング処理をするかどうか
 	 */
-	function loadTJS(storage, trim=false) {
+	function loadTJS(storage) {
 		clear();
-		loadDATA(Storages.chopStorageExt(storage), Scripts.evalStorage(storage), trim);
+		loadDATA(Storages.chopStorageExt(storage), Scripts.evalStorage(storage));
 	}
 
 	// ---------------------------------------------------
 	
 	/**
 	 * 画像ファイルのロード
-	 * @param trim トリミング処理をするかどうか	
 	 */
-	function loadImages(storage, trim) {
+	function loadImages(storage) {
 		var ext = Storages.extractStorageExt(storage).toUpperCase();
 		// 拡張子指定が無い場合は探索する
 		if (ext == "") {
@@ -678,11 +648,11 @@ class PSDInfo {
 			}
 		}
 		if (ext == ".PSD") {
-			loadPSD(storage, trim);
+			loadPSD(storage);
 		} else if (ext == ".TXT") {
-			loadTXT(storage, trim);
+			loadTXT(storage);
 		} else if (ext == ".TJS") {
-			loadTJS(storage, trim);
+			loadTJS(storage);
 		} else {
 			throw new Exception("複合画像の読み込みに失敗しました:"+ storage);
 		}
@@ -701,6 +671,7 @@ class PSDInfo {
 		for (var i=0;i<args.count;i++) {
 			ignoreLayers.add(new RegExp(args[i]));
 		}
+		calcArea();
 	}
 
 	/**
@@ -723,9 +694,8 @@ class PSDInfo {
 
 		var savelayer;
 		// ズーム処理対応
-		var w = (int)(width  * zoom / 100);
-		var h = (int)(height * zoom / 100);
 		var ooze = Math.ceil(150.0/zoom)+1;
+		calcArea(ooze);
 		for (var i=0;i<layers.count;i++) {
 			var info = %[];
 			(Dictionary.assign incontextof info)(layers[i]);
@@ -735,9 +705,10 @@ class PSDInfo {
 				layer.assignImages(info.layer);
 				layer.setLayerInfo(info);
 				info.layer = layer;
-				cropLayer(info, 0, 0, width, height, ooze);
-				scaleLayer(info, w, h, zoomType);
-				trimLayer(info);
+				cropLayer(info, offsetX, offsetY, width, height);
+				info.layer.oozeColor(ooze);
+				scaleLayer(info, zoom, zoomType);
+				trimLayer(info, true);
 			}
 			if (info.layer !== void) {
 				if (!noimage && !isIgnoreLayer(info.name)) {
@@ -812,8 +783,8 @@ class PSDInfo {
 	function saveTJS(storage, zoom=100, zoomType=stLinear, noimage=false, split=false) {
 		var basename = Storages.chopStorageExt(storage);
 		var savedata = [];
-		var w = (int)(width  * zoom / 100);
-		var h = (int)(height * zoom / 100);
+		var w = (int)(pageWidth  * zoom / 100);
+		var h = (int)(pageHeight * zoom / 100);
 		savedata.add(%[width:w, height:h]);
 		saveImageAll(basename, layers, groups, savedata, getSaveData, zoom, zoomType, noimage, split);
 		savedata.saveStruct2(storage);
@@ -873,8 +844,8 @@ class PSDInfo {
 	function saveTXT(storage, zoom=100, zoomType=stLinear, noimage=false, split=false) {
 		var basename = Storages.chopStorageExt(storage);
 		var savedata = [];
-		var w = (int)(width  * zoom / 100);
-		var h = (int)(height * zoom / 100);
+		var w = (int)(pageWidth  * zoom / 100);
+		var h = (int)(pageHeight * zoom / 100);
 		savedata.add("#" + getTxtSaveData());
 		savedata.add(getTxtSaveData(%[width:w, height:h]));
 		saveImageAll(basename, layers, groups, savedata, getTxtSaveData, zoom, zoomType, noimage, split);
@@ -953,7 +924,7 @@ class PSDInfo {
 	 * @param w 横幅
 	 * @param h 縦幅
 	 */
-	function cropLayer(info, x, y, w, h, ooze=4) {
+	function cropLayer(info, x, y, w, h) {
 		//dm("cropLayer:" + info.name + ":" + ooze);
 		getDispLayer(info, null);
 
@@ -966,9 +937,8 @@ class PSDInfo {
 //				layer.operateRect(.left - x, .top - y, info.layer, 0, 0, .width, .height, opr);
 			layer.copyRect(.left - x, .top - y, info.layer, 0, 0, .width, .height);
 		}
-		layer.oozeColor(ooze);
-		info.left   = 0;
-		info.top    = 0;
+		info.left   = x;
+		info.top    = y;
 		info.width  = w;
 		info.height = h;
 		layer.setLayerInfo(info);
@@ -979,18 +949,25 @@ class PSDInfo {
 	/**
 	 * レイヤを指定のサイズまで縮小する
 	 * @param info レイヤ情報
-	 * @param w 縮小サイズ横幅（画面全体）
-	 * @param h 縮小サイズ縦幅（画面全体）
+	 * @param percent 縮小率
 	 * @param type 縮小方式
 	 */
-	function scaleLayer(info, w, h, type) {
+	function scaleLayer(info, percent, type) {
 		var layer = new PSDInfoLayer(window);
+		var w = (int)(info.width  * percent / 100);
+		var h = (int)(info.height * percent / 100);
 		layer.setSize(w, h);
-		with (info.layer) {
-			layer.stretchCopy(0, 0, w, h, info.layer, 0, 0, .width, .height, type);
+		if (type == 4) {
+			with (info.layer) {
+				layer.shrinkCopy(0, 0, w, h, info.layer, 0, 0, .width, .height);
+			}
+		} else {
+			with (info.layer) {
+				layer.stretchCopy(0, 0, w, h, info.layer, 0, 0, .width, .height, type);
+			}
 		}
-		info.left = 0;
-		info.top  = 0;
+		info.left = (int)(info.left * percent / 100);
+		info.top  = (int)(info.top  * percent / 100);
 		info.width  = w;
 		info.height = h;
 		layer.setLayerInfo(info);
@@ -999,12 +976,26 @@ class PSDInfo {
 	}
 
 	/**
+	 * レイヤの座標をずらす
+	 * @param info レイヤ情報
+	 * @param x Xシフト量
+	 * @param y Yシフト量
+	 */
+	function shiftLayer(info, x, y) {
+		info.left -= x;
+		info.top  -= y;
+		if (info.layer !== void) {
+			info.layer.setLayerInfo(info);
+		}
+	}
+
+	/**
 	 * レイヤをトリムする
 	 * @param info レイヤ情報
 	 */
-	function trimLayer(info) {
+	function trimLayer(info, zero=false) {
 		var layer;
-		var crop = info.layer.getCropRect();
+		var crop = zero ? info.layer.getCropRectZero() : info.layer.getCropRect();
 		if (crop === void) {
 			info.width = 0;
 			info.height = 0;
@@ -1056,17 +1047,18 @@ class PSDInfo {
 	 */
 	function rescale(percent, type) {
 		useLayerExSave();
-		var w = (int)(width * percent / 100);
-		var h = (int)(height * percent / 100);
+		var ooze = Math.ceil(150.0/percent)+1;
+		calcArea(ooze);
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
-			cropLayer(info, 0, 0, width, height, Math.ceil(150.0/percent)+1);
-			scaleLayer(info, w, h, type);
+			cropLayer(info, offsetX, offsetY, width, height);
+			info.layer.oozeColor(ooze);
+			scaleLayer(info, percent, type);
 			trimLayer(info);
 		}
-		width  = w;
-		height = h;
-		setImageSize(w,h);
+		pageWidth  = (int)(pageWidth  * percent / 100);
+		pageHeight = (int)(pageHeight * percent / 100);
+		calcArea();
 	}
 
 	/**
@@ -1081,23 +1073,36 @@ class PSDInfo {
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
 			cropLayer(info, x, y, w, h);
+			shiftLayer(info, x, y);
 			trimLayer(info);
 		}
-		width  = w;
-		height = h;
-		setImageSize(w,h);
+		pageWidth  = w;
+		pageHeight = h;
+		calcArea();
 	}
 
+	function clearLayerAlpha(info) {
+		if (info.layer) with (info.layer) {
+			.clearAlpha();
+		}
+	}
+	
 	/**
 	 * 画像全体を最適化する
 	 */
-	function fix() {
+	function fix(ooze) {
 		useLayerExSave();
+		calcArea(ooze);
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
-			cropLayer(info, 0, 0, width, height);
-			trimLayer(info);
+			cropLayer(info, offsetX, offsetY, width, height);
+			clearLayerAlpha(info);
+			if (info.layer) {
+				info.layer.oozeColor(ooze);
+			}
+			trimLayer(info, true);
 		}
+		calcArea();
 	}
 
 	/**
@@ -1108,24 +1113,10 @@ class PSDInfo {
 		for (var i=0;i<layers.count;i++) {
 			var info = layers[i];
 			getDispLayer(info, null);
-			if (info.layer) with (info.layer) {
-				if (false) {
-					var layer = new PSDInfoLayer(window);
-					layer.setSize(.width, .height);
-					layer.fillRect(0,0, layer.width, layer.height,0);
-					layer.operateRect(0, 0, info.layer, 0, 0, .width, .height, omAlpha);
-					layer.setLayerInfo(info);
-					invalidate info.layer;
-					info.layer = layer;
-				} else {
-					var layer = new PSDInfoLayer(window);
-					layer.setImageSize(.imageWidth, .imageHeight);
-					layer.fillRect(0,0,.imageWidth, .imageHeight,0);
-					.getDiffPixel(layer, 0x00000000, void);
-					invalidate layer;
-				}
-			}
+			clearLayerAlpha(info);
+			trimLayer(info);
 		}
+		calcArea();
 	}
 
 	/**
@@ -1184,6 +1175,7 @@ class PSDLayer extends Layer {
 			setImageSize(width, height);
 			fillRect(0,0,width,height,neutralColor);
 		}
+		(Dictionary.clear incontextof layvisible)();
 	}
 	
 	// XXX なぜか存在してて missing 対象にならない
@@ -1192,16 +1184,37 @@ class PSDLayer extends Layer {
 	}
 
 	// 画像ロード差し替え
-	function loadImages(storage, trim) {
+	function loadImages(storage) {
 		dm("画像読み込み:" + storage);
 		psdinfo.loadImages(...);
 		resetSize();
 	}
 
+	// ------------------------
 	// psdconv用
+	// ------------------------
+	
+	function rescale() {
+		psdinfo.rescale(...);
+		resetSize();
+	}
+
+	function resize() {
+		psdinfo.resize(...);
+		resetSize();
+	}
+	
 	function fix() {
 		psdinfo.fix(...);
+		resetSize();
 	}
+
+	function clearAlpha() {
+		psdinfo.clearAlpha();
+		resetSize();
+	}
+	
+	// ----------------------------------------------------
 
 	// 処理をスルーする処理
 	function missing(set, name, value) {
@@ -1310,30 +1323,40 @@ class PSDLayer extends Layer {
 		
 		// 更新領域に対する描画を実行
 		if (region !== void) {
-			fillRect(region.left, region.top, region.width, region.height, neutralColor);
+			var rl = region.left;
+			var rt = region.top;
+			var l = rl - offsetX;
+			var t = rt - offsetY;
+			var w = region.width;
+			var h = region.height;
+			fillRect(l, t, w, h, neutralColor);
 			var first = true;
 			for (var i=layers.count-1;i>=0;i--) {
 				var info = layers[i];
 				if (isShowLayer(info) && info.layer) {
 					if (first) {
 						holdAlpha = false;
-						copyRect(region.left, region.top,
+						copyRect(l, t,
 								 info.layer,
-								 region.left - info.left,
-								 region.top  - info.top,
-								 region.width, region.height);
+								 rl - info.left,
+								 rt - info.top,
+								 w, h);
 						first = false;
 						holdAlpha = true;
 					} else {
-						operateRect(region.left,
-									region.top,
+						operateRect(l,
+									t,
 									info.layer,
-									region.left - info.left,
-									region.top  - info.top,
-									region.width, region.height, omAuto, info.opacity);
+									rl - info.left,
+									rt - info.top,
+									w, h, omAuto, info.opacity);
 					}
 				}
 			}
+			region.left   = l;
+			region.top    = t;
+			region.width  = w;
+			region.height = h;
 		}
 
 		return region;

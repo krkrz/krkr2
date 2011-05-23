@@ -86,24 +86,54 @@ srcなし の時はレイヤ単独でのトランジションが行われるのでこれらの考慮は
 
 class KAGLayer extends Layer
 {
-	// KAG で用いる背景/前景レイヤ、メッセージレイヤ、ボタンレイヤなどの基本クラス
-	var inTransition = false; // トランジション中か
-	var transExchange = false; // トランジション終了時に入れ替えを行うか
-	var transWithChildren = false; // トランジションは子レイヤも含めて行うか
-
-	var moveObject; // 現在進行中の自動移動用オブジェクト(進行していないときはvoid)
-
 	function KAGLayer(win, par)
 	{
 		super.Layer(win, par);
 	}
 
-	function finalize()
-	{
-		invalidate moveObject if moveObject !== void;
-		super.finalize(...);
+	// フォント関係で書き換えられることがあるので消しちゃだめ
+	function finalize() {
+		super.finalize();
 	}
 
+	function beginTransition(elm, src, withchildren=false)
+	{
+		// beginTransition オーバーライド
+		// elm に従い、トランジションを開始する
+		// src にはトランジションの相手を指定
+		var method = elm.method;
+		if(elm.time !== void)
+		{
+            if (window.drawspeed !== void) {
+                elm.time *= window.drawspeed;
+            }
+		}
+		elm.time = 1 if +elm.time == 0; // 時間に 0 は指定できないので
+		if(method === void)
+		{
+			method = 'universal'; // デフォルトでユニバーサル
+		}
+		else if(method == 'scroll')
+		{
+			// パラメータの変換
+			switch(elm.from)
+			{
+			case 'left': elm.from = sttLeft; break;
+			case 'top': elm.from = sttTop; break;
+			case 'right': elm.from = sttRight; break;
+			case 'bottom': elm.from = sttBottom; break;
+			}
+			switch(elm.stay)
+			{
+			case 'nostay': elm.stay = ststNoStay; break;
+			case 'stayback': elm.stay = ststStaySrc; break;
+			case 'stayfore': elm.stay = ststStayDest; break;
+			default: elm.stay = ststNoStay; break;
+			}
+		}
+		super.beginTransition(method, withchildren, src, elm);
+	}
+	
 	function setOptions(elm)
 	{
 		// elm に従ってレイヤのオプションを設定
@@ -186,44 +216,62 @@ class KAGLayer extends Layer
 		setImagePos(src.imageLeft, src.imageTop);
 	}
 
+	function store()
+	{
+		// 辞書配列に現在の状態を保存する
+		var dic = %[];
+		dic.left = left;
+		dic.top = top;
+		dic.width = width;
+		dic.height = height;
+		dic.imageWidth = imageWidth;
+		dic.imageHeight = imageHeight;
+		dic.opacity = opacity;
+		dic.visible = visible;
+		dic.imageLeft = imageLeft;
+		dic.imageTop = imageTop;
+		dic.absolute = absolute;
+		dic.type = type;
+		return dic;
+	}
+
+	function restore(dic)
+	{
+		// 辞書配列 dic から情報を読み出し、このレイヤに設定する
+		setImageSize(dic.imageWidth, dic.imageHeight);
+		setPos(dic.left, dic.top, dic.width, dic.height);
+		setImagePos(dic.imageLeft, dic.imageTop);
+		opacity = dic.opacity;
+		visible = dic.visible;
+		absolute = dic.absolute if !isPrimary && dic.absolute !== void;
+		type = dic.type if !isPrimary && dic.type !== void;
+	}
+}
+
+/**
+ * KAGのトランジション/MOVEのための処理。
+ * MessageLayer と GraphicLayer に差し込む
+ */
+class KAGTransMove {
+
+	// KAG で用いる背景/前景レイヤ、メッセージレイヤ、ボタンレイヤなどの基本クラス
+	var inTransition = false; // トランジション中か
+	var transExchange = false; // トランジション終了時に入れ替えを行うか
+	var transWithChildren = false; // トランジションは子レイヤも含めて行うか
+
+	var moveObject; // 現在進行中の自動移動用オブジェクト(進行していないときはvoid)
+
+	function KAGTransMove() {
+	}
+
+	function finalize()
+	{
+		invalidate moveObject if moveObject !== void;
+	}
+
 	function beginTransition(elm, src)
 	{
-		// beginTransition オーバーライド
-		// elm に従い、トランジションを開始する
-		// src にはトランジションの相手を指定
-//		stopTransition(); // 現在のトランジションは停止
-
 		if(elm.exchange !== void) transExchange = +elm.exchange; else transExchange = false;
-		var method = elm.method;
-		if(elm.time !== void)
-		{
-            if (window.drawspeed !== void) {
-                elm.time *= window.drawspeed;
-            }
-            elm.time = 1 if +elm.time == 0; // 時間に 0 は指定できないので
-		}
-		if(method === void)
-		{
-			method = 'universal'; // デフォルトでユニバーサル
-		}
-		else if(method == 'scroll')
-		{
-			// パラメータの変換
-			switch(elm.from)
-			{
-			case 'left': elm.from = sttLeft; break;
-			case 'top': elm.from = sttTop; break;
-			case 'right': elm.from = sttRight; break;
-			case 'bottom': elm.from = sttBottom; break;
-			}
-			switch(elm.stay)
-			{
-			case 'nostay': elm.stay = ststNoStay; break;
-			case 'stayback': elm.stay = ststStaySrc; break;
-			case 'stayfore': elm.stay = ststStayDest; break;
-			default: elm.stay = ststNoStay; break;
-			}
-		}
 		var withchildren = elm.children;
 		if(withchildren === void)
 			withchildren = true;
@@ -232,15 +280,15 @@ class KAGLayer extends Layer
 		transWithChildren = withchildren;
 		inTransition = true;
 		window.transCount++; // 進行中のトランジションの数を増やす
-		super.beginTransition(method, withchildren, src, elm);
+		global.KAGLayer.beginTransition(elm, src, withchildren);
 	}
 
 	function onTransitionCompleted(dest, src)
 	{
-		super.onTransitionCompleted(...);
+		global.KAGLayer.onTransitionCompleted(...);
+		inTransition = false;
 		if(window != null)
 		{
-			inTransition = false;
 			window.transCount--; // 進行中のトランジションの数を減らす
 			atEndOfTransition(src, transWithChildren, transExchange);
 			window.onLayerTransitionCompleted(this, dest, src);
@@ -306,126 +354,4 @@ class KAGLayer extends Layer
 	{
 		if(moveObject !== void) invalidate moveObject, moveObject = void;
 	}
-
-	function store()
-	{
-		// 辞書配列に現在の状態を保存する
-		var dic = %[];
-		dic.left = left;
-		dic.top = top;
-		dic.width = width;
-		dic.height = height;
-		dic.imageWidth = imageWidth;
-		dic.imageHeight = imageHeight;
-		dic.opacity = opacity;
-		dic.visible = visible;
-		dic.imageLeft = imageLeft;
-		dic.imageTop = imageTop;
-		dic.absolute = absolute;
-		dic.type = type;
-		return dic;
-	}
-
-	function restore(dic)
-	{
-		// 辞書配列 dic から情報を読み出し、このレイヤに設定する
-		setImageSize(dic.imageWidth, dic.imageHeight);
-		setPos(dic.left, dic.top, dic.width, dic.height);
-		setImagePos(dic.imageLeft, dic.imageTop);
-		opacity = dic.opacity;
-		visible = dic.visible;
-		absolute = dic.absolute if !isPrimary && dic.absolute !== void;
-		type = dic.type if !isPrimary && dic.type !== void;
-	}
-}
-
-/**
- * 簡易アニメーション処理つき KAGLayer
- */
-class AnimKAGLayer extends KAGLayer {
-
-    function AnimKAGLayer() {
-        super.KAGLayer(...);
-    }
-
-    function finalize() {
-        animStop();
-        super.finalize(...);
-    }
-
-    var animCount; // アニメーション処理用カウント
-    var animTime;  // アニメーション処理用フリップ時間
-    var animStartTime; // アニメ起動時間
-    var animTimer; // アニメーション処理用タイマ
-
-    function animStop() {
-        animCount = void;
-        animTime  = void;
-        animStartTime  =void;
-        callOnPaint = false;
-        if (animTimer !== void) {
-            invalidate animTimer;
-            animTimer = void;
-        }
-    }
-
-    function animHandler() {
-        if (visible) {
-            update();
-        }
-    }
-
-    function animStart(count, time) {
-        if (count === void || count <= 1) {
-            animStop();
-            super.height = imageHeight;
-        } else {
-            super.height = imageHeight / count;
-            animCount = count;
-            if (time > 0) {
-                animTime  = time === void ? (1000 / count) : time;
-                animStartTime = System.getTickCount();
-                animTimer = new Timer(animHandler, '');
-                animTimer.capacity = 1;
-                animTimer.interval = animTime;
-                animTimer.enabled  = true;
-                callOnPaint = true;
-            }
-        }
-    }
-
-    function onPaint() {
-        super.onPaint(...);
-        if (animCount !== void && animCount > 0 && animTime > 0) {
-            var now = System.getTickCount() - animStartTime;
-            var t = ((now \ animTime) % animCount) * (imageHeight \ animCount);
-            if (t <= imageHeight - height) {
-                imageTop = -t;
-            }
-        }
-    }
-
-    function loadImages(storage, key, count, time) {
-        animStop();
-        var ret = super.loadImages(storage, key);
-        animStart(count, time);
-        return ret;
-    }
-
-    function setSizeToImageSize() {
-        if (animCount === void) {
-            super.setSizeToImageSize();
-        } else {
-            super.width  = imageWidth;
-            super.height = imageHeight / animCount;
-        }
-    }
-
-    function assignImages(src, copyvisiblestate = false) {
-        animStop();
-        super.assignImages(src, copyvisiblestate);
-        if (src instanceof "AnimKAGLayer") {
-            animStart(src.animCount, src.animTime);
-        }
-    }
 }

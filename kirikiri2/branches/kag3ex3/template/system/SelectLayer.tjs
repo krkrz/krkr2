@@ -14,6 +14,7 @@ class SelectButtonLayer extends ButtonLayer
     var storage; // 処理終了後のジャンプ先
     var target;  // 処理終了後のジャンプ先
 	var tag;     // ボタン固有名称（フラグ用）
+	var text;    // 表示したテキスト
 	var drawopt; // 描画オプション
 	var message; // メッセージテキスト（再描画用）
 	var ui;
@@ -54,7 +55,7 @@ class SelectButtonLayer extends ButtonLayer
         super.ButtonLayer(owner.window, owner.window.primaryLayer);
 
 		if (owner.uibutton !== void)
-			(Dictionary.assignStruct incontextof (ui = %[]))(owner.getUIInfo(this), true);
+			(Dictionary.assignStruct incontextof (ui = %[]))(owner.getUIInfo(this, drawopt), true);
 
 		redraw();
 	}
@@ -212,6 +213,7 @@ class SelectLayer {
     var focusImage;
 	var uibutton; // uiload用
 	var uiname = "select";
+	var uinameSelected = void; //過去に選択済みの場合のUI(voidの場合は通常のuinameを使用)
 	var frameOpacity = 255; // 不透明度
 
     // フォント
@@ -321,6 +323,7 @@ class SelectLayer {
 
 		// uiload用
 		uiname = elm.uiname if (elm.uiname != "");
+		uinameSelected = elm.uinameselected if (elm.uinameselected !== void);
 		if (elm.uistorage !== void) {
 			uibutton = void;
 			if (Storages.isExistentStorage(elm.uistorage+".csv")) {
@@ -337,18 +340,20 @@ class SelectLayer {
     /**
      * 選択肢UI名取得
      */
-	function getUIName(num, cnt) {
-		return @"${uiname}${num+1}_${cnt}";
+	function getUIName(num, cnt, tag = uiname) {
+		return @"${tag}${num+1}_${cnt}";
 	}
     /**
      * UILoader用の情報を返す
      */
-	function getUIInfo(sel) {
+	function getUIInfo(sel, opt) {
+		var tag = uiname;
+		/**/tag = uinameSelected if (opt.selected && uinameSelected != "");
 		var name, num = selects.find(sel), cnt = selects.count;
-		if (num < 0) name = uiname;
+		if (num < 0) name = tag;
 		else {
-			name = getUIName(num, cnt);
-			name = uiname if (uibutton[name] === void);
+			name = getUIName(num, cnt, tag);
+			name = tag if (uibutton[name] === void);
 		}
 		var ret = uibutton[name];
 		if (ret === void) throw new Exception(@"選択肢UI「${name}」が見つかりません");
@@ -404,8 +409,11 @@ class SelectLayer {
 
 		// MessageLayer.drawTextToLayerに投げるためのhack
 		context.antialiased = true; //window.chDefaultAntialiased;
-		(MessageLayer.drawTextToLayer incontextof context)(lay, x, y, text, col);
+		drawText(context, lay, x, y, text, col);
 		invalidate context;
+	}
+	function drawText(context, *) {
+		return (MessageLayer.drawTextToLayer incontextof context)(*);
 	}
 
     // 登録済み選択肢
@@ -554,6 +562,7 @@ class SelectLayer {
         select.storage = elm.storage;
         select.target  = elm.target;
 		select.tag     = elm.tag;
+		select.text    = elm.text;
         
         selects.add(select);
     }
@@ -618,7 +627,7 @@ class SelectLayer {
 	 */
 	function end(select) {
 		var elm;
-		if (select) with (select) elm = %[ tag:.tag, storage:.storage, target:.target ];
+		if (select) with (select) elm = %[ tag:.tag, text:.text, storage:.storage, target:.target ];
 		window.processGo();
 		window.insertTag("doneselect", elm !== void ? elm : %[]);
 		if (setVisibleTime(false, fadeTime)) {

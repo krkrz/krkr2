@@ -18,6 +18,8 @@ var dm = Debug.message; // これで dm("message"); でコンソールに message を表示で
 */
 
 ("property debugWindowEnabled { getter() { return " + (System.getArgument("-debugwin") != "no") + "; } }")!;
+("property inXP3archivePacked { getter() { return " + (Storages.getPlacedPath("startup.tjs").indexOf(">") >= 0) + "; } }")!;
+Scripts.exec(@"@set (PACKED=${inXP3archivePacked})");
 
 if (!debugWindowEnabled) {
 	/*
@@ -239,6 +241,19 @@ function CanLoadPlugin(name) {
 	var placed = Storages.getPlacedPath(name);
 	return placed != "" && exist(placed);
 }
+try {
+	var dll = "PackinOne.dll";
+	Plugins.link(dll) if (CanLoadPlugin(dll));
+} catch {}
+
+Plugins.link("csvParser.dll");
+Plugins.link("fstat.dll");
+Plugins.link("layerExBTOA.dll");
+Plugins.link("layerExDraw.dll");
+Plugins.link("layerExImage.dll");
+Plugins.link("layerExRaster.dll");
+Plugins.link("scriptsEx.dll");
+Plugins.link("shrinkCopy.dll");
 
 /*
 	AppConfig.tjs 読み込み
@@ -269,6 +284,9 @@ else
 if (typeof global.ENV_GameName != "undefined") {
 	System.title = global.ENV_GameName;
 }
+if (typeof global.ENV_GameId != "undefined" && lockKey == "") {
+	lockKey = global.ENV_GameId;
+}
 
 /*
 	Config.tjs バージョンチェック
@@ -284,7 +302,7 @@ if(typeof global.config_version == "undefined" || config_version != kagVersion)
 */
 
 // 実行可能ファイルのパスをキーにしてロックを行う
-if(!System.createAppLock(System.appLockKey=(System.exePath + lockKey).replace(/[^A-Za-z]/g, '_')) && typeof global.restart == "undefined")
+if(!System.createAppLock(System.appLockKey=(System.exePath + lockKey).replace(/[^A-Za-z0-9]/g, '_')) && typeof global.restart == "undefined")
 {
 	// すでに起動している
 	if (debugWindowEnabled && typeof Window.sendMessage == "Object" &&   System.getArgument("-sendmessage") != "") {
@@ -328,6 +346,7 @@ KAGLoadScript("BitmapFont.tjs")   if (KAGConfigEnabled("fontExBitmapEnabled", fa
 
 KAGLoadScript("Utils.tjs");
 KAGLoadScript("KAGLayer.tjs");
+KAGLoadScript("AnimKAGLayer.tjs");
 
 KAGLoadScript("ButtonLayer.tjs");
 
@@ -395,6 +414,16 @@ parseStartTick = System.getTickCount();
 global.kag = new KAGWindow() if typeof global.kag == "undefined";
 	
 if (typeof global.KAGWorldPlugin != 'undefined') {
+
+	// シーンパーサ導入
+	if (debugWindowEnabled) {
+		Storages.addAutoPath(System.exePath + "tools/sceneparser/");
+		if (Storages.isExistentStorage("SceneParser.tjs")) {
+			Scripts.execStorage("SceneParser.tjs");
+			Storages.addAutoPath(System.exePath + "setup/sceneparser/");
+			Storages.addAutoPath(System.exePath + "scenario/");
+		}
+	}
 	// ワールド拡張プラグイン
 	kag.addPlugin(global.world_object = new KAGWorldPlugin(kag));
 	if (kag.debugLevel >= tkdlSimple) {

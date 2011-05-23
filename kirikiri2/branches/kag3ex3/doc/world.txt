@@ -9,15 +9,24 @@ KAGEX ‚©‚ç‚³‚ç‚É world.ks ‚ðƒvƒ‰ƒOƒCƒ“‚Æ‚µ‚Ä“Ç‚Ýž‚Þ‚±‚Æ‚Å
 ƒ[ƒ‹ƒhŠg’£‚Å‚ÍAƒQ[ƒ€‚ð\¬‚·‚é—v‘f‚ðuƒIƒuƒWƒFƒNƒgv‚Æ‚Ý‚È‚µ‚ÄA
 ‚»‚ÌƒIƒuƒWƒFƒNƒg‚É‘Î‚µ‚Ä‘€ì‚ð‚¨‚±‚È‚Á‚Ä‚¢‚­ƒXƒ^ƒCƒ‹‚Ì‹Lq‚Æ‚È‚è‚Ü‚·
 
-ŠÂ‹«      : ƒVƒXƒeƒ€‘S‘Ì‚Ì§ŒäA‚¨‚æ‚ÑA”wŒi/ŽžŠÔó‘Ô‚Ì§Œä
+ŠÂ‹«      : ƒVƒXƒeƒ€‘S‘Ì‚ÆƒJƒƒ‰‚Ì§Œä
+•‘‘ä      : êŠ‚Æ”wŒi‚É”º‚¤u”wŒi‰æ‘œv‚ð§Œä‚·‚é‚½‚ß‚Ìê—pƒIƒuƒWƒFƒNƒg
 ƒCƒxƒ“ƒg  : uƒCƒxƒ“ƒg‰æ‘œv‚ð§Œä‚·‚é‚½‚ß‚Ìê—pƒIƒuƒWƒFƒNƒg
-ƒLƒƒƒ‰ƒNƒ^: uƒLƒƒƒ‰ƒNƒ^v‚Ì—§‚¿ŠG‚âƒ{ƒCƒX‚È‚Ç‚ð§Œä‚·‚éƒIƒuƒWƒFƒNƒg
+ƒLƒƒƒ‰ƒNƒ^: uƒLƒƒƒ‰ƒNƒ^‰æ‘œv‚Ì—§‚¿ŠG‚âƒ{ƒCƒX‚È‚Ç‚ð§Œä‚·‚éƒIƒuƒWƒFƒNƒg
 ƒŒƒCƒ„    : ‰æ–ÊŒø‰Ê‘fÞ‚Æ‚µ‚Ä‚ÌuƒŒƒCƒ„‰æ‘œv‚ð§Œä‚µ‚·‚éƒIƒuƒWƒFƒNƒg
 
 ‚¢‚¸‚ê‚ÌƒIƒuƒWƒFƒNƒg‚àŽŸ‚Ì‚æ‚¤‚È“Á’¥‚ð‚à‚¿‚Ü‚·
 
 (1) KAG ‚É‚¨‚¯‚éu‘®«v‚Ì–¼‘O‚ðƒRƒ}ƒ“ƒh‚Æ‚Ý‚È‚·
 (2) KAG ‚É‚¨‚¯‚éu‘®«’lv‚ð‚»‚ÌƒRƒ}ƒ“ƒh‚É‘Î‚·‚éƒpƒ‰ƒ[ƒ^‚Æ‚Ý‚È‚·
+
+œ‘å‚«‚¢Žd—l•ÏX‚É‚Â‚¢‚Ä
+
+EhideŒn–½—ß‚Í”pŽ~‚³‚ê‚Ü‚µ‚½BallŒn–½—ß + hide ‚ð‘ã‚í‚è‚É‚Â‚©‚Á‚Ä‰º‚³‚¢
+Eclear–½—ß‚Í”pŽ~‚³‚ê‚Ü‚µ‚½BallŒn–½—ß + hide ‚ð‘ã‚í‚è‚É‚Â‚©‚Á‚Ä‰º‚³‚¢
+Enewchar/delcharAnewlayer/dellayer ‚Í–½—ß‚ÍŽc‚Á‚Ä‚Ü‚·‚ª deprecated‚Å‚·B
+@¶¬‚É‚Í char / layer ‚ðAíœ‚Í‚»‚ê‚¼‚ê‚ÌƒIƒuƒWƒFƒNƒg‚Ì delete 
+@ƒRƒ}ƒ“ƒh‚ðŽg‚Á‚Ä‰º‚³‚¢
 
 œ“±“ü•û–@
 
@@ -31,25 +40,21 @@ global.worldEnabled ‚ð startup.tjs ‚È‚Ç‚Å false ‚É‚µ‚Ä‚¨‚¢‚Ä‚­‚¾‚³‚¢B
 KAGEX ‚Ìƒ^ƒO‚Ìˆ—‚ªŽŸ‚Ì‚æ‚¤‚ÉŠg’£‚³‚ê‚Ü‚·
 
 EENV ƒ^ƒO‚ÍuŠÂ‹«v‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·B
-ESTAGE ‚Ü‚½‚Í BG ƒ^ƒO‚Íu”wŒiƒŒƒCƒ„v‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·B
-EEVENT ‚Ü‚½‚Í EV ƒ^ƒO‚ÍuƒCƒxƒ“ƒgƒŒƒCƒ„v‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·B
-ECHAR ƒ^ƒO‚Í name ƒIƒvƒVƒ‡ƒ“‚Æ‚ ‚í‚¹‚ÄƒLƒƒƒ‰ƒNƒ^‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·
-ELAYER ƒ^ƒO‚Í name ƒIƒvƒVƒ‡ƒ“‚Æ‚ ‚í‚¹‚ÄƒŒƒCƒ„‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·
+ESTAGE ‚Ü‚½‚Í BG ƒ^ƒO‚Íu•‘‘äv‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·B
+EEVENT ‚Ü‚½‚Í EV ƒ^ƒO‚ÍuƒCƒxƒ“ƒgv‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·B
+ECHAR ƒ^ƒO‚Í name ƒIƒvƒVƒ‡ƒ“‚Æ‚ ‚í‚¹‚ÄuƒLƒƒƒ‰ƒNƒ^v‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·
+ELAYER ƒ^ƒO‚Í name ƒIƒvƒVƒ‡ƒ“‚Æ‚ ‚í‚¹‚ÄuƒŒƒCƒ„v‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·
+Eƒ^ƒO–¼‚É‡’v‚·‚éêŠŽw’èAŽžŠÔŽw’èAƒAƒNƒVƒ‡ƒ“Žw’è‚ÌƒRƒ}ƒ“ƒh‚ª‚ ‚éê‡‚ÍA
+@u•‘‘äv‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·
 Eƒ^ƒO–¼‚É‡’v‚·‚éƒLƒƒƒ‰ƒNƒ^‚ª‘¶Ý‚·‚éê‡‚ÍŠY“–ƒLƒƒƒ‰‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·
-Eƒ^ƒO–¼‚É‡’v‚·‚éƒŒƒCƒ„‚ª‘¶Ý‚·‚éê‡‚ÍƒŒƒCƒ„‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·B
+Eƒ^ƒO–¼‚É‡’v‚·‚éƒŒƒCƒ„‚ª‘¶Ý‚·‚éê‡‚ÍŠY“–ƒŒƒCƒ„‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·B
 Eƒ^ƒO–¼‚É‡’v‚·‚éuŠÂ‹«v‚ÌƒRƒ}ƒ“ƒh‚Í‚»‚Ì‚Ü‚Ü‹@”\‚µ‚Ü‚·
 E–¼‘Oˆ—‹@”\‚ÍƒLƒƒƒ‰ƒNƒ^ƒ{ƒCƒX‚Æ“¯Šú‚µ‚Äˆ—‚³‚ê‚Ü‚·B
 
-EEV ƒ^ƒO‚ðŽg‚Á‚Ä•`‰æƒCƒxƒ“ƒgŠG‚ð•`‰æ‚µ‚½ê‡A
-@sflags ‚É ucg_–¼‘Ov‚Æ‚¢‚¤’l‚ªŽ©“®“I‚É“o˜^‚³‚ê‚Ü‚·B
-
-Ebgm ƒ^ƒO‚Í u‚a‚f‚lƒIƒuƒWƒFƒNƒgv‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·
+EBGM ƒ^ƒO‚Í u‚a‚f‚lƒIƒuƒWƒFƒNƒgv‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·
 
   ¦"bgm" ‚ÅŽn‚Ü‚éŽw’è‚ÍA‚»‚ê‚ðƒtƒ@ƒCƒ‹–¼‚Æ‚Ý‚È‚µ‚½
 @  [BGM play=–¼‘O] ‚Æ“™‰¿‚Ìˆµ‚¢‚É‚È‚è‚Ü‚·B
-
-  ¦BGM ƒ^ƒO‚ðŽg‚Á‚ÄBGM‚ðÄ¶‚µ‚½ê‡A
-@  sflags ‚É ubgm_–¼‘Ov‚Æ‚¢‚¤’l‚ªŽ©“®“I‚É“o˜^‚³‚ê‚Ü‚·B
 
 ESE ƒ^ƒO‚Íu‚r‚dƒIƒuƒWƒFƒNƒgŒQv‚É‘Î‚·‚éƒRƒ}ƒ“ƒh‚É‚È‚è‚Ü‚·B
 
@@ -63,6 +68,28 @@ KAGEX ‚Ìƒ^ƒO‚Ìˆ—‚ªŽŸ‚Ì‚æ‚¤‚ÉŠg’£‚³‚ê‚Ü‚·
 @•¶Žš—ñŽw’è‚ÍAƒ{ƒCƒXÄ¶‚ª–³‚©‚Á‚½ê‡‚Í‹­§“I‚É–`“ª‚Å‚ÌŽÀs‚É‚È‚è‚Ü‚·B
   ƒ{ƒCƒX’†‚Ìƒ‰ƒxƒ‹‚ÍA–{—ˆ‚Ì–¼‘O‚Ì‚Ù‚©A“oê‡‚É vl1, vl2, vl3 ... 
 @‚Æ‚¢‚¤•Ê–¼‚Å‹@”\‚·‚é‚æ‚¤‚É‚È‚Á‚Ä‚Ü‚·B
+  ‚Ü‚½Aƒ{ƒCƒXI—¹Žž‚É‰¼‘zƒ‰ƒxƒ‹ vlstop ‚ªˆ—‚³‚ê‚Ü‚·B
+
+žŽ©“®ƒtƒ‰ƒOˆ—
+
+EƒCƒxƒ“ƒg‚Ü‚½‚Í•‘‘ä‚É"EV"‚Å‚Í‚¶‚Ü‚é‰æ‘œ‚ð•`‰æ‚µ‚½ê‡A
+@sflags ‚É ucg_–¼‘Ov‚Æ‚¢‚¤’l‚ªŽ©“®“I‚É“o˜^‚³‚ê‚Ü‚·B
+
+EBGM ƒ^ƒO‚ðŽg‚Á‚ÄBGM‚ðÄ¶‚µ‚½ê‡A
+@sflags ‚É ubgm_–¼‘Ov‚Æ‚¢‚¤’l‚ªŽ©“®“I‚É“o˜^‚³‚ê‚Ü‚·B
+
+EƒLƒƒƒ‰ƒNƒ^ƒ{ƒCƒXÄ¶Žž‚É sflags ‚Éuvoice_ƒ{ƒCƒX’è‹`–¼] ‚Ìƒtƒ‰ƒO‚ª
+@Ž©“®“I‚É“o˜^‚³‚ê‚Ü‚·
+
+
+EƒŒƒCƒ„‚É‰æ‘œ‚ð•`‰æ‚µ‚½ê‡A
+@sflags ‚É ucg_–¼‘Ov‚Æ‚¢‚¤’l‚ªŽ©“®“I‚É“o˜^‚³‚ê‚Ü‚·B
+
+EƒŒƒCƒ„‚Éƒ^ƒCƒ‹‰æ‘œ‚ð•`‰æ‚µ‚½ê‡A
+@sflags ‚É utile_–¼‘Ov‚Æ‚¢‚¤’l‚ªŽ©“®“I‚É“o˜^‚³‚ê‚Ü‚·B
+
+EƒŒƒCƒ„‚ÉGFXŒnƒGƒtƒFƒNƒg‚ð•\Ž¦‚µ‚½ê‡A
+  sflags ‚É uautoflag’è‹`–¼_–¼‘Ov‚Æ‚¢‚¤’l‚ªŽ©“®“I‚É“o˜^‚³‚ê‚Ü‚·B
 
 ž–½—ß‚ÌŠg’£
 
@@ -106,102 +133,28 @@ trans ‚à fade ‚àŽw’è‚µ‚È‚©‚Á‚½ê‡‚ÍA
 
 msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 
-Ÿclear
-
-‰æ–Ê‚Ì‘SÁ‹Žˆ—‚ðs‚¢‚Ü‚·B
- E•‘‘ä
- EƒCƒxƒ“ƒgŠG
- EƒLƒƒƒ‰ƒNƒ^
- EŠÂ‹«ƒŒƒCƒ„
- EƒƒbƒZ[ƒW‘‹
-‚·‚×‚Ä‚ªÁ‹Ž‚³‚ê‚Ü‚·B
-
-‘®«
-    trans   ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“–¼Žw’è
-    fade    ƒtƒF[ƒhŽw’è
-
-ƒƒbƒZ[ƒW‘‹‚àˆêŠ‡Á‹Ž‚³‚ê‚Ü‚·B
-‚½‚¾A–{ƒVƒXƒeƒ€‚Ì•ûŒü“I‚É‚ÍA
-
-[env hideall msgoff trans=...]
-
-‚Ì‹LqƒXƒ^ƒCƒ‹‚ð„§‚µ‚Ü‚·B‚±‚Ìê‡‚Í
-EƒƒbƒZ[ƒW‘‹Á‹Ž
-E‘S•\Ž¦Á‹Ž‚µ‚Äƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ŽÀs‚Ì‚Q’iŠK•\Ž¦‚É‚È‚è‚Ü‚·B
-
-Ÿnewlay/newlayer
-
-V‹K‚ÉŠÂ‹«ƒŒƒCƒ„ƒIƒuƒWƒFƒNƒg‚ð¶¬‚µ‚Ü‚·B
-
-‘®«
-    name    ƒŒƒCƒ„‚ÌŽ¯•Ê–¼‚Å‚·
-
-¦¶¬‚µ‚½ƒ^ƒO‚Å‚»‚Ì‚Ü‚ÜŠÂ‹«ƒŒƒCƒ„—p‚ÌƒRƒ}ƒ“ƒh‚ðŽg—p‰Â”\‚Å‚·
-
-Ÿdellay/dellayer
-
-ŠÂ‹«ƒŒƒCƒ„ƒIƒuƒWƒFƒNƒg‚ð”jŠü‚µ‚Ü‚·
-
-‘®«
-    name    ƒŒƒCƒ„‚ÌŽ¯•Ê–¼‚Å‚·
-
 Ÿlayer
 
-ŠÂ‹«ƒŒƒCƒ„ƒIƒuƒWƒFƒNƒg‚É‘Î‚·‚é–½—ß‚Æ‚µ‚Ä‹@”\‚µ‚Ü‚·
+ƒŒƒCƒ„ƒIƒuƒWƒFƒNƒg‚É‘Î‚·‚é–½—ß‚Æ‚µ‚Ä‹@”\‚µ‚Ü‚·
+ƒ}ƒNƒ‚È‚Ç‚ÅƒŒƒCƒ„–¼‚ðƒpƒ‰ƒ[ƒ^Žw’è‚µ‚½‚¢ê‡‚ÉŽg—p‚Å‚«‚Ü‚·
+‘¶Ý‚µ‚È‚¢ƒŒƒCƒ„‚ðŽw’è‚µ‚½ê‡‚ÍŽ©“®“I‚Éì¬‚³‚ê‚Ü‚·B
 
 ‘®«
     name    ƒŒƒCƒ„‚ÌŽ¯•Ê–¼‚Å‚·
-
-¦ƒ}ƒNƒ‚È‚Ç‚ÅƒŒƒCƒ„–¼‚ðƒpƒ‰ƒ[ƒ^Žw’è‚µ‚½‚¢ê‡‚ÉŽg—p‚Å‚«‚Ü‚·
-
-Ÿnewchar
-
-V‹K‚ÉŠÂ‹«ƒLƒƒƒ‰ƒNƒ^ƒIƒuƒWƒFƒNƒg‚ð¶¬‚µ‚Ü‚·B
-
-‘®«
-    name        ƒLƒƒƒ‰ƒNƒ^–¼‚Å‚·
-    initname    ‰Šú‰»–¼
-
-¦¶¬‚µ‚½ƒ^ƒO‚Å‚»‚Ì‚Ü‚ÜƒLƒƒƒ‰ƒNƒ^—p‚ÌƒRƒ}ƒ“ƒh‚ð‚µ‚æ‚¤‰Â”\‚Å‚·
-
-ŠÂ‹«ƒLƒƒƒ‰ƒNƒ^ƒIƒuƒWƒFƒNƒg‚ÍA’ÊíA“Á‚ÉV‹K‚É¶¬‚µ‚È‚­‚Ä‚à
-ŽQÆŽž‚É‰Šú‰»–¼‚ðŽg‚Á‚ÄŽ©“®“I‚Éì¬‚³‚ê‚Ü‚·B‚±‚Ì‹@”\‚ÍA
-u•Ê–¼v‚Å“¯‚¶‰Šú‰»ƒf[ƒ^‚ð‚à‚Á‚½ƒLƒƒƒ‰ƒNƒ^‚ð¶¬‚µ‚½‚¢ê‡‚É
-—˜—p‚µ‚Ü‚·B
-
-Ÿdelchar
-
-ŠÂ‹«ƒLƒƒƒ‰ƒNƒ^ƒIƒuƒWƒFƒNƒg‚ð”jŠü‚µ‚Ü‚·
-
-‘®«
-    name    ƒLƒƒƒ‰ƒNƒ^–¼‚ðŽw’è‚µ‚Ü‚·
 
 Ÿchar
 
 ŠÂ‹«ƒLƒƒƒ‰ƒNƒ^ƒIƒuƒWƒFƒNƒg‚É‘Î‚·‚é–½—ß‚Æ‚µ‚Ä‹@”\‚µ‚Ü‚·
+ƒ}ƒNƒ‚È‚Ç‚ÅƒŒƒCƒ„–¼‚ðƒpƒ‰ƒ[ƒ^Žw’è‚µ‚½‚¢ê‡‚ÉŽg—p‚Å‚«‚Ü‚·
+‘¶Ý‚µ‚È‚¢–¼‘O‚ðŽw’è‚µ‚½ê‡‚ÍŽ©“®“I‚Éì¬‚³‚ê‚Ü‚·B
 
 ‘®«
     name    ƒLƒƒƒ‰ƒNƒ^–¼‚ðŽw’è‚µ‚Ü‚·
-
-¦ƒ}ƒNƒ‚È‚Ç‚ÅƒLƒƒƒ‰ƒNƒ^–¼‚ðƒpƒ‰ƒ[ƒ^Žw’è‚µ‚½‚¢ê‡‚ÉŽg—p‚Å‚«‚Ü‚·
-
-Ÿallchar
-
-‘SƒLƒƒƒ‰‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
-
-‘®«
-    poscond Žw’è‚³‚ê‚½êŠ‚É‚¢‚éƒLƒƒƒ‰‚É‚Ì‚ÝŽÀs‚µ‚Ü‚·
-
-Ÿalllayer
-
-‘SƒŒƒCƒ„‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
+    initname    ‰Šú‰»–¼
 
 Ÿallse
 
 ‘SSE‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
-
-‚»‚ÌêŠ‚É‘¶Ý‚·‚é‚·‚×‚Ä‚ÌƒIƒuƒWƒFƒNƒgiƒLƒƒƒ‰ƒNƒ^‚Ü‚½‚ÍƒŒƒCƒ„j
-‚É‘Î‚µ‚Ä–½—ß‚ðŽÀs‚µ‚Ü‚·
 
 Ÿshowvoiceinfo
 
@@ -228,6 +181,41 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 Ÿlaytrans
 Ÿltbegin/end Šg’£
 
+žallŒn–½—ß
+
+‰æ‘œŒn‚ÌƒIƒuƒWƒFƒNƒg‚ðˆêŠ‡ˆ—‚µ‚½‚¢ê‡‚É all` ‚Å‚Í‚¶‚Ü‚é‹Lq‚ð
+Žg‚¤‚±‚Æ‚ª‚Å‚«‚Ü‚·B‚±‚ê‚ç‚ÌƒRƒ}ƒ“ƒh‚ÍŠî–{“I‚É‚Í‚»‚ÌŽž“_‚Å•\Ž¦‚³‚ê‚Ä‚¢‚é
+ƒIƒuƒWƒFƒNƒg‚É‘Î‚µ‚Äˆê‚Âˆê‚Â“¯‚¶ƒRƒ}ƒ“ƒh‚ð•À‚×‚½‚Ì‚Æ“¯‚¶ˆÓ–¡‚ð‚à‚¿‚Ü‚·B
+‚Â‚Ü‚èAƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚È‚Ç‚ª“¯Šú‚µ‚Ä‚¢‚éê‡‚Íˆê‚Â‚Ã‚Â‡‚ÉŽÀs‚³‚ê‚Ü‚·B
+‘S•”“¯Žž‚É“®ì‚³‚¹‚½‚¢ê‡‚Í
+
+a. nosync Žw’è‚ð‚Â‚¯‚Ä‘S•””ñ“¯Šú“®ì‚³‚¹‚é
+b. all Žw’è‚ð‚Â‚¯‚Ä‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚³‚¹‚é
+
+‚Ì‚¢‚¸‚ê‚©‚ðs‚Á‚Ä‚­‚¾‚³‚¢
+
+¦‚±‚ê‚ç‚ª–¢Žw’è‚Ìê‡‚ÌƒfƒtƒHƒ‹ƒg’l‚ð envinit.tjs ‚Å’è‹`‚Å‚«‚Ü‚·
+allnosync : ƒfƒtƒHƒ‹ƒg‚Å nosync Žw’è‚ð‚µ‚½‚ÆŒ©‚È‚·
+allall    : ƒfƒtƒHƒ‹ƒg‚Å all Žw’è‚ð‚µ‚½‚ÆŒ©‚È‚·
+
+‹¤’Ê‘®«
+	poscond ‘ÎÛ‚ªƒLƒƒƒ‰‚Ìê‡‚Ì•\Ž¦ˆÊ’u‚ðŒÀ’è‚·‚é(posŽw’è‚Æ“¯‚¶‚à‚Ì‚ðŽw’è)
+	vcond	‘ÎÛ‚É‚·‚é•\Ž¦ó‘Ô‚ðŒÀ’è‚·‚é
+			true:•\Ž¦‚³‚ê‚Ä‚é‚à‚Ì(ƒfƒtƒHƒ‹ƒg) 
+			false:”ñ•\Ž¦‚Ì‚à‚Ì
+			all:‘S‚Ä
+	all		‘S‘Ì‚ðbegintrans/endtrans‚ÅˆÍ‚ñ‚¾ó‘Ô‚ÅŽÀs‚µ‚Ü‚·
+
+¦‹Lq—á
+@”ñ•\Ž¦‚ÌƒŒƒCƒ„‚ð‚·‚×‚Ä”jŠü
+  [alllayer delete vcond=false]
+
+Ÿallchar	•\Ž¦‚³‚ê‚Ä‚¢‚é‘SƒLƒƒƒ‰‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
+Ÿalllayer	•\Ž¦‚³‚ê‚Ä‚¢‚é‘SƒŒƒCƒ„‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
+Ÿallfore	•\Ž¦‚³‚ê‚Ä‚¢‚é‘SƒLƒƒƒ‰/ƒŒƒCƒ„‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
+Ÿallbase	•\Ž¦‚³‚ê‚Ä‚¢‚éƒCƒxƒ“ƒgŠG/•‘‘ä‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
+Ÿallimage	•\Ž¦‚³‚ê‚Ä‚¢‚é‰æ‘œƒIƒuƒWƒFƒNƒg‘S‚Ä‚É‘Î‚µ‚Ä“¯‚¶–½—ß‚ðŽÀs‚µ‚Ü‚·
+
 œƒ[ƒ‹ƒhŠg’£‚É‚¨‚¯‚é‹Lq‚ÌÈ—ª
 
 ƒ[ƒ‹ƒhŠg’£‚Å‚Í‚³‚Ü‚´‚Ü‚ÈÈ—ª‹L–@‚ª—LŒø‚Å‚·B
@@ -235,14 +223,14 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 žŠÂ‹«‘®«Žw’è‚ÌÈ—ª
 
 -------------------------
-[env stage=ŠwZ]
+[stage stage=ŠwZ]
 -------------------------
 
-ŠÂ‹«‚Ì•‘‘ä‚ðuŠwZv‚ÉŽw’è‚·‚é•\‹L‚Å‚·
+•‘‘ä‚ðuŠwZv‚ÉŽw’è‚·‚é•\‹L‚Å‚·
 “o˜^Ï‚Ý‚Ì–¼‘O‚ª‚Ù‚©‚ÌŽw’è‚Æ‚©‚Ô‚ç‚È‚¢ê‡A‚±‚ê‚ÍŽŸ‚Ì‚æ‚¤‚ÉÈ—ª‰Â”\‚Å‚·
 
 -------------------------
-[env ŠwZ]
+[stage ŠwZ]
 -------------------------
 
 žŠÂ‹«–¼‚ÌÈ—ª
@@ -253,8 +241,8 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 [ŠwZ]
 -------------------------
 
-uŠwZv‚Æ‚¢‚¤ƒ^ƒO‚Í‘¶Ý‚µ‚È‚¢‚½‚ßAŠÂ‹«‚É‘Î‚·‚é–½—ß‚É‚¨‚«‚©‚¦‚Ä
-ŽÀs‚³‚êA[env ŠwZ] ‚Æ“™‰¿‚É‚È‚è‚Ü‚·B
+uŠwZv‚Æ‚¢‚¤ƒ^ƒO‚Í‘¶Ý‚µ‚È‚¢‚½‚ßA•‘‘ä‚É‘Î‚·‚é–½—ß‚É‚¨‚«‚©‚¦‚Ä
+ŽÀs‚³‚êA[stage ŠwZ] ‚Æ“™‰¿‚É‚È‚è‚Ü‚·B
 
 žƒLƒƒƒ‰ƒNƒ^Žw’è
 
@@ -287,11 +275,95 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 EƒƒbƒZ[ƒW‘‹‚Éuºv‚Æ‚µ‚Ä–¼‘O‚ð•\Ž¦‚µ‚Ü‚·
 EƒƒbƒZ[ƒW‘‹‚Ì•\î—“‚ðu–­v‚ÌŒ»Ý‚Ì•\î{ƒ|[ƒY‚ÅŽ©“®•\Ž¦‚µ‚Ü‚·
 
-œƒIƒuƒWƒFƒNƒg‚Ì‹@”\
+
+
+    voice       ŽŸ‚É–Â‚ç‚·ƒ{ƒCƒX‚ðŽw’è‚µ‚Ü‚·
+@@@           ”’l:   Ä¶”’lƒJƒEƒ“ƒ^‚ðŽw’è‚·‚é
+        @@@   •¶Žš—ñ: ‚P‰ñÄ¶‚É‚í‚è‚±‚Þ
+            @@ ignore: ‚P‰ñ‚¾‚¯Ä¶‚ð–³Ž‹‚·‚éi•¶Žš—ñˆµ‚¢j
+
+@  once        ”’lŽw’è‚Å‚P‰ñÄ¶‚É‚í‚è‚±‚Ý‚Ü‚·i•¶Žš—ñˆµ‚¢‚É‚È‚éj
+@  incvoice    •¶Žš—ñŽw’è‚ÌŽž‚É‚à”’lƒJƒEƒ“ƒ^‚ð‚ ‚°‚é
+    noincvoice  ”’lƒJƒEƒ“ƒg‚ð‚ ‚°‚È‚¢iincvoice ‚æ‚è‹­‚¢Žw’èj
+
+    clearvoice  ŽŸ‚©‚çƒ{ƒCƒXÄ¶‚ð’âŽ~‚µ‚Ü‚·i‰Šúó‘Ô‚É–ß‚·j
+    nextvoice   Žw’è‚·‚é‚ÆŽŸ‚Ì‚Ù‚©‚ÌƒLƒƒƒ‰‚Ìƒ{ƒCƒXÄ¶‚Æ“¯Žž‚Éƒ{ƒCƒXÄ¶‚µ‚Ü‚·
+
+
+
+
+
+œŠÂ‹«ƒIƒuƒWƒFƒNƒg‚Ì‹@”\
+
+ŸKAGƒRƒ}ƒ“ƒh
+
+    init        ó‘Ô‚ð‰Šú‰»‚µ‚Ü‚·B
+                ƒLƒƒƒ‰ƒNƒ^‚ÆƒŒƒCƒ„‚·‚×‚ÄÁ‹Ž‚³‚êA
+                •‘‘ä‚âƒCƒxƒ“ƒg‚à•\Ž¦‚È‚µ‚Ìó‘Ô‚É‚È‚è‚Ü‚·B
+    nostopbgm   initŽž‚ÉBGM‚ðŒp‘±‚³‚¹‚Ü‚·
+
+	-- ‘S‘Ì•â³ --
+
+	ŒÂ•ÊƒIƒuƒWƒFƒNƒg‚Ì•â³ƒRƒ}ƒ“ƒh‚Æ“¯ˆê‚Ì‚à‚Ì‚ªŽw’è‰Â”\‚Å‚·B
+@@‚±‚±‚ÅŽw’è‚³‚ê‚½‚à‚Ì‚Í‘S‚Ä‚ÌƒIƒuƒWƒFƒNƒg‚É”½‰f‚³‚ê‚Ü‚·B
+	‹ó•¶ŽšŽw’è‚Ü‚½‚Í resetcolor ‚Å‰ðœ‚³‚ê‚Ü‚·
+
+    script      ‰æ‘œ‰ÁHƒtƒ@ƒ“ƒNƒVƒ‡ƒ“‚ðŽw’è‚µ‚Ü‚·
+    noise       ‰æ‘œ‚ÉƒmƒCƒYˆ—‚ðs‚¢‚Ü‚· 0`255
+    contrast    ‰æ‘œ‚ÌƒRƒ“ƒgƒ‰ƒXƒg‚ð•â³‚µ‚Ü‚· -100`100
+    brightness  ‰æ‘œ‚Ì–¾“x‚ð•â³‚µ‚Ü‚· -255`255
+    hue         ‰æ‘œ‚ÌF‘Š‚ð•â³‚µ‚Ü‚· -180`180(“x)
+    saturation  ‰æ‘œ‚ÌÊ“x‚ð•â³‚µ‚Ü‚· -100`100(%)
+    luminance   ‰æ‘œ‚Ì‹P“x‚ð•â³‚µ‚Ü‚· -100`100(%)
+    filter      ‰æ‘œ‚ÉFƒ}ƒXƒN‚ÅƒtƒBƒ‹ƒ^‚ð‘‚¯‚Ü‚·B
+    blurx       ƒ{ƒbƒNƒXƒuƒ‰[X—Ê
+    blury       ƒ{ƒbƒNƒXƒuƒ‰[Y—Ê
+    blur        ƒ{ƒbƒNƒXƒuƒ‰[XY“¯ŽžŽw’è
+    grayscale   ‰æ‘œ‚Ì•\Ž¦‚ªƒOƒŒ[ƒXƒP[ƒ‹‚É‚È‚è‚Ü‚·
+    rgamma      ‰æ‘œ‚ÌRƒKƒ“ƒ}•â³‚ðs‚¢‚Ü‚·
+    ggamma      ‰æ‘œ‚ÌGƒKƒ“ƒ}•â³‚ðs‚¢‚Ü‚·
+    bgamma      ‰æ‘œ‚ÌBƒKƒ“ƒ}•â³‚ðs‚¢‚Ü‚·
+
+    resetcolor  •â³Žw’è‚ð‰Šú‰»‚µ‚Ü‚·
+
+	-- ƒJƒƒ‰§Œä --
+
+    shiftx      ‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊX time,accel,nowait—LŒø
+    shifty      ‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊY time,accel,nowait—LŒø
+    camerax     ƒJƒƒ‰‚ÌˆÊ’uŽw’èX time,accel,nowait—LŒø
+    cameray     ƒJƒƒ‰‚ÌˆÊ’uŽw’èY time,accel,nowait—LŒø
+    camerazoom  ƒJƒƒ‰‚ÌƒY[ƒ€Žw’è time,accel,nowait—LŒø
+	camerarotate ƒJƒƒ‰‚Ì‰ñ“]Žw’è time,accel,nowait—LŒø
+    resetcamera ƒJƒƒ‰‚ÌˆÊ’u‚Ì‰Šú‰» time,accel,nowait—LŒø
+
+	cameraox	ƒJƒƒ‰‚ÌÁŽ¸“_‚ðŽw’è‚µ‚Ü‚·
+	cameraoy	ƒJƒƒ‰‚ÌÁŽ¸“_‚ðŽw’è‚µ‚Ü‚·
+	resetcameraorigin
+				ÁŽ¸“_‚ð‰Šúó‘Ô(”wŒi‚ÅŽw’è‚³‚ê‚½‚à‚Ì)‚É–ß‚µ‚Ü‚·
+
+    actioncamera ƒJƒƒ‰ƒAƒNƒVƒ‡ƒ“‚ÌŽw’è(actionƒRƒ}ƒ“ƒh‚Æ“¯“™‚ÌŽw’è)
+    stopcamera  ƒJƒƒ‰ƒAƒNƒVƒ‡ƒ“‚Ì’âŽ~(stopaction‚Æ“™‰¿)
+    camerach	Žw’è‚³‚ê‚½ƒLƒƒƒ‰‚ÌŠç‚ÌˆÊ’u‚ðƒJƒƒ‰ˆÚ“®‚ÌŒ´“_‚Æ‚·‚é
+				¦—§‚¿ŠG‚Å–¢’è‹`‚Ìê‡‚ÍƒGƒ‚[ƒVƒ‡ƒ“Œ´“_‚ªŽQÆ‚³‚ê‚é
+
+    reset       resetcolor ‚Æ resetcamera ‚ðŽÀs‚µ‚Ü‚·
+
+ŸƒvƒƒpƒeƒB
+
+    actioncamera ƒRƒ}ƒ“ƒh‚ÅˆÈ‰º‚ÌƒvƒƒpƒeƒB‚ðƒAƒNƒVƒ‡ƒ“Žw’è‰Â”\‚Å‚·
+
+    shiftx      	‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊX
+    shifty      	‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊY
+    camerax     	ƒJƒƒ‰‚ÌˆÊ’uŽw’èX
+    cameray     	ƒJƒƒ‰‚ÌˆÊ’uŽw’èY
+    camerazoom  	ƒJƒƒ‰‚ÌƒY[ƒ€Žw’è
+	camerarotate	ƒJƒƒ‰‚Ì‰ñ“]Žw’è
+
+œƒŒƒCƒ„ŒnƒIƒuƒWƒFƒNƒg‚Ì‹@”\
 
 ž‹¤’Ê‹@”\
 
-”wŒiAƒCƒxƒ“ƒgAƒLƒƒƒ‰ƒNƒ^[AƒŒƒCƒ„‚»‚ê‚¼‚ê‚Å
+•‘‘äAƒCƒxƒ“ƒgAƒLƒƒƒ‰ƒNƒ^[AƒŒƒCƒ„‚»‚ê‚¼‚ê‚Å
 ‹¤’Ê“I‚ÉŽg‚¤‚±‚Æ‚ª‚Å‚«‚éƒRƒ}ƒ“ƒhŒQ‚Å‚·B
 
 ŸKAGƒRƒ}ƒ“ƒh
@@ -353,7 +425,7 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
     waitanim    ƒŒƒCƒ„ƒAƒjƒÄ¶‘Ò‚¿
 
     show        ƒŒƒCƒ„‚ð•\Ž¦‚·‚é
-    hide        ƒŒƒCƒ„‚ð•\Ž¦‚µ‚È‚¢
+    hide        ƒŒƒCƒ„‚ðÁ‹Ž‚·‚é
 
     type        ƒŒƒCƒ„‡¬ƒ‚[ƒh
 
@@ -385,8 +457,6 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
     blurx       ƒ{ƒbƒNƒXƒuƒ‰[X—Ê
     blury       ƒ{ƒbƒNƒXƒuƒ‰[Y—Ê
     blur        ƒ{ƒbƒNƒXƒuƒ‰[XY“¯ŽžŽw’è
-
-    ¦ˆÈ‰º‚ÌƒRƒ}ƒ“ƒh‚ÍŠÂ‹«‚Ì colorall Žw’è‚Ì‰e‹¿‚ð‚¤‚¯‚Ü‚·
 
     grayscale   ‰æ‘œ‚Ì•\Ž¦‚ªƒOƒŒ[ƒXƒP[ƒ‹‚É‚È‚è‚Ü‚·
     rgamma      ‰æ‘œ‚ÌRƒKƒ“ƒ}•â³‚ðs‚¢‚Ü‚·
@@ -440,18 +510,9 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
     raster      ƒ‰ƒXƒ^[U•—Ê
 
 
-œŠÂ‹«ƒIƒuƒWƒFƒNƒg‚Ì‹@”\
-
-ž‹@”\
-
-ŠÂ‹«ƒIƒuƒWƒFƒNƒgŒÅ—L‚Ì‹@”\‚Å‚·
+œ•‘‘äƒIƒuƒWƒFƒNƒg‚Ì‹@”\
 
 ŸKAGƒRƒ}ƒ“ƒh
-
-    init        ó‘Ô‚ð‰Šú‰»‚µ‚Ü‚·B
-                ƒLƒƒƒ‰ƒNƒ^‚ÆƒŒƒCƒ„‚·‚×‚ÄÁ‹Ž‚³‚êA
-                •‘‘ä‚âƒCƒxƒ“ƒg‚à•\Ž¦‚È‚µ‚Ìó‘Ô‚É‚È‚è‚Ü‚·B
-    nostopbgm   initŽž‚ÉBGM‚ðŒp‘±‚³‚¹‚Ü‚·
 
     stage       •‘‘ä–¼‚ðŽw’è‚µ‚Ü‚·BÈ—ª•\‹L‰Â”\
                 •‘‘ä‚Í‚ ‚ç‚©‚¶‚ß envinit.tjs ‚Å“o˜^‚µ‚Ä‚¨‚«‚Ü‚·B
@@ -460,41 +521,16 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
                 ŽžŠÔ‚Í‚ ‚ç‚©‚¶‚ß envinit.tjs ‚Å“o˜^‚µ‚Ä‚¨‚«‚Ü‚·B
                 ¦ŽžŠÔ‚²‚Æ‚ÉF•â³ƒpƒ‰ƒ[ƒ^‚ªŽw’è‚Å‚«‚Ü‚·
 
-    hide            •‘‘ä‚ð”ñ•\Ž¦‚É‚µ‚Ü‚·i¦‹¤’Ê‹@”\j
-    hideevent       ƒCƒxƒ“ƒgŠG‚ð”ñ•\Ž¦‚É‚µ‚Ü‚·
-    hidebase        •‘‘ä‚ÆƒCƒxƒ“ƒgŠG‚ð”ñ•\Ž¦‚É‚µ‚Ü‚·
-    hidecharacters  ŠÂ‹«ƒLƒƒƒ‰ƒNƒ^‚ð‚·‚×‚Ä”ñ•\Ž¦‚É‚µ‚Ü‚·
-    hidechars       hidecharacters ‚Æ“¯‚¶
-    hidelayers      ŠÂ‹«ƒŒƒCƒ„‚ð‚·‚×‚Ä”ñ•\Ž¦‚É‚µ‚Ü‚·
-    hidefore        ŠÂ‹«ƒLƒƒƒ‰ƒNƒ^/ƒŒƒCƒ„‚ð‚·‚×‚Ä”ñ•\Ž¦‚É‚µ‚Ü‚·B
-    hideall         •‘‘äEƒCƒxƒ“ƒgŠGEŠÂ‹«ƒLƒƒƒ‰ƒNƒ^/ƒŒƒCƒ„‚ð”ñ•\Ž¦‚É‚µ‚Ü‚·
-
-    colorall    true ‚Ìê‡AŠÂ‹«‚Ì grayscale/rgamma/ggamma/bgamma ‚ÌŽw’è‚ð
-@@@@@@@@‘SƒIƒuƒWƒFƒNƒg‘Î‚µ‚Ä“K—p‚µ‚Ü‚·
-
-    shiftx      ‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊX time,accel,nowait—LŒø
-    shifty      ‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊY time,accel,nowait—LŒø
-    camerax     ƒJƒƒ‰‚ÌˆÊ’uŽw’èX time,accel,nowait—LŒø
-    cameray     ƒJƒƒ‰‚ÌˆÊ’uŽw’èY time,accel,nowait—LŒø
-    camerazoom  ƒJƒƒ‰‚ÌƒY[ƒ€Žw’è time,accel,nowait—LŒø
-    resetcamera ƒJƒƒ‰‚ÌˆÊ’u‚Ì‰Šú‰» time,accel,nowait—LŒø
-    actioncamera ƒJƒƒ‰ƒAƒNƒVƒ‡ƒ“‚ÌŽw’è(actionƒRƒ}ƒ“ƒh‚Æ“¯“™‚ÌŽw’è)
-    stopcamera  ƒJƒƒ‰ƒAƒNƒVƒ‡ƒ“‚Ì’âŽ~(stopaction‚Æ“™‰¿)
-    camerach	Žw’è‚³‚ê‚½ƒLƒƒƒ‰‚ÌŠç‚ÌˆÊ’u‚ðƒJƒƒ‰ˆÚ“®‚ÌŒ´“_‚Æ‚·‚é
-		¦—§‚¿ŠG‚Å–¢’è‹`‚Ìê‡‚ÍƒGƒ‚[ƒVƒ‡ƒ“Œ´“_‚ªŽQÆ‚³‚ê‚é
-
-ŸƒvƒƒpƒeƒB
-
-    actioncamera ƒRƒ}ƒ“ƒh‚ÅˆÈ‰º‚ÌƒvƒƒpƒeƒB‚ðƒAƒNƒVƒ‡ƒ“Žw’è‰Â”\‚Å‚·
-
-    shiftx      ‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊX
-    shifty      ‰æ–Ê‘S‘Ì‚ÌƒVƒtƒg—ÊY
-    camerax     ƒJƒƒ‰‚ÌˆÊ’uŽw’èX
-    cameray     ƒJƒƒ‰‚ÌˆÊ’uŽw’èY
-    camerazoom  ƒJƒƒ‰‚ÌƒY[ƒ€Žw’è
+	nolayer		•‘‘äŒø‰ÊƒŒƒCƒ„‚ð•\Ž¦‚µ‚Ü‚¹‚ñ
 
 
 œƒLƒƒƒ‰ƒNƒ^EƒŒƒCƒ„‹¤’Ê‹@”\
+
+žíœŽw’è
+
+ŸKAGƒRƒ}ƒ“ƒh
+	delete	ƒLƒƒƒ‰ƒNƒ^‚âƒŒƒCƒ„‚ÌƒIƒuƒWƒFƒNƒg‚ð”jŠü‚µ‚Ü‚·
+			dellay, delchar ‘Š“–‚Ìˆ—‚É‚È‚è‚Ü‚·
 
 ž•\Ž¦ƒŒƒxƒ‹Žw’è
 
@@ -532,6 +568,8 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
     facewin
     faceon
     faceoff
+	
+	facepose	•\î‚Ìƒ|[ƒY‚ð•Ê‚ÉŽw’è‚·‚éê‡‚ÉŽw’è‚µ‚Ü‚·B‹ó•¶Žš‚Å‰ðœ‚³‚ê‚Ü‚·
 
 žƒ{ƒCƒX‚ÌŽw’è
 
@@ -545,18 +583,6 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 @E•¶Žš—ñŽw’è‚Í‚P‰ñ‚©‚¬‚è—LŒø‚Å‚·
 
 ŸKAGƒRƒ}ƒ“ƒh
-
-    voice       ŽŸ‚É–Â‚ç‚·ƒ{ƒCƒX‚ðŽw’è‚µ‚Ü‚·
-@@@           ”’l:   Ä¶”’lƒJƒEƒ“ƒ^‚ðŽw’è‚·‚é
-        @@@   •¶Žš—ñ: ‚P‰ñÄ¶‚É‚í‚è‚±‚Þ
-            @@ ignore: ‚P‰ñ‚¾‚¯Ä¶‚ð–³Ž‹‚·‚éi•¶Žš—ñˆµ‚¢j
-
-@  once        ”’lŽw’è‚Å‚P‰ñÄ¶‚É‚í‚è‚±‚Ý‚Ü‚·i•¶Žš—ñˆµ‚¢‚É‚È‚éj
-@  incvoice    •¶Žš—ñŽw’è‚ÌŽž‚É‚à”’lƒJƒEƒ“ƒ^‚ð‚ ‚°‚é
-    noincvoice  ”’lƒJƒEƒ“ƒg‚ð‚ ‚°‚È‚¢iincvoice ‚æ‚è‹­‚¢Žw’èj
-
-    clearvoice  ŽŸ‚©‚çƒ{ƒCƒXÄ¶‚ð’âŽ~‚µ‚Ü‚·i‰Šúó‘Ô‚É–ß‚·j
-    nextvoice   Žw’è‚·‚é‚ÆŽŸ‚Ì‚Ù‚©‚ÌƒLƒƒƒ‰‚Ìƒ{ƒCƒXÄ¶‚Æ“¯Žž‚Éƒ{ƒCƒXÄ¶‚µ‚Ü‚·
 
     playvoice   Žw’è‚µ‚½ƒ{ƒCƒX‚ð’¼ÚÄ¶‚µ‚Ü‚·B
                 ƒ{ƒCƒX–¼‚ðŽw’èŽž‚Íƒ{ƒCƒXƒJƒEƒ“ƒg‚É‚Í‰e‹¿‚Í‚ ‚è‚Ü‚¹‚ñ
@@ -633,7 +659,7 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 žƒGƒ‚[ƒVƒ‡ƒ“‹@”\
 
 
-œŠÂ‹«ƒŒƒCƒ„‚Ì‹@”\
+œƒŒƒCƒ„‚Ì‹@”\
 
 ŸKAGƒRƒ}ƒ“ƒh
 
@@ -704,7 +730,7 @@ msgoff “¯—lAtrans ‚à fade ‚àŽw’è‚µ‚È‚¢ê‡‚Í‹K’è‚ÌƒtƒF[ƒhˆ—‚É‚È‚è‚Ü‚·B
 
 œƒCƒxƒ“ƒgƒIƒuƒWƒFƒNƒg‚Ì‹@”\
 
-ŠÂ‹«ƒŒƒCƒ„‚Æ“¯“™‚Ì‹@”\‚ðˆø‚«Œp‚¬‚Ü‚·B
+ƒŒƒCƒ„‚Ì‹@”\‚ðˆø‚«Œp‚¬‚Ü‚·B
 
 Efile Žw’è‚ÅAenvinit.tjs “o˜^Ï‚Ý‚ÌƒCƒxƒ“ƒgŠG‚ðŽQÆ‰Â”\‚Å‚·
 E[EV*] Œ`Ž®‚ÌƒRƒ}ƒ“ƒh‚Å’¼Ú‰æ‘œƒ[ƒhŽw’èŽQÆ‚Å‚«‚Ü‚·
@@ -823,12 +849,20 @@ sync Žw’è‚Å“¯Šú“®ì‚µ‚Ä‚¢‚éƒAƒNƒVƒ‡ƒ“‚ÍAƒNƒŠƒbƒN‘€ì‚É‚æ‚Á‚ÄƒLƒƒƒ“ƒZƒ‹‚³‚ê‚Ü‚·
 
 žŒÂ•Êƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Æ‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“
 
-ƒ[ƒ‹ƒhŠg’£‚Å‚ÍAŒ´‘¥A‚»‚ê‚¼‚ê‚ÌƒIƒuƒWƒFƒNƒg‚Ì•\Ž¦‚É‘Î‚µ‚ÄŒÂ•Ê‚É
-ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŽw’è‚Å‚«‚Ü‚·B‚½‚¾‚µAƒIƒuƒWƒFƒNƒg‚Ì•\Ž¦ƒŒƒxƒ‹‚ª
-•Ï‚í‚éê‡‚âA‘¼‚ÌƒIƒuƒWƒFƒNƒg‚É‚à‰e‹¿‚ª‹y‚Ô–½—ß‚Ìê‡‚ÍŒÂ•ÊŽw’è‚Í
-—˜—p‚Å‚«‚¸AŽ©“®“I‚É‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Æ‚µ‚Äˆµ‚í‚ê‚Ü‚·B
-‚Ü‚½Atrans.transall ƒpƒ‰ƒ[ƒ^‚ªŽw’è‚³‚ê‚Ä‚¢‚éƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚à
-‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“ˆµ‚¢‚É‚È‚è‚Ü‚·B
+ƒ[ƒ‹ƒhŠg’£‚Å‚ÍAŒ´‘¥AŒÂ•Ê‚ÌƒIƒuƒWƒFƒNƒg‚Ì•\Ž¦‚É‘Î‚µ‚Ä
+ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŽw’è‚Å‚«‚Ü‚·B‚½‚¾‚µAˆÈ‰º‚Ìê‡‚Í
+Ž©“®“I‚É‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚Æ‚µ‚Äˆµ‚í‚ê‚Ü‚·
+
+EƒIƒuƒWƒFƒNƒg‚Ì•\Ž¦ƒŒƒxƒ‹‚ª•Ï‚í‚éê‡
+
+E‘¼‚ÌƒIƒuƒWƒFƒNƒg‚É‚à‰e‹¿‚ª‹y‚Ô–½—ß‚ðŽg‚Á‚½ê‡
+
+  - ”wŒiŒø‰Ê‚ª‚ ‚é”wŒi‚ð•ÏX(Œø‰ÊƒŒƒCƒ„‚ª•ÏX‚³‚ê‚é)
+@- ”wŒi‚ÌŽžŠÔ‚ð•ÏX(ƒLƒƒƒ‰ƒNƒ^‚ª“¯Žž•ÏX)
+  - ƒCƒxƒ“ƒgŠG‚ª‚ ‚éó‘Ô‚Å”wŒi•ÏX(ƒCƒxƒ“ƒgŠG‚ªÁ‹Ž)
+  - ƒGƒtƒFƒNƒg‘€ì‚ÌŠÂ‹«–½—ß‚ðŽÀs(‘S‰æ‘œ‚ÉŒø‰Ê‚ª‹y‚Ô)
+
+Etrans.transall ƒpƒ‰ƒ[ƒ^‚ªŽw’è‚³‚ê‚½ƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ðŽg‚¤ê‡
 
 ‘S‘Ìƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚ÍA‰æ–Ê‘S‘Ì‚ðˆê“x‚Éƒgƒ‰ƒ“ƒWƒVƒ‡ƒ“‚·‚éˆ—‚Å‚·B
 ‘Oq‚ÌŽ©“®ˆ—‚Ì‘¼Abegintrans/endtrans ‚Å–¾Ž¦“I‚ÉŽÀs‚Å‚«‚Ü‚·B

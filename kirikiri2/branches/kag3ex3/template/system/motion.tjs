@@ -41,4 +41,8 @@ class MotionResourceManager
 			resourceManager.unload(path);
 		}
 	}
+
+	function clearCache() {
+		resourceManager.clearCache();
+	}
 }

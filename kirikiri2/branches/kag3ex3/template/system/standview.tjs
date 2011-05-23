@@ -104,7 +104,12 @@ class StandViewModelessDialog {
 		window = win;
 		with (dialog) {
 			.modeless = true;
-			var fh=9, w = 60, h = 22*fh-3;
+			var fh=9, tag = "-standviewsubwinfontsz";
+			if (System.getArgument(tag) != "") try {
+				fh = (int)(+System.getArgument(tag));
+				if (fh <= 0) fh = 9;
+			} catch{}
+			var w = 60, h = 22*fh-3;
 			var lbs = .LBS_NOTIFY | /*.LBS_USETABSTOPS |*/ .LBS_MULTIPLESEL | .WS_VSCROLL |.WS_BORDER;
 			var y1 = fh+4, y2 = y1+fh, tw = 32;
 			.store(%[
@@ -474,6 +479,7 @@ class StandViewWindow extends KAGWindow
 		filemenu.add(limitmenuitem = new svmi(this, "リスト表示を限定(&L)",               toggleLimitMenuNames));
 		filemenu.add(limitfaceitem = new svmi(this, "表情リスト表示を限定(&L)",           toggleLimitFaceNames));
 		filemenu.add(modelessDialogVisibleMenu = new svmi(this, "サブウィンドウ表示(&V)", toggleModelessDialog));
+		filemenu.add(new svmi(this, "サブウィンドウフォントサイズ...", setModelessDialogFontSize)) if (adjustExStandOffsetsEnabled);
 
 		filemenu.add(clipmenu = new MenuItem(this, "選択時クリップボード"));
 		makeClipMenu(0, "[通常]",   clipmenu, svmi);
@@ -725,7 +731,6 @@ class StandViewWindow extends KAGWindow
 //					if (!.isShowBU()) continue;
 					layer = elm.chlay;
 					.drawLayer(layer);
-					//layer.updateOffsetInfo();
 					.setSize(layer);
 					.calcPosition(layer);
 				}
@@ -1110,7 +1115,8 @@ class StandViewWindow extends KAGWindow
 
 	function syncAll(resetch = false) {
 		currentCh = void if (resetch);
-		env.syncAll();
+		env.setRedraw();
+		env.update();
 		updateAllMenu(resetch ? -1 : 0);
 	}
 
@@ -1130,7 +1136,7 @@ class StandViewWindow extends KAGWindow
 			.stopCamera();
 			.resetCamera(true, %[ time:0 ]);
 			._shiftx  = ._shifty  = 0;
-			.syncAll();
+			.updateAll();
 			setClipboard(makeTagText("env", "resetcamera", "shiftx=0", "shifty=0"));
 		}
 	}
@@ -1193,7 +1199,7 @@ class StandViewWindow extends KAGWindow
 			levelXoffset = (int)levelInfo.xoffset if levelInfo.xoffset !== void;
 		}
 		env._shiftx = scWidth / 2 - env.xmax + ((((int).xpos) * zoom / 100) + levelXoffset);
-		env.syncAll();
+		env.updateAll();
 	}
 
 	// メニュー
@@ -1295,7 +1301,7 @@ class StandViewWindow extends KAGWindow
 				if (created) {
 					.level = currentLevel;
 					if (!shift) {
-						env.syncAll();
+						env.updateAll();
 					}
 				}
 			}
@@ -1323,7 +1329,7 @@ class StandViewWindow extends KAGWindow
 	function setPose(sender, name) {
 		if (currentCh !== void) {
 			currentCh.setPose(name, %[]);
-			env.syncAll();
+			env.updateAll();
 			updateAllMenu();
 		}
 		copyClipboard(name);
@@ -1335,7 +1341,7 @@ class StandViewWindow extends KAGWindow
 	function setDress(sender, name) {
 		if (currentCh !== void) {
 			currentCh.setDress(name, %[]);
-			env.syncAll();
+			env.updateAll();
 			updateAllMenu();
 		}
 		copyClipboard(name);
@@ -1347,7 +1353,7 @@ class StandViewWindow extends KAGWindow
 	function setDiff(sender, name) {
 		if (currentCh !== void) {
 			currentCh.setDiff(name, %[]);
-			env.syncAll();
+			env.updateAll();
 			updateAllMenu();
 		}
 		copyClipboard(name);
@@ -1359,7 +1365,7 @@ class StandViewWindow extends KAGWindow
 	function setFace(sender, name) {
 		if (currentCh !== void) {
 			currentCh.setFace(name, %[]);
-			env.syncAll();
+			env.updateAll();
 			updateAllMenu();
 		}
 		copyClipboard(name);
@@ -1381,6 +1387,16 @@ class StandViewWindow extends KAGWindow
 			} catch {}
 		}
 		_adjustExStand.open(null) if (_adjustExStand !== void);
+	}
+	function setModelessDialogFontSize() {
+		var tag = "standviewsubwinfontsz";
+		var text = System.getArgument("-"+tag);
+		if (text == "") text = "9";
+		text = System.inputString("サブウィンドウフォントサイズ","フォントサイズを入力（9～）変更後は再起動のこと", text);
+		if (text != "") {
+			System.setArgument("-"+tag, text);
+			changeUserConf("standviewsubwinfontsz", text);
+		}
 	}
 
 	// -----------------------------------------------------------------
@@ -1494,7 +1510,7 @@ class StandViewWindow extends KAGWindow
 					.xpos += dx / draglevelz;
 					.ypos -= dy / draglevelz;
 					.reposition = true;
-					env.syncAll();
+					env.updateAll();
 				} else {
 					env._shiftx -= dx / draglevelz;
 					env._shifty -= dy / draglevelz;

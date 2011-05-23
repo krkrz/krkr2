@@ -1,6 +1,7 @@
 // Utils.tjs - ユーティリティ関数
 // Copyright (C)2001-2008, W.Dee and contributors  改変・配布は自由です
 
+try { Plugins.link("scriptsEx.dll"); } catch {};
 
 property random
 {
@@ -47,6 +48,14 @@ function str2num(str)
 	return +res;
 }
 
+function str2escape(str)
+{
+	// 文字列->エスケープ文字
+	var r;
+	for (var i = 0; i < str.length; i++)
+		r += "\\x%X".sprintf(# str.charAt(i));
+	return r;
+}
 
 function han2zen(str)
 {
@@ -62,6 +71,26 @@ function han2zen(str)
 		else if (num> 0x0020 && num<=0x007e) res+=$(0xff00+num-0x20); // UNICODE
 		else if (num>=0xff61 && num<=0xff9f) res+=zenkana[num-0xff61]; // 半角カナ⇒全角
 		else                                 res+=ch;
+	}
+	return res;
+}
+function zen2han(str)
+{
+	// 全角→半角（全角濁点カナも一応対応）
+	var zenkana1 = "。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜";
+	var zenkana2 = "ガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポ";
+	var hankana2 = "ｶﾞｷﾞｸﾞｹﾞｺﾞｻﾞｼﾞｽﾞｾﾞｿﾞﾀﾞﾁﾞﾂﾞﾃﾞﾄﾞﾊﾞﾋﾞﾌﾞﾍﾞﾎﾞﾊﾟﾋﾟﾌﾟﾍﾟﾎﾟ";
+	var res;
+	var i;
+	for(i=0;i<str.length;i++)
+	{
+		var ch = str.charAt(i);
+		var num=#ch, x;
+		if      (num==0x3000)                res+=" "; // "　" -> 0x20
+		else if (num> 0xff00 && num<=0xff5e) res+=$(num+0x20-0xff00); // 英数記号
+		else if ((x=zenkana1.indexOf(ch))>=0)res+=$(x + 0xff61);
+		else if ((x=zenkana2.indexOf(ch))>=0)res+=hankana2.substr(x*2,2);
+		else res+=ch;
 	}
 	return res;
 }
@@ -189,12 +218,13 @@ function number_format(n)
  * @func 処理ファンクション func(name, value, dict);
  */
 function foreach(dict, func, *) {
-    if (dict) {
+	if (dict) {
         var names = [];
-        names.assign(dict);
-        for (var i=0; i<names.count; i+= 2) {
-            func(names[i], names[i+1], dict, *);
-        }
+		names.assign(dict);
+		var count = names.count;
+		for (var i=0; i<count; i+= 2) {
+			func(names[i], names[i+1], dict, *);
+		}
     }
 }
 
@@ -441,14 +471,14 @@ function getSystemMouseCursor(tag, noValue) {
 
 /**
  * 辞書や配列のテキスト出力用配列を作成する
- * elm: %[ target:出力する辞書または配列, indent:インデント文字列 ]
- * output:出力用配列, 
+ * elm: %[ target:出力する辞書または配列, indent:インデント文字列, const:constを挿入するかどうか(default:false) ]
+ * output:出力用配列
  */
 
 function       makeDictionaryOutputTexts(elm, output = []) {
 	var self = makeDictionaryOutputTexts;
 	var target = elm.target;
-	var level  = (int)elm.level, offset;
+	var level  = (int)elm.level, offset, cnst = elm["const"] ? "(const) " : "";
 	var indent = (typeof elm.indent == "String") ? elm.indent : " ";
 	var line   = offset = indent.repeat(level);
 
@@ -465,19 +495,19 @@ function       makeDictionaryOutputTexts(elm, output = []) {
 			items.assign(target);
 			for (var i = 0; i < items.count; i+=2) keys.add(items[i]) if (items[i] != "");
 			keys.sort();
-			line += "(const) %[";
+			line += cnst+"%[";
 			output.add(line);
 			for (var i = 0, cnt = keys.count; i < cnt; i++) {
 				var key = keys[i];
-				var subelm = %[ target:target[key], key:key, comma:(i<cnt-1), level:level+1 ];
+				var subelm = %[ target:target[key], key:key, comma:(i<cnt-1), level:level+1, "const"=>elm["const"] ];
 				self(subelm, output);
 			}
 			line = offset+"]";
 		} else if (target instanceof "Array") {
-			line += "(const) [";
+			line += cnst+"[";
 			output.add(line);
 			for (var i = 0, cnt = target.count; i < cnt; i++) {
-				var subelm = %[ target:target[i], comma:(i<cnt-1), level:level+1 ];
+				var subelm = %[ target:target[i], comma:(i<cnt-1), level:level+1, "const"=>elm["const"] ];
 				self(subelm, output);
 			}
 			line = offset+"]";
@@ -489,3 +519,60 @@ function       makeDictionaryOutputTexts(elm, output = []) {
 	return output;
 }
 
+/**
+ * 既存のクラス関数またはプロパティに別の関数を後から差し込む
+ * @param elm 操作内容辞書 %[ target: 差し込み対象オブジェクト,
+ *                            method:差し込みメソッド名, func:置き換え関数,
+ *                            prop:差し込みプロパティ名, get:置き換えgetter, set:置き換えsetter ]
+ */
+function objectHookInjection(elm) {
+	var target = elm.target;
+	if (typeof target != "Object") throw new Exception("オブジェクトではありません");
+	if (elm.method == "" && elm.prop == "") throw new Exception("差し込み対象が不明です");
+
+	var name = "__InjectionTable", table;
+	if (typeof global[name] != "undefined") table = global[name];
+	else global[name] = table = %[];
+	var gettag = function(table, target, name, suffix = "_") {
+		var tag = (string)target +"::"+ name;
+		while (typeof table[tag] != "undefined") tag += suffix;
+		//dm("injection/tag:", tag);
+		return tag;
+	} incontextof global;
+
+	if (elm.method != "") {
+		var method = elm.method, tag = gettag(table, target, method, elm.suffix);
+		var old = typeof target[method] == "Object" ? (&target[method]) : function {}; // 無い場合はダミーで
+		if (!(old instanceof "Function")) throw new Exception("関数ではありません: "+method);
+
+		table[tag] = %[ ovr:elm.func, orig:old ];
+		target[method] = (@"function(*) { with (global.${name}['${tag}']) return (.ovr incontextof this)((.orig incontextof this), *); }")! incontextof null;
+	}
+	if (elm.prop != "") {
+		var prop = elm.prop, tag = gettag(table, target, prop, elm.suffix);
+		var get = elm.get, set = elm.set;
+		var  old, getprop = function(target, key) { return &target[key]; };
+		try { old = getprop(target, prop); } catch {}
+		if (old === void || !(old instanceof "Property")) throw new Exception("プロパティではありません: "+prop);
+		if (!get && !set) throw new Exception("getter/setterの指定がありません: "+prop);
+
+		table[tag] = %[ "getter" => get, "setter" => set, orig:old ];
+		var makeprop = function(tag, get, set, name) {
+			("property prop { " +
+			 (get ? @"getter    { with (global.${name}['${tag}']) return (.getter incontextof this)((\&.orig) incontextof this);    } " : "") +
+			 (set ? @"setter(v) { with (global.${name}['${tag}'])        (.setter incontextof this)((\&.orig) incontextof this, v); } " : "") +
+			 "}")!;
+			return &this.prop;
+		} incontextof %[];
+		(&target[prop]) = makeprop(tag, !!get, !!set, name) incontextof null;
+	}
+}
+
+
+
+/**
+ */
+function applyInlineStringVariableExtract(str, context = null) {
+	var extractor = function (str) { return str!; };
+	return (extractor incontextof context)("@'"+str.escape()+"'");
+}

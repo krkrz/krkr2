@@ -18,7 +18,20 @@ class ProvinceContext
     function finalize() {};
 }
 
-class GraphicLayer extends AnimationLayer
+class AnimationLayerTransMove extends AnimationLayer, KAGTransMove {
+
+	function AnimationLayerTransMove() {
+		global.AnimationLayer.AnimationLayer(...);
+		global.KAGTransMove.KAGTransMove();
+	}
+
+	function finalize() {
+		global.KAGTransMove.finalize();
+		global.AnimationLayer.finalize();
+	}
+}
+
+class GraphicLayer extends AnimationLayerTransMove
 {
 	// 背景/前景レイヤの基本クラス
 
@@ -968,7 +981,7 @@ class GraphicLayerEx extends GraphicLayer {
      */
 	function setOpacityTime(o, time, accel=0, nowait=false) {
 		if (time) {
-			beginAction(%[opacity:%[handler:MoveAction, value:o, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[opacity:%[handler:MoveAction, value:o, time:time, accel:accel], nowait:nowait]);
 		} else {
             opacity = o;
         }
@@ -981,7 +994,7 @@ class GraphicLayerEx extends GraphicLayer {
      */
     function setRotateTime(r, time, accel=0, nowait=false) {
 		if (time) {
-			beginAction(%[rotate:%[handler:MoveAction, value:r, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[rotate:%[handler:MoveAction, value:r, time:time, accel:accel], nowait:nowait]);
         } else {
             rotate = r;
         }
@@ -994,7 +1007,7 @@ class GraphicLayerEx extends GraphicLayer {
      */
 	function setZoomTime(z, time, accel=0, nowait=false) {
         if (time) {
-			beginAction(%[zoom:%[handler:MoveAction, value:z, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[zoom:%[handler:MoveAction, value:z, time:time, accel:accel], nowait:nowait]);
 		} else {
 			zoom = z;
 		}
@@ -1007,7 +1020,7 @@ class GraphicLayerEx extends GraphicLayer {
      */
 	function setZoomXTime(z, time, accel=0, nowait=false) {
 		if (time) {
-			beginAction(%[zoomx:%[handler:MoveAction, value:z, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[zoomx:%[handler:MoveAction, value:z, time:time, accel:accel], nowait:nowait]);
 		} else {
 			zoomx = z;
 		}
@@ -1020,7 +1033,7 @@ class GraphicLayerEx extends GraphicLayer {
      */
 	function setZoomYTime(z, time, accel=0, nowait=false) {
 		if (time) {
-			beginAction(%[zoomy:%[handler:MoveAction, value:z, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[zoomy:%[handler:MoveAction, value:z, time:time, accel:accel], nowait:nowait]);
 		} else {
 			zoomy = z;
 		}
@@ -1033,7 +1046,7 @@ class GraphicLayerEx extends GraphicLayer {
      */
 	function setSlantXTime(slant, time, accel=0, nowait=false) {
 		if (time) {
-			beginAction(%[slantx:%[handler:MoveAction, value:slant, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[slantx:%[handler:MoveAction, value:slant, time:time, accel:accel], nowait:nowait]);
 		} else {
 			slantx = slant;
 		}
@@ -1046,7 +1059,7 @@ class GraphicLayerEx extends GraphicLayer {
      */
 	function setSlantYTime(slant, time, accel=0, nowait=false) {
 		if (time) {
-			beginAction(%[slanty:%[handler:MoveAction, value:slant, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[slanty:%[handler:MoveAction, value:slant, time:time, accel:accel], nowait:nowait]);
 		} else {
 			slanty = slant;
 		}
@@ -1061,7 +1074,7 @@ class GraphicLayerEx extends GraphicLayer {
 		rasterLines = +lines if lines !== void;
 		rasterCycle = +cycle if cycle !== void;
 		if (time) {
-			beginAction(%[raster:%[handler:MoveAction, value:r, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[raster:%[handler:MoveAction, value:r, time:time, accel:accel], nowait:nowait]);
 		} else {
 			raster = r;
 		}
@@ -1207,8 +1220,9 @@ class GraphicLayerEx extends GraphicLayer {
 	// タイル位置指定
 	function setTilePos(x, y, time=0, accel=0, nowait=false) {
 		if (time > 0) {
-			beginAction(%[tilex:%[handler:MoveAction, value:x, time:time, accel:accel, nowait:nowait],
-					  tiley:%[handler:MoveAction, value:y, time:time, accel:accel, nowait:nowait]]);
+			beginAction(%[tilex:%[handler:MoveAction, value:x, time:time, accel:accel],
+					  tiley:%[handler:MoveAction, value:y, time:time, accel:accel],
+					  nowait:nowait]);
 		} else {
 			_tilex = x;
 			_tiley = y;
