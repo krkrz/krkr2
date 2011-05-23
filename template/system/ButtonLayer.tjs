@@ -16,19 +16,19 @@
 
 class ButtonLayer extends AnimKAGLayer
 {
-    var toggleButton; // トグルボタンとして初期化されてる
-    var _toggle;      // トグル状態
+	var toggleButton; // トグルボタンとして初期化されてる
+	var _toggle;      // トグル状態
 
-    var groupName;    // ラジオボタンの場合のグループ指定
-    var halftone;     // disable 時に半透明にする
-    
-    property toggle {
-        getter() { return _toggle; }
-        setter(v) {
-            _toggle = v;
-            update();
-        }
-    }
+	var groupName;    // ラジオボタンの場合のグループ指定
+	var halftone;     // disable 時に半透明にする
+
+	property toggle {
+		getter() { return _toggle; }
+		setter(v) {
+			_toggle = v;
+			update();
+		}
+	}
 
     var Butt_imageLoaded = false; // 画像が読み込まれたか
 	var Butt_mouseOn = false; // レイヤ内にマウスがあるか
@@ -42,20 +42,20 @@ class ButtonLayer extends AnimKAGLayer
 
 	function ButtonLayer(win, par, toggle=false)
 	{
-        super.AnimKAGLayer(win, par);
+		super.AnimKAGLayer(win, par);
 
 		if(typeof win.cursorPointed !== "undefined")
 			cursor = win.cursorPointed;
 
-        hitType = htMask;
-        hitThreshold = 0;
+		hitType = htMask;
+		hitThreshold = 0;
 		focusable = true; // フォーカスを得られる
-        toggleButton = toggle; // トグルボタンかどうか
+		toggleButton = toggle; // トグルボタンかどうか
 	}
 
 	function finalize()
 	{
-        super.finalize(...);
+		super.finalize(...);
 	}
 
 	function assign(src)
@@ -63,15 +63,15 @@ class ButtonLayer extends AnimKAGLayer
 		// src の情報をこのボタンレイヤにコピー
 		assignImages(src, true);
 		Butt_imageLoaded = src.Butt_imageLoaded;
-        Butt_color = src.Butt_color;
-        Butt_oncolor = src.Butt_oncolor;
+		Butt_color = src.Butt_color;
+		Butt_oncolor = src.Butt_oncolor;
 		Butt_caption = src.Butt_caption;
 		Butt_captionColor = src.Butt_captionColor;
 		hitThreshold = src.hitThreshold;
-        toggleButton = src.toggleButton;
-        toggle = src.toggle;
-        groupName = src.groupName;
-        halftone = src.halftone;
+		toggleButton = src.toggleButton;
+		toggle = src.toggle;
+		groupName = src.groupName;
+		halftone = src.halftone;
 		update();
 	}
 
@@ -84,37 +84,37 @@ class ButtonLayer extends AnimKAGLayer
 		//     (3): フォーカスがある場合
 		if(!enabled)
 		{
-            s = 0; // 無効状態
-        }
+			s = 0; // 無効状態
+		}
 
 		if(Butt_imageLoaded)
 		{
-            if (halftone) {
-                opacity = enabled ? 255 : 128;
-            }
-            // ボタンイメージが読み込まれている
-            // TODO: keyboard focus
+			if (halftone) {
+				opacity = enabled ? 255 : 128;
+			}
+			// ボタンイメージが読み込まれている
+			// TODO: keyboard focus
 			try { imageLeft = -s * width - (toggle ? imageWidth / 2: 0); }
 			catch (e) { throw new Exception(@"ボタン名'${name}'で${e.message}"); }
-        }
+		}
 		else
 		{
-			if(Butt_keyPressed) s = 1; // 押されている
-
 			// 枠とキャプションを描画
 			// クリア
 			face = dfAlpha;
 			colorRect(0, 0, width, height, 0, -255);
+
 			// 下地を塗る
-            if (toggle) {
-                if(Butt_oncolor != clNone)
-                    colorRect(0, 0, width, height, Butt_oncolor, 128);
-                else
-                    colorRect(0, 0, width, height, 0xff0000, 128);
-            } else {
-                if(Butt_color != clNone)
-                    colorRect(0, 0, width, height, Butt_color, 128);
-            }
+			if (toggle) {
+				if(Butt_oncolor != clNone)
+					colorRect(0, 0, width, height, Butt_oncolor, 128);
+				else
+					colorRect(0, 0, width, height, 0xff0000, 128);
+			} else {
+				if(Butt_color != clNone)
+					colorRect(0, 0, width, height, Butt_color, 128);
+			}
+
 			// 文字のサイズを得る
 			var tw, th;
 			tw = font.getTextWidth(Butt_caption);
@@ -197,9 +197,9 @@ class ButtonLayer extends AnimKAGLayer
 	function _copyButton(w, h, num, temp, info) {
 		var ox = 0, oy = 0, cw = temp.imageWidth, ch = temp.imageHeight;
 		// oFFs チャンクがあればずらす
-        if (sf && sf.offsetimage && info) {
-            if (info.offs_x !== void) ox = (int)info.offs_x;
-            if (info.offs_y !== void) oy = (int)info.offs_y;
+		if (sf && sf.offsetimage && info) {
+			if (info.offs_x !== void) ox = (int)info.offs_x;
+			if (info.offs_y !== void) oy = (int)info.offs_y;
 		}
 		// 隣にハミ出さないように調整
 		if (ox + cw > w) cw = w - ox;
@@ -211,67 +211,55 @@ class ButtonLayer extends AnimKAGLayer
     /**
      * 分離ボタン画像の読み込み
      */
-    function loadButtons(normal, over, on, focus, count, time, toggle=false) {
+	function loadButtons(normal, over, on, focus, count, time, toggle=false) {
+		
+		var temp = getTemporary();
+		
+		if (toggle) {
+			toggleButton = true;
+		}
+		
+		showFocusImage = (focus !== void);
 
-        var temp = getTemporary();
+		var info = temp.loadImages(normal);
+		var w = temp.imageWidth;
+		var h = temp.imageHeight;
+		// vpAg チャンクがあればそちらが真のサイズ
+		if (sf && sf.offsetimage && info) {
+			if (info.vpag_w !== void) w = (int)info.vpag_w;
+			if (info.vpag_h !== void) h = (int)info.vpag_h;
+		}
+		super.width  = w;
+		super.height = h;
+		imageWidth  = w * (Butt_showFocusImage ? 4 : 3) * (toggleButton ? 2:1);
+		imageHeight = h;
+		callOnPaint = true;
+		Butt_imageLoaded = true;
+		var base = toggleButton ? (Butt_showFocusImage ? 4 : 3) : 0;
 
-        if (toggle) {
-            toggleButton = true;
-        }
-        
-        if (focus !== void) {
-            Butt_showFocusImage = true;
-        }
-        var info = temp.loadImages(normal);
-        var w = temp.imageWidth;
-        var h = temp.imageHeight;
-        // vpAg チャンクがあればそちらが真のサイズ
-        if (sf && sf.offsetimage && info) {
-            if (info.vpag_w !== void) w = (int)info.vpag_w;
-            if (info.vpag_h !== void) h = (int)info.vpag_h;
-        }
-        super.width  = w;
-        super.height = h;
-        imageWidth  = w * (Butt_showFocusImage ? 4 : 3) * (toggleButton ? 2:1);
-        imageHeight = h;
-        callOnPaint = true;
-        Butt_imageLoaded = true;
-        var base = toggleButton ? (Butt_showFocusImage ? 4 : 3) : 0;
-        
-        fillRect(0, 0, imageWidth, imageHeight, 0);
-        _copyButton(w, h, base + 0, temp, info);
-        if (over !== void) {
-            info = temp.loadImages(over);
-        }
-        _copyButton(w, h, base + 2, temp, info);
+		fillRect(0, 0, imageWidth, imageHeight, 0);
+		_copyButton(w, h, base + 0, temp, info);
+		
+		info = temp.loadImages(over) if (over !== void);
+		_copyButton(w, h, base + 2, temp, info);
 
-        if (on !== void) {
-            info = temp.loadImages(on);
-        }
-        _copyButton(w, h, base + 1, temp, info);
-        
-        if (Butt_showFocusImage) {
-            if (focus !== void) {
-                info = temp.loadImages(focus);
-            } else if (over !== void) {
-                info = temp.loadImages(over);
-            } else if (on !== void) {
-                info = temp.loadImages(on);
-            } else {
-                info = temp.loadImages(normal);
-            }
-            _copyButton(w, h, base + 3, temp, info);
-        }
-        if (time > 0) {
-            animStart(count, time);
-        }
-    }
+		info = temp.loadImages(on) if (on !== void);
+		_copyButton(w, h, base + 1, temp, info);
+
+		if (Butt_showFocusImage) {
+			info = temp.loadImages(focus);
+			_copyButton(w, h, base + 3, temp, info);
+		}
+		if (time > 0) {
+			animStart(count, time);
+		}
+	}
 
 	// offsを考慮してボタンをコピーする
-    function _copyButton2(w, h, num, temp, ox, oy, cx = 0, cy = 0, cw, ch) {
+	function _copyButton2(w, h, num, temp, ox, oy, cx = 0, cy = 0, cw, ch) {
 		cw = temp.imageWidth  if (cw === void);
 		ch = temp.imageHeight if (ch === void);
-        // 隣にハミ出さないように調整
+		// 隣にハミ出さないように調整
 		if (ox + cw > w) cw = w - ox;
 		if (oy + ch > h) ch = h - oy;
 		// コピーする
@@ -297,37 +285,36 @@ class ButtonLayer extends AnimKAGLayer
 		return match;
 	}
 
-    /**
-     * ボタン画像UI情報の読み込み
-     */
-    function loadUIInfo(uiinfo, noclear = false) {
-        var states = uiinfo.uistates;
-        
-        if (states === void) {
-            throw new Exception("画像情報が不正です:" + uiinfo.name);
-        }
-
-        // トグルボタン用
-        if (uiinfo.class == "toggle" || uiinfo.groupName != "") {
+	/**
+	 * ボタン画像UI情報の読み込み
+	 */
+	function loadUIInfo(uiinfo, noclear = false) {
+		var states = uiinfo.uistates;
+		
+		if (states === void) {
+			throw new Exception("画像情報が不正です:" + uiinfo.name);
+		}
+		
+		// トグルボタン用
+		if (uiinfo.class == "toggle" || uiinfo.groupName != "") {
             toggleButton = true;
-        }
-        
-        // ラジオボタン用
-        groupName = uiinfo.groupName;
-        
-        if (states.focus !== void) {
-            Butt_showFocusImage = true;
-        }
+		}
+		
+		// ラジオボタン用
+		groupName = uiinfo.groupName;
+		
+		showFocusImage = (states.focus !== void);
 
-        var w = uiinfo.width;
-        var h = uiinfo.height;
-        super.width  = w;
-        super.height = h;
-        imageWidth  = w * (Butt_showFocusImage ? 4 : 3) *( toggleButton ? 2: 1);
-        imageHeight = h;
-        callOnPaint = true;
-        Butt_imageLoaded = true;
-        fillRect(0, 0, imageWidth, imageHeight, 0) if (!noclear);
+
+		var w = uiinfo.width;
+		var h = uiinfo.height;
+		super.width  = w;
+		super.height = h;
+		imageWidth  = w * (Butt_showFocusImage ? 4 : 3) *( toggleButton ? 2: 1);
+		imageHeight = h;
+		callOnPaint = true;
+		Butt_imageLoaded = true;
+		fillRect(0, 0, imageWidth, imageHeight, 0) if (!noclear);
 
 		// ボタン画像をコピーする
 		var normal, over;
@@ -347,18 +334,18 @@ class ButtonLayer extends AnimKAGLayer
 				/* */_copyButtonUIStates(base+3, uiinfo, over,  "focus_on", "focus");
 		}
 
-        if (uiinfo.time > 0) {
-            animStart(uiinfo.count, uiinfo.time);
-        }
-    }
-    
+		if (uiinfo.time > 0) {
+			animStart(uiinfo.count, uiinfo.time);
+		}
+	}
+
 	function discardImage()
 	{
 		// 画像を破棄し、文字ボタンレイヤとして動作するようにする
 		Butt_imageLoaded = false;
 		imageLeft = imageTop = 0;
-        animStop();
-        update();
+		animStop();
+		update();
 	}
 
 	function onExecute(x, y, button, shift)
@@ -372,11 +359,11 @@ class ButtonLayer extends AnimKAGLayer
 	function onMouseDown(x, y, button)
 	{
 		// onMouseDown イベントハンドラ
-        if (button == mbLeft) {
-            Butt_mouseDown = true;
-            focus();
-            update();
-        }
+		if (button == mbLeft) {
+			Butt_mouseDown = true;
+			focus();
+			update();
+		}
 		super.onMouseDown(...);
 	}
 
@@ -399,7 +386,7 @@ class ButtonLayer extends AnimKAGLayer
 	function draw()
 	{
 		// 現在の状態にあわせて描画を行う
-		if(Butt_mouseDown) drawState(1);
+		if(Butt_mouseDown || Butt_keyPressed) drawState(1);
 		else if(Butt_mouseOn) drawState(2);
 		else if(Butt_showFocusImage && focused) drawState(3);
 		else drawState(0);
@@ -415,8 +402,8 @@ class ButtonLayer extends AnimKAGLayer
 	function onMouseEnter()
 	{
 		// マウスがレイヤ領域内に入った
-        update();
-        Butt_mouseOn = true;
+		update();
+		Butt_mouseOn = true;
 		super.onMouseEnter(...);
 	}
 
@@ -462,19 +449,12 @@ class ButtonLayer extends AnimKAGLayer
 	function onKeyDown(key, shift, process)
 	{
 		// キーが押された
-		if(process)
+		if(process && (key == VK_RETURN || key == VK_SPACE))
 		{
-			if(key == VK_RETURN || key == VK_SPACE)
-			{
-				// スペースキーまたはエンターキー
-				Butt_keyPressed = true;
-				update();
-				super.onKeyDown(key, shift, false); // 処理をしたのでprocessにfalseを渡す
-			}
-			else
-			{
-				super.onKeyDown(...);
-			}
+			// スペースキーまたはエンターキーで他で処理されてない(process!=false)場合
+			Butt_keyPressed = true;
+			update();
+			super.onKeyDown(key, shift, false); // 処理をしたのでprocessにfalseを渡す
 		}
 		else
 		{
@@ -486,21 +466,14 @@ class ButtonLayer extends AnimKAGLayer
 	function onKeyUp(key, shift, process)
 	{
 		// キーが離された
-		if(process)
+		if(process && (key == VK_RETURN || key == VK_SPACE)) 
 		{
-			if(key == VK_RETURN || key == VK_SPACE)
-			{
-				// スペースキーまたはエンターキー
-				var flag = Butt_keyPressed;
-				Butt_keyPressed = false;
-				update();
-				super.onKeyUp(key, shift, false);
-				if(flag) onClick(width \ 2, height \ 2); // クリック動作
-			}
-			else
-			{
-				super.onKeyUp(...);
-			}
+			// スペースキーまたはエンターキーで他で処理されてない(process!=false)場合
+			var flag = Butt_keyPressed;
+			Butt_keyPressed = false;
+			update();
+			super.onKeyUp(key, shift, false);
+			if(flag) onClick(width \ 2, height \ 2); // クリック動作
 		}
 		else
 		{
@@ -520,8 +493,7 @@ class ButtonLayer extends AnimKAGLayer
 		{
 			super.width = x;
 			imageWidth = x;
-			Butt_imageLoaded = false;
-			update();
+			discardImage();
 		}
 		getter
 		{
@@ -535,8 +507,7 @@ class ButtonLayer extends AnimKAGLayer
 		{
 			super.height = x;
 			imageHeight = x;
-			Butt_imageLoaded = false;
-			update();
+			discardImage();
 		}
 		getter
 		{
@@ -548,8 +519,7 @@ class ButtonLayer extends AnimKAGLayer
 	{
 		super.setSize(w, h);
 		setImageSize(w, h);
-		Butt_imageLoaded = false;
-		update();
+		discardImage();
 	}
 
 	property caption

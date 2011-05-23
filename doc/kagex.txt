@@ -84,7 +84,7 @@ wait パラメータが指定された待ち命令は、規定の待ち動作のあと、
 ◆待ちありコマンド全般(拡張)
 
 動作に対して対応する待ちがあるコマンドに自動的に待ち動作を実行する
-属性が追加されています。canskipは未指定時は一括で true 扱いになります。
+属性が追加されています。
 
 属性
 	sync	待ち実行
@@ -326,6 +326,16 @@ color, storage, tile, flip は排他で、この順で有効です。
 
 　　＋各種flipエフェクトのパラメータも調整指定可能
 
+	モーション再生時のみ有効なパラメータ
+
+	chara			キャラ指定
+	motion			モーション指定
+	stealthchara	キャラの隠し差し替え
+	stealthmotion	モーションの隠し差し替え
+	flags			モーション再生フラグ
+	tickcount		モーションのtick値	
+	speed			再生速度指定
+
 ◆laylevel (新規)
 
 前景レイヤの表示レベルを指定します。
@@ -434,10 +444,10 @@ nowait 指定されたアクションは待つことができません。
 
 属性
     type    切り替え種別
+             trans   トランジション ※未指定時デフォルト
              wipeltor 左から右へのワイプ
              wipertol 右から左へのワイプ
              fade    クロスフェード
-             trans   トランジション
     time    切り替え時間（省略時は1000ms)
     color   画面暗転に利用する色（省略時は黒）
     wait    画面暗転後の待ち時間
@@ -950,6 +960,80 @@ KAG で独自に使用していた場合はコードを全面的に改定する
 
 ◇ダイアログレイヤ拡張
 
+
+◇squirrel拡張
+
+squirrel スクリプトをKAGとは別にバックグラウンドでスレッド実行可能です
+
+◆sq (新規)
+
+squirrelスクリプトのスレッド実行。
+指定された squirrel スクリプトをバックグラウンド実行します。
+スクリプトに起動時引数として、kag と渡されたパラメータがそのまま引き渡されます。
+
+属性
+	name	スクリプト識別名
+	storage	スクリプトファイル(.nut)
+
+◆wsq (新規)
+
+squirrelスクリプトの終了待ち
+
+属性
+	name	スクリプト識別名
+	canskip	trueならクリックでキャンセル可能  デフォルト:false
+
+◇モーション拡張
+
+前景レイヤ
+　image タグで、画像データとして *.psb を指定することでモーションを
+　動画として表示できます。
+  layopt タグで再生モーションの切り替えが可能です
+
+メッセージレイヤ
+　モーションをUIとして使うための専用拡張があります
+
+◆motionload (新規)
+
+現在のメッセージレイヤにモーションを読み込みます。
+
+属性
+	storage		モーションファイル名
+	separate	モーション分離指定(default true)
+	width		レイヤ横幅
+	height		レイヤ縦幅
+	left		レイヤ座標X
+	top			レイヤ座標Y
+	motionleft	モーション配置位置X(省略するとセンター)
+	motiontop	モーション配置位置Y(省略するとセンター)
+
+※motionopt のパラメータも合わせて指定可能です
+※sync/wait でカレントに対する wmotion が呼び出されます
+
+◆motionopt (新規)
+
+現在のメッセージレイヤのモーションを制御します
+
+属性
+	stealthchara
+	chara
+	stealthmotion
+	motion
+	tickcount
+	speed
+
+※sync/wait でカレントに対する wmotion が呼び出されます
+
+◆wmotion (新規)
+
+指定されたレイヤのアクションの終了を待ちます。
+指定を省略した場合は全レイヤのアクションの終了を待ちます。
+
+属性
+	layer	レイヤの指定(前景またはメッセージレイヤ)
+	page	表裏の指定
+	canskip	true(デフォルト) を指定するとクリックで待ちをスキップできます
+
 ● KAGEX の操作系
 
 KAGEX ショートカット一覧 (基本的に KAG とおなじです）
@@ -996,10 +1080,14 @@ textspeed       テキスト速度指定 0～10　(10だと瞬間表示)
 autospeed       自動再生待ち時間 0～10
 drawspeed       エフェクト系の描画速度調整 1.0:通常 0:瞬間
 noeffect        drawspeed に対するコンビニエント指定 true/false で指定
+
+wavevolume		マスターボリューム 0～100
 bgmenable       BGM が有効
 bgmvolume       BGM のボリューム 0～100
 seenable        SE が有効
 sevolume        SE のボリューム  0～100
+sysseenable		システムSEが有効
+syssevolume		システムSEのボリューム 0～100
 
 ◆ボイス関連プロパティ・メソッド
 

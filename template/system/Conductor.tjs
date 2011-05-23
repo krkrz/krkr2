@@ -126,7 +126,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 
 	var reNumber = new RegExp("^[0-9][0-9]*$");
 	
-    function checkTagExtract(cd, elm, voiceMode, isload) {
+    function checkTagExtract(cd, elm, isload) {
         // 特殊タグ展開処理用フック
         return false;
     }
@@ -188,9 +188,12 @@ class BaseConductor extends global.BaseConductorExtendClass
 				i++;
 			}
 		}
-		return delaytags.count > 0 || waitUntil["delay_*"] !== void;
 	}
 
+	function hasDelay() {
+		return delaytags.count > 0 || waitUntil["delay_*"] !== void;
+	}
+	
     function timerCallback()
 	{
 		var tick = System.getTickCount();
@@ -295,7 +298,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 						}
 
 						// タグ展開
-						if (checkTagExtract(this, obj, false, targetLine !== void)) {
+						if (checkTagExtract(this, obj, targetLine !== void)) {
 							continue;
 						} 
 
@@ -325,7 +328,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 					// シナリオ終了
 					timer.enabled = false;
 					timerEnabled =false;
-					onStop();
+					onStop(true);
 					inProcessing = false;
 					reentered = false;
 					return;
@@ -334,8 +337,11 @@ class BaseConductor extends global.BaseConductorExtendClass
 					//if (this === Window.mainWindow.mainConductor) {dm(runLine + "/" + runCount +  " タグ実行:" +  obj.tagname);}
 
 					// 遅延実行のキャンセル
-					if (obj.tagname == "delaydone") {
-						owner.extractDelay(void, obj.all);
+					if (obj.tagname == "extractdelay") {
+						owner.extractDelay(obj.label);
+						continue;
+					} else if (obj.tagname == "delaydone") {
+						owner.doneDelay(obj.all);
 						continue;
 					} else if (obj.tagname == "delaycancel") {
 						owner.cancelDelay();
@@ -463,7 +469,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 		return -1;
 	}
 
-	function onStop()
+	function onStop(eos)
 	{
 		// (シナリオの)停止時に呼ばれる。
 		// stop() から呼ばれるわけではない。
@@ -619,6 +625,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 		super.restore(...);
 		pendings.clear();
 		fasttags.clear();
+		delaytags.clear();
 	}
 
     // パース処理実行中
@@ -638,7 +645,7 @@ class BaseConductor extends global.BaseConductorExtendClass
 					runLine = curLine;
 				}
 				enqueueTag(%[tagname:"count"]);
-				if (!checkTagExtract(this, obj, true, true)) {
+				if (!checkTagExtract(this, obj, true)) {
 					var e = %[];
 					(Dictionary.assign incontextof e)(obj, false);
 					enqueueTag(e);
@@ -667,6 +674,8 @@ class BaseConductor extends global.BaseConductorExtendClass
 			parseMode = false;
 		}
 		pendings.clear();
+		fasttags.clear();
+		delaytags.clear();
 		super.loadScenario(storage);
 	}
 
@@ -719,6 +728,8 @@ class BaseConductor extends global.BaseConductorExtendClass
 			}
 
 			pendings.clear();
+			fasttags.clear();
+			delaytags.clear();
 			super.goToLabel(...);
 			runLine = curLine;
 			runCount = 0;
@@ -726,6 +737,8 @@ class BaseConductor extends global.BaseConductorExtendClass
 		}
 		// goToLabel オーバーライド
 		pendings.clear();
+		fasttags.clear();
+		delaytags.clear();
 		super.goToLabel(...);
 	}
 
@@ -771,8 +784,8 @@ class Conductor extends BaseConductor
 		super.finalize(...);
 	}
 
-    function checkTagExtract(cd, elm, voiceMode, isload) {
-		return owner.checkTagExtract(cd, elm, voiceMode, isload);
+    function checkTagExtract(cd, elm, isload) {
+		return owner.checkTagExtract(cd, elm, isload);
     }
 
 	function run(immediate = false)
@@ -885,7 +898,7 @@ class Conductor extends BaseConductor
 		return onUnknownTag(tagname, elm);
 	}
 
-	function onStop()
+	function onStop(eos)
 	{
 		// BaseConductor.onStop オーバーライド
 		// 停止時に呼ばれるのでステータスを mStop にする

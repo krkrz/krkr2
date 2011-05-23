@@ -1,181 +1,151 @@
 %[
-    // 時間情報
-    "times" => %[
-        "昼" => %[
-            "prefix" => "01",
-            ],
-        "夕" => %[
-            "prefix" => "02",
-            "lightColor" => 0xc0ff6010,    // 背景補正光色
-            "lightType" => ltPsHardLight,  // 背景補正光合成種別
-            "brightness" => 0,             // 背景明度補正
-            "contrast" => 0,               // 背景コントラスト補正
-            "charLightColor" => 0xffff0000,   // キャラ補正光合成色
-            "charLightType" => ltPsSoftLight, // キャラ補正光合成種別
-            "charBrightness" => 0,            // キャラ明度補正
-            "charContrast" => 0,              // キャラコントラスト補正
-            ],
-        "夜" => %[
-            "prefix" => "03",
-            "lightColor" => 0xc0000040,   // キャラ補正光合成色
-            "lightType" => ltPsHardLight, // キャラ補正光合成種別
-            "brightness" => -20,          // キャラ明度補正
-            "contrast" => -30,            // キャラコントラスト補正
-            "charLightColor" => 0xff400080,   // キャラ補正光合成色
-            "charLightType" => ltPsSoftLight, // キャラ補正光合成種別
-            "charBrightness" => -50,          // キャラ明度補正
-            "charContrast" => -30,            // キャラコントラスト補正
-            ]
-        ],
-    
-    // 場所情報
-    "stages" => %[
-        "道路" => %[
-            "image" => "bg01_TIME",
-            ],
-        ],
+	// 時間情報
+	"times" => %[
+		"昼" => %[
+			"prefix" => "01",
+			],
+		"夕" => %[
+			"prefix" => "02",
+			"lightColor" => 0xc0ff6010,    // 背景補正光色
+			"lightType" => ltPsHardLight,  // 背景補正光合成種別
+			"brightness" => 0,             // 背景明度補正
+			"contrast" => 0,               // 背景コントラスト補正
+			"charLightColor" => 0xffff0000,   // キャラ補正光合成色
+			"charLightType" => ltPsSoftLight, // キャラ補正光合成種別
+			"charBrightness" => 0,            // キャラ明度補正
+			"charContrast" => 0,              // キャラコントラスト補正
+			],
+		"夜" => %[
+			"prefix" => "03",
+			"lightColor" => 0xc0000040,   // キャラ補正光合成色
+			"lightType" => ltPsHardLight, // キャラ補正光合成種別
+			"brightness" => -20,          // キャラ明度補正
+			"contrast" => -30,            // キャラコントラスト補正
+			"charLightColor" => 0xff400080,   // キャラ補正光合成色
+			"charLightType" => ltPsSoftLight, // キャラ補正光合成種別
+			"charBrightness" => -50,          // キャラ明度補正
+			"charContrast" => -30,            // キャラコントラスト補正
+			]
+		],
 
-    "defaultTime" => "昼",
-    
-    // キャラクタ配置総合オフセット（画面中央原点)
-    "yoffset" => 700,
-    
-    // キャラクタ配置情報定義
-    "positions" => %[
+	// 場所情報
+	"stages" => %[
+		"道路" => %[
+			"image" => "bg01_TIME",
+			],
+		],
 
-        "出" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.BOTH
-            ],
+	"defaultTime" => "昼",
 
-        "立" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.BU
-            ],
-        
-        "消" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.CLEAR
-            ],
+	// キャラクタ配置総合オフセット（画面中央原点)
+	"yoffset" => 700,
 
-        "顔" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.FACE
-            ],
+	// キャラクタ配置情報定義
+	"positions" => %[
+		// ※type定義は不要になりました。disp/xpos/ypos/level いずれかの定義が記述されていればそれが使用されます。
 
-        "無" => %[
-            "type" => KAGEnvironment.DISPPOSITION,
-            "disp" => KAGEnvImage.INVISIBLE
-            ],
-        
-        "左奥" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int -440
-            ],
-        "右奥" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 440
-            ],
-        "左" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int -200
-            ],
-        "右" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 200
-            ],
-        "左中" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int -100
-            ],
-        "右中" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 100
-            ],
-        "左外" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int -600
-            ],
-        "右外" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 600
-            ],
-        "中" => %[
-            "type" => KAGEnvironment.XPOSITION,
-            "xpos" => int 0
-            ],
+		// 表示定義（顔表示は，フェイスウィンドウ機能がない場合には意味を持ちません）
+		"出" => %[ "disp" => KAGEnvImage.BOTH      ], // 立ち絵と顔を表示
+		"立" => %[ "disp" => KAGEnvImage.BU        ], // 立ち絵のみ表示
+		"顔" => %[ "disp" => KAGEnvImage.FACE      ], // 顔のみ表示
+		"消" => %[ "disp" => KAGEnvImage.CLEAR     ], // 一時非表示（状態変更による自動表示は有効）※基本はこちらを使います
+		"無" => %[ "disp" => KAGEnvImage.INVISIBLE ], // 完全非表示（状態変更による自動表示も無効）
 
-        "奥" => %[
-            "type" => KAGEnvironment.LEVEL,
-            "level" => int 0
-            ],
+		// 位置定義
+		"左奥" => %[ "xpos" => int -440 ],
+		"右奥" => %[ "xpos" => int  440 ],
+		"左"   => %[ "xpos" => int -200 ],
+		"右"   => %[ "xpos" => int  200 ],
+		"左中" => %[ "xpos" => int -100 ],
+		"右中" => %[ "xpos" => int  100 ],
+		"左外" => %[ "xpos" => int -600 ],
+		"右外" => %[ "xpos" => int  600 ],
+		"中"   => %[ "xpos" => int    0 ],
 
-        "前" => %[
-            "type" => KAGEnvironment.LEVEL,
-            "level" => int 1
-            ],
+		// yposは直で個別に指定する場合が多いようです
+//		"縦デフォルト" => %[ "ypos" => int    0 ],
+//		"縦しゃがみ"   => %[ "ypos" => int   50 ],
+//		"縦背伸び"     => %[ "ypos" => int  -20 ],
 
-        "手前" => %[
-            "type" => KAGEnvironment.LEVEL,
-            "level" => int 2
-            ],
-        ],
+		"奥"   => %[ "level" => int 0 ],
+		"前"   => %[ "level" => int 1 ],
+		"手前" => %[ "level" => int 2 ],
+		],
 
     // 表示レベル用情報
-    "levels" => [
-        %[
-            // 拡大率指定
-            "zoom" => 60,
-            "name" => "1"
-            ],
-        %[
-            "zoom" => 100,
-            "name" => "0"
-            ],
-        %[
-            "zoom" => 150,
-            "name" => "2"
-            ],
-        ],
+	"levels" => [
+		%[
+			// 拡大率指定
+			"zoom" => 60, // 位置縮小率（カメラ
+//			"imgzoom" => 100, // 画像縮小率
+			"name" => "1", //レベル名称
+			],
+		%[
+			"zoom" => 100,
+			"name" => "0"
+			],
+		%[
+			"zoom" => 150,
+			"name" => "2"
+			],
+		],
     
     "defaultLevel" => 1,
 
+	// BG奥行き指定（levelのzoom指定相当）　※各BG個別でのlevelz変更は未実装
+	"bglevelz" => 30,
+
+
     // 表情窓用のレベル指定。表情窓を使わない場合は void
     "faceLevelName" => void,
-    
+//	"faceArea" => %[ name:"顔領域レイヤ", center:true/*センターフラグ*/, xoffset:0, yoffset:0, width:200, height:160 ],
+//	"faceZoom" => 100,
+
+
     "actions" => %[
-        "おじぎ" => %[
-            "module" => "LayerJumpOnceActionModule",
-            "vibration" => -50,
-            "cycle" => 3000,
-            ],
-        "どっきり" => %[
-            "module" => "LayerHeartBeatZoomModule",
-            "time" => 200,
-            "zoom" => 120,
-            ],
-        "びょんびょん" => %[
-            "module" => "LayerJumpActionModule",
-            "vibration" => 30,
-            "cycle" => 1000,
-            ],
-        "びょんびょん待ち無" => %[
+		"おじぎ" => %[
+			"module" => "LayerJumpOnceActionModule",
+			"vibration" => 20,
+			"cycle" => 2000,
+			],
+		"どっきり" => %[
+			"module" => "LayerHeartBeatZoomModule",
+			"time" => 200,
+			"zoom" => 110,
+			],
+		"びょんびょん" => %[
 			"module" => "LayerJumpActionModule",
-            "vibration" => 30,
-            "cycle" => 1000,
+			"vibration" => -30,
+			"cycle" => 1000,
+			],
+		"びょんびょん待ち無" => %[
+			"module" => "LayerJumpActionModule",
+			"vibration" => -30,
+			"cycle" => 1000,
 			"nowait" => true,
-            ],
-        "ガクガク" => %[
-            "module" => "LayerVibrateActionModule",
-            "vibration" => 3,
-            "waitTime" => 40
-            ],
+			],
+		"ガクガク" => %[
+			"module" => "LayerVibrateActionModule",
+			"vibration" => 3,
+			"waitTime" => 40
+			],
 
 		// 新スタイルアクション定義例
 
 		"移動テスト" => %[ // 現在位置から+300の位置に500ms かけて移動
 						   "time" => 500,
 						   "left" => %[ handler:"MoveAction", value:"@+300" ],
+						   ],
+
+		"パス移動テスト" => %[ // 複数移動の一括指定
+						   "time" => 1000,
+						   "left" => %[ handler:"PathAction", value:"@+300,@-300,@+100" ],
+						   ],
+
+		"パス移動テスト2" => %[ // KAGのmove互換表記
+								"time" => 3000,
+								"path" => "(-400,400,128)(-400,-400,100)(0,0,256)",
+								"spline" => true,
 						   ],
 		
 		"回転テスト" => %[ // 1000msの間回転
@@ -217,20 +187,37 @@
 			"tilex"  => %[ handler:"LoopMoveAction", max:2700, loop:2700 ],
 			"nowait" => true,
 			],
+
+		"モーションアクション" => %[
+			"motion"  => %[ handler:"MotionAction", storage:"action.psb", chara:"action", motion:"motion1", layer:"レイヤ1" ],
+			],
+
+		"モーションアクション2" => %[
+			"motion"  => %[ handler:"MotionAction", storage:"action.psb", chara:"action", motion:"motion2", layer:"レイヤ1" ],
+			],
+
+		"モーションアクション3" => %[
+			"motion"  => %[ handler:"MotionAction", storage:"action.psb", chara:"action", motion:"motion3", layer:"レイヤ1" ],
+			],
+
+		"モーションアクション4" => %[
+			"motion"  => %[ handler:"MotionAction", storage:"action.psb", chara:"action", motion:"motion4", layer:"レイヤ1" ],
+			],
+
 		
 		],
 
     // 画面更新パラメータ
-    "transitions" => %[
-        "normal" => %[
-            "time" => 1000,
-            "method" => "crossfade",
-            ],
+	"transitions" => %[
+		"normal" => %[
+			"time" => 1000,
+			"method" => "crossfade",
+			],
 
-        "notrans" => %[
-            "time" => 0,
-            "method" => void,
-            ],
+		"notrans" => %[
+			"time" => 0,
+			"method" => void,
+			],
 
 		"showfade" => %[
 		time: 200,
@@ -252,45 +239,86 @@
 
 		],
 
-    // fade コマンドの規定値:全体用 (未定義の場合埋め込み値 500)
-    "fadeValue" => 1000,
-    // fade コマンドの規定値:キャラクタ用（未定義だと fadeValue を参照)
-    "charFadeValue" => 300,
-    
-    // キャラクタ定義情報
-    "characters" => %[
-        // 定義
+//デフォルトトランジション定義　ここから
 
-        // 定義
-        "あい" => %[
-            // ポーズ登録(表情ファイルの使い分けが無い範囲)
-            "poses" => %[
-                // ポーズ指定
-                "通常" => %[
-                    // 画像名 合成済みパターン
-                    "image"     => "ch_LEVEL_DRESS_FACE",
-//                    "image"     => "ch_0_DRESS_0",
-//                    "faceImage" => "ch_0_0_FACE",
+	//立ち絵、背景、イベント絵の変更時にトランジション指定が省略されていた場合に使用するトランジションを定義します
+	// "*Trans" => トランジション名文字列（"transitions"で定義されているもの） または トランジション定義辞書
+	// ※キャラクタ関係はキャラ定義内の *Trans の定義が優先されます。
 
-                    // 服装バリエーション
-                    "dresses" => %[
-                        "制服"     => "0",
-                        ],
-                    // 標準服装
-                    "defaultDress" => "0",
-                    // 表情バリエーション
-                    "faces" => %[
-                        "喜"    => "1",
-                        "怒"    => "2",
-                        "哀"    => "3",
-                        ],
-                    // 標準表情
-                    "defaultFace" => "1",
-                    ],
-                ],
-            "defaultPose" => "通常",
-            "voiceFile" => "ai%s%06d.ogg",
-            "voiceName" => "voice0"
-            ],
-        ],
-    ];
+	"charDispTrans" => %[ "time" =>  300, "method"  => "crossfade" ],                   // キャラクタの表示・消去指定
+	"positionTrans" => %[ "time" =>  300, "method"  => "crossfade" ],                   // キャラクタの位置変更
+
+//	"poseTrans"     => %[ "time" =>  300, "method"  => "crossfade", "nosync" => true ], // キャラクタのポーズ変更
+//	"dressTrans"    => %[ "time" =>  300, "method"  => "crossfade", "nosync" => true ], // キャラクタの服装変更
+//	"diffTrans"     => %[ "time" =>  300, "method"  => "crossfade", "nosync" => true ], // キャラクタの差分変更(exstand使用時のみ)
+//	"faceTrans"     => %[ "time" =>  300, "method"  => "crossfade", "nosync" => true ], // キャラクタの表情変更
+	"charTrans"     => %[ "time" =>  300, "method"  => "crossfade", "nosync" => true ], // ポーズ・服装・差分・表情のデフォルト（上記が未定義の時に使用される）
+
+//	"layerDispTrans"=> %[ "time" =>  500, "method"  => "crossfade" ],                   // レイヤー(newlayで作成されたもの)の表示・消去指定
+
+//	"timeTrans"     => %[ "time" => 1500, "method"  => "crossfade" ],                   // 時間変更
+//	"stageTrans"    => %[ "time" => 1500, "method"  => "crossfade" ],                   // 舞台（ステージ）変更
+//	"eventTrans"    => %[ "time" => 1500, "method"  => "crossfade" ],                   // イベント変更
+	"envTrans"      => "normal",                                                        // 環境デフォルト（上記が未定義の時に使用される）
+
+//デフォルトトランジション定義　ここまで
+
+	// fade コマンドの規定値:全体用 (未定義の場合埋め込み値 500)
+	"fadeValue" => 1000,
+	// fade コマンドの規定値:キャラクタ用（未定義だと fadeValue を参照)
+	"charFadeValue" => 300,
+
+	// 自動インクリメンタル方式の場合のボイス番号初期値
+	//"voiceInit" => 0,
+
+	// キャラクタ定義情報
+	"characters" => %[
+		// ※exstand (psd素材からのコンバート立ち絵) を使う場合は，ここでの詳細定義は不要。
+		//   voiceName等の定義のみでよい
+		//"あい" => %[ "voiceName" => "voice0", ～ ];
+
+		// 定義
+		"あい" => %[
+			// ポーズ登録(表情ファイルの使い分けが無い範囲)
+			"poses" => %[
+				// ポーズ指定
+				"通常" => %[
+					// 画像名 合成済みパターン
+					"image"     => "ch_LEVEL_DRESS_FACE",
+//					"image"     => "ch_0_DRESS_0",
+//					"faceImage" => "ch_0_0_FACE",
+					
+					// 服装バリエーション
+					"dresses" => %[
+						"制服"     => "0",
+						],
+					// 標準服装
+					"defaultDress" => "0",
+					// 表情バリエーション
+					"faces" => %[
+						"喜"    => "1",
+						"怒"    => "2",
+						"哀"    => "3",
+						],
+					// 標準表情
+					"defaultFace" => "1",
+					],
+				],
+			"defaultPose" => "通常",
+			"voiceFile" => "ai%s%06d.ogg",
+			"voiceName" => "voice0"
+			],
+		],
+
+	// 既定名レイヤ
+	// 指定の名前のレイヤが無ければ自動で作成して既定の初期化を行う
+	// ※名前は小文字で正規化されるのに注意してください
+	// 効果用の画像などをファイル名やレベル名を指定して登録することができます
+	"layers" => %[
+		"border" => %[
+		init: %[level:5, file:"border"], // 初期化パラメータ。任意のパラメータ配置可能
+		trans: "normal", // デフォルトのトランジション指定,
+		dispTrans: "normal",  // デフォルトの表示トランジション指定
+			],
+		]
+	];

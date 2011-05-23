@@ -30,6 +30,12 @@ class PropActionInfo {
 		first = true;
 		done  = false;
 		startTime = void;
+		if (absolute !== void) {
+			absolute.next();
+		}
+		for (var i=0;i<relative.count;i++) {
+			relative[i].next();
+		}
 	}
 
 	/**
@@ -75,9 +81,6 @@ class PropActionInfo {
 			}
 		} else {
 			dm("ハンドラ異常:" + handler);
-		}
-		if (elm.starttime !== void) {
-			startTime = +elm.starttime;
 		}
     }
 
@@ -509,6 +512,7 @@ class ActionSequense {
      */
     function doAction(now, stopFlag) {
 		if (cur < actions.count) {
+			do {
 			var action = actions[cur];
 			if (action instanceof "ActionInfo") {
 				if (action.doAction(target, now, stopFlag)) {
@@ -530,6 +534,7 @@ class ActionSequense {
 			} else {
 				cur++;
 			}
+			} while (cur < actions.count && stopFlag);
 		}
 		return cur >= actions.count;
     }
@@ -557,7 +562,8 @@ class ActionSequense {
 class ActionHandler {
 
     var time;  // 駆動時間
-    var delay; // 開始遅延時間
+	var delay; // 開始遅延時間
+	var starttime; // 開始時間
 
     /**
      * コンストラクタ
@@ -567,7 +573,8 @@ class ActionHandler {
      */
     function ActionHandler(target, propName, elm) {
 		time  = +elm.time if elm.time !== void;
-        delay = +elm.delay if elm.delay !== void;
+		delay = +elm.delay if elm.delay !== void;
+		starttime = elm.starttime !== void ? +elm.starttime : 0;
 		if (time !== void) {
 			time *= kag.drawspeed;
 		}
@@ -578,6 +585,12 @@ class ActionHandler {
 	 * 実行初回処理
 	 */
 	function init(target, propname) {
+	}
+
+	/**
+	 * アクション完了後の状態初期化
+	 */
+	function next() {
 	}
 	
     /**
@@ -594,8 +607,9 @@ class ActionHandler {
             if (now < 0) {
                 return false;
             }
-        }
-        return doAction(target, propName, now, stopFlag || (time !== void && now > time));
+		}
+		now += starttime;
+		return doAction(target, propName, now, stopFlag || (time !== void && now > time));
     }
     
     /**
@@ -1095,10 +1109,14 @@ class RandomAction extends VibrateAction {
         super.RelativeActionHandler(target, propName, elm);
         vibration = elm.value !== void ? elm.value : elm.vibration;
         waitTime  = +elm.waittime;
-        randomTime = 0;
-        randomValue = 0;
+		next();
     }
 
+	function next() {
+		randomTime = 0;
+		randomValue = 0;
+	}
+	
     function doAction(target, propName, now, stopFlag) {
         if (stopFlag) {
             return true; 

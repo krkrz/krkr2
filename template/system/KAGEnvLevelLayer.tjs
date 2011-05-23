@@ -139,10 +139,12 @@ class KAGEnvLevelLayer {
     } 
 
     function onStore(f) {
-		f.level = level;
+		f.name  = name if initDisp;
+		f.level = level if level !== void;
     }
 
     function onRestore(f) {
+		name = f.name;
 		_level  = f.level;
 	}
 }

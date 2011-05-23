@@ -1,13 +1,21 @@
 /**
  * 環境SEオブジェクト
  */
-class KAGEnvSE {
+class KAGEnvSE extends KAGEnvBase {
 
-    var env;
-    var id;
-	var name;  // 参照しているファイル名
-	var loop;  // ループしてるか
-	var volume;
+    /**
+     * コンストラクタ
+     */
+	function KAGEnvSE(env, id) {
+		super.KAGEnvBase(env, "se" + id);
+		this.id = id;
+		count = 0;
+	}
+	
+	var id;
+	var filename;  // 参照しているファイル名
+	var loop;      // ループしてるか
+	var volume;    // ボリューム指定
 	var count; // 参照されたカウント値
 	
 	var play;
@@ -18,40 +26,39 @@ class KAGEnvSE {
      * セーブ処理
      */
     function onStore(f) {
-		f.name  = name;
-		f.loop  = loop;
-		f.volume = volume;
-		f.id    = id;
-		f.count = count;
+		f.filename  = filename if filename !== void && loop;
+		f.loop      = loop   if loop !== void && loop != false;
+		f.volume    = volume if volume !== void && volume != 100;
+		//f.count     = count  if count != 0;
 	}
 
 	function onRestore(f) {
 		if (f !== void) {
-			kag.se[id].stop(); // 確実に止める（onSeStopでname=voidにされるので注意）
-			name = f.name;
-			loop = f.loop;
-			id   = f.id;
-			count = f.count;
-			if (name != "" && loop) {
-				setPlay(name, %[loop:loop]);
+			env.getSEOBJ(id).stop(); // 確実に止める（onStopでfilename=voidにされるので注意）
+			filename = f.filename;
+			loop  = f.loop !== void ? f.loop : false;
+			count = f.count !== void ? f.count : 0;
+			if (f.filename != "" && f.loop) {
+				setPlay(f.filename, %[loop:f.loop]);
 				if (f.volume !== void) {
 					fade = %[] if (fade === void);
-					fade.volume = f.volume;
+					fade.volume = volume = f.volume;
 				}
 			}
 		}
 	}
-	
-    /**
-     * コンストラクタ
-     */
-	var kag;
-	function KAGEnvSE(env, id) {
-		this.env = env;
-		this.kag = env.kag;
-		this.id = id;
+
+	/**
+	 * 停止時通知
+	 */
+	function onStop() {
+		filename = void;
+		loop = false;
 	}
 
+	// --------------------------------------------------------------------
+
+	
     /**
      * 再生処理
      * @param param 再生対象ファイル
@@ -59,8 +66,8 @@ class KAGEnvSE {
 	function setPlay(param, elm) {
 		if (param !== void) {
 			stop = void;
-			if (kag.skipMode<SKIP_STOP || elm.loop) {
-				name = param;
+			if (kag.skipMode<SKIP_STOP || elm.loop) { // XXX skipNoDisp 対策だけどなんか別スタイルを考えたほうがよさそうたぶんsync判定が妥当
+				filename = param;
 				loop = elm.loop;
 				play = %[];
 				(Dictionary.assign incontextof play)(elm, false);
@@ -69,10 +76,8 @@ class KAGEnvSE {
 					fade.volume = volume = 100;
 				}
 			} else {
-				stop = 0 if (loop); // ループSE再生中の場合は確実に止める
+				stop = 0 if (loop);
 				play = void;
-				name = void;
-				loop = void;
 			}
 			doflag = true;
 		}
@@ -85,7 +90,7 @@ class KAGEnvSE {
 	function setStop(param, elm) {
 		play = void;
 		fade = void;
-		name = void;
+		filename = void;
 		loop = void;
 		var time;
 		if (elm !== void && elm.time !== void) {
@@ -118,10 +123,11 @@ class KAGEnvSE {
     start : null,
     canskip : null,
     buf : null,
-    name : null,
+    filename : null,
     nosync : null,
 	sync : null,
 	wait : null,
+	delayrun : null,
         ];
 
     var doflag;
@@ -146,38 +152,19 @@ class KAGEnvSE {
         return true;
     }
 
-    /**
-     * KAG タグ処理
-     * @param elm 引数
-     */
-    function tagfunc(elm) {
-		// dm("SE 用ファンクション呼び出し!");
+	function command(elm) {
 		doflag = false;
 		foreach(elm, doCommand);
 		var tagname = elm.tagname;
 		if (!doflag && checkTagNamePlay(tagname)) {
 			setPlay(tagname, elm); 
 		}
-		// 待ちチェック
-		var wait = elm.wait !== void ? +elm.wait : elm.sync !== void ? 0 : void;
-		if (wait == 1) {
-			wait = 0;
-		}
-		var canskip = elm.canskip !== void ? +elm.canskip : true;
-		var fading = sync();
-		if (wait !== void) {
-			switch(fading) {
-			case 0:
-				return 0;
-			case 1:
-				return kag.waitSEFade(%[id:id, canskip:canskip, wait:wait]);
-			case 2:
-				return kag.waitSEStop(%[id:id, canskip:canskip, wait:wait]);
-			}
-		}
-		return 0;
-    }
+	}
 
+	function checkSync(elm) {
+		syncCommand = true if (elm.wait || elm.sync);
+	}
+	
 	// タグ名をファイル名とみなして再生できるかどうか
 	function checkTagNamePlay(tagname) {
 		switch (tagname) {
@@ -188,51 +175,73 @@ class KAGEnvSE {
 
 		default:
 			// ループSEの場合は同じタグ名による再度再生をさせいない
-			if (loop && name == tagname)
+			if (loop && filename == tagname)
 				return false;
 			break;
 		}
 		return true;
 	}
 
-	function sync() {
+	function update(skipMode) {
+		var se = env.getSEOBJ(id);
 		var fading = 0;
-		if (!kag.skipNoDisp) {
-			if (fade !== void) {
-				if (fade.time === void || fade.time == 0 || play !== void) {
-					kag.se[id].volume = fade.volume;
+		if (fade !== void) {
+			if (fade.time === void || fade.time == 0 || play !== void) {
+				se.volume = fade.volume;
+			} else {
+				se.fade(fade);
+				fading = 1;
+			}
+			fade = void;
+		}
+		if (play !== void) {
+			var origName = filename; // [XXX]再生中の効果音に再度再生するとonStopが呼ばれfilename=voidにされるので
+			if (skipMode<SKIP_STOP || play.loop || !env.isNoSE()) {
+				var time = +play.time;
+				if (time > 0)  {
+					if (se.volume <= 1) se.volume = 100;
+					se.fadeIn(%[ storage:filename, loop:play.loop, time:time, start:play.start]);
 				} else {
-					kag.se[id].fade(fade);
-					fading = 1;
+					se.play(%[ storage:filename, loop:play.loop, start:play.start]);
 				}
-				fade = void;
+				fading = 2; // sync時は停止待ち扱い
+				filename = origName;
+				loop = play.loop;
+			} else {
+				se.stop() if loop;
 			}
-			if (play !== void) {
-				var origName = name; // [XXX]再生中の効果音に再度再生するとonSeStopが呼ばれname=voidにされるので
-				if (kag.skipMode<SKIP_STOP || play.loop || !kag.nosewhenskip) {
-					var time = +play.time;
-					if (time > 0)  {
-						if (kag.se[id].volume <= 1) kag.se[id].volume = 100;
-						kag.se[id].fadeIn(%[ storage:name, loop:play.loop, time:time, start:play.start]);
-					} else {
-						kag.se[id].play(%[ storage:name, loop:play.loop, start:play.start]);
-					}
-					fading = 2; // sync時は停止待ち扱い
-				}
-				name = origName; // [XXX]もう一度設定しなおす
-				play = void;
-			}
+			play = void;
 		}
 		if (stop !== void) {
-			if (kag.skipMode == SKIP_NONE && stop > 0) {
-				kag.se[id].fadeOut(%[time:stop]);
+			if (skipMode == SKIP_NONE && stop > 0) {
+				se.fadeOut(%[time:stop]);
 				fading = 2;
 			} else {
-				kag.se[id].stop();
+				se.stop();
 			}
 			stop = void;
 		}
 		return fading;
+	}
+	
+	function sync(elm, skipMode) {
+		var fading = update(skipMode);
+		// 待ちチェック
+		var wait = elm.wait !== void ? +elm.wait : elm.sync !== void ? 0 : void;
+		if (wait == 1) {
+			wait = 0;
+		}
+		if (wait !== void) {
+			var canskip = elm.canskip !== void ? +elm.canskip : true;
+			switch(fading) {
+			case 1:
+				env.addFastTag("wf", %[id:id, canskip:canskip, wait:wait]);
+				break;
+			default:
+				env.addFastTag("ws", %[id:id, canskip:canskip, wait:wait]);
+				break;
+			}
+		}
 	}
 
 };

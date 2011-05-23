@@ -286,7 +286,7 @@ class DialogSliderLayer extends SliderLayer
  * ダイアログ処理用のレイヤ
  */
 
-class DialogLayer extends KAGLayer
+class DialogLayer extends AnimKAGLayer
 {
     var layerType = ltAlpha; // レイヤタイプ
 
@@ -333,7 +333,7 @@ class DialogLayer extends KAGLayer
      */
     function DialogLayer(window, parent, name) {
         
-        super.KAGLayer(...);
+		super.AnimKAGLayer(...);
         this.name = name;
 
         // レイヤタイプの設定

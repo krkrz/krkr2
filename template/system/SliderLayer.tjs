@@ -55,12 +55,38 @@ class SliderLayer extends KAGLayer
 
 	function assign(src)
 	{
+		assignImages(src, true);
+		if (src.baseImage !== void) {
+			if (baseImage === void) {
+				baseImage = new global.Layer(window, this);
+				baseImage.name = "baseImage";
+			}
+			baseImage.assignImages(src.baseImage);
+		} else {
+			invalidate baseImage if (baseImage !== void);
+			baseImage = void;
+		}
+		if (src.tabImage  !== void) {
+			createTabImage();
+			tabImage.assignImages(src.tabImage);
+		} else {
+			invalidate tabImage if (tabImage !== void);
+			tabImage = void;
+		}
 		// src の情報をこのオブジェクトにコピー
+		vertical   = src.vertical;
+		nohilight  = src.nohilight;
+		jumpMode   = src.jumpMode;
 		Slider_min = src.Slider_min;
 		Slider_max = src.Slider_max;
-        Slider_position = src.Slider_position;
-		Slider_step     = src.Slider_step;
-        Slider_color    = src.Slider_color;
+		Slider_position  = src.Slider_position;
+		Slider_step      = src.Slider_step;
+		Slider_tabWidth  = src.Slider_tabWidth;
+		Slider_tabHeight = src.Slider_tabHeight;
+
+		Slider_color     = src.Slider_color;
+		Slider_opacity   = src.Slider_opacity;
+		update();
     }
 
 	function onPaint()
@@ -280,14 +306,14 @@ class SliderLayer extends KAGLayer
                 if(pos_y - htabh > y) {
                     // タブより下
                     if (jumpMode) {
-                        toPosition(x, y);
+                        startJumpMode(x, y);
                     } else {
                         toLeft();
                     }
                 } else if(pos_y + htabh < y) {
                     // タブより上
                     if (jumpMode) {
-                        toPosition(x, y);
+                        startJumpMode(x, y);
                     } else {
                         toRight();
                     }
@@ -306,14 +332,14 @@ class SliderLayer extends KAGLayer
                 if(pos_x - htabw > x) {
                     // タブより左
                     if (jumpMode) {
-                        toPosition(x, y);
+                        startJumpMode(x, y);
                     } else {
                         toLeft();
                     }
                 } else if(pos_x + htabw < x) {
                     // タブより右
                     if (jumpMode) {
-                        toPosition(x, y);
+                        startJumpMode(x, y);
                     } else {
                         toRight();
                     }
@@ -326,15 +352,29 @@ class SliderLayer extends KAGLayer
             }
         }
 	}
+	function startJumpMode(x, y) {
+		if (0) {
+			toPosition(x, y);
+		} else {
+			Slider_dragging = true;
+			if (vertical) {
+				Slider_dragOriginY = 0;
+			} else {
+				Slider_dragOriginX = 0;
+			}
+			toPosition(x, y, true);
+		}
+	}
 
 	function onMouseUp(x, y, button)
 	{
 		// マウスボタンが離された
 		super.onMouseUp(...);
-        if (Slider_dragging) {
-            Slider_dragging = false;
-            position = position;
-        }
+		if (Slider_dragging) {
+			Slider_dragging = false;
+			toPosition(x, y, true);
+			//position = position;
+		}
 	}
 
 	function onMouseMove(x, y)
@@ -526,8 +566,8 @@ class SliderLayer extends KAGLayer
 			var on   = (states.on   !== void) ? states.on   : over;
 			var minox = (int)Math.min(normal.ox, over.ox, on.ox);
 			var minoy = (int)Math.min(normal.oy, over.oy, on.oy);
-			var maxdx = (int)Math.min(normal.ox+normal.w, over.ox+over.w, on.ox+on.w);
-			var maxdy = (int)Math.min(normal.oy+normal.h, over.oy+over.h, on.oy+on.h);
+			var maxdx = (int)Math.max(normal.ox+normal.w, over.ox+over.w, on.ox+on.w);
+			var maxdy = (int)Math.max(normal.oy+normal.h, over.oy+over.h, on.oy+on.h);
 			var w = width, h = height;
 			if (vertical) h = maxdy - minoy, minox = 0;
 			else          w = maxdx - minox, minoy = 0;
