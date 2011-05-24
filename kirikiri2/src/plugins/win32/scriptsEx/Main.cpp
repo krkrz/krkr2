@@ -40,6 +40,14 @@ public:
 											 tjs_int numparams,
 											 tTJSVariant **param,
 											 iTJSDispatch2 *objthis);
+
+	//----------------------------------------------------------------------
+	// hash値取得
+	static tjs_error TJS_INTF_METHOD getMD5HashString(tTJSVariant *result,
+													  tjs_int numparams,
+													  tTJSVariant **param,
+													  iTJSDispatch2 *objthis);
+
 };
 
 /**
@@ -442,10 +450,43 @@ ScriptsAdd::foreach(tTJSVariant *result,
 	return TJS_S_OK;
 }
 
+
+/**
+ * MD5ハッシュ値の取得
+ * @param filename 対象ファイル名
+ * @return ハッシュ値（32文字の16進数ハッシュ文字列（小文字））
+ */
+tjs_error TJS_INTF_METHOD
+ScriptsAdd::getMD5HashString(tTJSVariant *result,
+							 tjs_int numparams,
+							 tTJSVariant **param,
+							 iTJSDispatch2 *objthis) {
+	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+	tTJSVariantOctet *octet = param[0]->AsOctetNoAddRef();
+
+	TVP_md5_state_t st;
+	TVP_md5_init(&st);
+	TVP_md5_append(&st, octet->GetData(), (int)octet->GetLength());
+	
+	tjs_uint8 buffer[16];
+	TVP_md5_finish(&st, buffer);
+
+	tjs_char ret[32+1], *hex = TJS_W("0123456789abcdef");
+	for (tjs_int i=0; i<16; i++) {
+		ret[i*2  ] = hex[(buffer[i] >> 4) & 0xF];
+		ret[i*2+1] = hex[(buffer[i]     ) & 0xF];
+	}
+	ret[32] = 0;
+	if (result) *result = ttstr(ret);
+	return TJS_S_OK;
+}
+
 NCB_ATTACH_CLASS(ScriptsAdd, Scripts) {
 	RawCallback("getObjectKeys", &ScriptsAdd::getKeys, TJS_STATICMEMBER);
 	RawCallback("getObjectCount", &ScriptsAdd::getCount, TJS_STATICMEMBER);
 	NCB_METHOD(equalStruct);
 	NCB_METHOD(equalStructNumericLoose);
 	RawCallback("foreach", &ScriptsAdd::foreach, TJS_STATICMEMBER);
+	RawCallback("getMD5HashString", &ScriptsAdd::getMD5HashString, TJS_STATICMEMBER);
 };
