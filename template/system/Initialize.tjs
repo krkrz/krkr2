@@ -168,7 +168,6 @@ Storages.addAutoPath("data/"); // data フォルダ
 		"evimage",  // イベント画像
 		"thum",     // サムネイル
 		"uipsd",    // ユーザーインターフェース用パーツ画像
-		"motion",   // モーションデータ
 		];
 	for (var i = 0; i < subfolders.count; i++) {
 		var name = subfolders[i];
@@ -368,7 +367,6 @@ KAGLoadScript("GFX_Fire.tjs")     if (KAGConfigEnabled("gfxFireEnabled",     tru
 KAGLoadScript("GFX_Movie.tjs")    if (KAGConfigEnabled("gfxMovieEnabled",    true));
 KAGLoadScript("GFX_Flash.tjs")    if (KAGConfigEnabled("gfxFlashEnabled",    true) && CanLoadPlugin("flashPlayer.dll"));
 KAGLoadScript("GFX_Particle.tjs") if (KAGConfigEnabled("gfxParticleEnabled", true));
-KAGLoadScript("motion.tjs") if (KAGConfigEnabled("motionEnabled", true) && CanLoadPlugin("motionplayer.dll"));
 KAGLoadScript("MessageLayer.tjs");
 KAGLoadScript("Menus.tjs");
 KAGLoadScript("DefaultMover.tjs");
@@ -415,15 +413,6 @@ global.kag = new KAGWindow() if typeof global.kag == "undefined";
 	
 if (typeof global.KAGWorldPlugin != 'undefined') {
 
-	// シーンパーサ導入
-	if (debugWindowEnabled) {
-		Storages.addAutoPath(System.exePath + "tools/sceneparser/");
-		if (Storages.isExistentStorage("SceneParser.tjs")) {
-			Scripts.execStorage("SceneParser.tjs");
-			Storages.addAutoPath(System.exePath + "setup/sceneparser/");
-			Storages.addAutoPath(System.exePath + "scenario/");
-		}
-	}
 	// ワールド拡張プラグイン
 	kag.addPlugin(global.world_object = new KAGWorldPlugin(kag));
 	if (kag.debugLevel >= tkdlSimple) {

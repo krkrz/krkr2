@@ -383,7 +383,7 @@ class ActionSequense {
      * @param elm 初期化パラメータ
      */
     function addAction(propName, handler, elm) {
-		if (typeof target[propName] == "undefined" && handler != MotionAction) {
+		if (typeof target[propName] == "undefined") {
 			dm("指定されたプロパティは存在しません:" + target + ":" + propName);
         } else {
             if (create) {
@@ -943,137 +943,6 @@ class LoopMoveAction extends AbsoluteActionHandler {
 			return false;
         }
     }
-}
-
-/**
- * モーション移動アクション（絶対アクション）
- * 複数パラメータの一括制御になるので注意が必要
- * @param storage モーションデータファイル
- * @param chara モーションキャラ指定
- * @param motion モーション指定
- * @param tickcount 再生開始位置
- * @param speed 再生スピード
- * @param layer 参照レイヤ名
- * @param left モーション再生原点(未指定時は現在の対象のleft。相対表記可)
- * @param top モーション再生原点(未指定時は現在の対象のleft。相対表記可)
- */
-class MotionAction extends AbsoluteActionHandler {
-
-	// 結果情報
-	var motion_manager;
-	var storage;
-	var layerName;
-	var player;
-	var motion;
-	var result = %[];
-	var startTickCount;
-	var lastTime;
-	
-	// コンストラクタ
-	function MotionAction(target, propName, elm) {
-		super.AbsoluteActionHandler(target, propName, elm);
-		motion_manager = target.window.motion_manager;
-		storage = elm.storage;
-		layerName = elm.layer;
-		if (storage !== void) {
-			// プレイヤー生成
-			motion_manager.load(storage);
-			player = new Motion.Player(motion_manager.resourceManager);
-			
-			// 再生対象を選択
-			player.chara  = elm.chara;
-			player.play((motion = elm.motion), 1);
-			player.speed  = +elm.speed if elm.speed !== void;
-
-			// 座標基準値指定
-			player.setCoord(elm.left === void ? target.left : getRelative(elm.left, target.left),
-							elm.top  === void ? target.top  : getRelative(elm.top,  target.top));
-
-			// 最終結果を取得しておく
-			player.tickCount = player.lastTime;
-			player.progress(0);
-			setResult(result);
-			
-			// 初期化
-			startTickCount = +elm.tickcount;
-		}
-	}
-
-	// ファイナライザ
-	function finalize() {
-		if (storage !== void) {
-			motion_manager.unload(storage);
-			if (player !== void) {
-				invalidate player;
-			}
-		}
-	}
-
-	/**
-	 * 結果情報
-	 */
-	function getResultValue(ret, propName) {
-		(Dictionary.assign incontextof ret)(result, false);
-	}
-	
-	/**
-	 * 実行初回処理
-	 */
-	function init(target, propName) {
-		if (player) {
-			player.play(motion, 1);
-			player.tickCount = startTickCount;
-			//dm("motion start:" + player.lastTime);
-		}
-		lastTime = void;
-	}
-
-	// プレイヤーから指定レイヤの結果を吸い出す
-	function setResult(result) {
-		var layer = player.getLayerGetter(layerName);
-		if (layer !== void) {
-			//result.type    = layer.type;
-			result.visible = layer.visible;
-			result.afx = result.defaultAfx;
-			result.afy = result.defaultAfy;
-			result.afx += layer.originX;
-			result.afy += layer.originY;
-			result.left    = layer.left;
-			result.top     = layer.top;
-			result.flipx   = layer.flipX;
-			result.flipy   = layer.flipY;
-			result.zoomx   = layer.zoomX * 100;
-			result.zoomy   = layer.zoomY * 100;
-			result.slantx  = layer.slantX * 100;
-			result.slanty  = layer.slantY * 100;
-			result.rotate  = -layer.angleDeg;
-			result.opacity = layer.opacity;
-			//dm("origin:%d,%d".sprintf(layer.originX,layer.originY));
-		}
-	}
-	
-	// アクション実行
-	function doAction(target, propName, now, stopFlag) {
-		if (!player) {
-			return true;
-		}
-		if (stopFlag || !player.playing) {
-			player.tickCount = player.lastTime;
-			player.progress(0);
-			setResult(target);
-			return true;
-		} else {
-			if (lastTime == void) {
-				lastTime = now;
-			}
-			var diff = now - lastTime;
-			player.progress(diff);
-			lastTime = now;
-			setResult(target);
-			//dm("%d:(%f,%f)(%f,%f)".sprintf(player.tickCount, target.afx, target.afy, target.left, target.top));
-			return false;
-		}
-	}
 }
 
 /**

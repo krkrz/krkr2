@@ -1899,7 +1899,6 @@ class KAGEnvImage extends KAGEnvTrans {
 	hide : function(param) { disp = CLEAR; },
 	waitmovie : null,
 	waitanime : null,
-	waitmotion : null,
 		];
 
     /**
@@ -2236,15 +2235,6 @@ class KAGEnvImage extends KAGEnvTrans {
 		clipxFrom = void;
 		clipyFrom = void;
 		clipTime = void;
-	}
-
-	/**
-	 * ÉÇÅ[ÉVÉáÉìÇÃã≠êßíÜíf
-	 */
-	function stopMotion() {
-		if (targetLayer !== void && isvalid targetLayer) {
-			targetLayer.stopMotion();
-		}
 	}
 
 	function clearTransLayer() {
@@ -2650,7 +2640,6 @@ class KAGEnvImage extends KAGEnvTrans {
 			} else {
 				syncCommand = true if (elm.waitmovie ||
 									   elm.waitanime ||
-									   elm.waitmotion ||
 									   (!elm.nosync && (elm.sync || elm.wait)));
 			}
 		}
@@ -2728,9 +2717,6 @@ class KAGEnvImage extends KAGEnvTrans {
 					}
 					if (elm.waitanime) {
 						env.addFastTag("wa", %[target:targetLayer, casnskip:true, wait:elm.waitanime]);
-					}
-					if (elm.waitmotion) {
-						env.addFastTag("wmotion", %[target:targetLayer, canskip:true, wait:elm.waitmotion]);
 					}
 					if (!elm.nosync && (elm.sync || elm.wait)) {
 						env.addFastTag("wact", %[target:targetLayer, canskip:true, wait:elm.wait]);

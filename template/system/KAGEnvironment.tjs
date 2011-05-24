@@ -1151,14 +1151,6 @@ class KAGEnvironment extends KAGEnvTrans {
 		return isExistParameter(name.toLowerCase(), "events", "event_");
 	}
 
-	function getMotionObject(name) {
-		return getParameter(name.toLowerCase(), "motions", "motion_");
-	}
-	
-	function isExistMotion(name) {
-		return isExistParameter(name.toLowerCase(), "motions", "motion_");
-	}
-
 	/**
 	 * 名前から実際にロードするべき画像の名前を取得する
 	 * @param name 名前
@@ -1221,18 +1213,7 @@ class KAGEnvironment extends KAGEnvTrans {
 				data.storage = info;
 			}
 		} else {
-			//if (!enableSceneAnimEffect && getExistImageName(name) !== void) {
-			//	// 単純画像を優先読み込み
-			//	data.storage = name;
-			//} else {
-				if ((info = env.getMotionObject(name)) !== void) {
-					// モーション
-					(Dictionary.assign incontextof data)(info);
-				} else {
-					// ただのファイル
-					data.storage = name;
-				}
-			//}
+			data.storage = name;
 		}
 		return data;
 	}
