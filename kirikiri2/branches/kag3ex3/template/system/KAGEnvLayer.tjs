@@ -1,12 +1,3 @@
-// モーションパラメータ
-var motionParamList = ["chara", "stealthchara",
-					   "motion", "stealthmotion",
-					   "flags", "tickcount", "speed", "noseparate"];
-var motionParams = %[];
-for (var i=0;i<motionParamList.count;i++) {
-	motionParams[motionParamList[i]] = true;
-}
-
 // テキストパラメータ
 var textParamList = ["textsize", "textcolor", "rubysize", "rubyoffset", "shadow", "shadowcolor", "edge", "edgecolor", "linespacing", "pitch", "linesize", "fontface"];
 var textStoreParamList = ["size", "color", "rubysize", "rubyoffset", "shadow", "shadowcolor", "edge", "edgecolor", "linespacing", "pitch", "linesize", "fontface"];
@@ -23,8 +14,6 @@ class KAGEnvLayer extends KAGEnvImage {
 
 	/// 描画中画像
 	var imageFile;     // 画像基本名
-	var motionUpdate = %[]; // モーション更新用
-	var motionUpdateFlag;
 	/// 色指定塗りつぶし
 	var imageColor;
 	/// 文字描画
@@ -123,10 +112,6 @@ class KAGEnvLayer extends KAGEnvImage {
 		super.onStore(f);
 		if (imageFile !== void) {
 			f.imageFile = imageFile;
-			if (Scripts.getObjectCount(motionUpdate) > 0) {
-				f.motionUpdate = %[];
-				(Dictionary.assign incontextof f.motionUpdate)(motionUpdate);
-			}
 		}
 		f.imageColor = imageColor if imageColor !== void;
 		if (imageText !== void) {
@@ -156,9 +141,6 @@ class KAGEnvLayer extends KAGEnvImage {
     
     function onRestore(f) {
 		imageFile  = f.imageFile;
-		if (f.motionUpdate !== void) {
-			(Dictionary.assign incontextof motionUpdate)(f.motionUpdate);
-		}
 		imageColor = f.imageColor;
 		if (f.imageText !== void) {
 			imageText = %[];
@@ -190,7 +172,6 @@ class KAGEnvLayer extends KAGEnvImage {
 	function copy(orig) {
 		if (orig instanceof "KAGEnvLayer") {
 			imageFile = orig.imageFile;
-			(Dictionary.assign incontextof motionUpdate)(orig.motionUpdate);
 			imageColor = orig.imageColor;
 			if (orig.imageText !== void) {
 				imageText = %[];
@@ -227,8 +208,6 @@ class KAGEnvLayer extends KAGEnvImage {
 	
 	function clearFileState() {
 		imageFile  = void;
-		motionUpdateFlag = false;
-		(Dictionary.clear incontextof motionUpdate)();
 		imageColor = void;
 		imageText = void;
 		maskFile = void;
@@ -269,16 +248,6 @@ class KAGEnvLayer extends KAGEnvImage {
 
 		setLoadFile(file, elm);
 
-		// モーションパラメータ転送
-		// clearFileState 中でクリアされてしまうので必ず戻す
-		for (var i=0;i<motionParamList.count;i++) {
-			var param = motionParamList[i];
-			if (elm[param] !== void) {
-				motionUpdate[param] = elm[param];
-				//dm(@"set motionparam:${param} ${elm[param]}");
-			}
-		}
-		
 		initMask(elm);
 
 		if (elm.noflag === void && file !== void) {
@@ -442,15 +411,6 @@ class KAGEnvLayer extends KAGEnvImage {
             return true;
         }
 		
-		// モーションパラメータ
-		if (motionParams[cmd] !== void) {
-			if (elm.storage === void && elm.file === void && imageFile !== void) {
-				motionUpdate[cmd] = param;
-				motionUpdateFlag = true;
-			}
-			return true;
-		}
-
 		// テキストパラメータをスルー
 		if (textParams[cmd] !== void) {
 			return true;
@@ -504,10 +464,6 @@ class KAGEnvLayer extends KAGEnvImage {
 			targetLayer.setFlipOptions(flipInfo) if (isShowBU() && targetLayer !== void);
 			flipUpdateFlag = void;
 		}
-		if (motionUpdateFlag) {
-			targetLayer.setOptions(motionUpdate) if (isShowBU() && targetLayer !== void);
-			motionUpdateFlag = void;
-		}
 	}
 	
 	// マスクでクリップ
@@ -553,9 +509,6 @@ class KAGEnvLayer extends KAGEnvImage {
 			} else if (imageFile !== void) {
 				// 画像のロード
 				var imageData = env.getImageData(imageFile);
-				(Dictionary.assign incontextof imageData)(motionUpdate,false);
-				motionUpdateFlag = false;
-				//dm(@"画像:${imageData.storage} chara:${imageData.chara} motion:${imageData.motion}");
 				try {
 					layer.loadImages(imageData);
 					_width  = layer.width;

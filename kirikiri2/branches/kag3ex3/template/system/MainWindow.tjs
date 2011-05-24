@@ -1190,12 +1190,6 @@ class KAGWindow extends Window
 			}
 		}
 
-		// モーションリソースマネージャ
-		if (ismain && typeof global.MotionResourceManager != "undefined") {
-			this.motion_manager = new global.MotionResourceManager(this);
-			add(motion_manager);
-		}
-
 		// extract処理実行用のトリガ
 		extractTrigger = new AsyncTrigger(doExtractDelay, '');
 		extractTrigger.cached = true;
@@ -8757,137 +8751,6 @@ class KAGWindow extends Window
 		}
 	}
 
-	//--------------------------------------------------------- モーション関連 --
-
-	var motionCount = 0;
-
-	function onMotionStart(layer)
-	{
-		motionCount++;
-	}
-
-	// レイヤでモーションが終了したときに呼ばれる
-	function onMotionStop(layer) 
-	{
-		motionCount--;
-		conductor.trigger('motion_' + (string)layer);
-		if (motionCount == 0) {
-			conductor.trigger('motion');
-			// モーションのキャッシュデータをクリアしておく
-			if (motion_manager !== void) {
-				motion_manager.clearCache();
-			}
-		}
-	}
-
-	function onMotionAction(action) {
-		// ディレイ実行展開
-		extractDelay(label);
-	}
-	
-	// 全モーションの停止
-	function stopAllMotions() {
-		onLayerCommand(%[command:"stopMotion", args:[]]);
-	}
-
-	// レイヤモーションを待つ
-	function waitLayerMotion(target, canskip, wait=0) {
-		if (!target.motionPlaying) return 0;
-		var name = 'motion_'+ (string)target;
-		if((canskip === void || +canskip) && clickSkipEnabled)
-		{
-			// スキップできる場合
-			if(skipMode)
-			{
-				// スキップ中の場合
-				target.stopMotion();
-				return 0; // スキップ中の場合は再生を停止させて返る
-			}
-			conductor.wait(%[
-				click : function (target)
-				{
-					target.stopMotion(); // 再生を終了する
-				} incontextof this,
-				'click_arg' => target, // ハンドラへの引数
-				name => function (arg)
-				{
-					return arg;
-				} incontextof this,
-				name + "_arg" => wait
-				]);
-		}
-		else
-		{
-			// スキップできない場合
-			conductor.wait(%[
-				name =>	function (arg)
-				{
-					return arg;
-				} incontextof this,
-				name + "_arg" => wait
-				]);
-		}
-		return -2;
-	}
-
-	// 全モーションを待つ
-	function waitAllMotions(canskip, wait=0)	{
-		if (motionCount == 0) return 0;
-		if((canskip === void || +canskip) && clickSkipEnabled)
-		{
-			// スキップできる場合
-			if(skipMode)
-			{
-				// スキップ動作中
-				stopAllMotions();
-				return 0; // 自動移動を停止させてすぐに返る
-			}
-			conductor.wait(%[
-				click : function
-				{
-					updateBeforeCh = 1;
-					stopAllMotions();
-				} incontextof this,
-				motion : function(arg)
-				{
-					updateBeforeCh = 1;
-					return arg;
-				} incontextof this,
-				motion_arg : wait
-				]);
-		}
-		else
-		{
-			conductor.wait(%[
-				motion : function(arg)
-				{
-					updateBeforeCh = 1;
-					return arg;
-				} incontextof this,
-				motion_arg : wait
-				]);
-		}
-		return -2;
-	}
-
-	// モーションを待つ
-	function waitMotion(elm) {
-		var target;
-		if (elm.layer !== void) {
-			target = getLayerFromElm(elm);
-		}
-		if (target !== void) {
-			if (typeof target == "Object" && (target instanceof "AffineLayer" || target instanceof "AnimKAGLayer")) {
-				return waitLayerMotion(target, elm.canskip, +elm.wait);
-			} else {
-				dm("モーション待ちはレイヤに指定する必要があります");
-				return 0;
-			}
-		} else {
-			return waitAllMotions(elm.canskip, +elm.wait);
-		}
-	}
-	
 	// ------------------------------------------------------ レイヤ全消去
 
 	/**
@@ -10359,45 +10222,6 @@ class KAGWindow extends Window
 		// リンクのアンロック
 		unlockMessageLayerSelProcess();
 		return 0;
-	} incontextof this,
-
-	//----------------------------------------- タグハンドラ群(モーション操作) --
-
-	motionload : function(elm)
-	{
-		//if(currentWithBack) current.comp.loadMotion(elm);
-		current.loadMotion(elm);
-		elm.layer = "message";
-		elm.page  = currentPage ? "back" : "fore";
-		return waitFunc(elm, waitMotion);
-	} incontextof this,
-
-    motionopt : function(elm)
-	{
-		//if(currentWithBack) current.comp.setMotionOption(elm);
-		current.setMotionOption(elm);
-		elm.layer = "message";
-		elm.page  = currentPage ? "back" : "fore";
-		return waitFunc(elm, waitMotion);
-	} incontextof this,
-
-    motionbutton : function(elm)
-	{
-		//if(currentWithBack) current.comp.addMotionButton(elm);
-		current.addMotionButton(elm);
-		return 0;
-	} incontextof this,
-
-    motionslider : function(elm)
-	{
-		//if(currentWithBack) current.comp.addMotionButton(elm);
-		current.addMotionSlider(elm);
-		return 0;
-	} incontextof this,
-				  
-	wmotion : function(elm)
-	{
-		return waitMotion(elm);
 	} incontextof this,
 
 	//----------------------------------------- タグハンドラ群(システム操作) --
@@ -12605,71 +12429,6 @@ class KAGWindow extends Window
 		conductor.interrupt();
 
 		setMenuAccessibleAll();
-	}
-
-	// -------------------------------------------------------------
-	// モーション出力用処理
-	// -------------------------------------------------------------
-
-	/**
-	 * モーションを出力する
-	 * @param elm パラメータ
-	 *  storage モーションデータファイル
-	 *  chara キャラ指定
-	 *  motion モーション指定
-	 *  store 格納ファイル名(省略時は元データに連番付与)
-	 *  time 記録時間。省略時は終了まで
-	 *  width 出力画像サイズ横幅
-	 *  height 出力画像サイズ縦幅
-	 *  diff 時間差分
-	 *  speed 速度
-	 *  start 開始時間
-	 */
-	function exportMotion(elm) {
-		Plugins.link("layerExSave.dll") if (typeof global.Layer.saveLayerImageTlg5 != "Object");
-		
-		var player = new Motion.Player(motion_manager.resourceManager);
-		var target = new global.Layer(this, primaryLayer);
-
-		var width  = elm.width !== void ? +elm.width : scWidth;
-		var height = elm.height !== void ? +elm.height : scHeight;
-		with (target) {
-			.setSize(width, height);
-			.fillRect(0,0,.width,.height,.neutralColor);
-		}
-		motion_manager.load(elm.storage);
-		player.completionType = stFastLinear;
-		player.setCoord(target.width/2, target.height/2);
-		if (elm.zoom !== void) {
-			player.setZoom(+elm.zoom/100, +elm.zoom/100);
-		}
-		player.chara = elm.chara;
-		player.play(elm.motion, elm.flags !== void ? +elm.flags : Motion.PlayFlagForce);
-		player.speed = +elm.speed if elm.speed !== void;
-		player.tickCount = +elm.start if elm.start !== void;
-
-		var store = elm.store === void ? elm.motion : elm.store;
-		store += "%04d.png";
-		
-		var n    = 0;
-		var tick = 0;
-		var last = elm.time !== void ? +elm.time : player.lastTime;
-		var diff = elm.diff !== void ? +elm.diff : 100;
-
-		player.progress(0);
-		while (tick <= last) {
-			//dm("tick:%d/%d".sprintf(tick, last));
-			player.draw(target);
-			target.saveLayerImagePng(store.sprintf(n));
-			player.clear(target, target.neutralColor);
-			player.progress(diff);
-			tick += diff;
-			n++;
-		}
-		motion_manager.unload(elm.storage);
-		player.stop();
-		invalidate player;
-		invalidate target;
 	}
 
 	// -------------------------------------------------------------
