@@ -1200,7 +1200,7 @@ WIN32Dialog::openProgress(VarT *result, tjs_int num, VarT **param, iTJSDispatch2
 	bool defdsapp = !(num>=2 && param[0]->Type() == tvtObject);
 	bool succeeded = self->_openProgress
 		(   objthis,
-			(num >= 2 ? *param[0] : VarT()),
+			(num >= 2 ? *param[1] : VarT()),
 			(int)param[0]->AsInteger(),
 			(num >= 3 ? param[2]->operator bool() :  defdsapp),
 			(num >= 4 ? param[3]->operator bool() : !defdsapp)
