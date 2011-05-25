@@ -301,7 +301,7 @@ class WIN32Dialog {
 	/**
 	 * プログレスダイアログを表示する
 	 * @param id      プログレスバーのダイアログアイテムID（progressValueプロパティで更新される対象）
-	 * @param window  [optional] オーナーwindow (void=オーナーなし)
+	 * @param window  [optional] オーナーwindow (void=オーナーなし,null=Application)
 	 * @param dsapp   [optional] プログレス表示中はアプリケーションウィンドウを無効にするか
 	 * @param breathe [optional] progressValueのsetterでbreatheするかどうか
 	 * @return        成功したらtrue
