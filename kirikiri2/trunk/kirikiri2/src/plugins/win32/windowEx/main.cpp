@@ -1188,6 +1188,15 @@ public:
 				mi.fState |= MFS_DISABLED;
 			}
 		}
+		// ‰üs
+		val.Clear();
+		obj->PropGet(0, TJS_W("break"), 0, &val, obj);
+		{
+			tjs_int menubreak;
+			if (val.Type() != tvtVoid && (menubreak = (tjs_int)val) != 0)
+				mi.fType |= (menubreak > 0) ? MFT_MENUBARBREAK : MFT_MENUBREAK;
+		}
+
 		// ‘}“ü‚·‚éˆÊ’u
 		UINT pos = ::GetMenuItemCount(menu);
 		BOOL insPos = TRUE;
