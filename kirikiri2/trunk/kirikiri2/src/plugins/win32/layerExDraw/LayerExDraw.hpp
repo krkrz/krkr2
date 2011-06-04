@@ -32,6 +32,7 @@ struct GdiPlus {
  */
 class FontInfo {
 	friend class LayerExDraw;
+	friend class Path;
 
 protected:
 	FontFamily *fontFamily; //< フォントファミリー
@@ -169,6 +170,34 @@ protected:
 	 */
 	bool getLineCap(tTJSVariant &in, LineCap &cap, CustomLineCap* &custom, REAL pw);
 	vector<CustomLineCap*>customLineCaps;
+};
+
+
+/**
+ * 描画外観情報
+ */
+class Path {
+	friend class LayerExDraw;
+public:
+	Path();
+	virtual ~Path();
+	void drawArc(REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
+	void drawBezier(REAL x1, REAL y1, REAL x2, REAL y2, REAL x3, REAL y3, REAL x4, REAL y4);
+	void drawBeziers(tTJSVariant points);
+	void drawClosedCurve(tTJSVariant points);
+	void drawClosedCurve2(tTJSVariant points, REAL tension);
+	void drawCurve(tTJSVariant points);
+	void drawCurve2(tTJSVariant points, REAL tension);
+	void drawCurve3(tTJSVariant points, int offset, int numberOfSegments, REAL tension);
+	void drawPie(REAL x, REAL y, REAL width, REAL height, REAL startAngle, REAL sweepAngle);
+	void drawEllipse(REAL x, REAL y, REAL width, REAL height);
+	void drawLine(REAL x1, REAL y1, REAL x2, REAL y2);
+	void drawLines(tTJSVariant points);
+	void drawPolygon(tTJSVariant points);
+	void drawRectangle(REAL x, REAL y, REAL width, REAL height);
+	void drawRectangles(tTJSVariant rects);
+protected:
+	GraphicsPath path;
 };
 
 /*
@@ -319,7 +348,7 @@ protected:
 	 * @param path 描画するパス
 	 * @return 更新領域情報
 	 */
-	RectF drawPath(const Appearance *app, const GraphicsPath *path);
+	RectF _drawPath(const Appearance *app, const GraphicsPath *path);
 
         /**
          * グリフアウトラインの取得
@@ -346,6 +375,13 @@ public:
 	 */
 	void clear(ARGB argb);
 
+	/**
+	 * パスの描画
+	 * @param app アピアランス
+	 * @param path パス
+	 */
+	RectF drawPath(const Appearance *app, const Path *path);
+	
 	/**
 	 * 円弧の描画
 	 * @param app アピアランス

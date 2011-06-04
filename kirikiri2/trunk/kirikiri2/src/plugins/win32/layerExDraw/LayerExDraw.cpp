@@ -479,7 +479,7 @@ extern PointF getPoint(const tTJSVariant &var);
 /**
  * 点の配列を取得
  */
-static void getPoints(const tTJSVariant &var, vector<PointF> &points)
+void getPoints(const tTJSVariant &var, vector<PointF> &points)
 {
 	ncbPropAccessor info(var);
 	int c = info.GetArrayCount();
@@ -517,7 +517,7 @@ extern RectF getRect(const tTJSVariant &var);
 /**
  * 矩形の配列を取得
  */
-static void getRects(const tTJSVariant &var, vector<RectF> &rects)
+void getRects(const tTJSVariant &var, vector<RectF> &rects)
 {
 	ncbPropAccessor info(var);
 	int c = info.GetArrayCount();
@@ -1209,7 +1209,7 @@ LayerExDraw::fill(Graphics *graphics, const Brush *brush, const Matrix *matrix, 
  * @return 更新領域情報
  */
 RectF
-LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
+LayerExDraw::_drawPath(const Appearance *app, const GraphicsPath *path)
 {
 	// 領域記録用
 	RectF rect;
@@ -1263,6 +1263,17 @@ LayerExDraw::drawPath(const Appearance *app, const GraphicsPath *path)
 }
 
 /**
+ * パスの描画
+ * @param app アピアランス
+ * @param path パス
+ */
+RectF
+LayerExDraw::drawPath(const Appearance *app, const Path *path)
+{
+	return _drawPath(app, &path->path);
+}
+
+/**
  * 円弧の描画
  * @param x 左上座標
  * @param y 左上座標
@@ -1277,7 +1288,7 @@ LayerExDraw::drawArc(const Appearance *app, REAL x, REAL y, REAL width, REAL hei
 {
 	GraphicsPath path;
 	path.AddArc(x, y, width, height, startAngle, sweepAngle);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1298,7 +1309,7 @@ LayerExDraw::drawBezier(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y
 {
 	GraphicsPath path;
 	path.AddBezier(x1, y1, x2, y2, x3, y3, x4, y4);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1314,7 +1325,7 @@ LayerExDraw::drawBeziers(const Appearance *app, tTJSVariant points)
 	getPoints(points, ps);
 	GraphicsPath path;
 	path.AddBeziers(&ps[0], (int)ps.size());
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1330,7 +1341,7 @@ LayerExDraw::drawClosedCurve(const Appearance *app, tTJSVariant points)
 	getPoints(points, ps);
 	GraphicsPath path;
 	path.AddClosedCurve(&ps[0], (int)ps.size());
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1347,7 +1358,7 @@ LayerExDraw::drawClosedCurve2(const Appearance *app, tTJSVariant points, REAL te
 	getPoints(points, ps);
 	GraphicsPath path;
 	path.AddClosedCurve(&ps[0], (int)ps.size(), tension);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1363,7 +1374,7 @@ LayerExDraw::drawCurve(const Appearance *app, tTJSVariant points)
 	getPoints(points, ps);
 	GraphicsPath path;
 	path.AddCurve(&ps[0], (int)ps.size());
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1380,7 +1391,7 @@ LayerExDraw::drawCurve2(const Appearance *app, tTJSVariant points, REAL tension)
 	getPoints(points, ps);
 	GraphicsPath path;
 	path.AddCurve(&ps[0], (int)ps.size(), tension);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1399,7 +1410,7 @@ LayerExDraw::drawCurve3(const Appearance *app, tTJSVariant points, int offset, i
 	getPoints(points, ps);
 	GraphicsPath path;
 	path.AddCurve(&ps[0], (int)ps.size(), offset, numberOfSegments, tension);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1417,7 +1428,7 @@ LayerExDraw::drawPie(const Appearance *app, REAL x, REAL y, REAL width, REAL hei
 {
 	GraphicsPath path;
 	path.AddPie(x, y, width, height, startAngle, sweepAngle);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1434,7 +1445,7 @@ LayerExDraw::drawEllipse(const Appearance *app, REAL x, REAL y, REAL width, REAL
 {
 	GraphicsPath path;
 	path.AddEllipse(x, y, width, height);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1451,7 +1462,7 @@ LayerExDraw::drawLine(const Appearance *app, REAL x1, REAL y1, REAL x2, REAL y2)
 {
 	GraphicsPath path;
 	path.AddLine(x1, y1, x2, y2);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1467,7 +1478,7 @@ LayerExDraw::drawLines(const Appearance *app, tTJSVariant points)
 	getPoints(points, ps);
 	GraphicsPath path;
 	path.AddLines(&ps[0], (int)ps.size());
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1483,7 +1494,7 @@ LayerExDraw::drawPolygon(const Appearance *app, tTJSVariant points)
 	getPoints(points, ps);
 	GraphicsPath path;
 	path.AddPolygon(&ps[0], (int)ps.size());
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 
@@ -1502,7 +1513,7 @@ LayerExDraw::drawRectangle(const Appearance *app, REAL x, REAL y, REAL width, RE
 	GraphicsPath path;
 	RectF rect(x, y, width, height);
 	path.AddRectangle(rect);
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1518,7 +1529,7 @@ LayerExDraw::drawRectangles(const Appearance *app, tTJSVariant rects)
 	getRects(rects, rs);
 	GraphicsPath path;
 	path.AddRectangles(&rs[0], (int)rs.size());
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 /**
@@ -1539,7 +1550,7 @@ LayerExDraw::drawPathString(const FontInfo *font, const Appearance *app, REAL x,
 	// 文字列のパスを準備
 	GraphicsPath path;
 	path.AddString(text, -1, font->fontFamily, font->style, font->emSize, PointF(x, y), StringFormat::GenericDefault());
-	return drawPath(app, &path);
+	return _drawPath(app, &path);
 }
 
 static void transformRect(Matrix &calcTransform, RectF &rect)
@@ -2161,7 +2172,7 @@ LayerExDraw::drawPathString2(const FontInfo *font, const Appearance *app, REAL x
   GraphicsPath path;
   PointF offset(x + LONG(0.167 * font->emSize) - 0.5, y - 0.5);
   this->getTextOutline(font, offset, &path, text);
-  RectF result = drawPath(app, &path);
+  RectF result = _drawPath(app, &path);
   result.X = x;
   result.Y = y;
   result.Width += REAL(0.167 * font->emSize * 2);

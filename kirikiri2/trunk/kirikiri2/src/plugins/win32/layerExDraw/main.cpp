@@ -570,6 +570,25 @@ NCB_REGISTER_SUBCLASS(Appearance) {
 	NCB_METHOD(addPen);
 };
 
+NCB_REGISTER_SUBCLASS(Path) {
+	NCB_CONSTRUCTOR(());
+	NCB_METHOD(drawArc);
+	NCB_METHOD(drawPie);
+	NCB_METHOD(drawBezier);
+	NCB_METHOD(drawBeziers);
+	NCB_METHOD(drawClosedCurve);
+	NCB_METHOD(drawClosedCurve2);
+	NCB_METHOD(drawCurve);
+	NCB_METHOD(drawCurve2);
+	NCB_METHOD(drawCurve3);
+	NCB_METHOD(drawEllipse);
+	NCB_METHOD(drawLine);
+	NCB_METHOD(drawLines);
+	NCB_METHOD(drawPolygon);
+	NCB_METHOD(drawRectangle);
+	NCB_METHOD(drawRectangles);
+};
+
 #define ENUM(n) Variant(#n, (int)n)
 #define NCB_SUBCLASS_NAME(name) NCB_SUBCLASS(name, name)
 #define NCB_GDIP_SUBCLASS(Class) NCB_SUBCLASS(Class, GdipWrapper<Class>)
@@ -763,6 +782,7 @@ NCB_REGISTER_CLASS(GdiPlus)
 	
 	NCB_SUBCLASS(Font,FontInfo);
 	NCB_SUBCLASS(Appearance,Appearance);
+	NCB_SUBCLASS(Path,Path);
 }
 
 #if 0
@@ -852,6 +872,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(translateTransform);
 
 	NCB_METHOD(clear);
+	NCB_METHOD(drawPath);
 	NCB_METHOD(drawArc);
 	NCB_METHOD(drawPie);
 	NCB_METHOD(drawBezier);
