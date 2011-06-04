@@ -12,6 +12,25 @@ Path::~Path()
 }
 
 /**
+ * 現在の図形を閉じずに次の図形を開始します
+ */
+void
+Path::startFigure()
+{
+    path.StartFigure();
+}
+
+
+/**
+ * 現在の図形を閉じます
+ */
+void
+Path::closeFigure()
+{
+    path.CloseFigure();
+}
+
+/**
  * 円弧の描画
  * @param x 左上座標
  * @param y 左上座標

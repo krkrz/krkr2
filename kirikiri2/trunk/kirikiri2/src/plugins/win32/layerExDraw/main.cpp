@@ -572,6 +572,8 @@ NCB_REGISTER_SUBCLASS(Appearance) {
 
 NCB_REGISTER_SUBCLASS(Path) {
 	NCB_CONSTRUCTOR(());
+	NCB_METHOD(startFigure);
+	NCB_METHOD(closeFigure);
 	NCB_METHOD(drawArc);
 	NCB_METHOD(drawPie);
 	NCB_METHOD(drawBezier);
