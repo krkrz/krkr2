@@ -480,6 +480,16 @@ class GdiPlus {
 		 * パス情報クラス
 		 */
 		function Path();
+
+		/**
+		 * 現在の図形を閉じずに次の図形を開始します
+		 */
+		function startFigure();
+
+		/**
+		 * 現在の図形を閉じます
+		 */
+		function closeFigure();
 		
 		/**
 		 * 円弧の描画
