@@ -60,6 +60,7 @@ static bool TVPExpandToQuad = false;
 static tjs_int TVPL1BufferLength = 1000; // in ms
 static tjs_int TVPL2BufferLength = 1000; // in ms
 static bool TVPDirectSoundUse3D = false;
+static tjs_int TVPVolumeLogFactor = 3322;
 //---------------------------------------------------------------------------
 static void TVPInitSoundOptions()
 {
@@ -197,6 +198,12 @@ static void TVPInitSoundOptions()
 	{
 		tjs_int n = (tjs_int)val;
 		if(n > 0 && n < 600000) TVPL2BufferLength = n;
+	}
+
+	if(TVPGetCommandLine(TJS_W("-wsvolfactor"), &val))
+	{
+		tjs_int n = (tjs_int)val;
+		if(n > 0 && n < 200000) TVPVolumeLogFactor = n;
 	}
 
 	TVPSoundOptionsInit = true;
@@ -524,7 +531,7 @@ static void TVPInitLogTable()
 	TVPLogTable[0] = -10000;
 	for(i = 1; i <= 100; i++)
 	{
-		TVPLogTable[i] = log10((double)i/100.0)*5000.0;
+		TVPLogTable[i] = log10((double)i/100.0)*TVPVolumeLogFactor;
 	}
 }
 //---------------------------------------------------------------------------
@@ -540,7 +547,7 @@ tjs_int TVPVolumeToDSAttenuate(tjs_int volume)
 tjs_int TVPDSAttenuateToVolume(tjs_int att)
 {
 	if(att <= -10000) return 0;
-	return (tjs_int)(pow(10, (double)att / 5000.0) * 100.0) * 1000;
+	return (tjs_int)(pow(10, (double)att / TVPVolumeLogFactor) * 100.0) * 1000;
 }
 //---------------------------------------------------------------------------
 tjs_int TVPPanToDSAttenuate(tjs_int volume)
@@ -560,9 +567,9 @@ tjs_int TVPDSAttenuateToPan(tjs_int att)
 	if(att <= -10000) return -100000;
 	if(att >=  10000) return  100000;
 	if(att < 0)
-		return (100 - (tjs_int)(pow(10, (double)att /  5000.0) * 100.0)) * -1000;
+		return (100 - (tjs_int)(pow(10, (double)att /  TVPVolumeLogFactor) * 100.0)) * -1000;
 	else
-		return (100 - (tjs_int)(pow(10, (double)att / -5000.0) * 100.0)) *  1000;
+		return (100 - (tjs_int)(pow(10, (double)att / -TVPVolumeLogFactor) * 100.0)) *  1000;
 }
 //---------------------------------------------------------------------------
 
