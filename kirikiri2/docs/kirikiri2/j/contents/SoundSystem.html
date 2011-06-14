@@ -14,7 +14,7 @@
 	<link href="index.html" target="_top" rel="Start" title="トップページ" />
 </head>
 <body>
-<h1><a id="id251" name="id251">サウンドシステムについて</a>
+<h1><a id="id252" name="id252">サウンドシステムについて</a>
 </h1><div class="para"><div>
 　吉里吉里のサウンドシステムは MIDI、CD-DA、Wave (PCM) を再生できます。<br />
 　MIDI 再生はシーケンサを内蔵しており、再生チャンネルが重ならなければ同時再生できます。<br />
@@ -22,7 +22,7 @@
 　Wave 再生は複数を同時再生でき、ストリーミング再生 (長いサウンドを少しずつ読み込みながら再生) をすることができるほか、サウンドループ情報ファイル (.sli ファイル) を用いて、つぎめを感じさせないシームレスなループ再生を実現できます (サウンドループ情報ファイルはループチューナで作成します)。<br />
 </div></div>
 
-<h1><a id="id252" name="id252">WaveSoundBuffer で再生可能な形式</a>
+<h1><a id="id253" name="id253">WaveSoundBuffer で再生可能な形式</a>
 </h1><div class="para"><div>
 　<a target="main" class="jump" href="f_WaveSoundBuffer.html">WaveSoundBuffer</a> では、標準で無圧縮の RIFF Wave 形式 ( 拡張は .wav で、Windows 標準形式 ) を再生することができます。受け付けられる形式は以下の通りです。<br />
 <br />
@@ -31,7 +31,7 @@
 <br />
 　また、WaveSoundBuffer で再生可能な形式は、プラグインによって拡張することができます。<br />
 </div></div>
-<h1><a id="id253" name="id253">WaveSoundBuffer での 4ch および 6ch の扱い</a>
+<h1><a id="id254" name="id254">WaveSoundBuffer での 4ch および 6ch の扱い</a>
 </h1><div class="para"><div>
 　WAVE_FORMAT_EXTENSIBLE は、データ内に「どのチャンネルがどのスピーカーに割り当てられているか」の情報を持っていますが、WAVE_FORMAT_PCM や WAVE_FORMAT_IEEE_FLOAT の場合はその情報を持っていません。吉里吉里が WAVE_FORMAT_PCM や WAVE_FORMAT_IEEE_FLOAT で 4ch や 6ch のデータを扱うときは次のように解釈します。<br />
 <br />
