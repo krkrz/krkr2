@@ -14,13 +14,13 @@
 	<link href="index.html" target="_top" rel="Start" title="トップページ" />
 </head>
 <body>
-<h1><a id="id254" name="id254">吉里吉里の起動について</a>
+<h1><a id="id255" name="id255">吉里吉里の起動について</a>
 </h1><div class="para"><div>
-　吉里吉里を起動し、スクリプトを指定するためには通常、<a id="id255" name="id255" class="targanchor"><dfn>プロジェクトフォルダ</dfn></a> を決定する必要があります ( <a target="main" class="jump" href="StorageSystem.html">ストレージシステム</a> 参照 )。<br />
+　吉里吉里を起動し、スクリプトを指定するためには通常、<a id="id256" name="id256" class="targanchor"><dfn>プロジェクトフォルダ</dfn></a> を決定する必要があります ( <a target="main" class="jump" href="StorageSystem.html">ストレージシステム</a> 参照 )。<br />
 　プロジェクトフォルダを決定する方法はいくつかありますが、下記に挙げた順に優先されます ( 上のほうに書いたものが適用できれば適用される )。<br />
 　起動時に吉里吉里に渡すオプションについては <a target="main" class="jump" href="CommandLine.html">コマンドラインオプション</a> を参照してください。<br />
 </div></div>
-<h1><a id="id256" name="id256">プロジェクトフォルダの決定順序</a>
+<h1><a id="id257" name="id257">プロジェクトフォルダの決定順序</a>
 </h1><div class="para"><div>
 <dl>
 <dt>コマンドラインに指定されたフォルダやアーカイブ</dt>
@@ -42,7 +42,7 @@
 　いずれの方法でも決定できなかった場合は、フォルダ/アーカイブ選択の画面が出ます。<br />
 　ただし、リリースオプションで 「XP3アーカイブのみから実行」が指定されていた場合は、data.xp3ファイル、data.exeファイル、「自分自身に XP3 アーカイブが結合されているとき」の場合の動作しかしません ( <a target="main" class="jump" href="Configure.html">吉里吉里設定</a> 参照 )。<br />
 </div></div>
-<h1><a id="id257" name="id257">フォルダ/アーカイブ選択</a>
+<h1><a id="id258" name="id258">フォルダ/アーカイブ選択</a>
 </h1><div class="para"><div>
 　フォルダ/アーカイブ選択の画面は以下のようになります。<br />
 <img width="511" height="346" alt="FolderSelector.png" src="FolderSelector.png" /><br />
@@ -56,15 +56,15 @@
 <dd>　現在選択中のフォルダやファイルの実行を開始します。</dd>
 <dt>「キャンセル」ボタン</dt>
 <dd>　何もせずに吉里吉里を終了します。</dd></dl></div></div>
-<h1><a id="id258" name="id258">最初に実行されるファイル</a>
+<h1><a id="id259" name="id259">最初に実行されるファイル</a>
 </h1><div class="para"><div>
 　プロジェクトフォルダ決定後、最初に実行されるのは、プロジェクトフォルダ内の startup.tjs です。これがない場合はエラーになります。<br />
 </div></div>
-<h1><a id="id259" name="id259">メッセージマップファイル</a>
+<h1><a id="id260" name="id260">メッセージマップファイル</a>
 </h1><div class="para"><div>
 　吉里吉里は、起動直後に吉里吉里と同じフォルダに msgmap.tjs があるかどうかを調べ、それが存在すれば実行します。ただしリリースオプションでこれを読み込まないように指定されていた場合を除きます ( <a target="main" class="jump" href="Configure.html">吉里吉里設定</a> 参照 )。msgmap.tjs では <a target="main" class="jump" href="f_System_assignMessage.html">System.assignMessage</a> を使用してメッセージの割り当てを変更することができます。msgmap.tjs は <a target="main" class="jump" href="Controller.html">コントローラ</a> でも作成することができます。<br />
 </div></div>
-<h1><a id="id260" name="id260">設定ファイル</a>
+<h1><a id="id261" name="id261">設定ファイル</a>
 </h1><div class="para"><div>
 　吉里吉里は、<a target="main" class="jump" href="Configure.html">吉里吉里設定</a> で作成した設定ファイル (.cf ファイルや .cfu ファイル) を読み込み、そこに記述してある設定にしたがって動作します。<br />
 　ファイル名やファイルの作成される場所については <a target="main" class="jump" href="Configure.html">吉里吉里設定</a> を参照してください。<br />
