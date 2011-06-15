@@ -37,7 +37,7 @@ object TVPWindowForm: TTVPWindowForm
     Left = 0
     Top = 0
     Width = 315
-    Height = 193
+    Height = 200
     HorzScrollBar.Tracking = True
     VertScrollBar.Tracking = True
     Align = alClient
