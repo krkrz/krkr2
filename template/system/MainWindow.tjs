@@ -3996,6 +3996,31 @@ class KAGWindow extends Window
 		}
 	}
 
+	function onMouseDown(x, y, button)
+	{
+		// フルスクリーン時の画面外クリックを判定
+		if (fullScreened)
+		{
+			// x,yは実座標のためプライマリレイヤで判定
+			var pl = primaryLayer;
+			var px = pl.cursorX;
+			var py = pl.cursorY;
+
+			if (px < 0 || py < 0 || px >= pl.width || py >= pl.height)
+			{
+				if (button == mbLeft)
+				{
+					onPrimaryClick();
+				}
+				else if (button == mbRight)
+				{
+					onPrimaryRightClick();
+				}
+			}
+		}
+		super.onMouseDown(...);
+	}
+
 	//------------------------------------------------- クリック待ち記号処理 --
 
 	function hideClickGlyphs()
