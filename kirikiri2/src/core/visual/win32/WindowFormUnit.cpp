@@ -372,6 +372,13 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	ReloadDeviceTick = 0;
 
 	LastRecheckInputStateSent = 0;
+
+	// redirect window mouse events to paintbox's mouse event
+	this->OnClick = PaintBoxClick;
+	this->OnMouseDown = PaintBoxMouseDown;
+	this->OnDblClick = PaintBoxDblClick;
+	this->OnMouseMove = PaintBoxMouseMove;
+	this->OnMouseUp = PaintBoxMouseUp;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::FormDestroy(TObject *Sender)
@@ -1705,13 +1712,13 @@ void __fastcall TTVPWindowForm::SetUseMouseKey(bool b)
 		if(MouseLeftButtonEmulatedPushed)
 		{
 			MouseLeftButtonEmulatedPushed = false;
-			PaintBoxMouseUp(this, Controls::mbLeft,
+			PaintBoxMouseUp(PaintBox, Controls::mbLeft,
 				TShiftState(), LastMouseMovedPos.x, LastMouseMovedPos.y);
 		}
 		if(MouseRightButtonEmulatedPushed)
 		{
 			MouseRightButtonEmulatedPushed = false;
-			PaintBoxMouseUp(this, Controls::mbRight,
+			PaintBoxMouseUp(PaintBox, Controls::mbRight,
 				TShiftState(), LastMouseMovedPos.x, LastMouseMovedPos.y);
 		}
 
@@ -1802,6 +1809,9 @@ void __fastcall TTVPWindowForm::PaintBoxDblClick(TObject *Sender)
 void __fastcall TTVPWindowForm::PaintBoxMouseMove(TObject *Sender,
 	  TShiftState Shift, int X, int Y)
 {
+	if(Sender == this)
+		TranslateWindowToPaintBox(X, Y);
+
 	if(TJSNativeInstance)
 	{
 		tjs_uint32 shift = TVP_TShiftState_To_uint32(Shift);
@@ -1826,7 +1836,11 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 {
 	if(!CanSendPopupHide()) DeliverPopupHide();
 
-	::SetCaptureControl(PaintBox);
+	if(Sender == this)
+		TranslateWindowToPaintBox(X, Y);
+
+	if(Sender == PaintBox)
+		::SetCaptureControl(PaintBox);
 
 	LastMouseDownX = X;
 	LastMouseDownY = Y;
@@ -1845,6 +1859,9 @@ void __fastcall TTVPWindowForm::PaintBoxMouseDown(TObject *Sender,
 void __fastcall TTVPWindowForm::PaintBoxMouseUp(TObject *Sender,
 	  TMouseButton Button, TShiftState Shift, int X, int Y)
 {
+	if(Sender == this)
+		TranslateWindowToPaintBox(X, Y);
+
 	::SetCaptureControl(NULL);
 
 	if(TJSNativeInstance)
@@ -1855,6 +1872,16 @@ void __fastcall TTVPWindowForm::PaintBoxMouseUp(TObject *Sender,
 			new tTVPOnMouseUpInputEvent(TJSNativeInstance,
 				X, Y, button, shift));
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TTVPWindowForm::TranslateWindowToPaintBox(int &x, int &y)
+{
+	if(!PaintBox) return;
+	TPoint pt;
+	pt = ClientToScreen(TPoint(x, y));
+	pt = PaintBox->ScreenToClient(pt);
+	x = pt.x;
+	y = pt.y;
 }
 //---------------------------------------------------------------------------
 void TTVPWindowForm::InternalKeyDown(WORD key, tjs_uint32 shift)
@@ -1883,14 +1910,14 @@ void TTVPWindowForm::InternalKeyDown(WORD key, tjs_uint32 shift)
 					if(key == VK_RETURN || key == VK_SPACE || key == VK_PAD1)
 					{
 						MouseLeftButtonEmulatedPushed = true;
-						PaintBoxMouseDown(this, Controls::mbLeft,
+						PaintBoxMouseDown(PaintBox, Controls::mbLeft,
 							TShiftState(), tp.x, tp.y);
 					}
 
 					if(key == VK_ESCAPE || key == VK_PAD2)
 					{
 						MouseRightButtonEmulatedPushed = true;
-						PaintBoxMouseDown(this, Controls::mbRight,
+						PaintBoxMouseDown(PaintBox, Controls::mbRight,
 							TShiftState(), tp.x, tp.y);
 					}
 				}
@@ -2012,16 +2039,16 @@ void TTVPWindowForm::InternalKeyUp(WORD key, tjs_uint32 shift)
 				{
 					if(key == VK_RETURN || key == VK_SPACE || key == VK_PAD1)
 					{
-						PaintBoxClick(this);
+						PaintBoxClick(PaintBox);
 						MouseLeftButtonEmulatedPushed = false;
-						PaintBoxMouseUp(this, Controls::mbLeft,
+						PaintBoxMouseUp(PaintBox, Controls::mbLeft,
 							TShiftState(), tp.x, tp.y);
 					}
 
 					if(key == VK_ESCAPE || key == VK_PAD2)
 					{
 						MouseRightButtonEmulatedPushed = false;
-						PaintBoxMouseUp(this, Controls::mbRight,
+						PaintBoxMouseUp(PaintBox, Controls::mbRight,
 							TShiftState(), tp.x, tp.y);
 					}
 				}

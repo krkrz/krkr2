@@ -383,6 +383,7 @@ protected:
 	//-- paint box management
 	void __fastcall CreatePaintBox(TWinControl *owner);
 
+	// note that also window mouse events are to be sent to these functions
 	void __fastcall PaintBoxClick(TObject *Sender);
 	void __fastcall PaintBoxMouseDown(TObject *Sender, TMouseButton Button,
 		  TShiftState Shift, int X, int Y);
@@ -392,6 +393,9 @@ protected:
 		  int X, int Y);
 	void __fastcall PaintBoxMouseUp(TObject *Sender, TMouseButton Button,
 		  TShiftState Shift, int X, int Y);
+
+	//-- window coodinate translation
+	void __fastcall TranslateWindowToPaintBox(int &x, int &y);
 
 protected:
 	//-- Windows message mapping
