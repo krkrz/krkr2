@@ -93,7 +93,9 @@ void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
 		{
 			stream = TVPCreateTextStreamForRead(name, TJS_W(""));
 			ttstr tmp;
-			stream->Read(tmp, 0);
+			if (stream) {
+				stream->Read(tmp, 0);
+			}
 			Buffer = tmp.c_str();
 		}
 		catch(...)
