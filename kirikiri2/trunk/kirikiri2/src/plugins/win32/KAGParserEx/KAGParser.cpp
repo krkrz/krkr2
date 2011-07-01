@@ -99,7 +99,9 @@ void tTVPScenarioCacheItem::LoadScenario(const ttstr & name, bool isstring)
 		{
 			stream = TVPCreateTextStreamForRead(name, TJS_W(""));
 			ttstr tmp;
-			stream->Read(tmp, 0);
+			if (stream) {
+				stream->Read(tmp, 0);
+			}
 			Buffer = tmp.c_str();
 		}
 		catch(...)
@@ -1855,7 +1857,7 @@ parse_start:
 						exp = val;
 						if(exp == TJS_W(""))
 							TVPThrowExceptionMessage(TVP_KAGPARSER_MESSAGEMAP(TVPKAGSyntaxError));
-						TVPExecuteExpression(exp, &val);
+						TVPExecuteExpression(exp, Owner, &val);
 
 						bool cond = val.operator bool();
 						if(tagkind == tag_ignore) cond = ! cond;
@@ -1888,7 +1890,7 @@ parse_start:
 //						const std::string s = exp.AsStdString();
 						if(exp == TJS_W(""))
 							TVPThrowExceptionMessage(TVP_KAGPARSER_MESSAGEMAP(TVPKAGSyntaxError));
-						TVPExecuteExpression(exp, &val);
+						TVPExecuteExpression(exp, Owner, &val);
 
 						bool cond = val.operator bool();
 						if(cond)
@@ -1956,7 +1958,7 @@ parse_start:
 							exp = val;
 							if(exp == TJS_W(""))
 								TVPThrowExceptionMessage(TVP_KAGPARSER_MESSAGEMAP(TVPKAGSyntaxError));
-							TVPExecuteExpression(exp, &val);
+							TVPExecuteExpression(exp, Owner, &val);
 							exp = val;
 
 							// count '['
@@ -2333,7 +2335,7 @@ parse_start:
 				// process expression entity or macro argument
 				if(entity)
 				{
-					TVPExecuteExpression(value, &ValueVariant);
+					TVPExecuteExpression(value, Owner, &ValueVariant);
 					if(ValueVariant.Type() != tvtVoid) ValueVariant.ToString();
 				}
 				else if(macroarg)
@@ -2371,7 +2373,7 @@ parse_start:
 					// condition
 
 					tTJSVariant val;
-					TVPExecuteExpression(ttstr(ValueVariant), &val);
+					TVPExecuteExpression(ttstr(ValueVariant), Owner, &val);
 					condition = val.operator bool();
 					store = false;
 				}
@@ -2712,6 +2714,21 @@ TJS_BEGIN_NATIVE_PROP_DECL(macroParams)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(macroParams)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(mp)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_KAGParser);
+		iTJSDispatch2 *params = _this->GetMacroTopNoAddRef();
+		*result = tTJSVariant(params, params);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(mp)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(callStackDepth)
 {
