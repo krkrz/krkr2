@@ -89,13 +89,44 @@ struct WindowEx
 
 	// resetWindowIcon
 	static tjs_error TJS_INTF_METHOD resetWindowIcon(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { 
-		HWND hwnd = GetHWND(obj);
+		WindowEx *self = GetInstance(obj);
+		return (self != NULL) ? self->_resetWindowIcon() : TJS_E_ACCESSDENYED;
+	}
+	// setWindowIcon
+	static tjs_error TJS_INTF_METHOD setWindowIcon(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { 
+		WindowEx *self = GetInstance(obj);
+		return (self != NULL) ? self->_setWindowIcon(n > 0 ? p[0] : NULL) : TJS_E_ACCESSDENYED;
+	}
+	tjs_error _setWindowIcon(tTJSVariant *ptr) {
+		if (externalIcon) {
+			::DestroyIcon(externalIcon);
+			externalIcon = NULL;
+		}
+		if (ptr && ptr->Type() == tvtString) {
+			ttstr file(ptr->AsStringNoAddRef());
+			if (file.length() > 0) {
+				file = TVPGetPlacedPath(file);
+				if (!file.length()) TVPThrowExceptionMessage(TJS_W("file not found."));
+				if (wcschr(file.c_str(), '>')) TVPThrowExceptionMessage(TJS_W("cannot get in archive icon."));
+				TVPGetLocalName(file);
+				externalIcon = ::ExtractIconW(GetModuleHandle(0), file.c_str(), 0);
+				if (externalIcon == NULL) TVPThrowExceptionMessage(TJS_W("icon not found."));
+			}
+		}
+		return _resetWindowIcon();
+	}
+	tjs_error _resetWindowIcon() const {
+		HWND hwnd = GetHWND(self);
 		if (hwnd != NULL) {
-			HICON icon = ::LoadIcon(GetModuleHandle(0), IDI_APPLICATION);
+			HICON icon = getCurrentIcon();
 			::PostMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
 		}
 		return TJS_S_OK;
 	}
+	HICON getCurrentIcon() const {
+		return externalIcon ? externalIcon : (::LoadIcon(GetModuleHandle(0), IDI_APPLICATION));
+	}
+	
 
 	// getWindowRect
 	static tjs_error TJS_INTF_METHOD getWindowRect(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
@@ -534,6 +565,7 @@ struct WindowEx
 			sysMenuModified(0), sysMenuModMap(0),
 			cachedHWND(0),
 			sysMenu(0),
+			externalIcon(0),
 			hasResizing(false),
 			hasMoving(false),
 			hasMove(false),
@@ -550,6 +582,7 @@ struct WindowEx
 	~WindowEx() {
 		if (menuex)          menuex         ->Release();
 		if (sysMenuModified) sysMenuModified->Release();
+		if (externalIcon) ::DestroyIcon(externalIcon);
 		resetSystemMenu();
 		deleteOverlayBitmap();
 		regist(false);
@@ -705,6 +738,7 @@ private:
 	iTJSDispatch2 *sysMenuModified, *sysMenuModMap; //< システムメニュー改変用
 	HWND cachedHWND;
 	HMENU sysMenu;
+	HICON externalIcon;
 	bool hasResizing, hasMoving, hasMove, hasNcMsMove; //< メソッドが存在するかフラグ
 	bool disableResize; //< サイズ変更禁止
 	bool enableNCMEvent; //< WM_SETCURSORコールバック
@@ -908,6 +942,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 	RawCallback(TJS_W("minimized"),           &Class::getMinimized,      &Class::setMinimized, 0);
 	RawCallback(TJS_W("showRestore"),         &Class::showRestore,       0);
 	RawCallback(TJS_W("resetWindowIcon"),     &Class::resetWindowIcon,   0);
+	RawCallback(TJS_W("setWindowIcon"),       &Class::setWindowIcon,     0);
 	RawCallback(TJS_W("getWindowRect"),       &Class::getWindowRect,     0);
 	RawCallback(TJS_W("getClientRect"),       &Class::getClientRect,     0);
 	RawCallback(TJS_W("getNormalRect"),       &Class::getNormalRect,     0);
@@ -1810,7 +1845,7 @@ struct System
 		if (n < 1) return TJS_E_BADPARAMCOUNT;
 
 		if (p[0]->Type() != tvtString) return TJS_E_INVALIDPARAM;
-		ttstr key(p[0]->AsString());
+		ttstr key(p[0]->AsStringNoAddRef());
 		if (key == TJS_W("")) return TJS_E_INVALIDPARAM;
 		key.ToUppserCase();
 
@@ -1866,7 +1901,7 @@ struct System
 	static tjs_error TJS_INTF_METHOD readEnvValue(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
 		if (n < 1) return TJS_E_BADPARAMCOUNT;
 		if (p[0]->Type() != tvtString) return TJS_E_INVALIDPARAM;
-		ttstr name(p[0]->AsString());
+		ttstr name(p[0]->AsStringNoAddRef());
 		if (name == TJS_W("")) return TJS_E_INVALIDPARAM;
 
 		r->Clear();
@@ -1885,7 +1920,7 @@ struct System
 	// System.expandEnvString
 	static tjs_error TJS_INTF_METHOD expandEnvString(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
 		if (n < 1) return TJS_E_BADPARAMCOUNT;
-		ttstr src(p[0]->AsString());
+		ttstr src(p[0]->AsStringNoAddRef());
 
 		r->Clear();
 		DWORD len = ::ExpandEnvironmentStrings(src.c_str(), NULL, 0);

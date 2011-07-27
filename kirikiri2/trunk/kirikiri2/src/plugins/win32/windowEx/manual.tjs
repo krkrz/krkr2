@@ -48,6 +48,13 @@ class Window {
 	function resetWindowIcon();
 
 	/**
+	 * ウィンドウのタイトルバーアイコンを変更する
+	 * @param file アイコンファイルまたはvoid (voidか""で初期状態にリセット）
+	 * ※ アーカイブ内のファイル指定は不可，exeやDLLを指定した場合は一番最初のアイコンが設定される
+	 */
+	function setWindowIcon(file);
+
+	/**
 	 * クライアント・ウィンドウ領域，非最大化通常表示の領域の取得
 	 * @return %[ x, y, w, h ] または void(取得失敗時)
 	 * ※ innerSunken枠分はクライアント領域に含まれるので注意
