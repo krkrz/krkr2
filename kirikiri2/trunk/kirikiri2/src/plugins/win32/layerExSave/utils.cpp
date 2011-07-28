@@ -294,8 +294,9 @@ static inline void AddColor(DWORD &r, DWORD &g, DWORD &b, BufRefT p) {
 /**
  * レイヤの淵の色を透明部分まで引き伸ばす（縮小時に偽色が出るのを防ぐ）
  * 
- * Layer.oozeColor = function(level);
+ * Layer.oozeColor = function(level, threshold=1);
  * @param level 処理を行う回数。大きいほど引き伸ばし領域が増える
+ * @param threshold アルファの閾値(1～255)これより低いピクセルへ引き伸ばす
  */
 static tjs_error TJS_INTF_METHOD
 OozeColor(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
@@ -305,6 +306,11 @@ OozeColor(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispa
 	int level = (int)(param[0]->AsInteger());
 	if (level <= 0) 
 		TVPThrowExceptionMessage(TJS_W("Invalid level count."));
+	unsigned char threshold = (unsigned char)(numparams > 1 ? param[1]->AsInteger() : 1);
+	if (threshold < 1)
+		threshold = 1;
+	else if (threshold > 255)
+		threshold = 255;
 
 	// レイヤバッファの取得
 	WrtRefT p, r = 0;
@@ -322,8 +328,8 @@ OozeColor(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispa
 			o = otop + y*ow;
 			p = r    + y*nl;
 			for (x = 0; x < w; x++, o++, p+=nc) {
-				if (p[3]) *o = -1;
-				else p[2] = p[1] = p[0] = 0; // 完全透明部分の色は消す
+				if (p[3] >= threshold) *o = -1;
+				else p[2] = p[1] = p[0] = 0; // 閾値以下の不透明部分の色は消す
 			}
 		}
 
