@@ -95,24 +95,30 @@ struct WindowEx
 	// setWindowIcon
 	static tjs_error TJS_INTF_METHOD setWindowIcon(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) { 
 		WindowEx *self = GetInstance(obj);
-		return (self != NULL) ? self->_setWindowIcon(n > 0 ? p[0] : NULL) : TJS_E_ACCESSDENYED;
+		return (self != NULL) ? self->_setWindowIcon(n > 0 ? p[0] : NULL, n > 1 ? p[1]->operator bool() : false) : TJS_E_ACCESSDENYED;
 	}
-	tjs_error _setWindowIcon(tTJSVariant *ptr) {
+	static HICON _loadExternalIcon(ttstr file) {
+		HICON ret = NULL;
+		if (file.length() > 0) {
+			file = TVPGetPlacedPath(file);
+			if (!file.length()) TVPThrowExceptionMessage(TJS_W("file not found."));
+			if (wcschr(file.c_str(), '>')) TVPThrowExceptionMessage(TJS_W("cannot get in archive icon."));
+			TVPGetLocalName(file);
+			ret = ::ExtractIconW(GetModuleHandle(0), file.c_str(), 0);
+			if (ret == NULL) TVPThrowExceptionMessage(TJS_W("icon not found."));
+		}
+		return ret;
+	}
+	static void _setApplicationIcon(HICON icon);
+	tjs_error _setWindowIcon(tTJSVariant *ptr, bool withapp) {
 		if (externalIcon) {
 			::DestroyIcon(externalIcon);
 			externalIcon = NULL;
 		}
 		if (ptr && ptr->Type() == tvtString) {
-			ttstr file(ptr->AsStringNoAddRef());
-			if (file.length() > 0) {
-				file = TVPGetPlacedPath(file);
-				if (!file.length()) TVPThrowExceptionMessage(TJS_W("file not found."));
-				if (wcschr(file.c_str(), '>')) TVPThrowExceptionMessage(TJS_W("cannot get in archive icon."));
-				TVPGetLocalName(file);
-				externalIcon = ::ExtractIconW(GetModuleHandle(0), file.c_str(), 0);
-				if (externalIcon == NULL) TVPThrowExceptionMessage(TJS_W("icon not found."));
-			}
+			externalIcon = _loadExternalIcon(ptr->AsStringNoAddRef());
 		}
+		if (withapp) _setApplicationIcon(externalIcon);
 		return _resetWindowIcon();
 	}
 	tjs_error _resetWindowIcon() const {
@@ -1936,9 +1942,43 @@ struct System
 		return TJS_S_OK;
 	}
 
-	static void breathe() { TVPBreathe(); }
-	static bool isBreathing() { return TVPGetBreathing(); }
+	// System.setApplicationIcon
+	static tjs_error TJS_INTF_METHOD setApplicationIcon(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		return _setApplicationIcon((n > 0 && p[0] && p[0]->Type() == tvtString) ?
+								   WindowEx::_loadExternalIcon(p[0]->AsStringNoAddRef()) : NULL);
+	}
+	static tjs_error _setApplicationIcon(HICON icon) {
+		termExternalIcon();
+		// [XXX] Win7にてIDI_APPLICATIONのアイコンをICON_BIGに再設定しても何故か変化しない読み直す
+		if (!icon) {
+			tTJSVariant v;
+			TVPExecuteExpression(TJS_W("System.exeName"), &v);
+			icon = WindowEx::_loadExternalIcon(v.AsStringNoAddRef());
+		}
+		externalIcon = icon;
+		HWND hwnd = TVPGetApplicationWindowHandle();
+		if (hwnd) {
+			::PostMessage(hwnd, WM_SETICON, ICON_BIG,   (LPARAM)icon);
+			::PostMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+		}
+		return TJS_S_OK;
+	}
+	static HICON externalIcon;
+	static void termExternalIcon() {
+		if (externalIcon) {
+			::DestroyIcon(externalIcon);
+			externalIcon = NULL;
+		}
+	}
 };
+HICON System::externalIcon = NULL;
+// Window.setWindowIconでwithapp=trueとしたとき
+void WindowEx::_setApplicationIcon(HICON icon) {
+	// アイコン指定がある場合は複製（アイコンハンドルの管轄が異なるため）
+	if (icon) icon = ::DuplicateIcon(NULL, icon);
+	System::_setApplicationIcon(icon);
+}
+
 
 // Systemに関数を追加
 NCB_ATTACH_FUNCTION(getDisplayMonitors, System, System::getDisplayMonitors);
@@ -1948,8 +1988,9 @@ NCB_ATTACH_FUNCTION(setCursorPos,       System, System::setCursorPos);
 NCB_ATTACH_FUNCTION(getSystemMetrics,   System, System::getSystemMetrics);
 NCB_ATTACH_FUNCTION(readEnvValue,       System, System::readEnvValue);
 NCB_ATTACH_FUNCTION(expandEnvString,    System, System::expandEnvString);
-NCB_ATTACH_FUNCTION(breathe,            System, System::breathe);
-NCB_ATTACH_FUNCTION(isBreathing,        System, System::isBreathing);
+NCB_ATTACH_FUNCTION(setApplicationIcon, System, System::setApplicationIcon);
+NCB_ATTACH_FUNCTION(breathe,            System, TVPBreathe);
+NCB_ATTACH_FUNCTION(isBreathing,        System, TVPGetBreathing);
 
 ////////////////////////////////////////////////////////////////
 
@@ -2007,6 +2048,7 @@ static void PreRegistCallback()
 static void PostUnregistCallback()
 {
 	Scripts::UnRegist();
+	System::termExternalIcon();
 }
 NCB_PRE_REGIST_CALLBACK(      PreRegistCallback);
 NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
