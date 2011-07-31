@@ -889,6 +889,33 @@ public:
 		if (result) *result = ttstr(ret);
 		return TJS_S_OK;
 	}
+
+	/**
+	 * パスの検索
+	 * @param filename   検索対象ファイル名
+	 * @param searchpath 検索対象パス（ローカル表記(c:\～等)で";"区切り，省略時はシステムのデフォルト検索パス）
+	 * @return 見つからなかった場合はvoid，見つかった場合はファイルのフルパス(file://./～)
+	 */
+	static tjs_error TJS_INTF_METHOD searchPath(tTJSVariant *result,
+												tjs_int numparams,
+												tTJSVariant **param,
+												iTJSDispatch2 *objthis) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		ttstr filename(*param[0]), searchpath;
+		if (TJS_PARAM_EXIST(1)) searchpath = *param[1];
+		WCHAR tmp[MAX_PATH+1];
+		DWORD len = ::SearchPathW(searchpath.length() ? searchpath.c_str() : NULL,
+								  filename.c_str(), NULL, MAX_PATH, tmp, NULL);
+		if (len > 0) {
+			// if (len > MAX_PATH) ...
+			tmp[MAX_PATH] = 0;
+			if (result) *result = TVPNormalizeStorageName(tmp);
+		} else {
+			// not found
+			if (result) result->Clear();
+		}
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
@@ -914,6 +941,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(isExistentStorageNoSearchNoNormalize);
 	NCB_METHOD(getDisplayName);
 	RawCallback("getMD5HashString",    &Class::getMD5HashString,    TJS_STATICMEMBER);
+	RawCallback("searchPath",          &Class::searchPath,          TJS_STATICMEMBER);
 };
 
 /**
