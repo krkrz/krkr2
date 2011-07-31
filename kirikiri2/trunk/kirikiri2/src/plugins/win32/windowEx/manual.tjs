@@ -50,9 +50,10 @@ class Window {
 	/**
 	 * ウィンドウのタイトルバーアイコンを変更する
 	 * @param file アイコンファイルまたはvoid (voidか""で初期状態にリセット）
+	 * @param withapp アプリケーションウィンドウのアイコンも一緒に変更するかどうか
 	 * ※ アーカイブ内のファイル指定は不可，exeやDLLを指定した場合は一番最初のアイコンが設定される
 	 */
-	function setWindowIcon(file);
+	function setWindowIcon(file, withapp);
 
 	/**
 	 * クライアント・ウィンドウ領域，非最大化通常表示の領域の取得
@@ -461,6 +462,13 @@ class System
 	 * @return 展開後文字列
 	 */
 	function expandEnvString(text);
+
+	/**
+	 * タスクバーやALT+TABなどで表示されるアプリケーションアイコンを変更する
+	 * @param file アイコンファイルまたはvoid (voidか""で初期状態にリセット）
+	 * ※ アーカイブ内のファイル指定は不可，exeやDLLを指定した場合は一番最初のアイコンが設定される
+	 */
+	function setApplicationIcon(file);
 
 	/**
 	 * TVPBreathe, TVPGetBreathing のラッパ
