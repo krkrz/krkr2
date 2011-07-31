@@ -187,4 +187,12 @@ class Storages {
 	 * @return ハッシュ値（32文字の16進数ハッシュ文字列（小文字））
 	 */
 	function getMD5HashString(filename); // by miahmie
+
+	/**
+	 * パスの検索
+	 * @param filename   検索対象ファイル名
+	 * @param searchpath 検索対象パス（ローカル表記(c:\～等)で";"区切り，省略時はシステムのデフォルト検索パス）
+	 * @return 見つからなかった場合はvoid，見つかった場合はファイルのフルパス(file://./～)
+	 */
+	function searchPath(filename, searchpath); // by miahmie
 };
