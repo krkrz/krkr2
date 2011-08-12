@@ -59,6 +59,7 @@ public:
 	 * @param checkCert 認証確認するかどうか
 	 */
 	HttpConnection(tstring agentName, bool checkCert=false) : agentName(agentName), checkCert(checkCert), contentLength(0), secure(false){
+		::InitializeCriticalSection(&cs);
 		hInet = NULL;
 		hConn = NULL;
 		hReq  = NULL;
@@ -67,6 +68,7 @@ public:
 	// デストラクタ
 	~HttpConnection(void) {
 		clearParam();
+		::DeleteCriticalSection(&cs);
 	}
 
 	// 送信ヘッダをクリア
@@ -78,11 +80,7 @@ public:
 	}
 
 	// ハンドルをクリア
-	void closeHandle() {
-		if (hReq) { InternetCloseHandle(hReq);hReq=NULL; }
-		if (hConn) { InternetCloseHandle(hConn);hConn=NULL; }
-		if (hInet) { InternetCloseHandle(hInet);hInet=NULL; }
-	}
+	void closeHandle();
 
 	// 送信パラメータをクリア(名前を変えただけで、実体は送信データクリア)
 	void clearParam() {
@@ -212,6 +210,8 @@ public:
 	void setCheckCert(bool check)	{ checkCert = check;}
 
 private:
+	CRITICAL_SECTION cs;
+
 	// 基礎情報
 	tstring agentName; ///< ユーザエージェント名
 	bool checkCert;	   ///< 証明書確認ダイアログを出すか

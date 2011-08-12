@@ -1,6 +1,20 @@
 #include "HttpConnection.h"
 #pragma comment(lib, "Wininet.lib") 
 
+class CriticalSectionHelper
+{
+public:
+	CriticalSectionHelper(LPCRITICAL_SECTION p) : m_pCS( p ) {
+		::EnterCriticalSection(m_pCS);
+	}
+	~CriticalSectionHelper() {
+		::LeaveCriticalSection(m_pCS);
+	}
+private:
+	LPCRITICAL_SECTION m_pCS;
+};
+#define	LOCK  CriticalSectionHelper csh(&cs)
+
 #define BUFSIZE (1024*16)
 
 // データ中から METAタグで Content-Type を取得する
@@ -80,6 +94,16 @@ parseContentType(const TCHAR *buf, size_t length, tstring &contentType, tstring 
 	}
 }
 
+// ハンドルをクリア
+void
+HttpConnection::closeHandle()
+{
+	LOCK;
+	if (hReq) { InternetCloseHandle(hReq);hReq=NULL; }
+	if (hConn) { InternetCloseHandle(hConn);hConn=NULL; }
+	if (hInet) { InternetCloseHandle(hInet);hInet=NULL; }
+}
+
 void
 HttpConnection::addHeader(const TCHAR *name, const TCHAR *value)
 {
@@ -102,6 +126,7 @@ HttpConnection::open(const TCHAR *method,
 					 const TCHAR *url,
 					 const TCHAR *_user,
 					 const TCHAR *_passwd) {
+	LOCK;
 	clearParam();
 	errorMessage.erase();
 
@@ -208,6 +233,8 @@ retry:
 int
 HttpConnection::request(RequestCallback requestCallback, RetryCallback retryCallback, void *context)
 {
+	LOCK;
+
 	if (!isValid()) {
 		return ERROR_INET;
 	}
@@ -341,6 +368,8 @@ again:
 void
 HttpConnection::queryInfo()
 {
+	LOCK;
+
 	statusCode = 0;
 	DWORD length = sizeof statusCode;
 	HttpQueryInfo(hReq, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, (LPVOID)&statusCode, &length, NULL);
@@ -413,6 +442,8 @@ HttpConnection::queryInfo()
 int 
 HttpConnection::response(ResponseCallback callback, void *context)
 {
+	LOCK;
+
 	if (!isValid()) {
 		return ERROR_INET;
 	}

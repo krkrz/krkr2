@@ -539,19 +539,29 @@ protected:
 		::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_SENT);
 		inputSize = 0;
 		int errorCode;
-		if ((errorCode = http.request(uploadCallback, rewindUploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+		if (canceled) {
+			errorCode = HttpConnection::ERROR_CANCEL;
 			clearInput();
-			http.queryInfo();
-			outputSize = 0;
-			outputLength = http.getContentLength();
-			::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
-			if ((errorCode = http.response(downloadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
-				closeOutput();
-			} else {
-				clearOutput();
-			}
 		} else {
-			clearInput();
+			if ((errorCode = http.request(uploadCallback, rewindUploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+				clearInput();
+				if (canceled) {
+					errorCode = HttpConnection::ERROR_CANCEL;
+					clearOutput();
+				} else {
+					http.queryInfo();
+					outputSize = 0;
+					outputLength = http.getContentLength();
+					::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
+					if ((errorCode = http.response(downloadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+						closeOutput();
+					} else {
+						clearOutput();
+					}
+				}
+			} else {
+				clearInput();
+			}
 		}
 		switch (errorCode) {
 		case HttpConnection::ERROR_NONE:
@@ -588,8 +598,6 @@ protected:
 	void stopThread() {
 		if (threadHandle) {
 			canceled = true;
-			// ã≠êßîjä¸!
-			http.closeHandle();
 			WaitForSingleObject(threadHandle, INFINITE);
 			CloseHandle(threadHandle);
 			threadHandle = 0;
