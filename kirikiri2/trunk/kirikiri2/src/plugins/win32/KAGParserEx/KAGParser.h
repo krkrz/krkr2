@@ -211,6 +211,7 @@ private:
 
 	ArgValue args; // current args
 	iTJSDispatch2 * Macros; // Macro Dictionary Object
+	iTJSDispatch2 * ParamMacros; // Param Macro Dictionary Object
 
 	std::vector<ArgValue> MacroArgs; // Macro arguments
 	tjs_uint MacroArgStackDepth;
@@ -330,6 +331,7 @@ public:
 
 private:
 	void operator()(tTJSVariant &name, tTJSVariant &value);
+	bool EntryParam(bool &condition, tTJSVariant &ValueVariant, const ttstr &attribname, const ttstr &value, bool entity, bool macroarg);
 
 public:
 	iTJSDispatch2 * GetNextTag();
@@ -349,6 +351,7 @@ public:
 	tTVPKAGDebugLevel GetDebugLevel(void) const { return DebugLevel; }
 
 	iTJSDispatch2 *GetMacrosNoAddRef() const { return Macros; }
+	iTJSDispatch2 *GetParamMacrosNoAddRef() const { return ParamMacros; }
 
 	iTJSDispatch2 *GetMacroTopNoAddRef() const;
 		// get current macro argument (parameters)

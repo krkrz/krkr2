@@ -392,6 +392,7 @@ tTJSNI_KAGParser::tTJSNI_KAGParser()
 	ProcessSpecialTags = true;
 	IgnoreCR = false;
 	Macros = NULL;
+	ParamMacros = NULL;
 	RecordingMacro = NULL;
 	DebugLevel = tkdlSimple;
 	Interrupted = false;
@@ -402,6 +403,7 @@ tTJSNI_KAGParser::tTJSNI_KAGParser()
 
 	// retrieve DictClear method and DictObj object
 	Macros = TJSCreateDictionaryObject();
+	ParamMacros = TJSCreateDictionaryObject();
 }
 //---------------------------------------------------------------------------
 tjs_error TJS_INTF_METHOD
@@ -422,6 +424,7 @@ void TJS_INTF_METHOD tTJSNI_KAGParser::Invalidate()
 
 	// release objects
 	if(Macros) Macros->Release();
+	if(ParamMacros) ParamMacros->Release();
 
 	ClearMacroArgs();
 	ClearBuffer();
@@ -438,6 +441,13 @@ void tTJSNI_KAGParser::operator = (const tTJSNI_KAGParser & ref)
 		tTJSVariant src(ref.Macros, ref.Macros);
 		tTJSVariant *psrc = &src;
 		DicAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, Macros);
+	}
+
+	// copy ParamMacros
+	{
+		tTJSVariant src(ref.ParamMacros, ref.ParamMacros);
+		tTJSVariant *psrc = &src;
+		DicAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, ParamMacros);
 	}
 
 	// copy MacroArgs
@@ -513,6 +523,21 @@ iTJSDispatch2 *tTJSNI_KAGParser::Store()
 				&tmp, dic);
 
 			tTJSVariant src(Macros, Macros);
+			tTJSVariant *psrc = &src;
+			DicAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, dsp);
+		}
+		
+		// create and assign param macro dictionary
+		{
+			iTJSDispatch2 * dsp;
+
+			dsp = TJSCreateDictionaryObject();
+			tTJSVariant tmp(dsp, dsp);
+			dsp->Release();
+			dic->PropSet(TJS_MEMBERENSURE, TJS_W("paramMacros"), NULL,
+				&tmp, dic);
+
+			tTJSVariant src(ParamMacros, ParamMacros);
 			tTJSVariant *psrc = &src;
 			DicAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, dsp);
 		}
@@ -742,6 +767,17 @@ void tTJSNI_KAGParser::Restore(iTJSDispatch2 *dic)
 		{
 			tTJSVariant *psrc = &val;
 			DicAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, Macros);
+		}
+	}
+	
+	// restore paramMacros
+	{
+		val.Clear();
+		dic->PropGet(0, TJS_W("paramMacros"), NULL, &val, dic);
+		if(val.Type() != tvtVoid)
+		{
+			tTJSVariant *psrc = &val;
+			DicAssign->FuncCall(0, NULL, NULL, NULL, 1, &psrc, ParamMacros);
 		}
 	}
 
@@ -1510,6 +1546,92 @@ void tTJSNI_KAGParser::operator()(tTJSVariant &name, tTJSVariant &value)
 }
 
 //---------------------------------------------------------------------------
+
+bool
+tTJSNI_KAGParser::EntryParam(bool &condition, tTJSVariant &ValueVariant, const ttstr &attribname, const ttstr &value, bool entity=false, bool macroarg=false)
+{
+	// extract parameter macro
+	tTJSVariant paramMacroValue;
+	if (TJS_SUCCEEDED(ParamMacros->PropGet(0, attribname.c_str(), NULL, &paramMacroValue, ParamMacros)) && paramMacroValue.Type() == tvtObject) {
+		tTJSVariantClosure clo = paramMacroValue.AsObjectClosureNoAddRef();
+		tjs_int count = 0;
+		tTJSVariant v;
+		clo.PropGet(0, TJS_W("count"), NULL, &v, NULL);
+		count = v;
+		for(tjs_int i = 0; i<count; i+=2)
+		{
+			bool e = false;
+			bool m = false;
+			tTJSVariant nVar;
+			tTJSVariant pVar;
+			clo.PropGetByNum(0, i,   &nVar, NULL);
+			clo.PropGetByNum(0, i+1, &pVar, NULL);
+			ttstr name  = nVar;
+			ttstr param = pVar;
+			const tjs_char *p = param.c_str();
+			if (*p == TJS_W('&')) {
+				e = true;
+				param = p+1;
+			} else if (*p == TJS_W('%')) {
+				m = true;
+				param = p+1;
+			}
+			if (EntryParam(condition, v, name, param, e, m)) {
+				args.add(name, v);
+			}
+		}
+		return false;
+	}
+
+	// process expression entity or macro argument
+	if(entity)
+	{
+		TVPExecuteExpression(value, Owner, &ValueVariant);
+		if(ValueVariant.Type() != tvtVoid) ValueVariant.ToString();
+	}
+	else if(macroarg)
+	{
+		iTJSDispatch2 *args = GetMacroTopNoAddRef();
+		if(args)
+		{
+			tjs_char *vp = (tjs_char*)TJS_strchr(value.c_str(), TJS_W('|'));
+			
+			if(vp)
+			{
+				ttstr name(value.c_str(), vp - value.c_str());
+				args->PropGet(0, name.c_str(), NULL, &ValueVariant, args);
+				if(ValueVariant.Type() == tvtVoid)
+					ValueVariant = ttstr(vp + 1);
+			}
+			else
+			{
+				args->PropGet(0, value.c_str(), NULL, &ValueVariant, args);
+			}
+			
+		}
+		else
+		{
+			ValueVariant = value;
+		}
+	}
+	else
+	{
+		ValueVariant = value;
+	}
+	
+	if(attribname == TJS_W("cond"))
+	{
+		// condition
+		
+		tTJSVariant val;
+		TVPExecuteExpression(ttstr(ValueVariant), Owner, &val);
+		condition = val.operator bool();
+		return false;
+	}
+	
+	return true;
+}
+
 iTJSDispatch2 * tTJSNI_KAGParser::GetNextTag()
 {
 	// get next tag and return information dictionary object.
@@ -1533,6 +1655,7 @@ parse_start:
 	static ttstr __storage_name(TJSMapGlobalStringMap(TJS_W("storage")));
 	static ttstr __target_name(TJSMapGlobalStringMap(TJS_W("target")));
 	static ttstr __exp_name(TJSMapGlobalStringMap(TJS_W("exp")));
+	static ttstr __name_name(TJSMapGlobalStringMap(TJS_W("name")));
 
 	while(true)
 	{
@@ -1687,7 +1810,7 @@ parse_start:
 		enum tSpecialTags
 		{ tag_other, tag_if, tag_else, tag_elsif, tag_ignore, tag_endif, tag_endignore,
 			tag_emb, tag_macro, tag_endmacro, tag_macropop, tag_erasemacro,
-			tag_jump, tag_call, tag_return} tagkind;
+			tag_jump, tag_call, tag_return, tag_pmacro, tag_erasepmacro } tagkind;
 		static bool tag_checker_init = false;
 		static tTJSHashTable<ttstr, tjs_int> special_tags_hash;
 		if(!tag_checker_init)
@@ -1721,6 +1844,10 @@ parse_start:
 				ttstr(TJS_W("call")), (tjs_int)tag_call);
 			special_tags_hash.Add(
 				ttstr(TJS_W("return")), (tjs_int)tag_return);
+			special_tags_hash.Add(
+				ttstr(TJS_W("pmacro")), (tjs_int)tag_pmacro);
+			special_tags_hash.Add(
+				ttstr(TJS_W("erasepmacro")), (tjs_int)tag_erasepmacro);
 		}
 
 
@@ -2150,7 +2277,7 @@ parse_start:
 						if(tagkind == tag_macro)
 						{
 							tTJSVariant val;
-							args.getProp(ttstr(TJS_W("name")), val);
+							args.getProp(__name_name, val);
 							RecordingMacroName = val;
 							RecordingMacroName.ToLowerCase();
 							if(RecordingMacroName == TJS_W(""))
@@ -2167,10 +2294,44 @@ parse_start:
 						else if(tagkind == tag_erasemacro)
 						{
 							tTJSVariant val;
-							args.getProp(ttstr(TJS_W("name")), val);
+							args.getProp(__name_name, val);
 							ttstr macroname = val;
 							if(TJS_FAILED(
 								Macros->DeleteMember(0, macroname.c_str(), 0, Macros)))
+								TVPThrowExceptionMessage(TVP_KAGPARSER_MESSAGEMAP(TVPUnknownMacroName), macroname);
+						}
+						else if(tagkind == tag_pmacro)
+						{
+							tTJSVariant val;
+							args.getProp(__name_name, val);
+							ttstr macroname = val;
+							struct ExtractParamMacro {
+								ExtractParamMacro() {
+									array = TJSCreateArrayObject();
+								}
+								~ExtractParamMacro() {
+									array->Release();
+								}
+								void operator()(tTJSVariant &name, tTJSVariant &value) {
+									ttstr n = name;
+									if (n != __name_name && n != __tag_name) {
+										tTJSVariant *args[] = {&name, &value};
+										ArrayPush->FuncCall(0, NULL, NULL, NULL, 2, args, array);
+									}
+								}
+								iTJSDispatch2 *array;
+							} pmacro;
+							args.extract(pmacro);
+							tTJSVariant store(pmacro.array, pmacro.array);
+							ParamMacros->PropSet(TJS_MEMBERENSURE, macroname.c_str(), NULL, &store, ParamMacros);
+						}
+						else if(tagkind == tag_erasepmacro)
+						{
+							tTJSVariant val;
+							args.getProp(__name_name, val);
+							ttstr macroname = val;
+							if(TJS_FAILED(
+								ParamMacros->DeleteMember(0, macroname.c_str(), 0, ParamMacros)))
 								TVPThrowExceptionMessage(TVP_KAGPARSER_MESSAGEMAP(TVPUnknownMacroName), macroname);
 						}
 					}
@@ -2332,51 +2493,7 @@ parse_start:
 			bool store = true;
 			if((!RecordingMacro && ExcludeLevel == -1) || tagkind == tag_elsif)
 			{
-				// process expression entity or macro argument
-				if(entity)
-				{
-					TVPExecuteExpression(value, Owner, &ValueVariant);
-					if(ValueVariant.Type() != tvtVoid) ValueVariant.ToString();
-				}
-				else if(macroarg)
-				{
-					iTJSDispatch2 *args = GetMacroTopNoAddRef();
-					if(args)
-					{
-						tjs_char *vp = (tjs_char*)TJS_strchr(value.c_str(), TJS_W('|'));
-
-						if(vp)
-						{
-							ttstr name(value.c_str(), vp - value.c_str());
-							args->PropGet(0, name.c_str(), NULL, &ValueVariant, args);
-							if(ValueVariant.Type() == tvtVoid)
-									ValueVariant = ttstr(vp + 1);
-						}
-						else
-						{
-							args->PropGet(0, value.c_str(), NULL, &ValueVariant, args);
-						}
-
-					}
-					else
-					{
-						ValueVariant = value;
-					}
-				}
-				else
-				{
-					ValueVariant = value;
-				}
-
-				if(attribname == TJS_W("cond"))
-				{
-					// condition
-
-					tTJSVariant val;
-					TVPExecuteExpression(ttstr(ValueVariant), Owner, &val);
-					condition = val.operator bool();
-					store = false;
-				}
+				store = EntryParam(condition, ValueVariant, attribname, value, entity, macroarg);
 			}
 
 			// store value into the dictionary object
@@ -2699,6 +2816,21 @@ TJS_BEGIN_NATIVE_PROP_DECL(macros)
 	TJS_DENY_NATIVE_PROP_SETTER
 }
 TJS_END_NATIVE_PROP_DECL(macros)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_PROP_DECL(paramMacros)
+{
+	TJS_BEGIN_NATIVE_PROP_GETTER
+	{
+		TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/tTJSNI_KAGParser);
+		iTJSDispatch2 *paramMacros = _this->GetParamMacrosNoAddRef();
+		*result = tTJSVariant(paramMacros, paramMacros);
+		return TJS_S_OK;
+	}
+	TJS_END_NATIVE_PROP_GETTER
+
+	TJS_DENY_NATIVE_PROP_SETTER
+}
+TJS_END_NATIVE_PROP_DECL(paramMacros)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_PROP_DECL(macroParams)
 {
