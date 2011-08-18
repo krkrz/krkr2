@@ -138,6 +138,32 @@ class MyDialog extends WIN32DialogEX {
 		return super.onHScroll(...);
 	}
 }
+class        TabTestDialog extends MyDialog {
+	function TabTestDialog {
+		with (template.items) {
+			.clear();
+			.add(Control("Hoge", ID_TABS, TABCONTROL, TCS_TABS, 0, 0, 100, 100, 0));
+			//.add(PushButton("ƒ{ƒ^ƒ“‚P", ID_BTN, 10, 20, 80, 10));
+		}
+		super.MyDialog(...);
+	}
+	var ID_TABS = 1100;
+	function onInit() {
+		global.WIN32DialogEX.onInit(...);
+		addTab(ID_TABS, 0, "Hoge");
+		addTab(ID_TABS, 1, "Fuga");
+	}
+	function addTab(id, idx, text) {
+		var blob = new global.WIN32Dialog.Blob(SIZEOF_TC_ITEM);
+		var ptr;
+		with (blob) {
+			.setDWord(0, TCIF_TEXT);
+			.setText(12, text);
+			ptr = .pointer;
+		}
+		sendItemMessage(id, TCM_INSERTITEM, idx, ptr);
+	}
+}
 
 function createMenuItem(win, caption, onclick) {
 	var menuItem = new MenuItem(win, caption);
@@ -213,6 +239,11 @@ with (win) {
 		for (var i = 0; i < sheets.count; i++) {
 			invalidate sheets[i];
 		}
+	}));
+	add(createMenuItem(win, "TabSheetTest",      function{
+		var dlg = new TabTestDialog(0);
+		dlg.open(win);
+		invalidate dlg;
 	}));
 	add(createMenuItem(win, "ProgressTest",      function{
 		var test = new MyDialog(0);

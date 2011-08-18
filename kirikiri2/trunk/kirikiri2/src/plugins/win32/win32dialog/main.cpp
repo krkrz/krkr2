@@ -147,6 +147,26 @@ private:
 	NMHDR const* ref;
 };
 
+// 汎用バイナリオ操作ブジェクト
+struct Blob {
+	Blob(DWORD size) : ptr(0), size(size) { if (size) { ptr = new BYTE[size]; ZeroMemory(ptr, size); } }
+	Blob(BYTE  *ptr) : ptr(ptr), size(0) {}
+	~Blob() { if (size) delete ptr; size = 0; ptr = 0; }
+	tjs_int64 GetPointer() const { return (tjs_int64)(ptr); }
+	inline BYTE  GetByte( int ofs) const { return ptr[ofs]; }
+	inline WORD  GetWord( int ofs) const { return ( WORD)GetByte(ofs) | ((( WORD)GetByte(ofs+1))<<8);  }
+	inline DWORD GetDWord(int ofs) const { return (DWORD)GetWord(ofs) | (((DWORD)GetWord(ofs+2))<<16); }
+	inline void  SetByte( int ofs, BYTE  v) { ptr[ofs] = v; }
+	inline void  SetWord( int ofs, WORD  v) { SetByte(ofs, (BYTE)v); SetByte(ofs+1, (BYTE)(v>>8));  }
+	inline void  SetDWord(int ofs, DWORD v) { SetWord(ofs, (WORD)v); SetWord(ofs+2, (WORD)(v>>16)); }
+	ttstr GetText(int ofs) const { return (tjs_char*)GetDWord(ofs); }
+	void  SetText(int ofs, tjs_char const *text) { SetDWord(ofs, (DWORD)text); }
+	static Blob* ReferPointer(DWORD ptr) { return new Blob((BYTE*)ptr); }
+private:
+	BYTE *ptr;
+	DWORD size;
+};
+
 class WIN32Dialog {
 public:
 	// 型のalias
@@ -1288,12 +1308,28 @@ NCB_REGISTER_SUBCLASS(NotifyAccessor) {
 	Method(TJS_W("getDWord"), &Class::GetDWord);
 }
 
+NCB_REGISTER_SUBCLASS(Blob) {
+	Constructor<DWORD>(0);
+	Property(TJS_W("pointer"), &Class::GetPointer, (int)0);
+	Method(TJS_W("getByte"),   &Class::GetByte);
+	Method(TJS_W("getWord"),   &Class::GetWord);
+	Method(TJS_W("getDWord"),  &Class::GetDWord);
+	Method(TJS_W("getText"),   &Class::GetText);
+	Method(TJS_W("setByte"),   &Class::SetByte);
+	Method(TJS_W("setWord"),   &Class::SetWord);
+	Method(TJS_W("setDWord"),  &Class::SetDWord);
+	Method(TJS_W("setText"),   &Class::SetText);
+
+	Method(TJS_W("ReferPointer"), &Class::ReferPointer);
+}
+
 NCB_REGISTER_CLASS(WIN32Dialog) {
 	NCB_SUBCLASS(Header, Header);
 	NCB_SUBCLASS(Items,  Items);
 	NCB_SUBCLASS(Bitmap, Bitmap);
 	NCB_SUBCLASS(DrawItem, DrawItem);
 	NCB_SUBCLASS(Notify, NotifyAccessor);
+	NCB_SUBCLASS(Blob, Blob);
 
 	Constructor<iTJSDispatch2*>(0);
 
@@ -2003,7 +2039,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Variant(TJS_W("HOTKEY"),         HOTKEY_CLASSW, 0);			// "msctls_hotkey32"
 
 	// [XXX] コモンコントロールのメッセージ用ENUMが必要
-	// 取り急ぎトラックバー・プログレス・リストビュー・のみ
+	// 取り急ぎトラックバー・プログレス・リストビュー・タブコントロールのみ
 
 	// Trackbar Styles
 	ENUM(TBS_AUTOTICKS);
@@ -2397,6 +2433,87 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	//ENUM(LVN_SETDISPINFO);
 	//ENUM(LVN_GETINFOTIP);
 	//ENUM(LVN_INCREMENTALSEARCH);
+
+	// TabControl Styles
+	ENUM(TCS_SCROLLOPPOSITE);
+	ENUM(TCS_BOTTOM);
+	ENUM(TCS_RIGHT);
+	ENUM(TCS_MULTISELECT);
+	ENUM(TCS_FLATBUTTONS);
+	ENUM(TCS_FORCEICONLEFT);
+	ENUM(TCS_FORCELABELLEFT);
+	ENUM(TCS_HOTTRACK);
+	ENUM(TCS_VERTICAL);
+	ENUM(TCS_TABS);
+	ENUM(TCS_BUTTONS);
+	ENUM(TCS_SINGLELINE);
+	ENUM(TCS_MULTILINE);
+	ENUM(TCS_RIGHTJUSTIFY);
+	ENUM(TCS_FIXEDWIDTH);
+	ENUM(TCS_RAGGEDRIGHT);
+	ENUM(TCS_FOCUSONBUTTONDOWN);
+	ENUM(TCS_OWNERDRAWFIXED);
+	ENUM(TCS_TOOLTIPS);
+	ENUM(TCS_FOCUSNEVER);
+	ENUM(TCS_EX_FLATSEPARATORS);
+	ENUM(TCS_EX_REGISTERDROP);
+
+	// TabControl Messages
+	ENUM(TCM_GETIMAGELIST);
+	ENUM(TCM_SETIMAGELIST);
+	ENUM(TCM_GETITEMCOUNT);
+	ENUM(TCIF_TEXT);
+	ENUM(TCIF_IMAGE);
+	ENUM(TCIF_RTLREADING);
+	ENUM(TCIF_PARAM);
+	ENUM(TCIF_STATE);
+	ENUM(TCIS_BUTTONPRESSED);
+	ENUM(TCIS_HIGHLIGHTED);
+
+	// use WideCharVersion Macro
+	Variant(TJS_W("TCM_GETITEM"),    TCM_GETITEMW, 0);
+	Variant(TJS_W("TCM_SETITEM"),    TCM_SETITEMW, 0);
+	Variant(TJS_W("TCM_INSERTITEM"), TCM_INSERTITEMW, 0);
+
+	ENUM(TCM_DELETEITEM);
+	ENUM(TCM_DELETEALLITEMS);
+	ENUM(TCM_GETITEMRECT);
+	ENUM(TCM_GETCURSEL);
+	ENUM(TCM_SETCURSEL);
+	ENUM(TCHT_NOWHERE);
+	ENUM(TCHT_ONITEMICON);
+	ENUM(TCHT_ONITEMLABEL);
+	ENUM(TCHT_ONITEM);
+
+	ENUM(TCM_HITTEST);
+	ENUM(TCM_SETITEMEXTRA);
+	ENUM(TCM_ADJUSTRECT);
+	ENUM(TCM_SETITEMSIZE);
+	ENUM(TCM_REMOVEIMAGE);
+	ENUM(TCM_SETPADDING);
+	ENUM(TCM_GETROWCOUNT);
+	ENUM(TCM_GETTOOLTIPS);
+	ENUM(TCM_SETTOOLTIPS);
+	ENUM(TCM_GETCURFOCUS);
+	ENUM(TCM_SETCURFOCUS);
+	ENUM(TCM_SETMINTABWIDTH);
+	ENUM(TCM_DESELECTALL);
+	ENUM(TCM_HIGHLIGHTITEM);
+	ENUM(TCM_SETEXTENDEDSTYLE);
+	ENUM(TCM_GETEXTENDEDSTYLE);
+	ENUM(TCM_SETUNICODEFORMAT);
+	ENUM(TCM_GETUNICODEFORMAT);
+
+	// TabControl Notification
+	ENUM(TCN_KEYDOWN);
+	ENUM(TCN_SELCHANGE);
+	ENUM(TCN_SELCHANGING);
+	ENUM(TCN_GETOBJECT);
+	ENUM(TCN_FOCUSCHANGE);
+
+	// sizeof item structs
+	Variant(TJS_W("SIZEOF_TC_ITEMHEADER"), sizeof(TC_ITEMHEADERW), 0);
+	Variant(TJS_W("SIZEOF_TC_ITEM"),       sizeof(TC_ITEMW), 0);
 
 
 	////////////////
