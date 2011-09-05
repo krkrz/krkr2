@@ -351,9 +351,9 @@ public:
 	virtual void TJS_INTF_METHOD GetListAt(const ttstr &name, iTVPStorageLister * lister) {
 		tTJSVariant base = getFile(name);
 		if (isDirectory(base)) {
-			GetLister *r = new GetLister(lister);
-			tTJSVariantClosure closure(r);
+			tTJSVariantClosure closure(new GetLister(lister));
 			base.AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
+			closure.Release();
 		}
 	}
 
