@@ -608,13 +608,13 @@ IDispatchWrapper::GetNextDispID(
 	if (id == DISPID_STARTENUM) {
 		methodEnums.clear();
 		methodEnumsCount = 0;
-		GetEnumCaller caller(&methodEnums);
-		tTJSVariantClosure closure(&caller);
+		tTJSVariantClosure closure(new GetEnumCaller(&methodEnums));
 		try {
 			Try_iTJSDispatch2_EnumMembers(obj, TJS_ENUM_NO_VALUE, &closure, obj);
 		} catch (...) {
 			log(L"EnumMembers ‚Å—áŠO");
 		}
+		closure.Release();
 	}
 	if (methodEnums.size() > methodEnumsCount) {
 		*pid = methodEnums[methodEnumsCount++];

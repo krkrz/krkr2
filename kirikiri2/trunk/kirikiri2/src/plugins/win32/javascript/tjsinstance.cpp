@@ -159,10 +159,10 @@ TJSInstance::createTJSClass(const Arguments& args)
 		TVPExecuteExpression(*className, &classObj);
 		if (classObj.Type() == tvtObject &&
 			TJS_SUCCEEDED(classObj.AsObjectClosureNoAddRef().IsInstanceOf(0,NULL,NULL,L"Class",NULL))) {
-			MemberRegister *r = new MemberRegister(classTemplate);
-			tTJSVariantClosure closure(r);
+			MemberRegister *caller = new MemberRegister(classTemplate);
+			tTJSVariantClosure closure(caller);
 			classObj.AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
-			r->Release();
+			caller->Release();
 		}
 	}
 
