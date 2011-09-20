@@ -105,8 +105,10 @@ class Layer {
 	/**
 	 * レイヤの淵の色を透明部分まで引き伸ばします（縮小時に偽色が出るのを防ぐ）
 	 * @param level 処理を行う回数。大きいほど引き伸ばし領域が増える
+	 * @param threshold アルファの閾値(1～255)これより低いピクセルへ引き伸ばす
+	 * @param fillColor 処理領域以外の塗りつぶし色(0xRRGGBB)
 	 */
-	function oozeColor(level);
+	function oozeColor(level, threshold=1, fillColor=0);
 
 	/**
 	 * レイヤの Blue CHANNEL を Alpha 領域に複製する
@@ -121,8 +123,9 @@ class Layer {
 	function isBlank(x, y, w, h);
 
 	/**
-	 * αが指定以下の部分を完全透明化(0x00000000)する
+	 * αが指定以下の部分を指定色で塗りつぶすする
 	 * @param threthold αの下限
+	 * @param fillColor 塗りつぶし色(0x00RRGGBB)
 	 */
-	function clearAlpha(threthold=0);
+	function clearAlpha(threthold=0, fillColor=0);
 };

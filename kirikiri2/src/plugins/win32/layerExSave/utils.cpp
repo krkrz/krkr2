@@ -297,6 +297,7 @@ static inline void AddColor(DWORD &r, DWORD &g, DWORD &b, BufRefT p) {
  * Layer.oozeColor = function(level, threshold=1);
  * @param level 処理を行う回数。大きいほど引き伸ばし領域が増える
  * @param threshold アルファの閾値(1～255)これより低いピクセルへ引き伸ばす
+ * @param fillColor 処理領域以外の塗りつぶし色
  */
 static tjs_error TJS_INTF_METHOD
 OozeColor(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
@@ -307,6 +308,10 @@ OozeColor(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispa
 	if (level <= 0) 
 		TVPThrowExceptionMessage(TJS_W("Invalid level count."));
 	unsigned char threshold = (unsigned char)(numparams > 1 ? param[1]->AsInteger() : 1);
+	unsigned long fillColor = (unsigned long)(numparams > 2 ? param[2]->AsInteger() : 0);
+	unsigned char fillR = (unsigned char)((fillColor >> 16) & 0xff);
+	unsigned char fillG = (unsigned char)((fillColor >> 8) & 0xff);
+	unsigned char fillB = (unsigned char)((fillColor) & 0xff);
 	if (threshold < 1)
 		threshold = 1;
 	else if (threshold > 255)
@@ -329,7 +334,11 @@ OozeColor(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispa
 			p = r    + y*nl;
 			for (x = 0; x < w; x++, o++, p+=nc) {
 				if (p[3] >= threshold) *o = -1;
-				else p[2] = p[1] = p[0] = 0; // 閾値以下の不透明部分の色は消す
+				else {
+					p[2] = fillR;
+					p[1] = fillG;
+					p[0] = fillB; // 閾値以下の不透明部分の色を指定色でクリア
+				}
 			}
 		}
 
@@ -470,14 +479,15 @@ isBlank(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatc
 NCB_ATTACH_FUNCTION(isBlank, Layer, isBlank);
 
 /**
- * Layer.clearAlpha = function (threthold)
+ * Layer.clearAlpha = function (threthold, fillColor=0)
  * αが指定より小さい部分を完全透明化する
  */
 static tjs_error TJS_INTF_METHOD
 clearAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *lay)
 {
 	int threthold = numparams <= 0 ? 0 : *param[0];
-
+	unsigned long fillColor = (unsigned long) ((numparams > 1 ? param[1]->AsInteger() : 0) & 0xffffff);
+	
 	// 書き込み先
 	WrtRefT dbuf = 0;
 	long w, h, pitch;
@@ -490,7 +500,7 @@ clearAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDisp
 		WrtRefT q = dbuf;   // A領域
 		for (int j=0;j<w;j++) {
 			if (q[3] <= threthold) {
-				q[0] = q[1] = q[2] = q[3] = 0;
+				*((unsigned long*)q) = fillColor;
 			}
 			q += 4;
 		}
