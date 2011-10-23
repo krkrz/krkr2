@@ -55,13 +55,23 @@ SQRESULT sq_stackinfos(HSQUIRRELVM v, SQInteger level, SQStackInfos *si)
 	return SQ_ERROR;
 }
 
-void SQVM::Raise_Error(const SQChar *s, ...)
+void SQVM::Raise_Error(const SQChar *s)
+{
+	_lasterror = SQString::Create(_ss(this),s);
+}
+
+void SQVM::Raise_ErrorV(const SQChar *s, va_list &vl)
+{
+	scvsprintf(_sp(rsl((SQInteger)scstrlen(s)+(NUMBER_MAX_CHAR*2))), s, vl);
+	Raise_Error(_spval);
+}
+
+void SQVM::Raise_ErrorF(const SQChar *s, ...)
 {
 	va_list vl;
 	va_start(vl, s);
-	scvsprintf(_sp(rsl((SQInteger)scstrlen(s)+(NUMBER_MAX_CHAR*2))), s, vl);
+	Raise_ErrorV(s, vl);
 	va_end(vl);
-	_lasterror = SQString::Create(_ss(this),_spval,-1);
 }
 
 void SQVM::Raise_Error(SQObjectPtr &desc)
@@ -89,13 +99,13 @@ SQString *SQVM::PrintObjVal(const SQObject &o)
 void SQVM::Raise_IdxError(SQObject &o)
 {
 	SQObjectPtr oval = PrintObjVal(o);
-	Raise_Error(_SC("the index '%.50s' does not exist"), _stringval(oval));
+	Raise_ErrorF(_SC("the index '%.50s' does not exist"), _stringval(oval));
 }
 
 void SQVM::Raise_CompareError(const SQObject &o1, const SQObject &o2)
 {
 	SQObjectPtr oval1 = PrintObjVal(o1), oval2 = PrintObjVal(o2);
-	Raise_Error(_SC("comparsion between '%.50s' and '%.50s'"), _stringval(oval1), _stringval(oval2));
+	Raise_ErrorF(_SC("comparsion between '%.50s' and '%.50s'"), _stringval(oval1), _stringval(oval2));
 }
 
 
@@ -112,5 +122,5 @@ void SQVM::Raise_ParamTypeError(SQInteger nparam,SQInteger typemask,SQInteger ty
 			StringCat(exptypes,SQString::Create(_ss(this), IdType2Name((SQObjectType)mask), -1), exptypes);
 		}
 	}
-	Raise_Error(_SC("parameter %d has an invalid type '%s' ; expected: '%s'"), nparam, IdType2Name((SQObjectType)type), _stringval(exptypes));
+	Raise_ErrorF(_SC("parameter %d has an invalid type '%s' ; expected: '%s'"), nparam, IdType2Name((SQObjectType)type), _stringval(exptypes));
 }

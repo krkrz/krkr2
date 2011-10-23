@@ -11,7 +11,7 @@
 #endif
 
 #include <stdio.h>
-#include "sqobject.h"
+#include "sqobjectclass.h"
 
 /**
  * ファイルを非同期に開く
@@ -322,8 +322,8 @@ public:
 	static long diffTick;     ///< 差分呼び出し時間
 	
 protected:
-	static ObjectInfo threadList; ///< スレッド一覧
-	static ObjectInfo newThreadList; ///< スレッド一覧
+	static ObjectInfo *threadList; ///< スレッド一覧
+	static ObjectInfo *newThreadList; ///< スレッド一覧
 
 	// -------------------------------------------------------------
 	// グローバルメソッド用

@@ -6,13 +6,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#ifdef USESQPLUS
-using namespace SqPlus;
-using namespace sqobject;
-DECLARE_INSTANCE_TYPE_NAME_RELEASE(Object, SQOBJECT);
-DECLARE_INSTANCE_TYPE_NAME_RELEASE(Thread, SQTHREAD);
-#endif
-
 namespace sqobject {
 
 /**
@@ -36,10 +29,6 @@ const SQChar *getString(HSQUIRRELVM v, SQInteger idx) {
 	sq_getstring(v, idx, &x);
 	return x;
 };
-
-static SQRESULT ERROR_NOMEMBER(HSQUIRRELVM v) {
-	return sq_throwerror(v, _SC("no such member"));
-}
 
 // setter名前決定
 static void pushSetterName(HSQUIRRELVM v, const SQChar *name)
@@ -113,7 +102,7 @@ Object::Object(HSQUIRRELVM v, int delegateIdx)
 	self.getStackWeak(v,1);
 	_waitThreadList.initArray();
 	if (sq_gettop(v) >= delegateIdx) {
-		delegate.getStack(v, delegateIdx);
+		delegate.getStackWeak(v, delegateIdx);
 	}
 }
 
@@ -228,7 +217,7 @@ Object::_get(HSQUIRRELVM v)
 			}
 		} else {
 			sq_pop(v, 1); // self
-#if 1
+#if 0
 			// グローバル変数を参照
 			sq_pushroottable(v);
 			sq_pushstring(v, name, -1);
@@ -241,7 +230,7 @@ Object::_get(HSQUIRRELVM v)
 #endif
 		}
 	}
-	return ERROR_NOMEMBER(v);
+	return SQ_ERROR;
 }
 
 /**
@@ -285,7 +274,7 @@ Object::_set(HSQUIRRELVM v)
 		
 	}
 	//return result;
-	return ERROR_NOMEMBER(v);
+	return SQ_ERROR;
 }
 
 /**
@@ -331,7 +320,7 @@ SQRESULT
 Object::setDelegate(HSQUIRRELVM v)
 {
 	if (sq_gettop(v) > 1) {
-		delegate.getStack(v,2);
+		delegate.getStackWeak(v,2);
 	} else {
 		delegate.clear();
 	}
@@ -347,6 +336,18 @@ Object::getDelegate(HSQUIRRELVM v)
 	delegate.push(v);
 	return 1;
 }
+
+bool
+pushObject(HSQUIRRELVM v, Object *obj)
+{
+	if (obj->isInit()) {
+		obj->push(v);
+		return true;
+	}
+	return false;
+}
+
+void pushValue(HSQUIRRELVM v, const StackValue &value) { value.push(v); }
 
 };
 

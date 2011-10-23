@@ -308,7 +308,7 @@ bool WriteObject(HSQUIRRELVM v,SQUserPointer up,SQWRITEFUNC write,SQObjectPtr &o
 	case OT_NULL:
 		break;
 	default:
-		v->Raise_Error(_SC("cannot serialize a %s"),GetTypeName(o));
+		v->Raise_ErrorF(_SC("cannot serialize a %s"),GetTypeName(o));
 		return false;
 	}
 	return true;
@@ -338,7 +338,7 @@ bool ReadObject(HSQUIRRELVM v,SQUserPointer up,SQREADFUNC read,SQObjectPtr &o)
 		o=_null_;
 		break;
 	default:
-		v->Raise_Error(_SC("cannot serialize a %s"),IdType2Name(t));
+		v->Raise_ErrorF(_SC("cannot serialize a %s"),IdType2Name(t));
 		return false;
 	}
 	return true;
@@ -606,6 +606,7 @@ void SQVM::Mark(SQCollectable **chain)
 		SQSharedState::MarkObject(_errorhandler,chain);
 		SQSharedState::MarkObject(_debughook,chain);
 		SQSharedState::MarkObject(_roottable, chain);
+		SQSharedState::MarkObject(_exceptionclass, chain);
 		SQSharedState::MarkObject(temp_reg, chain);
 		for(SQUnsignedInteger i = 0; i < _stack.size(); i++) SQSharedState::MarkObject(_stack[i], chain);
 		for(SQUnsignedInteger j = 0; j < _vargsstack.size(); j++) SQSharedState::MarkObject(_vargsstack[j], chain);

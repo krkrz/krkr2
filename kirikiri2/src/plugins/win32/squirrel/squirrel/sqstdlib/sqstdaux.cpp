@@ -106,7 +106,13 @@ static SQInteger _sqstd_aux_printerror(HSQUIRRELVM v)
 				pf(v,_SC("\nAN ERROR HAS OCCURED [%s]\n"),sErr);
 			}
 			else{
-				pf(v,_SC("\nAN ERROR HAS OCCURED [unknown]\n"));
+				sq_tostring(v,2);
+				if(SQ_SUCCEEDED(sq_getstring(v,-1,&sErr)))	{
+					pf(v,_SC("\nAN ERROR HAS OCCURED [%s]\n"),sErr);
+				} else {
+					pf(v,_SC("\nAN ERROR HAS OCCURED [unknown]\n"));
+				}
+				sq_pop(v, 1);
 			}
 			sqstd_printcallstack(v);
 		}

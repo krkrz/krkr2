@@ -6,13 +6,6 @@
 #include <string.h>
 extern SQRESULT sqstd_loadmemory(HSQUIRRELVM v, const char *dataBuffer, int dataSize, const SQChar *filename, SQBool printerror);
 
-#ifdef USESQPLUS
-using namespace SqPlus;
-using namespace sqobject;
-DECLARE_INSTANCE_TYPE_NAME_RELEASE(Object, SQOBJECT);
-DECLARE_INSTANCE_TYPE_NAME_RELEASE(Thread, SQTHREAD);
-#endif
-
 namespace sqobject {
 
 // パラメータが不正
@@ -366,13 +359,13 @@ Thread::_entryThread(HSQUIRRELVM v)
 {
 	// スレッド情報として登録
 	ObjectInfo thinfo(v,1);
-	SQInteger max = threadList.len();
+	SQInteger max = threadList->len();
 	for (int i=0;i<max;i++) {
-		if (threadList.get(i) == thinfo) {
+		if (threadList->get(i) == thinfo) {
 			return;
 		}
 	}
-	newThreadList.append(thinfo);
+	newThreadList->append(thinfo);
 }
 
 
@@ -558,8 +551,10 @@ Thread::printError()
 void
 Thread::init()
 {
-	threadList.initArray();
-	newThreadList.initArray();
+	threadList = new ObjectInfo();
+	newThreadList = new ObjectInfo();
+	threadList->initArray();
+	newThreadList->initArray();
 }
 
 /*
@@ -585,18 +580,18 @@ Thread::update(long diff)
 int
 Thread::main(ThreadCallback *onThreadDone, void *userData)
 {
-	threadList.appendArray(newThreadList);
-	newThreadList.clearData();
+	threadList->appendArray(*newThreadList);
+	newThreadList->clearData();
 	SQInteger i=0;
-	SQInteger max = threadList.len();
+	SQInteger max = threadList->len();
 	while (i < max) {
-		ObjectInfo thObj = threadList.get(i);
+		ObjectInfo thObj = threadList->get(i);
 		Thread *th = thObj;
 		if (!th || th->_main(diffTick)) {
 			if (onThreadDone) {
 				onThreadDone(thObj, userData);
 			}
-			threadList.remove(i);
+			threadList->remove(i);
 			max--;
 		} else {
 			i++;
@@ -608,7 +603,7 @@ Thread::main(ThreadCallback *onThreadDone, void *userData)
 int
 Thread::getThreadCount()
 {
-	return (int)threadList.len() + (int)newThreadList.len();
+	return (int)threadList->len() + (int)newThreadList->len();
 }
 
 /**
@@ -650,9 +645,9 @@ Thread::fork(const SQChar *scriptName, int argc, const SQChar **argv)
 void
 Thread::trigger(const SQChar *name)
 {
-	SQInteger max = threadList.len();
+	SQInteger max = threadList->len();
 	for (SQInteger i=0;i<max;i++) {
-		Thread *th = threadList.get(i);
+		Thread *th = threadList->get(i);
 		if (th) {
 			th->notifyTrigger(name);
 		}
@@ -666,25 +661,27 @@ void
 Thread::done()
 {
 	// 全スレッドを強制中断
-	threadList.appendArray(newThreadList);
-	newThreadList.clearData();
-	SQInteger max = threadList.len();
+	threadList->appendArray(*newThreadList);
+	newThreadList->clearData();
+	SQInteger max = threadList->len();
 	for (SQInteger i=0;i<max;i++) {
-		Thread *th = threadList.get(i);
+		Thread *th = threadList->get(i);
 		if (th) { th->_exit();}
 	}
-	threadList.clearData();
+	threadList->clearData();
 	// リスト自体を破棄
-	threadList.clear();
-	newThreadList.clear();
+	threadList->clear();
+	newThreadList->clear();
+	delete threadList;
+	delete newThreadList;
 }
 
 // -------------------------------------------------------------
 // グローバルスレッド用
 // -------------------------------------------------------------
 
-ObjectInfo Thread::threadList; //< スレッド一覧
-ObjectInfo Thread::newThreadList; //< 新規スレッド一覧
+ObjectInfo *Thread::threadList; //< スレッド一覧
+ObjectInfo *Thread::newThreadList; //< 新規スレッド一覧
 long Thread::currentTick = 0;  //< 現在のシステムtick
 long Thread::diffTick = 0;  //< 今回の呼び出し差分
 
@@ -718,9 +715,9 @@ Thread::global_getDiffTick(HSQUIRRELVM v)
 SQRESULT
 Thread::global_getCurrentThread(HSQUIRRELVM v)
 {
-	SQInteger max = threadList.len();
+	SQInteger max = threadList->len();
 	for (SQInteger i=0;i<max;i++) {
-		Thread *th = threadList.get(i);
+		Thread *th = threadList->get(i);
 		if (th && th->isSameThread(v)) {
 			th->push(v);
 			return 1;
@@ -735,7 +732,7 @@ Thread::global_getCurrentThread(HSQUIRRELVM v)
 SQRESULT
 Thread::global_getThreadList(HSQUIRRELVM v)
 {
-	threadList.pushClone(v);
+	threadList->pushClone(v);
 	return 1;
 }
 
@@ -760,9 +757,9 @@ Thread::global_fork(HSQUIRRELVM v)
 Thread *
 Thread::getCurrentThread(HSQUIRRELVM v)
 {
-	SQInteger max = threadList.len();
+	SQInteger max = threadList->len();
 	for (SQInteger i=0;i<max;i++) {
-		Thread *th = threadList.get(i);
+		Thread *th = threadList->get(i);
 		if (th && th->isSameThread(v)) {
 			return th;
 		}

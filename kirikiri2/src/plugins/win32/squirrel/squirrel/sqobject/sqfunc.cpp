@@ -5,7 +5,7 @@
  * Œp³î•ñ‚Í’PƒƒŠƒXƒgŠÇ—‚µ‚Ä‚Ü‚·
  */
 #include "sqobjectinfo.h"
-#include "sqobject.h"
+#include "sqobjectclass.h"
 #include "sqthread.h"
 
 #include <string.h>

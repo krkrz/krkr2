@@ -1,5 +1,5 @@
-Author: 渡邊剛(go@denpa.org)
-Date: 2010/2/23
+Author: 渡邊剛(go@wamsoft.jp)
+Date: 2011/2/20
 
 ●解説
 
@@ -9,11 +9,9 @@ Date: 2010/2/23
 
 以下のコードも内包します
 
-sqplus C++用のsquirrelバインドツール
- http://wiki.squirrel-lang.org/default.aspx/SquirrelWiki/SqPlus.html
- 
-sqrat  C++用のsquirrelバインドツールその２
+sqrat  C++用のsquirrelバインドツール
  http://sourceforge.net/projects/scrat/
+ ※改造されています
 
 ●MANIFEST
 
@@ -21,24 +19,22 @@ include/	squirrelヘッダファイル
 squirrel/	squirrel本体ソース
 sqstdlib/	squirrel標準ライブラリソース
 sq/			sq コマンド
-sqplus/		sqplus 組み込みむけ改造版
 sqrat/		sqrat 機能追加版
 sqobject/	Object/Threadライブラリ
 sqengine/	squirrelゲームエンジン組み込みサンプル
 
 squirrel.sln	Visual Studio 用ソリューションファイル
-squirrel.vcproj	squirrelライブラリ本体部プロジェクトファイル
+※プロジェクトファイルはそれぞれのフォルダにあります
 
-仕様変更.txt	squirrelの仕様をいじったり追加した部分の解説
-機能追加.txt	squirrelのライブラリに足した機能の解説
+機能追加.txt	squirrelの仕様変更/追加機能の解説
 読んでね.txt	このファイル
 
 ●ライセンス
 
-squirrel/sqplus/sqrat 同様 に
+squirrel/sqrat 同様 に
 zlibライセンスに従って利用してください。
 
 /*
- * copyright (c)2010 Go Watanabe go@denpa.org
+ * copyright (c)2010 Go Watanabe go@wamsoft.jp
  * zlib license
  */

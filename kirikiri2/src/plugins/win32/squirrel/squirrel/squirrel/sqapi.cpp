@@ -1,6 +1,7 @@
 /*
 	see copyright notice in squirrel.h
 */
+#include <stdarg.h>
 #include "sqpcheader.h"
 #include "sqvm.h"
 #include "sqstring.h"
@@ -18,7 +19,7 @@ bool sq_aux_gettypedarg(HSQUIRRELVM v,SQInteger idx,SQObjectType type,SQObjectPt
 	*o = &stack_get(v,idx);
 	if(type(**o) != type){
 		SQObjectPtr oval = v->PrintObjVal(**o);
-		v->Raise_Error(_SC("wrong argument type, expected '%s' got '%.50s'"),IdType2Name(type),_stringval(oval));
+		v->Raise_ErrorF(_SC("wrong argument type, expected '%s' got '%.50s'"),IdType2Name(type),_stringval(oval));
 		return false;
 	}
 	return true;
@@ -33,7 +34,7 @@ bool sq_aux_gettypedarg(HSQUIRRELVM v,SQInteger idx,SQObjectType type,SQObjectPt
 
 SQInteger sq_aux_throwobject(HSQUIRRELVM v,SQObjectPtr &e)
 {
-	v->_lasterror = e;
+	v->Raise_Error(e);
 	return SQ_ERROR;
 }
 
@@ -497,6 +498,17 @@ SQRESULT sq_setconsttable(HSQUIRRELVM v)
 		return SQ_OK;
 	}
 	return sq_throwerror(v, _SC("ivalid type, expected table"));
+}
+
+SQRESULT sq_setexceptionclass(HSQUIRRELVM v)
+{
+	SQObject o = stack_get(v, -1);
+	if(sq_isclass(o)) {
+		v->_exceptionclass = o;
+		v->Pop();
+		return SQ_OK;
+	}
+	return sq_throwerror(v, _SC("ivalid type"));
 }
 
 void sq_setforeignptr(HSQUIRRELVM v,SQUserPointer p)
@@ -972,10 +984,13 @@ void sq_resetobject(HSQOBJECT *po)
 	po->_unVal.pUserPointer=NULL;po->_type=OT_NULL;
 }
 
-SQRESULT sq_throwerror(HSQUIRRELVM v,const SQChar *err)
+SQRESULT sq_throwerror(HSQUIRRELVM v,const SQChar *err, ...)
 {
-	v->_lasterror=SQString::Create(_ss(v),err);
-	return -1;
+	va_list vl;
+	va_start(vl, err);
+	v->Raise_ErrorV(err, vl);
+	va_end(vl);
+	return SQ_ERROR;
 }
 
 void sq_reseterror(HSQUIRRELVM v)
@@ -1000,7 +1015,7 @@ SQRESULT sq_resume(HSQUIRRELVM v,SQBool retval,SQBool raiseerror)
 	if(type(v->GetUp(-1))==OT_GENERATOR){
 		v->Push(_null_); //retval
 		if(!v->Execute(v->GetUp(-2),v->_top,0,v->_top,v->GetUp(-1),raiseerror,SQVM::ET_RESUME_GENERATOR))
-		{v->Raise_Error(v->_lasterror); return SQ_ERROR;}
+		{return SQ_ERROR;}
 		if(!retval)
 			v->Pop();
 		return SQ_OK;
@@ -1013,7 +1028,7 @@ SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror)
 	SQObjectPtr res;
 	if(v->Call(v->GetUp(-(params+1)),params,v->_top-params,res,raiseerror?true:false)){
 		if(!v->_suspended) {
-			v->Pop(params);//pop closure and args
+		v->Pop(params);//pop closure and args
 		}
 		if(retval){
 			v->Push(res); return SQ_OK;

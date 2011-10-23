@@ -49,7 +49,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../;squirrel/include;squirrel/sqobject;squirrel/sqstdlib"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SQUIRRELBASE_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SQUIRRELBASE_EXPORTS;NOUSESQRAT"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../;squirrel/include;squirrel/sqobject;squirrel/sqstdlib"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SQUIRRELBASE_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SQUIRRELBASE_EXPORTS;NOUSESQRAT"
 				RuntimeLibrary="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -271,10 +271,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
-			<File
-				RelativePath=".\sqobject.h"
-				>
-			</File>
 			<File
 				RelativePath=".\sqtjsobj.h"
 				>

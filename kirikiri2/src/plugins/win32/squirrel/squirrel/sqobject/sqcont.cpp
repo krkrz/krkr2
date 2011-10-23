@@ -3,8 +3,8 @@
 
 namespace sqobject {
 
-ObjectInfo beforeContinuousList;
-ObjectInfo afterContinuousList;
+ObjectInfo *beforeContinuousList;
+ObjectInfo *afterContinuousList;
 
 // リストに追加(既に登録されてる場合は無視)
 static void add(ObjectInfo &list, ObjectInfo &info)
@@ -42,9 +42,9 @@ static SQRESULT addContinuousHandler(HSQUIRRELVM v)
 		type=1;
 	}
 	if (type == 0) {
-		add(beforeContinuousList, info);
+		add(*beforeContinuousList, info);
 	} else if (type == 1) {
-		add(afterContinuousList, info);
+		add(*afterContinuousList, info);
 	}
 	return SQ_OK;
 }
@@ -60,17 +60,19 @@ static SQRESULT removeContinuousHandler(HSQUIRRELVM v)
 		type=1;
 	}
 	if (type == 0) {
-		beforeContinuousList.removeValue(info, true);
+		beforeContinuousList->removeValue(info, true);
 	} else if (type == 1) {
-		afterContinuousList.removeValue(info, true);
+		afterContinuousList->removeValue(info, true);
 	}
 	return SQ_OK;
 }
 
 static SQRESULT clearContinuousHandler(HSQUIRRELVM v)
 {
-	beforeContinuousList.clearData();
-	afterContinuousList.clearData();
+	beforeContinuousList->clearData();
+	afterContinuousList->clearData();
+	delete beforeContinuousList;
+	delete afterContinuousList;
 	return SQ_OK;
 }
 
@@ -91,29 +93,31 @@ void registerContinuous()
 	REGISTERMETHOD(clearContinuousHandler, 0, _SC(""));
 	sq_pop(v,1);
 
-	beforeContinuousList.initArray();
-	afterContinuousList.initArray();
+	beforeContinuousList = new ObjectInfo();
+	afterContinuousList  = new ObjectInfo();
+	beforeContinuousList->initArray();
+	afterContinuousList->initArray();
 }
 
 /// ハンドラ処理呼び出し。Thread::main の前で呼び出す
 void beforeContinuous()
 {
-	call(beforeContinuousList, Thread::currentTick, Thread::diffTick);
+	call(*beforeContinuousList, Thread::currentTick, Thread::diffTick);
 }
 
 /// ハンドラ処理呼び出し。Thread::main の後で呼び出す
 void afterContinuous()
 {
-	call(afterContinuousList, Thread::currentTick, Thread::diffTick);
+	call(*afterContinuousList, Thread::currentTick, Thread::diffTick);
 }
 
 /// 機能終了
 void doneContinuous()
 {
-	beforeContinuousList.clearData();
-	beforeContinuousList.clear();
-	afterContinuousList.clearData();
-	afterContinuousList.clear();
+	beforeContinuousList->clearData();
+	beforeContinuousList->clear();
+	afterContinuousList->clearData();
+	afterContinuousList->clear();
 }
 
 };
