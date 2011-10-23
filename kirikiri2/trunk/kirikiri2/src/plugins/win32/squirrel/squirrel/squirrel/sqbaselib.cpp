@@ -86,6 +86,14 @@ static SQInteger base_setconsttable(HSQUIRRELVM v)
 	return 1;
 }
 
+static SQInteger base_setexceptionclass(HSQUIRRELVM v)
+{
+	SQObjectPtr &o=stack_get(v,2);
+	if(SQ_FAILED(sq_setexceptionclass(v))) return SQ_ERROR;
+	v->Push(o);
+	return 1;
+}
+
 static SQInteger base_seterrorhandler(HSQUIRRELVM v)
 {
 	sq_seterrorhandler(v);
@@ -246,6 +254,7 @@ static SQRegFunction base_funcs[]={
 	{_SC("setroottable"),base_setroottable,2, NULL},
 	{_SC("getconsttable"),base_getconsttable,1, NULL},
 	{_SC("setconsttable"),base_setconsttable,2, NULL},
+	{_SC("setexceptionclass"),base_setexceptionclass,2, NULL},
 	{_SC("assert"),base_assert,2, NULL},
 	{_SC("print"),base_print,2, NULL},
 	{_SC("compilestring"),base_compilestring,-2, _SC(".ss")},
@@ -622,7 +631,7 @@ bool _qsort_compare(HSQUIRRELVM v,SQObjectPtr &arr,SQObjectPtr &a,SQObjectPtr &b
 		v->Push(a);
 		v->Push(b);
 		if(SQ_FAILED(sq_call(v, 3, SQTrue, SQFalse))) {
-			if(!sq_isstring( v->_lasterror)) 
+			if(!sq_isnull( v->_lasterror)) 
 				v->Raise_Error(_SC("compare func failed"));
 			return false;
 		}

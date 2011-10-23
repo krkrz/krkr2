@@ -11,6 +11,13 @@
 #define SQOBJECTNAME _SC("Object")
 #endif
 
+// オブジェクトバインド用処理
+#ifndef NOUSESQRAT
+#include <sqrat.h>
+#else
+#include "sqfunc.h"
+#endif
+
 #include "sqobjectinfo.h"
 
 namespace sqobject {
@@ -197,14 +204,211 @@ protected:
 
 };
 
-};// namespace
+// ---------------------------------------------------
+// オブジェクトバインド処理用
+// ---------------------------------------------------
 
-// ログ出力用
-#define SQPRINT(v,msg) {\
-	SQPRINTFUNCTION print = sq_getprintfunc(v);\
-	if (print) {\
-		print(v,msg);\
-	}\
+// Objectを pushする
+// @return すでに squirrel 用に初期化済みでインスタンスをもっていて push できたら true
+bool pushObject(HSQUIRRELVM v, Object *obj);
+
+
+#ifndef NOUSESQRAT
+// 値の格納
+// 格納失敗したときはオブジェクトが削除されるので delete の必要はない
+// ※元が squirrel 側で生成されたオブジェクトだった場合は必ず成功する
+template<typename T>
+void pushValue(HSQUIRRELVM v, T *value) {
+	if (value) {
+		if (pushObject(v, value)) {
+			return;
+		}
+		Sqrat::Var<T*>::push(v, value);
+		return;
+	}
+	sq_pushnull(v);
 }
+
+// 値の格納その他用
+template<typename T>
+void pushOtherValue(HSQUIRRELVM v, T *value) {
+	if (value) {
+		Sqrat::Var<T*>::push(v, value);
+		return;
+	}
+	sq_pushnull(v);
+}
+
+// 値の取得
+template<typename T>
+SQRESULT getValue(HSQUIRRELVM v, T **value, int idx=-1) {
+	*value = Sqrat::Var<T*>(v, idx).value;
+	return SQ_OK;
+}
+#else
+
+// 値の格納
+// 格納失敗したときはオブジェクトが削除されるので delete の必要はない
+// ※元が squirrel 側で生成されたオブジェクトだった場合は必ず成功する
+template<typename T>
+void pushValue(HSQUIRRELVM v, T *value) {
+	if (value) {
+		if (pushObject(v, value)) {
+			SQClassType<T>::pushInstance(v, value);
+			return;
+		}
+	}
+	sq_pushnull(v);
+}
+
+// 値の取得
+template<typename T>
+SQRESULT getValue(HSQUIRRELVM v, T **value, int idx=-1) {
+	*value = SQClassType<T>::getInstance(v, idx);
+	return SQ_OK;
+}
+#endif
+
+// 値の強制初期化
+template<typename T>
+void clearValue(T **value) {
+	*value = 0;
+}
+
+// 値の取得
+template<typename T>
+SQRESULT getResultValue(HSQUIRRELVM v, T **value) {
+	return getValue(value);
+}
+
+
+// ---------------------------------------------------------
+// StackValue
+// ---------------------------------------------------------
+
+/**
+ * スタック参照用
+ */
+class StackValue {
+	
+public:
+  // コンストラクタ
+  StackValue(HSQUIRRELVM v, int idx) : v(v), idx(idx) {};
+  
+  // 任意型へのキャスト
+  // 取得できなかった場合はクリア値になる
+  template<typename T>
+  operator T() const
+  {
+	T value;
+	if (SQ_FAILED(getValue(v, &value, idx))) {
+	  clearValue(&value);
+	}
+	return value;
+  }
+
+  // オブジェクトをPUSH
+  void push(HSQUIRRELVM v) const {
+	  sq_move(v, this->v, idx);
+  }
+
+  // 型を返す
+  SQObjectType type() const {
+	return sq_gettype(v, idx);
+  }
+
+  // int値
+  SQInteger intValue() const {
+	return (SQInteger)*this;
+  }
+
+  // flaot値
+  SQFloat floatValue() const {
+	return (SQFloat)*this;
+  }
+
+private:
+  HSQUIRRELVM v;
+  int idx;
+};
+
+void pushValue(HSQUIRRELVM v, const StackValue &sv);
+
+// --------------------------------------------------------------------------------------
+
+/**
+ * 引数処理用情報
+ */
+class StackInfo {
+
+public:
+	/**
+	 * コンストラクタ
+	 * @param vm VM
+	 */
+	StackInfo(HSQUIRRELVM vm) : vm(vm) {
+		argc = sq_gettop(vm) - 1;
+	}
+	
+	/**
+	 * @return 引数の数
+	 */
+	int len() const {
+		return argc;
+	}
+
+	/**
+	 * @return self参照
+	 */
+	ObjectInfo getSelf() const {
+		return ObjectInfo(vm, 1);
+	}
+
+	/**
+	 * @param n 引数番号 0～
+	 * @return 引数の型
+	 */
+	SQObjectType getType(int n) const {
+		if (n < argc) {
+			return sq_gettype(vm, n+2);
+		}
+		return OT_NULL;
+	}
+	
+	/**
+	 * @param n 引数番号 0～
+	 * @return 引数の型
+	 */
+	ObjectInfo getArg(int n) const {
+		ObjectInfo ret;
+		if (n < argc) {
+			ret.getStack(vm, n+2);
+		}
+		return ret;
+	}
+
+	/**
+	 * 引数取得
+	 * @param n 引数番号 0～
+	 * @return 引数オブジェクト
+	 */
+	ObjectInfo operator[](int n) const {
+		return getArg(n);
+	}
+
+	// 結果登録
+	SQRESULT setReturn() const { return 0; }
+	template<typename T>
+	SQRESULT setReturn(T value) const {
+		pushValue(vm, value);
+		return 1;
+	}
+
+protected:
+	HSQUIRRELVM vm; //< VM
+	SQInteger argc; //< 引数の数
+};
+
+};// namespace
 
 #endif

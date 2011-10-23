@@ -1,7 +1,7 @@
 #ifndef __SQTJS_OBJ_H_
 #define __SQTJS_OBJ_H_
 
-#include <sqobject.h>
+#include <sqobjectclass.h>
 
 /**
  * 吉里吉里オブジェクトを保持するsquirrelクラス

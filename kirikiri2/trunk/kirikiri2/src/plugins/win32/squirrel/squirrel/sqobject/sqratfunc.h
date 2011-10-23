@@ -1,7 +1,7 @@
 #ifndef SQRATFUNC_H
 #define SQRATFUNC_H
 
-#include "sqobjectinfo.h"
+#include "sqobjectclass.h"
 
 /**
  * sqobject::sqobject を継承したオブジェクト用に sqrat あわせでテンプレートを作成
@@ -116,7 +116,7 @@ namespace sqobject {
 		static SQInteger _get(HSQUIRRELVM vm) {
 			// Find the get method in the get table
 			sq_push(vm, 2);
-			if (SQ_FAILED( sq_get(vm,-2) )) {
+			if (SQ_FAILED( sq_rawget(vm,-2) )) {
 				SQUserPointer p = NULL;
 				sq_getinstanceup(vm, 1, &p, NULL);
 				C* ptr = (C*)p;
@@ -134,7 +134,7 @@ namespace sqobject {
 		static SQInteger _set(HSQUIRRELVM vm) {
 			// Find the set method in the set table
 			sq_push(vm, 2);
-			if (SQ_FAILED( sq_get(vm,-2) )) {
+			if (SQ_FAILED( sq_rawget(vm,-2) )) {
 				SQUserPointer p = NULL;
 				sq_getinstanceup(vm, 1, &p, NULL);
 				C* ptr = (C*)p;

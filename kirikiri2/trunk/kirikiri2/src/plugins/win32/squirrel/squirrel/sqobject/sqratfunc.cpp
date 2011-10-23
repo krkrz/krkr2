@@ -5,7 +5,7 @@
  * sqrat ‚Ì‹@”\‚ğ‚Â‚©‚Á‚ÄŒp³‚ğˆ—‚µ‚Ä‚¢‚Ü‚·B
  */
 #include "sqratfunc.h"
-#include "sqobject.h"
+#include "sqobjectclass.h"
 #include "sqthread.h"
 
 #include <sqstdstring.h>

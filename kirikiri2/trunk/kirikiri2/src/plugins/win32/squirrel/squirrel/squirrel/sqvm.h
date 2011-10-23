@@ -2,6 +2,7 @@
 #ifndef _SQVM_H_
 #define _SQVM_H_
 
+#include <stdarg.h>
 #include "sqopcodes.h"
 #include "sqobject.h"
 #define MAX_NATIVE_CALLS 100
@@ -82,8 +83,10 @@ public:
 	SQString *PrintObjVal(const SQObject &o);
 
  
-	void Raise_Error(const SQChar *s, ...);
+	void Raise_Error(const SQChar *s);
 	void Raise_Error(SQObjectPtr &desc);
+	void Raise_ErrorV(const SQChar *s, va_list &vl);
+	void Raise_ErrorF(const SQChar *s, ...);
 	void Raise_IdxError(SQObject &o);
 	void Raise_CompareError(const SQObject &o1, const SQObject &o2);
 	void Raise_ParamTypeError(SQInteger nparam,SQInteger typemask,SQInteger type);
@@ -146,6 +149,7 @@ public:
 	SQObjectPtr _lasterror;
 	SQObjectPtr _errorhandler;
 	SQObjectPtr _debughook;
+	SQObjectPtr _exceptionclass;
 
 	SQObjectPtr temp_reg;
 	

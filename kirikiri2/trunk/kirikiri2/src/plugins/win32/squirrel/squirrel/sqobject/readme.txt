@@ -1,4 +1,4 @@
-Author: 渡邊剛(go@denpa.org)
+Author: 渡邊剛(go@wamsoft.jp)
 Date: 2009/4/22
 
 ●概要
@@ -29,7 +29,7 @@ SQHEAPDEFINE の定義を差し替えてください
 ファイルを非同期に読み込む処理を行うために以下のメソッドを実装してください。
 
 ※ squirrel 標準機構の sqstd_loadfile 他は全く使ってません。
-　 サンプルの sqfunc / sqplusfunc / sqratfunc 中の初期化処理では 
+　 サンプルの sqfunc / sqratfunc 中の初期化処理では 
    sqstdmath と sqstdstring だけ登録しています。
 
    ルールが混乱するので、dofile() の利用にはご注意ください。
@@ -75,13 +75,12 @@ namespace sqobject{
 ◇オブジェクト参照処理の実装
 
 バインダに応じたネイティブオブジェクトの参照(push/get)処理が必要になります。
-sqplus, sqrat および独自実装用のコードは既に組んであるので、
-必要に応じてプリプロセッサで以下を定義してください
+標準では sqrat を使うコードになっています。別途独自実装用のコードを
+使う場合は必要に応じてプリプロセッサで以下を定義してください
 
-USESQPLUS  sqplus をバインダとして使用する
-USESQRAT   sqrat をバインダとして使用する
+NOUSESQRAT   sqrat をバインダとして使用しない
 
-未定義の場合は独自の簡易バインダ (sqfunc.h) による処理になります
+これを定義した場合は独自の簡易バインダ (sqfunc.h) による処理になります
 
 ※登録用に ObjectInfo の諸機能を使うため以下のメソッドが必要になります。
 
@@ -217,7 +216,6 @@ continuous handler: 制御が終わったあとの自律計算処理
 ■実装サンプルコード
 
  sqfunc.cpp     シンプルな継承/メンバ関数処理の実装例
- sqplusfunc.cpp	SQPlusを使う場合の実装例
  sqratfunc.cpp	SQRatを使う場合の実装例
 
 ●スクリプトの呼び出し
@@ -225,9 +223,10 @@ continuous handler: 制御が終わったあとの自律計算処理
 C++側からスクリプトを起動する場合は、Thread::fork() を使うか、
 squirrel の API を使って、グローバル関数 fork() を呼び出すようにしてください。
 
-sqplus(改)での例
+sqratでの例
 ---------------------------------------------------------------
-SqPlus::SquirrelFunction<int>("fork")(NULL, _SC("file.nut"));
+Sqrat::Function forkFunc(Sqrat::RootTable(), _SC("fork"));
+forkFunc.Evaluate<int>(NULL, _SC("file.nut"));
 ---------------------------------------------------------------
 
 ※スレッド実行時の注意
@@ -243,6 +242,6 @@ SqPlus::SquirrelFunction<int>("fork")(NULL, _SC("file.nut"));
 squirrel 同様 zlibライセンスに従って利用してください。
 
 /*
- * copyright (c)2009 Go Watanabe go@denpa.org
+ * copyright (c)2009 Go Watanabe go@wamsoft.jp
  * zlib license
  */

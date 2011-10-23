@@ -1,6 +1,7 @@
 #ifndef __SQFUNC__H_
 #define __SQFUNC__H_
 
+#include <squirrel.h>
 #include <new>
 
 extern SQRESULT ERROR_CREATE(HSQUIRRELVM v);

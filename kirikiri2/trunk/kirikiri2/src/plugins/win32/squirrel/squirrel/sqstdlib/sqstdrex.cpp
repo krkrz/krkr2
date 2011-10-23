@@ -12,6 +12,10 @@
 #endif
 
 #ifdef _DEBUG
+// #define DEBUG_NNAMES_LOG
+#endif
+
+#ifdef DEBUG_NNAMES_LOG
 #include <stdio.h>
 
 static const SQChar *g_nnames[] =
@@ -540,7 +544,7 @@ SQRex *sqstd_rex_compile(const SQChar *pattern,const SQChar **error)
 		exp->_nodes[exp->_first].left = res;
 		if(*exp->_p!='\0')
 			sqstd_rex_error(exp,_SC("unexpected character"));
-#ifdef _DEBUG
+#ifdef DEBUG_NNAMES_LOG
 		{
 			SQInteger nsize,i;
 			SQRexNode *t;

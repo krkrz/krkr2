@@ -16,7 +16,7 @@
 #include <sqstdmath.h>	
 #include <sqstdstring.h>
 #include <sqstdaux.h>
-#include "sqobject/sqobject.h"
+#include "sqobject/sqobjectclass.h"
 
 #ifdef SQUNICODE
 #define scfprintf fwprintf
