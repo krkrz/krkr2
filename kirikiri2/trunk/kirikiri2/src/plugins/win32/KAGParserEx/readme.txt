@@ -1,5 +1,5 @@
 Title: KAGParserEx プラグイン
-Author: miahmie
+Author: miahmie, wtnbgo
 
 ●これは何か？
 
@@ -67,6 +67,28 @@ KAGParserを置き換えて拡張するプラグインです。
 
  パラメータマクロ削除
   @erasepmacro name=パラメータマクロ名
+
+
+●マクロパラメータの展開「*」の挙動の違いについて
+
+KAGParserではマクロ展開の「*」以前に書かれているオプションが上書きされて
+消えてしまうというバグっぽい挙動がありますが，KAGParserExでは
+paramMacros対応のため構造を変えた関係で「*」以前のパラメータも有効となります。
+
+例：
+	[macro name=hoge]
+		[tag foo=bar * baz]
+	[endmacro]
+
+	において
+
+	[hoge fuga=piyo]
+
+	とすると，
+	・KAGParser   では [tag fuga=piyo baz]
+	・KAGParserEx では [tag foo=bar fuga=piyo baz]
+	が渡る
+
 
 ●ソースについて
 
