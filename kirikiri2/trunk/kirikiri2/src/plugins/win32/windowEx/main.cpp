@@ -1970,6 +1970,8 @@ struct System
 			externalIcon = NULL;
 		}
 	}
+
+	static tjs_int getDoubleClickTime() { return (tjs_int)::GetDoubleClickTime(); }
 };
 HICON System::externalIcon = NULL;
 // Window.setWindowIcon‚Åwithapp=true‚Æ‚µ‚½‚Æ‚«
@@ -1989,6 +1991,7 @@ NCB_ATTACH_FUNCTION(getSystemMetrics,   System, System::getSystemMetrics);
 NCB_ATTACH_FUNCTION(readEnvValue,       System, System::readEnvValue);
 NCB_ATTACH_FUNCTION(expandEnvString,    System, System::expandEnvString);
 NCB_ATTACH_FUNCTION(setApplicationIcon, System, System::setApplicationIcon);
+NCB_ATTACH_FUNCTION(getDoubleClickTime, System, System::getDoubleClickTime);
 NCB_ATTACH_FUNCTION(breathe,            System, TVPBreathe);
 NCB_ATTACH_FUNCTION(isBreathing,        System, TVPGetBreathing);
 NCB_ATTACH_FUNCTION(clearGraphicCache,  System, TVPClearGraphicCache);

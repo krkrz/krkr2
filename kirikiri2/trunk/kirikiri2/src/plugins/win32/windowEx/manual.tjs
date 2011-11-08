@@ -450,6 +450,16 @@ class System
 	function getSystemMetrics(index);
 
 	/**
+	 * システムのダブルクリック許容時間を取得
+	 * @return 時間(ms) 既定値は500ms
+	 *
+	 * 詳細は GetDoubleClickTime() API のマニュアルを参照
+	 * ダブルクリックの許容移動範囲はgetSystemMetricsのCXDOUBLECLK/CYDOUBLECLKで取得可能
+	 * Layer.onDoubleClickを使わずにソフトウェアで擬似的にダブルクリック判定を行う場合に使用（時間決め打ちでも問題ないけど一応…）
+	 */
+	function getDoubleClickTime();
+
+	/**
 	 * 環境変数を取得
 	 * @param name 環境変数名
 	 * @return 環境変数値（未定義の場合はvoid）
