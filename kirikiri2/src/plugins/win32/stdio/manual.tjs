@@ -1,0 +1,26 @@
+/**
+ * System クラスへの標準入出力拡張
+ */
+class System {
+
+	/**
+	 * 標準入力からテキストを入力する。入力はブロッキングします。
+	 * @param utf8 UTF8として読み込む場合はtrue
+	 * @return 入力されたテキスト
+	 */
+	function stdin(utf8=false);
+
+	/**
+	 * 標準出力に文字列を出力
+	 * @param string 出力するメッセージ
+	 * @param utf8 UTF8で出力する場合はtrue
+	 */
+	function stdout(string, utf8=false);
+
+	/**
+	 * 標準エラー出力に文字列を出力
+	 * @param string 出力するメッセージ
+	 * @param utf8 UTF8で出力する場合はtrue
+	 */
+	function stderr(string, utf8=false);
+};

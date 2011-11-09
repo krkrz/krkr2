@@ -1,0 +1,6 @@
+Plugins.link("stdio.dll");
+Debug.console.visible = true;
+Debug.controller.visible = true;
+var line = System.stdin();
+System.stdout(@"標準出力に出す:${line}\n");
+System.stderr(@"標準エラー出力に出す:${line}\n");
