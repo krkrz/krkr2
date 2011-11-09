@@ -104,7 +104,8 @@ TJS_END_NATIVE_CONSTRUCTOR_DECL(/*TJS class name*/System)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/terminate)
 {
-	TVPTerminateAsync();
+	int code = numparams > 0 ? *param[0] : 0;
+	TVPTerminateAsync(code);
 
 	return TJS_S_OK;
 }
@@ -114,7 +115,8 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exit)
 {
 	// this method does not return
 
-	TVPTerminateSync();
+	int code = numparams > 0 ? *param[0] : 0;
+	TVPTerminateSync(code);
 
 	return TJS_S_OK;
 }
