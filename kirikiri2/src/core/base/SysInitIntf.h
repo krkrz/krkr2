@@ -33,8 +33,8 @@ extern void TVPAfterSystemInit();
 extern void TVPBeforeSystemUninit();
 extern void TVPAfterSystemUninit();
 
-extern void TVPTerminateAsync(); // do acynchronous teminating of application
-extern void TVPTerminateSync(); // do synchronous teminating of application(never return)
+extern void TVPTerminateAsync(int code=0); // do acynchronous teminating of application
+extern void TVPTerminateSync(int code=0); // do synchronous teminating of application(never return)
 extern void TVPMainWindowClosed(); // called from WindowIntf.cpp, caused by closing main window.
 	// this function must shutdown the application, unless the controller window is visible.
 //---------------------------------------------------------------------------

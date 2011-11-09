@@ -120,9 +120,9 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// this prevents ugly exception message on exit
 
 	delete Application;
-	ExitProcess(0);
+	ExitProcess(TVPTerminateCode);
 #endif
-	return 0;
+	return TVPTerminateCode;
 }
 //---------------------------------------------------------------------------
 
