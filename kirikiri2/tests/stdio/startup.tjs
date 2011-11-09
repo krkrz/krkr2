@@ -1,6 +1,18 @@
 Plugins.link("stdio.dll");
-Debug.console.visible = true;
-Debug.controller.visible = true;
-var line = System.stdin();
-System.stdout(@"標準出力に出す:${line}\n");
-System.stderr(@"標準エラー出力に出す:${line}\n");
+//Debug.console.visible = true;
+//Debug.controller.visible = true;
+Debug.message("標準入出力接続状態:%0x".sprintf(System.stdioState));
+if (System.stdioState != 7 && !System.attachConsole()) {
+	System.inform("コンソールと接続できません");
+	if (!System.allocConsole()) {
+		System.inform("コンソールを生成できません");
+	}
+}
+Debug.message("標準入出力接続状態:%0x".sprintf(System.stdioState));
+if ((System.stdioState & 0x01)) {
+	var line = System.stdin();
+	System.stdout(@"標準出力に出す:${line}\n");
+	System.stderr(@"標準エラー出力に出す:${line}\n");
+}
+System.inform("完了しました");
+System.freeConsole();
