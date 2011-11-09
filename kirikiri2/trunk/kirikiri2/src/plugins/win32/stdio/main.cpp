@@ -5,6 +5,85 @@
 
 struct Stdio
 {
+	static int getState() {
+		int state = 0;
+		if (_fileno(stdin)  >= 0) state |= 0x01;
+		if (_fileno(stdout) >= 0) state |= 0x02;
+		if (_fileno(stderr) >= 0) state |= 0x04;
+		return state;
+	}
+
+	// コンソールと接続
+	static tjs_error TJS_INTF_METHOD attach(tTJSVariant *result,
+											tjs_int numparams,
+											tTJSVariant **param,
+											iTJSDispatch2 *objthis) {
+		int state = numparams > 0 ? *param[0] : 0;
+		bool ret = true;
+		if (state == 0) {
+			if (_fileno(stdin)  == -2) state |= 0x01;
+			if (_fileno(stdout) == -2) state |= 0x02;
+			if (_fileno(stderr) == -2) state |= 0x04;
+		}
+		// 接続先が無い場合はコンソールを開いてそこに接続する
+		if (state != 0) {
+			typedef BOOL (WINAPI* AttachConsoleFunc)(DWORD dwProcessId);
+			HINSTANCE hDLL = LoadLibrary(L"kernel32.dll");
+			AttachConsoleFunc AttachConsole = (AttachConsoleFunc)GetProcAddress(hDLL, "AttachConsole");
+			if (AttachConsole && (*AttachConsole)(-1)) {
+				if ((state & 0x01)) freopen("CON", "r", stdin); 
+				if ((state & 0x02)) freopen("CON", "w", stdout);
+				if ((state & 0x04)) freopen("CON", "w", stderr);
+			} else {
+				ret = false;
+			}
+			FreeLibrary(hDLL);
+		}
+		if (result) {
+			*result = ret;
+		}
+		return TJS_S_OK;
+	}
+
+	// コンソールの割り当て
+	static tjs_error TJS_INTF_METHOD alloc(tTJSVariant *result,
+										   tjs_int numparams,
+										   tTJSVariant **param,
+										   iTJSDispatch2 *objthis) {
+		int state = numparams > 0 ? *param[0] : 0;
+		bool ret = true;
+		if (state == 0) {
+			if (_fileno(stdin)  == -2) state |= 0x01;
+			if (_fileno(stdout) == -2) state |= 0x02;
+			if (_fileno(stderr) == -2) state |= 0x04;
+		}
+		// 接続先が無い場合はコンソールを開いてそこに接続する
+		if (state != 0) {
+			if (::AllocConsole()) {
+				if ((state & 0x01)) freopen("CON", "r", stdin); 
+				if ((state & 0x02)) freopen("CON", "w", stdout);
+				if ((state & 0x04)) freopen("CON", "w", stderr);
+			} else {
+				ret = false;
+			}
+		}
+		if (result) {
+			*result = ret;
+		}
+		return TJS_S_OK;
+	}
+
+	static tjs_error TJS_INTF_METHOD free(tTJSVariant *result,
+										  tjs_int numparams,
+										  tTJSVariant **param,
+										  iTJSDispatch2 *objthis) {
+		bool ret = ::FreeConsole() != 0;
+		if (result) {
+			*result = ret;
+		}
+		return TJS_S_OK;
+	}
+	
 	// 標準入力からテキストを読み込む
 	static tjs_error TJS_INTF_METHOD in(tTJSVariant *result,
 										tjs_int numparams,
@@ -93,6 +172,10 @@ struct Stdio
 };
 
 NCB_ATTACH_CLASS(Stdio, System) {
+	Property("stdioState", &Stdio::getState, 0);
+	RawCallback("attachConsole",  &Stdio::attach, TJS_STATICMEMBER);
+	RawCallback("allocConsole",  &Stdio::alloc, TJS_STATICMEMBER);
+	RawCallback("freeConsole",  &Stdio::free, TJS_STATICMEMBER);
 	RawCallback("stdin",  &Stdio::in, TJS_STATICMEMBER);
 	RawCallback("stdout", &Stdio::out, TJS_STATICMEMBER);
 	RawCallback("stderr", &Stdio::err, TJS_STATICMEMBER);
@@ -100,23 +183,6 @@ NCB_ATTACH_CLASS(Stdio, System) {
 
 void PreRegisterCallback()
 {
-	int in  = _fileno(stdin);
-	int out = _fileno(stdout);
-	int err = _fileno(stderr);
-	// 接続先が無い場合はコンソールを開いてそこに接続する
-	if (in == -2 || out == -2 || err == -2) {
-		typedef BOOL (WINAPI* AttachConsoleFunc)(DWORD dwProcessId);
-		HINSTANCE hDLL = LoadLibrary(L"kernel32.dll");
-		AttachConsoleFunc AttachConsole = (AttachConsoleFunc)GetProcAddress(hDLL, "AttachConsole");
-		if (AttachConsole && (*AttachConsole)(-1) || ::AllocConsole()) {
-			if (in == -2) freopen("CON", "r", stdin); 
-			if (out == -2) freopen("CON", "w", stdout);
-			if (err == -2) freopen("CON", "w", stderr);
-		} else {
-			TVPAddImportantLog(L"faild to attach console");
-		}
-		FreeLibrary(hDLL);
-	}
 }
 
 NCB_PRE_REGIST_CALLBACK(PreRegisterCallback);
