@@ -9,7 +9,15 @@
 	<name>terminate</name>
 	<type>method</type>
 	<shortdesc>吉里吉里の非同期終了</shortdesc>
-	<arg></arg>
+	<arg>
+		<argitem>
+			<name>code</name>
+			<default>0</default>
+			<desc>
+				　プロセスの終了コードを指定します
+			</desc>
+		</argitem>
+	</arg>
 	<result></result>
 	<desc>
 		　吉里吉里を<kw>終了</kw>させます。<r/>
@@ -22,7 +30,15 @@
 	<name>exit</name>
 	<type>method</type>
 	<shortdesc>吉里吉里の同期終了</shortdesc>
-	<arg></arg>
+	<arg>
+		<argitem>
+			<name>code</name>
+			<default>0</default>
+			<desc>
+				　プロセスの終了コードを指定します
+			</desc>
+		</argitem>
+	</arg>
 	<result></result>
 	<desc>
 		　吉里吉里を<kw>終了</kw>させます。<r/>
