@@ -1,0 +1,37 @@
+/**
+ * 擬似コードによるマニュアル
+ */
+class System
+{
+	/**
+	 * レジストリにデータを書き込みます
+	 * @param key 書き込み先のキー(readRegValue と同様に HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\hoeg\installdir と指定する)
+	 * @param value 書き込む値(文字列又は整数値)
+	 */
+	function writeRegValue(key, value);
+
+	// レジストリの読み込みは、組み込みの System.readRegValue を使用のこと
+
+	/**
+	 * 環境変数を取得
+	 * @param name 環境変数名
+	 * @return 環境変数値（未定義の場合はvoid）
+	 */
+	function readEnvValue(name);
+
+	/**
+	 * 環境変数を設定
+	 * @param name 環境変数名
+	 * @param value 設定する値
+	 * @return 元の環境変数値（未定義の場合はvoid）
+	 */
+	function writeEnvValue(name, value);
+	
+	/**
+	 * 文字列内の「%～%」を環境変数で展開
+	 * @param text 展開する文字列
+	 * @return 展開後文字列
+	 */
+	function expandEnvString(text);
+	
+};
