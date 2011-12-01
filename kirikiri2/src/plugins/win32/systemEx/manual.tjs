@@ -34,4 +34,19 @@ class System
 	 */
 	function expandEnvString(text);
 	
+	/**
+	 * URLEncodeˆ—‚ğs‚¤
+	 * @param str Œ³•¶š—ñ
+	 * @param utf8 UTF8‚Åo—Í‚·‚éê‡‚Ítrue
+	 * @return URLEncode‚³‚ê‚½•¶š—ñ
+	 */
+	function urlencode(str, utf8=true);
+
+	/**
+	 * URLDecodeˆ—‚ğs‚¤
+	 * @param str Œ³•¶š—ñ
+	 * @param utf8 UTF8‚Æ‚µ‚Äˆ—‚·‚éê‡‚Ítrue
+	 * @return URLDecode‚³‚ê‚½•¶š—ñ
+	 */
+	function urldecode(str, utf8=true);
 };

@@ -1,10 +1,14 @@
 #include "ncbind/ncbind.hpp"
+#include <errno.h>
+#include <sstream>
 
 #ifdef _DEBUG
 #define dm(msg) TVPAddLog(msg)
 #else
 #define dm(msg)
 #endif
+
+static const char *HEX = "0123456789ABCDEF";
 
 struct System
 {
@@ -158,9 +162,124 @@ struct System
 		}
 		return TJS_S_OK;
 	}
+
+	// urlencodeˆ—
+	static tjs_error TJS_INTF_METHOD urlencode(tTJSVariant *result,
+											   tjs_int numparams,
+											   tTJSVariant **param,
+											   iTJSDispatch2 *objthis) {
+		if (numparams > 0 && result) {
+			bool utf8 = !(numparams> 1 && (int)*param[1] == 0);
+			ttstr str = *param[0];
+			tjs_int len;
+			char *dat;
+			if (utf8) {
+				const tjs_char *s = str.c_str();
+				len = TVPWideCharToUtf8String(s, NULL);
+				dat = new char [len+1];
+				try {
+					TVPWideCharToUtf8String(s, dat);
+					dat[len] = '\0';
+				}
+				catch(...)	{
+					delete [] dat;
+					throw;
+				}
+			} else {
+				len = str.GetNarrowStrLen();
+				dat = new char[len+1];
+				try {
+					str.ToNarrowStr(dat, len+1);
+				}
+				catch(...)	{
+					delete [] dat;
+					throw;
+				} 
+				delete [] dat;
+			}
+			std::wostringstream os;
+			for (int i=0; i<len; i++) {
+				char c = dat[i];
+				if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+					(c >= '0' && c <= '9') ||
+					c == '-' || c == '_' || c == '.' || c == '~') {
+					os << c;
+				} else {
+					os << '%';
+					os << HEX[(c >> 4) & 0x0f];
+					os << HEX[c & 0x0f];
+				}
+			}
+			*result = os.str().c_str();
+			delete [] dat;
+		}
+		return TJS_S_OK;
+	}
+
+	
+	// urldecodeˆ—
+	static tjs_error TJS_INTF_METHOD urldecode(tTJSVariant *result,
+											   tjs_int numparams,
+											   tTJSVariant **param,
+											   iTJSDispatch2 *objthis) {
+
+		if (numparams > 0 && result) {
+			bool utf8 = !(numparams> 1 && (int)*param[1] == 0);
+			ttstr str = *param[0];
+			tjs_int len = str.length();
+			std::ostringstream os;
+			for (int i=0;i<len;i++) {
+				int ch = str[i];
+				if (ch > 0xff) {
+					return TJS_E_INVALIDPARAM;
+				}
+				if (ch == '%') {
+					if (i + 2 >= len) {
+						return TJS_E_INVALIDPARAM;
+					}
+					char buf[3];
+					buf[0] = (char)str[i+1];
+					buf[1] = (char)str[i+2];
+					buf[2] = '\0';
+					long n = strtol(buf, NULL, 16);
+					if (errno == ERANGE) {
+						return TJS_E_INVALIDPARAM;
+					}
+					os << (char)n;
+					i+=2;
+				} else {
+					os << (char)ch;
+				}
+			}
+			if (utf8) {
+				std::string str = os.str();
+				const char *s = str.c_str();
+				tjs_int len = TVPUtf8ToWideCharString(s, NULL);
+				if (len > 0) {
+					tjs_char *dat = new tjs_char[len+1];
+					try {
+						TVPUtf8ToWideCharString(s, dat);
+						dat[len] = TJS_W('\0');
+					}
+					catch(...) {
+						delete [] dat;
+						throw;
+					}
+					*result = ttstr(dat);
+					delete [] dat;
+				}				
+			} else {
+				*result = ttstr(os.str().c_str());
+			}
+		}
+		return TJS_S_OK;
+	}
+
 };
 
 NCB_ATTACH_FUNCTION(writeRegValue,      System, System::writeRegValue);
 NCB_ATTACH_FUNCTION(readEnvValue,       System, System::readEnvValue);
 NCB_ATTACH_FUNCTION(writeEnvValue,      System, System::writeEnvValue);
 NCB_ATTACH_FUNCTION(expandEnvString,    System, System::expandEnvString);
+NCB_ATTACH_FUNCTION(urlencode,          System, System::urlencode);
+NCB_ATTACH_FUNCTION(urldecode,          System, System::urldecode);
