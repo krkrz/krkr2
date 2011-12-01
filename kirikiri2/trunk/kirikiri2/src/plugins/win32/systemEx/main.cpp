@@ -1,6 +1,6 @@
 #include "ncbind/ncbind.hpp"
 #include <errno.h>
-#include <sstream>
+#include <string>
 
 #ifdef _DEBUG
 #define dm(msg) TVPAddLog(msg)
@@ -197,20 +197,20 @@ struct System
 				} 
 				delete [] dat;
 			}
-			std::wostringstream os;
+			ttstr os;
 			for (int i=0; i<len; i++) {
 				char c = dat[i];
 				if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
 					(c >= '0' && c <= '9') ||
 					c == '-' || c == '_' || c == '.' || c == '~') {
-					os << c;
+					os += c;
 				} else {
-					os << '%';
-					os << HEX[(c >> 4) & 0x0f];
-					os << HEX[c & 0x0f];
+					os += (tjs_char) '%';
+					os += (tjs_char) HEX[(c >> 4) & 0x0f];
+					os += (tjs_char) HEX[c & 0x0f];
 				}
 			}
-			*result = os.str().c_str();
+			*result = os;
 			delete [] dat;
 		}
 		return TJS_S_OK;
@@ -227,7 +227,7 @@ struct System
 			bool utf8 = !(numparams> 1 && (int)*param[1] == 0);
 			ttstr str = *param[0];
 			tjs_int len = str.length();
-			std::ostringstream os;
+			std::string os;
 			for (int i=0;i<len;i++) {
 				int ch = str[i];
 				if (ch > 0xff) {
@@ -245,15 +245,14 @@ struct System
 					if (errno == ERANGE) {
 						return TJS_E_INVALIDPARAM;
 					}
-					os << (char)n;
+					os += (char)n;
 					i+=2;
 				} else {
-					os << (char)ch;
+					os += (char)ch;
 				}
 			}
 			if (utf8) {
-				std::string str = os.str();
-				const char *s = str.c_str();
+				const char *s = os.c_str();
 				tjs_int len = TVPUtf8ToWideCharString(s, NULL);
 				if (len > 0) {
 					tjs_char *dat = new tjs_char[len+1];
@@ -269,7 +268,7 @@ struct System
 					delete [] dat;
 				}				
 			} else {
-				*result = ttstr(os.str().c_str());
+				*result = ttstr(os.c_str());
 			}
 		}
 		return TJS_S_OK;
