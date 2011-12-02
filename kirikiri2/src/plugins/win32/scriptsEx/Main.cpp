@@ -2,8 +2,6 @@
 #include <vector>
 #include <algorithm>
 
-
-
 /**
  * メソッド追加用
  */
@@ -48,6 +46,10 @@ public:
 													  tTJSVariant **param,
 													  iTJSDispatch2 *objthis);
 
+
+	//----------------------------------------------------------------------
+	// オブジェクト複製
+	static tTJSVariant clone(tTJSVariant v1);
 };
 
 /**
@@ -452,8 +454,8 @@ ScriptsAdd::foreach(tTJSVariant *result,
 
 
 /**
- * MD5ハッシュ値の取得
- * @param filename 対象ファイル名
+ * octet の MD5ハッシュ値の取得
+ * @param octet 対象オクテット
  * @return ハッシュ値（32文字の16進数ハッシュ文字列（小文字））
  */
 tjs_error TJS_INTF_METHOD
@@ -482,6 +484,82 @@ ScriptsAdd::getMD5HashString(tTJSVariant *result,
 	return TJS_S_OK;
 }
 
+
+//----------------------------------------------------------------------
+// 辞書の要素を全cloneするCaller
+class DictMemberCloneCaller : public tTJSDispatch
+{
+public:
+	DictMemberCloneCaller(iTJSDispatch2 *dict) : dict(dict) {};
+	virtual tjs_error TJS_INTF_METHOD FuncCall( // function invocation
+												tjs_uint32 flag,			// calling flag
+												const tjs_char * membername,// member name ( NULL for a default member )
+												tjs_uint32 *hint,			// hint for the member name (in/out)
+												tTJSVariant *result,		// result
+												tjs_int numparams,			// number of parameters
+												tTJSVariant **param,		// parameters
+												iTJSDispatch2 *objthis		// object as "this"
+												) {
+		tTJSVariant value = ScriptsAdd::clone(*param[2]);
+		dict->PropSet((int)*param[1], param[0]->GetString(), 0, &value, dict);
+		return TJS_S_OK;
+	}
+protected:
+	iTJSDispatch2 *dict;
+};
+
+//----------------------------------------------------------------------
+// 構造体比較関数
+tTJSVariant
+ScriptsAdd::clone(tTJSVariant obj)
+{
+	// タイプがオブジェクトなら細かく判定
+	if (obj.Type() == tvtObject) {
+
+		tTJSVariantClosure &o1 = obj.AsObjectClosureNoAddRef();
+		
+		// Arrayの複製
+		if (o1.IsInstanceOf(0, NULL, NULL, L"Array", NULL)== TJS_S_TRUE) {
+			iTJSDispatch2 *array = TJSCreateArrayObject();
+			tTJSVariant o1Count;
+			(void)o1.PropGet(0, L"count", &countHint, &o1Count, NULL);
+			tjs_int count = o1Count;
+			tTJSVariant val;
+			tTJSVariant *args[] = {&val};
+			for (tjs_int i = 0; i < count; i++) {
+				(void)o1.PropGetByNum(TJS_IGNOREPROP, i, &val, NULL);
+				val = ScriptsAdd::clone(val);
+				static tjs_uint addHint = 0;
+				(void)array->FuncCall(0, TJS_W("add"), &addHint, 0, 1, args, array);
+			}
+			tTJSVariant result(array, array);
+			array->Release();
+			return result;
+		}
+		
+		// Dictionaryの複製
+		if (o1.IsInstanceOf(0, NULL, NULL, L"Dictionary", NULL)== TJS_S_TRUE) {
+			iTJSDispatch2 *dict = TJSCreateDictionaryObject();
+			DictMemberCloneCaller *caller = new DictMemberCloneCaller(dict);
+			tTJSVariantClosure closure(caller);
+			o1.EnumMembers(TJS_IGNOREPROP, &closure, NULL);
+			caller->Release();
+			tTJSVariant result(dict, dict);
+			dict->Release();
+			return result;
+		}
+
+		// cloneメソッドの呼び出しに成功すればそれを返す
+		tTJSVariant result;
+		static tjs_uint cloneHint = 0;
+		if (o1.FuncCall(0, L"clone", &cloneHint, &result, 0, NULL, NULL)== TJS_S_TRUE) {
+			return result;
+		}
+	}
+	
+	return obj;
+}
+
 NCB_ATTACH_CLASS(ScriptsAdd, Scripts) {
 	RawCallback("getObjectKeys", &ScriptsAdd::getKeys, TJS_STATICMEMBER);
 	RawCallback("getObjectCount", &ScriptsAdd::getCount, TJS_STATICMEMBER);
@@ -489,4 +567,5 @@ NCB_ATTACH_CLASS(ScriptsAdd, Scripts) {
 	NCB_METHOD(equalStructNumericLoose);
 	RawCallback("foreach", &ScriptsAdd::foreach, TJS_STATICMEMBER);
 	RawCallback("getMD5HashString", &ScriptsAdd::getMD5HashString, TJS_STATICMEMBER);
+	NCB_METHOD(clone);
 };

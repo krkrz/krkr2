@@ -36,4 +36,20 @@ class Scripts {
 	 * @param args 追加引数
 	 */
 	function foreach(obj, func, args*);
+
+	/**
+	 * octet の MD5ハッシュ値の取得
+	 * @param octet 対象オクテット
+	 * @return ハッシュ値（32文字の16進数ハッシュ文字列（小文字））
+	 */
+	function getMD5HashString(octet);
+	
+	/**
+	 * 値のクローンを返す。
+	 * @param obj クローン元
+	 * void/数値/文字列/octet は元の値をそのまま返します。
+	 * 辞書・配列オブジェクトは、deep copy 処理したものを返します。入れ子は再帰処理されます。
+	 * 一般オブジェクトは "clone" メソッドが存在すればその帰り値を、なければ元の値をそのまま返します
+	 */
+	function clone(obj);
 }
