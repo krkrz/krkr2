@@ -282,3 +282,5 @@ NCB_ATTACH_FUNCTION(writeEnvValue,      System, System::writeEnvValue);
 NCB_ATTACH_FUNCTION(expandEnvString,    System, System::expandEnvString);
 NCB_ATTACH_FUNCTION(urlencode,          System, System::urlencode);
 NCB_ATTACH_FUNCTION(urldecode,          System, System::urldecode);
+NCB_ATTACH_FUNCTION(getAboutString,     System, TVPGetAboutString);
+
