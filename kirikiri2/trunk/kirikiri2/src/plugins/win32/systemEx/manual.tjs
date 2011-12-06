@@ -49,4 +49,11 @@ class System
 	 * @return URLDecodeされた文字列
 	 */
 	function urldecode(str, utf8=true);
+
+	/**
+	 * Ctrl+F12で表示される環境情報テキストを取得する
+	 * @return テキスト(TVPGetAboutString)
+	 */
+	function getAboutString();
+
 };
