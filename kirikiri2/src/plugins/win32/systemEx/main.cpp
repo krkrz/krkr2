@@ -282,7 +282,7 @@ struct System
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 		ttstr message = *param[0];
 		ttstr caption;
-		HWND parent = 0;
+		HWND parent = ::TVPGetApplicationWindowHandle();
 		if (numparams > 2) {
 			iTJSDispatch2 *window = param[2]->AsObjectNoAddRef();
 			if (window->IsInstanceOf(0, NULL, NULL, L"Window", window) != TJS_S_TRUE) {
