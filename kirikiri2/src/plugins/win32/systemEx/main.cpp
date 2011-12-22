@@ -274,6 +274,33 @@ struct System
 		return TJS_S_OK;
 	}
 
+	// ‚Í‚¢‚¢‚¢‚¦‚ÌŠm”F
+	static tjs_error TJS_INTF_METHOD confirm(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis) {
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		ttstr message = *param[0];
+		ttstr caption;
+		HWND parent = 0;
+		if (numparams > 2) {
+			iTJSDispatch2 *window = param[2]->AsObjectNoAddRef();
+			if (window->IsInstanceOf(0, NULL, NULL, L"Window", window) != TJS_S_TRUE) {
+				TVPThrowExceptionMessage(L"InvalidObject");
+			}
+			tTJSVariant val;
+			window->PropGet(0, TJS_W("HWND"), NULL, &val, window);
+			parent = reinterpret_cast<HWND>((tjs_int)(val));
+		}
+		if (numparams > 1) {
+			caption = *param[1];
+		}
+		int ret = ::MessageBox(parent, message.c_str(), caption.c_str(), MB_YESNO);
+		if (result) {
+			*result = (ret == IDYES);
+		}
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_FUNCTION(writeRegValue,      System, System::writeRegValue);
@@ -283,4 +310,5 @@ NCB_ATTACH_FUNCTION(expandEnvString,    System, System::expandEnvString);
 NCB_ATTACH_FUNCTION(urlencode,          System, System::urlencode);
 NCB_ATTACH_FUNCTION(urldecode,          System, System::urldecode);
 NCB_ATTACH_FUNCTION(getAboutString,     System, TVPGetAboutString);
+NCB_ATTACH_FUNCTION(confirm,            System, System::confirm);
 

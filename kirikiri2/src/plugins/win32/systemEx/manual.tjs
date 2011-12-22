@@ -56,4 +56,12 @@ class System
 	 */
 	function getAboutString();
 
+	/**
+	 * 確認用メッセージ窓を表示します。ウインドウはモーダルで表示されます。
+	 * @param text 表示するメッセージ
+	 * @param caption ウインドウのキャプション文字列
+	 * @param window 指定があった場合はそのウインドウを親として表示します
+	 * @return YESがおされたら true
+	 */
+	function confirm(text, caption="", window=void);
 };
