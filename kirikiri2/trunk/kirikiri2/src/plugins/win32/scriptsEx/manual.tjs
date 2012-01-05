@@ -2,16 +2,32 @@ class Scripts {
 
 	/**
 	 * オブジェクトのメンバ名一覧を返す
+	 * @param obj 対象オブジェクト
 	 * @return キーが格納された配列
 	 */
 	function getObjectKeys(obj);
 
 	/**
 	 * オブジェクトのメンバ個数を返す
+	 * @param obj 対象オブジェクト
 	 * @return 個数を返す
 	 */
 	function getObjectCount(obj);
 
+	/**
+	 * オブジェクトのコンテキストを返す
+	 * @param obj 対象オブジェクト
+	 * @return コンテキストオブジェクト
+	 */
+	function getObjectContext(obj);
+
+	/**
+	 * オブジェクトのコンテキスト判定
+	 * @param obj 対象オブジェクト
+	 * @return コンテキストが null
+	 */
+	function isNullContext(obj);
+	
 	/**
 	 * オブジェクト同士を比較する。辞書/配列の場合は中身の要素が再帰的に比較されます
 	 * @param obj1 オブジェクトその1

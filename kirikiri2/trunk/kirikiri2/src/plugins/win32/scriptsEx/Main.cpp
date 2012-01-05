@@ -24,6 +24,16 @@ public:
 											  tjs_int numparams,
 											  tTJSVariant **param,
 											  iTJSDispatch2 *objthis);
+	/**
+	 * コンテキストの取得
+	 */
+	static tTJSVariant getObjectContext(tTJSVariant obj);
+
+	/**
+	 * コンテキストが null かどうか判定
+	 */
+	static bool isNullContext(tTJSVariant obj);
+	
 	//----------------------------------------------------------------------
 	// 構造体比較関数
 	static bool equalStruct(tTJSVariant v1, tTJSVariant v2);
@@ -268,6 +278,26 @@ ScriptsAdd::getCount(tTJSVariant *result,
 		*result = count;
 	}
 	return TJS_S_OK;
+}
+
+
+/**
+ * コンテキストの取得
+ */
+tTJSVariant
+ScriptsAdd::getObjectContext(tTJSVariant obj)
+{
+	iTJSDispatch2 *objthis = obj.AsObjectClosureNoAddRef().ObjThis;
+	return tTJSVariant(objthis, objthis);
+}
+
+/**
+ * コンテキストが null かどうか判定
+ */
+bool
+ScriptsAdd::isNullContext(tTJSVariant obj)
+{
+	return obj.AsObjectClosureNoAddRef().ObjThis == NULL;
 }
 
 //----------------------------------------------------------------------
@@ -563,6 +593,8 @@ ScriptsAdd::clone(tTJSVariant obj)
 NCB_ATTACH_CLASS(ScriptsAdd, Scripts) {
 	RawCallback("getObjectKeys", &ScriptsAdd::getKeys, TJS_STATICMEMBER);
 	RawCallback("getObjectCount", &ScriptsAdd::getCount, TJS_STATICMEMBER);
+	NCB_METHOD(getObjectContext);
+	NCB_METHOD(isNullContext);
 	NCB_METHOD(equalStruct);
 	NCB_METHOD(equalStructNumericLoose);
 	RawCallback("foreach", &ScriptsAdd::foreach, TJS_STATICMEMBER);
