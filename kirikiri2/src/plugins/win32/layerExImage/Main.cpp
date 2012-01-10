@@ -2,8 +2,8 @@
 
 static const char *copyright = 
 "----- CxImage Copyright START -----\n"
-"CxImage version 5.99c 17/Oct/2004\n"
-"CxImage : Copyright (C) 2001 - 2004, Davide Pizzolato\n"
+"CxImage version 7.0.2 07/Feb/2011\n"
+"CxImage : Copyright (C) 2001 - 2011, Davide Pizzolato\n"
 "Original CImage and CImageIterator implementation are:\n"
 "Copyright (C) 1995, Alejandro Aguilar Sierra (asierra(at)servidor(dot)unam(dot)mx)\n"
 "----- CxImage Copyright END -----\n";
@@ -37,6 +37,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(layerExImage, Layer) {
 	NCB_METHOD(modulate);
 	NCB_METHOD(noise);
 	NCB_METHOD(generateWhiteNoise);
+	NCB_METHOD(gaussianBlur);
 }
 
 void init()

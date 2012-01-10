@@ -51,6 +51,12 @@ public:
 	 * ノイズ生成（元の画像を無視してグレースケールのホワイトノイズを描画／α情報は維持）
 	 */
 	void generateWhiteNoise();
+
+	/**
+	 * ガウスぼかし
+	 * @param radius ぼかし度合い
+	 */
+	void gaussianBlur(float radius);
 };
 
 #endif
