@@ -18,7 +18,15 @@ class Layer {
 	 * @param blend ブレンド 0 (効果なし) ～ 1 (full effect)
 	 */
 	function colorize(hue, sat, blend);
-    
+
+	/**
+	 * 色相と彩度と輝度の変更
+	 * @param hue 色相 -180～180 (度)
+	 * @param saturation 彩度 -100～100 (%)
+	 * @param luminance 輝度 -100～100 (%)
+	 */
+	function modulate(hue, saturation, luminance);
+	
     /**
 	 * ノイズ追加
 	 * @param level ノイズレベル 0 (no noise) ～ 255 (lot of noise).
@@ -31,10 +39,8 @@ class Layer {
     function generateWhiteNoise();
 
 	/**
-	 * 色相と彩度と輝度の変更
-	 * @param hue 色相 -180～180 (度)
-	 * @param saturation 彩度 -100～100 (%)
-	 * @param luminance 輝度 -100～100 (%)
+	 * ガウスぼかし処理
+	 * @param radius ぼかし度合い
 	 */
-	function modulate(hue, saturation, luminance);
+	void gaussianBlur(float radius);
 };

@@ -5,6 +5,11 @@
  * CxImage version 5.99c 17/Oct/2004
  */
 
+// xImaDsp.cpp : DSP functions
+/* 07/08/2001 v1.00 - Davide Pizzolato - www.xdp.it
+ * CxImage version 7.0.2 07/Feb/2011
+ */
+
 #include <windows.h>
 #include <math.h>
 #include "LayerExImage.h"
@@ -360,4 +365,297 @@ layerExImage::generateWhiteNoise()
 		src += _pitch;
 	}
 	redraw();
+}
+
+
+typedef _int32 int32_t;
+typedef unsigned char uint8_t;
+
+////////////////////////////////////////////////////////////////////////////////
+/** 
+ * generates a 1-D convolution matrix to be used for each pass of 
+ * a two-pass gaussian blur.  Returns the length of the matrix.
+ * \author [nipper]
+ */
+static int32_t
+gen_convolve_matrix (float radius, float **cmatrix_p)
+{
+	int32_t matrix_length;
+	int32_t matrix_midpoint;
+	float* cmatrix;
+	int32_t i,j;
+	float std_dev;
+	float sum;
+	
+	/* we want to generate a matrix that goes out a certain radius
+	* from the center, so we have to go out ceil(rad-0.5) pixels,
+	* inlcuding the center pixel.  Of course, that's only in one direction,
+	* so we have to go the same amount in the other direction, but not count
+	* the center pixel again.  So we double the previous result and subtract
+	* one.
+	* The radius parameter that is passed to this function is used as
+	* the standard deviation, and the radius of effect is the
+	* standard deviation * 2.  It's a little confusing.
+	* <DP> modified scaling, so that matrix_lenght = 1+2*radius parameter
+	*/
+	radius = (float)fabs(0.5*radius) + 0.25f;
+	
+	std_dev = radius;
+	radius = std_dev * 2;
+	
+	/* go out 'radius' in each direction */
+	matrix_length = int32_t (2 * ceil(radius-0.5) + 1);
+	if (matrix_length <= 0) matrix_length = 1;
+	matrix_midpoint = matrix_length/2 + 1;
+	*cmatrix_p = new float[matrix_length];
+	cmatrix = *cmatrix_p;
+	
+	/*  Now we fill the matrix by doing a numeric integration approximation
+	* from -2*std_dev to 2*std_dev, sampling 50 points per pixel.
+	* We do the bottom half, mirror it to the top half, then compute the
+	* center point.  Otherwise asymmetric quantization errors will occur.
+	*  The formula to integrate is e^-(x^2/2s^2).
+	*/
+	
+	/* first we do the top (right) half of matrix */
+	for (i = matrix_length/2 + 1; i < matrix_length; i++)
+    {
+		float base_x = i - (float)floor((float)(matrix_length/2)) - 0.5f;
+		sum = 0;
+		for (j = 1; j <= 50; j++)
+		{
+			if ( base_x+0.02*j <= radius ) 
+				sum += (float)exp (-(base_x+0.02*j)*(base_x+0.02*j) / 
+				(2*std_dev*std_dev));
+		}
+		cmatrix[i] = sum/50;
+    }
+	
+	/* mirror the thing to the bottom half */
+	for (i=0; i<=matrix_length/2; i++) {
+		cmatrix[i] = cmatrix[matrix_length-1-i];
+	}
+	
+	/* find center val -- calculate an odd number of quanta to make it symmetric,
+	* even if the center point is weighted slightly higher than others. */
+	sum = 0;
+	for (j=0; j<=50; j++)
+    {
+		sum += (float)exp (-(0.5+0.02*j)*(0.5+0.02*j) /
+			(2*std_dev*std_dev));
+    }
+	cmatrix[matrix_length/2] = sum/51;
+	
+	/* normalize the distribution by scaling the total sum to one */
+	sum=0;
+	for (i=0; i<matrix_length; i++) sum += cmatrix[i];
+	for (i=0; i<matrix_length; i++) cmatrix[i] = cmatrix[i] / sum;
+	
+	return matrix_length;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * generates a lookup table for every possible product of 0-255 and
+ * each value in the convolution matrix.  The returned array is
+ * indexed first by matrix position, then by input multiplicand (?)
+ * value.
+ * \author [nipper]
+ */
+static float*
+gen_lookup_table (float *cmatrix, int32_t cmatrix_length)
+{
+	float* lookup_table = new float[cmatrix_length * 256];
+	float* lookup_table_p = lookup_table;
+	float* cmatrix_p      = cmatrix;
+	
+	for (int32_t i=0; i<cmatrix_length; i++)
+    {
+		for (int32_t j=0; j<256; j++)
+		{
+			*(lookup_table_p++) = *cmatrix_p * (float)j;
+		}
+		cmatrix_p++;
+    }
+	
+	return lookup_table;
+}
+
+/**
+ * this function is written as if it is blurring a column at a time,
+ * even though it can operate on rows, too.  There is no difference
+ * in the processing of the lines, at least to the blur_line function.
+ * \author [nipper]
+ */
+static void
+blur_line (float *ctable, float *cmatrix, int32_t cmatrix_length, uint8_t* cur_col, uint8_t* dest_col, int32_t y, int32_t bytes)
+{
+	float scale;
+	float sum;
+	int32_t i=0, j=0;
+	int32_t row;
+	int32_t cmatrix_middle = cmatrix_length/2;
+	
+	float *cmatrix_p;
+	uint8_t  *cur_col_p;
+	uint8_t  *cur_col_p1;
+	uint8_t  *dest_col_p;
+	float *ctable_p;
+	
+	/* this first block is the same as the non-optimized version --
+	* it is only used for very small pictures, so speed isn't a
+	* big concern.
+	*/
+	if (cmatrix_length > y)
+    {
+		for (row = 0; row < y ; row++)
+		{
+			scale=0;
+			/* find the scale factor */
+			for (j = 0; j < y ; j++)
+			{
+				/* if the index is in bounds, add it to the scale counter */
+				if ((j + cmatrix_middle - row >= 0) &&
+					(j + cmatrix_middle - row < cmatrix_length))
+					scale += cmatrix[j + cmatrix_middle - row];
+			}
+			for (i = 0; i<bytes; i++)
+			{
+				sum = 0;
+				for (j = 0; j < y; j++)
+				{
+					if ((j >= row - cmatrix_middle) &&
+						(j <= row + cmatrix_middle))
+						sum += cur_col[j*bytes + i] * cmatrix[j];
+				}
+				dest_col[row*bytes + i] = (uint8_t)(0.5f + sum / scale);
+			}
+		}
+    }
+	else
+    {
+		/* for the edge condition, we only use available info and scale to one */
+		for (row = 0; row < cmatrix_middle; row++)
+		{
+			/* find scale factor */
+			scale=0;
+			for (j = cmatrix_middle - row; j<cmatrix_length; j++)
+				scale += cmatrix[j];
+			for (i = 0; i<bytes; i++)
+			{
+				sum = 0;
+				for (j = cmatrix_middle - row; j<cmatrix_length; j++)
+				{
+					sum += cur_col[(row + j-cmatrix_middle)*bytes + i] * cmatrix[j];
+				}
+				dest_col[row*bytes + i] = (uint8_t)(0.5f + sum / scale);
+			}
+		}
+		/* go through each pixel in each col */
+		dest_col_p = dest_col + row*bytes;
+		for (; row < y-cmatrix_middle; row++)
+		{
+			cur_col_p = (row - cmatrix_middle) * bytes + cur_col;
+			for (i = 0; i<bytes; i++)
+			{
+				sum = 0;
+				cmatrix_p = cmatrix;
+				cur_col_p1 = cur_col_p;
+				ctable_p = ctable;
+				for (j = cmatrix_length; j>0; j--)
+				{
+					sum += *(ctable_p + *cur_col_p1);
+					cur_col_p1 += bytes;
+					ctable_p += 256;
+				}
+				cur_col_p++;
+				*(dest_col_p++) = (uint8_t)(0.5f + sum);
+			}
+		}
+		
+		/* for the edge condition , we only use available info, and scale to one */
+		for (; row < y; row++)
+		{
+			/* find scale factor */
+			scale=0;
+			for (j = 0; j< y-row + cmatrix_middle; j++)
+				scale += cmatrix[j];
+			for (i = 0; i<bytes; i++)
+			{
+				sum = 0;
+				for (j = 0; j<y-row + cmatrix_middle; j++)
+				{
+					sum += cur_col[(row + j-cmatrix_middle)*bytes + i] * cmatrix[j];
+				}
+				dest_col[row*bytes + i] = (uint8_t) (0.5f + sum / scale);
+			}
+		}
+    }
+}
+
+// src -> dest ‚ÉƒJƒ‰ƒ€î•ñ‚ğæ“¾
+static void
+getCol(BYTE *src, BYTE *dest, int height, int pitch)
+{
+	pitch -= 4;
+	for (int i=0;i<height;i++) {
+		*dest++ = *src++;
+		*dest++ = *src++;
+		*dest++ = *src++;
+		*dest++ = *src++;
+		src += pitch;
+	}
+}
+
+// dest -> srct ‚ÉƒJƒ‰ƒ€î•ñ‚ğ•œ‹A
+static void
+setCol(BYTE *src, BYTE *dest, int height, int pitch)
+{
+	pitch -= 4;
+	for (int i=0;i<height;i++) {
+		*src++ = *dest++;
+		*src++ = *dest++;
+		*src++ = *dest++;
+		*src++ = *dest++;
+		src += pitch;
+	}
+}
+
+void
+layerExImage::gaussianBlur(float radius /*= 1.0f*/)
+{
+	int tmppitch = _width * 4;
+	BYTE *tmpbuf = new BYTE[tmppitch * _height];
+	
+	// generate convolution matrix and make sure it's smaller than each dimension
+	float *cmatrix = NULL;
+	int32_t cmatrix_length = gen_convolve_matrix(radius, &cmatrix);
+	// generate lookup table
+	float *ctable = gen_lookup_table(cmatrix, cmatrix_length);
+	
+	int32_t x,y;
+	int32_t bypp = 4;
+	
+	// blur the rows
+    for (y=0;y<_height;y++)
+	{
+		blur_line(ctable, cmatrix, cmatrix_length, _buffer + _pitch * y, tmpbuf + tmppitch * y, _width, bypp);
+	}
+
+	// blur the cols
+	BYTE* cur_col  = new BYTE[_height*4];
+	BYTE* dest_col = new BYTE[_height*4];
+	for (x=0;x<_width;x++)
+	{
+		getCol(tmpbuf+x*4, cur_col, _height, tmppitch);
+		//getCol(_buffer+x*4, dest_col, _height, _pitch);
+		blur_line(ctable, cmatrix, cmatrix_length, cur_col, dest_col, _height, bypp);
+		setCol(_buffer+x*4, dest_col, _height, _pitch);
+	}
+	delete[] cur_col;
+	delete[] dest_col;
+
+	delete[] cmatrix;
+	delete[] ctable;
+	delete[] tmpbuf;
 }
