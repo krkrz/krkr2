@@ -37,6 +37,15 @@ class Window {
 	 * 処理がおわったら onShellExecuted イベントが発生します。
 	 */
 	function commandExecute(target, param);
+
+	/**
+	 * Ctrl+Cイベントの送信(experimental:すべての環境で動作するとは限りません)
+	 * @param process プロセスハンドル（commandExecuteしたプロセスのみ）
+	 * @param isBreak Ctrl+CではなくCtrl+Breakを送る
+	 * @return 成功したらtrue
+	 */
+	function commandSendSignal(process, isBreak);
+
 	/**
 	 * イベント:コンソール出力
 	 * @param process プロセスハンドル

@@ -95,7 +95,7 @@ struct CommandExecute
 		si.hStdInput  = hIR;
 		si.hStdError  = hEW;
 		si.wShowWindow = SW_HIDE;
-		if (!::CreateProcessW(0, cmdline, 0, 0, TRUE, CREATE_NEW_CONSOLE, 0, 0, &si, &pi)) {
+		if (!::CreateProcessW(0, cmdline, 0, 0, TRUE, CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP, 0, 0, &si, &pi)) {
 			error = ERR_PROC;
 			return false;
 		}
@@ -239,7 +239,8 @@ struct CommandExecute
 		return exitcode;
 	}
 
-	HANDLE getProcessHandle() const { return pi.hProcess; }
+	HANDLE getProcessHandle() const { return pi.hProcess;    }
+	DWORD  getProcessId()     const { return pi.dwProcessId; }
 };
 
 
@@ -303,6 +304,7 @@ protected:
 	void onShellExecuted(WPARAM wp, LPARAM lp) {
 		tTJSVariant process = (tjs_int)wp;
 		tTJSVariant endCode = (tjs_int)lp;
+		removeProcessMap((HANDLE)wp);
 		tTJSVariant *p[] = {&process, &endCode};
 		objthis->FuncCall(0, L"onShellExecuted", NULL, NULL, 2, p, objthis);
 	}
@@ -427,6 +429,7 @@ public:
 		CommandExecute *cmd = new CommandExecute();
 		if (cmd->start(target, param)) {
 			HANDLE proc = cmd->getProcessHandle();
+			setProcessMap(proc, cmd->getProcessId());
 			_beginthread(waitCommand, 0, new ExecuteInfo(msgHWND, proc, cmd));
 			return (int)proc;
 		}
@@ -434,6 +437,46 @@ public:
 		return (int)INVALID_HANDLE_VALUE;
 	}
 
+
+	/**
+	 * シグナル送信
+	 */
+	bool commandSendSignal(int process, bool type) {
+		DWORD id = getProcessMap((HANDLE)process);
+		DWORD ev = type ? CTRL_BREAK_EVENT : CTRL_C_EVENT;
+
+		BOOL r = ::GenerateConsoleCtrlEvent(ev, id);
+		if (!r) {
+			if (::AttachConsole(id)) {
+				r = ::GenerateConsoleCtrlEvent(ev, id);
+				::FreeConsole();
+			} else  {
+				ttstr err;
+				getLastError(err);
+				TVPAddLog(err.c_str());
+			}
+		}
+		return !!r;
+	}
+	void  setProcessMap(HANDLE proc, DWORD id) { pmap.SetValue((tjs_int32)proc, (tTVInteger)id); }
+	DWORD getProcessMap(HANDLE proc)  { return (DWORD)(pmap.getIntValue((tjs_int32)proc, -1)); }
+	void removeProcessMap(HANDLE proc) {
+		iTJSDispatch2 *dsp = pmap.GetDispatch();
+		dsp->DeleteMemberByNum(0, (tjs_int)proc, dsp);
+	}
+static void getLastError(ttstr &message) {
+	LPVOID lpMessageBuffer;
+	FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+				   NULL, GetLastError(),
+				   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				   (LPWSTR)&lpMessageBuffer, 0, NULL);
+	message = ((tjs_char*)lpMessageBuffer);
+	LocalFree(lpMessageBuffer);
+}
+
+
+private:
+	ncbDictionaryAccessor pmap;
 };
 
 ATOM WindowShell::MessageWindowClass = 0;
@@ -459,6 +502,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowShell, Window) {
 	Method(L"shellExecute", &WindowShell::shellExecute);
 	Method(L"commandExecute", &WindowShell::commandExecute);
 	Method(L"terminateProcess", &WindowShell::terminateProcess);
+	Method(L"commandSendSignal", &WindowShell::commandSendSignal);
 }
 
 
@@ -515,6 +559,5 @@ tjs_error TJS_INTF_METHOD commandExecute(
 	return TJS_S_OK;
 }
 
-
-NCB_ATTACH_FUNCTION(commandExecute, System, commandExecute);
+NCB_ATTACH_FUNCTION(commandExecute,    System, commandExecute);
 
