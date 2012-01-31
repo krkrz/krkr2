@@ -30,6 +30,7 @@ class TestWindow extends Window {
 		menu.add(new MenuItem(this, "term"));
 		menu.add(new MenuItem(this, "console"));
 		menu.add(new MenuItem(this, "bgconsole"));
+		menu.add(new MenuItem(this, "sigint"));
 		caption = "shellExecute.dllƒeƒXƒg";
 		innerSunken = false;
 		setInnerSize(320, 1);
@@ -53,8 +54,11 @@ class TestWindow extends Window {
 				Debug.message("\n"+ToString(ret));
 				break;
 			case "bgconsole":
-				var file = Storages.getPlacedPath("console.bat");
+				var file = Storages.getPlacedPath("loop.bat");
 				lastproc = commandExecute("cmd.exe", @'/c "${Storages.getLocalName(file)}"');
+				break;
+			case "sigint":
+				Debug.message(commandSendSignal(lastproc, 0));
 				break;
 			}
 		}
