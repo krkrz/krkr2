@@ -70,6 +70,18 @@ ObjectInfo::getStackWeak(HSQUIRRELVM v, SQInteger idx)
 	sq_pop(gv, 1);
 }
 
+// オブジェクトを弱参照として取得
+void
+ObjectInfo::getWeak(const ObjectInfo &src)
+{
+	clear();
+	HSQUIRRELVM gv = getGlobalVM();
+	src.push(gv);
+	sq_weakref(gv, -1);
+	sq_getstackobj(gv, -1, &obj);
+	sq_addref(gv, &obj);
+	sq_pop(gv, 2);
+}
 
 // コンストラクタ
 ObjectInfo::ObjectInfo() {
@@ -344,6 +356,7 @@ void pushValue(HSQUIRRELVM v, const ObjectInfo &obj) { obj.push(v); }
 void pushValue(HSQUIRRELVM v, const sqstring &value) { sq_pushstring(v,value.c_str(),value.length()); }
 void pushValue(HSQUIRRELVM v, SQFUNCTION func) { sq_newclosure(v, func, 0); }
 void pushValue(HSQUIRRELVM v, HSQOBJECT obj) { sq_pushobject(v, obj); }
+void pushValue(HSQUIRRELVM v, const ObjectInfo::ObjectInfoReference &obj) { obj.pushData(v); }
 
 // 値の取得
 SQRESULT getValue(HSQUIRRELVM v, bool *value, int idx) { SQBool b;SQRESULT ret = sq_getbool(v, idx, &b); *value = b != SQFalse; return ret; }

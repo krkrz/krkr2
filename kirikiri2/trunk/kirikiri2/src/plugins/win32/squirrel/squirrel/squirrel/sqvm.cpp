@@ -896,7 +896,8 @@ common_call:
 			case _OP_PINC: {SQObjectPtr o(sarg3); _GUARD(DerefInc('+',TARGET, STK(arg1), STK(arg2), o, true));} continue;
 			case _OP_PINCL:	{SQObjectPtr o(sarg3); _GUARD(PLOCAL_INC('+',TARGET, STK(arg1), o));} continue;
 			case _OP_CMP:	_GUARD(CMP_OP((CmpOP)arg3,STK(arg2),STK(arg1),TARGET))	continue;
-			case _OP_EXISTS: TARGET = Get(STK(arg1), STK(arg2), temp_reg, true,false)?_true_:_false_;continue;
+			//case _OP_EXISTS: TARGET = Get(STK(arg1), STK(arg2), temp_reg, true,false)?_true_:_false_;continue;
+			case _OP_EXISTS: TARGET = Exist(STK(arg1), STK(arg2))?_true_:_false_;continue;
 			case _OP_INSTANCEOF: 
 				if(type(STK(arg1)) != OT_CLASS || type(STK(arg2)) != OT_INSTANCE) {
 					TARGET = _false_;
@@ -1163,6 +1164,68 @@ bool SQVM::CallNative(SQNativeClosure *nclosure,SQInteger nargs,SQInteger stackb
 	_top = oldtop;
 	POP_CALLINFO(this);
 	return true;
+}
+
+bool SQVM::Exist(const SQObjectPtr &self,const SQObjectPtr &key)
+{
+	switch(type(self)){
+	case OT_TABLE:
+		if(_table(self)->Exist(key))return true;
+		break;
+	case OT_ARRAY:
+		if(sq_isnumeric(key)){
+			return _array(self)->Exist(tointeger(key));
+		}
+		break;
+	case OT_INSTANCE:
+		if(_instance(self)->Exist(key)) return true;
+		break;
+	default:break; //shut up compiler
+	}
+	if(FallBackExist(self,key)) return true;
+	return false;
+}
+
+bool SQVM::FallBackExist(const SQObjectPtr &self,const SQObjectPtr &key)
+{
+	switch(type(self)){
+	case OT_CLASS: 
+		return _class(self)->Exist(key);
+	case OT_TABLE:
+	case OT_USERDATA:
+        //delegation
+		if(_delegable(self)->_delegate) {
+			if(Exist(SQObjectPtr(_delegable(self)->_delegate),key))
+				return true;	
+			Push(self);Push(key);
+			SQObjectPtr t;
+			if(CallMetaMethod(_delegable(self),MT_EXIST,2,t)) {
+				return true;
+			}
+		}
+		return false;
+		break;
+	case OT_STRING:
+		if(sq_isnumeric(key)){
+			SQInteger n=tointeger(key);
+			if(abs((int)n)<_string(self)->_len){
+				return true;
+			}
+		}
+		break;
+	case OT_INSTANCE:
+		{
+			Push(self);Push(key);
+			SQObjectPtr t;
+			if(CallMetaMethod(_delegable(self),MT_EXIST,2,t)) {
+				return true;
+			}
+		}
+		break;
+	default:
+		return false;
+	}
+	return false;
 }
 
 bool SQVM::Get(const SQObjectPtr &self,const SQObjectPtr &key,SQObjectPtr &dest,bool raw, bool fetchroot)
