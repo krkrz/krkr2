@@ -108,7 +108,10 @@ public:
 
     // スタックから弱参照として取得
 	void getStackWeak(HSQUIRRELVM v, SQInteger idx);
-  
+
+	// オブジェクトを弱参照として取得
+	void getWeak(const ObjectInfo &src);
+	
 	// コンストラクタ
 	ObjectInfo();
 
@@ -165,6 +168,11 @@ public:
 	// デストラクタ
 	virtual ~ObjectInfo();
 
+	// 弱参照か？
+	bool isWeak() {
+		return sq_isweakref(obj);
+	}
+	
 	// null か？
 	bool isNull() const {
 		return type() == OT_NULL;
@@ -455,7 +463,7 @@ public:
 		}
 
 		template<typename K>
-		ObjectInfoReference operator[](K key) {
+		ObjectInfoReference operator[](K key) const {
 			HSQOBJECT target;
 			HSQUIRRELVM gv = getGlobalVM();
 			pushData(gv);
@@ -502,7 +510,7 @@ public:
 	 * という処理が自動的に行われます
 	 */
 	template<typename K>
-	ObjectInfoReference operator[](K key) {
+	ObjectInfoReference operator[](K key) const {
 		return ObjectInfoReference(obj, key);
 	}
 
@@ -883,6 +891,8 @@ inline SQInteger printf(const SQChar *format, T1 p1, T2 p2, T3 p3, T4 p4, T5 p5)
 	pushValue(gv, p5);
 	return sqstd_printf(gv, 5);
 }
+
+void pushValue(HSQUIRRELVM v, const ObjectInfo::ObjectInfoReference &obj);
 
 };
 

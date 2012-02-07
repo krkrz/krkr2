@@ -22,6 +22,10 @@ public:
 	void Finalize(){
 		_values.resize(0);
 	}
+	bool Exist(const SQInteger nidx)
+	{
+		return nidx>=0 && nidx<(SQInteger)_values.size();
+	}
 	bool Get(const SQInteger nidx,SQObjectPtr &val)
 	{
 		if(nidx>=0 && nidx<(SQInteger)_values.size()){

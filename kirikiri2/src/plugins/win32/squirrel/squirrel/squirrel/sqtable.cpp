@@ -80,6 +80,14 @@ SQTable *SQTable::Clone()
 	return nt;
 }
 
+bool SQTable::Exist(const SQObjectPtr &key)
+{
+	if(type(key) == OT_NULL)
+		return false;
+	_HashNode *n = _Get(key, HashObj(key) & (_numofnodes - 1));
+	return n != 0;
+}
+
 bool SQTable::Get(const SQObjectPtr &key,SQObjectPtr &val)
 {
 	if(type(key) == OT_NULL)

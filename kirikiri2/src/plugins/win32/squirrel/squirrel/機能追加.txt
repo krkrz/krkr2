@@ -304,6 +304,11 @@ local name = function() {};
 userpointer の typeof で帰る型名を "userdata" ではなく
 "userpointer" に変更。区別がつかないと困る場合がある
 
+・OP_EXIST 用の処理を SQVM::Exist として専用に作成。
+　
+　関連して存在判定メタメソッド _exist を新設。
+　存在する場合は成功(SQ_ERROR)、そうでない場合は例外(SQ_ERROR)を返すようにする
+
 ●バグ修正
 
 ・se_set/sq_rawset/sq_newslot が処理に失敗したときに
