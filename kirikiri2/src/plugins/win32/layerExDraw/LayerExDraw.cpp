@@ -2179,3 +2179,135 @@ LayerExDraw::drawPathString2(const FontInfo *font, const Appearance *app, REAL x
   result.Height = REAL(font->getLineSpacing() * 1.124);
   return result;
 }
+
+static bool getEncoder(const tjs_char* mimeType, CLSID* pClsid)
+{
+	UINT num = 0, size = 0;
+	::GetImageEncodersSize(&num, &size);
+	if (size > 0) {
+		ImageCodecInfo* pImageCodecInfo = (ImageCodecInfo*)malloc(size);
+		if (pImageCodecInfo) {
+			GetImageEncoders(num, size, pImageCodecInfo);
+			for (UINT j = 0; j < num; ++j) {
+				if (wcscmp(pImageCodecInfo[j].MimeType, mimeType) == 0) {
+					*pClsid = pImageCodecInfo[j].Clsid;
+					free(pImageCodecInfo);
+					return true;
+				}
+			}
+			free(pImageCodecInfo);
+		}
+	}
+	return false;
+}
+
+/**
+ * エンコードパラメータ情報の参照用
+ */
+class EncoderParameterGetter : public tTJSDispatch /** EnumMembers 用 */
+{
+public:
+	struct EncoderInfo {
+		const char *name;
+		GUID guid;
+		long value;
+		EncoderInfo(const char *name, GUID guid, long value) : name(name), guid(guid), value(value) {};
+		EncoderInfo(){};
+	} infos[7];
+	EncoderParameters *params;
+
+	EncoderParameterGetter() {
+		infos[0] = EncoderInfo("compression", EncoderCompression, -1);
+		infos[1] = EncoderInfo("scanmethod", EncoderScanMethod, -1);
+		infos[2] = EncoderInfo("version", EncoderVersion, -1);
+		infos[3] = EncoderInfo("render", EncoderRenderMethod, -1);
+		infos[4] = EncoderInfo("tansform", EncoderTransformation, -1);
+		infos[5] = EncoderInfo("quality", EncoderQuality, -1);
+		infos[6] = EncoderInfo("depth", EncoderColorDepth, -1);
+		params = (EncoderParameters*)malloc(sizeof(EncoderParameters) + 6 * sizeof(EncoderParameter));
+	};
+
+	~EncoderParameterGetter() {
+		delete params;
+	}
+
+	void checkResult() {
+		int n = 0;
+		for (int i=0;i<7;i++) {
+			if (infos[i].value >= 0) {
+				params->Parameter[n].Guid = infos[i].guid;
+				params->Parameter[n].Type = EncoderParameterValueTypeLong;
+				params->Parameter[n].NumberOfValues = 1;
+				params->Parameter[n].Value = &infos[i].value;
+				n++;
+			}
+		}
+		params->Count = n;
+	}
+	
+	virtual tjs_error TJS_INTF_METHOD FuncCall( // function invocation
+												tjs_uint32 flag,			// calling flag
+												const tjs_char * membername,// member name ( NULL for a default member )
+												tjs_uint32 *hint,			// hint for the member name (in/out)
+												tTJSVariant *result,		// result
+												tjs_int numparams,			// number of parameters
+												tTJSVariant **param,		// parameters
+												iTJSDispatch2 *objthis		// object as "this"
+												) {
+		if (numparams > 1) {
+			tTVInteger flag = param[1]->AsInteger();
+			if (!(flag & TJS_HIDDENMEMBER)) {
+				ttstr name = *param[0];
+				for (int i=0;i<7;i++) {
+					if (name == infos[i].name) {
+						infos[i].value = (tjs_int)*param[1];
+						break;
+					}
+				}
+			}
+		}
+		if (result) {
+			*result = true;
+		}
+		return TJS_S_OK;
+	}
+};
+
+/**
+ * 画像の保存
+ */
+tjs_error
+LayerExDraw::saveImage(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	LayerExDraw *self = ncbInstanceAdaptor<LayerExDraw>::GetNativeInstance(objthis, true);
+	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+	if (!self) return TJS_E_NATIVECLASSCRASH;
+	ttstr filename = TVPNormalizeStorageName(param[0]->AsStringNoAddRef());
+	TVPGetLocalName(filename);
+	ttstr type;
+	if (numparams > 1) {
+		type = *param[1];
+	} else {
+		type = L"image/bmp";
+	}
+	CLSID clsid;
+	if (!getEncoder(type.c_str(), &clsid)) {
+		TVPThrowExceptionMessage(L"unknown format:%1", type);
+	}
+	Status ret;
+	if (numparams > 2 && param[2]->Type() == tvtObject) {
+		// パラメータ辞書がある
+		EncoderParameterGetter *caller = new EncoderParameterGetter();
+		tTJSVariantClosure closure(caller);
+		param[2]->AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
+		caller->checkResult();
+		ret = self->bitmap->Save(filename.c_str(), &clsid, caller->params);
+		caller->Release();
+	} else {
+		ret = self->bitmap->Save(filename.c_str(), &clsid, NULL);
+	}
+	if (result) {
+		*result = ret == 0;
+	}
+	return TJS_S_OK;
+}
