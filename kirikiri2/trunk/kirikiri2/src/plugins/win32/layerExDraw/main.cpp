@@ -909,6 +909,27 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 	NCB_METHOD(redrawRecord);
 	NCB_METHOD(saveRecord);
 	NCB_METHOD(loadRecord);
+
+	NCB_METHOD_RAW_CALLBACK(saveImage, &LayerExDraw::saveImage, 0);
+
+#define ENUM(n) Variant(#n, (int)n)
+	ENUM(EncoderValueCompressionLZW);
+    ENUM(EncoderValueCompressionCCITT3);
+    ENUM(EncoderValueCompressionCCITT4);
+    ENUM(EncoderValueCompressionRle);
+    ENUM(EncoderValueCompressionNone);
+    ENUM(EncoderValueScanMethodInterlaced);
+    ENUM(EncoderValueScanMethodNonInterlaced);
+    ENUM(EncoderValueVersionGif87);
+    ENUM(EncoderValueVersionGif89);
+    ENUM(EncoderValueRenderProgressive);
+    ENUM(EncoderValueRenderNonProgressive);
+	ENUM(EncoderValueTransformRotate90);
+    ENUM(EncoderValueTransformRotate180);
+    ENUM(EncoderValueTransformRotate270);
+    ENUM(EncoderValueTransformFlipHorizontal);
+    ENUM(EncoderValueTransformFlipVertical);
+
 }
 
 // ----------------------------------- ãNìÆÅEäJï˙èàóù

@@ -717,6 +717,14 @@ public:
 	 * @return ¬Œ÷‚µ‚½‚ç true
 	 */
 	bool loadRecord(const tjs_char *filename);
+
+	/**
+	 * ‰æ‘œ‚Ì•Û‘¶
+	 */
+	static tjs_error TJS_INTF_METHOD saveImage(tTJSVariant *result,
+											   tjs_int numparams,
+											   tTJSVariant **param,
+											   iTJSDispatch2 *objthis);
 };
 
 #endif

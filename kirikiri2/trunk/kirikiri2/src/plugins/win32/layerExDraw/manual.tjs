@@ -951,5 +951,42 @@ class Layer {
 	 * return Image オブジェクト
 	 */
 	function getRecordImage();
+
+	/**
+	 * 画像の保存
+	 * @param filename ファイル名
+	 * @param mime 保存する画像形式 image/jpeg, image/png, image/gif など
+	 * @param param エンコードパラメータ(辞書)
+	 * compression, scanmethod, version, render, transform, quality(0～100), depth(1,4,8,24,32)
+	 */
+	function saveImage(filename, mime, param=void);
+
+	// エンコードパラメータ指定用定数
+
+	// compression用
+	EncoderValueCompressionLZW;
+	EncoderValueCompressionCCITT3;
+    EncoderValueCompressionCCITT4;
+    EncoderValueCompressionRle;
+    EncoderValueCompressionNone;
+
+	// scanmethod用
+	EncoderValueScanMethodInterlaced;
+    EncoderValueScanMethodNonInterlaced;
+
+	// version用
+	EncoderValueVersionGif87;
+    EncoderValueVersionGif89;
+
+	// render用
+	EncoderValueRenderProgressive;
+    EncoderValueRenderNonProgressive;
+
+	// transform用
+	EncoderValueTransformRotate90;
+    EncoderValueTransformRotate180;
+    EncoderValueTransformRotate270;
+	EncoderValueTransformFlipHorizontal;
+	EncoderValueTransformFlipVertical;
 };
 
