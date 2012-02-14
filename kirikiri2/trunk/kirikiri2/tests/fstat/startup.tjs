@@ -36,7 +36,11 @@ function testTime(name) {
 }
 
 function testExistDir(name) {
-	dm("\n\ntestExistDir: " + name + ":"+Storages.isExistentDirectory(name));
+	try {
+		dm(@"\n\ntestExistDir: ${name} : ${Storages.isExistentDirectory(name)}");
+	} catch (e) {
+		dm(@"\n\ntestExistDir: ${name} fail : ${e.message}");
+	}
 }
 
 

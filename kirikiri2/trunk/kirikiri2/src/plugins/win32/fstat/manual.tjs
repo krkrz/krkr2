@@ -6,6 +6,11 @@
 class Storages {
 
 	/**
+	 * カレントディレクトリを示すプロパティ(読み書き可能)
+	 */
+	proprety currentPath;
+	
+	/**
 	 * ファイル属性の取得
 	 * @param file 対象ファイル
 	 * @return 属性情報の入った辞書
@@ -80,6 +85,13 @@ class Storages {
 	 */
 	function createDirectory(dir);	// by Kiyobee
 
+	/**
+	 * カレントディレクトリを変更する
+	 * @param dir ディレクトリ名
+	 * @return 実際に変更できたら true
+	 */
+	function changeDirectory(dir);
+	
 	/**
 	 * ファイルの属性を設定する
 	 * @param fliename ファイル/ディレクトリ名
