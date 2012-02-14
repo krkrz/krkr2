@@ -572,6 +572,28 @@ public:
 	}
 
 	/**
+	 * カレントディレクトリの変更
+	 * @param dir ディレクトリ名
+	 * @return 実際に作成できたら true
+	 */
+	static bool changeDirectory(ttstr dir)
+	{
+		if(dir.GetLastChar() != TJS_W('/'))
+		{
+			TVPThrowExceptionMessage(TJS_W("'/' must be specified at the end of given directory name."));
+		}
+		dir	= TVPNormalizeStorageName(dir);
+		TVPGetLocalName(dir);
+		BOOL	r = SetCurrentDirectory(dir.c_str());
+		if (r == FALSE) {
+			ttstr mes;
+			getLastError(mes);
+			TVPAddLog(ttstr(TJS_W("changeDirectory : ")) + dir + TJS_W(" : ") + mes);
+		}
+		return !! r;
+	}
+	
+	/**
 	 * ファイルの属性を設定する
 	 * @param filename ファイル/ディレクトリ名
 	 * @param attr 設定する属性
@@ -916,6 +938,24 @@ public:
 		}
 		return TJS_S_OK;
 	}
+
+	/*----------------------------------------------------------------------
+	 * カレントディレクトリ
+     ----------------------------------------------------------------------*/
+	static ttstr getCurrentPath() {
+		TCHAR crDir[MAX_PATH + 1];
+		GetCurrentDirectory(MAX_PATH + 1 , crDir);
+		ttstr result(crDir);
+		return TVPNormalizeStorageName(result + L"\\");
+	}
+	
+	static void setCurrentPath(ttstr path) {
+		if (!changeDirectory(path)) {
+			ttstr mes;
+			getLastError(mes);
+			TVPThrowExceptionMessage(TJS_W("setCurrentPath failed:%1"), mes);
+		}
+	}
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
@@ -932,6 +972,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(dirlistEx);
 	NCB_METHOD(removeDirectory);
 	NCB_METHOD(createDirectory);
+	NCB_METHOD(changeDirectory);
 	NCB_METHOD(setFileAttributes);
 	NCB_METHOD(resetFileAttributes);
 	NCB_METHOD(getFileAttributes);
@@ -942,6 +983,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(getDisplayName);
 	RawCallback("getMD5HashString",    &Class::getMD5HashString,    TJS_STATICMEMBER);
 	RawCallback("searchPath",          &Class::searchPath,          TJS_STATICMEMBER);
+	Property("currentPath", &Class::getCurrentPath, &Class::setCurrentPath);
 };
 
 /**
