@@ -2223,7 +2223,7 @@ public:
 		infos[3] = EncoderInfo("render", EncoderRenderMethod, -1);
 		infos[4] = EncoderInfo("tansform", EncoderTransformation, -1);
 		infos[5] = EncoderInfo("quality", EncoderQuality, -1);
-		infos[6] = EncoderInfo("depth", EncoderColorDepth, -1);
+		infos[6] = EncoderInfo("depth", EncoderColorDepth, 24);
 		params = (EncoderParameters*)malloc(sizeof(EncoderParameters) + 6 * sizeof(EncoderParameter));
 	};
 
@@ -2279,9 +2279,15 @@ public:
 tjs_error
 LayerExDraw::saveImage(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
-	LayerExDraw *self = ncbInstanceAdaptor<LayerExDraw>::GetNativeInstance(objthis, true);
+	// rawcallback だと hook がきいてない模様
+	LayerExDraw *self = ncbInstanceAdaptor<LayerExDraw>::GetNativeInstance(objthis);
+	if (!self) {
+		self = new LayerExDraw(objthis);
+		ncbInstanceAdaptor<LayerExDraw>::SetNativeInstance(objthis, self);
+	}
+	self->reset();
+	
 	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-	if (!self) return TJS_E_NATIVECLASSCRASH;
 	ttstr filename = TVPNormalizeStorageName(param[0]->AsStringNoAddRef());
 	TVPGetLocalName(filename);
 	ttstr type;
@@ -2294,18 +2300,17 @@ LayerExDraw::saveImage(tTJSVariant *result, tjs_int numparams, tTJSVariant **par
 	if (!getEncoder(type.c_str(), &clsid)) {
 		TVPThrowExceptionMessage(L"unknown format:%1", type);
 	}
-	Status ret;
+
+	EncoderParameterGetter *caller = new EncoderParameterGetter();
+	// パラメータ辞書がある
 	if (numparams > 2 && param[2]->Type() == tvtObject) {
-		// パラメータ辞書がある
-		EncoderParameterGetter *caller = new EncoderParameterGetter();
 		tTJSVariantClosure closure(caller);
 		param[2]->AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
-		caller->checkResult();
-		ret = self->bitmap->Save(filename.c_str(), &clsid, caller->params);
-		caller->Release();
-	} else {
-		ret = self->bitmap->Save(filename.c_str(), &clsid, NULL);
 	}
+	caller->checkResult();
+	Status ret = self->bitmap->Save(filename.c_str(), &clsid, caller->params);
+	caller->Release();
+
 	if (result) {
 		*result = ret == 0;
 	}
