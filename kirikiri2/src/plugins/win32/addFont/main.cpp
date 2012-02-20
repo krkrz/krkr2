@@ -1,6 +1,13 @@
 #pragma comment(lib, "gdi32.lib")
 
+#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500
+#error "_WIN32_WINNT < 0x0500 : AddFontResourceEx undefined"
+#endif
+
+#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
+#endif
+
 #include <windows.h>
 #include <wingdi.h>
 #include "ncbind/ncbind.hpp"
@@ -80,7 +87,7 @@ struct FontEx
 						in->Stat(&stat, STATFLAG_NONAME);
 						DWORD ret = 0;
 						// ƒTƒCƒY‚ ‚Ó‚ê–³Ž‹ XXX
-						ULONG size = stat.cbSize.QuadPart;
+						ULONG size = (ULONG)(stat.cbSize.QuadPart);
 						char *data = new char[size];
 						if (in->Read(data, size, &size) == S_OK) {
 							HANDLE handle = AddFontMemResourceEx((void*)data, size, NULL, &ret);
