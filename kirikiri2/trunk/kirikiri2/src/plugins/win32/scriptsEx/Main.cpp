@@ -202,14 +202,16 @@ public:
 class DictIterateCaller : public tTJSDispatch
 {
 public:
-	tTJSVariantClosure &dst;
+	iTJSDispatch2 *func;
+	iTJSDispatch2 *functhis;
 	tTJSVariant **paramList;
 	tjs_int paramCount;
 
-	DictIterateCaller(tTJSVariantClosure &_dst,
+	DictIterateCaller(iTJSDispatch2 *func,
+					  iTJSDispatch2 *functhis,
 					  tTJSVariant **_paramList,
 					  tjs_int _paramCount)
-		 : dst(_dst)
+		 : func(func), functhis(functhis)
 		   , paramList(_paramList)
 		   , paramCount(_paramCount) {
 		   }
@@ -227,7 +229,7 @@ public:
 			if ((int)*param[1] != TJS_HIDDENMEMBER) {
 				*paramList[0] = *param[0];
 				*paramList[1] = *param[2];
-				(void)dst.FuncCall(0, NULL, NULL, NULL, paramCount, paramList, NULL);
+				(void)func->FuncCall(0, NULL, NULL, NULL, paramCount, paramList, functhis);
 			}
 		}
 		if (result)
@@ -439,7 +441,15 @@ ScriptsAdd::foreach(tTJSVariant *result,
 {
 	if (numparams < 2) return TJS_E_BADPARAMCOUNT;
 	tTJSVariantClosure &obj = param[0]->AsObjectClosureNoAddRef();
-	tTJSVariantClosure &func = param[1]->AsObjectClosureNoAddRef();
+	tTJSVariantClosure &funcClosure = param[1]->AsObjectClosureNoAddRef();
+
+	// 実行対象関数を選択
+	// 無名関数なら this コンテキストで動作させる
+	iTJSDispatch2 *func     = funcClosure.Object;
+	iTJSDispatch2 *functhis = funcClosure.ObjThis;
+	if (functhis == 0) {
+		functhis = objthis;
+	}
 
 	// 配列の場合
 	if (obj.IsInstanceOf(0, NULL, NULL, L"Array", NULL)== TJS_S_TRUE) {
@@ -458,7 +468,7 @@ ScriptsAdd::foreach(tTJSVariant *result,
 		for (tjs_int i = 0; i < count; i++) {
 			key = i;
 			(void)obj.PropGetByNum(TJS_IGNOREPROP, i, &value, NULL);
-			(void)func.FuncCall(0, NULL, NULL, NULL, numparams, paramList, NULL);
+			(void)func->FuncCall(0, NULL, NULL, NULL, numparams, paramList, functhis);
 		}
 
 		delete[] paramList;
@@ -472,7 +482,7 @@ ScriptsAdd::foreach(tTJSVariant *result,
 		for (tjs_int i = 2; i < numparams; i++)
 			paramList[i] = param[i];
 
-		DictIterateCaller *caller = new DictIterateCaller(func, paramList, numparams);
+		DictIterateCaller *caller = new DictIterateCaller(func, functhis, paramList, numparams);
 		tTJSVariantClosure closure(caller);
 		obj.EnumMembers(TJS_IGNOREPROP, &closure, NULL);
 		caller->Release();
