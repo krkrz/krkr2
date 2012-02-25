@@ -1973,6 +1973,36 @@ struct System
 		}
 	}
 
+	static bool setIconicPreview(bool en) {
+		static bool lastFailed = false;
+		if (lastFailed) return false;
+
+		HMODULE hmod = ::LoadLibraryW(L"dwmapi.dll");
+
+		typedef HRESULT (WINAPI *DwmSetWindowAttributeT)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+		DwmSetWindowAttributeT proc = 0;
+		if (!hmod) TVPAddImportantLog(TJS_W("dwmapi.dll load failed."));
+		else {
+			proc = (DwmSetWindowAttributeT)::GetProcAddress(hmod, "DwmSetWindowAttribute");
+			if (!proc) TVPAddImportantLog(TJS_W("dwmapi.dll: DwmSetWindowAttribute not found."));
+		}
+		if (!proc) {
+			lastFailed = true;
+			return false;
+		}
+
+		BOOL val = en ? TRUE : FALSE;
+		HWND app = TVPGetApplicationWindowHandle();
+#ifndef DWMWA_FORCE_ICONIC_REPRESENTATION
+#define DWMWA_FORCE_ICONIC_REPRESENTATION 7
+#endif
+		bool r = SUCCEEDED(proc(app, DWMWA_FORCE_ICONIC_REPRESENTATION, &val, sizeof(val)));
+
+		if (hmod) ::FreeLibrary(hmod);
+		return r;
+	}
+
+
 	static tjs_int getDoubleClickTime() { return (tjs_int)::GetDoubleClickTime(); }
 };
 HICON System::externalIcon = NULL;
@@ -1993,6 +2023,7 @@ NCB_ATTACH_FUNCTION(getSystemMetrics,   System, System::getSystemMetrics);
 NCB_ATTACH_FUNCTION(readEnvValue,       System, System::readEnvValue);
 NCB_ATTACH_FUNCTION(expandEnvString,    System, System::expandEnvString);
 NCB_ATTACH_FUNCTION(setApplicationIcon, System, System::setApplicationIcon);
+NCB_ATTACH_FUNCTION(setIconicPreview,   System, System::setIconicPreview);
 NCB_ATTACH_FUNCTION(getDoubleClickTime, System, System::getDoubleClickTime);
 NCB_ATTACH_FUNCTION(breathe,            System, TVPBreathe);
 NCB_ATTACH_FUNCTION(isBreathing,        System, TVPGetBreathing);

@@ -481,6 +481,14 @@ class System
 	function setApplicationIcon(file);
 
 	/**
+	 * Vista以降のタスクバーやAlt+TABでのサムネイル表示を強制的にアプリケーションアイコン表示にする
+	 * @param iconic trueならサムネイルの代わりにアイコンを表示する／falseなら設定解除
+	 * @return 成功したかどうか（XP以前では常に失敗）
+	 * ※ アプリケーションウィンドウに DWMWA_FORCE_ICONIC_REPRESENTATION が設定される
+	 */
+	function setIconicPreview(iconic);
+
+	/**
 	 * TVPBreathe, TVPGetBreathing のラッパ
 	 */
 	function breathe();
