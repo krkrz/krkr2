@@ -542,6 +542,8 @@ public:
 												) {
 		tTJSVariant value = ScriptsAdd::clone(*param[2]);
 		dict->PropSet((int)*param[1], param[0]->GetString(), 0, &value, dict);
+		if (result)
+			*result = true;
 		return TJS_S_OK;
 	}
 protected:
