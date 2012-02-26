@@ -541,7 +541,7 @@ public:
 												iTJSDispatch2 *objthis		// object as "this"
 												) {
 		tTJSVariant value = ScriptsAdd::clone(*param[2]);
-		dict->PropSet((int)*param[1], param[0]->GetString(), 0, &value, dict);
+		dict->PropSet(TJS_MEMBERENSURE|(tjs_int)*param[1], param[0]->GetString(), 0, &value, dict);
 		if (result)
 			*result = true;
 		return TJS_S_OK;
