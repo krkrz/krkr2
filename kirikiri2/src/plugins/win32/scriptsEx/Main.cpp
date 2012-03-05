@@ -473,7 +473,7 @@ ScriptsAdd::foreach(tTJSVariant *result,
 
 		delete[] paramList;
 
-	} else if (obj.IsInstanceOf(0, NULL, NULL, L"Dictionary", NULL)== TJS_S_TRUE) {
+	} else {
 
 		tTJSVariant key, value;
 		tTJSVariant **paramList = new tTJSVariant *[numparams];
