@@ -208,3 +208,32 @@ class Storages {
 	 */
 	function searchPath(filename, searchpath); // by miahmie
 };
+
+
+/**
+ * テンポラリファイルを管理するクラス
+ * あらかじめテンポラリ化したいファイルをこれにエントリして、
+ * その後このオブジェクトを破棄すると、
+ * ファイルクローズ時に自動的に消去されます
+ */
+class TemporaryFiles {
+
+	/**
+	 * コンストラクタ
+	 */
+	function TemporaryFiles();
+	
+	/**
+	 * ファイルをエントリ
+	 * @param filename ファイル名
+	 * @return 登録できたら true
+	 */
+	function entry(filename);
+
+	/**
+	 * フォルダをエントリ
+	 * @param foldername フォルダ名
+	 * @return 登録できたら true
+	 */
+	function entryFolder(foldername)
+};
