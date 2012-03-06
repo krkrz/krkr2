@@ -1012,9 +1012,10 @@ public:
 private:
 	std::vector<HANDLE> handles;
 
-	bool _entry(ttstr filename, bool folder=false) {
-		filename = TVPGetPlacedPath(filename);
-		if (filename.length() && !wcschr(filename.c_str(), '>')) {
+	bool _entry(const ttstr &name, bool folder=false) {
+		ttstr filename = TVPNormalizeStorageName(name);
+		TVPGetLocalName(filename);
+		if (filename.length()) {
 			DWORD access = FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE;
 			DWORD flag = folder ? FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_DELETE_ON_CLOSE : FILE_ATTRIBUTE_NORMAL|FILE_FLAG_DELETE_ON_CLOSE;
 			HANDLE h = CreateFile(filename.c_str(),0,access,0,OPEN_EXISTING,flag,0);
