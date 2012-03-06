@@ -1,5 +1,6 @@
 #include "ncbind/ncbind.hpp"
 #include <string>
+#include <vector>
 using namespace std;
 #include <tchar.h>
 #include <shlobj.h>
@@ -985,6 +986,52 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("searchPath",          &Class::searchPath,          TJS_STATICMEMBER);
 	Property("currentPath", &Class::getCurrentPath, &Class::setCurrentPath);
 };
+
+// テンポラリファイル処理用クラス
+class TemporaryFiles
+{
+public:
+	TemporaryFiles() {};
+
+	~TemporaryFiles() {
+		std::vector<HANDLE>::iterator it = handles.begin();
+		while (it != handles.end()) {
+			HANDLE h = *it;
+			::CloseHandle(h);
+		}
+	}
+
+	bool entry(ttstr filename) {
+		return _entry(filename);
+	}
+
+	bool entryFolder(ttstr filename) {
+		return _entry(filename, true);
+	}
+	
+private:
+	std::vector<HANDLE> handles;
+
+	bool _entry(ttstr filename, bool folder=false) {
+		filename = TVPGetPlacedPath(filename);
+		if (filename.length() && !wcschr(filename.c_str(), '>')) {
+			DWORD access = FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE;
+			DWORD flag = folder ? FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_DELETE_ON_CLOSE : FILE_ATTRIBUTE_NORMAL|FILE_FLAG_DELETE_ON_CLOSE;
+			HANDLE h = CreateFile(filename.c_str(),0,access,0,OPEN_EXISTING,flag,0);
+			if (h != INVALID_HANDLE_VALUE) {
+				handles.push_back(h);
+				return true;
+			}
+		}
+		return false;
+	}
+};
+
+NCB_REGISTER_CLASS(TemporaryFiles) {
+	Constructor();
+	NCB_METHOD(entry);
+	NCB_METHOD(entryFolder);
+}
 
 /**
  * 登録処理後
