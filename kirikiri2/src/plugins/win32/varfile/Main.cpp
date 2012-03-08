@@ -274,7 +274,7 @@ private:
 
 
 /**
- * ZIPストレージ
+ * Varストレージ
  */
 class VarStorage : public iTVPStorageMedia
 {
@@ -408,7 +408,10 @@ protected:
 				// フォルダ
 				ttstr member = ttstr(p, q-p);
 				tTJSVariant value;
-				if (TJS_SUCCEEDED(base.AsObjectClosureNoAddRef().PropGet(0, member.c_str(), NULL, &value, NULL)) && isDirectory(value)) {
+				tTJSVariantClosure &o = base.AsObjectClosureNoAddRef();
+				if (((o.IsInstanceOf(0, NULL, NULL, L"Array", NULL) == TJS_S_TRUE &&
+					  TJS_SUCCEEDED(o.PropGetByNum(0, (tjs_int)TJSStringToInteger(member.c_str()), &value, NULL))) ||
+					 (TJS_SUCCEEDED(o.PropGet(0, member.c_str(), NULL, &value, NULL)))) && isDirectory(value)) {
 					base = value;
 					path = ttstr(q+1);
 				} else {
