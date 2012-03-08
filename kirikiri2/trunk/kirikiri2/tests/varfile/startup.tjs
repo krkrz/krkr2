@@ -3,6 +3,7 @@ Plugins.link("varfile.dll");
 Plugins.link("fstat.dll");
 
 var abc = %[];
+var d = %[e:[%[]]];
 
 class MyWindow extends Window {
 
@@ -31,6 +32,7 @@ class MyWindow extends Window {
 			test("var:/abc/hoge");
 			test("var://abc/hoge");
 			test("var:///abc/hoge");
+			test("var:///d/e/0/hoge");
 		}
 	}
 };
