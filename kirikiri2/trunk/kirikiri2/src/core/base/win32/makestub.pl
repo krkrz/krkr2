@@ -491,6 +491,9 @@ process_exp_stub("../win32/SysInitImpl.h");
 print OFH "#include \"DetectCPU.h\"\n";
 process_exp_stub("../../environ/win32/DetectCPU.h");
 
+print OFH "#include \"ThreadIntf.h\"\n";
+process_exp_stub("../../utils/ThreadIntf.h");
+
 print OFH "#include \"DebugIntf.h\"\n";
 process_exp_stub("../../utils/DebugIntf.h");
 
