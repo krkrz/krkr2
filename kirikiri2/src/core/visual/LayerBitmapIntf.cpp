@@ -20,6 +20,7 @@
 #include "tvpgl.h"
 #include "argb.h"
 #include "tjsUtils.h"
+#include "ThreadIntf.h"
 
 
 //#define TVP_FORCE_BILINEAR
@@ -78,149 +79,13 @@ static float sBmFactor[] =
 };
 
 //---------------------------------------------------------------------------
-static const tjs_int TVPMaxThreadNum = 8;
-tjs_int TVPDrawThreadNum = 1;
-typedef void (*TVP_THREAD_TASK_FUNC)(void *);
-typedef void * TVP_THREAD_PARAM;
-struct ThreadInfo {
-  bool readyToExit;
-  HANDLE thread;
-  HANDLE pingEvent;
-  HANDLE pongEvent;
-  TVP_THREAD_TASK_FUNC  lpStartAddress;
-  TVP_THREAD_PARAM lpParameter;
-};
-static std::vector<ThreadInfo*> TVPThreadList;
-static std::vector<HANDLE> TVPPongEventList;
-static std::vector<tjs_int> TVPProcesserIdList;
-static tjs_int TVPRunningThreadCount;
-static tjs_int TVPThreadTaskNum, TVPThreadTaskCount;
-
-//---------------------------------------------------------------------------
-static tjs_int GetProcesserNum(void)
-{
-  static tjs_int processor_num = 0;
-  if (! processor_num) {
-    SYSTEM_INFO info;
-    GetSystemInfo(&info);
-    processor_num = info.dwNumberOfProcessors;
-  }
-  return processor_num;
-}
-
-tjs_int TVPGetProcessorNum(void)
-{
-  return GetProcesserNum();
-}
-
-//---------------------------------------------------------------------------
-static tjs_int GetThreadNum(void)
-{
-  tjs_int threadNum = TVPDrawThreadNum ? TVPDrawThreadNum : GetProcesserNum();
-  threadNum = std::min(threadNum, TVPMaxThreadNum);
-  return threadNum;
-}
-//---------------------------------------------------------------------------
 static tjs_int GetAdaptiveThreadNum(tjs_int pixelNum, float factor)
 {
   if (pixelNum >= factor * 1000)
-    return GetThreadNum();
+    return TVPGetThreadNum();
   else
     return 1;
 }
-//---------------------------------------------------------------------------
-static DWORD WINAPI ThreadLoop(LPVOID p)
-{
-  ThreadInfo *threadInfo = (ThreadInfo*)p;
-  for(;;) {
-    SignalObjectAndWait(threadInfo->pongEvent, threadInfo->pingEvent, INFINITE, FALSE);
-    if (threadInfo->readyToExit)
-      break;
-    (threadInfo->lpStartAddress)(threadInfo->lpParameter);
-  }
-
-  DeleteObject(threadInfo->pongEvent);
-  DeleteObject(threadInfo->pingEvent);
-  delete threadInfo;
-  ExitThread(0);
-
-  return TRUE;
-}
-//---------------------------------------------------------------------------
-static void BeginThreadTask(tjs_int taskNum)
-{
-  TVPThreadTaskNum = taskNum;
-  TVPThreadTaskCount = 0;
-  TVPRunningThreadCount = 0;
-  tjs_int extraThreadNum = GetThreadNum() - 1;
-  if (TVPProcesserIdList.empty()) {
-    DWORD processAffinityMask, systemAffinityMask;
-    GetProcessAffinityMask(GetCurrentProcess(),
-                           &processAffinityMask,
-                           &systemAffinityMask);
-    for (tjs_int i = 0; i < MAXIMUM_PROCESSORS; i++) {
-      if (processAffinityMask & (1 << i))
-        TVPProcesserIdList.push_back(i);
-    }
-    if (TVPProcesserIdList.empty())
-      TVPProcesserIdList.push_back(MAXIMUM_PROCESSORS);
-  }
-  while (TVPThreadList.size() < extraThreadNum) {
-    ThreadInfo *threadInfo = new ThreadInfo();
-    threadInfo->readyToExit = false;
-    threadInfo->pingEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    threadInfo->pongEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    threadInfo->thread = CreateThread(NULL, 0, ThreadLoop, threadInfo, CREATE_SUSPENDED, NULL);
-    SetThreadIdealProcessor(threadInfo->thread, TVPProcesserIdList[TVPThreadList.size() % TVPProcesserIdList.size()]);
-    ResumeThread(threadInfo->thread);
-    WaitForSingleObject(threadInfo->pongEvent, INFINITE);
-    TVPThreadList.push_back(threadInfo);
-    TVPPongEventList.push_back(threadInfo->pongEvent);
-  }
-  while (TVPThreadList.size() > extraThreadNum) {
-    ThreadInfo *threadInfo = TVPThreadList.back();
-    threadInfo->readyToExit = true;
-    SetEvent(threadInfo->pingEvent);
-    TVPThreadList.pop_back();
-    TVPPongEventList.pop_back();
-  }
-}
-
-//---------------------------------------------------------------------------
-static void ExecThreadTask(TVP_THREAD_TASK_FUNC func,
-                           TVP_THREAD_PARAM param)
-{
-  if (++TVPThreadTaskCount == TVPThreadTaskNum) {
-    func(param);
-    return;
-  }
-  ThreadInfo *threadInfo;
-
-  if (TVPRunningThreadCount < TVPThreadList.size()) {
-    threadInfo = TVPThreadList[TVPRunningThreadCount++];
-  } else {
-    DWORD retval = WaitForMultipleObjects(TVPPongEventList.size(),
-                                          &(TVPPongEventList[0]),
-                                          FALSE,
-                                          INFINITE);
-    threadInfo = TVPThreadList[ retval - WAIT_OBJECT_0 ];
-  }
-  threadInfo->lpStartAddress = func;
-  threadInfo->lpParameter = param;
-  SetEvent(threadInfo->pingEvent);
-}
-//---------------------------------------------------------------------------
-static void EndThreadTask(void) 
-{
-  if (TVPRunningThreadCount) {
-    WaitForMultipleObjects(TVPRunningThreadCount,
-                           &(TVPPongEventList[0]),
-                           TRUE,
-                           INFINITE);
-  }
-}
-//---------------------------------------------------------------------------
-
 //---------------------------------------------------------------------------
 #define RET_VOID
 #define BOUND_CHECK(x) \
@@ -375,7 +240,7 @@ bool tTVPBaseBitmap::Fill(tTVPRect rect, tjs_uint32 value)
         bool is32bpp = Is32BPP();
 
         tjs_int taskNum = GetAdaptiveThreadNum(w * h, 150);
-        BeginThreadTask(taskNum);
+        TVPBeginThreadTask(taskNum);
         PartialFillParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
@@ -391,9 +256,9 @@ bool tTVPBaseBitmap::Fill(tTVPRect rect, tjs_uint32 value)
           param->h = y1 - y0;
           param->value = value;
           param->is32bpp = is32bpp;
-          ExecThreadTask(&PartialFillEntry, TVP_THREAD_PARAM(param));
+          TVPExecThreadTask(&PartialFillEntry, TVP_THREAD_PARAM(param));
         }
-        EndThreadTask();
+        TVPEndThreadTask();
 
         return true;
 }
@@ -480,7 +345,7 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
         tjs_int w = rect.right - rect.left;
 
         tjs_int taskNum = GetAdaptiveThreadNum(w * h, opa == 255 ? 115 : 55);
-        BeginThreadTask(taskNum);
+        TVPBeginThreadTask(taskNum);
         PartialFillColorParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
@@ -496,9 +361,9 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
           param->h = y1 - y0;
           param->color = color;
           param->opa = opa;
-          ExecThreadTask(&PartialFillColorEntry, TVP_THREAD_PARAM(param));
+          TVPExecThreadTask(&PartialFillColorEntry, TVP_THREAD_PARAM(param));
         }
-        EndThreadTask();
+        TVPEndThreadTask();
 
         return true;
 }
@@ -578,7 +443,7 @@ bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
         else
           factor = 147;
         tjs_int taskNum = GetAdaptiveThreadNum(w * h, factor);
-        BeginThreadTask(taskNum);
+        TVPBeginThreadTask(taskNum);
         PartialBlendColorParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
@@ -595,9 +460,9 @@ bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
           param->color = color;
           param->opa = opa;
           param->additive = additive;
-          ExecThreadTask(&PartialBlendColorEntry, TVP_THREAD_PARAM(param));
+          TVPExecThreadTask(&PartialBlendColorEntry, TVP_THREAD_PARAM(param));
         }
-        EndThreadTask();
+        TVPEndThreadTask();
 
         return true;
 }
@@ -682,7 +547,7 @@ bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
         tjs_int w = rect.right - rect.left;
 
         tjs_int taskNum = GetAdaptiveThreadNum(w * h, level == 255 ? 83 : 50);
-        BeginThreadTask(taskNum);
+        TVPBeginThreadTask(taskNum);
         PartialRemoveConstOpacityParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
@@ -697,9 +562,9 @@ bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
           param->w = w;
           param->h = y1 - y0;
           param->level = level;
-          ExecThreadTask(&PartialRemoveConstOpacityEntry, TVP_THREAD_PARAM(param));
+          TVPExecThreadTask(&PartialRemoveConstOpacityEntry, TVP_THREAD_PARAM(param));
         }
-        EndThreadTask();
+        TVPEndThreadTask();
 
         return true;
 }
@@ -754,7 +619,7 @@ bool tTVPBaseBitmap::FillMask(tTVPRect rect, tjs_int value)
         tjs_int w = rect.right - rect.left;
 
         tjs_int taskNum = GetAdaptiveThreadNum(w * h, 84);
-        BeginThreadTask(taskNum);
+        TVPBeginThreadTask(taskNum);
         PartialFillMaskParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
@@ -769,9 +634,9 @@ bool tTVPBaseBitmap::FillMask(tTVPRect rect, tjs_int value)
           param->w = w;
           param->h = y1 - y0;
           param->value = value;
-          ExecThreadTask(&PartialFillMaskEntry, TVP_THREAD_PARAM(param));
+          TVPExecThreadTask(&PartialFillMaskEntry, TVP_THREAD_PARAM(param));
         }
-        EndThreadTask();
+        TVPEndThreadTask();
 
         return true;
 }
@@ -891,7 +756,7 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
         bool backwardCopy = (ref == this && rect.top > refrect.top);
 
         tjs_int taskNum = (ref == this) ? 1 : GetAdaptiveThreadNum(w * h, 66);
-        BeginThreadTask(taskNum);
+        TVPBeginThreadTask(taskNum);
         PartialCopyRectParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
@@ -912,9 +777,9 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
           param->sy = refrect.top + y0;
           param->plane = plane;
           param->backwardCopy = backwardCopy;
-          ExecThreadTask(&PartialCopyRectEntry, TVP_THREAD_PARAM(param));
+          TVPExecThreadTask(&PartialCopyRectEntry, TVP_THREAD_PARAM(param));
         }
-        EndThreadTask();
+        TVPEndThreadTask();
 
         return true;
 }
@@ -1106,7 +971,7 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 	tjs_int h = refrect.get_height();
 
         tjs_int taskNum = GetAdaptiveThreadNum(w * h, sBmFactor[method]);
-        BeginThreadTask(taskNum);
+        TVPBeginThreadTask(taskNum);
         PartialBltParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
@@ -1127,9 +992,9 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
           param->method = method;
           param->opa = opa;
           param->hda = hda;
-          ExecThreadTask(&PartialBltEntry, TVP_THREAD_PARAM(param));
+          TVPExecThreadTask(&PartialBltEntry, TVP_THREAD_PARAM(param));
         }
-        EndThreadTask();
+        TVPEndThreadTask();
 
         return true;
 }
@@ -2795,7 +2660,7 @@ int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *r
         tjs_int h = destrect.bottom - destrect.top;
 
         tjs_int taskNum = GetAdaptiveThreadNum(w * h, sBmFactor[method] * 13 / 59);
-        BeginThreadTask(taskNum);
+        TVPBeginThreadTask(taskNum);
         PartialAffineBltParam params[TVPMaxThreadNum];
         for (tjs_int i = 0; i < taskNum; i++) {
           tjs_int y0, y1;
@@ -2830,9 +2695,9 @@ int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *r
           param->srcpitch = srcpitch;
           param->srccliprect = &srccliprect;
           param->srcrect = &srcrect;
-          ExecThreadTask(&PartialAffineBltEntry, TVP_THREAD_PARAM(param));
+          TVPExecThreadTask(&PartialAffineBltEntry, TVP_THREAD_PARAM(param));
         }
-        EndThreadTask();
+        TVPEndThreadTask();
 
         // update area param
         for (tjs_int i = 0; i < taskNum; i++) {

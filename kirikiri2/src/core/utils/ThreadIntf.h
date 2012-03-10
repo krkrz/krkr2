@@ -25,5 +25,16 @@ enum tTVPThreadPriority
 
 #include "ThreadImpl.h"
 
+/*[*/
+const tjs_int TVPMaxThreadNum = 8;
+typedef void (*TVP_THREAD_TASK_FUNC)(void *);
+typedef void * TVP_THREAD_PARAM;
+/*]*/
+
+TJS_EXP_FUNC_DEF(tjs_int, TVPGetProcessorNum, ());
+TJS_EXP_FUNC_DEF(tjs_int, TVPGetThreadNum, ());
+TJS_EXP_FUNC_DEF(void, TVPBeginThreadTask, (tjs_int));
+TJS_EXP_FUNC_DEF(void, TVPExecThreadTask, (TVP_THREAD_TASK_FUNC, TVP_THREAD_PARAM));
+TJS_EXP_FUNC_DEF(void, TVPEndThreadTask, ());
 
 #endif
