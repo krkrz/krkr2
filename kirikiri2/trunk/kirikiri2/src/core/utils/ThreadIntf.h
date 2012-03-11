@@ -33,8 +33,8 @@ typedef void * TVP_THREAD_PARAM;
 
 TJS_EXP_FUNC_DEF(tjs_int, TVPGetProcessorNum, ());
 TJS_EXP_FUNC_DEF(tjs_int, TVPGetThreadNum, ());
-TJS_EXP_FUNC_DEF(void, TVPBeginThreadTask, (tjs_int));
-TJS_EXP_FUNC_DEF(void, TVPExecThreadTask, (TVP_THREAD_TASK_FUNC, TVP_THREAD_PARAM));
+TJS_EXP_FUNC_DEF(void, TVPBeginThreadTask, (tjs_int num));
+TJS_EXP_FUNC_DEF(void, TVPExecThreadTask, (TVP_THREAD_TASK_FUNC func, TVP_THREAD_PARAM param));
 TJS_EXP_FUNC_DEF(void, TVPEndThreadTask, ());
 
 #endif
