@@ -1890,8 +1890,8 @@ extern void * TVPImportFuncPtrcf8ab6c24f25993ccc7663e572ac2991;
 extern void * TVPImportFuncPtrba40ffbca76695b54a02aa8c1f1e047b;
 extern void * TVPImportFuncPtrc97720e639e95ba5130ce9dd78d30403;
 extern void * TVPImportFuncPtrc5557ac5391b1b831a22e64b65d1746c;
-extern void * TVPImportFuncPtr762bbb5c48a8e87053b01f6468b4cec9;
-extern void * TVPImportFuncPtr567f889f4d6f7d11ee5842b65b1e7488;
+extern void * TVPImportFuncPtr3243a4c32d4f674f1bbc8d3895257568;
+extern void * TVPImportFuncPtr78390a3d08879903ee9558e9df68db4d;
 extern void * TVPImportFuncPtr58e9454d7096a52808f9a83b9ce25ff0;
 extern void * TVPImportFuncPtrcdefadd0c3bf15b4639b2f0338a40585;
 extern void * TVPImportFuncPtr4bf80e9bac16b9e3f9bf385b2fbce657;
@@ -7672,25 +7672,25 @@ inline tjs_int TVPGetThreadNum()
 	typedef tjs_int (__stdcall * __functype)();
 	return ((__functype)(TVPImportFuncPtrc5557ac5391b1b831a22e64b65d1746c))();
 }
-inline void TVPBeginThreadTask(tjs_int)
+inline void TVPBeginThreadTask(tjs_int num)
 {
-	if(!TVPImportFuncPtr762bbb5c48a8e87053b01f6468b4cec9)
+	if(!TVPImportFuncPtr3243a4c32d4f674f1bbc8d3895257568)
 	{
-		static char funcname[] = "void ::TVPBeginThreadTask()";
-		TVPImportFuncPtr762bbb5c48a8e87053b01f6468b4cec9 = TVPGetImportFuncPtr(funcname);
+		static char funcname[] = "void ::TVPBeginThreadTask(tjs_int)";
+		TVPImportFuncPtr3243a4c32d4f674f1bbc8d3895257568 = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)();
-	((__functype)(TVPImportFuncPtr762bbb5c48a8e87053b01f6468b4cec9))(tjs_int);
+	typedef void (__stdcall * __functype)(tjs_int);
+	((__functype)(TVPImportFuncPtr3243a4c32d4f674f1bbc8d3895257568))(num);
 }
-inline void TVPExecThreadTask(TVP_THREAD_TASK_FUNC , TVP_THREAD_PARAM)
+inline void TVPExecThreadTask(TVP_THREAD_TASK_FUNC func , TVP_THREAD_PARAM param)
 {
-	if(!TVPImportFuncPtr567f889f4d6f7d11ee5842b65b1e7488)
+	if(!TVPImportFuncPtr78390a3d08879903ee9558e9df68db4d)
 	{
-		static char funcname[] = "void ::TVPExecThreadTask()";
-		TVPImportFuncPtr567f889f4d6f7d11ee5842b65b1e7488 = TVPGetImportFuncPtr(funcname);
+		static char funcname[] = "void ::TVPExecThreadTask(TVP_THREAD_TASK_FUNC,TVP_THREAD_PARAM)";
+		TVPImportFuncPtr78390a3d08879903ee9558e9df68db4d = TVPGetImportFuncPtr(funcname);
 	}
-	typedef void (__stdcall * __functype)();
-	((__functype)(TVPImportFuncPtr567f889f4d6f7d11ee5842b65b1e7488))(TVP_THREAD_TASK_FUNC, TVP_THREAD_PARAM);
+	typedef void (__stdcall * __functype)(TVP_THREAD_TASK_FUNC , TVP_THREAD_PARAM);
+	((__functype)(TVPImportFuncPtr78390a3d08879903ee9558e9df68db4d))(func, param);
 }
 inline void TVPEndThreadTask()
 {
