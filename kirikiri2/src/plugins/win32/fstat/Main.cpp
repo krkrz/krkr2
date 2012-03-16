@@ -209,6 +209,10 @@ class StoragesFstat {
 public:
 	StoragesFstat(){};
 
+	static void clearStorageCaches() {
+		TVPClearStorageCaches();
+	}
+	
 	/**
 	 * 指定されたファイルの情報を取得する
 	 * @param filename ファイル名
@@ -960,6 +964,7 @@ public:
 };
 
 NCB_ATTACH_CLASS(StoragesFstat, Storages) {
+	NCB_METHOD(clearStorageCaches);
 	RawCallback("fstat",               &Class::fstat,               TJS_STATICMEMBER);
 	RawCallback("getTime",             &Class::getTime,             TJS_STATICMEMBER);
 	RawCallback("setTime",             &Class::setTime,             TJS_STATICMEMBER);
