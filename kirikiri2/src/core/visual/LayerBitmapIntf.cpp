@@ -81,7 +81,7 @@ static float sBmFactor[] =
 //---------------------------------------------------------------------------
 static tjs_int GetAdaptiveThreadNum(tjs_int pixelNum, float factor)
 {
-  if (pixelNum >= factor * 1000)
+  if (pixelNum >= factor * 500)
     return TVPGetThreadNum();
   else
     return 1;
