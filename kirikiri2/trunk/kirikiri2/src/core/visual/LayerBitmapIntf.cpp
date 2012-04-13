@@ -263,7 +263,7 @@ bool tTVPBaseBitmap::Fill(tTVPRect rect, tjs_uint32 value)
         return true;
 }
 
-void tTVPBaseBitmap::PartialFillEntry(void *v)
+void TJS_USERENTRY tTVPBaseBitmap::PartialFillEntry(void *v)
 {
   const PartialFillParam *param = (const PartialFillParam *)v;
   param->self->PartialFill(param);
@@ -368,7 +368,7 @@ bool tTVPBaseBitmap::FillColor(tTVPRect rect, tjs_uint32 color, tjs_int opa)
         return true;
 }
 
-void tTVPBaseBitmap::PartialFillColorEntry(void *v)
+void TJS_USERENTRY tTVPBaseBitmap::PartialFillColorEntry(void *v)
 {
   const PartialFillColorParam *param = (const PartialFillColorParam *)v;
   param->self->PartialFillColor(param);
@@ -467,7 +467,7 @@ bool tTVPBaseBitmap::BlendColor(tTVPRect rect, tjs_uint32 color, tjs_int opa,
         return true;
 }
 
-void tTVPBaseBitmap::PartialBlendColorEntry(void *v)
+void TJS_USERENTRY tTVPBaseBitmap::PartialBlendColorEntry(void *v)
 {
   const PartialBlendColorParam *param = (const PartialBlendColorParam *)v;
   param->self->PartialBlendColor(param);
@@ -569,7 +569,7 @@ bool tTVPBaseBitmap::RemoveConstOpacity(tTVPRect rect, tjs_int level)
         return true;
 }
 
-void tTVPBaseBitmap::PartialRemoveConstOpacityEntry(void *v)
+void TJS_USERENTRY tTVPBaseBitmap::PartialRemoveConstOpacityEntry(void *v)
 {
   const PartialRemoveConstOpacityParam *param = (const PartialRemoveConstOpacityParam *)v;
   param->self->PartialRemoveConstOpacity(param);
@@ -641,7 +641,7 @@ bool tTVPBaseBitmap::FillMask(tTVPRect rect, tjs_int value)
         return true;
 }
 
-void tTVPBaseBitmap::PartialFillMaskEntry(void *v)
+void TJS_USERENTRY tTVPBaseBitmap::PartialFillMaskEntry(void *v)
 {
   const PartialFillMaskParam *param = (const PartialFillMaskParam *)v;
   param->self->PartialFillMask(param);
@@ -784,7 +784,7 @@ bool tTVPBaseBitmap::CopyRect(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
         return true;
 }
 
-void tTVPBaseBitmap::PartialCopyRectEntry(void *v)
+void TJS_USERENTRY tTVPBaseBitmap::PartialCopyRectEntry(void *v)
 {
   const PartialCopyRectParam *param = (const PartialCopyRectParam *)v;
   param->self->PartialCopyRect(param);
@@ -1000,7 +1000,7 @@ bool tTVPBaseBitmap::Blt(tjs_int x, tjs_int y, const tTVPBaseBitmap *ref,
 }
 
 
-void tTVPBaseBitmap::PartialBltEntry(void *v)
+void TJS_USERENTRY tTVPBaseBitmap::PartialBltEntry(void *v)
 {
   const PartialBltParam *param = (const PartialBltParam *)v;
   param->self->PartialBlt(param);
@@ -2778,7 +2778,7 @@ int tTVPBaseBitmap::InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *r
 	return (clear || !firstline)?2:0;
 }
 
-void tTVPBaseBitmap::PartialAffineBltEntry(void *v)
+void TJS_USERENTRY tTVPBaseBitmap::PartialAffineBltEntry(void *v)
 {
   PartialAffineBltParam *param = (PartialAffineBltParam *)v;
   param->self->PartialAffineBlt(param);
