@@ -27,7 +27,7 @@ enum tTVPThreadPriority
 
 /*[*/
 const tjs_int TVPMaxThreadNum = 8;
-typedef void (*TVP_THREAD_TASK_FUNC)(void *);
+typedef void (TJS_USERENTRY *TVP_THREAD_TASK_FUNC)(void *);
 typedef void * TVP_THREAD_PARAM;
 /*]*/
 

@@ -167,7 +167,7 @@ private:
           tjs_uint32 value;
           bool is32bpp;
         };
-        static void PartialFillEntry(void *param);
+        static void TJS_USERENTRY PartialFillEntry(void *param);
         void PartialFill(const PartialFillParam *param);
 
         struct PartialFillColorParam {
@@ -181,7 +181,7 @@ private:
           tjs_uint32 color;
           tjs_int opa;
         };
-        static void PartialFillColorEntry(void *param);
+        static void TJS_USERENTRY PartialFillColorEntry(void *param);
         void PartialFillColor(const PartialFillColorParam *param);
 
         struct PartialBlendColorParam {
@@ -196,7 +196,7 @@ private:
           tjs_int opa;
           bool additive;
         };
-        static void PartialBlendColorEntry(void *param);
+        static void TJS_USERENTRY PartialBlendColorEntry(void *param);
         void PartialBlendColor(const PartialBlendColorParam *param);
 
         struct PartialRemoveConstOpacityParam {
@@ -209,7 +209,7 @@ private:
           tjs_int pitch;
           tjs_int level;
         };
-        static void PartialRemoveConstOpacityEntry(void *param);
+        static void TJS_USERENTRY PartialRemoveConstOpacityEntry(void *param);
         void PartialRemoveConstOpacity(const PartialRemoveConstOpacityParam *param);
   
         struct PartialFillMaskParam {
@@ -222,7 +222,7 @@ private:
           tjs_int pitch;
           tjs_int value;
         };
-        static void PartialFillMaskEntry(void *param);
+        static void TJS_USERENTRY PartialFillMaskEntry(void *param);
         void PartialFillMask(const PartialFillMaskParam *param);
 
         struct PartialCopyRectParam {
@@ -241,7 +241,7 @@ private:
           tjs_int plane;
           bool backwardCopy;
         };
-        static void PartialCopyRectEntry(void *param);
+        static void TJS_USERENTRY PartialCopyRectEntry(void *param);
         void PartialCopyRect(const PartialCopyRectParam *param);
 
         struct PartialBltParam {
@@ -260,7 +260,7 @@ private:
           tjs_int opa;
           bool hda;
         };
-        static void PartialBltEntry(void *param);
+        static void TJS_USERENTRY PartialBltEntry(void *param);
         void PartialBlt(const PartialBltParam *param);
 
 public:
@@ -376,7 +376,7 @@ private:
           tjs_int mostbottom;
           bool firstline;
         };
-        static void PartialAffineBltEntry(void *param);
+        static void TJS_USERENTRY PartialAffineBltEntry(void *param);
         void PartialAffineBlt(PartialAffineBltParam *param);
 
 	int InternalAffineBlt(tTVPRect destrect, const tTVPBaseBitmap *ref,
