@@ -1,0 +1,48 @@
+Plugins.link("minizip.dll");
+Plugins.link("fstat.dll");
+
+function showDate(date) {
+	if (date !== void && date !== null) {
+		Debug.message("%04d/%02d/%02d %02d:%02d:%02d".sprintf(date.getYear(), date.getMonth()+1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()));
+	}
+}
+var win = new Window();
+win.visible = true;
+
+Debug.console.visible = true;
+
+var zip = new Zip();
+zip.open("てすと.zip", true);
+zip.add("file1.txt", "filex.txt");
+zip.add("file1.txt", "ファイル\x2661.txt");
+zip.add("file2.txt", "folder/zipfile2.txt");
+zip.close();
+
+var unzip = new Unzip();
+unzip.open("てすと.zip");
+var list = unzip.list();
+for (var i=0;i<list.count;i++) {
+	var info = list[i];
+	Debug.message("%s:%d %d %02d/%02d/%02d %02d:%02d:%02d".sprintf(info.filename,
+																   info.compressed_size,
+																   info.uncompressed_size,
+																   info.date.getYear(),
+																   info.date.getMonth()+1,
+																   info.date.getDate(),
+																   info.date.getHours(),
+																   info.date.getMinutes(),
+																   info.date.getSeconds()));
+	unzip.extract(info.filename, "extract/" + info.filename);
+}
+unzip.close();
+
+Storages.mountZip("てすと", "てすと.zip");
+Storages.exportFile("zip://てすと/filex.txt", "export_file1.txt");
+Storages.exportFile("zip://てすと/ファイル\x2661.txt", "export_ファイル１.txt");
+Storages.exportFile("zip://てすと/folder/zipfile2.txt", "export_file2.txt");
+Storages.addAutoPath("zip://てすと/");
+Storages.addAutoPath("zip://てすと/folder/");
+Storages.exportFile("filex.txt", "export2_file1.txt");
+Storages.exportFile("ファイル\x2661.txt", "export2_ファイル\x2661.txt");
+Storages.exportFile("zipfile2.txt", "export2_file2.txt");
+Storages.unmountZip("てすと");

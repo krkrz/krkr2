@@ -1,0 +1,106 @@
+Plugins.link("httprequest.dll");
+
+Debug.console.visible = true;
+
+var WIDTH=400;
+var HEIGHT=300;
+
+function dm(msg) {
+	Debug.message(msg);
+}
+
+class MyHttpRequest extends HttpRequest
+{
+	function MyHttpRequest(win, cert, agent="KIRIKIRI") {
+		super.HttpRequest(win, cert, agent);
+	}
+
+	function onProgress(upload, percent) {
+		dm("%s:%d".sprintf(upload ? "upload" : "download", percent));
+	}
+
+	function onReadyStateChange(readyState) {
+		dm(this);
+		dm("readyState:%d".sprintf(readyState));
+		if (readyState == global.HttpRequest.LOADED) {
+			dm("load done %d: %s".sprintf(status, statusText));
+			var headers = getAllResponseHeaders();
+			var names = [];
+			names.assign(headers);
+			for (var i=0;i<names.count;i+=2) {
+				var name = names[i];
+				var value = names[i+1];
+				dm("header:%s value:%s".sprintf(name, value));
+			}
+		}
+	}
+}
+
+
+class MyWindow extends Window
+{
+	var initTrigger;
+	var base;
+	var http;
+
+	function MyWindow() {
+		super.Window();
+		setInnerSize(WIDTH, HEIGHT);
+
+		// ベースレイヤ
+		base = new Layer(this, null);
+		base.visible=true;
+		base.setSize(WIDTH,HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0x000000);
+		add(base);
+
+		initTrigger = new AsyncTrigger(init, "");
+		initTrigger.cached = true;
+		initTrigger.mode = atmExclusive;
+		initTrigger.trigger();
+	}
+
+	function finalize() {
+		invalidate http;
+	}
+	
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		}
+	}
+
+	function init() {
+		var type = 5;
+		http = new MyHttpRequest(this, true);
+		switch (type) {
+		case 0:
+			http.open("GET", "http://ruriko.denpa.org/");
+			http.send();
+			break;
+		case 1:
+			http.open("GET", "http://ruriko.denpa.org/");
+			http.send(void, "index.html");
+			break;
+		case 2:
+			http.open("PUT", "http://ruriko.denpa.org/dav/test");
+			http.sendStorage("testdata");
+			break;
+		case 3:
+			http.open("GET", "https://www.wam-soft.net/");
+			http.send();
+			break;
+		case 4:
+			http.open("POST", "http://ruriko.denpa.org/dav/test.cgi");
+			http.sendStorage("formtest", "result");
+			break;
+		case 5:
+			http.open("GET", "https://www.amazon.co.jp");
+			http.send(void,"amazon");
+			break;
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible=true;

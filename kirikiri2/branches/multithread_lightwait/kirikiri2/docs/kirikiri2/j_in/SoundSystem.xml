@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<doc>
+<title>サウンドシステム</title>
+
+<para>
+<ptitle>サウンドシステムについて</ptitle>
+　吉里吉里のサウンドシステムは MIDI、CD-DA、Wave (PCM) を再生できます。<r/>
+　MIDI 再生はシーケンサを内蔵しており、再生チャンネルが重ならなければ同時再生できます。<r/>
+　CD-DA 再生は再生ドライブが重ならなければ同時再生でき、CD-ROM ドライブそれ自体に対して音量を制御することもできます。<r/>
+　Wave 再生は複数を同時再生でき、ストリーミング再生 (長いサウンドを少しずつ読み込みながら再生) をすることができるほか、サウンドループ情報ファイル (.sli ファイル) を用いて、つぎめを感じさせないシームレスなループ再生を実現できます (サウンドループ情報ファイルはループチューナで作成します)。<r/>
+</para>
+
+
+<para>
+<ptitle>WaveSoundBuffer で再生可能な形式</ptitle>
+　<at href="f_WaveSoundBuffer.html">WaveSoundBuffer</at> では、標準で無圧縮の RIFF Wave 形式 ( 拡張は .wav で、Windows 標準形式 ) を再生することができます。受け付けられる形式は以下の通りです。<r/>
+<r/>
+<ul>
+<li>WAVE_FORMAT_PCM 形式で、8bit 以上 32bit 以下の整数 PCM、かつチャンネル数が 1(モノラル)、2(ステレオ), 4(quadraphonic)、6(5.1ch) のもの</li>
+<li>WAVE_FORMAT_IEEE_FLOAT 形式で、32bit の浮動小数点数 PCM、かつチャンネル数が 1(モノラル)、2(ステレオ), 4(quadraphonic)、6(5.1ch) のもの</li>
+<li>WAVE_FORMAT_EXTENSIBLE 形式で、サブタイプが KSDATAFORMAT_SUBTYPE_PCM 形式で8bit 以上 32bit 以下の整数 PCM</li>
+<li>WAVE_FORMAT_EXTENSIBLE 形式で、サブタイプが KSDATAFORMAT_SUBTYPE_IEEE_FLOAT 形式の 32bit 浮動小数点数 PCM</li>
+</ul>
+<r/>
+　16bit を越える整数 PCM (24bit PCM など) や 浮動小数点数 PCM、ステレオを越えるチャンネル数のサウンド ( 4chサウンドや5.1chサウンドなど ) の再生は、WDM 系のサウンドドライバを使用しているシステム ( Windows2000, XP 以降、 Windows 98/98SE/ME で WDM ドライバ使用のシステム ) でのみのサポートとなります。<r/>
+<r/>
+　また、WaveSoundBuffer で再生可能な形式は、プラグインによって拡張することができます。<r/>
+</para>
+
+<para>
+<ptitle>WaveSoundBuffer での 4ch および 6ch の扱い</ptitle>
+　WAVE_FORMAT_EXTENSIBLE は、データ内に「どのチャンネルがどのスピーカーに割り当てられているか」の情報を持っていますが、WAVE_FORMAT_PCM や WAVE_FORMAT_IEEE_FLOAT の場合はその情報を持っていません。吉里吉里が WAVE_FORMAT_PCM や WAVE_FORMAT_IEEE_FLOAT で 4ch や 6ch のデータを扱うときは次のように解釈します。<r/>
+<r/>
+<dl>
+<dt>4chのとき</dt>
+<dd>チャンネルの先頭から、それぞれ、前左、前右、後左、後右のスピーカー用データであると見なされます</dd>
+<dt>6chのとき</dt>
+<dd>チャンネルの先頭から、それぞれ、前左、前中央、前右、後左、後右、低周波のスピーカー用データであると見なされます</dd>
+</dl>
+<r/>
+また、OggVorbis で 4ch や 6ch のサウンドを再生するときにもこれと同じルールが適用されます。<r/>
+
+</para>
+
+</doc>
+
+

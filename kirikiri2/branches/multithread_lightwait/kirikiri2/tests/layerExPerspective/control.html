@@ -1,0 +1,61 @@
+<html>
+<head>
+<title>制御パネル</title>
+</head>
+<script>
+var win = window.external.win;
+var global = window.external;
+
+function parseIntDefault(param, defaultValue)
+{
+    var ret = parseInt(param);
+    return isNaN(ret) ? defaultValue : ret;
+}
+
+function parseFloatDefault(param, defaultValue)
+{
+    var ret = parseFloat(param);
+    return isNaN(ret) ? defaultValue : ret;
+}
+
+function getInt(name, defaultValue) {
+    return parseIntDefault(document.getElementById(name).value, defaultValue);
+}
+
+function getFloat(name, defaultValue) {
+    return parseFloatDefault(document.getElementById(name).value, defaultValue);
+}
+
+function init() {
+    win.init();
+}
+
+function perspective() {
+    win.perspective(getInt("x1"), getInt("y1"),
+                    getInt("x2"), getInt("y2"),
+                    getInt("x3"), getInt("y3"),
+                    getInt("x4"), getInt("y4"));
+}
+</script>
+</head>
+<body>
+
+<p>
+<button onclick='init()'>初期化</button>
+
+<pre>
+レイヤ機能拡張
+透視コピー:
+X1:<input size=4 id=x1 value=0>
+Y1:<input size=4 id=y1 value=0>
+X2:<input size=4 id=x2 value=50>
+Y2:<input size=4 id=y2 value=0>
+X3:<input size=4 id=x3 value=0>
+Y3:<input size=4 id=y3 value=50>
+X4:<input size=4 id=x4 value=50>
+Y4:<input size=4 id=y4 value=50>
+<button onclick='perspective()'>コピー</button>
+</pre>
+
+</body>
+</html>

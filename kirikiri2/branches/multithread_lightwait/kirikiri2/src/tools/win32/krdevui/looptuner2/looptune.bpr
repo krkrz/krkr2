@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="..\..\..\..\..\bin\win32\tools\looptune.exe"/>
+    <OBJFILES value="..\intermediate\looptune.obj ..\intermediate\WaveReader.obj 
+      ..\intermediate\RIFFWaveContext.obj ..\intermediate\TSSWaveContext.obj 
+      ..\intermediate\WaveView.obj ..\intermediate\DSound.obj 
+      ..\intermediate\LoopTunerMainUnit.obj 
+      ..\intermediate\EditLabelAttribUnit.obj 
+      ..\intermediate\EditLinkAttribUnit.obj ..\intermediate\LinkDetailUnit.obj 
+      ..\intermediate\LabelDetailUnit.obj ..\intermediate\WaveLoopManager.obj 
+      ..\intermediate\tvpsnd.obj ..\intermediate\CharacterSet.obj 
+      ..\intermediate\TotalView.obj"/>
+    <RESFILES value="looptune.res"/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) LoopTunerMainUnit.dfm EditLabelAttribUnit.dfm 
+      EditLinkAttribUnit.dfm LinkDetailUnit.dfm LabelDetailUnit.dfm"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="vclx50.lib Vcl50.lib"/>
+    <SPARELIBS value="Vcl50.lib vclx50.lib"/>
+    <PACKAGES value="Vcl50.bpi bcb2kaxserver50.bpi Vclx50.bpi bcbsmp50.bpi Inet50.bpi 
+      Inetdb50.bpi vcldbx50.bpi VCLIB50.bpi vclie50.bpi NMFast50.bpi 
+      dclocx50.bpi Qrpt50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi TeeQR50.bpi"/>
+    <PATHCPP value=".;..\..\..\..\core\sound;..\..\..\..\core\sound\win32;..\..\..\..\core\base"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value="TVP_IN_LOOP_TUNER;_DEBUG"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="looptune.cpp"/>
+    <INCLUDEPATH value="..\..\..\..\core\base;..\..\..\..\core\sound\win32;..\..\..\..\core\sound;$(BCB)\include;$(BCB)\include\vcl;..\..\..\..\core\tjs2"/>
+    <LIBPATH value="..\..\..\..\core\base;..\..\..\..\core\sound\win32;..\..\..\..\core\sound;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c 
+      -tW -tWM"/>
+    <PFLAGS value="-N2..\intermediate -N0..\intermediate -$Y+ -$W -$O- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-I..\intermediate -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=0
+MajorVer=2
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1041
+CodePage=932
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=2.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[Excluded Packages]
+C:\WINDOWS\System32\ibsmp50.bpl=Borland C++ InterBase Alerter Component
+$(BCB)\Bin\applet50.bpl=Borland Control Panel Applet Package
+$(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
+$(BCB)\Bin\bcbsmp50.bpl=Borland C++ Sample Components
+$(BCB)\Bin\dclqrt50.bpl=QuickReport Components
+$(BCB)\Bin\dclbde50.bpl=Borland BDE DB Components
+$(BCB)\Bin\dcldb50.bpl=Borland Database Components
+$(BCB)\Bin\dcltee50.bpl=TeeChart 5.0 Components
+$(BCB)\Bin\dcltqr50.bpl=TeeChart 5.0 for QuickReport Components Design Package
+$(BCB)\Bin\dclib50.bpl=InterBase Data Access Components
+$(BCB)\Bin\bcbie50.bpl=Borland C++Builder Internet Explorer 5 Components Package
+$(BCB)\Bin\dclnet50.bpl=Borland Internet Components
+$(BCB)\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
+$(BCB)\Bin\DCLNMF50.bpl=NetMasters Fastnet Tools
+$(BCB)\Bin\dclocx50.bpl=Borland Sample Imported ActiveX Controls
+$(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
+$(BCB)\Bin\bcb2kaxserver50.bpl=Borland C++Builder COM Server Components Sample Package
+
+[HistoryLists\hlIncludePath]
+Count=4
+Item0=..\..\..\..\core\base;..\..\..\..\core\sound\win32;..\..\..\..\core\sound;$(BCB)\include;$(BCB)\include\vcl;..\..\..\..\core\tjs2
+Item1=..\..\..\..\core\base;..\..\..\..\core\sound\win32;..\..\..\..\core\sound;$(BCB)\include;$(BCB)\include\vcl
+Item2=$(BCB)\include;$(BCB)\include\vcl
+Item3=;;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=3
+Item0=..\..\..\..\core\base;..\..\..\..\core\sound\win32;..\..\..\..\core\sound;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item1=$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item2=;;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=4
+Item0=TVP_IN_LOOP_TUNER;_DEBUG
+Item1=TVP_IN_LOOP_TUNER
+Item2=_DEBUG;TVP_IN_LOOP_TUNER
+Item3=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=..\intermediate
+
+[HistoryLists\hlFinalOutputDir]
+Count=2
+Item0=..\..\..\..\..\bin\win32\tools\
+Item1=..\..\..\..\..\bin\win32\tools
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+  </IDEOPTIONS>
+</PROJECT>

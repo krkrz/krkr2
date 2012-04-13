@@ -1,0 +1,31 @@
+Plugins.link("json.dll");
+
+Debug.console.visible = true;
+
+var time;
+
+function start() {
+    time = System.getTickCount();
+}
+
+function count(msg) {
+    Debug.message(msg + " time:" + (System.getTickCount() - time));
+}
+
+
+// ‘‹
+var win = new Window();
+win.visible=true;
+
+var data;
+
+start();
+data = Scripts.evalStorage("testtjs.txt");
+count("tjs");
+
+start();
+data = Scripts.evalJSONStorage("test.txt");
+count("json");
+
+Scripts.saveJSON("output.txt", data);
+data.saveStruct("outtjs.txt");

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+
+<doc>
+<title>バージョン情報ダイアログの作成について</title>
+
+<para>
+<ptitle>バージョン情報ダイアログとは</ptitle>
+　よくソフトウェアの「ヘルプ - バージョン情報」ででてくるウィンドウです。KAG の場合はこれを KAG のシナリオファイルで書くことができます。<r/>
+　使用するには、<tt>Config.tjs</tt> の <tt>helpMenu.visible</tt> と <tt>helpAboutMenuItem.visible</tt> をともに true に設定する必要があります。<r/>
+　また、バージョン情報ダイアログのサイズは <tt>aboutWidth</tt> と <tt>aboutHeight</tt> で指定したサイズになります。<r/>
+　バージョン情報ダイアログに表示する KAG シナリオファイルは <tt>about.ks</tt> という名前になります。<r/>
+<r/>
+　通常は、バージョン情報の内容を書いた画像を背景に表示するだけでも十分ですが、作り方によっては凝ったものも作れると思います。<r/>
+</para>
+
+<para>
+<ptitle>about.ks の制限</ptitle>
+　about.ks は通常の KAG シナリオにはない制限があります。<r/>
+　下に記した以外の制限もあります ( Config.tjs の設定のほとんどに従わない等 )。<r/>
+<r/>
+<dl>
+<dt>BGM、効果音、ビデオなど</dt>
+<dd>
+　基本的に使用できますが、効果音バッファの数は 1 つに固定されます。ムービー(AVI や SWF など) は使用できません。
+</dd>
+<dt>メッセージレイヤ</dt>
+<dd>
+　メッセージレイヤの数は 1 つに固定されます。メッセージ履歴は表示できません。メッセージレイヤ0は初期状態で表示されていますが、サイズは不定ですので、非表示にするか、position タグで位置やサイズを指定してから使ってください。
+</dd>
+</dl>
+</para>
+
+<para>
+<ptitle>バージョン情報ダイアログの例</ptitle>
+　単純に背景に画像を表示するだけの例です。<r/>
+<bq>
+@title name="このソフトについて"<r/>
+@layopt layer=message0 page=fore visible=false<r/>
+@image storage=about.png layer=base page=fore<r/>
+@s<r/>
+</bq>
+<r/>
+　もうちょっと複雑で、メッセージレイヤに情報をトランジションを使って表示するものです。また、サポートページを link タグで作成したリンクをクリックすることで開くことができるようにしています。また、「閉じる」をクリックするとダイアログを閉じることができるようにしています。<r/>
+<bq>
+@title name="このソフトについて"<r/>
+@rclick enabled=false<r/>
+@clickskip enabled=false<r/>
+@position left=0 top=0 width=320 height=200 color=0xffffff opacity=255 marginl=0 margint=0 marginr=0 marginb=0<r/>
+@style align=center<r/>
+@font size=24 shadow=false color=0<r/>
+@wait time=200<r/>
+@nowait<r/>
+@backlay<r/>
+@current page=back<r/>
+吉里吉里２<r/>
+[emb exp="System.versionString"]<r/>
+@trans method=crossfade time=500<r/>
+@wt<r/>
+KAG3<r/>
+[emb exp="kagVersion"]<r/>
+@trans method=crossfade time=500<r/>
+@wt<r/>
+[font size=12]ダウンロードページ<r/>
+[link hint="クリックするとダウンロードページを開きます" exp="System.shellExecute('http://kikyou.info/tvp/')"]http://kikyou.info/tvp/[endlink]<r/>
+@trans method=crossfade time=500<r/>
+@wt<r/>
+[link target=*exit]閉じる[endlink]<r/>
+@trans method=crossfade time=500<r/>
+@wt<r/>
+@s<r/>
+*exit<r/>
+@close<r/>
+</bq>
+</para>
+</doc>
