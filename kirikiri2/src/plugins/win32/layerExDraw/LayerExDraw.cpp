@@ -1060,7 +1060,7 @@ LayerExDraw::scaleViewTransform(REAL sx, REAL sy)
 void
 LayerExDraw::translateViewTransform(REAL dx, REAL dy)
 {
-	viewTransform.Scale(dx, dy, MatrixOrderAppend);
+	viewTransform.Translate(dx, dy, MatrixOrderAppend);
 	updateViewTransform();
 }
 
@@ -1114,7 +1114,7 @@ LayerExDraw::scaleTransform(REAL sx, REAL sy)
 void
 LayerExDraw::translateTransform(REAL dx, REAL dy)
 {
-	transform.Scale(dx, dy, MatrixOrderAppend);
+	transform.Translate(dx, dy, MatrixOrderAppend);
 	updateTransform();
 }
 
