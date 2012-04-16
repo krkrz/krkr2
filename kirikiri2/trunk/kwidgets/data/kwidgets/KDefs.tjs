@@ -1,0 +1,30 @@
+function blendColor(c1, c2) {
+  var a = (((c1 >> 24) & 0xff) + ((c2 >> 24) & 0xff)) >> 1;
+  var r = (((c1 >> 16) & 0xff) + ((c2 >> 16) & 0xff)) >> 1;
+  var g = (((c1 >> 8) & 0xff) + ((c2 >> 8) & 0xff)) >> 1;
+  var b = (((c1 >> 0) & 0xff) + ((c2 >> 0) & 0xff)) >> 1;
+  return (a << 24) | (r << 16) | (g << 8) | (b << 0);
+}
+
+global.WIN_BG       = 0xFF000000 | System.toActualColor(clBtnFace);
+global.WIN_DARKEN2  = 0xFF000000 | System.toActualColor(cl3DDkShadow);
+global.WIN_DARKEN1  = blendColor(WIN_BG, WIN_DARKEN2);
+global.WIN_LIGHTEN1  = 0xFF000000 | System.toActualColor(cl3DLight);
+global.WIN_LIGHTEN2  = 0xFF000000 | System.toActualColor(clBtnHighlight);
+global.WIN_SELECTED = 0xFF000000 | System.toActualColor(clHighlight);
+global.WIN_SELECTED_TEXT = 0xFF000000 | System.toActualColor(clHighlightText);
+global.WIN_HIGHLIGHT = 0xFF000000 | System.toActualColor(clBtnHighlight);
+global.WIN_BLACK    = 0xFF000000;
+global.WIN_WHITE    = 0xFFFFFFFF;
+
+global.ALIGN_LEFT   = 0;
+global.ALIGN_CENTER = 1;
+global.ALIGN_RIGHT  = 2;
+global.ALIGN_TOP    = 0;
+global.ALIGN_BOTTOM = 2;
+
+/// フレームの種類
+global.FRAME_FLATTEN = 0; ///< フラットフレーム
+global.FRAME_SUNKEN = 1;  ///< へこんだフレーム
+global.FRAME_RAISED = 2;  ///< でっぱったフレーム
+

@@ -1,0 +1,169 @@
+//
+// $Id: KTextInputSlider.tjs,v 1.6 2007/09/17 12:09:52 m2 Exp $
+//
+
+
+/**----------------------------------------------------------------------
+ * テキストインプットスライダー
+ ----------------------------------------------------------------------*/
+class KTextInputSlider extends KGridLayout
+{
+  var _value;
+  var textInput;
+  var slider;
+  var minValue, maxValue;
+  // 辞書
+  var dict;
+
+  /*------------------------------
+   * テキストインプットとスライダーを合成したウィジェットです。
+   *
+   * @param win ウィンドウ
+   * @param w 幅
+   * @param h 高さ
+   * @param minValue 値の最小値
+   * @param maxValue 値の最大値
+   * @param name 名前
+   * @param step 刻み幅
+   ------------------------------*/
+  function KTextInputSlider(win, w, h, minValue, maxValue, step = 1, name = "") {
+    super.KGridLayout(win, name);
+
+    add(0, 0, (textInput = new KTextInput(win, h * 2, h, step == int(step) ? TEXT_DIGIT : TEXT_REAL, "textInput")));
+    add(1, 0, (slider = new KSlider(win, w == 0 ? 0 : w, h, minValue, maxValue, step, "slider")));
+
+    this.minValue = minValue;
+    this.maxValue = maxValue;
+    _value = minValue;
+    slider.value = minValue; 
+    slider.focusable = false;
+    textInput.value = string(minValue);
+  }
+
+  /*------------------------------
+   * ファイナライザ
+   ------------------------------*/
+  function finalize {
+    if (dict) {
+      dict.set(name, value);
+    }
+    super.finalize(...);
+  }
+
+  /*------------------------------
+   * 永続化辞書を値にバインドする
+   ------------------------------*/
+  function bindPersistentDictionary(dict) {
+    if (name !== void) {
+      this.dict = dict;
+      value = dict.init(name, value);
+    }
+  }
+
+  /**------------------------------
+   * イベントを発生させ強制的に現在の値を通知する。
+   *
+   * 現在の値で onValueModifiedを呼びます。
+   ------------------------------*/
+  function invalidateValue {
+    if (nodeEnabled)
+      onValueModified(value);
+  }
+
+  /**------------------------------
+   * 値を設定する
+   *
+   * @param v 値
+   * @return 値
+   ------------------------------*/
+  property value {
+    getter {
+      return _value;
+    }
+    setter(v) {
+      v = Math.min(maxValue, Math.max(v, minValue));
+      if (step == int(step))
+        v = int(v);
+      if (_value == v)
+        return;
+      _value = v;
+      slider.value = v;
+      textInput.value = string(v);
+    }
+  }
+
+  /*------------------------------
+   * 子孫ウィジェットから特定の名前を持った子ウィジェットを捜す
+   *
+   * 子の「名前」を拾わないようにトラップ。
+   ------------------------------*/
+  function find(name) {
+    if (this.name === name)
+      return this;
+    else
+      return void;
+  }
+
+  function onChildValueModified(child, newValue) {
+    var oldValue = _value;
+    value = newValue;
+    if (oldValue != value)
+      onValueModified(value, oldValue);
+  }
+
+  /**------------------------------
+   * 値の変化量を設定する
+   *
+   * @param v 値
+   * @return 値
+   ------------------------------*/
+  property step {
+    getter {
+      return slider.step;
+    }
+    setter(v) {
+      if(step != v)
+      {
+        var mx = maxValue, mn = minValue;
+        slider.step = v;
+        maxValue = mx; // step の変化に伴う、再設定
+        minValue = mn;
+        textInput.type = v == int(v) ? TEXT_DIGIT : TEXT_REAL;
+        value = value; // 値の再設定
+      }
+    }
+  }
+
+  /**------------------------------
+   * 最大値を設定する
+   *
+   * @param v 値
+   * @return 値
+   ------------------------------*/
+  property maxValue {
+    getter {
+      return slider.maxValue * step;
+    }
+    setter(v) {
+      slider.maxValue = int(v / step);
+      value = value; // 値の再設定
+    }
+  }
+
+  /**------------------------------
+   * 最小値を設定する
+   *
+   * @param v 値
+   * @return 値
+   ------------------------------*/
+  property minValue {
+    getter {
+      return slider.minValue * step;
+    }
+    setter(v) {
+      slider.minValue = int(v / step);
+      value = value; // 値の再設定
+    }
+  }
+
+};

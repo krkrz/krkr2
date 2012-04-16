@@ -1,0 +1,1873 @@
+//
+// $Id: KList.tjs,v 1.7 2007/09/14 17:13:00 m2 Exp $
+//
+
+
+/*----------------------------------------------------------------------
+ * リスト項目リネーム時のテキストエディット
+ ----------------------------------------------------------------------*/
+class KLabelEdit extends KTextInput {
+  var item;
+  var minLabelWidth = 1;
+
+  function KLabelEdit(item) {
+    this.item = item;
+    minLabelWidth = item.minLabelWidth;
+
+    // リストに収まる範囲の大きさでテキストエディットを作成。
+    var rootRect = item.root.viewingRect;
+    var rect = item.labelRect;
+    rect.left += item.left - 5;
+    rect.top += item.top - 3;
+    rect.width = rootRect.width - rect.left + rootRect.left;
+    rect.height = item.layer.fontHeight + 8;
+    super.KTextInput(item.root.window,
+                     rect.width, rect.height,
+                     item.labelTextType);
+
+    parent = item.root;
+    fontFace = item.layer.fontFace;
+
+    setPos(rect.left, rect.top);
+    value = item.label;
+
+    text.focus();
+    text.onWindowDeactivate = this.onWindowDeactivate;
+  }
+
+  function finalize {
+    super.finalize(...);
+  }
+
+  // フォーカスが外れたらキャンセル扱い
+  function onChildBlur {
+    super.onChildBlur(...);
+    text.cancelValue();
+  }
+
+  // ENTER押したら内容を反映
+  function onEnter {
+    if (! item.isAcceptRename(value))
+      return;
+    if (value.length >= minLabelWidth) {
+      var oldLabel = item.label;
+      item.label = value;
+      item.onRename(oldLabel, value);
+    }
+    asyncCaller.call(parent.removeLabelEdit);
+  }
+
+  // キャンセルしたら無かったことに
+  function onCancel {
+    asyncCaller.call(parent.removeLabelEdit);
+  }
+
+  // スクロールされちゃまずいんでホイールは食う。
+  function onMouseWheel {
+  }
+
+  function onWindowDeactivate {
+    text.cancelValue();
+  }    
+}    
+    
+
+/**----------------------------------------------------------------------
+ * リストビュー
+ ----------------------------------------------------------------------*/
+class KList extends KVirtualWidget
+{
+  var depth = -1;
+  var root;
+  var slideWidth = 12;
+  var drawItemList = [];
+  var updateWidth, updateHeight;
+  var childList = [];
+  var selection = void, selectionIndex = -1;
+  var selectionRect = [ 0, 0, 0, 0 ];
+  var toggleOpenImage, toggleCloseImage;
+  var iconLayer = %[];
+  var labelEdit = void;
+  var labelTextType = TEXT_SYMBOL;
+  var marginalWidth, marginalHeight;
+  var _focusOnSelect;
+  var selectionLayer;
+
+  /*------------------------------
+   * リストビュー
+   *
+   * 入れ子が可能なリストビュー。
+   * リスト本体である KList と、リストアイテム KListItem から鳴る。
+   *
+   * KList は KWidget を継承したクラスだが、KListItem は KWidget では無い。
+   * メモリ節約の観点から、KListItem は画面に表示される時のみ
+   * 内部的に proxy widget を作る設計になっている。
+   * だが、マウス関連やドラッグ＆ドロップ関連のイベントのほとんどは
+   * proxy widget から KListItem に転送されるため、 KListItem を
+   * KWidget 継承クラスとみなして扱っても実質的に問題は無い。
+   *
+   * @param window ウィンドウ
+   * @param name 名前
+   ------------------------------*/
+  function KList(window, name = "") {
+    super.KVirtualWidget(window, name);
+    focusable = window.defaultFocusable;
+    hitThreshold = 0;
+    root = this;
+    toggleOpenImage = icon("k_list_open");
+    toggleCloseImage = icon("k_list_close");
+//    fillRect(0, 0, width, height, neutralColor);
+    selectionLayer = new global.Layer(window, this);
+    marginalWidth = marginalHeight = 1000;
+    setMinMaxSize(0, 0, marginalWidth, marginalHeight);
+    _focusOnSelect = true;
+  }
+
+  function onDraw(left, top, width, height) {
+    fillRect(left, top, width, height, WIN_WHITE);
+  }
+
+  /*------------------------------
+   * ファイナライザ
+   ------------------------------*/
+  function finalize {
+    discardDictionary(iconLayer);
+    discardArray(childList);
+    super.finalize(...);
+  }
+
+  /**------------------------------
+   * 最低限のサイズを設定する
+   *
+   * リスト項目が少なくても最低限広げられる
+   * 「最低最大サイズ」を決定する。
+   * デフォルト値は1000x1000
+   *
+   * @param w 幅
+   * @param h 高さ
+   ------------------------------*/
+  function setMarginalSize(w, h) {
+    marginalWidth = w;
+    marginalHeight = h;
+  }
+
+  /**------------------------------
+   * 子アイテムを追加する
+   *
+   * @param item アイテム
+   ------------------------------*/
+  function add(item) {
+    item.depth = -1;
+    item.parent = this;
+    childList.add(item);
+    updateItems();
+  }
+
+  /**------------------------------
+   * 子アイテムを挿入する
+   *
+   * @param index インデックス
+   * @param item アイテム
+   ------------------------------*/
+  function insert(index, item) {
+    item.depth = -1;
+    item.parent = this;
+    childList.insert(index, item);
+    updateItems();
+  }
+
+  /**------------------------------
+   * 子アイテムを削除する
+   * 
+   * @param item アイテム
+   * @param doInvalidate invalidateするかどうか
+   ------------------------------*/
+  function remove(item, doInvalidate = true) {
+    if (! (item isvalid))
+      return void;
+
+    if (item == root.selection
+        || (root.selection && item.isAncestorOf(root.selection))) {
+      root.selectItem(void);
+      var i = item.index;
+      childList.remove(item);
+      if (childList.count != 0) {
+        if (i > childList.count - 1)
+          i--;
+        childList[i].select();
+      } 
+      updateItems();
+    } else {
+      childList.remove(item);
+      updateItems();
+    }
+
+    item._root = void;
+    item.parent = void;
+
+    if (doInvalidate)
+      invalidate item;
+  }
+
+  /**------------------------------
+   * 子アイテムを全て削除する
+   *
+   * @param doInvalidate 取り除いた子ウィジェットを無効化するか
+   ------------------------------*/
+  function removeAll(doInvalidate = true)
+  {
+    while(childList.count > 0)
+    {
+      var child = childList[0];
+      childList.remove(child);
+      if(doInvalidate)
+      {
+        invalidate child;
+      }
+      else
+      {
+        child._root = void;
+        child.parent = void;
+      }
+    }
+    selection = void;
+    updateItems();
+  }
+
+  /**------------------------------
+   * 子アイテムをカウントする
+   * 
+   * @return 子アイテム数
+   ------------------------------*/
+  property childCount {
+    getter {
+      return childList.count;
+    }
+  }
+
+  /**------------------------------
+   * 子アイテムを参照する
+   *
+   * @param index インデックス
+   * @return 子アイテム
+   ------------------------------*/
+  function childAt(index) {
+    return childList[index];
+  }
+
+  /**------------------------------
+   * 子孫アイテムから特定の名前を持った子アイテムを捜す
+   * 
+   * @param name アイテムの名前
+   * @return アイテム
+   ------------------------------*/
+  function find(name) {
+    if (this.name === name)
+      return this;
+    for (var i = 0; i < childList.count; i++) {
+      var child = childList[i];
+      var widget = child.find(name);
+      if (widget)
+        return widget;
+    }
+    return void;
+  }
+
+  /*------------------------------
+   * 選択が変更された時に呼ばれる
+   *
+   * @param selection セレクション
+   ------------------------------*/
+  function onSelect(item) {
+  }
+
+  // 祖先であるかどうか判定
+  function isAncestorOf(item) {
+    for (; item != root; item = item.parent) {
+      if (item == this)
+        return true;
+    }
+    return false;
+  }
+
+  // 子孫であるかどうか判定
+  function isDescendantOf(item) {
+    return item.isAncestorOf(this);
+  }
+
+  /**------------------------------
+   * 子孫ウィジェットの一覧
+   ------------------------------*/
+  property descendants {
+    getter {
+      var result = [];
+      for (var i = 0; i < childList.count; i++) {
+        var child = childList[i];
+	result.add(child);
+	var childDescendants = child.descendants;
+	for (var j = 0; j < childDescendants.count; j++)
+	  result.add(childDescendants[j]);
+      }
+      return result;
+    }
+  }
+
+  /**------------------------------
+   * セレクト時にフォーカス時を移動するかどうか
+   *
+   * @param v セレクト時にフォーカス時を移動するかどうか
+   * @return セレクト時にフォーカス時を移動するかどうか
+   ------------------------------*/
+  property focusOnSelect {
+    getter {
+      return _focusOnSelect;
+    }
+    setter(v) {
+      _focusOnSelect = v;
+    }
+  }
+
+  // 名前に対応したアイコンをロードしてキャッシュ
+  function icon(name) {
+    if (typeof(name) == "Object") {
+      var layer = iconLayer[name] = new global.Layer(window, this);
+      name(layer);
+      return layer;
+    }
+    if (iconLayer[name])
+      return iconLayer[name];
+    var layer = iconLayer[name] = new global.Layer(window, this);
+    layer.loadImages(name);
+    layer.setSizeToImageSize();
+    return layer;
+  }
+
+  // 描画のアップデート
+  function updateItems() {
+    // update関数を呼ぶことで、onPaint を喚起。
+    update(0, 0, width, height);
+  }
+
+  // 描画更新
+  function onPaint {
+    var i;
+
+    // リストの描画を更新
+    updateChildren(this);
+
+    // 選択アイテムが閉じてしまったら
+    // 上階層のアイテムを選択し直す
+    if (selection !== void
+        && ! selection.visible) {
+      var newSelection = selection;
+      while (! newSelection.visible)
+        newSelection = newSelection.parent;
+      selectItem(newSelection);
+    }
+
+    // サイズを再設定
+    setMinMaxSize(updateWidth, updateHeight,
+                  Math.max(marginalWidth, updateWidth),
+                  Math.max(marginalHeight, updateHeight));
+    // 選択アイテムの背景色を変更
+    drawSelection();
+    // 選択アイテムを注視
+    // seeSelection();
+  }
+
+  // アイテムの再描画
+  function updateChildren(item) {
+    var i, num, child, v;
+
+    // 一旦全てのアイテムのproxy widgetを非表示にした上で
+    for (i = 0; i < drawItemList.count; i++)
+      if (drawItemList[i] isvalid)
+        drawItemList[i].visible = false;
+
+    // ツリーをたどって、表示するアイテムを表示し直す
+    drawItemList = [];
+    updateWidth = 0;
+    updateHeight = 0;
+
+    var stack = [];
+    
+    i = 0;
+    num = item.childList.count;
+    v = true;
+
+    var sum = 0;
+
+    if (num == 0)
+      return;
+    for (;;) {
+      child = item.childList[i];
+      if (selection == child)
+        selectionIndex = drawItemList.count;
+      if (v) {
+        child.visible = true;
+        child.setPos(child.depth * slideWidth, updateHeight);
+        updateWidth = Math.max(updateWidth,
+                               child.width + 
+                               child.depth * slideWidth);
+        updateHeight += child.height;
+        drawItemList.add(child);
+      }      if (child.hasChild
+          && child.opened) {
+        if (i + 1 < num)
+          stack.add([ item, i + 1, num, v ]);
+        item = child;
+        i = 0;
+        num = item.childList.count;
+        v = v && item.opened;
+        continue;
+      }
+      if (++i < num)
+        continue;
+      if (stack.count == 0)
+        break;
+      var a = stack[stack.count - 1];
+      stack.erase(stack.count - 1);
+      item = a[0];
+      i = a[1];
+      num = a[2];
+      v = a[3];
+    }
+  }
+
+  // ダミー関数
+  function updateToggle {
+  }
+
+  // 特定のアイテムを選択する
+  function selectItem(item, selectionIndex = -1) {
+    if (selection == item)
+      return;
+
+    // 祖先アイテムを参照
+    var prevAncestors = [], curAncestors = [];
+    if (selection !== void) {
+      prevAncestors = selection.ancestors;
+      prevAncestors.insert(0, selection);
+    }
+    if (item !== void) {
+      curAncestors = item.ancestors;
+      curAncestors.insert(0, item);
+    }
+
+    // 祖先アイテムが共通の部分に関しては、更新を呼ばない
+    while (prevAncestors.count 
+	   && curAncestors.count
+	   && prevAncestors[prevAncestors.count - 1] === curAncestors[curAncestors.count - 1]) {
+      prevAncestors.erase(prevAncestors.count - 1);
+      curAncestors.erase(curAncestors.count - 1);
+    }
+
+    var prevSelection = selection;
+    selection = item;
+    if (prevSelection !== void) {
+      prevSelection.onDeselect();
+      prevSelection.drawLayer();
+      for (var i = 0; i < prevAncestors.count; i++)
+	prevAncestors[i].onDescendantDeselect();
+    }
+    if (selection == void) {
+      this.selectionIndex = -1;
+      drawSelection();
+      return;
+    }
+    if (selectionIndex == -1)
+      selectionIndex = drawItemList.find(selection);
+    this.selectionIndex = selectionIndex;
+    drawSelection();
+    if (selection !== void) {
+      for (var i = curAncestors.count - 1; i >= 0; i--)
+	curAncestors[i].onDescendantSelect();
+      selection.drawLayer();
+      selection.onSelect(prevSelection);
+    }
+    if (_focusOnSelect)
+      focus();
+    onSelect(selection);
+  }
+
+  // 選択アイテムの背景を選択色で描画する
+  function drawSelection {
+    if (selection === void
+        || selection.layer === void) {
+      selectionRect = [ 0, 0, 0, 0 ];
+      selectionLayer.visible = false;
+    } else {
+      selection.drawLayer();
+      selectionRect = [ 0, selection.top, width, selection.height ];
+      selectionLayer.setPos(selectionRect[0], selectionRect[1]);
+      selectionLayer.setSize(selectionRect[2], selectionRect[3]);
+      selectionLayer.fillRect(0, 0, selectionRect[2], selectionRect[3], focused ? WIN_SELECTED : WIN_BG);
+      selectionLayer.visible = true;
+    }
+    return;
+
+    fillRect(selectionRect[0],
+             selectionRect[1],
+             selectionRect[2],
+             selectionRect[3],
+             0xffffffff);
+    if (selection === void
+        || selection.layer === void) {
+      selectionRect = [ 0, 0, 0, 0 ];
+    } else {
+      selection.drawLayer();
+      selectionRect = [ 0, selection.top, width, selection.height ];
+      fillRect(selectionRect[0],
+               selectionRect[1],
+               selectionRect[2],
+               selectionRect[3],
+               focused ? WIN_SELECTED : WIN_BG);
+    }
+  }
+
+  // フォーカス時反応
+  function onFocus {
+    // セレクション再描画
+    drawSelection();
+  }
+
+  // フォーカス失った時の反応
+  function onBlur {
+    // セレクション再描画
+    drawSelection();
+  }
+
+  // セレクションを注視する
+  function seeSelection {
+    asyncCaller.callOnce(this.doSeeSelection, this);
+  }
+
+  function doSeeSelection {
+    if (selection !== void) {
+      noticeRect(selection.left, selection.top, 
+                 selection.width, selection.height);
+    }
+  }
+
+  // マウス押されたらその位置のアイテムをセレクト
+  function onMouseDown(x, y, button, shift) {
+    super.onMouseDown(...);
+    if (button == mbMiddle)
+      return;
+    var i, b, e, m;
+    b = 0;    e = drawItemList.count;
+    while (e - b > 10) {
+      m = (b + e) >> 1;
+      if (y < drawItemList[m].top) {
+        e = m;
+      } else if (y > drawItemList[m].top + drawItemList[m].height) {
+        b = m + 1;
+      } else {
+        selectItem(drawItemList[m], m);
+        return;
+      }
+    }
+    for (i = b; i < e; i++) {
+      if (drawItemList[i].top <= y 
+          && y < drawItemList[i].top + drawItemList[i].height) {
+        selectItem(drawItemList[i], i);
+        return;
+      }
+    }
+    focus();
+  }
+
+  // キー反応
+  function onKeyDownSuper(key, shift) {
+    if (key == VK_DOWN
+        || key == VK_UP
+        || key == VK_RIGHT
+        || key == VK_LEFT)
+      return;
+    else
+      super.onKeyDown(...);
+  }
+
+  function onKeyDown(key, shift) {
+    if (selection === void) {
+      super.onKeyDown(...);
+      return;
+    }
+    if (key == VK_DOWN
+        && ! (shift & (ssAlt | ssCtrl | ssShift))) {
+      if (selectionIndex + 1 < drawItemList.count) {
+        selectItem(drawItemList[selectionIndex + 1], 
+                   selectionIndex + 1);
+        seeSelection();
+      }
+    } else if (key == VK_UP
+               && ! (shift & (ssAlt | ssCtrl | ssShift))) {
+      if (selectionIndex > 0) {
+        selectItem(drawItemList[selectionIndex - 1],
+                   selectionIndex - 1);
+        seeSelection();
+      }
+    } else if (key == VK_RIGHT
+                && ! (shift & (ssAlt | ssCtrl | ssShift))) {
+      if (selection.childList.count == 0) {
+        return;
+      }
+      if (selection.opened) {
+        selectItem(selection.childList[0],
+                   selectionIndex + 1);
+      } else {
+        selection.opened = true;
+      }
+    } else if (key == VK_LEFT
+               && ! (shift & (ssAlt | ssCtrl | ssShift))) {
+      if (selection.childList.count != 0
+          && selection.opened) {
+        selection.opened = false;
+        seeSelection();
+      } else if (selection.parent != root) {
+        selectItem(selection.parent);
+        seeSelection();
+      }
+    } else if (key == VK_F2) {
+      renameSelection();
+    } else {
+      selection.onKeyDown(...);
+    }
+  }
+
+  // キー反応
+  function onKeyPress(key) {
+    switch (key) {
+    case '+': {
+      selection.opened = true;
+      break;
+    }
+    case '-': {
+      selection.opened = false;
+      break;
+    }
+    case "*": {
+      selection.openDescendants();
+      selection.opened = true;
+      break;
+    }
+    }
+  }
+
+  // 選択中のアイテムをリネームする
+  function renameSelection {
+    if (selection !== void
+        && selection.labelEditable) {
+      seeSelection();
+      labelEdit = new KLabelEdit(selection);
+      onBeginLabelEdit();
+    }
+  }
+
+  // リネームを終了
+  function removeLabelEdit {
+    onFinishLabelEdit();
+    discard(labelEdit);
+    focus(selection);
+  }
+
+  function onBeginLabelEdit {
+  }
+
+  function onFinishLabelEdit {
+  }
+
+  // サイズ変わったら選択範囲を再描画
+  function onSizeModified {
+    drawSelection();
+  }
+
+  // enabled==trueならそのまま表示
+  function onNodeEnabled {
+    canvas.opacity = 255;
+    opacity = 255;
+  } 
+
+  // enabled=falseなら半透明で表示
+  function onNodeDisabled {
+    canvas.opacity = 64;
+    opacity = 64;
+  }
+}
+
+/*----------------------------------------------------------------------
+ * リストアイテムのproxy widget
+ *
+ * KListItemが画面に表示される時、内部的に自動的に生成される。
+ * マウスイベントなどを KListItem に転送する。
+ ----------------------------------------------------------------------*/
+class KListItemLayer extends KWidget
+{
+  var owner;
+  var toggleWidth;
+
+  // コンストラクタ
+  function KListItemLayer(owner) {
+    super.KWidget(owner.root.window);
+    this.owner = owner;
+    neutralColor = 0x00ffffff;
+    hitThreshold = 0;
+  }
+
+  // トグル(リスト開閉ようの[+][-]のノッチを描画する
+  function drawToggle(bgColor = 0) {
+    var root = owner.root;
+    var l, t, w, h;
+    l = 2; t = (height - root.toggleOpenImage.height) / 2;
+    if (! owner.hasChild) {
+      fillRect(l, t, root.toggleOpenImage.width, root.toggleOpenImage.height, bgColor);
+    } else if (! owner.opened) {
+      copyRect(l, t, root.toggleOpenImage,
+               0, 0,
+               root.toggleOpenImage.width, root.toggleOpenImage.height);
+    } else {
+      copyRect(l, t, root.toggleCloseImage,
+               0, 0,
+               root.toggleCloseImage.width, root.toggleCloseImage.height);
+    }
+  }
+
+  // 座標がトグル内かどうかを判定
+  function inToggle(x, y) {
+    var root = owner.root;
+    var l, t, w, h;
+    l = 2; t = (height - root.toggleOpenImage.height) / 2;
+    w = root.toggleOpenImage.width;
+    h = root.toggleOpenImage.height;
+    return (l <= x && x < l + w && t <= y && y < t + h);
+  }
+
+  // 座標がアイコン内かどうかを判定
+  function inIcon(x, y) {
+    var l, w;
+    l = owner.toggleWidth + 2;
+    w = owner.iconWidth - 2;
+    return l <= x && x < l + w;
+  }
+
+  // アイコンインデックスを特定
+  function iconIndex(x) {
+    x -= owner.toggleWidth + 2;
+    for (var i = 0; i < owner.icons.count; i++)
+      if (x < owner.iconLayerAt(i).width)
+        return i;
+      else
+        x -= owner.iconLayerAt(i).width;
+  }
+
+  /*------------------------------
+   * 各種マウスイベント
+   * おおむね KListItemに転送するだけ
+   ------------------------------*/
+  function onMouseDown (x, y, button, shift) {
+    // トグルをクリックすると、リストが開閉する
+    if (button == mbLeft
+	&& owner.hasChild
+	&& inToggle(x, y)) {
+      if (! owner.opened 
+	  && (shift & ssCtrl)) 
+	owner.openDescendants();
+      owner.opened = ! owner.opened;
+      return;
+    }
+    // アイコンをクリックするとアイコンに反応
+    if (button == mbLeft
+	&& owner.hasIcon
+	&& inIcon(x, y)) {
+      owner.onIconClick(iconIndex(x));
+      return;
+    }
+    // 右クリックか左クリックでセレクション移動
+    if (button != mbMiddle) {
+      owner.select();
+      owner.root.focus();
+    }
+    super.onMouseDown(...);
+    owner.onMouseDown(...);
+  }
+
+  function onMouseMove {
+    super.onMouseMove(...);
+    owner.onMouseMove(...);
+  }
+
+  function onMouseUp {
+    super.onMouseUp(...);
+    owner.onMouseUp(...);
+  }
+
+  function onMouseEnter {
+    super.onMouseEnter(...);
+    owner.onMouseEnter(...);
+  }
+
+  function onMouseLeave {
+    super.onMouseLeave(...);
+    owner.onMouseLeave(...);
+  }
+
+  function onRightClick {
+    owner.onRightClick(...);
+  }
+
+  function onClick {
+    owner.onClick(...);
+  }
+
+  function onDoubleClick(x, y) {
+    if (! inToggle(x, y))
+      owner.opened = ! owner.opened;
+  }
+
+  function onDragEnter {
+    owner.onDragEnter(...);
+  }
+
+  function onDragMove {
+    owner.onDragMove(...);
+  }
+
+  function onDragLeave {
+    owner.onDragLeave(...);
+  }
+
+  function isPacketAcceptable {
+    return owner.isPacketAcceptable(...);
+  }
+
+  function onPacketEnter {
+    owner.onPacketEnter(...);
+  }
+
+  function onPacketMove {
+    owner.onPacketMove(...);
+  }
+
+  function onPacketLeave {
+    owner.onPacketLeave(...);
+  }
+
+  function onPacketDrop {
+    owner.onPacketDrop(...);
+  }
+
+  function onPacketCancel {
+    owner.onPacketCancel(...);
+  }
+}
+
+/**----------------------------------------------------------------------
+ * リストアイテム
+ ----------------------------------------------------------------------*/
+class KListItem
+{
+  var _depth;
+  var _opened;
+  var _root;
+  var parent;
+  var _visible = false;
+  var layer = void;
+  var childList = [];
+  var _labelEditable = false;
+  var _minLabelWidth = 1;
+  var _labelTextType = TEXT_SYMBOL;
+  var name;
+  var _size;
+  var _icon;
+  var _label;
+  var _hint;
+  var _status;
+  // ウィジェット
+  var _nameCache = %[];
+  var _fontColor = 0xFFFFFFFF;
+  var _fontBold = false;
+
+  /**------------------------------
+   * コンストラクタ
+   * 
+   * @param label ラベル
+   * @param name 名前
+   ------------------------------*/
+  function KListItem(label = "", name = "") {
+    _opened = false;
+    this.name = name;
+    _depth = -1;
+    _label = label;
+    _hint = "";
+    _status = "";
+    _icon = [];
+    // missing を有効にする
+    Scripts.setCallMissing(this);
+  }
+
+  /*------------------------------
+   * ファイナライザ
+   ------------------------------*/
+  function finalize {
+    discardArray(childList);
+    discard(layer);
+  }
+
+  /**------------------------------
+   * クラスツリー
+   *
+   * @return 自分自身の属するクラスツリーを配列で返す
+   ------------------------------*/
+  property classTrees {
+    getter {
+      return Scripts.getClassNames(this);
+    }
+  }
+
+  /**------------------------------
+   * クラス名
+   *
+   * @return 自分自身のクラス名を返す
+   ------------------------------*/
+  property className {
+    getter {
+      return Scripts.getClassNames(this)[0];
+    }
+  }
+
+  /**------------------------------
+   * ラベルがリネーム可能かどうか
+   * 
+   * @param v リネーム可能？
+   * @return リネーム可能？
+   ------------------------------*/
+  property labelEditable {
+    getter {
+      return _labelEditable;
+    }
+    setter(v) {
+      _labelEditable = v;
+      return _labelEditable;
+    }
+  }
+
+  /**------------------------------
+   * ラベルのテキストタイプ
+   *
+   * リネーム時に設定可能な テキストのタイプを
+   * TEXT_ANY, TEXT_DIGIT, TEXT_SYMBOL のいずれかより設定する
+   * 
+   * @param v テキストタイプ
+   * @return テキストタイプ
+   ------------------------------*/
+  property labelTextType {
+    getter {
+      return _labelTextType;
+    }
+    setter(v) {
+      _labelTextType = v;
+      return _labelTextType;
+    }
+  }
+
+  /**------------------------------
+   * ラベルの最小文字数
+   *
+   * リネーム時に設定可能なラベルの最小文字数を設定する
+   * 
+   * @param v 最小文字数
+   * @return 最小文字数
+   ------------------------------*/
+  property minLabelWidth {
+    getter {
+      return _minLabelWidth;
+    }
+    setter(v) {
+      _minLabelWidth = v;
+      return _minLabelWidth;
+    }
+  }
+
+  /**------------------------------
+   * アイテムの縦幅
+   *
+   * 指定しないと、MList の fontHeight から spaceVertical から自動設定される
+   *
+   * @param v 縦幅
+   * @return 縦幅
+   ------------------------------*/
+  property size {
+    getter {
+      if (_size == 0) {
+        var r = root;
+        if (r)
+          _size = root.fontHeight + root.spaceVertical;
+      }
+      return _size;
+    }
+      
+    setter(v) {
+      _size = v;
+      if (visible) {
+        drawLayer();
+        updateItems();
+      }
+      return;
+    }
+  }
+
+  /**------------------------------
+   * ラベル
+   * 
+   * @param value ラベル
+   * @return ラベル
+   ------------------------------*/
+  property label {
+    getter {
+      return _label;
+    }
+    setter (value) {
+      if (_label == value)
+        return;
+      _label = value;
+      if (_visible) {
+        drawLayer();
+        updateItems();
+      }
+    }
+  }
+
+  /**------------------------------
+   * フォントカラー
+   * 
+   * @param value カラー
+   * @return カラー
+   ------------------------------*/
+  property fontColor {
+    getter {
+      return _fontColor;
+    }
+    setter (value) {
+      if (_fontColor == value)
+        return;
+      _fontColor = value;
+      if (_visible) {
+        drawLayer();
+        updateItems();
+      }
+    }
+  }
+
+  /**------------------------------
+   * フォントボールド
+   * 
+   * @param value ボールド
+   * @return ボールド
+   ------------------------------*/
+  property fontBold {
+    getter {
+      return _fontBold;
+    }
+    setter (value) {
+      if (_fontBold == value)
+        return;
+      _fontBold = value;
+      if (_visible) {
+        drawLayer();
+        updateItems();
+      }
+    }
+  }
+
+  /**------------------------------
+   * ヒント
+   *
+   * @param value ヒント
+   ------------------------------*/
+  property hint {
+    getter {
+      return _hint;
+    }
+    setter(v) {
+      _hint = v;
+      if (_visible)
+        layer.hint = v;
+    }
+  }
+  
+  /**------------------------------
+   * ステータス
+   *
+   * @param value ステータス
+   ------------------------------*/
+  property status {
+    getter {
+      return _status;
+    }
+    setter(v) {
+      _status = v;
+      if (_visible)
+        layer.status = v;
+    }
+  }
+  
+  /**------------------------------
+   * アイコン
+   *
+   * ラベルの前方に描画されるアイコンを設定する。
+   * voidを設定するとアイコンは消去される。
+   * アイコンがクリックされると onIconClick() が呼ばれる。
+   *
+   * @param value アイコンファイル名
+   * @return アイコンファイル名
+   ------------------------------*/
+  property icon {
+    getter {
+      return _icon[0];
+    }
+    setter(value) {
+      if (value == void)
+        icons = [];
+      else
+        icons = [ value ];
+    }
+  }
+
+  /**------------------------------
+   * アイコンリスト
+   *
+   * ラベルの前方に描画されるアイコンを複数設定する。
+   * 設定したアイコンは左から順番に並んで表示される。
+   * アイコンがクリックされると onIconClick() が呼ばれる。
+   * onIconClickの引数でどのアイコンが押されたかを判別できる。
+   *
+   * @param value アイコンファイル名配列
+   * @return アイコンファイル名配列
+   ------------------------------*/
+  property icons {
+    getter {
+      return duplicateStruct(_icon);
+    }
+    setter(value) {
+      var hasLayer = false;
+      for (var i = 0; i < value.count; i++) 
+	if (value[i] instanceof "Object") {
+	  hasLayer = true;
+	  break;
+	}
+      if (! hasLayer
+	  && equalStruct(value, _icon))
+        return;
+      if (! _visible) {
+        _icon = value;
+      }else {
+        var oldIconWidth = iconWidth;
+        _icon = value;
+        if (iconWidth != oldIconWidth) {
+          drawLayer();
+          updateItems();
+        } else {
+          drawIcon();
+        }
+      }
+    }
+  }
+
+  property hasIcon {
+    getter {
+      return _icon !== void;
+    }
+  }
+
+  /**------------------------------
+   * アイコンが押された時に呼ばれるフック関数
+   *
+   * @param iconIndex アイコンインデックス
+   ------------------------------*/
+  function onIconClick(iconIndex) {
+    select();
+    root.focus();
+  } 
+
+  /*------------------------------
+   * depth
+   ------------------------------*/
+  property depth {
+    setter (v) {
+      _depth = v;
+      if (v == -1)
+        for (var i = 0; i < childList.count; i++)
+          childList[i].depth = v;
+    }
+    getter {
+      if (_depth < 0) {
+        if (parent !== void)
+          _depth = parent.depth + 1;
+      }
+      return _depth;
+    }
+  }
+
+  /**------------------------------
+   * 子アイテムを追加する
+   *
+   * @param item アイテム
+   ------------------------------*/
+  function add(item) {
+    item.depth = -1;
+    item.parent = this;
+    childList.add(item);
+    updateItems();
+  }
+
+  /**------------------------------
+   * 子アイテムを挿入する
+   *
+   * @param index インデックス
+   * @param item アイテム
+   ------------------------------*/
+  function insert(index, item) {
+    item.depth = -1;
+    item.parent = this;
+    childList.insert(index, item);
+    updateItems();
+  }
+
+  /**------------------------------
+   * 子アイテムを削除する
+   * 
+   * @param item アイテム
+   * @param doInvalidate invalidateするかどうか
+   ------------------------------*/
+  function remove(item, doInvalidate = true) {
+    if (! (item isvalid))
+      return void;
+
+    if (item == root.selection
+        || (root.selection && item.isAncestorOf(root.selection))) {
+      root.selectItem(void);
+      var i = item.index;
+      childList.remove(item);
+      if (childList.count != 0) {
+        if (i > childList.count - 1)
+          i--;
+        childList[i].select();
+      }  else {
+	select();
+      }
+      updateItems();
+    } else {
+      childList.remove(item);
+      updateItems();
+    }
+
+    item._root = void;
+    item.parent = void;
+
+    updateToggle();
+
+    if (doInvalidate)
+      invalidate item;
+  }
+
+  /**------------------------------
+   * 子アイテムを全て削除する
+   *
+   * @param doInvalidate 取り除いた子ウィジェットを無効化するか
+   ------------------------------*/
+  function removeAll(doInvalidate = true)
+  {
+    if (root !== void
+        && root.selection 
+        && this.isAncestorOf(root.selection)) 
+      root.selectItem(void);
+    while(childList.count > 0)
+    {
+      var child = childList[0];
+      childList.remove(child);
+      if(doInvalidate)
+      {
+        invalidate child;
+      }
+      else
+      {
+        child._root = void;
+        child.parent = void;
+      }
+    }
+    updateItems();
+    updateToggle();
+  }
+
+  /**------------------------------
+   * 自分自身を削除する
+   *
+   * @param doInvalidate invalidateするかどうか
+   ------------------------------*/
+  function removeSelf(doInvalidate = true) {
+    asyncCaller.call(parent.remove, this, doInvalidate);
+  }
+
+  /**------------------------------
+   * 子持ちかどうか判定する
+   *
+   * @return 子持ち？
+   ------------------------------*/
+  property hasChild {
+    getter {
+      return childList.count != 0;
+    }
+  }
+
+  /**------------------------------
+   * 子アイテムをカウントする
+   * 
+   * @return 子アイテム数
+   ------------------------------*/
+  property childCount {
+    getter {
+      return childList.count;
+    }
+  }
+
+  /**------------------------------
+   * 子アイテムを参照する
+   *
+   * @param index インデックス
+   * @return 子アイテム
+   ------------------------------*/
+  function childAt(index) {
+    return childList[index];
+  }
+
+  /**------------------------------
+   * 子孫アイテムから特定の名前を持った子ウィジェットを捜す
+   * 
+   * @param name 名前
+   ------------------------------*/
+  function find(name) {
+    if (this.name === name)
+      return this;
+    for (var i = 0; i < childList.count; i++) {
+      var child = childList[i];
+      var widget = child.find(name);
+      if (widget)
+        return widget;
+    }
+    return void;
+  }
+
+  /**------------------------------
+   * 子孫アイテムから特定の名前を持った子ウィジェットを捜します
+   *
+   * find関数を経由せずに、オブジェクトのプロパティ扱いで名前を指定して
+   * 子孫アイテム中のウィジェットを参照することが出来ます。
+   *
+   * パフォーマンスの都合で、グローバルに同名のシンボルが存在する場合は
+   * 優先的にそちらを見に行くという挙動をするので注意。
+   ------------------------------*/
+  function missing(get_or_set, name, value) {
+    if (! get_or_set) {
+      if (typeof(global[name]) != "undefined")
+        return false;
+      if (typeof(_nameCache[name]) != "undefined") {
+        var widget = _nameCache[name];
+        if (widget isvalid
+            && widget.name == name) {
+          *value = widget;
+          return true;
+        } else {
+          delete _nameCache[name];
+        }
+      }
+      var widget = find(name);
+      if (widget) {
+        _nameCache[name] = widget;
+        *value = widget;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**------------------------------
+   * 自分自身のインデックス
+   * 
+   * リストの何番目にいるか。
+   *
+   * @param value インデックス
+   * @return インデックス
+   ------------------------------*/
+  property index {
+    getter {
+      return parent.childList.find(this);
+    }
+
+    setter(value) {
+      var curIndex = index;
+      if (curIndex == value)
+        return;
+      parent.childList.erase(curIndex);
+      parent.childList.insert(value, this);
+      updateItems();
+    }
+  }
+
+  /**------------------------------
+   * アイテムを「選択」状態にする
+   ------------------------------*/
+  function select {
+    root.selectItem(this);
+    root.seeSelection();
+  }
+
+  /**------------------------------
+   * 選択されているか？
+   * @return 選択されているか？
+   ------------------------------*/
+  property selected {
+    getter {
+      return root !== void
+        && root.selection === this;
+    }
+  }
+
+  /**------------------------------
+   * アイテムが選択状態になった時に呼ばれるフック関数
+   ------------------------------*/
+  function onSelect {
+  }
+
+  /**------------------------------
+   * アイテムが非選択状態になった時に呼ばれるフック関数
+   ------------------------------*/
+  function onDeselect {
+  }
+
+  /**------------------------------
+   * (自分を含む)子孫アイテムが選択状態になった時に呼ばれるフック関数
+   ------------------------------*/
+  function onDescendantSelect {
+  }
+
+  /**------------------------------
+   * (自分を含む)子孫アイテムが非選択状態になった時に呼ばれるフック関数
+   ------------------------------*/
+  function onDescendantDeselect {
+  }
+
+  /**------------------------------
+   * 子持ちの時のトグル状態を変更する
+   *
+   * @param o 開閉
+   * @return 開閉
+   ------------------------------*/
+  property opened {
+    getter {
+      return _opened;
+    }
+    setter(o) {
+      if (_opened == o)
+        return;
+      _opened = o;
+      if (_visible)
+        layer.drawToggle();
+      updateItems();
+    }
+  }
+
+  /**------------------------------
+   * 子孫アイテムをまとめて開く
+   *------------------------------*/
+  function openDescendants {
+    var i, desc = descendants;
+
+    for (i = 0; i < desc.count; i++) {
+      if (desc[i].hasChild) {
+        desc[i].opened = true;
+      }
+    }
+  }
+
+  /**------------------------------
+   * ユーザーに値を入力させてラベルをリネームする
+   * (F2を押した時と同様の動作)
+   *------------------------------*/
+  function renameAsUserInput {
+    select();
+    root.renameSelection();
+  }    
+
+  /**------------------------------
+   * ラベルをリネームする
+   * 
+   * 引数 labelを指定すると、ラベル変更後に onRename 関数が呼ばれる。
+   * (ラベル変更後にフックをかける仕組)
+   * 
+   * @param label リネームするラベル
+   ------------------------------*/
+  function rename(label) {
+    var oldLabel = this.label;
+    this.label = label;
+    this.onRename(oldLabel, label);
+  }
+
+  /**------------------------------
+   * ラベルにリネーム許可を与えるか判定する
+   *
+   * renameAsUserInput を使ったリネーム時に、
+   * 指定された名前を受け入れていいかどうかを判定する
+   * ユーザー定義関数。
+   * デフォルトの実装では常にtrueを返す
+   *
+   * @param label 判定するラベル
+   * @return 受け入れるならtrueを、拒否するならfalseを返す。
+   ------------------------------*/
+  function isAcceptRename(label) {
+    return true;
+  }
+
+  /**------------------------------
+   * リネーム時に呼ばれるフック関数
+   * 
+   * @param oldLabl 旧ラベル
+   * @param newLabel 新ラベル
+   ------------------------------*/
+  function onRename(oldLabel, newLabel)
+  {
+  }
+
+  /*------------------------------
+   * 各種ウィジェットイベントフック関数。
+   * 引数の詳細は KWidgetを参照されたし
+   ------------------------------*/
+  // キーダウン
+  function onKeyDown(key, shift) {
+    root.onKeyDownSuper(...);
+  }
+
+  // マウスダウン
+  function onMouseDown(x, y, button, shift) {
+  }
+
+  // マウスムーブ
+  function onMouseMove(x, y, button, shift) {
+  }
+
+  // マウスアップ
+  function onMouseUp(x, y, button, shift) {
+  }
+
+  // マウスエンター
+  function onMouseEnter() {
+  }
+
+  // マウスリーブ
+  function onMouseLeave() {
+  }
+
+  // 右クリック
+  function onRightClick(x, y, shift) {
+  }
+
+  // 左クリック
+  function onClick(x, y) {
+  }
+
+  // ドラッグエンター
+  function onDragEnter(x, y, shift) {
+  }
+
+  // ドラッグムーブ
+  function onDragMove(x, y, shift) {
+  }
+
+  // ドラッグリーブ
+  function onDragLeave(x, y, shift) {
+  }
+
+  // パケットのドラッグ開始
+  function beginDragPacket(packet) {
+    layer.beginDragPacket(packet);
+  }
+
+  // パケットの受け入れ判定
+  function isPacketAcceptable(packet) {
+    return false;
+  }
+
+  // パケット侵入
+  function onPacketEnter(x, y, packet, shift) {
+    // 背景色を変更
+    drawLayer(0xffff0000);
+  }
+
+  // パケットムーブ
+  function onPacketMove(x, y, packet, shift) {
+  }
+
+  // パケット離脱
+  function onPacketLeave(x, y, packet, shift) {
+    // 背景色を戻す
+    drawLayer(0x00000000);
+  }
+
+  // パケットドロップ
+  function onPacketDrop(x, y, packet, shift) {
+  }
+
+  // パケットキャンセル
+  function onPacketCancel(packet) {
+  }
+
+  /*------------------------------
+   * フック関数ここまで
+   ------------------------------*/
+
+  // アイテムの高さ
+  property width {
+    getter {
+      return _visible ? layer.width : 0;
+    }
+  }
+
+  // アイテムの高さ
+  property height {
+    getter {
+      return _visible ? layer.height : 0;
+    }
+  }
+
+  // アイテムのX座標
+  property left {
+    getter {
+      return _visible ? layer.left : 0;
+    }
+  }
+
+  // アイテムのY座標
+  property top {
+    getter {
+      return _visible ? layer.top : 0;
+    }
+  }
+
+  // アイテムの可視
+  property visible {
+    getter {
+      return _visible;
+    }
+
+    setter (v) {
+      if (_visible == v)
+        return;
+      _visible = v;
+      if (_visible) {
+        layer = new KListItemLayer(this);
+        layer.parent = root;
+        layer.hint = _hint;
+        layer.status = _status;
+        drawLayer();
+      } else {
+        discard(layer);
+        layer = void;
+      }
+    }
+  }
+
+  // トグルの描画を更新
+  function updateToggle {
+    if (_visible)
+      layer.drawToggle();
+  }
+
+  // トグルの表示に要する幅
+  property toggleWidth {
+    getter {
+      return root.toggleOpenImage.width + 4;
+    }
+  }
+
+  // 位置設定
+  function setPos(x, y) {
+    if (_visible)
+      layer.setPos(x, y);
+  }
+
+  // 祖先アイテム一覧
+  property ancestors {
+    getter {
+      var a, item;
+
+      a = [];
+      
+      for (item = this.parent; item && item != root; item = item.parent)
+        a.add(item);
+
+      return a;
+    }
+  }
+
+  // 祖先であるかどうか判定
+  function isAncestorOf(item) {
+    for (; item != root; item = item.parent) {
+      if (item == this)
+        return true;
+    }
+    return false;
+  }
+
+  // 子孫であるかどうか判定
+  function isDescendantOf(item) {
+    return item.isAncestorOf(this);
+  }
+
+  // 子孫アイテム一覧
+  property descendants {
+    getter {
+      var i, num, child, item;
+      var stack = [];
+      i = 0;
+      var retval = [];
+      item = this;
+      num = item.childList.count;
+      if (num == 0)
+        return [];
+      for (;;) {
+        child = item.childList[i];
+        retval.add(child);
+        if (child.hasChild) {
+          if (i + 1 < num)
+            stack.add([ item, i + 1, num ]);
+          item = child;
+          i = 0;
+          num = item.childList.count;
+          continue;
+        }
+        if (++i < num)
+          continue;
+        if (stack.count == 0)
+          break;
+        var a = stack[stack.count - 1];
+        stack.erase(stack.count - 1);
+        item = a[0];
+        i = a[1];
+        num = a[2];
+      }
+      return retval;
+    }
+  }
+
+  // ルートアイテムを参照する
+  property root {
+    getter {
+      if (_root === void
+          && parent !== void)
+        _root = parent.root;
+      return _root;
+    }
+  }
+
+  // 描画を更新する
+  function updateItems {
+    var r = this.root;
+    if (r) {
+      r.updateItems();
+    }
+  }
+
+  // アイコンレイヤ
+  function iconLayerAt(index) {
+    var layer = _icon[index];
+    if (layer instanceof "Layer")
+      return layer;
+    else
+      return root.icon(layer);
+  }
+
+  // アイコン表示幅
+  property iconWidth {
+    getter {
+      if (_icon.count == 0)
+        return 0;
+      else {
+        var w = 4;
+        for (var i = 0; i < _icon.count; i++) 
+          w += iconLayerAt(i).width;
+        return w;
+      } 
+    }
+  }
+
+  // ラベルを描画する
+  function drawLabel {
+    layer.drawText(toggleWidth + iconWidth, root.spaceVertical / 2, label, fontColor,
+                   255, true, 2048, WIN_WHITE, 2.5);
+  }
+
+  // アイコンを描画する
+  function drawIcon {
+    if (_icon.count) {
+      layer.fillRect(toggleWidth + 2, 0, iconWidth - 2, size, 0x00000000);
+      var x = toggleWidth + 2;
+      for (var i = 0; i < _icon.count; i++) {
+        var iconLayer = iconLayerAt(i);
+        layer.copyRect(x, (size - iconLayer.height) / 2, iconLayer, 0, 0, iconLayer.width, iconLayer.height);
+        x += iconLayer.width;
+      }
+    }
+  }
+
+  // レイヤの内容を描画する
+  function drawLayer(bgColor = 0x00000000) {
+    if (layer === void)
+      return;
+    layer.font.face = "ＭＳ ゴシック";
+    layer.font.height = size - root.spaceVertical;
+    layer.font.bold = _fontBold;
+    layer.setFixedSize(layer.font.getTextWidth(label) + toggleWidth + iconWidth, size);
+    layer.fillRect(0, 0, width, height, bgColor);
+    layer.drawToggle(bgColor);
+    drawIcon();
+    drawLabel();
+  }
+
+  // ラベル矩形
+  property labelRect {
+    getter {
+      return %[ left:(toggleWidth + iconWidth), top:0, 
+      width:width - (toggleWidth + iconWidth), height:size];
+    }
+  }
+
+
+  /**------------------------------
+   * 「値」が変わった時に呼ばれるフック関数
+   *
+   * 「値」を持つウィジェットで、値が変更された時に呼ばれます。
+   * デフォルトでは、parent の onChildValueModifiedを呼ぶように設定されています。
+   *
+   * @param newValue 新規の値
+   * @param oldValue 変更前の値
+   ------------------------------*/
+  function onValueModified(newValue, oldValue) {
+    if (parent !== void)
+      parent.onChildValueModified(this, newValue, oldValue);
+  }
+
+  /**------------------------------
+   * 子ウィジェットの「値」が変わった時に呼ばれるフック関数
+   *
+   * 子ウィジェットの「値」値が変更された時に呼ばれます。
+   * デフォルトでは、さらに parent の onChildValueModifiedを呼ぶように設定されています。
+   * どこかのウィジェットが関数をオーバーライドして処理を行わない限り、
+   * 値変更の通知は KWindow まで届きます。
+   *
+   * @param newValue 新規の値
+   * @param oldValue 変更前の値
+   ------------------------------*/
+  function onChildValueModified(child, newValue, oldValue) {
+    if (parent !== void)
+      parent.onChildValueModified(...);
+  }
+}
