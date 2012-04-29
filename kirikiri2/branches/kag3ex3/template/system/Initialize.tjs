@@ -241,7 +241,7 @@ function CanLoadPlugin(name) {
 	return placed != "" && exist(placed);
 }
 try {
-	var dll = "PackinOne.dll";
+	var dll = "KAGParserEx.dll";
 	Plugins.link(dll) if (CanLoadPlugin(dll));
 } catch {}
 
@@ -367,6 +367,7 @@ KAGLoadScript("GFX_Fire.tjs")     if (KAGConfigEnabled("gfxFireEnabled",     tru
 KAGLoadScript("GFX_Movie.tjs")    if (KAGConfigEnabled("gfxMovieEnabled",    true));
 KAGLoadScript("GFX_Flash.tjs")    if (KAGConfigEnabled("gfxFlashEnabled",    true) && CanLoadPlugin("flashPlayer.dll"));
 KAGLoadScript("GFX_Particle.tjs") if (KAGConfigEnabled("gfxParticleEnabled", true));
+KAGLoadScript("GFX_AMovie.tjs")   if (KAGConfigEnabled("gfxAlphaMovieEnabled", true) && CanLoadPlugin("AlphaMovie.dll"));
 KAGLoadScript("MessageLayer.tjs");
 KAGLoadScript("Menus.tjs");
 KAGLoadScript("DefaultMover.tjs");

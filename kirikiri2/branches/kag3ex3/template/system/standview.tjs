@@ -491,6 +491,7 @@ class StandViewWindow extends KAGWindow
 		var savemenu = new MenuItem(this, "一覧画像保存");
 		savemenu.add(new svmi(this, "全キャラ保存", saveAll));
 		savemenu.add(new svmi(this, "現在キャラ保存", saveOne));
+		savemenu.add(new svmi(this, "現在の選択キャラ状態で表情別の立ち絵画像群を保存", saveFaces));
 		savemenu.add(new MenuItem(this, "-"));
 		savemenu.add(new svmi(this, "画像保存設定", setSaveConfig));
 		filemenu.add(savemenu);
@@ -548,6 +549,36 @@ class StandViewWindow extends KAGWindow
 		if (r != "") try { defaultSaveFontSize = (int)r; } catch {}
 		var r = System.inputString("縮小率指定", "画像の全体の縮小率(1-100[%])を入力してください。", (string)defaultSaveZoomPerc);
 		if (r != "") try { defaultSaveZoomPerc = (int)r; } catch {}
+	}
+	// 現在のキャラ画像保存
+	function saveFaces() {
+		Plugins.link("layerExSave.dll") if (typeof global.Layer.saveLayerImagePng == "undefined");
+		var ch = currentCh, file = System.exePath+"_temp_extract_faces";
+		var name = ch.name + @"／LV${ch.level}";
+		with (ch) {
+			if (.dress != "") name += "／"+.dress;
+			if (.pose  != "") name += "／"+.pose;
+			if (typeof .diff != "undefined" && .diff  != "") name += "／"+.diff;
+		}
+
+		var lays = [], grps = [];
+		var elm = %[ ch:ch, grps:grps, lays:lays, tags:[ "Face" ], base:primaryLayer, font:primaryLayer.font, chlay:ch.createLayer(this) ];
+		saveCharaExtractImages(elm, 0, 100);
+
+		for (var i = 0; i < grps.count; i++) {
+			try {
+				with (grps[i]) {
+					if (.faces[0] !== void)
+						.faces[0].saveLayerImagePng(@"${file}/${name}/${.name}.png");
+				}
+			} catch {}
+		}
+
+		clearAll();
+		invalidate elm.chlay;
+		delete     elm.chlay;
+
+		for (var i = 0; i < lays.count; i++) invalidate lays[i];
 	}
 
 	// 全キャラ立ち絵・顔の切抜き画像保存
@@ -885,7 +916,8 @@ class StandViewWindow extends KAGWindow
 		submenu.add(item = new svmi(this, @"${text} コピーなし",             enableClipboard, 0, key)); item.group = key+1; item.radio = 1; submenu[key+":0"] = item;
 		submenu.add(item = new svmi(this, @"${text} 選択文字のみ",           enableClipboard, 1, key)); item.group = key+1; item.radio = 1; submenu[key+":1"] = item;
 		submenu.add(item = new svmi(this, @"${text} キャラを含めたタグ生成", enableClipboard, 2, key)); item.group = key+1; item.radio = 1; submenu[key+":2"] = item;
-		submenu.add(item = new svmi(this, @"${text} 完全タグを生成",         enableClipboard, 3, key)); item.group = key+1; item.radio = 1; submenu[key+":3"] = item;
+		submenu.add(item = new svmi(this, @"${text} 服装を除いたタグを生成", enableClipboard, 3, key)); item.group = key+1; item.radio = 1; submenu[key+":3"] = item;
+		submenu.add(item = new svmi(this, @"${text} 完全タグを生成",         enableClipboard, 4, key)); item.group = key+1; item.radio = 1; submenu[key+":4"] = item;
 	}
 
 	// クリップボードへの転送を有効・無効
@@ -897,13 +929,46 @@ class StandViewWindow extends KAGWindow
 		store();
 	}
 	function makeTagText(list*) { return @"[${list.join(' ')}]"; }
-	function makeClipboardText(mode = 3, name, ischar = false) {
+	function makeClipboardText(mode = 3, name, type) {
 		switch (mode) {
 		case 1: // 選択文字のみコピー
 			return name;
 		case 2: // キャラと選択文字でタグを生成
-			return (currentCh !== void && !ischar) ? makeTagText(currentCh.name, name) : makeTagText(name);
-		case 3: // 完全タグ生成
+			return (currentCh !== void && type != "char") ? makeTagText(currentCh.name, name) : makeTagText(name);
+		case 3: // 服装を除いたタグ生成
+			if (currentCh !== void) with (currentCh) {
+				var tmp = [ .name ];
+				switch (type) {
+				case "char": case "disp": case "level": case "pos":
+					tmp.add(currentDispName) if (currentDispName != "");
+					if (!currentDispHide) {
+						tmp.add(currentLevelName) if (currentLevelName != "");
+						tmp.add(currentXPosName)  if (currentXPosName  != "");
+						tmp.add(currentYPosName)  if (currentYPosName  != "");
+					}
+					break;
+				default:
+					if (typeof .diff == "undefined") {
+						tmp.add(.pose) if (.pose != "" && !hidePoseMenu);
+					} else {
+						tmp.add(.diff) if (.diff != "");
+					}
+					if (.face != "") {
+						if (.face.indexOf(":")) {
+							var flist = .face.split(":");
+							for (var i=0;i<flist.count;i++) {
+								tmp.add(flist[i]);
+							}
+						} else {
+							tmp.add(.face);
+						}
+					}
+					break;
+				}
+				return makeTagText(tmp*);
+			}
+			break;
+		case 4: // 完全タグ生成
 			if (currentCh !== void) with (currentCh) {
 				var tmp = [ .name ];
 				tmp.add(currentDispName) if (currentDispName != "");
@@ -928,12 +993,13 @@ class StandViewWindow extends KAGWindow
 				}
 				return makeTagText(tmp*);
 			}
+			break;
 		}
 	}
 	// クリップボードへコピー
-	function copyClipboard(name, ischar = false) {
+	function copyClipboard(name, type) {
 		var mode = System.getKeyState(VK_SHIFT) ? clipCopyModeSft : clipCopyMode;
-		setClipboard(makeClipboardText(mode, name, ischar));
+		setClipboard(makeClipboardText(mode, name, type));
 	}
 	function copyCurrent() {
 		setClipboard(makeClipboardText());
@@ -1085,7 +1151,7 @@ class StandViewWindow extends KAGWindow
 			.disp = value;
 			syncAll();
 		}
-		copyClipboard(name);
+		copyClipboard(name, "disp");
 	}
 	function setChLevel(sender, name, level) {
 		var chk = checkVPosUpdate(sender, name, "currentLevelName");
@@ -1096,7 +1162,7 @@ class StandViewWindow extends KAGWindow
 				syncAll();
 			}
 		}
-		copyClipboard(name);
+		copyClipboard(name, "level");
 	}
 	function setChPos(sender, name, pos, isX) {
 		var chk = checkVPosUpdate(sender, name, isX ? "currentXPosName" : "currentYPosName");
@@ -1106,7 +1172,7 @@ class StandViewWindow extends KAGWindow
 			else     .ypos = currentYPos;
 			syncAll();
 		} else updateAllMenu(0);
-		copyClipboard(name);
+		copyClipboard(name, "pos");
 	}
 
 	// -------------------------------------------------------
@@ -1308,7 +1374,7 @@ class StandViewWindow extends KAGWindow
 			if (!shift) hideExceptCurrentCh();
 		}
 		updateCharacter();
-		copyClipboard(name, true);
+		copyClipboard(name, "char");
 	}
 	function updateCharacter() {
 		if (currentCh !== void) with (currentCh) {
@@ -1332,7 +1398,7 @@ class StandViewWindow extends KAGWindow
 			env.updateAll();
 			updateAllMenu();
 		}
-		copyClipboard(name);
+		copyClipboard(name, "pose");
 	}
 	
 	/**
@@ -1344,7 +1410,7 @@ class StandViewWindow extends KAGWindow
 			env.updateAll();
 			updateAllMenu();
 		}
-		copyClipboard(name);
+		copyClipboard(name, "dress");
 	}
 
 	/**
@@ -1356,7 +1422,7 @@ class StandViewWindow extends KAGWindow
 			env.updateAll();
 			updateAllMenu();
 		}
-		copyClipboard(name);
+		copyClipboard(name, "diff");
 	}
 	
 	/**
@@ -1368,7 +1434,7 @@ class StandViewWindow extends KAGWindow
 			env.updateAll();
 			updateAllMenu();
 		}
-		copyClipboard(name);
+		copyClipboard(name, "face");
 	}
 
 	// -----------------------------------------------------------------

@@ -347,7 +347,7 @@ class BaseLayer extends GraphicLayer
 	function BaseLayer(win, par, name, id)
 	{
 		super.GraphicLayer(win, par, name, id);
-		type = ltCoverRect;
+		defaultType = type = ltCoverRect;
 		hitType = htMask;
 		hitThreshold = 0;
 	}
@@ -532,6 +532,13 @@ class GenericFlip {
 		}
 	}
 
+	function flipOffset(left, top, width, height) {
+		for (var i = flipLayers.count-1; i >= 0; i--) {
+			flipLayers[i].setOffsetForMovie(left, top, width, height);
+		}
+	}
+
+	
 	function flipEntry(lay) {
 		flipLeave(lay);
 		flipLayers.add(lay);
@@ -874,10 +881,15 @@ class GraphicLayerEx extends GraphicLayer {
 
 	// -------------------------------------------------
 	
-	function assignImagesForMovie(src, resize = true) {
+	function assignImagesForMovie(src, resize=true) {
 		super.assignImages(src);
 		applyColorCorrection(this, Anim_loadParams);
 		setSize(src.width, src.height) if (resize);
+	}
+
+	function setOffsetForMovie(left, top, width, height) {
+		//dm(@"offset:${left},${top},${width},${height}");
+		setAffineOffset(width/2 - left, height/2 - top);
 	}
 	
 	function assign(src)
@@ -1243,7 +1255,7 @@ class CharacterLayer extends GraphicLayerEx
 	{
         super.GraphicLayerEx(win, par, name, id);
 		freeImage();
-		type = ltCoverRect;
+		defaultType = type = ltCoverRect;
 		hitType = htMask;
         hitThreshold = 64;
         this.level = level;

@@ -509,13 +509,23 @@ class KAGEnvLayer extends KAGEnvImage {
 			} else if (imageFile !== void) {
 				// 画像のロード
 				var imageData = env.getImageData(imageFile);
-				try {
-					layer.loadImages(imageData);
-					_width  = layer.width;
-					_height = layer.height;
-					maskLayer(layer);
-				} catch (e) {
-					errorLayer(layer, imageFile + ":画像がロードできません:" + e.message);
+				var flipType = GenericFlip.GetType(imageData.storage, imageData);
+				if (flipType === void || flipType == null) {
+					// 単純画像
+					try {
+						layer.loadImages(imageData);
+						_width  = layer.width;
+						_height = layer.height;
+						maskLayer(layer);
+					} catch (e) {
+						errorLayer(layer, imageFile + ":画像がロードできません:" + e.message);
+					}
+				} else {
+					// フリップ画像の場合・マスクは対応できない
+					//dm(@"${imageFile}:フリップ画像対応:${flipType}:${imageData.storage}");
+					layer.startFlip(imageData.storage, imageData, flipType);
+					_width  = imageData.width  if (imageData.width  !== void);
+					_height = imageData.height if (imageData.height !== void);
 				}
 			} else if (imageColor !== void) {
 				// 塗りつぶし

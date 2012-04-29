@@ -568,6 +568,7 @@ class uiEntryNormal {
 		e.height = value.height;
 		e.frame  = value.storage if e.frame === void;
 		if (e.frame == "") {
+			e.frame = ""  if e.frame   === void;
 			e.opacity = 0 if e.opacity === void;
 			e.color   = 0 if e.color   === void;
 		}

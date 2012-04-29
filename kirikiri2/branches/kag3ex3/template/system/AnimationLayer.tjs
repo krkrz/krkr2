@@ -333,6 +333,7 @@ class AnimationLayer extends AffineLayer
 	var Anim_interrupted = false;// 中断中か
 
 	var Anim_defaultFontInfo = %[];
+	var Anim_seLabelWait = void; // SELabel待ち
 
 	function AnimationLayer(win, par)
 	{
@@ -343,6 +344,8 @@ class AnimationLayer extends AffineLayer
 
 	function finalize()
 	{
+		if (Anim_seLabelWait !== void && isvalid window)
+			window.removeHook("onSELabel", this.onSELabel);
 		termAnim();
 		super.finalize(...);
 	}
@@ -573,7 +576,9 @@ class AnimationLayer extends AffineLayer
 
 		// レイヤモード
 		{
-			var mode = ltAlpha;
+			// affinelayer は void で適切な初期モードが選択される
+			//var mode = ltAlpha;
+			var mode;
 
 			if(elm.mode !== void)
 			{
@@ -828,7 +833,7 @@ class AnimationLayer extends AffineLayer
 
 	function applyColorCorrection(layer, param)
 	{
-		if (param === void || !layer.isBitmap()) return;
+		if (param === void || (typeof layer.isBitmap == "Object" && !layer.isBitmap())) return;
 		// layer に対して色補正を行う
 		var orgface = layer.face;
 		var orgholdlpha = layer.holdAlpha;
@@ -1246,6 +1251,27 @@ class AnimationLayer extends AffineLayer
 		setOptions(elm);
 		return 0;
 	}
+
+	/*タグハンドラ*/function wsl(elm)
+	{
+		if (Anim_seLabelWait === void && typeof window.addHook == "Object") {
+			Anim_seLabelWait = "";
+			window.addHook("onSELabel", this.onSELabel);
+		}
+		if (Anim_seLabelWait !== void) {
+			Anim_seLabelWait = elm.name;
+			setInterrupted(true);
+			return -2;
+		}
+		return -1;
+	}
+	function onSELabel(label, id)
+	{
+		if (Anim_seLabelWait == "*" || Anim_seLabelWait == label) {
+			Anim_seLabelWait = "";
+			setInterrupted(false);
+		}
+	}
 }
 
 
@@ -1351,6 +1377,11 @@ class ClickGlyphLayer extends KAGLayer
 		}
 	}
 
+	property type {
+		getter() { return super.type; }
+		setter(v) { super.type = v === void ? ltAlpha : v; }
+	}
+	
 	property visible
 	{
 		// visible オーバーライド

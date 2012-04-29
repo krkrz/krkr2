@@ -114,6 +114,7 @@ class KAGEnvSE extends KAGEnvBase {
 
     var secommands = %[
     tagname : null, 
+    taglist : null, 
     storage : setPlay incontextof this,
     play : setPlay incontextof this,
     stop : setStop incontextof this,
@@ -235,10 +236,10 @@ class KAGEnvSE extends KAGEnvBase {
 			var canskip = elm.canskip !== void ? +elm.canskip : true;
 			switch(fading) {
 			case 1:
-				env.addFastTag("wf", %[id:id, canskip:canskip, wait:wait]);
+				env.addFastTag("wf", %[buf:id, canskip:canskip, wait:wait]);
 				break;
 			default:
-				env.addFastTag("ws", %[id:id, canskip:canskip, wait:wait]);
+				env.addFastTag("ws", %[buf:id, canskip:canskip, wait:wait]);
 				break;
 			}
 		}

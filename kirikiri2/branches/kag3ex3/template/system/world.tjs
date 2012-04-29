@@ -63,6 +63,7 @@ class EnvGraphicLayer extends GraphicLayerEx
 			_top  = src._top;
 			__zoomx = src.__zoomx;
 			__zoomy = src.__zoomy;
+			rotate = src.rotate;
 			xoffset = src.xoffset;
 			yoffset = src.yoffset;
 			levelz   = src.levelz;
@@ -348,6 +349,9 @@ var transitionName = %[
 var transitionParam = %[
 	"laytrans" => true, // レイヤトランジション駆動用
 	"blacktrans" => true, // 暗転トランジション駆動用
+	"begin" => true,
+	"end" => true,
+	"bwait" => true,
 	"color" => true,
 	"btime" => true,
 	"time" => true,
@@ -465,6 +469,7 @@ KAGLoadScript('KAGEnvCharacter.tjs');
 KAGLoadScript('KAGEnvBGM.tjs');
 KAGLoadScript('KAGEnvSE.tjs');
 KAGLoadScript('KAGEnvironment.tjs');
+property KAGEnvPlayer { getter() { KAGLoadScript("KAGEnvPlayer.tjs"); return global.KAGEnvPlayer; } }
 
 /*
  クラス継承関係
@@ -486,6 +491,18 @@ KAGLoadScript('KAGEnvironment.tjs');
  */
 class KAGWorldPlugin extends KAGPlugin
 {
+	var player;
+
+	// プレイヤが動作しているかどうか
+	property playerWorking {
+		getter() { return player !== void && player.working; }
+	}
+
+	// プレイヤが動作しているかどうか
+	property playerConverting {
+		getter() { return player !== void && player.converting; }
+	}
+
 	var kag;
 	var env;
 	var tagHandlers = %[];
@@ -497,6 +514,9 @@ class KAGWorldPlugin extends KAGPlugin
 		env = new KAGEnvironment(kag);
 		destroyTrigger = new AsyncTrigger(env.destroy, '');
 		destroyTrigger.cached = true;
+
+		// 各種playerフラグを初期化
+		restoreSystemVariables();
 
 		// 強制のっとり
 		// 本来別機構をつくるべき
@@ -540,6 +560,12 @@ class KAGWorldPlugin extends KAGPlugin
 		tagHandlers["breaktrans"] = env.breaktrans;
 		tagHandlers["wchvoice"] = function(elm) { var ch = elm.target; if (ch !== void) { return ch.waitVoice(elm, this); return 0; }} incontextof kag;
 
+		// プレイヤー系機能
+		tagHandlers["scenestart"] = scenestart incontextof this;
+		tagHandlers["scenestarttext"] = scenestarttext incontextof this;
+		tagHandlers["sceneplay"]  = sceneplay incontextof this;
+		tagHandlers["scenecheck"]  = scenecheck incontextof this;
+
 		addTag(kag, tagHandlers);
 	}
 
@@ -550,20 +576,76 @@ class KAGWorldPlugin extends KAGPlugin
 	function finalize() {
 		destroyTrigger.cancel();
 		invalidate destroyTrigger;
+		invalidate player if player !== void;
 		invalidate env;
     }
 
 	// -----------------------------------------------------------------
 
+	var checkSkipOnNextPlay = false; // 次のsceneplayタグで既読自動スキップチェックをするかどうか
+	function initPlayer() {
+		if (player !== void && (player.forceReadOnly != playerReadOnly)) {
+			invalidate player;
+			player = void;
+		}
+		if (player === void) {
+			player = new KAGEnvPlayer(kag, env, playerReadOnly);
+		}
+	}
+	
+	// シーン再生開始タグ
+	function scenestart(elm) {
+		initPlayer();
+		checkSkipOnNextPlay = true;
+		return player.start(elm);
+	}
+
+	// テキスト再生開始タグ
+	function scenestarttext(elm) {
+		initPlayer();
+		return player.starttexttag(elm);
+	}
+	
+	// シーン再生タグ
+	function sceneplay(elm) {
+		if (player !== void) {
+			if (checkSkipOnNextPlay) {
+				checkSkipOnNextPlay = false;
+				kag.checkSkipOnReadedLabel();
+			}
+			return player.play(elm);
+		}
+		return 0;
+	}
+	
+	// シーンチェックタグ
+	function scenecheck(elm) {
+		if (player !== void) {
+			return player.check(elm);
+		}
+		return 0;
+	}
+	
+	// -----------------------------------------------------------------
+	
     function onStore(f, elm) {
-		var dic = f.env = %[];
-		env.onStore(dic);
+		// プレイヤーの保存処理が動いてない場合は環境を保存
+		if (player === void || !player.onStore(f)) {
+			var dic = f.env = %[];
+			env.onStore(dic);
+		}
     }
 
 	function onRestore(f, clear, elm) {
-		if (f.env !== void) {
-			env.onRestore(f.env, clear, elm);
-			env.updateAll();
+		// プレイヤーの復帰処理が動いてない場合は環境を復帰
+		if (f.scenePlayer !== void) {
+			initPlayer();
+		}
+		if (player === void || !player.onRestore(f)) {
+			if (f.env !== void) {
+				env.onRestore(f.env, clear, elm);
+				env.updateAll();
+			}
 		}
 	}
 
@@ -584,8 +666,12 @@ class KAGWorldPlugin extends KAGPlugin
 
 	// リセット時コールバック
 	function onResetAll() {
-		env.resetEnv();
-		env.updateAll();
+		if (player !== void) {
+			player.reset();
+		} else {
+			env.resetEnv();
+			env.updateAll();
+		}
 	}
 
 	// ボイスボリューム変更時コールバック
@@ -595,9 +681,16 @@ class KAGWorldPlugin extends KAGPlugin
 
 	// ボイススピード変更時コールバック
 	function onVoiceSpeedUpdate() {
-		env.updateVoice();
+		env.updateVoiceSpeed();
 	}
 
+	// ボイス再生されている場合はボイス待ちのトリガを返す
+	function checkVoiceWait() {
+		if (env.playVoiceCount > 0) {
+			return "env_voice";
+		}
+	}
+	
 	// SE停止時コールバック
 	function onSeStop(id) {
 		env.onSeStop(id);
@@ -621,6 +714,7 @@ class KAGWorldPlugin extends KAGPlugin
 	// 画面同期要求コールバック
 	function onSync() {
 		env.destroy();
+		player.onSync() if player !== void;
 		env.setRedraw();
 		env.updateAll();
 	}
@@ -646,4 +740,184 @@ class KAGWorldPlugin extends KAGPlugin
 		}
 		return env.unknown(tagName, elm);
 	}
+
+	// 選択開始
+	function onSelectStart(info) {
+		if (player !== void) { 
+			return player.onSelectStart(...);
+		}
+	}
+	
+	// 選択通知
+	function onSelect(text) {
+		if (player !== void) { 
+			return player.onSelect(...);
+		}
+	}
+	
+	// シナリオ遷移のっとり
+	function onNext() {
+		if (player !== void) { 
+			checkSkipOnNextPlay = true;
+			return player.onNext(...);
+		}
+	}
+
+	// kagが遷移した場合に呼ばれるコールバック
+	function onProcess(usingExtraConductor) {
+		player.onProcess(usingExtraConductor) if player !== void;
+	}
+
+	// 現在実行中位置情報の差し替え
+	function getCurrentInfo() {
+		if (playerWorking || playerConverting) {
+			return player.getCurrentInfo();
+		}
+	}
+
+	// 未読判定の差し替え
+	function getCurrentRead() {
+		if (playerWorking) {
+			return player.curRead;
+		}
+	}
+
+	// ページ名の差し替え
+	function getCurrentPageName() {
+		if (playerWorking) {
+			return player.title;
+		}
+	}
+
+	/**
+	 * シナリオ実行系をのっとるための口
+	 * @param execFile 実行用スクリプト(内部で scenestart/sceneplay を呼ぶ必要がある
+	 * @param storage 対象ストレージ
+	 * @param target 対象ターゲット(ラベルまたは行番号)
+	 */
+	function onScenarioExec(execFile, storage, target) {
+		if (playerExecMode) {
+			with (kag) {
+				.setConductorToMain();
+				.conductor.clear();
+				tf.storage = storage;
+				tf.target  = target;
+				.process(execFile);
+			}
+			return true;
+		}
+	}
+	
+	/**
+	 * ラベル・業指定ジャンプ指示
+	 * @param line 行番号またはラベル
+	 */
+	function onSkipToLine(line) {
+		if (playerWorking) {
+			player.initEnv();
+			player.startScene("", line);
+			kag.processGo();
+			return true;
+		}
+	}
+
+	// 選択肢まで戻る用履歴情報
+
+	function isSetToRecordHistory() {
+		return playerWorking;
+	}
+	
+	function isHistoryOfStoreAlive() {
+		if (playerWorking) {
+			return player.isHistoryOfStoreAlive();
+		}
+	}
+
+	function onRecordHistoryOfStore() {
+		if (playerWorking) {
+			return player.onRecordHistoryOfStore();
+		}
+	}
+
+	function onGoBackHistoryOfStore() {
+		if (playerWorking) {
+			return player.onGoBackHistoryOfStore();
+		}
+	}
+
+	function getHistoryOfStorePage() {
+		if (playerWorking) {
+			return player.getHistoryOfStorePage();
+		}
+	}
+
+	// ----------------------------------------------------------
+	
+	// プレイヤ実行処理を乗っ取るフラグ true ならメニューの実行処理系をのっとる
+	var playerExecMode;
+	// DB強制書き込み禁止
+	var playerReadOnly;
+
+	// kag.saveSystemVariables() 時に playerExecMode を保存する
+	function onSaveSystemVariables() {
+		with (kag.scflags) {
+			.playerExecMode = playerExecMode;
+			.playerReadOnly  = playerReadOnly;
+		}
+	}
+	// scflagsから playerExecMode を復帰させる
+	function restoreSystemVariables() {
+		// playerExecMode 初期値を設定
+		if (kag.scflags !== void) with (kag.scflags) {
+			playerExecMode  = .playerExecMode;
+			playerReadOnly  = .playerReadOnly;
+		}
+		// 未定義の場合のデフォルト値
+		playerExecMode  = envPlayerConvertEnabled   if (playerExecMode  === void && typeof global.envPlayerConvertEnabled   != "undefined");
+		playerReadOnly  = envPlayerReadOnlyEnabled  if (playerReadOnly  === void && typeof global.envPlayerReadOnlyEnabled  != "undefined");
+
+		updateMenuItemChecked();
+	}
+
+	// メニュー系の処理
+	var _menuItemName = "convertModeMenuItem";
+	var _patchMenuItemName = "convertModePatchMenuItem";
+	var _readonlyMenuItemName = "convertModeReadOnlyMenuItem";
+	function updateMenuItemChecked() {
+		if (typeof kag[_menuItemName] == "Object") {
+			/**/   kag[_menuItemName].checked = playerExecMode;
+		}
+		if (typeof kag[_readonlyMenuItemName] == "Object") {
+			/**/   kag[_readonlyMenuItemName].checked = playerReadOnly;
+		}
+	}
+	function togglePlayerExecMode()  { playerExecMode  = !playerExecMode;  updateMenuItemChecked(); }
+	function togglePlayerReadOnly()  { playerReadOnly  = !playerReadOnly;  updateMenuItemChecked(); }
+
+	// ------------------------------------------------------------------
+
+	/**
+	 * 全リスト済みシナリオのコンバート処理
+	 * @param clean true なら一度クリアしてからコンバート
+	 */
+	function convertAll(clean) {
+		initPlayer();
+		convertClean() if (clean);
+		player.convertAll();
+	}
+
+	/**
+	 * 全リスト済みシナリオのクリア処理
+	 */
+	function convertClean() {
+		initPlayer();
+		player.convertClean();
+	}
+
+@if (KAGENV_OVERLAYER)
+	function onUpdateEffect(f, elm)
+    {
+		env.over.opacity = env.over.opacity;
+	}
+@endif
 };

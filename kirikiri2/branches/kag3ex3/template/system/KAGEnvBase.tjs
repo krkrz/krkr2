@@ -31,10 +31,13 @@ class KAGEnvBase {
 	function tagfunc(elm, skipMode, skipNoDisp) {
 		initCommand();
 		command(elm);
+		checkSync(elm);
+		if (env.envinfo.autolabelSync && syncCommand) {
+			kag.setAutoLabel();
+		}
 		if (skipNoDisp) {
 			nodisp(elm);
 		} else {
-			checkSync(elm);
 			sync(elm, skipMode);
 		}
 	}

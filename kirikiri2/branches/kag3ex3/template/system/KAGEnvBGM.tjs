@@ -149,6 +149,7 @@ class KAGEnvBgm extends KAGEnvBase {
 
     var bgmcommands = %[
 	tagname : null, 
+	taglist : null, 
 	storage : setPlay incontextof this,
     play : setPlay incontextof this,
     stop : setStop incontextof this,
@@ -266,7 +267,7 @@ class KAGEnvBgm extends KAGEnvBase {
 			resume = void;
 		}
 		if (stop !== void) {
-			if (skipMode == SKIP_NONE && stop > 0) {
+			if (skipMode == SKIP_NONE && stop > 0 && bgm.inPlaying) {
 				bgm.fadeOut(%[ time:stop ]);
 				fading = 2;
 			} else {

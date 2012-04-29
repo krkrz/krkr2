@@ -104,14 +104,22 @@ class KAGLayer extends Layer
 		var method = elm.method;
 		if(elm.time !== void)
 		{
-            if (window.drawspeed !== void) {
-                elm.time *= window.drawspeed;
-            }
+			elm.time *= window.effectspeed;
 		}
-		elm.time = 1 if +elm.time == 0; // 時間に 0 は指定できないので
+		if (+elm.time <= 1)
+		{
+			// 時間に 0 は指定できないので
+			elm.time = 1;
+			method = "crossfade"; // 強制でクロスフェードにする(どんなメソッドでも違いが分からないため)
+			// memo: extNagano.dll (～ver1.2.4.727) の multiripple で time=1 にすると落ちる問題あり
+		}
 		if(method === void)
 		{
-			method = 'universal'; // デフォルトでユニバーサル
+			if (elm.rule === void) {
+				method = 'crossfade'; // ruleがなければクロスフェード
+			} else {
+				method = 'universal'; // デフォルトでユニバーサル
+			}
 		}
 		else if(method == 'scroll')
 		{
@@ -197,7 +205,7 @@ class KAGLayer extends Layer
 			var su = super;
 			su.visible = src.visible;
 			su.opacity = src.opacity;
-			su.absolute = src.absolute if !src.isPrimary && src.parent.absoluteOrderMode;
+			su.absolute = src.absolute if !src.isPrimary && src.parent && src.parent.absoluteOrderMode;
 			su.type = src.type;
 			su.setPos(src.left, src.top, src.width, src.height);
 			su.setImagePos(src.imageLeft, src.imageTop);
@@ -313,9 +321,7 @@ class KAGTransMove {
 		// elm に従い自動移動を開始する
 
         // 速度補正
-        if (window.drawspeed !== void) {
-            elm.time *= window.drawspeed;
-        }
+		elm.time *= window.effectspeed;
 
         stopMove();
 

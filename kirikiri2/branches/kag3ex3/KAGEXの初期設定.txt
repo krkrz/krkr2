@@ -1,5 +1,5 @@
 Title: KAGEX の初期設定方法
-Date: 2007/1/23
+Date: 2012/4/29
 Author: 渡邊剛
 
 1. ベースの取得
@@ -10,14 +10,10 @@ Author: 渡邊剛
 
 2. 実行ファイルを展開
 
-  吉里吉里本家から吉里吉里の配布をダウンロードします
+  レポジトリから吉里吉里のバイナリ配布をダウンロードして配置します
+  https://sv.kikyou.info/svn/kirikiri2/trunk/kirikiri2/bin/win32
 
-　http://kikyou.info/tvp/#dev			開発版
-　http://kikyou.info/tvp/#downloads		安定版
-
- ※吉里吉里 2.31.2010.425 以降でしか動作確認されていません
-
- 必要なファイルを KAGEX 用のフォルダ以下にコピーします
+  ※開発版バイナリ最新(Rev.5034)以降でしか動作確認されていません
 
  krkr.exe を実行するとサンプルのシステムが起動します。
 
