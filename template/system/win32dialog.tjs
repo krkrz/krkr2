@@ -613,6 +613,10 @@ class WIN32GenericDialogEX extends WIN32DialogEX
 		var rect = getCurrentRect(div, height);
 		with (rect) addItem(LText(text, id, .x, .y, .w, .h));
 	}
+	function addRText(text, div, height = _ptSz, id = -1)  {
+		var rect = getCurrentRect(div, height);
+		with (rect) addItem(RText(text, id, .x, .y, .w, .h));
+	}
 	function addIcon(id, height, div, style = SS_BITMAP|SS_CENTERIMAGE|SS_SUNKEN)  {
 		var rect = getCurrentRect(div, height);
 		with (rect) addItem(Control("", id, STATIC, style, .x, .y, .w, .h, 0));

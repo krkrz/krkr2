@@ -342,6 +342,7 @@ class DialogLayer extends AnimKAGLayer
         // 当たり判定初期化
         hitType = htMask;
         hitThreshold = 0; // マウスメッセージは全域不透過
+		cursor = window.cursorDefault;
         
         // サイズはデフォルトで決定する
 		imageModified = true;
@@ -786,21 +787,14 @@ class DialogLayer extends AnimKAGLayer
 		}
 	}
 
-	function setFocusToLink(n, force = false) {
-
-        // マウスカーソルを リンク番号 n の位置に移動させたり、
-		// フォーカスを与えたりする
-		// force=false の場合はキーボード操作が行われた場合のみ
-		// マウスカーソルを移動するが、force=true のばあいはキーボードの状態に
-		// 関わらずマウスカーソルを移動し、フォーカスを設定する
-		var linkn = links[n];
-		if(linkn === void) return;
-        var left   = linkn.x[0];
-        var top    = linkn.y[0];
-        var width  = linkn.w[0];
+	function getLinkHotSpot(linkn)
+	{
+		var left   = linkn.x[0];
+		var top    = linkn.y[0];
+		var width  = linkn.w[0];
 		var height = linkn.h[0];
 		var x, y;
-        if(linkn.type == ltEdit)
+		if(linkn.type == ltEdit)
 		{
 			// カーソルはじゃまなので端っこに置く
 			if(vertical)
@@ -819,6 +813,19 @@ class DialogLayer extends AnimKAGLayer
 			x = left + (width>>1);
 			y = top + (height>>1);
 		}
+		return %[ x:x, y:y ];
+	}
+	function setFocusToLink(n, force = false)
+	{
+		// マウスカーソルを リンク番号 n の位置に移動させたり、
+		// フォーカスを与えたりする
+		// force=false の場合はキーボード操作が行われた場合のみ
+		// マウスカーソルを移動するが、force=true のばあいはキーボードの状態に
+		// 関わらずマウスカーソルを移動し、フォーカスを設定する
+		var linkn = links[n];
+		if(linkn === void) return;
+		var x, y;
+		with (getLinkHotSpot(linkn)) x=.x, y=.y;
 
 		// キーボードで操作が行われた場合にのみカーソルを
 		// 移動させるため、該当するキーが押されているかチェックを行う
@@ -1064,6 +1071,27 @@ class DialogLayer extends AnimKAGLayer
 		return global.uiload(this, elm);
     }
 
+
+	function showHideFade(vis, fadeTime = 300, nowait = true) {
+		with (window) {
+			var from = vis ?   0:255;
+			var to   = vis ? 255:  0;
+			.stopAction(this);
+			.beginAction(this, %[
+			opacity: %[ handler:MoveAction, start:(opacity=from), value:to, time:fadeTime ] ],
+						 @"function { onShowHideFadeDone(${vis}, ${enabled}) if (isvalid this); }"! incontextof this, nowait);
+			visible = true;
+			enabled = false;
+		}
+	}
+	function onShowHideFadeDone(vis, en) {
+		visible = vis;
+		enabled = en;
+		if (vis && en && focusable) {
+			super.setMode() if (isSetMode);
+			focus();
+		}
+	}
 }
 
 /**

@@ -29,6 +29,9 @@ class SliderLayer extends KAGLayer
     var Slider_color = clWindow; // 背景色
     var Slider_opacity = 192; // 不透明度
 
+	var Slider_cursorPointed;
+	var Slider_cursorNormal;
+
     var nohilight; // ハイライトしない
     var jumpMode = false; // クリックしたときにそこにジャンプする
     
@@ -43,6 +46,10 @@ class SliderLayer extends KAGLayer
 		hitType = htMask;
 		hitThreshold = 0;
         this.vertical = vertical;
+
+		Slider_cursorPointed = Slider_cursorNormal = cursor;
+		if(typeof win.cursorPointed != "undefined")
+			Slider_cursorPointed = win.cursorPointed;
     }
 
     
@@ -86,6 +93,9 @@ class SliderLayer extends KAGLayer
 
 		Slider_color     = src.Slider_color;
 		Slider_opacity   = src.Slider_opacity;
+
+		Slider_cursorNormal  = src.Slider_cursorNormal;
+		Slider_cursorPointed = src.Slider_cursorPointed;
 		update();
     }
 
@@ -296,61 +306,40 @@ class SliderLayer extends KAGLayer
 		focus();
 		super.onMouseDown(...);
 
-        if (button == mbLeft) {
-            if (vertical) {
-                var tabh = Slider_tabHeight;
-                var htabh = tabh >> 1;
-                var pos_y = int(
-                    (Slider_position-Slider_min) * (imageHeight - tabh - 2)/(Slider_max - Slider_min)) +
-                    htabh + 1;
-                if(pos_y - htabh > y) {
-                    // タブより下
-                    if (jumpMode) {
-                        startJumpMode(x, y);
-                    } else {
-                        toLeft();
-                    }
-                } else if(pos_y + htabh < y) {
-                    // タブより上
-                    if (jumpMode) {
-                        startJumpMode(x, y);
-                    } else {
-                        toRight();
-                    }
-                } else {
-                    // タブ
-                    // タブのドラッグを開始
-                    Slider_dragging = true;
-                    Slider_dragOriginY = y - pos_y;
-                }
-            } else {
-                var tabw = Slider_tabWidth;
-                var htabw = tabw >> 1;
-                var pos_x = int(
-                    (Slider_position-Slider_min) * (imageWidth - tabw - 2)/(Slider_max - Slider_min)) +
-                    htabw + 1;
-                if(pos_x - htabw > x) {
-                    // タブより左
-                    if (jumpMode) {
-                        startJumpMode(x, y);
-                    } else {
-                        toLeft();
-                    }
-                } else if(pos_x + htabw < x) {
-                    // タブより右
-                    if (jumpMode) {
-                        startJumpMode(x, y);
-                    } else {
-                        toRight();
-                    }
-                } else {
-                    // タブ
-                    // タブのドラッグを開始
-                    Slider_dragging = true;
-                    Slider_dragOriginX = x - pos_x;
-                }
-            }
-        }
+		if (button == mbLeft) {
+			var state = internalHitCheck(x, y, true);
+			if (state) {
+				if      (jumpMode)  startJumpMode(x, y);
+				else if (state < 0) toLeft();
+				else                toRight();
+			} else {
+				Slider_dragging = true;
+				resetMouseCursor();
+			}
+		}
+	}
+	//! @result 0:hit, -1:toLeft, 1:toRight
+	function internalHitCheck(x, y, originset) {
+		if (vertical) {
+			var tabh = Slider_tabHeight;
+			var htabh = tabh >> 1;
+			var pos_y = int(
+				(Slider_position-Slider_min) * (imageHeight - tabh - 2)/(Slider_max - Slider_min)) +
+				htabh + 1;
+			if      (pos_y - htabh > y) return -1; // タブより上
+			else if (pos_y + htabh < y) return  1; // タブより下
+			else if (originset) Slider_dragOriginY = y - pos_y;
+		} else {
+			var tabw = Slider_tabWidth;
+			var htabw = tabw >> 1;
+			var pos_x = int(
+				(Slider_position-Slider_min) * (imageWidth - tabw - 2)/(Slider_max - Slider_min)) +
+				htabw + 1;
+			if      (pos_x - htabw > x) return -1; // タブより左
+			else if (pos_x + htabw < x) return  1; // タブより右
+			else if (originset) Slider_dragOriginX = x - pos_x;
+		}
+		return 0;
 	}
 	function startJumpMode(x, y) {
 		if (0) {
@@ -363,8 +352,18 @@ class SliderLayer extends KAGLayer
 				Slider_dragOriginX = 0;
 			}
 			toPosition(x, y, true);
+			resetMouseCursor();
 		}
 	}
+	function resetMouseCursor(state = Slider_dragging) {
+		cursor = state ? Slider_cursorPointed : Slider_cursorNormal;
+	}
+	function getMouseCursorState(x = cursorX, y = cursorY) {
+		if (Slider_dragging) return true;
+		if (internalHitCheck(x, y, false)) return false;
+		return vertical ? (x >= 0 && x < width) : (y >= 0 && y < height);
+	}
+
 
 	function onMouseUp(x, y, button)
 	{
@@ -374,6 +373,7 @@ class SliderLayer extends KAGLayer
 			Slider_dragging = false;
 			toPosition(x, y, true);
 			//position = position;
+			resetMouseCursor(getMouseCursorState(x, y));
 		}
 	}
 
@@ -386,6 +386,10 @@ class SliderLayer extends KAGLayer
 		{
             toPosition(x, y, true);
         }
+		else
+		{
+			resetMouseCursor(getMouseCursorState(x, y));
+		}
 	}
 
 	function onMouseEnter()
@@ -402,6 +406,7 @@ class SliderLayer extends KAGLayer
 		update();
 		Slider_mouseOn = false;
 		Slider_dragging = false;
+		resetMouseCursor(false);
 		super.onMouseLeave(...);
 	}
 

@@ -48,9 +48,18 @@ class MovieControlLayer extends GenericFlip, VideoOverlay
 		targetLayer.name = "動画:" + filename;
 		this.loop=loop;
 		file = filename;
-		var fn = getExistFileNameAutoExtFill(file, "mpg", "mpeg", "wmv");
+		var fn = getExistFileNameAutoExtFill(file, "mpg", "mpv", "mpeg", "wmv");
 		open(fn);
+		// 音がある場合は音量を設定
+		try { audioVolume = getAudioVolume(); } catch {}
 		play();
+	}
+
+	// 音量を取得（windowから参照）
+	function getAudioVolume() {
+		with (targetLayer.window)
+			return   (.waveenable && .movieAudioEnable) ?
+				/**/ (.wavevolume *  .movieAudioVolume) * 10 : 0; // 通常は *1000 だが vol*vol なので *10 で十分
 	}
 
 	// 外部から停止
@@ -108,7 +117,7 @@ GenericFlip.Entry(
 		"type"     => "movie",             // 登録タグ
 		"class"    => MovieControlLayer,   // コントローラクラス
 		"trigger"  => "lmstop",            // 停止時に投げるトリガー名
-		"ext"      => [ "mpeg", "mpg", "wmv" ], // 判定処理（拡張子文字列or配列）
+		"ext"      => [ "mpeg", "mpg", "mpv", "wmv" ], // 判定処理（拡張子文字列or配列）
 //		"checker"  => void,                // 判定処理（関数）
 		"options"  => [ "loop", "alpha" ], // 使用するオプション値（KAGEnvLayer用）
 		"autoflag" => "movie",             // 自動フラグタグ名（KAGEnvLayer用）

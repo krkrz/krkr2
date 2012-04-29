@@ -153,12 +153,14 @@ class SelectButtonLayer extends ButtonLayer
 	{
 		// キー操作によるフォーカス変動の場合にマウスカーソルも移動
 		if(!_ignoreFocusJump) {
-			cursorX = (width>>1);
-			cursorY = (height>>1);
+			with (getButtonHotSpot()) cursorX = .x, cursorY = .y;
 			releaseCapture();
         }
 		return super.onFocus(...);
     }
+	function getButtonHotSpot() {
+		return %[ x:(width>>1), y:(height>>1) ];
+	}
 
 	var     _forceDisabled = false;
 	property forceDisabled { getter { return _forceDisabled; } setter (v) {
@@ -244,6 +246,9 @@ class SelectLayer {
     var enterse;
     var leavese;
     var clickse;
+    var entersebuf;
+    var leavesebuf;
+    var clicksebuf;
 
     var opense;
     var closese;
@@ -308,11 +313,14 @@ class SelectLayer {
         enterse = elm.enterse if elm.enterse !== void;
         leavese = elm.leavese if elm.leavese !== void;
         clickse = elm.clickse if elm.clickse !== void;
+        entersebuf = elm.entersebuf if elm.entersebuf !== void;
+        leavesebuf = elm.leavesebuf if elm.leavesebuf !== void;
+        clicksebuf = elm.clicksebuf if elm.clicksebuf !== void;
 
         opense = elm.opense if elm.opense !== void;
-        opensebuf = elm.opensebuf !== void ? elm.opensebuf : kag.numSEBuffers - 1;
         closese = elm.closese if elm.closese !== void;
-        closesebuf = elm.closesebuf !== void ? elm.closesebuf : kag.numSEBuffers - 1;
+        opensebuf = elm.opensebuf !== void ? elm.opensebuf : this.opensebuf;
+        closesebuf = elm.closesebuf !== void ? elm.closesebuf : this.closesebuf;
         
         // メッセージ窓を消去するかどうか
         msgoff = +elm.msgoff if elm.msgoff !== void;
@@ -429,7 +437,13 @@ class SelectLayer {
         width  = window.primaryLayer.width;
         height = window.primaryLayer.height;
 		fontAppearance.gdiplus = new global.MessageLayer.GdiPlusFontApp() if (typeof global.Layer.drawPathString != "undefined");
-    }
+		var num = window.numSEBuffers;
+		entersebuf = num - 2;
+		leavesebuf = num - 2;
+		clicksebuf = num - 1;
+		opensebuf  = num - 1;
+ 		closesebuf = num - 1;
+	}
 
     function finalize() {
 		stopAction();
@@ -549,9 +563,9 @@ class SelectLayer {
         var enterse    = elm.enterse !== void ? elm.enterse : this.enterse;
         var leavese    = elm.leavese !== void ? elm.leavese : this.leavese;
         var clickse    = elm.clickse !== void ? elm.clickse : this.clickse;
-        var entersebuf = elm.entersebuf !== void ? elm.entersebuf : kag.numSEBuffers - 2;
-        var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : kag.numSEBuffers - 2;
-        var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : kag.numSEBuffers - 1;
+        var entersebuf = elm.entersebuf !== void ? elm.entersebuf : this.entersebuf;
+        var leavesebuf = elm.leavesebuf !== void ? elm.leavesebuf : this.leavesebuf;
+        var clicksebuf = elm.clicksebuf !== void ? elm.clicksebuf : this.clicksebuf;
 
 		var select = getSelectButtonLayer(elm);
         select.name = "選択肢ボタン" + elm.text;

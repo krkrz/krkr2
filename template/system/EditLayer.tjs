@@ -101,24 +101,24 @@ class EditLayer extends KAGLayer
 	function resizeCaret()
 	{
 		// キャレットのサイズの初期化
+		with (getCaretSize())
+		{
+			Edit_caretLayer.setImageSize(.w, .h);
+			Edit_caretLayer.setSizeToImageSize();
+			Edit_caretLayer.colorRect(0, 0, .w, .h, Edit_textColor);
+		}
+	}
+	var _caretWidth = 2; // const
+	function getCaretSize()
+	{
+		var fh = font.height;
+		if (fh < 0) fh = -fh;
+		var sz = %[ w:_caretWidth, h:fh ];
 		if(Edit_vertical)
 		{
-			var h = 2; // 2 固定
-			var w = font.height;
-			w = -w if(w<0);
-			Edit_caretLayer.setImageSize(w, h);
-			Edit_caretLayer.setSizeToImageSize();
-			Edit_caretLayer.colorRect(0, 0, w, h, Edit_textColor);
+			sz.w <-> sz.h;
 		}
-		else
-		{
-			var w = 2; // 2 固定
-			var h = font.height;
-			h = -h if(h<0);
-			Edit_caretLayer.setImageSize(w, h);
-			Edit_caretLayer.setSizeToImageSize();
-			Edit_caretLayer.colorRect(0, 0, w, h, Edit_textColor);
-		}
+		return sz;
 	}
 
 	function getCaretXPos()

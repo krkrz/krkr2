@@ -140,18 +140,6 @@ class KAGEnvStage extends KAGEnvImage {
 		}
 	}
 
-	function setCox(cox) {
-		defaultAfx = cox != 0 ? "center + " + (int)(cox * (1-levelz/100)) : "center";
-		afx = void;
-		reposition = true;
-	}
-
-	function setCoy(coy) {
-		defaultAfy = coy != 0 ? "center - " + (int)(coy * (1-levelz/100)) : "center";
-		afy = void;
-		reposition = true;
-	}
-	
     /**
      * 舞台を設定する
      * @param stageName 舞台名
@@ -162,7 +150,11 @@ class KAGEnvStage extends KAGEnvImage {
 			env.errorCmd("舞台指定が不明です: " + stageName) if (stageName != "");
 			return;
 		}
-		if (stageName != stage || isClear() || env.event.isShow()) {
+		if (stageName != stage || isClear() || env.event.isShow()
+@if (KAGENV_OVERLAYER)
+			|| env.over.isShow()
+@endif
+			) {
 			
 			//dm("舞台指定:" + stageName);
 			stage = stageName;
@@ -179,8 +171,21 @@ class KAGEnvStage extends KAGEnvImage {
 			redraw = true;
 			reposition = true;
 
-			env.setCameraOrigin(info.cox !== void ? +info.cox : 0, info.coy !== void ? +info.coy : 0);
-
+			var ax = "center";
+			var ay = "center";
+			if (info.cox !== void || info.coy !== void) {
+				var cox = info.cox !== void ? +info.cox : 0;
+				var coy = info.coy !== void ? +info.coy : 0;
+				env.setCameraOrigin(cox, coy);
+				ax = cox != 0 ? "center + " + (int)(cox * (1-levelz/100)) : "center";
+				ay = coy != 0 ? "center - " + (int)(coy * (1-levelz/100)) : "center";
+				reposition = true;
+			}
+			if (info.afx !== void) { ax = info.afx; }
+			if (info.afy !== void) { ay = info.afy; }
+			defaultAfx = ax; afx = void;
+			defaultAfy = ay; afy = void;
+			
 			xpos = elm.xpos === void ? void : +elm.xpos;
 			ypos = elm.ypos === void ? void : +elm.ypos;
 			
@@ -202,6 +207,11 @@ class KAGEnvStage extends KAGEnvImage {
 		if (env.event.isShow()) {
 			env.event.disp = CLEAR;
 		}
+@if (KAGENV_OVERLAYER)
+		if (env.over.isShow()) {
+			env.over.disp = CLEAR;
+		}
+@endif
 	}
 
     /**
@@ -215,7 +225,11 @@ class KAGEnvStage extends KAGEnvImage {
 			env.errorCmd("時間指定が不明です: "+timeName);
 			return;
 		}
-		if (timeName != time || isClear() || env.event.isShow()) {
+		if (timeName != time || isClear() || env.event.isShow()
+@if (KAGENV_OVERLAYER)
+			|| env.over.isShow()
+@endif
+			) {
 
 			time = timeName;
 
@@ -243,6 +257,11 @@ class KAGEnvStage extends KAGEnvImage {
 		if (env.event.isShow()) {
 			env.event.disp = CLEAR;
         }
+@if (KAGENV_OVERLAYER)
+		if (env.over.isShow()) {
+			env.over.disp = CLEAR;
+		}
+@endif
     }
 
 	/**

@@ -254,9 +254,10 @@ function getExistFileNameAutoExtFill(storage, exts*)
  * 指定した名前の画像ファイルが存在すればその名前を返す
  * @return 拡張子まで指定された画像ファイル名。存在しなければ void
  */
+global.Layer.SupportedExtensions = [ "png", "tlg", "tlg5", "tlg6", "jpeg", "jpg", "bmp" ];
 function getExistImageName(storage)
 {
-	return getExistFileNameAutoExtFill(storage, "png", "tlg", "tlg5", "tlg6", "jpeg", "jpg");
+	return getExistFileNameAutoExtFill(storage, global.Layer.SupportedExtensions*);
 }
 
 /**
@@ -403,8 +404,14 @@ function getParentWindowCenterPos(win, w, h)
 	with (monitor) x1=.x, y1=.y, x2=.w+x1, y2=.h+y1;
 
 	if (iswin) with (win) {
-		x = ((.width  - w)\2) + .left;
-		y = ((.height - h)\2) + .top;
+		var rx = x = ((.width  - w)\2) + .left;
+		var ry = y = ((.height - h)\2) + .top;
+		if (typeof .getClientRect == "Object") try {
+			with ( .getClientRect()) {
+				x = ((.w - w)\2) + .x;
+				y = ((.h - h)\2) + .y;
+			} 
+		} catch { x=rx, y=ry; } // revert.
 	} else {
 		x =  (x1+x2   - w)\2;
 		y =  (y1+y2   - h)\2;
@@ -490,7 +497,8 @@ function       makeDictionaryOutputTexts(elm, output = []) {
 	case "Integer": line += (string)target; break;
 	case "String":  line += '"'+target.escape()+'"'; break;
 	case "Object":
-		if (target instanceof "Dictionary") {
+		if (target === null) line += "null";
+		else if (target instanceof "Dictionary") {
 			var items = [], keys = [];
 			items.assign(target);
 			for (var i = 0; i < items.count; i+=2) keys.add(items[i]) if (items[i] != "");
@@ -569,7 +577,58 @@ function objectHookInjection(elm) {
 }
 
 
-
+/**
+ * 多重継承クラスを作るためのヘルパ関数
+ * @param name  作成するクラス名（文字列）
+ * @param prefix superクラスを保持する変数名のプレフィックス
+ * @param classes... 継承するクラスリスト（文字列）
+ * @return 作成したクラスオブジェクト
+ *
+ * ・継承するクラスは必ずglobal以下に存在し，コンストラクタ／ファイナライズメソッドが存在すること
+ * ・コンストラクタ引数は classes[0]のコンストラクタのへ渡す引数配列, classes[1]のコンストラクタのへ渡す引数配列, ... で渡す
+ * ・${prefix}super0, ${prefix}super1, ... で classesオブジェクトが参照できる
+ */
+function createMultipleInheritanceClass(name, prefix = name+"_", classes*) {
+	var supers = [], constructors = [], finalizes = [];
+	for (var i = classes.count-1; i >= 0; i--) {
+		var cl = classes[i];
+		supers      .unshift(@"var ${prefix}super${i} = global.${cl};");
+		constructors.unshift(@"if (typeof args[${i}] == 'Object') ${prefix}super${i}.${cl}(args[${i}]*); else ${prefix}super${i}.${cl}();");
+		finalizes   .push   (@"${prefix}super${i}.finalize();");
+	}
+	var exp = (@"
+class ${name} extends ${classes.join(', ')} {
+	${supers.join('\n\t')}
+	function ${name}(args*) {
+		${constructors.join('\n\t\t')}
+	}
+	function finalize {
+		if (!isvalid this) return;
+		${finalizes.join('\n\t\t')}
+	}
+}");
+	//Debug.message(exp);
+	exp!;
+	return global[name];
+}
+/**
+ * 別の辞書等を参照するProxyプロパティオブジェクトを作成するヘルパ関数
+ * @param tag プロパティ名
+ * @param defvalstr 未定義／エラー時のデフォルト値（文字列に変換され生成時に値が評価されることに注意）
+ * @param base 参照先オブジェクトのベース（ base.tag が参照先プロパティ）
+ */
+function createPropertyProxy(tag, defvalstr, base = "global.kag.scflags", prefix = "", context = %[]) {
+	var get = @"${prefix}(${base}.${tag})";
+	if (defvalstr == "") defvalstr = "void";
+	else get = @"(typeof ${base}.${tag} != 'undefined') ? ${get} : ${defvalstr}";
+	try { delete context[tag]; } catch {}
+	(function (exp) { exp!; } incontextof context)(@"
+property ${tag} {
+	setter(v) { try { ${base}.${tag} = ${prefix}(v); } catch {} }
+	getter    { try { return ${get}; } catch {} return ${defvalstr}; }
+}");
+	return &context[tag];
+}
 /**
  */
 function applyInlineStringVariableExtract(str, context = null) {

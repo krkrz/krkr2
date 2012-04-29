@@ -138,7 +138,7 @@ class ParticleController extends GenericFlip, Layer {
 				if (u !== void && (moveUnit incontextof u)(now, term)) {
 					with (u) {
 						var x0 = .x-sw/2, y0 = .y-sh/2;
-						operateAffine(stamp, .px*sw, .py*sh, sw, sh, false, x0,y0,x0+sw,y0,x0,y0+sh, omAuto, .opacity, stFastLinear);
+						try { operateAffine(stamp, .px*sw, .py*sh, sw, sh, false, x0,y0,x0+sw,y0,x0,y0+sh, omAuto, .opacity, stFastLinear); } catch {}
 					}
 				} else {
 					units[i] = void;
@@ -195,6 +195,10 @@ class ParticleController extends GenericFlip, Layer {
 
 		// アニメパターン
 		py = (interval > 0) ? ((int)(n / interval) + tdiff) % row : 0;
+		if (py < 0) {
+			py += ((-py+row-1)\row)*row;
+			if (py < 0) while (py < 0) py += row;
+		}
 
 		// フェード
 		if (fade > 0) {

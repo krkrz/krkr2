@@ -646,8 +646,15 @@ class BitmapAffineSourceLayer extends AffineSourceLayer {
 				//dm(@"変形無し更新:${name}:${l},${t},${sl},${st},${sw},${sh}");
 				(global.Layer.copyRect incontextof target)(l + sl, t + st, _image, sl -_image.imageLeft, st -_image.imageTop, sw, sh);
 			} else {
-				//dm(@"変形無し描画:${name}:${l},${t},${_image.width},${_image.height}");
-				(global.Layer.copyRect incontextof target)(l, t, _image, -_image.imageLeft, -_image.imageTop, _image.width, _image.height);
+				if (l == 0 && t ==0 && _image.imageLeft == 0 && _image.imageTop == 0 &&
+					*(&global.Layer.imageWidth incontextof target)== _image.imageWidth &&
+					*(&global.Layer.imageHeight incontextof target)== _image.imageHeight) {
+					//dm(@"変形無しassign:${name}:${l},${t},${_image.width},${_image.height}");
+					(global.Layer.assignImages incontextof target)(_image);
+				} else {
+					//dm(@"変形無し描画:${name}:${l},${t},${_image.width},${_image.height}");
+					(global.Layer.copyRect incontextof target)(l, t, _image, -_image.imageLeft, -_image.imageTop, _image.width, _image.height);
+				}
 				updateRegion(l, t, _image.width, _image.height);
 			}
 			return;
@@ -1391,7 +1398,9 @@ class AffineLayer extends KAGLayer {
 
 	// 描画領域をクリアする
 	function clearAll() {
-		(global.Layer.fillRect incontextof this)(0, 0, super.width, super.height, neutralColor);
+		if (hasImage && super.type != ltBinder) {
+			(global.Layer.fillRect incontextof this)(0, 0, super.width, super.height, neutralColor);
+		}
 	}
 	
 	// ビットマップがどうかの判定
@@ -1403,6 +1412,7 @@ class AffineLayer extends KAGLayer {
 	function _initBitmap() {
 		if (!(_image instanceof "BitmapAffineSourceLayer")) {
 			invalidate _image;
+			super.type = ltAlpha if super.type == ltBinder;
 			_image = new global.BitmapAffineSourceLayer(this);
 			clearAll();
 		}
@@ -1412,6 +1422,7 @@ class AffineLayer extends KAGLayer {
 	function _initVector() {
 		if (!(_image instanceof "VectorAffineSourceLayer")) {
 			invalidate _image;
+			super.type = ltAlpha if super.type == ltBinder;
 			_image = new global.VectorAffineSourceLayer(this);
 			clearAll();
 		}
@@ -1571,13 +1582,16 @@ class AffineLayer extends KAGLayer {
 		}
 	}
 
+	// リセット時に戻す先のtype
+	var defaultType = ltAlpha;
+
 	property type {
 		getter() {
 			return super.type;
 		}
 		setter(v) {
 			if (v === void) {
-				v = _image._initType !== void ? _image._initType : ltAlpha;
+				v = _image._initType !== void ? _image._initType : defaultType;
 			}
 			if (v != super.type) {
 				// type が変わると透明色が変わるので一度全部塗りつぶす
@@ -1629,6 +1643,7 @@ class AffineLayer extends KAGLayer {
 	function clearNeutralColor() {
 		switch (type) {
 		case ltAlpha:
+		case ltBinder:
 			// 何もしない
 			break;
 		case ltOpaque:

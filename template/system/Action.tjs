@@ -383,6 +383,11 @@ class ActionSequense {
      * @param elm 初期化パラメータ
      */
     function addAction(propName, handler, elm) {
+		if (propName == "zoom") {
+			addAction("zoomx", handler, elm);
+			addAction("zoomy", handler, elm);
+			return;
+		}
 		if (typeof target[propName] == "undefined") {
 			dm("指定されたプロパティは存在しません:" + target + ":" + propName);
         } else {
@@ -420,6 +425,11 @@ class ActionSequense {
 	 * @param propName プロパティ名
      */
     function delAction(propName) {
+		if (propName == "zoom") {
+			delAction("zoomx");
+			delAction("zoomy");
+			return;
+		}
 		if (actions.count > 0 && actions[actions.count-1] instanceof "ActionInfo") {
 			actions[actions.count - 1].delAction(target, propName);
 		}
@@ -513,27 +523,27 @@ class ActionSequense {
     function doAction(now, stopFlag) {
 		if (cur < actions.count) {
 			do {
-			var action = actions[cur];
-			if (action instanceof "ActionInfo") {
-				if (action.doAction(target, now, stopFlag)) {
-					action.next();
-					cur++;
-				}
-			} else if (action instanceof "ActionWaitInfo") {
-				if (stopFlag || action.doAction(target, now)) {
-					action.next();
-					cur++;
-				}
-			} else if (action instanceof "ActionLoopInfo") {
-				var loop;
-				if ((loop = action.doLoop(stopFlag)) >= 0 && loop < cur) {
-					cur = loop;
+				var action = actions[cur];
+				if (action instanceof "ActionInfo") {
+					if (action.doAction(target, now, stopFlag)) {
+						action.next();
+						cur++;
+					}
+				} else if (action instanceof "ActionWaitInfo") {
+					if (stopFlag || action.doAction(target, now)) {
+						action.next();
+						cur++;
+					}
+				} else if (action instanceof "ActionLoopInfo") {
+					var loop;
+					if ((loop = action.doLoop(stopFlag)) >= 0 && loop < cur) {
+						cur = loop;
+					} else {
+						cur++;
+					}
 				} else {
 					cur++;
 				}
-			} else {
-				cur++;
-			}
 			} while (cur < actions.count && stopFlag);
 		}
 		return cur >= actions.count;
@@ -576,7 +586,7 @@ class ActionHandler {
 		delay = +elm.delay if elm.delay !== void;
 		starttime = elm.starttime !== void ? +elm.starttime : 0;
 		if (time !== void) {
-			time *= kag.drawspeed;
+			time *= kag.effectspeed;
 		}
 		//dm("ActionHandler:" + propName + " time:" + time + " delay:" + delay);
     }
@@ -735,7 +745,27 @@ class MoveAction extends AbsoluteActionHandler {
 		if (moveFunc === void) {
 			// 旧来の指定方法
 			accel = +accel;
-			moveFunc = (accel == 0) ? getConstMove : (accel > 0) ? getAccelMove : getDecelMove;
+			if (!accel) moveFunc = getConstMove;
+			else {
+				@if (!KAGEX_ACCEL_KAGCOMPAT)
+					switch (accel) {
+					case  1: case  1.0: moveFunc = getAccelMove; break;
+					case -1: case -1.0: moveFunc = getDecelMove; break;
+					default:
+						accel += (accel < 0) ? -1 : 1;
+				@endif
+					/*
+						if (accel < 0) accel = 1/(-accel);
+						moveFunc = @"function (t) { return Math.pow(t, ${accel}); }"!;
+					*/
+						var func = (accel > 0) ? @"function (t) { return   Math.pow(t,   ${ accel}); }"
+							:                    @"function (t) { return 1-Math.pow(1-t, ${-accel}); }";
+						moveFunc = func!;
+				@if (!KAGEX_ACCEL_KAGCOMPAT)
+						break;
+					}
+				@endif
+			}
 		}
 		//dm("MoveAction", typeof accel, accel, moveFunc);
 	}
@@ -776,7 +806,7 @@ class MoveAction extends AbsoluteActionHandler {
 	}
 	function getConstMove(t) { return t; }             //等速度
 	function getAccelMove(t) { return t*t; }           //加速
-	function getDecelMove(t) { return t*(2-t); }       //減速
+	function getDecelMove(t) { return t*(2-t); }       //減速 == 1-(1-t)*(1-t);
 	function getAcDecMove(t) { return (t*t*(3-2*t)); } //加減速
 	function getAcCosMove(t) { return (1-Math.cos(t*Math.PI))/2; } //加減速(cos使用)
 }
@@ -1084,11 +1114,11 @@ class TrigonoAction extends VibrateAction {
         super.VibrateAction(target, propName, elm);
         cycle  = +elm.cycle if elm.cycle !== void;
         angvel = +elm.angvel if elm.angvel !== void;
-		if (kag.drawspeed > 0) {
+		if (kag.effectspeed > 0) {
 			if (cycle !== void) {
-				cycle *= kag.drawspeed;
+				cycle *= kag.effectspeed;
 			} else {
-				angvel /= kag.drawspeed;
+				angvel /= kag.effectspeed;
 			}
 		}
 	}
@@ -1261,8 +1291,8 @@ function LayerVibrateZoomModule(info, elm) {
 
 function LayerNormalRotateModule(info, elm) {
     var cycle = elm.angvel !== void ? 360/elm.angvel*1000 : elm.cycle;
-	if (kag.drawspeed > 0) {
-		cycle *= kag.drawspeed;
+	if (kag.effectspeed > 0) {
+		cycle *= kag.effectspeed;
 	}
 	info.addAction("rotate", TriangleAction, %[vibration:360, ontime:cycle, offtime:0, time:elm.time, delay:elm.delay]);
 }

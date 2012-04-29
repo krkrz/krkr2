@@ -23,13 +23,16 @@ class KAGEnvLevelLayer {
 					//dm("同一レベルなので処理しない");
 					return;
 				}
-				var index = absolute;
-				// もともといたレベルの調整
-				for (var i = 0; i<forelayers.count; i++) {
-					var target = forelayers[i];
-					if (target !== this && target.level == _level) {
-						if (target.absolute > index) {
-							target.absolute -= 100;
+				if (false) {
+					// もともといたレベルは触らない
+					var index = absolute;
+					// もともといたレベルの調整
+					for (var i = 0; i<forelayers.count; i++) {
+						var target = forelayers[i];
+						if (target !== this && target.level == _level) {
+							if (target.absolute > index) {
+								target.absolute -= 100;
+							}
 						}
 					}
 				}

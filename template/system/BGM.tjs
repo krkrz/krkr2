@@ -111,6 +111,9 @@ class KAGWaveSoundBuffer extends WaveSoundBuffer, KAGSoundBuffer
         owner.owner.onBGMLabel(label);
     }
 }
+// WaveSoundBufferがサポートする拡張子一覧
+KAGSoundBuffer.SupportedExtensions = [ "wav", "ogg", "tcw" ];
+
 
 class KAGMIDISoundBuffer extends MIDISoundBuffer, KAGSoundBuffer
 {
@@ -259,14 +262,27 @@ class BGM
 			var test;
 			if(!Storages.isExistentStorage(storage))
 			{
-				if(test = storage + ".wav", Storages.isExistentStorage(test))
+				@if (BGM_SUPPORT_MULTISONGS)
+				// wuプラグインがマルチソングをサポートする場合に
+				// ファイル名に"|"を渡すことでそれ以降の文字列をオプションとして認識させる
+				var option;
+				{
+					var idx = ((string)storage).indexOf("|");
+					if (idx > 0) {
+						option  = storage.substr(idx);
+						storage = storage.substr(0, idx);
+					}
+				}
+				@endif
+				test = getExistFileNameAutoExtFill(storage, global.KAGSoundBuffer.SupportedExtensions*);
+				if (test == "") found = false;
+				else {
 					storage = test;
-				else if(test = storage + ".ogg", Storages.isExistentStorage(test))
-					storage = test;
-				else if(test = storage + ".tcw", Storages.isExistentStorage(test))
-					storage = test;
-				else
-					found = false;
+				@if (BGM_SUPPORT_MULTISONGS)
+					if (option != "") with (Storages)
+						storage = .chopStorageExt(test) + .chopStorageExt(option) + .extractStorageExt(test);
+				@endif
+				}
 			}
 		}
 		else if(type == "MIDI")
@@ -565,6 +581,11 @@ class BGM
 	property canWaitStop // BGM の終了を待てるかどうかを返す
 	{
 		getter { return currentBuffer.inFadeAndStop || (currentBuffer.status == "play" && !currentBuffer.looping); }
+	}
+
+	property inPlaying
+	{
+		getter { return playingStorage != "" && currentBuffer.status == "play" && !currentBuffer.inFadeAndStop; }
 	}
 
 	// ラベル待ち

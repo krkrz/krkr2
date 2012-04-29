@@ -83,6 +83,7 @@ class ExStandInfoParser extends CSVParser
 					chinfo = %[name:chname, map:%[], list:[], allDressNameList:[], allDressNameMap:%[]];
 					result[chname] = chinfo;
 				}
+				var commons = [];
 				var dressNames = [];
 				var dressMap  = %[];
 				var faceList  = [];
@@ -153,6 +154,12 @@ class ExStandInfoParser extends CSVParser
 										}
 										break;
 									}
+								}
+								break;
+							case "common":
+								{
+									commons.add(line[1]);
+									break;
 								}
 								break;
 							case "dress":
@@ -337,6 +344,7 @@ class ExStandInfoParser extends CSVParser
 				// ポーズ名とファイル名の対応を保存
 				var info = %[name:chname, pose:posename, filename:filename, xoffset:xoffset, yoffset:yoffset, emoRev:emoRev,
 						 facezoom:facezoom, facexoff:facexoff, faceyoff:faceyoff,
+						 commons:commons,
 						 dressMap:dressMap, faceList:faceList, faceMap:faceMap, addMap:addMap,
 						 fgList:fgList, fgMap:fgMap, fgAliasList:fgAliasList, fgAliasMap:fgAliasMap, fgNameList:fgNameList, fgNameMap:fgNameMap];
 				chinfo.list.add(info);
@@ -430,24 +438,39 @@ class ExStandAnimParser extends CSVParser
 	}
 };
 	// 立ち絵情報
-	var parser = new ExStandInfoParser();
-	parser.parseStorage("charinit.csv");
-	allStandInfoMap  = parser.result;
-	allStandInfoList = parser.chlist;
-
-	invalidate parser;
+	var csvfile = "charinit.csv";
+	if (Storages.isExistentStorage(csvfile)) {
+		var parser = new ExStandInfoParser();
+		parser.parseStorage(csvfile);
+		allStandInfoMap  = parser.result;
+		allStandInfoList = parser.chlist;
+		invalidate parser;
+	} else {
+		allStandInfoMap  = %[];
+		allStandInfoList =  [];
+	}
 
 	// レベル情報
-	parser = new ExStandLevelParser();
-	parser.parseStorage("charlevel.csv");
-	allStandLevelMap = parser.result;
-	invalidate parser;
+	csvfile = "charlevel.csv";
+	if (Storages.isExistentStorage(csvfile)) {
+		var parser = new ExStandLevelParser();
+		parser.parseStorage(csvfile);
+		allStandLevelMap = parser.result;
+		invalidate parser;
+	} else {
+		allStandLevelMap = %[];
+	}
 
 	// アニメ情報
-	parser = new ExStandAnimParser();
-	parser.parseStorage("charanim.csv");
-	allStandAnimMap = parser.result;
-	invalidate parser;
+	csvfile = "charanim.csv";
+	if (Storages.isExistentStorage(csvfile)) {
+		var parser = new ExStandAnimParser();
+		parser.parseStorage(csvfile);
+		allStandAnimMap = parser.result;
+		invalidate parser;
+	} else {
+		allStandAnimMap = %[];
+	}
 }
 
 var dumplist;
@@ -594,7 +617,7 @@ function checkStandLayerLevel(level, levelMax, standInfo, levels, searchSmallLev
 	// 空文字の名前指定の場合は標準ファイルを使う
 	var levelInfo;
 	var levelName;
-	if (levels !== void && (levelInfo = levels[level]) !== void && (levelName = levelInfo.name) === "") {
+	if (levels !== void && (levelInfo = levels[(int)+level]) !== void && (levelName = levelInfo.name) === "") {
 		return;
 	}
 
@@ -607,11 +630,12 @@ function checkStandLayerLevel(level, levelMax, standInfo, levels, searchSmallLev
 				imageLevel = l;
 				break;
 			}
-		}
-		var file = standInfo.filename + "_" + l + ".txt";
-		if (Storages.isExistentStorage(file)) {
-			imageLevel = l;
-			break;
+		} else {
+			var file = standInfo.filename + "_" + l + ".txt";
+			if (Storages.isExistentStorage(file)) {
+				imageLevel = l;
+				break;
+			}
 		}
 	}
 	if (searchSmallLevel && imageLevel === void) {
@@ -624,11 +648,12 @@ function checkStandLayerLevel(level, levelMax, standInfo, levels, searchSmallLev
 					imageLevel = l;
 					break;
 				}
-			}
-			var file = standInfo.filename + "_" + l + ".txt";
-			if (Storages.isExistentStorage(file)) {
-				imageLevel = l;
-				break;
+			} else {
+				var file = standInfo.filename + "_" + l + ".txt";
+				if (Storages.isExistentStorage(file)) {
+					imageLevel = l;
+					break;
+				}
 			}
 		}
 	}
@@ -654,7 +679,7 @@ class StandPSDInfo extends PSDInfo {
 		} else {
 			var levelInfo;
 			var levelName;
-			if (levels !== void && (levelInfo = levels[imageLevel]) !== void && (levelName = levelInfo.name) !== void) {
+			if (levels !== void && (levelInfo = levels[(int)+imageLevel]) !== void && (levelName = levelInfo.name) !== void) {
 				filename = info.filename + "_" + levelName + ".txt";
 			} else {
 				filename = info.filename + "_" + imageLevel + ".txt";
@@ -865,6 +890,12 @@ class StandLayer extends PSDLayer {
 			}
 			// いったん全レイヤを消去
 			hideAll();
+			// 全服装の共通要素
+			var commons = info.commons;
+			var count = commons.count;
+			for (var i=0;i<count;i++) {
+				checkVisible(commons[i]);
+			}
 			// ベースレイヤを表示
 			var base = dressInfo.baseList;
 			for (var i=0;i<base.count;i++) {
@@ -1337,6 +1368,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	// 各種ロジックの差し替え
 
 	// 保持変数
+	var convDress; //< 置換後の服装
 	var diff;  //< 差分情報
 
 	/// 表情用差分情報
@@ -1405,7 +1437,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	 */
 	function checkDiffFace() {
 		var info = getStandInfo(pose);
-		var dressInfo = info.dressMap[dress];
+		var dressInfo = info.dressMap[convDress];
 		if (dressInfo === void) {
 			throw new Exception("ポーズに該当する服装が存在しません pose:" + pose + " dress:" + dress);
 		}
@@ -1475,7 +1507,10 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	
 	function _setDress(dressName) {
 
+		// 服装を記録(保存対象)
 		dress = dressName;
+		// 実際に処理用に参照するのはコンバート後の服装
+		convDress = convDressName(dress, "dressNameMap");
 		
 		// 現在選択可能なポーズのリスト
 		clearListMap(currentPoseNameList, currentPoseNameMap);
@@ -1485,7 +1520,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		var count = getStandInfoCount();
 		for (var i=0;i<count;i++) {
 			var info = getStandInfo(i);
-			var dressInfo = info.dressMap[dress];
+			var dressInfo = info.dressMap[convDress];
 			if (dressInfo !== void) {
 				// ポーズ一覧
 				currentPoseNameMap[info.pose] = true;
@@ -1530,7 +1565,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 			
 		// ポーズの再設定。未設定または同じものが無ければ該当する最初のものにする
-		if (pose === void || getStandInfo(pose).dressMap[dress] === void) {
+		if (pose === void || getStandInfo(pose).dressMap[convDress] === void) {
+			//dm(@"服装が無いのでポーズを切り替える ${pose}→${currentPoseNameList[0]}");
 			pose = currentPoseNameList[0];
 		}
 
@@ -1623,7 +1659,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			}
 			
 			// 該当差分が無い場合は該当差分があるポーズに切り替える
-			var dressInfo = getStandInfo(pose).dressMap[dress];
+			var dressInfo = getStandInfo(pose).dressMap[convDress];
 			if (dressInfo === void) {
 				throw new Exception("ポーズに該当する服装が存在しません pose:" + pose + " dress:" + dress);
 			}
@@ -1679,7 +1715,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				return;
 			}
 			// 該当差分が無い場合は該当差分があるポーズに切り替える
-			var dressInfo = getStandInfo(facepose).dressMap[dress];
+			var dressInfo = getStandInfo(facepose).dressMap[convDress];
 			if (dressInfo === void) {
 				throw new Exception("ポーズに該当する服装が存在しません facepose:" + facepose + " dress:" + dress);
 			}
@@ -1733,6 +1769,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			//dm("add更新:" + param);
 			disp = SHOW;
 			redraw = true;
+			setAutoTrans([init.addTrans, init.charTrans, env.envinfo.addTrans, env.envinfo.charTrans], elm);
 			addimage = param;
 			// 表情表示取得
 			setRedrawFace(elm);
@@ -2177,10 +2214,11 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			// レイヤ組み替え
 			if (standlayer === void || standlayer.poseName != pose || standlayer.level != level) {
 				invalidate standlayer if standlayer !== void;
-				standlayer = createStandLayer(pose, level);
+				standlayer = createStandLayer(pose, level, env.envinfo.fixCamera !== void ? +env.envinfo.fixCamera : true);
+				//standlayer = createStandLayer(pose, level, false);
 			}
 
-			standlayer.setDress(convDressName(dress, "dressNameMap"));
+			standlayer.setDress(convDress);
 			standlayer.setDiff(diff);
 			standlayer.setAdd(addimage, true);
 			standlayer.setAddFace(addface, true);
@@ -2189,7 +2227,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			standlayer.setFace(face);
 			standlayer.updateImage();
 			
-			var levelInfo = env.levels[level];
+			var levelInfo = env.levels[(int)+level];
 			
 			// オフセット指定調整
 			var standinfo = chstandinfo.map[pose];
@@ -2202,8 +2240,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 				((levels = chstandlevel[pose]) !== void ||
 				 (levels = chstandlevel["*"]) !== void) &&
 				level < levels.count) {
-				yoffset -= (levels[level].y * 100 / levelInfo.zoom);
-				xoffset += (levels[level].x * 100 / levelInfo.zoom);
+				yoffset -= (levels[(int)+level].y * 100 / levelInfo.zoom);
+				xoffset += (levels[(int)+level].x * 100 / levelInfo.zoom);
 			}
 			layer.type = ltAlpha;
 			var z; // 画像拡大縮小処理
@@ -2263,6 +2301,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	 * 顔領域を取得する
 	 */
 	function getFaceArea(standlayer) {
+		if (env.envinfo.faceStand) with (standlayer) return %[ left:0, top:0, width:.pageWidth, height:.pageHeight ];
 		var faceArea = init.faceArea;
 		var tag = (faceArea !== void && faceArea.name != "") ? faceArea.name : "顔領域";
 		var info = standlayer.getPropInfo(dress + tag);
@@ -2286,7 +2325,39 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 	 * 顔原点を取得する
 	 */
 	function getFacePoint(standlayer, fca) {
-		return standlayer.getPropInfo(fca.name != "" ? fca.name : "顔原点");
+		var info = standlayer.getPropInfo(fca.name != "" ? fca.name : "顔原点");
+		if (info !== void) {
+			return info;
+		}
+		// 画面中央基準指定がある場合
+		if (env.envinfo.facePoint !== void) {
+			var level = standlayer.level;
+			var pose  = standlayer.poseName;
+			var levelInfo = env.levels[level];
+			var z; // 画像拡大縮小処理
+			if (standlayer.imageLevel === void) {
+				// 基準サイズからの拡大/縮小
+				z = levelInfo.imgzoom !== void ? levelInfo.imgzoom : levelInfo.zoom;
+			} else if (standlayer.imageLevel == level) {
+				// 縮小済み素材
+				z = 100;
+			} else {
+				// 最も近い素材からの縮小
+				var levelInfo2 = env.levels[standlayer.imageLevel];
+				if (levelInfo.imgzoom !== void && levelInfo2.imgzoom !== void) {
+					z = levelInfo.imgzoom * 100.0 / levelInfo2.imgzoom;
+				} else {
+					z = levelInfo.zoom * 100.0 / levelInfo2.zoom;
+				}
+			}
+			// オフセット指定調整
+			var standinfo = chstandinfo.map[pose];
+			var xoff = standinfo.xoffset * levelInfo.zoom / z;
+			var yoff = standinfo.yoffset * levelInfo.zoom / z;
+			var left = (int)((standlayer.pageWidth/2 - standlayer.offsetX - xoff));
+			var top  = (int)((standlayer.pageHeight/2 - standlayer.offsetY - yoff));
+			return %[left:left + env.envinfo.facePoint.left, top:top + env.envinfo.facePoint.top];
+		}
 	}
 
     /**
@@ -2315,7 +2386,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					d = facediff;
 				}
 				//dm("差分指定 %s -> %s".sprintf(diff, d));
-				facelayer.setDress(convDressName(dress, "dressNameMap"));
+				facelayer.setDress(convDress);
 				facelayer.setDiff(d);
 				facelayer.setAdd(addimage, true);
 				facelayer.setAddFace(addface, true);
@@ -2373,7 +2444,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 					}
 				}
 
-				if (env.envinfo.faceApplyColor) {
+				if (env.envinfo.faceApplyColor && !init.noColorFilter) {
 					applyColor(layer);
 				}
 				return true;
@@ -2403,7 +2474,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		if (limit) {
 			var ret = [];
 			var info = getStandInfo(pose);
-			var dressInfo = info.dressMap[dress];
+			var dressInfo = info.dressMap[convDress];
 			for (var i=0;i<dressInfo.diffList.count;i++) {
 				ret.add(dressInfo.diffList[i].name);
 			}
@@ -3295,10 +3366,16 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		if (standlayer !== void) {
 			if (emotion !== void) {
 				var name = emotion.name;
-				info = standlayer.getPropInfo(name + "エモーション原点");
+				if (emotion.layerName !== void) {
+					dm("エモーション情報参照:" + emotion.layerName);
+					info = standlayer.getPropInfo(emotion.layerName);
+				}
 				if (info === void) {
-					name = name.replace(/[a-zA-Z]/, ""); // 英字を消す
 					info = standlayer.getPropInfo(name + "エモーション原点");
+					if (info === void) {
+						name = name.replace(/[a-zA-Z]/, ""); // 英字を消す
+						info = standlayer.getPropInfo(name + "エモーション原点");
+					}
 				}
 			}
 			if (info === void) {
@@ -3352,7 +3429,7 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 			break;
 		}
 		
-		var levelInfo = env.levels[level];
+		var levelInfo = env.levels[(int)+level];
 		var standinfo = chstandinfo.map[pose];
 		var emoRev = standinfo.emoRev;
 
@@ -3374,8 +3451,8 @@ class KAGEnvCharacterEx extends KAGEnvCharacter {
 		}
 
 		// エモーション座標補正
-		var emoX = ((standlayer.offsetX + eleft) - standlayer.pageWidth/2) * z / levelInfo.zoom;
-		var emoY = (standlayer.pageHeight/2 -   (standlayer.offsetY + etop)) * z / levelInfo.zoom;
+		var emoX = -(afx*100/z - eleft + standlayer.offsetX);
+		var emoY =   afy*100/z - etop + standlayer.offsetY;
 		//dm("エモーション情報:" + emoRev + " " + emoX + "," + emoY + "  zoom:" + z + " size:" + standlayer.width + "," + standlayer.height);
 		
 		// 座標調整

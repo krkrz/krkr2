@@ -209,6 +209,7 @@ class KAGEnvTrans extends KAGEnvBase {
 					"time" => fadeTime > 1 ? fadeTime : fadeValue,
 					"method" => "crossfade",
 					];
+				env.copyTransParam(trans, elm);
 			} else {
 				// 表示・消去指定に対応
 				if (showMode == 1 || showMode == 2) {
@@ -239,6 +240,27 @@ class KAGEnvTrans extends KAGEnvBase {
 	// --------------------------------------------------------------------
 	// アクション処理
 	// --------------------------------------------------------------------
+
+	// nowait つきのアクションかどうか
+	function isNowaitAction(action) {
+		if (typeof action == "Object")  {
+			if (action instanceof "Dictionary") {
+				if (action.nowait !== void) {
+					return action.nowait;
+				}
+			} else if (action instanceof "Array") {
+				for (var i=0;i<action.count;i++) {
+					var ac = action[i];
+					if (typeof ac == "Object" && ac instanceof "Dictionary") {
+						if (ac.nowait !== void) {
+							return ac.nowait;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * アクション情報のコピー
@@ -373,6 +395,7 @@ class KAGEnvTrans extends KAGEnvBase {
 	var ignorecommands = %[
 	"*order"=> null, // cf. Conductor.getNextTag()
     tagname : null,
+	taglist :null,
 	name : null, // 無視
     time : null, // 無視
 	delay : null, // 無視
@@ -408,7 +431,8 @@ class KAGEnvTrans extends KAGEnvBase {
 class KAGEnvImage extends KAGEnvTrans {
 
 	var layerClass = global.EnvGraphicLayer;
-	var defaultLayerType = ltAlpha;
+	// XXX 画像の既定のレイヤ種別になるようにする
+	var defaultLayerType = void;
 	
 	// 処理対象レイヤ
 	var targetLayer;
@@ -1376,7 +1400,7 @@ class KAGEnvImage extends KAGEnvTrans {
 			if (elm.zoomy === void) zoomy = 100;
 		}
 		if (elm.slantx === void) slantx = 0;
-		if (elm.slanty === void) slantx = 0;
+		if (elm.slanty === void) slanty = 0;
 		if (elm.raster === void) raster = 0;
 		if (elm.afx === void && elm.origin === void) afx = void;
 		if (elm.afy === void && elm.origin === void) afy = void;
@@ -1520,27 +1544,6 @@ class KAGEnvImage extends KAGEnvTrans {
 		}
 	}
 
-	// nowait つきのアクションかどうか
-	function isNowaitAction(action) {
-		if (typeof action == "Object")  {
-			if (action instanceof "Dictionary") {
-				if (action.nowait !== void) {
-					return action.nowait;
-				}
-			} else if (action instanceof "Array") {
-				for (var i=0;i<action.count;i++) {
-					var ac = action[i];
-					if (typeof ac == "Object" && ac instanceof "Dictionary") {
-						if (ac.nowait !== void) {
-							return ac.nowait;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
-	
     /**
 	 * アクション情報の消去
 	 * @param all 全アクション指定
@@ -1667,7 +1670,7 @@ class KAGEnvImage extends KAGEnvTrans {
 				layer.slanty = slantyFrom;
 				slantyFrom = void;
 			}
-			if (slantxTime == 0) {
+			if (slantyTime == 0) {
 				layer.slanty = slanty;
 			} else {
 				layer.setSlantYTime(slanty, slantyTime, slantyAccel, slantyNowait);
@@ -1700,18 +1703,15 @@ class KAGEnvImage extends KAGEnvTrans {
 			//dm("アクション適用開始:" + actionList.count);
 			for (var i=0;i<actionList.count;i++) {
 				var action = actionList[i];
-				layer.beginAction(action);
-				// 実行中アクションの記録（保存用）
-				if (action instanceof "Dictionary") {
-					if (action.time == 0) {
-						//dm("アクションを記録:" + i);
-						currentActionList.add(action);
+				var act = (action instanceof "Array")  ? action[action.count-1] : action;
+				if (act.time == 0) {
+					// 継続性アクションは動かさないことができる
+					if (act.eval === void || Scripts.eval(act.eval)) {
+						layer.beginAction(action);
 					}
-				} else if (action instanceof "Array") {
-					if (action.count > 0 && action[action.count - 1].time == 0) {
-						//dm("アクションを記録:" + i + " count:" + action.count);
-						currentActionList.add(action);
-					}
+					currentActionList.add(action);
+				} else {
+					layer.beginAction(action);
 				}
 			}
 			actionList.clear();
@@ -1832,6 +1832,7 @@ class KAGEnvImage extends KAGEnvTrans {
 		slantyTime = void;
 		rasterTime = void;
 		moveTime = void;
+		clipTime = void;
 	}
 
     var commands = %[
@@ -1926,6 +1927,10 @@ class KAGEnvImage extends KAGEnvTrans {
      * セーブ処理
      */
 	function onStore(f) {
+		f.defaultAfx = defaultAfx if defaultAfx != "center";
+		f.defaultAfy = defaultAfy if defaultAfy != "center";
+		f.defaultOrx = defaultOrx if defaultOrx != "center";
+		f.defaultOry = defaultOry if defaultOry != "center";
 		f.type    = type if type !== void && type != ltAlpha;
 		f.opacity = opacity if opacity !== void && opacity != 255;
 		f.rotate  = rotate if rotate !== void && rotate != 0;
@@ -1982,7 +1987,11 @@ class KAGEnvImage extends KAGEnvTrans {
      * ロード処理
      */
     function onRestore(f) {
-        type = f.type !== void ? f.type : ltAlpha;
+		defaultAfx = f.defaultAfx !== void ? f.defaultAfx : "center";
+		defaultAfy = f.defaultAfy !== void ? f.defaultAfy : "center";
+		defaultOrx = f.defaultOrx !== void ? f.defaultOrx : "center";
+		defaultOry = f.defaultOry !== void ? f.defaultOry : "center";
+		type = f.type !== void ? f.type : ltAlpha;
 		opacity     = f.opacity !== void ? f.opacity : 255;
 		opacityFrom = void;
 		opacityTime = void;
@@ -2497,7 +2506,7 @@ class KAGEnvImage extends KAGEnvTrans {
 				if ((func = env.getParameter(name, "scripts", "script_")) !== void) {
 					//dm("script find:" + name);
 					(func incontextof layer)(args*);
-				} else if ((func = layer[name]) !== void && func instanceof "Function") {
+				} else if (typeof layer[name] == "Object" && (func = layer[name]) && func instanceof "Function") {
 					func(args*);
 				}
 			} catch(e) {
@@ -2530,10 +2539,10 @@ class KAGEnvImage extends KAGEnvTrans {
 		if (grayscale) {
 			layer.doGrayScale();
 		}
-		if (rgamma != void || ggamma != void || bgamma != void) {
-			layer.adjustGamma(rgamma == void ? 1.0 : rgamma, 0, 255,
-							  ggamma == void ? 1.0 : ggamma, 0, 255,
-							  bgamma == void ? 1.0 : bgamma, 0, 255);
+		if (rgamma !== void || ggamma !== void || bgamma !== void) {
+			layer.adjustGamma(rgamma === void ? 1.0 : rgamma, 0, 255,
+							  ggamma === void ? 1.0 : ggamma, 0, 255,
+							  bgamma === void ? 1.0 : bgamma, 0, 255);
 		}
 	}
 
@@ -2548,7 +2557,7 @@ class KAGEnvImage extends KAGEnvTrans {
 	/**
 	 * 単純更新
 	 */
-	function update(base, isSkip=false) {
+	function update(base) {
 		if (isUpdate()) {
 			//dm("更新処理実行:" + name + " show:" + isShowBU() +  " updateFlag:" + updateFlag + " redraw:" + redraw + " reposition:" + reposition);
 			if (targetLayer === void || !env.isBaseLayer(base, targetLayer)) {
@@ -2598,6 +2607,7 @@ class KAGEnvImage extends KAGEnvTrans {
 				}
 				doShow = false;
 			}
+			kag.updateBeforeCh = 1;
 		} else {
 			updateSkip();
 		}
@@ -2647,12 +2657,11 @@ class KAGEnvImage extends KAGEnvTrans {
 	
 	function sync(elm, skipMode) {
 		updateSound(skipMode);
-		var isSkip = skipMode != SKIP_FORCE && (skipMode || env.isNoeffect());
 		var showMode = getShowMode();
 		//dm("更新処理開始" + name);
 		if (env.transMode) {
 			//dm("トランジション処理中");
-			update(BACKBASE, isSkip);
+			update(BACKBASE);
 		} else if (showMode == 0) {
 			// 非表示のまま変更無し
 			//dm("画像破棄");
@@ -2660,7 +2669,7 @@ class KAGEnvImage extends KAGEnvTrans {
 				invalidate targetLayer;
 				targetLayer = void;
 			}
-			update(FOREBASE, isSkip);
+			update(FOREBASE);
 		} else if (transall) {
 			//dm("全体トランジション処理");
 			env.entryAllTrans(trans, transsync);
@@ -2668,12 +2677,12 @@ class KAGEnvImage extends KAGEnvTrans {
 			var waitMode = 0; // 0:待ちなし 1:アクションまち 2:トランジションまち
 			// ベースのトランジションは強制停止
 			env.checkTransition();
-			if (isSkip || trans === void  || (trans.method !== void && trans.time == 0)) {
+			if (trans === void  || (trans.method !== void && trans.time == 0)) {
 				if (isInTransition()) {
 					// トランジション実行中だった場合は裏(新規に出てくるもの)にコマンド実行
-					update(BACKBASE, isSkip);
+					update(BACKBASE);
 				} else {
-					update(FOREBASE, isSkip);
+					update(FOREBASE);
 				}
 			} else {
 				if (trans.method !== void) {

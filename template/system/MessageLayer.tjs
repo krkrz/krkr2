@@ -445,7 +445,7 @@ class LinkSliderLayer extends SliderLayer
 	}
 	function toPosition(x, y, drag = false) {
 		super.toPosition(...);
-		execClick() if (!drag);
+		execClick() if (!drag || !Slider_dragging);
 	}
 
 	function onMouseDown(x, y, button)
@@ -3844,21 +3844,14 @@ class MessageLayer extends AnimKAGLayerTransMove
 		super.onMouseLeave(...);
 	}
 
-	function setFocusToLink(n, force = false)
+	function getLinkHotSpot(linkn)
 	{
-        // マウスカーソルを リンク番号 n の位置に移動させたり、
-		// フォーカスを与えたりする
-		// force=false の場合はキーボード操作が行われた場合のみ
-		// マウスカーソルを移動するが、force=true のばあいはキーボードの状態に
-		// 関わらずマウスカーソルを移動し、フォーカスを設定する
-		var linkn = links[n];
-		if(linkn === void) return;
-		var left = linkn.x[0];
-		var top = linkn.y[0];
-		var width = linkn.w[0];
+		var left   = linkn.x[0];
+		var top    = linkn.y[0];
+		var width  = linkn.w[0];
 		var height = linkn.h[0];
 		var x, y;
-        if(linkn.type == ltEdit)
+		if(linkn.type == ltEdit)
 		{
 			// カーソルはじゃまなので端っこに置く
 			if(vertical)
@@ -3883,6 +3876,20 @@ class MessageLayer extends AnimKAGLayerTransMove
 			x += lineLayerOriginX + getLineLayerLeftOffset();
 			y += lineLayerOriginY + getLineLayerTopOffset();
 		}
+		return %[ x:x, y:y ];
+	}
+
+	function setFocusToLink(n, force = false)
+	{
+		// マウスカーソルを リンク番号 n の位置に移動させたり、
+		// フォーカスを与えたりする
+		// force=false の場合はキーボード操作が行われた場合のみ
+		// マウスカーソルを移動するが、force=true のばあいはキーボードの状態に
+		// 関わらずマウスカーソルを移動し、フォーカスを設定する
+		var linkn = links[n];
+		if(linkn === void) return;
+		var x, y;
+		with (getLinkHotSpot(linkn)) x=.x, y=.y;
 
 		// キーボードで操作が行われた場合にのみカーソルを
 		// 移動させるため、該当するキーが押されているかチェックを行う
@@ -4227,7 +4234,7 @@ class MessageLayer extends AnimKAGLayerTransMove
 	function preIndent(ch)
 	{
 		changeLineSize() if sizeChanged;
-		var cw = lineLayer.font.getTextWidth(ch);
+		var cw = (typeof ch == "String") ? lineLayer.font.getTextWidth(ch) : +ch;
 		var newx = x - marginL, newy = y - marginT;
 		if(vertical) newy -= cw;
 		else         newx -= cw;
@@ -4258,6 +4265,11 @@ class MessageLayer extends AnimKAGLayerTransMove
 		// elm に従ってトランジションを行う
 		faceLayer.stopTransition() if faceLayer !== void;
 		super.beginTransition(elm, comp);
+	}
+	function stopTransition()
+	{
+		faceLayer.stopTransition() if faceLayer !== void;
+		return super.stopTransition(...);
 	}
 
 	function internalAssign(src, copyvisiblestate)
