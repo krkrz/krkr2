@@ -2381,7 +2381,8 @@ class KTimeLineControl extends KHorizontalSpliterLayout
     _rightGrid.add(0, 1, new KScrollLayout(window, true, true, "_layerViewScroll"), 2, 2);
     _layerViewScroll.add(new timelineLayerViewClass(window, this, "_layerView"));
     _leftGrid.add(0, 0, new KStatusBar(window, "_titleLabel"));
-    _leftGrid.add(1, 0, new KTextButton(window, "M", "_viewWidthButton"));
+    _leftGrid.add(1, 0, new KGridLayout(window, "additionalControlGrid"));
+    _leftGrid.add(2, 0, new KTextButton(window, "M", "_viewWidthButton"));
     _leftGrid.add(0, 2, new KStatusBar(window, "_statusBar"), 2);
     _rightGrid.add(1, 0, new KSpacer(window, _layerViewScroll.verticalBar.width));
     _layerViewScroll.onChildViewModified = this.onLayerViewModified;

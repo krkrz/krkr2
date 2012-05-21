@@ -201,7 +201,7 @@ class KTextToggleButton extends KToggleButton
       return child.label;
     }
     setter(v) {
-      child.label = label;
+      child.label = v;
     }
   }
 }
@@ -238,7 +238,7 @@ class KImageToggleButton extends KToggleButton
       return child.label;
     }
     setter(v) {
-      child.label = label;
+      child.label = v;
     }
   }
 }
