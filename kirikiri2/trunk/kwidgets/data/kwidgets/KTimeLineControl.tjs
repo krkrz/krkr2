@@ -2371,7 +2371,7 @@ class KTimeLineControl extends KHorizontalSpliterLayout
     super.add(new global.KGridLayout(window, "_rightGrid"));
     _leftGrid.isAvoidDictionaryRegistration = true;
     _rightGrid.isAvoidDictionaryRegistration = true;
-    _leftGrid.add(0, 1, new KScrollLayout(window, true, true, "_layerListScroll"), 2);
+    _leftGrid.add(0, 1, new KScrollLayout(window, true, true, "_layerListScroll"), 3);
     _layerListScroll.hideHorizontalBar = true;
     _layerListScroll.hideVerticalBar = true;
     _layerListScroll.add(new timelineLayerListClass(window, this, "_layerList"));
@@ -2383,7 +2383,7 @@ class KTimeLineControl extends KHorizontalSpliterLayout
     _leftGrid.add(0, 0, new KStatusBar(window, "_titleLabel"));
     _leftGrid.add(1, 0, new KGridLayout(window, "additionalControlGrid"));
     _leftGrid.add(2, 0, new KTextButton(window, "M", "_viewWidthButton"));
-    _leftGrid.add(0, 2, new KStatusBar(window, "_statusBar"), 2);
+    _leftGrid.add(0, 2, new KStatusBar(window, "_statusBar"), 3);
     _rightGrid.add(1, 0, new KSpacer(window, _layerViewScroll.verticalBar.width));
     _layerViewScroll.onChildViewModified = this.onLayerViewModified;
     _layerListScroll.onChildViewModified = this.onLayerListModified;
