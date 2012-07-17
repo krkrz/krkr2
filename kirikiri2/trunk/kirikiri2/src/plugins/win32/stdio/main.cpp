@@ -169,6 +169,15 @@ struct Stdio
 										 iTJSDispatch2 *objthis) {
 		return _out(numparams, param, std::cerr);
 	}
+
+	// 標準出力をフラッシュ
+	static tjs_error TJS_INTF_METHOD flush(tTJSVariant *result,
+										   tjs_int numparams,
+										   tTJSVariant **param,
+										   iTJSDispatch2 *objthis) {
+		std::cout << std::flush;
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_CLASS(Stdio, System) {
@@ -179,6 +188,7 @@ NCB_ATTACH_CLASS(Stdio, System) {
 	RawCallback("stdin",  &Stdio::in, TJS_STATICMEMBER);
 	RawCallback("stdout", &Stdio::out, TJS_STATICMEMBER);
 	RawCallback("stderr", &Stdio::err, TJS_STATICMEMBER);
+	RawCallback("flush", &Stdio::flush, TJS_STATICMEMBER);
 }
 
 void PreRegisterCallback()
