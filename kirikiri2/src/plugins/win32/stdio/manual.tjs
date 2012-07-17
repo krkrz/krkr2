@@ -52,4 +52,9 @@ class System {
 	 * @param utf8 UTF8で出力する場合はtrue
 	 */
 	function stderr(string, utf8=false);
+
+	/**
+	 * 標準出力をフラッシュする
+	 */
+	function flush();
 };
