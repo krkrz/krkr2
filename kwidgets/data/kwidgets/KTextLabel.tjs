@@ -10,7 +10,7 @@ class KTextLabel extends KWidget
 {
   var _label;
   var lineSpacing = 1;
-  var maxLabelWidth = 0;
+  var _maxLabelWidth = 0;
 
   /*------------------------------
    * コンストラクタ
@@ -65,7 +65,7 @@ class KTextLabel extends KWidget
       th += font.height + lineSpacing;
     }
     th -= lineSpacing;
-    setFixedSize(maxLabelWidth ? Math.min(maxLabelWidth, tw) : tw, th);
+    setFixedSize(_maxLabelWidth ? Math.min(_maxLabelWidth, tw) : tw, th);
 
     // 透明に塗りつぶし
     fillRect(0, 0, width, height, 0);
@@ -75,6 +75,19 @@ class KTextLabel extends KWidget
     for(var i=0; i<lines.count; i++) {
       drawText(0, t, lines[i], fontColor, 255);
       t += font.height + lineSpacing;
+    }
+  }
+
+  // 最大ラベル幅が変更されたら再描画
+  property maxLabelWidth {
+    getter { 
+      return _maxLabelWidth;
+    }
+    setter(v) {
+      if (v == _maxLabelWidth)
+        return;
+      _maxLabelWidth = v;
+      drawContent();
     }
   }
 
