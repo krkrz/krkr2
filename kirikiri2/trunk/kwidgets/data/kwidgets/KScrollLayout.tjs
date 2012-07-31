@@ -121,6 +121,18 @@ class KVerticalScrollBar extends KWidget
                          targetRealSize - targetWindowSize);
   }
 
+  // 上ブランクが押されたらスクロール領域の9割上へ
+  function onPressUpper {
+    targetPos = Math.max(targetPos - int((barRange.end - barRange.begin) * 0.9),
+                         0);
+  }
+ 
+  // 下ブランクが押されたらスクロール領域の9割下へ
+  function onPressLower {
+    targetPos = Math.min(targetPos + int((barRange.end - barRange.begin) * 0.9),
+                         targetRealSize - targetWindowSize);
+  }
+
   // ボタンが押された事を検知
   function onChildValueModified(child) {
     switch (child.name) {
@@ -149,9 +161,9 @@ class KVerticalScrollBar extends KWidget
       }
     } else {
       if (y < handleBegin) {
-        onPressTop();
+        onPressUpper();
       } else if (y >= handleEnd) {
-        onPressBottom();
+        onPressLower();
       } else {
         dragging = true;
         mouseDownY = y;
