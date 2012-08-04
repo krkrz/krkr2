@@ -1801,8 +1801,8 @@ struct System
 			break;
 		case 3: // À•WŽw’è
 			POINT pt;
-			pt.x = (LONG)param[0]->AsInteger();
-			pt.y = (LONG)param[1]->AsInteger();
+			pt.x = (LONG)param[1]->AsInteger();
+			pt.y = (LONG)param[2]->AsInteger();
 			mon = ::MonitorFromPoint(pt, flag);
 			break;
 		case 5: // ”ÍˆÍŽw’è
