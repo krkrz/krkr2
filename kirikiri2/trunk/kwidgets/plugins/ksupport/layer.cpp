@@ -285,6 +285,13 @@ public:
     update();
   }
 
+  tjs_int wrap_mod(tjs_int num, int denom) const {
+    if (num > 0)
+      return num % denom;
+    else
+      return num - (num / denom - 1) * denom;
+  }
+
   void copyWrappedRect(tjs_int dleft, tjs_int dtop, tjs_int dwidth, tjs_int dheight,
                        tTJSVariant src, tjs_int sleft, tjs_int stop, tjs_int swidth, tjs_int sheight,
                        tjs_int shiftLeft, tjs_int shiftTop) {
@@ -302,9 +309,9 @@ public:
     const unsigned char *srcBuffer = reinterpret_cast<const unsigned char*>(srcObj.GetValue(L"mainImageBuffer", ncbTypedefs::Tag<tjs_int64>()));
     for (tjs_int y = dtop; y < dbottom; y++) {
       unsigned char *dst = dstBuffer + dstPitch * y + dleft * 4;
-      const unsigned char *srcBase = srcBuffer + (stop + tjs_uint(shiftTop + y) % sheight) * srcPitch;
+      const unsigned char *srcBase = srcBuffer + (stop + wrap_mod(shiftTop + y,  sheight)) * srcPitch;
       for (tjs_int x = dleft; x < dright; x++) {
-        const unsigned char *src = srcBase + (sleft + tjs_uint(shiftLeft + x) % swidth) * 4;
+        const unsigned char *src = srcBase + (sleft + wrap_mod(shiftLeft + x, swidth)) * 4;
         *dst++ = *src++;
         *dst++ = *src++;
         *dst++ = *src++;
