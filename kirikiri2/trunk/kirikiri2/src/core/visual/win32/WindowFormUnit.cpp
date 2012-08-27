@@ -1479,7 +1479,7 @@ void __fastcall TTVPWindowForm::CreateMenuContainer()
 //---------------------------------------------------------------------------
 void __fastcall TTVPWindowForm::CheckMenuBarDrop()
 {
-	if(MenuContainer && MenuBarVisible)
+	if(MenuContainer && MenuBarVisible && GetWindowActive()) 
 	{
 		POINT pos = {0, Height};
 		::GetCursorPos(&pos);
