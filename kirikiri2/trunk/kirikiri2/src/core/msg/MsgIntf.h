@@ -20,6 +20,7 @@
 #endif
 
 #include "MsgImpl.h"
+#include "svn_revision.h"
 
 //---------------------------------------------------------------------------
 // Message Strings ( these should be localized )
@@ -29,7 +30,8 @@ TVP_MSG_DECL_CONST(TVPAboutString,
 	
 TJS_W("吉里吉里[きりきり] 2 実行コア version %1 ( TJS version %2 )\n")
 TJS_W("Compiled on ") __DATE__ TJS_W(" ") __TIME__ TJS_W("\n")
-TJS_W("Copyright (C) 1997-2009 W.Dee and contributors All rights reserved.\n")
+TJS_W("SVN Revision: ") TVP_SVN_REVISION TJS_W("\n")
+TJS_W("Copyright (C) 1997-2012 W.Dee and contributors All rights reserved.\n")
 TJS_W("Contributors in alphabetical order:\n")
 TJS_W("  Go Watanabe, Kenjo, Kiyobee, Kouhei Yanagita, mey, MIK, Takenori Imoto, yun\n")
 TJS_W("吉里吉里実行コアの使用/配布/改変は、\n")
@@ -79,8 +81,8 @@ TJS_W("環境情報\n")
 TVP_MSG_DECL_CONST(TVPVersionInformation,
 	
 TJS_W("吉里吉里[きりきり] 2 実行コア/%1 ")
-TJS_W("(Compiled on ") __DATE__ TJS_W(" ") __TIME__ TJS_W(") TJS2/%2 ")
-TJS_W("Copyright (C) 1997-2009 W.Dee and contributors All rights reserved."));
+TJS_W("(SVN revision:") TVP_SVN_REVISION TJS_W("; Compiled on ") __DATE__ TJS_W(" ") __TIME__ TJS_W(") TJS2/%2 ")
+TJS_W("Copyright (C) 1997-2012 W.Dee and contributors All rights reserved."));
 
 TVP_MSG_DECL_CONST(TVPVersionInformation2,
 	TJS_W("バージョン情報の詳細は Ctrl + F12 で閲覧できます"));

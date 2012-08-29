@@ -16,10 +16,18 @@ call gengl.bat
 cd %TOP_DIR%\msg\win32
 call gen_optdesc_res.bat
 
+cd %TOP_DIR%\msg
+copy svn_revision.h svn_revision.~h /y
+
+
 cd %TOP_DIR%\environ\win32
 copy tvpwin32.bpr tvpwin32.~bpr /y
 copy tvpwin32.res tvpwin32.~res /y
 perl basefix.pl
+perl revision_fix.pl
+copy svn_revision.h "%TOP_DIR%\msg"
+
+
 
 cd %TOP_DIR%\environ\win32
 cmd /c "c:\Program Files\Borland\CBuilder5\Bin\bcb" tvpwin32.bpr -b -omakeout.txt
@@ -32,3 +40,5 @@ cd %TOP_DIR%\environ\win32
 copy tvpwin32.~bpr tvpwin32.bpr /y
 copy tvpwin32.~res tvpwin32.res /y
 
+cd %TOP_DIR%\msg
+copy svn_revision.~h svn_revision.h /y
