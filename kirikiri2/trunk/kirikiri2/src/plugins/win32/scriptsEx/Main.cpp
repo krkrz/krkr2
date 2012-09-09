@@ -227,8 +227,8 @@ public:
 												) {
 		if (numparams > 1) {
 			if ((int)*param[1] != TJS_HIDDENMEMBER) {
-				*paramList[0] = *param[0];
-				*paramList[1] = *param[2];
+				paramList[0] = param[0];
+				paramList[1] = param[2];
 				(void)func->FuncCall(0, NULL, NULL, NULL, paramCount, paramList, functhis);
 			}
 		}
@@ -475,10 +475,7 @@ ScriptsAdd::foreach(tTJSVariant *result,
 
 	} else {
 
-		tTJSVariant key, value;
 		tTJSVariant **paramList = new tTJSVariant *[numparams];
-		paramList[0] = &key;
-		paramList[1] = &value;
 		for (tjs_int i = 2; i < numparams; i++)
 			paramList[i] = param[i];
 
