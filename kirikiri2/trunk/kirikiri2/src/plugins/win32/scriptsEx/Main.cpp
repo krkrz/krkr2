@@ -613,3 +613,5 @@ NCB_ATTACH_CLASS(ScriptsAdd, Scripts) {
 	RawCallback("getMD5HashString", &ScriptsAdd::getMD5HashString, TJS_STATICMEMBER);
 	NCB_METHOD(clone);
 };
+
+NCB_ATTACH_FUNCTION(rehash, Scripts, TJSDoRehash);
