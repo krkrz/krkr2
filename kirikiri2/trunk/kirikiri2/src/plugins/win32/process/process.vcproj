@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="shellExecute"
+	Name="process"
 	ProjectGUID="{A34A74F1-91DC-44A7-B7F2-4CE4048DFC2F}"
-	RootNamespace="shellExecute"
+	RootNamespace="process"
 	Keyword="Win32Proj"
 	>
 	<Platforms>

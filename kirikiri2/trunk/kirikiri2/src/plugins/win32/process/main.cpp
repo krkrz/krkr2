@@ -248,15 +248,16 @@ struct CommandExecute
 /**
  * メソッド追加用クラス
  */
-class WindowShell {
+class Process {
 
 protected:
 	iTJSDispatch2 *objthis; //< オブジェクト情報の参照
 	HWND msgHWND;
+	HANDLE process;
 
-	typedef WindowShell SelfClass;
-#define MSGWND_CLASSNAME  L"Window ShellExecute Message Window Class"
-#define MSGWND_WINDOWNAME L"Window ShellExecute Message"
+	typedef Process SelfClass;
+#define MSGWND_CLASSNAME  L"TVP Process Message Window Class"
+#define MSGWND_WINDOWNAME L"TVP Process Message"
 	static ATOM MessageWindowClass;
 	HWND  createMessageWindow() {
 		HINSTANCE hinst = ::GetModuleHandle(NULL);
@@ -285,7 +286,7 @@ protected:
 		SelfClass *self = (SelfClass*)(::GetWindowLong(hwnd, GWL_USERDATA));
 		if (self) switch (msg) {
 		case WM_SHELLEXECUTED:
-			self->onShellExecuted(wp, lp);
+			self->onShellExecuted(lp);
 			return 0;
 		case WM_SHELLCONSOLEOUT:
 			self->onCommandLineOutput(wp, lp);
@@ -300,49 +301,81 @@ public:
 	}
 
 protected:
-	// イベント処理
-	void onShellExecuted(WPARAM wp, LPARAM lp) {
-		tTJSVariant process = (tjs_int)wp;
-		tTJSVariant endCode = (tjs_int)lp;
-		removeProcessMap((HANDLE)wp);
-		tTJSVariant *p[] = {&process, &endCode};
-		objthis->FuncCall(0, L"onShellExecuted", NULL, NULL, 2, p, objthis);
+
+	// エラー取得
+	static void getLastError(ttstr &message) {
+		LPVOID lpMessageBuffer;
+		FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+					   NULL, GetLastError(),
+					   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+					   (LPWSTR)&lpMessageBuffer, 0, NULL);
+		message = ((tjs_char*)lpMessageBuffer);
+		LocalFree(lpMessageBuffer);
 	}
+
+	/**
+	 * イベント処理
+	 * コマンド実行完了
+	 */
+	void onShellExecuted(LPARAM lp) {
+		tTJSVariant endCode = (tjs_int)lp;
+		tTJSVariant *p[] = {&endCode};
+		objthis->FuncCall(0, L"onExecuted", NULL, NULL, 1, p, objthis);
+		process = INVALID_HANDLE_VALUE;
+	}
+
+	/**
+	 * イベント処理
+	 * 行出力
+	 */
 	void onCommandLineOutput(WPARAM wp, LPARAM lp) {
-		tTJSVariant process = (tjs_int)wp;
+		tTJSVariant line = (tjs_int)wp;
 		tTJSVariant text = ttstr((LPCWSTR)lp);
-		tTJSVariant *p[] = { &process, &text };
-		objthis->FuncCall(0, L"onCommandLineOutput", NULL, NULL, 2, p, objthis);
+		tTJSVariant *p[] = {&line, &text};
+		objthis->FuncCall(0, L"onOutput", NULL, NULL, 2, p, objthis);
 	}
 
 public:
+	/**
+	 * インスタンス生成ファクトリ
+	 */
+	static tjs_error factory(Process **result, tjs_int numparams, tTJSVariant **params, iTJSDispatch2 *objthis) {
+		*result = new Process(objthis);
+		return S_OK;
+	}
+
 	// コンストラクタ
-	WindowShell(iTJSDispatch2 *objthis) : objthis(objthis) {
+	Process(iTJSDispatch2 *objthis) : objthis(objthis), process(INVALID_HANDLE_VALUE) {
 		msgHWND = createMessageWindow();
 	}
 
 	// デストラクタ
-	~WindowShell() {
+	~Process() {
 		msgHWND = destroyMessageWindow(msgHWND);
 	}
 
-public:
+	// 状態参照
+	int getStatus() {
+		return process == INVALID_HANDLE_VALUE ? 0 : 1;
+	}
+
+protected:
+
 	/**
 	 * 実行情報
 	 */
 	struct ExecuteInfo {
 		HWND   message; // メッセージ送信先
 		HANDLE process; // 待ち対象プロセス
-		CommandExecute *cmd;
-		ExecuteInfo(HWND message, HANDLE process, CommandExecute *cmd = 0)
-			: message(message), process(process), cmd(cmd) {}
+		ExecuteInfo(HWND message, HANDLE process)
+			 : message(message), process(process) {}
 	};
 	
 	/**
 	 * 終了待ちスレッド処理
 	 * @param data ユーザ(ExecuteInfo)
 	 */
-	static void waitProcess(void *data) {
+	static void waitExecute(void *data) {
 		// パラメータ引き継ぎ
 		HWND   message = ((ExecuteInfo*)data)->message;
 		HANDLE process = ((ExecuteInfo*)data)->process;
@@ -355,24 +388,17 @@ public:
 		CloseHandle(process);
 
 		// 送信
-		PostMessage(message, WM_SHELLEXECUTED, (WPARAM)process, (LPARAM)dt);
-	}
-	
-	/**
-	 * プロセスの停止
-	 * @param process プロセスID
-	 * @param endCode 終了コード
-	 */
-	void terminateProcess(int process, int endCode) {
-		TerminateProcess((HANDLE)process, endCode);
+		PostMessage(message, WM_SHELLEXECUTED, NULL, (LPARAM)dt);
 	}
 
+public:
 	/**
 	 * プロセスの実行
 	 * @param target ターゲット
 	 * @praam param パラメータ
 	 */
-	int shellExecute(LPCTSTR target, LPCTSTR param) {
+	bool execute(LPCTSTR target, LPCTSTR param) {
+		terminate();
 		SHELLEXECUTEINFO si;
 		ZeroMemory(&si, sizeof(si));
 		si.cbSize = sizeof(si);
@@ -382,127 +408,118 @@ public:
 		si.nShow = SW_SHOWNORMAL;
 		si.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 		if (ShellExecuteEx(&si)) {
-			_beginthread(waitProcess, 0, new ExecuteInfo(msgHWND, si.hProcess));
-			return (int)si.hProcess;
+			if (_beginthread(waitExecute, 0, new ExecuteInfo(msgHWND, si.hProcess)) != -1L) {
+				process = si.hProcess;
+				return true;
+			}
 		}
-		return (int)INVALID_HANDLE_VALUE;
+		return false;
 	}
 
+protected:
 
 	/**
-	 * commandExec コンソール処理
+	 * 実行情報
 	 */
-	struct ConsoleOutputParam {
-		HWND message;
-		HANDLE process;
-		ConsoleOutputParam(HWND message, HANDLE process) : message(message), process(process) {}
-		static void consoleLineOutCallback(void *v, int line, LPCWSTR text) {
-			ConsoleOutputParam *self = (ConsoleOutputParam*)v;
-			if (self) SendMessage(self->message, WM_SHELLCONSOLEOUT, (WPARAM)self->process, (LPARAM)text);
-		}
+	struct CommandInfo {
+		HWND   message; // メッセージ送信先
+		CommandExecute *cmd; // コマンド実行情報
+		CommandInfo(HWND message, CommandExecute *cmd = 0)
+			 : message(message), cmd(cmd) {}
 	};
+
+	/**
+	 * テキスト出力用
+	 */
+	static void consoleLineOutCallback(void *v, int line, LPCWSTR text) {
+		SendMessage((HWND)v, WM_SHELLCONSOLEOUT, (WPARAM)line, (LPARAM)text);
+	}
+	
 	/**
 	 * commandExec 終了待ちスレッド処理
-	 * @param data ユーザ(ExecuteInfo)
+	 * @param data ユーザ(CommandInfo)
 	 */
 	static void waitCommand(void *data) {
 		// パラメータ引き継ぎ
-		HWND        message = ((ExecuteInfo*)data)->message;
-		HANDLE      process = ((ExecuteInfo*)data)->process;
-		CommandExecute *cmd = ((ExecuteInfo*)data)->cmd;
+		HWND        message = ((CommandInfo*)data)->message;
+		CommandExecute *cmd = ((CommandInfo*)data)->cmd;
 		delete data;
 
-		ConsoleOutputParam prm(message, process);
-		cmd->wait(ConsoleOutputParam::consoleLineOutCallback, (void*)&prm, 0);
+		cmd->wait(consoleLineOutCallback, (void*)message, 0);
 		DWORD exit = cmd->getExitCode();
 		delete cmd;
-
+		
 		// 送信
-		PostMessage(message, WM_SHELLEXECUTED, (WPARAM)process, (LPARAM)exit);
+		PostMessage(message, WM_SHELLEXECUTED, NULL, (LPARAM)exit);
 	}
+
+public:
 	/**
 	 * コマンドラインの実行
 	 * @param target ターゲット
-	 * @praam param パラメータ
+	 * @param param パラメータ
 	 */
-	int commandExecute(ttstr target, ttstr param) {
+	bool commandExecute(ttstr target, ttstr param) {
+		terminate();
 		CommandExecute *cmd = new CommandExecute();
 		if (cmd->start(target, param)) {
-			HANDLE proc = cmd->getProcessHandle();
-			setProcessMap(proc, cmd->getProcessId());
-			_beginthread(waitCommand, 0, new ExecuteInfo(msgHWND, proc, cmd));
-			return (int)proc;
+			if (_beginthread(waitCommand, 0, new CommandInfo(msgHWND, cmd)) != -1L) {
+				process = cmd->getProcessHandle();
+				return true;
+			}
 		}
 		delete cmd;
-		return (int)INVALID_HANDLE_VALUE;
+		return false;
 	}
 
+	// -------------------------------------------------------------------------------------
+
+	/**
+	 * プロセスの停止
+	 * @param endCode 終了コード
+	 */
+	void terminate(int endCode=-1) {
+		if (process != INVALID_HANDLE_VALUE) {
+			::TerminateProcess(process, endCode);
+			process = INVALID_HANDLE_VALUE;
+		}
+	}
 
 	/**
 	 * シグナル送信
 	 */
-	bool commandSendSignal(int process, bool type) {
-		DWORD id = getProcessMap((HANDLE)process);
-		DWORD ev = type ? CTRL_BREAK_EVENT : CTRL_C_EVENT;
-
-		BOOL r = ::GenerateConsoleCtrlEvent(ev, id);
-		if (!r) {
-			if (::AttachConsole(id)) {
-				r = ::GenerateConsoleCtrlEvent(ev, id);
-				::FreeConsole();
-			} else  {
-				ttstr err;
-				getLastError(err);
-				TVPAddLog(err.c_str());
+	bool sendSignal(bool type) {
+		if (process != INVALID_HANDLE_VALUE) {
+			DWORD id = ::GetProcessId(process);
+			DWORD ev = type ? CTRL_BREAK_EVENT : CTRL_C_EVENT;
+			BOOL r = ::GenerateConsoleCtrlEvent(ev, id);
+			if (!r) {
+				if (::AttachConsole(id)) {
+					r = ::GenerateConsoleCtrlEvent(ev, id);
+					::FreeConsole();
+				} else  {
+					ttstr err;
+					getLastError(err);
+					TVPAddLog(err.c_str());
+				}
 			}
+			return !!r;
 		}
-		return !!r;
+		return false;
 	}
-	void  setProcessMap(HANDLE proc, DWORD id) { pmap.SetValue((tjs_int32)proc, (tTVInteger)id); }
-	DWORD getProcessMap(HANDLE proc)  { return (DWORD)(pmap.getIntValue((tjs_int32)proc, -1)); }
-	void removeProcessMap(HANDLE proc) {
-		iTJSDispatch2 *dsp = pmap.GetDispatch();
-		dsp->DeleteMemberByNum(0, (tjs_int)proc, dsp);
-	}
-static void getLastError(ttstr &message) {
-	LPVOID lpMessageBuffer;
-	FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-				   NULL, GetLastError(),
-				   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				   (LPWSTR)&lpMessageBuffer, 0, NULL);
-	message = ((tjs_char*)lpMessageBuffer);
-	LocalFree(lpMessageBuffer);
-}
-
-
-private:
-	ncbDictionaryAccessor pmap;
 };
 
-ATOM WindowShell::MessageWindowClass = 0;
-static void PostUnregistCallback() { WindowShell::UnregisterMessageWindowClass(); }
+ATOM Process::MessageWindowClass = 0;
+static void PostUnregistCallback() { Process::UnregisterMessageWindowClass(); }
 NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
 
-
-// インスタンスゲッタ
-NCB_GET_INSTANCE_HOOK(WindowShell)
-{
-	NCB_INSTANCE_GETTER(objthis) { // objthis を iTJSDispatch2* 型の引数とする
-		ClassT* obj = GetNativeInstance(objthis);	// ネイティブインスタンスポインタ取得
-		if (!obj) {
-			obj = new ClassT(objthis);				// ない場合は生成する
-			SetNativeInstance(objthis, obj);		// objthis に obj をネイティブインスタンスとして登録する
-		}
-		return obj;
-	}
-};
-
-// フックつきアタッチ
-NCB_ATTACH_CLASS_WITH_HOOK(WindowShell, Window) {
-	Method(L"shellExecute", &WindowShell::shellExecute);
-	Method(L"commandExecute", &WindowShell::commandExecute);
-	Method(L"terminateProcess", &WindowShell::terminateProcess);
-	Method(L"commandSendSignal", &WindowShell::commandSendSignal);
+NCB_REGISTER_CLASS(Process) {
+	Factory(&ClassT::factory);
+	Method(L"execute",        &ClassT::execute);
+	Method(L"commandExecute", &ClassT::commandExecute);
+	Method(L"terminate",      &ClassT::terminate);
+	Method(L"sendSignal",     &ClassT::sendSignal);
+	NCB_PROPERTY_RO(status, getStatus);
 }
 
 
