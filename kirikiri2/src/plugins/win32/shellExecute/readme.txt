@@ -1,4 +1,4 @@
-Title: shellExecute Plugin
+Title: [obsolete] shellExecute Plugin
 Author: わたなべごう
 
 ●これはなに？
@@ -6,6 +6,9 @@ Author: わたなべごう
 吉里吉里に外部プログラム実行＋実行完了検知処理を提供します。
 System.shellExecute と異なり、起動したアプリの実行終了を検知できます。
 実行終了イベントは、実行処理を行ったウインドウに対して通知されます。
+
+※注記：Windowオブジェクトに依存しないprocessプラグインが作成されました
+	新規に使用されるかたはそちらをご利用ください
 
 ●使用方法
 
