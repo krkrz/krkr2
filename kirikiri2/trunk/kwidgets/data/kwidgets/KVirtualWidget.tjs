@@ -412,6 +412,45 @@ class KVirtualWidget extends KWidget
     _canvas.operateBezierPatch(src, sleft, stop, swidth, sheight, nbp, divisionX, divisionY, mode, opa, type);
   }
 
+  /**------------------------------
+   * メッシュコピー
+   * 
+   * @param src 　コピー元のレイヤオブジェクトを指定します。
+   * @param sleft 　コピーする矩形の左端位置を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param stop 　コピーする矩形の上端位置を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param swidth 　コピーする矩形の横幅を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param sheight 　コピーする矩形の縦幅を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param mesh メッシュ。
+   * @param divisionX X方向分割数。X方向をいくつのポリゴンに分割するか指定します。1=分割無し。
+   * @param divisionY Y方向分割数。Y方向をいくつのポリゴンに分割するか指定します。1=分割無し。
+   * @param type アフィン変換のタイプを指定します。
+   * @param clear 転送先レイヤの、アフィン変換された画像の周囲をLayer.neutralColor プロパティで示された色・透明度でクリアするかどうかを指定します.
+   */
+  function meshCopy(src, sleft, stop, swidth, sheight, mesh, divisionX, divisionY, type, clear) {
+    var nbp = BezierPatch.translatePatch(mesh, - _site.left, - _site.top);
+    _canvas.meshCopy(src, sleft, stop, swidth, sheight, nbp, divisionX, divisionY, type, clear);
+  }
+
+  /**------------------------------
+   * メッシュ合成
+   * 
+   * @param src 　コピー元のレイヤオブジェクトを指定します。
+   * @param sleft 　コピーする矩形の左端位置を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param stop 　コピーする矩形の上端位置を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param swidth 　コピーする矩形の横幅を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param sheight 　コピーする矩形の縦幅を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param mesh メッシュ。
+   * @param divisionX X方向分割数。X方向をいくつのポリゴンに分割するか指定します。1=分割無し。
+   * @param divisionY Y方向分割数。Y方向をいくつのポリゴンに分割するか指定します。1=分割無し。
+   * @param mode 演算のモードを指定します。
+   * @param opa 重ね合わせの不透明度 ( 0 ～ 255 ) を指定します。
+   * @param type アフィン変換のタイプを指定します。
+   */
+  function operateMesh(src, sleft, stop, swidth, sheight, mesh, divisionX, divisionY, mode, opa, type) {
+    var nbp = BezierPatch.translatePatch(mesh, - _site.left, - _site.top);
+    _canvas.operateMesh(src, sleft, stop, swidth, sheight, nbp, divisionX, divisionY, mode, opa, type);
+  }
+
   /*----------------------------------------------------------------------
    * layerExDraw描画関数の仮想座標系バージョン
    ----------------------------------------------------------------------*/
