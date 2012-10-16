@@ -2000,11 +2000,16 @@ LayerExDraw::getGlyphOutline(const FontInfo *fontInfo, PointF &offset, GraphicsP
 
   GLYPHMETRICS gm;
 
+  DWORD flags = GGO_BEZIER;
+  // フィッティング指定が無ければ UNHINTEDにする。xs
+  if (! (textRenderingHint & 1))
+    flags |= GGO_UNHINTED;
+
   int size = GetGlyphOutlineW(metaHDC,
                               glyph,
-                              GGO_BEZIER, //  | GGO_GLYPH_INDEX,
+                              flags, //  | GGO_GLYPH_INDEX,
                               &gm, 
-                              0, 
+                              0,
                               NULL, 
                               &mat 
                               );
@@ -2013,7 +2018,7 @@ LayerExDraw::getGlyphOutline(const FontInfo *fontInfo, PointF &offset, GraphicsP
 	  buffer = new char[size];
 	  int result = GetGlyphOutlineW(metaHDC,
 									glyph,
-									GGO_BEZIER, //  | GGO_GLYPH_INDEX,
+									flags, //  | GGO_GLYPH_INDEX,
 									&gm, 
 									size, 
 									buffer, 
