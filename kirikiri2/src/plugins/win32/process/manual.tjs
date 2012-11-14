@@ -15,20 +15,22 @@ class Process {
 	 * バックグラウンドでの外部プログラムの実行
 	 * @param target プログラム
 	 * @param param 引数
+	 * @param folder 実行時フォルダ(未指定時はカレントフォルダ)
 	 * @return 起動成功時は true
 	 * 処理がおわったら onExecuted イベントが発生します。
 	 */
-	function execute(target, param);
+	function execute(target, param=void, folder=void);
 
 	/**
 	 * コンソール出力取得つきコマンドラインプログラムの実行
 	 * @param target プログラム
 	 * @param param 引数
+	 * @param folder 実行時フォルダ(未指定時はカレントフォルダ)
 	 * @return 起動成功時は true
 	 * コンソールの行単位出力で onOutput イベントが発生します。
 	 * 処理がおわったら onExecuted イベントが発生します。
 	 */
-	function commandExecute(target, param);
+	function commandExecute(target, param=void, folder=void);
 
 	/**
 	 * 実行中の外部プログラムの強制終了
