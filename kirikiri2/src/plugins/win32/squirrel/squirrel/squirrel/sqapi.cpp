@@ -906,7 +906,7 @@ SQRESULT sq_get(HSQUIRRELVM v,SQInteger idx)
 SQBool sq_exists(HSQUIRRELVM v,SQInteger idx)
 {
 	SQObjectPtr &self=stack_get(v,idx);
-	if(v->Get(self,v->GetUp(-1),v->GetUp(-1),true,false)) {
+	if(v->Exist(self,v->GetUp(-1))) {
 		v->Pop(1);
 		return SQTrue;
 	} else {
