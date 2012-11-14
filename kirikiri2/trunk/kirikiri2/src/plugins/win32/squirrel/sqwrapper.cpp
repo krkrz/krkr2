@@ -63,8 +63,8 @@ SQEXCEPTION(HSQUIRRELVM v)
 class iTJSDispatch2Wrapper : public tTJSDispatch
 {
 protected:
-	/// 内部保持用
-	HSQUIRRELVM v;
+	/// 内部保持用・グローバルVMで保持するようにする
+	HSQUIRRELVM gv;
 	HSQOBJECT obj;
 
 public:
@@ -72,19 +72,21 @@ public:
 	 * コンストラクタ
 	 * @param obj IDispatch
 	 */
-	iTJSDispatch2Wrapper(HSQUIRRELVM v, int idx) : v(v) {
+	iTJSDispatch2Wrapper(HSQUIRRELVM v, int idx) {
+		// グローバルに移した上で保持する
 		sq_resetobject(&obj);
-		sq_getstackobj(v,idx,&obj);
-		sq_addref(v, &obj);
+		gv = sqobject::getGlobalVM();
+		sq_move(gv, v, idx);
+		sq_getstackobj(gv,-1,&obj);
+		sq_addref(gv, &obj);
+		sq_pop(gv, 1);
 	}
 	
 	/**
 	 * デストラクタ
 	 */
 	~iTJSDispatch2Wrapper() {
-		if(v) {
-			sq_release(v, &obj);
-		}
+		sq_release(gv, &obj);
 	}
 
 	void push(HSQUIRRELVM v) {
@@ -108,22 +110,22 @@ public:
 			return TJS_E_NOTIMPL;
 		}
 		int ret = S_FALSE;
-		sq_pushobject(v, obj);
-		sq_pushroottable(v);			// this 相当部分
+		sq_pushobject(gv, obj);
+		sq_pushroottable(gv);			// this 相当部分
 		for (int i=0;i<numparams;i++) {	// パラメータ群
-			sq_pushvariant(v, *param[i]);
+			sq_pushvariant(gv, *param[i]);
 		}
-		if (SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+		if (SQ_SUCCEEDED(sq_call(gv, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
 			if (result) {
 				tTJSVariant var;
-				sq_getvariant(v, -1, &var);
-				sq_pop(v, 1); // newobj
+				sq_getvariant(gv, -1, &var);
+				sq_pop(gv, 1); // newobj
 				*result = var;
 			}
-			sq_pop(v, 1); // obj
+			sq_pop(gv, 1); // obj
 		} else {
-			sq_pop(v, 1); // obj
-			SQEXCEPTION(v);
+			sq_pop(gv, 1); // obj
+			SQEXCEPTION(gv);
 		}
 		return TJS_S_OK;
 	}
@@ -144,43 +146,43 @@ public:
 				  obj._type == OT_GENERATOR)) {
 				return TJS_E_NOTIMPL;
 			}
-			sq_pushobject(v, obj);
-			sq_pushroottable(v);
+			sq_pushobject(gv, obj);
+			sq_pushroottable(gv);
 			for (int i=0;i<numparams;i++) {	// パラメータ群
-				sq_pushvariant(v, *param[i]);
+				sq_pushvariant(gv, *param[i]);
 			}
-			if (SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+			if (SQ_SUCCEEDED(sq_call(gv, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
 				if (result) {
-					sq_getvariant(v, -1, result);
-					sq_pop(v, 1);
+					sq_getvariant(gv, -1, result);
+					sq_pop(gv, 1);
 				}
-				sq_pop(v, 1);
+				sq_pop(gv, 1);
 			} else {
-				sq_pop(v, 1);
-				SQEXCEPTION(v);
+				sq_pop(gv, 1);
+				SQEXCEPTION(gv);
 			}
 			return TJS_S_OK;
 		} else {
-			sq_pushobject(v, obj);
-			sq_pushstring(v, membername,-1);
-			if (SQ_SUCCEEDED(sq_get(v,-2))) {
-				sq_pushobject(v, obj); // this
+			sq_pushobject(gv, obj);
+			sq_pushstring(gv, membername,-1);
+			if (SQ_SUCCEEDED(sq_get(gv,-2))) {
+				sq_pushobject(gv, obj); // this
 				for (int i=0;i<numparams;i++) {	// パラメータ群
-					sq_pushvariant(v, *param[i]);
+					sq_pushvariant(gv, *param[i]);
 				}
 				// 帰り値がある場合
-				if (SQ_SUCCEEDED(sq_call(v, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
+				if (SQ_SUCCEEDED(sq_call(gv, numparams + 1, result ? SQTrue:SQFalse, SQTrue))) {
 					if (result) {
-						sq_getvariant(v, -1, result);
-						sq_pop(v, 1);
+						sq_getvariant(gv, -1, result);
+						sq_pop(gv, 1);
 					}
-					sq_pop(v, 2);
+					sq_pop(gv, 2);
 				} else {
-					sq_pop(v, 2);
-					SQEXCEPTION(v);
+					sq_pop(gv, 2);
+					SQEXCEPTION(gv);
 				}
 			} else {
-				sq_pop(v, 1);
+				sq_pop(gv, 1);
 				return TJS_E_MEMBERNOTFOUND;
 			}
 			return TJS_S_OK;
@@ -198,20 +200,55 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-		sq_pushobject(v, obj);
-		sq_pushstring(v, membername,-1);
-		if (SQ_SUCCEEDED(sq_get(v,-2))) {
+		sq_pushobject(gv, obj);
+		sq_pushstring(gv, membername,-1);
+		if (SQ_SUCCEEDED(sq_get(gv,-2))) {
 			if (result) {
-				sq_getvariant(v, -1, result);
+				sq_getvariant(gv, -1, result);
 			}
-			sq_pop(v,2);
+			sq_pop(gv,2);
 		} else {
-			sq_pop(v,1);
-			return TJS_E_MEMBERNOTFOUND;
+			sq_pop(gv,1);
+			if (sq_istable(obj) || sq_isarray(obj)) {
+				// tableの場合は void を返す
+				if (result) {
+					result->Clear();
+				}
+			} else {
+				return TJS_E_MEMBERNOTFOUND;
+			}
 		}
 		return TJS_S_OK;
 	}
 
+	// プロパティ取得
+	tjs_error TJS_INTF_METHOD PropGetByNum(
+		tjs_uint32 flag,
+		int num,
+		tjs_uint32 *hint,
+		tTJSVariant *result,
+		iTJSDispatch2 *objthis) {
+		sq_pushobject(gv, obj);
+		sq_pushinteger(gv, num);
+		if (SQ_SUCCEEDED(sq_get(gv,-2))) {
+			if (result) {
+				sq_getvariant(gv, -1, result);
+			}
+			sq_pop(gv,2);
+		} else {
+			sq_pop(gv,1);
+			if (sq_istable(obj) || sq_isarray(obj)) {
+				// tableの場合は void を返す
+				if (result) {
+					result->Clear();
+				}
+			} else {
+				return TJS_E_MEMBERNOTFOUND;
+			}
+		}
+		return TJS_S_OK;
+	}
+	
 	// プロパティ設定
 	tjs_error TJS_INTF_METHOD PropSet(
 		tjs_uint32 flag,
@@ -223,27 +260,56 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-		sq_pushobject(v, obj);
-		sq_pushstring(v, membername,-1);
-		sq_pushvariant(v, (tTJSVariant&)*param);
-		if ((flag & TJS_MEMBERENSURE)) {
-			if (SQ_SUCCEEDED(sq_newslot(v,-3, SQFalse))) {
-				sq_pop(v,1);
+		sq_pushobject(gv, obj);
+		sq_pushstring(gv, membername,-1);
+		sq_pushvariant(gv, (tTJSVariant&)*param);
+		if (sq_istable(obj) || sq_isarray(obj) || (flag & TJS_MEMBERENSURE)) {
+			if (SQ_SUCCEEDED(sq_newslot(gv,-3, SQFalse))) {
+				sq_pop(gv,1);
 			} else {
-				sq_pop(v,1);
-				SQEXCEPTION(v);
+				sq_pop(gv,1);
+				SQEXCEPTION(gv);
 			}
 		} else {
-			if (SQ_SUCCEEDED(sq_set(v,-3))) {
-				sq_pop(v,1);
+			if (SQ_SUCCEEDED(sq_set(gv,-3))) {
+				sq_pop(gv,1);
 			} else {
-				sq_pop(v,1);
-				SQEXCEPTION(v);
+				sq_pop(gv,1);
+				SQEXCEPTION(gv);
 			}
 		}
 		return TJS_S_OK;
 	}
 
+	// プロパティ設定
+	tjs_error TJS_INTF_METHOD PropSetByNum(
+		tjs_uint32 flag,
+		int num,
+		tjs_uint32 *hint,
+		const tTJSVariant *param,
+		iTJSDispatch2 *objthis) {
+		sq_pushobject(gv, obj);
+		sq_pushinteger(gv, num);
+		sq_pushvariant(gv, (tTJSVariant&)*param);
+		if (sq_istable(obj) || sq_isarray(obj) || (flag & TJS_MEMBERENSURE)) {
+			if (SQ_SUCCEEDED(sq_newslot(gv,-3, SQFalse))) {
+				sq_pop(gv,1);
+			} else {
+				sq_pop(gv,1);
+				SQEXCEPTION(gv);
+			}
+		} else {
+			if (SQ_SUCCEEDED(sq_set(gv,-3))) {
+				sq_pop(gv,1);
+			} else {
+				sq_pop(gv,1);
+				SQEXCEPTION(gv);
+			}
+		}
+		return TJS_S_OK;
+	}
+
+	
 	tjs_error TJS_INTF_METHOD IsInstanceOf(
 		tjs_uint32 flag,
 		const tjs_char * membername,
@@ -301,6 +367,27 @@ static iTJSDispatch2 *GetDispatch(HSQUIRRELVM v, int idx)
 }
 
 /**
+ * iTJSDispatch2 用プロパティの存在確認
+ * @param v squirrel VM
+ */
+static SQRESULT
+exist(HSQUIRRELVM v)
+{
+	tTJSVariant instance;
+	if (GetVariant(v, 1, &instance)) {
+		tTJSVariant result;
+		tjs_error error;
+		const tjs_char *name = sqobject::getString(v,2);
+		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropGet(TJS_MEMBERMUSTEXIST, sqobject::getString(v, 2), NULL, &result, NULL))) {
+			return 1;
+		} else {
+			return ERROR_KRKR(v, error);
+		}
+	}
+	return ERROR_BADINSTANCE(v);
+}
+
+/**
  * iTJSDispatch2 用プロパティの取得
  * @param v squirrel VM
  */
@@ -312,7 +399,7 @@ get(HSQUIRRELVM v)
 		tTJSVariant result;
 		tjs_error error;
 		const tjs_char *name = sqobject::getString(v,2);
-		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropGet(0, sqobject::getString(v, 2), NULL, &result, NULL))) {
+		if (TJS_SUCCEEDED(error = instance.AsObjectClosureNoAddRef().PropGet(TJS_MEMBERMUSTEXIST, sqobject::getString(v, 2), NULL, &result, NULL))) {
 			sq_pushvariant(v, result);
 			return 1;
 		} else {
@@ -481,6 +568,10 @@ sq_pushvariant(HSQUIRRELVM v, tTJSVariant &variant)
 						
 						// メソッド群を追加
 						sq_newtable(v);
+
+						sq_pushstring(v, L"_exist", -1);
+						sq_newclosure(v, exist, 0);
+						sq_createslot(v, -3);
 						
 						sq_pushstring(v, L"_get", -1);
 						sq_newclosure(v, get, 0);

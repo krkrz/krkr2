@@ -42,14 +42,17 @@ Squirrel は、協調スレッド（コルーチン）をサポートしており、
 
 ・TJS2オブジェクト(iTJSDispatch2*) は、Squirrel では userData として参照可能です
 
-　メタメソッド get/set/call を通じて操作可能です。
+　メタメソッド exist/get/set/call を通じて操作可能です。
 　クラスオブジェクトを call した場合は、TJS2 側で
 　インスタンスが作成されそれを UserData で参照したものが帰ります
+  Dictionary/Arrayの存在しないメンバ参照はエラーになります
 
 ・squirrel オブジェクトは、TJS2 側では iTJSDispatch2 として参照可能です
 
-  PropGet/PropSet/FuncCall/CreateNew を通じて操作可能です。
-  incontextof 指定は無視されます。
+  PropGet/PropGetByNum/PropSet/PropSetByNum/FuncCall/CreateNew 
+  を通じて操作可能です。incontextof 指定は無視されます。
+  table / array の存在しないメンバを参照した場合は void が帰ります
+  table / array に対する書き込みは create 扱いになります
 
 ・createTJSClass()で、TJSのクラスを Squirrelクラスとして扱うことができます
 
