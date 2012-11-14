@@ -72,7 +72,7 @@ struct CommandExecute
 		::CloseHandle(hIT);
 	}
 
-	bool start(ttstr const &target, ttstr const &param) {
+	bool start(ttstr const &target, const tjs_char *param=0, const tjs_char *folder=0) {
 		if (hasError()) return false;
 
 		ttstr cmd(L"\"");
@@ -83,7 +83,7 @@ struct CommandExecute
 			/**/cmd += tmp    + L"\"";
 		} else  cmd += target + L"\"";
 
-		if (param.length() > 0) cmd += L" " + param;
+		if (param && wcslen(param) > 0) cmd += L" " + ttstr(param);
 		LPWSTR cmdline = (LPWSTR)cmd.c_str();
 
 		// 子プロセス作成
@@ -95,7 +95,7 @@ struct CommandExecute
 		si.hStdInput  = hIR;
 		si.hStdError  = hEW;
 		si.wShowWindow = SW_HIDE;
-		if (!::CreateProcessW(0, cmdline, 0, 0, TRUE, CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP, 0, 0, &si, &pi)) {
+		if (!::CreateProcessW(0, cmdline, 0, 0, TRUE, CREATE_DEFAULT_ERROR_MODE | CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP, 0, folder, &si, &pi)) {
 			error = ERR_PROC;
 			return false;
 		}
@@ -391,20 +391,30 @@ protected:
 		PostMessage(message, WM_SHELLEXECUTED, NULL, (LPARAM)dt);
 	}
 
-public:
 	/**
 	 * プロセスの実行
 	 * @param target ターゲット
 	 * @praam param パラメータ
+	 * @param folder フォルダ
 	 */
-	bool execute(LPCTSTR target, LPCTSTR param) {
+	bool _execute(ttstr target, const tjs_char *param, const tjs_char *folder) {
 		terminate();
+
+		ttstr cmd(L"\"");
+		// 吉里吉里サーチパス上にある場合はそちらを優先
+		if (TVPIsExistentStorage(target)) {
+			ttstr tmp = TVPGetPlacedPath(target);
+			TVPGetLocalName(tmp);
+			/**/cmd += tmp    + L"\"";
+		} else  cmd += target + L"\"";
+
 		SHELLEXECUTEINFO si;
 		ZeroMemory(&si, sizeof(si));
 		si.cbSize = sizeof(si);
 		si.lpVerb = _T("open");
-		si.lpFile = target;
+		si.lpFile       = cmd.c_str();
 		si.lpParameters = param;
+		si.lpDirectory  = folder;
 		si.nShow = SW_SHOWNORMAL;
 		si.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 		if (ShellExecuteEx(&si)) {
@@ -415,8 +425,6 @@ public:
 		}
 		return false;
 	}
-
-protected:
 
 	/**
 	 * 実行情報
@@ -453,16 +461,15 @@ protected:
 		PostMessage(message, WM_SHELLEXECUTED, NULL, (LPARAM)exit);
 	}
 
-public:
 	/**
 	 * コマンドラインの実行
 	 * @param target ターゲット
 	 * @param param パラメータ
 	 */
-	bool commandExecute(ttstr target, ttstr param) {
+	bool _commandExecute(ttstr target, const tjs_char *param, const tjs_char *folder) {
 		terminate();
 		CommandExecute *cmd = new CommandExecute();
-		if (cmd->start(target, param)) {
+		if (cmd->start(target, param, folder)) {
 			if (_beginthread(waitCommand, 0, new CommandInfo(msgHWND, cmd)) != -1L) {
 				process = cmd->getProcessHandle();
 				return true;
@@ -474,6 +481,32 @@ public:
 
 	// -------------------------------------------------------------------------------------
 
+public:
+
+	static tjs_error TJS_INTF_METHOD execute(tTJSVariant *r, tjs_int n, tTJSVariant **p, Process *self) {
+		if (n < 1) return TJS_E_BADPARAMCOUNT;
+		if (!self) return TJS_E_NATIVECLASSCRASH;
+		const tjs_char *param  = n > 1 ? p[1]->GetString() : 0;
+		const tjs_char *folder = n > 2 ? p[2]->GetString() : 0;
+		bool ret = self->_execute(*p[0], param, folder);
+		if (r) {
+			*r = ret;
+		}
+		return TJS_S_OK;
+	}
+
+	static tjs_error TJS_INTF_METHOD commandExecute(tTJSVariant *r, tjs_int n, tTJSVariant **p, Process *self) {
+		if (n < 1) return TJS_E_BADPARAMCOUNT;
+		if (!self) return TJS_E_NATIVECLASSCRASH;
+		const tjs_char *param  = n > 1 ? p[1]->GetString() : 0;
+		const tjs_char *folder = n > 2 ? p[2]->GetString() : 0;
+		bool ret = self->_commandExecute(*p[0], param, folder);
+		if (r) {
+			*r = ret;
+		}
+		return TJS_S_OK;
+	}
+	
 	/**
 	 * プロセスの停止
 	 * @param endCode 終了コード
@@ -515,8 +548,8 @@ NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
 
 NCB_REGISTER_CLASS(Process) {
 	Factory(&ClassT::factory);
-	Method(L"execute",        &ClassT::execute);
-	Method(L"commandExecute", &ClassT::commandExecute);
+	RawCallback("execute", &ClassT::execute, 0);
+	RawCallback("commandExecute", &ClassT::commandExecute, 0);
 	Method(L"terminate",      &ClassT::terminate);
 	Method(L"sendSignal",     &ClassT::sendSignal);
 	NCB_PROPERTY_RO(status, getStatus);
@@ -542,7 +575,8 @@ tjs_error TJS_INTF_METHOD commandExecute(
 
 	// コマンドライン/タイムアウト取得
 	int timeout = 0;
-	ttstr target(param[0]->GetString()), cmdprm;
+	ttstr target(param[0]->GetString());
+	const tjs_char *cmdprm = 0;
 
 	if (numparams > 1) cmdprm  = param[1]->GetString();
 	if (numparams > 2) timeout = (tjs_int)*param[2];
