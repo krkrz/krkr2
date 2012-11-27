@@ -97,7 +97,11 @@ static TImeMode TVP_tTVPImeMode_To_TImeMode(tTVPImeMode mode)
 {
 	switch(mode)
 	{
-	case ::imDisable   : return Controls::imDisable ;
+	// Note: imDisable will cause undesired behaviour on ATOK/Win8.
+	// This(*) is a quickhack making kirikiri not to use imDisable,
+	// which may cause calling troublesome Win32NLSEnableIME.
+	// This bug is live AFAIK Windows8 32/64, no SP.
+	case ::imDisable   : return Controls::imClose   ; // (*)
 	case ::imClose     : return Controls::imClose   ;
 	case ::imOpen      : return Controls::imOpen    ;
 	case ::imDontCare  : return Controls::imDontCare;
@@ -110,7 +114,7 @@ static TImeMode TVP_tTVPImeMode_To_TImeMode(tTVPImeMode mode)
 	case ::imSHanguel  : return Controls::imSHanguel;
 	case ::imHanguel   : return Controls::imHanguel ;
 	}
-	return Controls::imDisable;
+	return Controls::imClose; // (*)
 }
 //---------------------------------------------------------------------------
 
@@ -339,12 +343,12 @@ __fastcall TTVPWindowForm::TTVPWindowForm(TComponent* Owner, tTJSNI_Window *ni)
 	ZoomDenom = ActualZoomDenom = 1;
 	ZoomNumer = ActualZoomNumer = 1;
 
-	DefaultImeMode = ::imDisable;
+	DefaultImeMode = ::imClose;
 	LastSetImeMode = Controls::imDontCare;
 
 	CreatePaintBox(ScrollBox);
 
-	LastSetImeMode = Controls::imDisable;
+	LastSetImeMode = Controls::imClose;
 	::PostMessage(Handle, TVP_WM_ACQUIREIMECONTROL, 0, 0);
 
 
