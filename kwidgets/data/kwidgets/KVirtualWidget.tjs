@@ -329,12 +329,12 @@ class KVirtualWidget extends KWidget
   function affineCopy(src, sleft, stop, swidth, sheight, affine, A, B, C, D, E, F, type = stNearest, clear = false) {
     if (affine) {
       var a, b, c, d, e, f;
-      a = A * 0 + C * 0 + E;
-      b = B * 0 + D * 0 + F;
-      c = A * swidth + C * 0 + E;
-      d = B * swidth + D * 0 + F;
-      e = A * 0 + C * sheight + E;
-      f = B * 0 + D * sheight + F;
+      a = A * -0.5 + C * -0.5 + E;
+      b = B * -0.5 + D * -0.5 + F;
+      c = A * (swidth - 0.5) + C * -0.5 + E;
+      d = B * (swidth - 0.5) + D * -0.5 + F;
+      e = A * -0.5 + C * (sheight - 0.5) + E;
+      f = B * -0.5 + D * (sheight - 0.5) + F;
       A = a, B = b, C = c, D = d, E = e, F = f;
     }
     _canvas.affineCopy(src, sleft, stop, swidth, sheight, false, A - _site.left, B - _site.top, C - _site.left, D - _site.top, E - _site.left, F - _site.top, type, clear);
@@ -362,12 +362,12 @@ class KVirtualWidget extends KWidget
   function operateAffine(src, sleft, stop, swidth, sheight, affine, A, B, C, D, E, F, mode = omAuto, opa = 255, type = stNearest) {
     if (affine) {
       var a, b, c, d, e, f;
-      a = A * 0 + C * 0 + E;
-      b = B * 0 + D * 0 + F;
-      c = A * swidth + C * 0 + E;
-      d = B * swidth + D * 0 + F;
-      e = A * 0 + C * sheight + E;
-      f = B * 0 + D * sheight + F;
+      a = A * -0.5 + C * -0.5 + E;
+      b = B * -0.5 + D * -0.5 + F;
+      c = A * (swidth - 0.5) + C * -0.5 + E;
+      d = B * (swidth - 0.5) + D * -0.5 + F;
+      e = A * -0.5 + C * (sheight - 0.5) + E;
+      f = B * -0.5 + D * (sheight - 0.5) + F;
       A = a, B = b, C = c, D = d, E = e, F = f;
     }
     _canvas.operateAffine(src, sleft, stop, swidth, sheight, false, A - _site.left, B - _site.top, C - _site.left, D - _site.top, E - _site.left, F - _site.top, mode, opa, type);
@@ -746,12 +746,12 @@ class KVirtualWidget extends KWidget
   function drawImageAffine(src, sleft, stop, swidth, sheight, affine, A, B, C, D, E, F) {
     if (affine) {
       var a, b, c, d, e, f;
-      a = A * 0 + C * 0 + E;
-      b = B * 0 + D * 0 + F;
-      c = A * swidth + C * 0 + E;
-      d = B * swidth + D * 0 + F;
-      e = A * 0 + C * sheight + E;
-      f = B * 0 + D * sheight + F;
+      a = A * -0.5 + C * -0.5 + E;
+      b = B * -0.5 + D * -0.5 + F;
+      c = A * (swidth - 0.5) + C * -0.5 + E;
+      d = B * (swidth - 0.5) + D * -0.5 + F;
+      e = A * -0.5 + C * (sheight - 0.5) + E;
+      f = B * -0.5 + D * (sheight - 0.5) + F;
       A = a, B = b, C = c, D = d, E = e, F = f;
     }
     return _canvas.drawImageAffine(src, sleft, stop, swidth, sheight, false, A, B, C, D, E, F);
