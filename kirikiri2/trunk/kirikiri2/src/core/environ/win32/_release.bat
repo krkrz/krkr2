@@ -31,6 +31,9 @@ copy svn_revision.h "%TOP_DIR%\msg"
 
 cd %TOP_DIR%\environ\win32
 cmd /c "c:\Program Files\Borland\CBuilder5\Bin\bcb" tvpwin32.bpr -b -omakeout.txt
+pause
+perl ime_win8_fix.pl "%TOP_DIR%\..\..\bin\win32\tvpwin32.exe"
+pause
 
 cd %TOP_DIR%\..\..\bin\win32
 del krkr.eXe /Q
