@@ -6,7 +6,7 @@
 /**----------------------------------------------------------------------
  * ボタン
  ----------------------------------------------------------------------*/
-class KButton extends KWidget
+class KButton extends KValueWidget
 {
   // ラベルウィジェット
   var child;
@@ -14,6 +14,8 @@ class KButton extends KWidget
   var baseLayer;
   // 押下中
   var pressing;
+  // ボタンの値
+  var value = true;
 
   /**------------------------------
    * コンストラクタ
@@ -79,7 +81,7 @@ class KButton extends KWidget
    ------------------------------*/
   function invalidateValue {
     if (nodeEnabled)
-      onValueModified(true);
+      onValueModified(value);
   }
 
   /*------------------------------
@@ -114,7 +116,7 @@ class KButton extends KWidget
     // ラベルの位置を元に戻す
     locateChild(1, 1, width - 2, height - 2, child);
     // 値の更新を通知
-    onValueModified(true);
+    invalidateValue();
   }
 
   /*------------------------------
@@ -181,6 +183,10 @@ class KButton extends KWidget
   // enabled=falseなら半透明で表示
   function onNodeDisabled {
     baseLayer.opacity = 64;
+  }
+
+  // 永続化辞書にはバインドしない。
+  function bindPersistentDictionary() {
   }
 }  
 
