@@ -238,7 +238,7 @@ class FuncCall
   }
 
   function call {
-    func(args*);
+    return func(args*);
   }
 };
 
