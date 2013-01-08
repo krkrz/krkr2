@@ -85,54 +85,52 @@ class Window {
 
 	/**
 	 * 拡張イベントを有効にする
-	 * 拡張イベントとして以下が発生：
-	 *  onMaximizeQuery  最大化許可確認
-	 *  onMaximize       最大化
-	 *  onMinimize       最小化（タスクバー収納時は除く）
-	 *  onShow           ウィンドウ表示（タスクバーから復帰時）
-	 *  onHide           ウィンドウ非表示（タスクバー収納時）
-	 *  onMoveSizeBegin  リサイズ・移動開始
-	 *  onMoveSizeEnd    リサイズ・移動終了
-	 *  onMoving   ※    移動中
-	 *  onMove     ※    移動
-	 *  onResizing ※    リサイズ中
-	 *   ※: この関数を実行した時点でインスタンスに存在しない場合には発生しない
+	 * このウィンドウのインスタンスについて
+	 * 説明に「■拡張イベント：」と記述されているコールバックが有効になる
+	 *
+	 * ただし、下記のコールバックについては
+	 * この関数を実行した時点でインスタンスに存在しない場合には発生しないので注意
+	 * （ない場合は後からインスタンスに関数を追加しても呼ばれない）
+	 *  onMoving      移動中
+	 *  onMove        移動
+	 *  onResizing    リサイズ中
+	 *  onNcMouseMove NonClient領域でのマウス移動
 	 */
 	function registerExEvent();
 
 	/**
-	 * 拡張イベント：最大化を許可するかどうか確認
+	 * ■拡張イベント：最大化を許可するかどうか確認
 	 * @return true を返すと最大化を許可しない
 	 */
 	function onMaximizeQuery();
 
 	/**
-	 * 拡張イベント：ウィンドウ最大化
+	 * ■拡張イベント：ウィンドウ最大化
 	 * 呼ばれた時点でウィンドウサイズは既に最大化されている
 	 */
 	function onMaximize();
 
 	/**
-	 * 拡張イベント：ウィンドウ最小化
+	 * ■拡張イベント：ウィンドウ最小化
 	 * フルスクリーン中にAlt+Tabなどで別のアプリを選んだ場合や，mainWindow以外が最小化されたときに呼ばれる
 	 * タスクバーに収納された場合は onHide イベントが呼ばれるので注意
 	 */
 	function onMinimize();
 
 	/**
-	 * 拡張イベント：ウィンドウ表示
+	 * ■拡張イベント：ウィンドウ表示
 	 * タスクバーから復帰したときなどに呼ばれる
 	 */
 	function onShow();
 
 	/**
-	 * 拡張イベント：ウィンドウ非表示
+	 * ■拡張イベント：ウィンドウ非表示
 	 * タスクバーに収納された時などに呼ばれる
 	 */
 	function onHide();
 
 	/**
-	 * 拡張イベント：リサイズ・移動開始通知/終了
+	 * ■拡張イベント：リサイズ・移動開始通知/終了
 	 * フレームやタイトルバーをドラッグ開始した時やAlt+SpaceでSやMを選んだ時（開始通知），
 	 * および移動やリサイズが終了した時（終了通知）にそれぞれ呼ばれる
 	 * onMovingやonResizing中に元のウィンドウ位置やサイズを参照したい時はここで保存しておくとよい
@@ -142,22 +140,22 @@ class Window {
 	function onMoveSizeEnd();   //< 終了通知
 
 	/**
-	 * 拡張イベント：ウィンドウ移動中
+	 * ■拡張イベント：ウィンドウ移動中
 	 * @param rect %[ x, y, w, h ] ウィンドウ座標
 	 * 
 	 * ※Windowsでウィンドウ内容を表示したまま移動する設定（移動枠表示なし）の場合，すぐにonMoveが呼ばれる
 	 */
-	function onMoving(rect);
+	function onMoving(rect); //< registerExEvent()後の追加は無効（詳細はregisterExEventの説明を参照）
 
 	/**
-	 * 拡張イベント：ウィンドウ移動（完了）
+	 * ■拡張イベント：ウィンドウ移動（完了）
 	 * @param x,y クライアント領域左上のスクリーン座標
 	 *            ※ innerSunken枠分はクライアント領域に含まれるので注意
 	 */
-	function onMove(x, y);
+	function onMove(x, y); //< registerExEvent()後の追加は無効（詳細はregisterExEventの説明を参照）
 
 	/**
-	 * 拡張イベント：サイズ変更中
+	 * ■拡張イベント：サイズ変更中
 	 * @param rect %[ x, y, w, h, type ] 変更中サイズ（ウィンドウ座標）
 	 * @param rect.type ウィンドウのどこをつかんでサイズを変更しているか 1～8
 	 *                  +1:左側, +2:右側, +3:上側, +6:下側  の組み合わせ（3進数的表現）
@@ -170,7 +168,7 @@ class Window {
 	 * 
 	 * ※Windowsでウィンドウ内容を表示したままリサイズする設定（サイズ枠表示なし）の場合，すぐにonResizeが呼ばれる
 	 */
-	function onResizing(rect);
+	function onResizing(rect); //< registerExEvent()後の追加は無効（詳細はregisterExEventの説明を参照）
 
 @if (0)
 	/* （※これはプラグインで拡張される関数ではありません！）
@@ -196,21 +194,23 @@ class Window {
 @endif
 
 	/**
-	 * 拡張イベント：ディスプレイ構成の変更通知
+	 * ■拡張イベント：ディスプレイ構成の変更通知
 	 * 解像度や色数、マルチモニタの構成（位置変更も含む）が変更されたときに呼ばれる
 	 */
 	function onDisplayChanged();
 
 	/**
-	 * 拡張イベント：メニュー処理の開始・終了通知
+	 * ■拡張イベント：メニュー処理の開始・終了通知
 	 * ウィンドウのメニュー処理（クリックやF10を押した場合など）の開始と終了の通知イベント
 	 * WM_ENTERMENULOOP / WM_EXITMENULOOP 通知のコールバック
+	 *
+	 * ※フルスクリーンにした場合のメニューではこのイベントは発生しないので注意！
 	 */
 	function onEnterMenuLoop(); //< メニュー処理開始
 	function onExitMenuLoop();  //< メニュー処理終了
 
 	/**
-	 * 拡張イベント：スクリーンセーバー開始通知，モニタパワー変更通知
+	 * ■拡張イベント：スクリーンセーバー開始通知，モニタパワー変更通知
 	 * @param mode -1/1/2
 	 * @return true を返すと制御抑制
 	 */
@@ -228,7 +228,7 @@ class Window {
 	property disableResize { getter; setter; }
 
 	/**
-	 * 拡張イベント：アクティブ状態変更通知
+	 * ■拡張イベント：アクティブ状態変更通知
 	 * @param active 0:非アクティブ化 1:マウスクリック以外でアクティブ化 2:マウスクリックでアクティブ化
 	 * @param minimize 0:ウィンドウは最小化されていない それ以外:最小化されている
 	 *
@@ -258,12 +258,12 @@ class Window {
 	function setOverlayBitmap(layer)
 
 	/**
-	 * 非クライアントエリアマウスイベント
+	 * ■拡張イベント：非クライアントエリアマウスイベント
 	 * @param x, y マウス座標
 	 * @param ht 領域の種類（NCHITTEST定数）
 	 * @param btn マウスボタン（mbLeft, mbRight, mbMiddle）
 	 */
-	function onNcMouseMove(x, y, ht);
+	function onNcMouseMove(x, y, ht); //< registerExEvent()後の追加は無効（詳細はregisterExEventの説明を参照）
 	function onNcMouseUp(  x, y, btn, ht);
 	function onNcMouseDown(x, y, btn, ht);
 	function onNcMouseLeave();
