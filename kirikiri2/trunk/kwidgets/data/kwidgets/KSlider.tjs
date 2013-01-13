@@ -17,6 +17,7 @@ class KSlider extends KValueWidget
   var frameSize = SLIDER_FRAME_SIZE;
 
   // 最小値、最大値
+  var leftValue, rightValue;
   var minValue, maxValue;
   // 値
   var _value;
@@ -24,6 +25,7 @@ class KSlider extends KValueWidget
   var railLeft, railTop, railWidth, railHeight;
   // スライダーの座標値関連
   var sliderLeft, mouseDownX, mouseDownSliderLeft;
+  var sign;
   var dragging;
   // 刻み幅
   var step;
@@ -46,12 +48,15 @@ class KSlider extends KValueWidget
    * @param name 名前
    * @param step 刻み幅
    ------------------------------*/
-  function KSlider(win, w, h, minValue, maxValue, step = 1, name = "") {
+  function KSlider(win, w, h, leftValue, rightValue, step = 1, name = "") {
     super.KWidget(win, name);
     this.step = step;
-    this.minValue = int(minValue / step);
-    this.maxValue = int(maxValue / step);
-    _value = minValue;
+    this.leftValue = int(leftValue / step);
+    this.rightValue = int(rightValue / step);
+    this.minValue = int(Math.min(this.leftValue, this.rightValue));
+    this.maxValue = int(Math.max(this.leftValue, this.rightValue));
+    sign = leftValue < rightValue ? 1 : -1;
+    _value = this.leftValue;
     if (w == SLIDER_ADAPTIVE_WIDTH)
       w = adaptiveWidth;
     else
@@ -110,8 +115,8 @@ class KSlider extends KValueWidget
   function drawContent {
     fillRect(0, 0, width, height, focused ? WIN_HIGHLIGHT : 0);
     drawSunkenFrame(1, 1, width - 2, height - 2, WIN_LIGHTEN1);
-    sliderLeft = railLeft + int((_value - minValue) * (railWidth - sliderWidth)
-                                / (maxValue - minValue));
+    sliderLeft = railLeft + int((_value - leftValue) * (railWidth - sliderWidth)
+                                / (rightValue - leftValue));
     drawRaisedFrame(sliderLeft, railTop, sliderWidth, railHeight);
   }
 
@@ -122,12 +127,10 @@ class KSlider extends KValueWidget
     super.onMouseDown(...);
     focus();
     drawContent();
-    if (x < sliderLeft
-        && _value > minValue) {
-      setValue(_value - 1);
-    } else if (x >= sliderLeft + sliderWidth
-               && _value < maxValue) {
-      setValue(_value + 1);
+    if (x < sliderLeft) {
+      setValue(_value - sign);
+    } else if (x >= sliderLeft + sliderWidth) {
+      setValue(_value + sign);
     } else {
       dragging = true;
       mouseDownX = x;
@@ -142,7 +145,7 @@ class KSlider extends KValueWidget
       curSliderLeft = Math.max(curSliderLeft, railLeft);
       curSliderLeft = Math.min(curSliderLeft, railLeft + railWidth - 1);
       var curValue = 
-        int((maxValue - minValue) * (curSliderLeft - railLeft) / (railWidth - sliderWidth) + minValue);
+        int((rightValue - leftValue) * (curSliderLeft - railLeft) / (railWidth - sliderWidth) + leftValue);
       setValue(curValue);
     }
   }
@@ -157,9 +160,9 @@ class KSlider extends KValueWidget
    ------------------------------*/
   function onKeyDown(key) {
     if (key == VK_LEFT)
-      setValue(_value - 1);
+      setValue(_value - sign);
     else if (key == VK_RIGHT)
-      setValue(_value + 1);
+      setValue(_value + sign);
     else
       super.onKeyDown(...);
   }
