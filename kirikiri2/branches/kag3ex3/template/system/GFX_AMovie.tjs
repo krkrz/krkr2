@@ -67,7 +67,7 @@ class AMovieControlLayer extends GenericFlip, AlphaMovie
 			}
 			if (lastFrame !== void && lastFrame+1 < cur) {
 				//dm("*skip", lastFrame, cur, ret);
-				frame = cur;
+				try { frame = cur % numOfFrame; } catch {}
 			}
 			lastFrame = cur;
 		}
