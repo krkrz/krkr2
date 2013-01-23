@@ -1200,6 +1200,7 @@ void tTJSNI_BaseLayer::SetOrderIndex(tjs_int index)
 		index = Parent->Children.GetActualCount()-1;
 
 	Parent->ChildChangeOrder(GetOrderIndex(), index);
+	Parent->NotifyChildrenVisualStateChanged();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::BringToBack()
@@ -1240,6 +1241,7 @@ void tTJSNI_BaseLayer::SetAbsoluteOrderIndex(tjs_int index)
 	Parent->ChildChangeAbsoluteOrder(GetOrderIndex(), index);
 
 	AbsoluteOrderIndex = index;
+	Parent->NotifyChildrenVisualStateChanged();
 }
 //---------------------------------------------------------------------------
 void tTJSNI_BaseLayer::SetAbsoluteOrderMode(bool b)
