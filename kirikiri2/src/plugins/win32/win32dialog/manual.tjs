@@ -82,6 +82,20 @@ class WIN32Dialog {
 	function getItem(id);
 
 	/**
+	 * GetDlgCtrlID のラッパー
+	 * @param hwnd ダイアログアイテムのHWND
+	 * @return ダイアログアイテムのID
+	 */
+	function getItemID(hwnd);
+
+	/**
+	 * GetClassName のラッパー
+	 * @param id ダイアログアイテムのID
+	 * @return ダイアログアイテムのクラス名
+	 */
+	function getItemClassName(id);
+
+	/**
 	 * Get/SetDlgItemInt/Text のラッパー
 	 * @param id    ダイアログアイテムのID
 	 * @param value 設定する値（setの場合のみ）
@@ -108,7 +122,7 @@ class WIN32Dialog {
 	function setItemFocus(id);
 
 	/**
-	 * アイテムの位置・大きさを変更する
+	 * アイテムの位置・大きさを変更・取得する
 	 * @param id    ダイアログアイテムのID
 	 * @param x     ダイアログアイテムのX座標
 	 * @param y     ダイアログアイテムのY座標
@@ -117,6 +131,10 @@ class WIN32Dialog {
 	 */
 	function setItemPos( id, x, y);
 	function setItemSize(id, w, h);
+	function getItemLeft(id);
+	function getItemTop(id);
+	function getItemWidth(id);
+	function getItemHeight(id);
 
 	/**
 	 * アイテムにBitmapを設定する
@@ -226,6 +244,24 @@ class WIN32Dialog {
 	function onNotify(msg, wparam, lparam);
 
 	/**
+	 * WM_KEYDOWN のコールバック
+	 * @param wparam DlgProc のWPARAM
+	 * @param lparam DlgProc のLPARAM
+	 */
+	function onKeyDown(wparam, lparam)
+	{
+	}
+
+	/**
+	 * WM_KEYUP のコールバック
+	 * @param wparam DlgProc のWPARAM
+	 * @param lparam DlgProc のLPARAM
+	 */
+	function onKeyUp(wparam, lparam)
+	{
+	}
+
+	/**
 	 * MessageBox のラッパー
 	 * @param window  オーナーwindow（指定しない場合はnullを渡すこと）
 	 * @param text    メッセージテキスト
@@ -268,6 +304,11 @@ class WIN32Dialog {
 	 *   void:アイコンなし
 	 */
 	property icon { setter; getter; }
+
+	/**
+	 * ダイアログを open しているかどうか
+	 */
+	property isValid { getter; }
 
 	/**
 	 * ShowWindow のラッパー
@@ -316,6 +357,48 @@ class WIN32Dialog {
 	property progress         {         getter; } //< プログレス状態かどうか
 	property progressValue    { setter; getter; } //< プログレスバーを更新する（0-100の数値 or 負数の場合マーキー状態の速度）
 	property progressCanceled { setter; getter; } //< プログレスがキャンセルされたかどうか（※対象ボタンはIDCANCEL固定）
+
+	/**
+	 * タブコントロールを利用する.
+
+//	利用手順を検討中
+	 * insertTab(IDC_TAB, 0, "基本"); // タブを追加
+	 * // deleteTab(IDC_TAB, 0); // タブを削除
+	 * // deleteAllTab(IDC_TAB); // タブをすべて削除
+	 * var dlg = new WIN32Dialog(); dlg.loadResource("resource.dll", "INNER"); // Border=None, Style=Child にしたダイアログ
+	 * selectTab(IDC_TAB, dlg); // 表示
+	 * insertTab(IDC_TAB, 1, "拡張");
+	 * var dlg2 = new WIN32Dialog(); dlg2.loadResource("resource.dll", "INNER2");
+	 * dlg.show(SW_HIDE);
+	 * selectTab(IDC_TAB, dlg2); // 切り替え
+	 * // onNotify で notify->code == TCN_SELCHANGE かつ notify->idFrom == IDC_TAB の場合にユーザーによるタブの切り替え
+	 * // getCurSel(tab_id) でタブの番号を取得し、対応するダイアログを SW_SHOW、それ以外を SW_HIDE する
+	 * // タブ番号と対応するダイアログは自分で管理すること
+	 * ※ dlg,dlg2 の open は selectTab されたときに行われるので、show(SW_HIDE) するときは isValid で open されているか確認のこと
+
+	 */
+	function insertTab(tab_id, pos, label);
+	function deleteTab(tab_id, pos);
+	function deleteAllTab(tab_id);
+	function getCurSel(tab_id);
+	function selectTab(tab_id, dialog);
+
+	/**
+	 * ScrollInfo の設定
+	 * @param id スクロールバーのダイアログアイテムID
+	 * @param pos スライダーの位置
+	 * @param min 取りうる最小の値
+	 * @param max 取りうる最大の値
+	 * @param page ページの値
+	 */
+	function setScrollInfo(id, pos, min, max, page);
+
+	/**
+	 * ScrollInfo の取得
+	 * @param id スクロールバーのダイアログアイテムID
+	 * @return %[pos, min, max, page]
+	 */
+	function getScrollInfo(id);
 
 	/**
 	 * ウィンドウスタイル等の定数
@@ -370,6 +453,9 @@ class WIN32Dialog {
 	var SBS_*;
 	// Scroll bar messages
 	var SBM_*;
+	var SIF_*;
+	// Scroll bar option
+	var SB_*;
 	// Font Weights
 	var FW_*;
 	// ShowWindow options
@@ -382,6 +468,9 @@ class WIN32Dialog {
 	// PropertySheet notifications/messages
 	var PSN_*;
 	var PSM_*;
+
+	// TabControl messages
+	var TCN_*;
 }
 
 /**
