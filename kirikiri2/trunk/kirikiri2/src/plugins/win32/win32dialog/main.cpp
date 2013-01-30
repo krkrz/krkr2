@@ -197,6 +197,7 @@ private:
 	BYTE *buf;
 	BYTE *ref;
 	VarT resid, iconBitmap;
+	HHOOK hHook;
 public:
 	// constructor
 	WIN32Dialog(DspT *_owner = 0)
@@ -208,7 +209,8 @@ public:
 			owner(_owner),
 			objthis(0),
 			modeless(false),
-			buf(0)
+			buf(0),
+			hHook(0)
 	{}
 
 	// destructor
@@ -590,6 +592,11 @@ public:
 			if (inst) {
 				inst->dialogHWnd = hwnd;
 				if (inst->icon && !inst->propsheet) SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)inst->icon);
+
+				// モードレスダイアログ用フック
+				//	http://support.microsoft.com/kb/233263/ja に基づいて作成
+				if(inst->modeless)
+					inst->hHook = SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc, NULL, GetCurrentThreadId());
 				return inst->callback(TJS_W("onInit"),    msg, wparam, lparam);
 			}
 			break;
@@ -605,12 +612,32 @@ public:
 			if ((inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER)) != 0)
 				return inst->callback(TJS_W("onNotify"), wparam, (NMHDR*)lparam);
 			break;
+		case WM_DESTROY:
+			if ((inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER)) != 0 && inst->hHook != NULL)
+				UnhookWindowsHookEx(inst->hHook);
+			return FALSE;
 		}
 		return FALSE;
 	}
 	static LRESULT NormalCallback(NameT cbn, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 		WIN32Dialog *inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER);
 		return (inst != 0) ? inst->callback(cbn, msg, wparam, lparam) : FALSE;
+	}
+	static LRESULT FAR PASCAL GetMsgProc(int ncode, WPARAM wparam, LPARAM lparam) {
+		WIN32Dialog *inst;
+		LPMSG	lpmsg = (LPMSG)lparam;
+		if (ncode >= 0 && PM_REMOVE == wparam) {
+			if ((lpmsg->message >= WM_KEYFIRST && lpmsg->message <= WM_KEYLAST)) {
+				if (IsDialogMessage(GetParent(lpmsg->hwnd), lpmsg)) {
+					lpmsg->message	= WM_NULL;
+					lpmsg->lParam	= 0;
+					lpmsg->wParam	= 0;
+				}
+			}
+		}
+		if ((inst = (WIN32Dialog *)GetWindowLong(GetParent(lpmsg->hwnd), DWL_USER)) != 0)
+			return CallNextHookEx(inst->hHook, ncode, wparam, lparam);
+		return S_FALSE;
 	}
 
 	// -------------------------------------------------------------
