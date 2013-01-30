@@ -327,8 +327,32 @@ public:
 		if (!ret) ThrowLastError();
 		return ret;
 	}
+	int GetDlgCtrlItem(HWND hwnd) const {
+		checkDialogValid();
+		int ret = GetDlgCtrlID(hwnd);
+		if (!ret) ThrowLastError();
+		return ret;
+	}
+	VarT GetItemClassName(int id) const {
+		HWND	hwnd	= GetItemHWND(id);
+		if(hwnd)
+		{
+			VarT		var;
+			tjs_char	buf[256];
+			int	ret	= GetClassName(hwnd, buf, sizeof(buf));
+			if(!ret) ThrowLastError();
+			else var = VarT(buf);
+			return var;
+		}
+		return VarT();
+	}
+
 	// for tjs
 	tjs_int64 GetItem(int id) const { return (tjs_int64)GetItemHWND(id); }
+	int GetItemID(tjs_int64 hwnd) const { return GetDlgCtrlItem((HWND)hwnd); }
+	bool IsExistentItem(int id) const { return GetDlgItem(dialogHWnd, id) != NULL; }
+	long SetItemLong(int id, int index, long newlong) { return SetWindowLong(GetItemHWND(id), index, newlong); } 
+	long GetItemLong(int id, int index) { return GetWindowLong(GetItemHWND(id), index); }
 
 	int GetItemInt(int id) const {
 		checkDialogValid();
@@ -352,7 +376,7 @@ public:
 	}
 	void SetItemText(int id, NameT string) {
 		checkDialogValid();
-		if (!SetDlgItemTextW(dialogHWnd, id, string)) ThrowLastError();
+		if (!SetDlgItemTextW(dialogHWnd, id, string))ThrowLastError();
 	}
 
 	void SetItemEnabled(int id, bool en) {
@@ -364,6 +388,15 @@ public:
 	void SetItemFocus(int id) {
 		SetFocus(GetItemHWND(id));
 	}
+#define GetItemSize(id, rect, result) \
+	checkDialogValid(); \
+	RECT rect; \
+	GetWindowRect(GetItemHWND(id), &(rect)); \
+	return (result)
+	long GetItemLeft(int id)   const { GetItemSize(id, r, r.left); }
+	long GetItemTop(int id)    const { GetItemSize(id, r, r.top); }
+	long GetItemWidth(int id)  const { GetItemSize(id, r, r.right - r.left); }
+	long GetItemHeight(int id) const { GetItemSize(id, r, r.bottom - r.top); }
 	void SetItemPos(int id, int x, int y) {
 		SetWindowPos(GetItemHWND(id), 0, x, y, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
 	}
@@ -447,6 +480,10 @@ public:
 			var = to;
 		}
 		return var;
+	}
+	bool InvalidateAll(bool erase) {
+		checkDialogValid();
+		return ::InvalidateRect(dialogHWnd, NULL, erase);
 	}
 	bool InvalidateRect(VarT vrect, bool erase) {
 		checkDialogValid();
@@ -724,6 +761,75 @@ public:
 	}
 
 	// -------------------------------------------------------------
+	// タブコントロール用
+
+	//	タブ挿入
+	tjs_int64 InsertTabItem(int tabid, VarT pos, VarT title) {
+		//	タブ挿入
+		if(title.Type() != tvtString) return TJS_E_INVALIDPARAM;
+		ttstr	str	= title.AsStringNoAddRef();
+		LPWSTR	tx	= (LPWSTR)str.c_str();
+		TC_ITEM	tc;
+		tc.mask		= TCIF_TEXT;
+		tc.pszText	= tx;
+		tjs_int	ins	= pos.Type() == tvtVoid ? 0 : pos.AsInteger();
+		HWND	htab= GetItemHWND(tabid);
+		TabCtrl_InsertItem(htab, ins, &tc);
+		return TJS_S_OK;
+	}
+
+	//	タブ削除
+	tjs_int64 DeleteTabItem(int tabid, VarT pos) {
+		HWND	htab = GetItemHWND(tabid);
+		TabCtrl_DeleteItem(htab, pos.AsInteger());
+		return TJS_S_OK;
+	}
+
+	//	すべてのタブを削除
+	tjs_int64 DeleteAllTabItem(int tabid) {
+		HWND	htab = GetItemHWND(tabid);
+		TabCtrl_DeleteAllItems(htab);
+		return TJS_S_OK;
+	}
+
+	//	選択されているタブ
+	tjs_int GetCurSelTab(int tabid) {
+		HWND	htab = GetItemHWND(tabid);
+		return TabCtrl_GetCurSel(htab);
+	}
+
+	//	タブを選択
+	tjs_int SetCurSelTab(int tabid, VarT pos) {
+		HWND	htab = GetItemHWND(tabid);
+		int idx = pos.Type() == tvtVoid ? 0 : pos.AsInteger();
+		return TabCtrl_SetCurSel(htab, idx);
+	}
+
+	//	タブ内にダイアログを表示する
+	tjs_int64 SelectTab(int tabid, VarT dlg) {
+		//	取得
+		HWND	htab = GetItemHWND(tabid);
+		DspT*	obj = dlg.AsObjectNoAddRef();
+		WIN32Dialog* child = SelfAdaptorT::GetNativeInstance(obj);
+		if(!child) return TJS_E_NATIVECLASSCRASH;
+		child->checkDialogValid(); 
+
+		//	親ウィンドウの変更
+		HWND	hchild = (HWND)child->getHWND();
+		if(GetParent(hchild) != dialogHWnd) SetParent(hchild, dialogHWnd);
+
+		//	切替
+		RECT	rect;
+		GetClientRect(htab, &rect);
+		TabCtrl_AdjustRect(htab, false, &rect);
+		MapWindowPoints(htab, dialogHWnd, (LPPOINT)&rect, 2);
+		MoveWindow(hchild, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, false);
+		ShowWindow(hchild, SW_SHOW);
+
+		return TJS_S_OK;
+	}
+
+	// -------------------------------------------------------------
 	// プログレスダイアログ用インターフェース
 
 	ProgressValueT getProgressValue() const;
@@ -735,6 +841,56 @@ public:
 	void closeProgress();
 	bool isProgress() const { return progress != 0; }
 	void checkProgress() const { if (!isProgress()) TVPThrowExceptionMessage(TJS_W("dialog is not progress mode.")); }
+
+	// -------------------------------------------------------------
+	// スクロールバー用インターフェース
+
+	static tjs_error TJS_INTF_METHOD setScrollInfo(VarT *result, tjs_int num, VarT **param, iTJSDispatch2 *objthis) {
+		if(num < 1) return TJS_E_BADPARAMCOUNT;
+
+		WIN32Dialog* dlg = SelfAdaptorT::GetNativeInstance(objthis);
+		if(!dlg) return TJS_E_NATIVECLASSCRASH;
+
+		HWND		hscr	= dlg->GetItemHWND(param[0]->AsInteger());
+		SCROLLINFO	si;
+		ZeroMemory(&si, sizeof(SCROLLINFO));
+		si.cbSize	= sizeof(SCROLLINFO);
+		if(num > 1 && param[1]->Type() != tvtVoid) {
+			si.fMask|= SIF_POS;
+			si.nPos	= param[1]->AsInteger();
+		}
+		if(num > 3 && param[2]->Type() != tvtVoid && param[3]->Type() != tvtVoid) {
+			si.fMask|= SIF_RANGE;
+			si.nMin	= param[2]->AsInteger();
+			si.nMax	= param[3]->AsInteger();
+		}
+		if(num > 4 && param[4]->Type() != tvtVoid) {
+			si.fMask|= SIF_PAGE;
+			si.nPage= param[4]->AsInteger();
+		}
+		SetScrollInfo(hscr, SB_CTL, &si, true);
+
+		return TJS_S_OK;
+	}
+	VarT	getScrollInfo(int id) {
+		DictT	dict;
+		if(dict.IsValid()) {
+			HWND		hscr	= GetItemHWND(id);
+			SCROLLINFO	si;
+			ZeroMemory(&si, sizeof(SCROLLINFO));
+			si.cbSize	= sizeof(SCROLLINFO);
+			si.fMask	= SIF_ALL;
+			GetScrollInfo(hscr, SB_CTL, &si);
+
+			dict.SetValue(TJS_W("pos"), si.nPos);
+			dict.SetValue(TJS_W("min"), si.nMin);
+			dict.SetValue(TJS_W("max"), si.nMax);
+			dict.SetValue(TJS_W("page"), si.nPage);
+			dict.SetValue(TJS_W("trackpos"), si.nTrackPos);
+		}
+		VarT	var	= dict;
+		return var;
+	}
 
 	// -------------------------------------------------------------
 	// アイコン書き換え
@@ -941,6 +1097,13 @@ public:
 	static tjs_int64 GetStringAddress(tTJSVariant str) {
 		return (str.Type() == tvtString) ? (tjs_int64)((const tjs_char *)(str.AsStringNoAddRef())) : 0;
 	}
+
+	// -------------------------------------------------------------
+	// ウィンドウ位置など
+	void BringToFront(void) {
+		::SetForegroundWindow(dialogHWnd);
+	}
+
 };
 HHOOK WIN32Dialog::MessageBoxHook = 0;
 HWND  WIN32Dialog::MessageBoxOwnerHWND = 0;
@@ -1339,6 +1502,10 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("close"),     &Class::close);
 
 	Method(TJS_W("getItem"),         &Class::GetItem);
+	Method(TJS_W("getItemID"),       &Class::GetItemID);
+	Method(TJS_W("getItemClassName"),&Class::GetItemClassName);
+	Method(TJS_W("setItemLong"),     &Class::SetItemLong);
+	Method(TJS_W("getItemLong"),     &Class::GetItemLong);
 	Method(TJS_W("setItemInt"),      &Class::SetItemInt);
 	Method(TJS_W("getItemInt"),      &Class::GetItemInt);
 	Method(TJS_W("setItemText"),     &Class::SetItemText);
@@ -1346,15 +1513,21 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("setItemEnabled"),  &Class::SetItemEnabled);
 	Method(TJS_W("getItemEnabled"),  &Class::GetItemEnabled);
 	Method(TJS_W("setItemFocus"),    &Class::SetItemFocus);
+	Method(TJS_W("getItemLeft"),     &Class::GetItemLeft);
+	Method(TJS_W("getItemTop"),      &Class::GetItemTop);
+	Method(TJS_W("getItemWidth"),    &Class::GetItemWidth);
+	Method(TJS_W("getItemHeight"),   &Class::GetItemHeight);
 	Method(TJS_W("setItemPos"),      &Class::SetItemPos);
 	Method(TJS_W("setItemSize"),     &Class::SetItemSize);
 	RawCallback(TJS_W("setItemBitmap"),   &Class::SetItemBitmap, 0);
+	Method(TJS_W("isExistentItem"),  &Class::IsExistentItem);
 
 	RawCallback(TJS_W("sendItemMessage"), &Class::sendItemMessage, 0);
 
 	Method(TJS_W("getBaseUnits"),    &Class::GetBaseUnits);
 	Method(TJS_W("mapRect"),         &Class::MapRect);
 	Method(TJS_W("invalidateRect"),  &Class::InvalidateRect);
+	Method(TJS_W("invalidateAll"),   &Class::InvalidateAll);
 
 	Method(TJS_W("setPos"),          &Class::SetPos);
 	Method(TJS_W("setSize"),         &Class::SetSize);
@@ -1376,7 +1549,24 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 
 	Property(TJS_W("icon"),          &Class::getDialogIcon, &Class::setDialogIcon);
 
+	Property(TJS_W("isValid"),        &Class::IsValid, (int)0);
+
 	// 定数定義
+
+	// Window Long index
+	ENUM(GWL_STYLE);
+	ENUM(GWL_WNDPROC);
+	ENUM(GWL_HINSTANCE);
+	ENUM(GWL_HWNDPARENT);
+	ENUM(GWL_STYLE);
+	ENUM(GWL_EXSTYLE);
+	ENUM(GWL_USERDATA);
+	ENUM(GWL_ID);
+
+	// Dialog Long index
+	ENUM(DWL_DLGPROC);
+	ENUM(DWL_MSGRESULT);
+	ENUM(DWL_USER);
 
 	// Window Styles
 	ENUM(WS_OVERLAPPED);
@@ -1912,6 +2102,24 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	ENUM(SIF_DISABLENOSCROLL);
 	ENUM(SIF_TRACKPOS);
 	ENUM(SIF_ALL);
+
+	// Scroll bar option
+	ENUM(SB_LINEUP);
+	ENUM(SB_LINEUP);
+	ENUM(SB_LINELEFT);
+	ENUM(SB_LINEDOWN);
+	ENUM(SB_LINERIGHT);
+	ENUM(SB_PAGEUP);
+	ENUM(SB_PAGELEFT);
+	ENUM(SB_PAGEDOWN);
+	ENUM(SB_PAGERIGHT);
+	ENUM(SB_THUMBPOSITION);
+	ENUM(SB_THUMBTRACK);
+	ENUM(SB_TOP);
+	ENUM(SB_LEFT);
+	ENUM(SB_BOTTOM);
+	ENUM(SB_RIGHT);
+	ENUM(SB_ENDSCROLL);
 
 	// Font Weights
 	ENUM(FW_DONTCARE);
@@ -2659,6 +2867,26 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Property(TJS_W("propsheet"),       &Class::isPropertySheet, 0);
 
 	////////////////
+	// TabControl用
+#define U_ENUM(n) Variant(#n, (unsigned long)n, 0)
+	U_ENUM(TCN_SELCHANGE);	//	GetCode で得られる値はUINTだがTCN_SELCHANGE はマイナスのため、ENUM を使うとそのままでは比較できない
+	U_ENUM(TCN_SELCHANGING);
+#ifdef TCN_GETOBJECT
+	U_ENUM(TCN_GETOBJECT);
+#endif
+#ifdef TCN_FOCUSCHANGE
+	U_ENUM(TCN_FOCUSCHANGE);
+#endif
+	U_ENUM(TCN_KEYDOWN);
+
+	Method(TJS_W("insertTab"),    &Class::InsertTabItem);
+	Method(TJS_W("deleteTab"),    &Class::DeleteTabItem);
+	Method(TJS_W("deleteAllTab"), &Class::DeleteAllTabItem);
+	Method(TJS_W("getCurSel"),    &Class::GetCurSelTab);
+	Method(TJS_W("setCurSel"),    &Class::SetCurSelTab);
+	Method(TJS_W("selectTab"),    &Class::SelectTab);
+
+	////////////////
 	// Progress用
 
 	RawCallback(TJS_W("openProgress"),  &Class::openProgress, 0);
@@ -2667,5 +2895,14 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Property(TJS_W("progressCanceled"), &Class::getProgressCanceled, &Class::setProgressCanceled);
 	Method(TJS_W("closeProgress"),      &Class::closeProgress);
 
+	////////////////
+	// スクロールバー用
+
+	Method(TJS_W("getScrollInfo"), &Class::getScrollInfo);
+	RawCallback(TJS_W("setScrollInfo"), &Class::setScrollInfo, 0);
+
+	////////////////
+	// ウィンドウ位置など
+	Method(TJS_W("bringToFront"), &Class::BringToFront);
 }
 
