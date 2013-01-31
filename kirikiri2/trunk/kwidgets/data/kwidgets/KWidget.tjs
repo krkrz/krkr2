@@ -1731,7 +1731,9 @@ n   ------------------------------*/
   property viewingRect {
     getter {
     var rect = %[ left:0, top:0, right:width, bottom:height ];
+    var diffX, diffY;
     var layer;
+    diffX = diffY = 0;
     for (layer = this; layer.parent; layer = layer.parent) {
       rect.left = Math.max(rect.left, 0);
       rect.top = Math.max(rect.top, 0);
@@ -1741,7 +1743,13 @@ n   ------------------------------*/
       rect.top += layer.top;
       rect.right += layer.left;
       rect.bottom += layer.top;
+      diffX += layer.left;
+      diffY += layer.top;
     }
+    rect.left -= diffX;
+    rect.top -= diffY;
+    rect.right -= diffX;
+    rect.bottom -= diffY;
     rect.width = rect.right - rect.left;
     rect.height = rect.bottom - rect.top;
     return rect;
