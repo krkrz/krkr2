@@ -628,16 +628,21 @@ public:
 		LPMSG	lpmsg = (LPMSG)lparam;
 		if (ncode >= 0 && PM_REMOVE == wparam) {
 			if ((lpmsg->message >= WM_KEYFIRST && lpmsg->message <= WM_KEYLAST)) {
-				if (IsDialogMessage(GetParent(lpmsg->hwnd), lpmsg)) {
-					lpmsg->message	= WM_NULL;
-					lpmsg->lParam	= 0;
-					lpmsg->wParam	= 0;
+				HWND parentHWnd = GetParent(lpmsg->hwnd);
+				if ((inst = (WIN32Dialog *)GetWindowLong(parentHWnd, DWL_USER)) != 0) {
+					if(inst->modeless) {
+						if (IsDialogMessage(parentHWnd, lpmsg)) {
+							lpmsg->message	= WM_NULL;
+							lpmsg->lParam	= 0;
+							lpmsg->wParam	= 0;
+						}
+					}
 				}
 			}
 		}
 		if ((inst = (WIN32Dialog *)GetWindowLong(GetParent(lpmsg->hwnd), DWL_USER)) != 0)
 			return CallNextHookEx(inst->hHook, ncode, wparam, lparam);
-		return S_FALSE;
+		return 0;
 	}
 
 	// -------------------------------------------------------------
