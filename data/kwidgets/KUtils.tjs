@@ -283,7 +283,14 @@ class AsyncCaller
       func = funcs[0][0];
       args = funcs[0][1];
       funcs.erase(0);
-      func(args*);
+      try {
+        func(args*);
+      } catch (e) {
+        if (e.message == "オブジェクトはすでに無効化されています") 
+          Debug.message("遅延呼び出しを受けたオブジェクトが無効化されていました");
+        else
+          throw e;
+      }          
     }
   }
 }
