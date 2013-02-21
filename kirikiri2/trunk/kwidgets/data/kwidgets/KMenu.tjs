@@ -116,6 +116,23 @@ class KMenuItem extends MenuItem
     }
   }
 
+  /**------------------------------
+   * ”CˆÓ‚ÌƒAƒCƒRƒ“‚ð•¶Žš‚Å
+   ------------------------------*/
+  property iconChar {
+    setter(v) {
+      var tmpLayer = new global.Layer(root.window, root.window.primaryLayer);
+      var w = System.getSystemMetrics("CYMENUCHECK");
+      tmpLayer.setImageSize(w, w);
+      tmpLayer.setSizeToImageSize();
+      tmpLayer.fillRect(0, 0, w, w, 0);
+      tmpLayer.font.height = w - 2;
+      tmpLayer.drawText((w - tmpLayer.font.getTextWidth(w)) / 2, 1, v, 0);
+      icon = tmpLayer;
+      invalidate tmpLayer;
+    }
+  }
+
   function add {
     super.add(...);
     root.window.invalidateMenuIcon();
