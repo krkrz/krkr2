@@ -149,6 +149,7 @@ class KList extends KVirtualWidget
   function setMarginalSize(w, h) {
     marginalWidth = w;
     marginalHeight = h;
+    updateItems();
   }
 
   /**------------------------------
