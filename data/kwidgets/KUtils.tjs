@@ -286,7 +286,8 @@ class AsyncCaller
       try {
         func(args*);
       } catch (e) {
-        if (e.message == "オブジェクトはすでに無効化されています") 
+        if (e.message == "オブジェクトはすでに無効化されています"
+            || e.message == "null オブジェクトにアクセスしようとしました")
           Debug.message("遅延呼び出しを受けたオブジェクトが無効化されていました");
         else
           throw e;
