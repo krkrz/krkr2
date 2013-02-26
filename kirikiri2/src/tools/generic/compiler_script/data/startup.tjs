@@ -1,0 +1,65 @@
+/*------------------ compiler ------------------*/
+class MyWindow extends Window {
+	var primlayer;
+	var graphlayer;
+	var filemenu;
+	var exitmenu;
+
+	function MyWindow()
+	{
+		super.Window();
+		menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+		filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
+
+		// 下敷き(プライマリレイヤ)
+		add(primlayer = new Layer(this, null));
+		primlayer.name = "primlayer";
+		primlayer.left = primlayer.top = 0;
+		primlayer.imageWidth = 480;
+		primlayer.imageHeight = 120;
+		primlayer.setSizeToImageSize();
+		setInnerSize(primlayer.width, primlayer.height);
+
+		// 画像
+		add(graphlayer = new Layer(this, primlayer));
+		graphlayer.name = "graphlayer";
+		graphlayer.width = primlayer.width;
+		graphlayer.height = primlayer.height;
+		graphlayer.setPos(0, 0);
+		graphlayer.visible = true;
+		graphlayer.font.height = 18;
+		graphlayer.drawText(10, 10, "Explorer 等からコンパイルしたいTJS2スクリプトを", 0xff0000, 255, true, 200, 0x000000, 3, 2, 2);
+		graphlayer.drawText(10, 30, "ここにドロップしてください", 0xff0000, 255, true, 200, 0x000000, 3, 2, 2);
+
+		visible = true;
+	}
+
+	function compileScript(file) {
+		// TJS2スクリプト読み込み
+		try {
+			Scripts.compileStorage(file,Storages.extractStoragePath(file)+"output/"+Storages.extractStorageName(file),false,false,false);
+			graphlayer.fillRect(0, 70, 480, 50, 0);
+			graphlayer.drawText(10, 70, Storages.extractStorageName(file)+"をコンパイルしました。", 0xff0000, 255, true, 200, 0x000000, 3, 2, 2);
+			graphlayer.drawText(10, 90, "savedataフォルダを確認してください。", 0xff0000, 255, true, 200, 0x000000, 3, 2, 2);
+		} catch(e) {
+			System.inform("TJS2スクリプトを読み込むことができません : " + e.message);
+		}
+	}
+
+	function action(ev)
+	{
+		if(ev.type == "onFileDrop" && ev.target == this) {
+			for( var i = 0; i < ev.files.count; i++ ) {
+				compileScript(ev.files[i]);
+			}
+		}
+		else if(ev.type == "onClick" && ev.target == exitmenu)
+		{
+			close();
+		}
+	}
+}
+
+var a = new MyWindow();
+/*------------------ compiler ------------------*/
+
