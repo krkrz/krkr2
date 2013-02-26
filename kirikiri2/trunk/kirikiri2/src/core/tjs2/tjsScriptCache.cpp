@@ -14,6 +14,7 @@
 #include "tjs.h"
 #include "tjsScriptCache.h"
 #include "tjsScriptBlock.h"
+#include "tjsByteCodeLoader.h"
 
 #define TJS_SCRIPT_CACHE_MAX 64
 
@@ -216,6 +217,27 @@ void tTJSScriptCache::EvalExpression(const ttstr &expression, tTJSVariant *resul
 	return;
 }
 //---------------------------------------------------------------------------
-
-
+// for Bytecode
+void tTJSScriptCache::LoadByteCode( tjs_uint8* buff, size_t len, tTJSVariant *result,
+		iTJSDispatch2 *context, const tjs_char *name )
+{
+	tTJSByteCodeLoader* loader = new tTJSByteCodeLoader();
+	tTJSScriptBlock* blk = NULL;
+	try {
+		blk = loader->ReadByteCode( Owner, name, buff, len );
+		if( blk != NULL ) {
+			// blk->Dump();
+			blk->ExecuteTopLevel( result, context );
+		} else {
+			TJS_eTJSScriptError( TJSByteCodeBroken, blk, 0 );
+		}
+	} catch(...) {
+		if( blk ) blk->Release();
+		delete loader;
+		throw;
+	}
+	if( blk ) blk->Release();
+	delete loader;
+}
+//---------------------------------------------------------------------------
 } // namespace TJS

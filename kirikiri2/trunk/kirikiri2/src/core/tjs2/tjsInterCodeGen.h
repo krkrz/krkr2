@@ -156,6 +156,8 @@ public:
 		const tjs_char *name, tTJSScriptBlock *block, tTJSContextType type);
 	virtual ~tTJSInterCodeContext();
 
+	// is bytecode export
+	static bool IsBytecodeCompile;
 protected:
 	void Finalize(void);
 	//------------------------------------------------------- compiling stuff
@@ -269,6 +271,17 @@ private:
 		tjs_int Object;
 		tjs_int Counter;
 	};
+
+	// for Bytecode
+	struct tProperty {
+		const tjs_char* Name;
+		const tTJSInterCodeContext* Value;
+		tProperty( const tjs_char* name, const tTJSInterCodeContext* val ) {
+			Name = name;
+			Value = val;
+		}
+	};
+	std::vector<tProperty*>* Properties;
 
 	tjs_int FrameBase;
 
@@ -557,6 +570,17 @@ private:
 
 	void RegisterObjectMember(iTJSDispatch2 * dest);
 
+	// for Byte code
+	static inline void Add4ByteToVector( std::vector<tjs_uint8>* array, int value ) {
+		array->push_back( (tjs_uint8)((value>>0)&0xff) );
+		array->push_back( (tjs_uint8)((value>>8)&0xff) );
+		array->push_back( (tjs_uint8)((value>>16)&0xff) );
+		array->push_back( (tjs_uint8)((value>>24)&0xff) );
+	}
+	static inline void Add2ByteToVector( std::vector<tjs_uint8>* array, tjs_int16 value ) {
+		array->push_back( (tjs_uint8)((value>>0)&0xff) );
+		array->push_back( (tjs_uint8)((value>>8)&0xff) );
+	}
 public:
 	// iTJSDispatch2 implementation
 	tjs_error TJS_INTF_METHOD
@@ -615,6 +639,22 @@ public:
 		 tTJSVariant *result,
 			const tTJSVariant *param,	iTJSDispatch2 *objthis);
 
+	// for Byte code
+	void SetCodeObject( tTJSInterCodeContext* parent, tTJSInterCodeContext* setter, tTJSInterCodeContext* getter, tTJSInterCodeContext* superclass ) {
+		Parent = parent;
+		PropSetter = setter;
+		if( setter ) setter->AddRef();
+		PropGetter = getter;
+		if( getter ) getter->AddRef();
+		SuperClassGetter = superclass;
+	}
+	
+	tTJSInterCodeContext( tTJSScriptBlock *block, const tjs_char *name, tTJSContextType type,
+		tjs_int32* code, tjs_int codeSize, tTJSVariant* data, tjs_int dataSize,
+		tjs_int varcount, tjs_int verrescount, tjs_int maxframe, tjs_int argcount, tjs_int arraybase, tjs_int colbase, bool srcsorted,
+		tSourcePos* srcPos, tjs_int srcPosSize, std::vector<tjs_int>& superpointer );
+
+	std::vector<tjs_uint8>* ExportByteCode( bool outputdebug, tTJSScriptBlock *block, class tjsConstArrayData& constarray );
 };
 //---------------------------------------------------------------------------
 }

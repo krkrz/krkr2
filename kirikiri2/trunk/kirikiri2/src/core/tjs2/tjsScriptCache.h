@@ -85,6 +85,10 @@ public:
 	void EvalExpression(const ttstr &expression, tTJSVariant *result,
 		iTJSDispatch2 * context,
 		const ttstr *name, tjs_int lineofs);
+
+	// for Bytecode
+	void LoadByteCode( tjs_uint8* buff, size_t len, tTJSVariant *result,
+		iTJSDispatch2 *context, const tjs_char *name );
 };
 //---------------------------------------------------------------------------
 

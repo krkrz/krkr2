@@ -30,7 +30,9 @@ class tTJSScriptBlock
 public:
 	tTJSScriptBlock(tTJS * owner);
 	virtual ~tTJSScriptBlock();
-
+                            
+	// for Bytecode               
+	static const int BYTECODE_FILE_TAG_SIZE = 8;
 private:
 	tTJS * Owner;
 	tjs_int RefCount;
@@ -104,6 +106,22 @@ public:
 private:
 	static void ConsoleOutput(const tjs_char *msg, void *data);
 
+	// for Bytecode
+	static const int BYTECODE_TAG_SIZE = 4;
+	static const int BYTECODE_CHUNK_SIZE_LEN = 4;
+	static const tjs_uint8 BYTECODE_FILE_TAG[BYTECODE_FILE_TAG_SIZE];
+	static const tjs_uint8 BYTECODE_CODE_TAG[BYTECODE_TAG_SIZE];
+	static const tjs_uint8 BYTECODE_OBJ_TAG[BYTECODE_TAG_SIZE];
+	static const tjs_uint8 BYTECODE_DATA_TAG[BYTECODE_TAG_SIZE];
+
+	static inline void Write4Byte( tjs_uint8 output[4], int value ) {
+		output[0] = ( (tjs_uint8)((value>>0)&0xff) );
+		output[1] = ( (tjs_uint8)((value>>8)&0xff) );
+		output[2] = ( (tjs_uint8)((value>>16)&0xff) );
+		output[3] = ( (tjs_uint8)((value>>24)&0xff) );
+	}
+	void ExportByteCode( bool outputdebug, class tTJSBinaryStream* output );
+
 public:
 	static void (*GetConsoleOutput())(const tjs_char *msg, void *data)
 		{ return ConsoleOutput; }
@@ -113,6 +131,25 @@ public:
 
 	void ExecuteTopLevelScript(tTJSVariant *result, iTJSDispatch2 * context);
 
+	// for Bytecode
+	tTJSScriptBlock( tTJS* owner,  const tjs_char* name, tjs_int lineoffset );
+
+	void SetObjects( tTJSInterCodeContext* toplevel,std::vector<tTJSInterCodeContext*>& objs, int count ) {
+		TopLevelContext = toplevel;
+		for( int i = 0; i < count; i++ ) {
+			Add( objs[i] );
+			if( objs[i] != toplevel ) {
+				AddRef();
+			}
+			objs[i] = NULL;
+		}
+	}
+	void ExecuteTopLevel( tTJSVariant *result, iTJSDispatch2 * context );
+
+	int GetCodeIndex( const tTJSInterCodeContext* ctx ) const;
+
+	void Compile( const tjs_char *text, bool isexpression, bool isresultneeded, bool outputdebug, tTJSBinaryStream* output );
+	void TranslateCodeAddress( tjs_int32* code, const tjs_int32 codeSize );
 };
 //---------------------------------------------------------------------------
 }

@@ -383,6 +383,8 @@ TJS_MSG_DECL(TJSWarnRunningCodeOnDeletingObject, TJS_W("%4: Running code on dele
 TJS_MSG_DECL(TJSWriteError, TJS_W("Write error"))
 TJS_MSG_DECL(TJSReadError, TJS_W("Read error"))
 TJS_MSG_DECL(TJSSeekError, TJS_W("Seek error"))
+
+TJS_MSG_DECL(TJSByteCodeBroken, TJS_W("Bytecode read error. File is broken or it's not bytecode file."))
 #endif
 
 #undef TJS_MSG_DECL

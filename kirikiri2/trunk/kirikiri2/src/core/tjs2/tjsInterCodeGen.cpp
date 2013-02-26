@@ -20,6 +20,7 @@
 #include "tjsError.h"
 #include "tjsUtils.h"
 #include "tjsDebug.h"
+#include "tjsConstArrayData.h"
 
 #define LEX_POS (Block->GetLexicalAnalyzer() -> GetCurrentPosition())
 #define NODE_POS (node?node->GetPosition():-1)
@@ -186,9 +187,12 @@ static tjs_int TJSGetContextHashSize(tTJSContextType type)
 	}
 }
 //---------------------------------------------------------------------------
+// is bytecode export
+bool tTJSInterCodeContext::IsBytecodeCompile = false;
+//---------------------------------------------------------------------------
 tTJSInterCodeContext::tTJSInterCodeContext(tTJSInterCodeContext *parent,
 	const tjs_char *name, tTJSScriptBlock *block, tTJSContextType type) :
-		inherited(TJSGetContextHashSize(type))
+		inherited(TJSGetContextHashSize(type)), Properties(NULL)
 {
 	inherited::CallFinalize = false;
 		// this notifies to the class ancestor - "tTJSCustomObject", not to
@@ -298,6 +302,76 @@ tTJSInterCodeContext::tTJSInterCodeContext(tTJSInterCodeContext *parent,
 	// 古いローカル変数は削除してしまう
 	TJSDebuggerClearLocalVariable( GetClassName().c_str(), GetName(), Block->GetName(), FunctionRegisterCodePoint );
 #endif	// ENABLE_DEBUGGER
+}
+
+//---------------------------------------------------------------------------
+// for Byte code
+tTJSInterCodeContext::tTJSInterCodeContext( tTJSScriptBlock *block, const tjs_char *name, tTJSContextType type,
+	tjs_int32* code, tjs_int codeSize, tTJSVariant* data, tjs_int dataSize,
+	tjs_int varcount, tjs_int verrescount, tjs_int maxframe, tjs_int argcount, tjs_int arraybase, tjs_int colbase, bool srcsorted,
+	tSourcePos* srcPos, tjs_int srcPosSize, std::vector<tjs_int>& superpointer ) :
+	inherited(TJSGetContextHashSize(type)), Properties(NULL)
+{
+	inherited::CallFinalize = false;
+	Parent = NULL;
+	PropGetter = PropSetter = SuperClassGetter = NULL;
+
+	CodeArea = code;
+	CodeAreaCapa = codeSize;
+	CodeAreaSize = codeSize;
+
+	_DataArea = NULL;
+	_DataAreaCapa = 0;
+	_DataAreaSize = 0;
+	DataArea = data;
+	DataAreaSize = dataSize;
+
+	// copy
+	size_t size = superpointer.size();
+	SuperClassGetterPointer.reserve(size);
+	for( size_t i = 0; i < size; i++ ) {
+		SuperClassGetterPointer.push_back( superpointer[i] );
+	}
+
+	FrameBase = 1; // for code generate
+	SuperClassExpr = NULL; // for code generate
+
+	MaxFrameCount = maxframe;
+	MaxVariableCount = varcount;
+	VariableReserveCount = verrescount; //
+
+	FuncDeclArgCount = argcount;
+	FuncDeclUnnamedArgArrayBase = arraybase;
+	FuncDeclCollapseBase = colbase;
+
+	FunctionRegisterCodePoint = 0;
+
+
+	PrevSourcePos = -1;
+	SourcePosArraySorted = true;
+	SourcePosArray = srcPos;
+	SourcePosArrayCapa = srcPosSize;
+	SourcePosArraySize = srcPosSize;
+
+#ifdef ENABLE_DEBUGGER
+	DebuggerRegisterArea = NULL;
+#endif	// ENABLE_DEBUGGER
+
+	if( name ) {
+		Name = new tjs_char[TJS_strlen(name)+1];
+		TJS_strcpy(Name, name);
+	} else {
+		Name = NULL;
+	}
+
+	try {
+		AsGlobalContextMode = false;
+		ContextType = type;
+		Block = block;
+	} catch(...) {
+		delete [] Name;
+		throw;
+	}
 }
 //---------------------------------------------------------------------------
 tTJSInterCodeContext::~tTJSInterCodeContext()
@@ -884,6 +958,11 @@ void tTJSInterCodeContext::RegisterFunction()
 	if( Parent->ContextType == ctFunction ||
 		Parent->ContextType == ctClass)
 	{
+		if( IsBytecodeCompile ) { // for bytecode export
+			if( Properties == NULL ) Properties = new std::vector<tProperty*>();
+			Properties->push_back( new tProperty( Name, this ) );
+		}
+
 		// register members to the parent object
 		tTJSVariant val = this;
 		Parent->PropSet(TJS_MEMBERENSURE|TJS_IGNOREPROP, Name, NULL, &val, Parent);
@@ -3782,6 +3861,119 @@ tTJSExprNode * tTJSInterCodeContext::MakeNP3(tjs_int opecode, tTJSExprNode * nod
 	n->Add(node2);
 	n->Add(node3);
 	return n;
+}
+//---------------------------------------------------------------------------
+
+/**
+ * バイトコードを出力する
+ * @return
+ */
+std::vector<tjs_uint8>* tTJSInterCodeContext::ExportByteCode( bool outputdebug, tTJSScriptBlock *block, tjsConstArrayData& constarray )
+{
+	int parent = -1;
+	if( Parent != NULL ) {
+		parent = block->GetCodeIndex(Parent);
+	}
+	int propSetter = -1;
+	if( PropSetter != NULL ) {
+		propSetter = block->GetCodeIndex(PropSetter);
+	}
+	int propGetter = -1;
+	if( PropGetter != NULL ) {
+		propGetter = block->GetCodeIndex(PropGetter);
+	}
+	int superClassGetter = -1;
+	if( SuperClassGetter != NULL ) {
+		superClassGetter = block->GetCodeIndex(SuperClassGetter);
+	}
+	int name = -1;
+	if( Name != NULL ) {
+		name = constarray.PutString(Name);
+	}
+	// 13 * 4 データ部分のサイズ
+	int srcpossize = 0;
+	if( outputdebug ) {
+		srcpossize = SourcePosArraySize * 8;
+	}
+	int codesize = (CodeAreaSize%2) == 1 ? CodeAreaSize * 2+2 : CodeAreaSize * 2;
+	int datasize = DataAreaSize * 4;
+	int scgpsize = SuperClassGetterPointer.size() * 4;
+	int propsize = (Properties != NULL ? Properties->size() * 8 : 0)+4;
+	int size = 12*4 + srcpossize + codesize + datasize + scgpsize + propsize + 4*4;
+	std::vector<tjs_uint8>* result = new std::vector<tjs_uint8>();
+	result->reserve( size );
+
+	Add4ByteToVector( result, parent );
+	Add4ByteToVector( result, name );
+	Add4ByteToVector( result, ContextType );
+	Add4ByteToVector( result, MaxVariableCount );
+	Add4ByteToVector( result, VariableReserveCount );
+	Add4ByteToVector( result, MaxFrameCount );
+	Add4ByteToVector( result, FuncDeclArgCount );
+	Add4ByteToVector( result, FuncDeclUnnamedArgArrayBase );
+	Add4ByteToVector( result, FuncDeclCollapseBase );
+	Add4ByteToVector( result, propSetter );
+	Add4ByteToVector( result, propGetter );
+	Add4ByteToVector( result, superClassGetter );
+
+	int count = srcpossize;
+	Add4ByteToVector( result, count);
+	if( outputdebug ) {
+		for( int i = 0; i < count ; i++ ) {
+			Add4ByteToVector( result, SourcePosArray[i].CodePos );
+		}
+		for( int i = 0; i < count ; i++ ) {
+			Add4ByteToVector( result, SourcePosArray[i].SourcePos );
+		}
+	}
+
+	count = CodeAreaSize;
+	Add4ByteToVector( result, count);
+
+	block->TranslateCodeAddress( CodeArea, CodeAreaSize );
+	for( int i = 0; i < CodeAreaSize; i++ ) {
+		Add2ByteToVector( result, CodeArea[i] );
+	}
+	if( (count%2) == 1 ) { // alignment
+		Add2ByteToVector( result, 0 );
+	}
+
+	count = DataAreaSize;
+	Add4ByteToVector( result, count);
+	for( int i = 0; i < count ; i++ ) {
+		tjs_int16 type = constarray.GetType( DataArea[i], block );
+		tjs_int16 v = (tjs_int16)constarray.PutVariant( DataArea[i], block );
+		Add2ByteToVector( result, type );
+		Add2ByteToVector( result, v );
+	}
+	count = SuperClassGetterPointer.size();
+	Add4ByteToVector( result, count);
+	for( int i = 0; i < count ; i++ ) {
+		int v = SuperClassGetterPointer.at(i);
+		Add4ByteToVector( result, v);
+	}
+	count = 0;
+	if( Properties != NULL ) {
+		count = Properties->size();
+		Add4ByteToVector( result, count);
+		if( count > 0 ) {
+			for( int i = 0; i < count; i++ ) {
+				tProperty* prop = (*Properties).at(i);
+				int propname = constarray.PutString(prop->Name);
+				int propobj = -1;
+				if( prop->Value != NULL ) {
+					propobj = block->GetCodeIndex(prop->Value);
+				}
+				Add4ByteToVector( result, propname );
+				Add4ByteToVector( result, propobj );
+				delete prop;
+			}
+		}
+		delete Properties;
+	} else {
+		Add4ByteToVector( result, count);
+	}
+	return result;
 }
 //---------------------------------------------------------------------------
 
