@@ -674,6 +674,23 @@ void TVPExecuteStorage(const ttstr &name, iTJSDispatch2 *context, tTJSVariant *r
 {
 	// execute storage which contains script
 	if(!TVPScriptEngine) TVPThrowInternalError;
+	
+	{ // for bytecode
+		ttstr place(TVPSearchPlacedPath(name));
+		ttstr shortname(TVPExtractStorageName(place));
+		tTJSBinaryStream* stream = TVPCreateStream(place, TJS_BS_READ);
+		if( stream ) {
+			bool isbytecode = false;
+			try {
+				isbytecode = TVPScriptEngine->LoadByteCode( stream, result, context, shortname.c_str() );
+			} catch(...) {
+				delete stream;
+				throw;
+			}
+			delete stream;
+			if( isbytecode ) return;
+		}
+	}
 
 	ttstr place(TVPSearchPlacedPath(name));
 	ttstr shortname(TVPExtractStorageName(place));
@@ -702,8 +719,35 @@ void TVPExecuteStorage(const ttstr &name, iTJSDispatch2 *context, tTJSVariant *r
 	}
 }
 //---------------------------------------------------------------------------
+void TVPCompileStorage( const ttstr& name, bool isrequestresult, bool outputdebug, bool isexpression, const ttstr& outputpath ) {
+	// execute storage which contains script
+	if(!TVPScriptEngine) TVPThrowInternalError;
 
+	ttstr place(TVPSearchPlacedPath(name));
+	ttstr shortname(TVPExtractStorageName(place));
+	iTJSTextReadStream * stream = TVPCreateTextStreamForRead(place, TJS_W(""));
 
+	ttstr buffer;
+	try {
+		stream->Read(buffer, 0);
+	} catch(...) {
+		stream->Destruct();
+		throw;
+	}
+	stream->Destruct();
+
+	tTJSBinaryStream* outputstream = TVPCreateStream(outputpath, TJS_BS_WRITE);
+	if(TVPScriptEngine) {
+		try {
+			TVPScriptEngine->CompileScript( buffer.c_str(), outputstream, isrequestresult, outputdebug, isexpression, name.c_str(), 0 );
+		} catch(...) {
+			delete outputstream;
+			throw;
+		}
+	}
+	delete outputstream;
+}
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -1040,6 +1084,33 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/evalStorage)
 	return TJS_S_OK;
 }
 TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/evalStorage)
+//----------------------------------------------------------------------
+TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/compileStorage) // bytecode
+{
+	if(numparams < 2) return TJS_E_BADPARAMCOUNT;
+
+	ttstr name = *param[0];
+	ttstr output = *param[1];
+
+	bool isresult = false;
+	if( numparams >= 3 && (tjs_int)*param[2] ) {
+		isresult = true;
+	}
+
+	bool outputdebug = false;
+	if( numparams >= 4 && (tjs_int)*param[3] ) {
+		outputdebug = true;
+	}
+
+	bool isexpression = false;
+	if( numparams >= 5 && (tjs_int)*param[4] ) {
+		isexpression = true;
+	}
+	TVPCompileStorage( name, isresult, outputdebug, isexpression, output );
+
+	return TJS_S_OK;
+}
+TJS_END_NATIVE_STATIC_METHOD_DECL(/*func. name*/compileStorage)
 //----------------------------------------------------------------------
 TJS_BEGIN_NATIVE_METHOD_DECL(/*func. name*/exec)
 {

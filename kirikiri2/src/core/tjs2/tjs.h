@@ -158,6 +158,14 @@ public:
 
 	void DoGarbageCollection();
 
+	// for Bytecode
+	void LoadByteCode( tjs_uint8* buff, size_t len, tTJSVariant *result = NULL,
+		iTJSDispatch2 *context = NULL, const tjs_char *name = NULL);
+
+	bool LoadByteCode( class tTJSBinaryStream* stream, tTJSVariant *result = NULL,
+		iTJSDispatch2 *context = NULL, const tjs_char *name = NULL);
+
+	void CompileScript( const tjs_char *script, class tTJSBinaryStream* output, bool isresultneeded = false, bool outputdebug = false, bool isexpression = false, const tjs_char *name = NULL, tjs_int lineofs = 0 );
 };
 //---------------------------------------------------------------------------
 

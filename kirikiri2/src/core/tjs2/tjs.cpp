@@ -26,7 +26,7 @@
 #include "tjsRandomGenerator.h"
 #include "tjsGlobalStringMap.h"
 #include "tjsDebug.h"
-
+#include "tjsByteCodeLoader.h"
 
 
 
@@ -511,10 +511,53 @@ void tTJS::DoGarbageCollection()
 	TJSCompactStringHeap();
 }
 //---------------------------------------------------------------------------
-
-
-
-
+// for Bytecode
+void tTJS::LoadByteCode( tjs_uint8* buff, size_t len, tTJSVariant *result,
+	iTJSDispatch2 *context, const tjs_char *name )
+{
+	TJS_F_TRACE("tTJS::LoadByteCode");
+	TJSSetFPUE();
+	if(Cache) Cache->LoadByteCode(buff, len, result, context, name);
+}
+//---------------------------------------------------------------------------
+bool tTJS::LoadByteCode( class tTJSBinaryStream* stream, tTJSVariant *result,
+	iTJSDispatch2 *context, const tjs_char *name )  {
+	bool ret = false;
+	tjs_uint8* buff = NULL;
+	try {
+		tjs_uint64 streamlen = stream->GetSize();
+		if( streamlen >= tTJSScriptBlock::BYTECODE_FILE_TAG_SIZE ) {
+			tjs_uint8 header[tTJSScriptBlock::BYTECODE_FILE_TAG_SIZE];
+			stream->Read( header, tTJSScriptBlock::BYTECODE_FILE_TAG_SIZE );
+			if( tTJSByteCodeLoader::IsTJS2ByteCode( header ) ) {
+				stream->Seek( 0, TJS_BS_SEEK_SET );
+				buff = new tjs_uint8[streamlen];
+				stream->Read( buff, streamlen );
+				LoadByteCode( buff, streamlen, result, context, name );
+				ret = true;
+			}
+		}
+	} catch(...) {
+		delete[] buff;
+		throw;
+	}
+	delete[] buff;
+	return ret;
+}
+//---------------------------------------------------------------------------
+void tTJS::CompileScript( const tjs_char *script, class tTJSBinaryStream* output, bool isresultneeded, bool outputdebug, bool isexpression, const tjs_char *name, tjs_int lineofs )
+{
+	tTJSScriptBlock *blk = new tTJSScriptBlock(this);
+	try {
+		if( name ) blk->SetName( name, lineofs );
+		blk->Compile( script, isexpression, isresultneeded, outputdebug, output );
+	} catch(...) {
+		blk->Release();
+		throw;
+	}
+	blk->Release();
+}
+//---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 // TextStream Creation

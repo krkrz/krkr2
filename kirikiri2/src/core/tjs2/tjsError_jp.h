@@ -87,4 +87,6 @@ TJS_MSG_DECL(TJSWarnRunningCodeOnDeletingObject, TJS_W("%4: 削除中のオブジェクト
 TJS_MSG_DECL(TJSWriteError, TJS_W("書き込みエラーが発生しました"))
 TJS_MSG_DECL(TJSReadError, TJS_W("読み込みエラーが発生しました。ファイルが破損している可能性や、デバイスからの読み込みに失敗した可能性があります"))
 TJS_MSG_DECL(TJSSeekError, TJS_W("シークエラーが発生しました。ファイルが破損している可能性や、デバイスからの読み込みに失敗した可能性があります"))
+
+TJS_MSG_DECL(TJSByteCodeBroken, TJS_W("バイトコードファイル読み込みエラー。ファイルが壊れているかバイトコードとは異なるファイルです"))
 //---------------------------------------------------------------------------
