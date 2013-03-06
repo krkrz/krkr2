@@ -32,9 +32,9 @@ class KAbsoluteLayout extends KWidget
    * 
    * @param child 子ウィジェット
    ------------------------------*/
-  function add(child) {
-
+  function add(child, ignoreSize = false) {
     child.parent = this;
+    child.ignoreSize = ignoreSize;
     childList.add(child);
     invalidateLayout();
   }
@@ -82,6 +82,8 @@ class KAbsoluteLayout extends KWidget
     minW = minH = maxW = maxH = 0;
     for (var i = 0; i < childList.count; i++) {
       var child = childList[i];
+      if (child.ignoreSize)
+        continue;
       minW = int(Math.max(minW, child.minWidth + child.marginHorizontal));
       minH = int(Math.max(minH, child.minHeight + child.marginVertical));
       maxW = int(Math.max(maxW, child.maxWidth + child.marginHorizontal));
