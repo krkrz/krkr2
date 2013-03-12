@@ -78,6 +78,56 @@
 </member>
 
 <member>
+	<name>compileStorage</name>
+	<type>method</type>
+	<shortdesc>ストレージ上のスクリプトのコンパイル</shortdesc>
+	<arg>
+		<argitem>
+			<name>inputfile</name>
+			<default></default>
+			<desc>
+				　コンパイル対象ストレージを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>outputfile</name>
+			<default></default>
+			<desc>
+				　出力バイトコードストレージを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>isresult</name>
+			<default>false</default>
+			<desc>
+				　戻り値が必要かどうかを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>outputdebug</name>
+			<default>false</default>
+			<desc>
+				　デバッグ情報を含めるかどうかを指定します。<r/>
+			</desc>
+		</argitem>
+		<argitem>
+			<name>isexpression</name>
+			<default>false</default>
+			<desc>
+				　式かどうかを指定します。<r/>
+			</desc>
+		</argitem>
+	</arg>
+	<result>式を評価した結果が戻ります。</result>
+	<desc>
+		　指定されたストレージを読み込み、その内容をコンパイルしてバイトコードファイルとして出力します。<r/>
+		　コンパイルされたバイトコードファイルは execStorage もしくは、evalStorage で通常のスクリプトと同じように実行できます。<r/>
+	</desc>
+	<ref>Scripts.execStorage</ref>
+	<ref>Scripts.evalStorage</ref>
+</member>
+
+<member>
 	<name>exec</name>
 	<type>method</type>
 	<shortdesc>スクリプトの実行</shortdesc>
