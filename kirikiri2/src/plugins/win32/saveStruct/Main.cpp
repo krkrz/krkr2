@@ -84,9 +84,10 @@ static void getDictString(iTJSDispatch2 *dict, IWriter *writer)
 {
 	writer->write(L"%[");
 	//writer->addIndent();
-	DictMemberDispCaller caller(writer);
-	tTJSVariantClosure closure(&caller);
+	DictMemberDispCaller *caller = new DictMemberDispCaller(writer);
+	tTJSVariantClosure closure(caller);
 	dict->EnumMembers(TJS_IGNOREPROP, &closure, dict);
+	caller->Release();
 	//writer->delIndent();
 	writer->write((tjs_char)']');
 }
