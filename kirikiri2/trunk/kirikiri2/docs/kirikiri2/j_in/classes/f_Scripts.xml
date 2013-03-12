@@ -118,7 +118,7 @@
 			</desc>
 		</argitem>
 	</arg>
-	<result>式を評価した結果が戻ります。</result>
+	<result></result>
 	<desc>
 		　指定されたストレージを読み込み、その内容をコンパイルしてバイトコードファイルとして出力します。<r/>
 		　コンパイルされたバイトコードファイルは execStorage もしくは、evalStorage で通常のスクリプトと同じように実行できます。<r/>
