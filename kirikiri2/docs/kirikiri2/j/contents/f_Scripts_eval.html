@@ -26,13 +26,22 @@
 </dd>
 <dt>構文</dt>
 <dd>
-<span class="funcdecl">eval(<span class="arg">expression</span>)</span><br />
+<span class="funcdecl">eval(<span class="arg">expression</span>, <span class="arg">name</span><span class="defarg">=<span class="defargval">''</span></span>, <span class="arg">linesof</span><span class="defarg">=<span class="defargval">0</span></span>, <span class="arg">context</span><span class="defarg">=<span class="defargval">global</span></span>)</span><br />
 </dd>
 <dt>引数</dt>
 <dd>
 <table rules="all" frame="box" cellpadding="3" summary="eval の引数">
 <tr><td valign="top"><span class="argname">expression</span></td>
 <td>				　実行する式を文字列で指定します。<br />
+			</td></tr>
+<tr><td valign="top"><span class="argname">name</span></td>
+<td>				　エラーメッセージ用ファイル名の指定
+			</td></tr>
+<tr><td valign="top"><span class="argname">linesof</span></td>
+<td>				　エラーメッセージ用行番号の指定
+			</td></tr>
+<tr><td valign="top"><span class="argname">context</span></td>
+<td>				　実行コンテキストを指定します。<br />
 			</td></tr>
 </table>
 </dd>
