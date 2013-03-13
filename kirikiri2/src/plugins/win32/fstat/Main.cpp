@@ -990,6 +990,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("getMD5HashString",    &Class::getMD5HashString,    TJS_STATICMEMBER);
 	RawCallback("searchPath",          &Class::searchPath,          TJS_STATICMEMBER);
 	Property("currentPath", &Class::getCurrentPath, &Class::setCurrentPath);
+	Method(TJS_W("getTemporaryName"), &TVPGetTemporaryName);
 };
 
 // テンポラリファイル処理用クラス

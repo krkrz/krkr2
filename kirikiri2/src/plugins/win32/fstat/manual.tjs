@@ -207,6 +207,13 @@ class Storages {
 	 * @return 見つからなかった場合はvoid，見つかった場合はファイルのフルパス(file://./～)
 	 */
 	function searchPath(filename, searchpath); // by miahmie
+
+
+	/**
+	 * テンポラリファイル名の取得
+	 * @return テンポラリファイル名（TVPGetTemporaryName()の文字列）
+	 */
+	function getTemporaryName(); // by miahmie
 };
 
 
