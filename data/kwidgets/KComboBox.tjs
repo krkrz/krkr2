@@ -644,7 +644,7 @@ class KComboBox extends KValueWidget
 		setter(v)	{
 			for(var i=0; i<_values.count; i++)
 			{
-				if(v == _values[i])
+              if(equalStructNumericLoose(v, _values[i]))
 				{
 					if( selected != i ){
 						lastselected = _selected;
