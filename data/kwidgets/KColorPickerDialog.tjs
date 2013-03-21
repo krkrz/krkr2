@@ -355,6 +355,15 @@ class KColorPickerDialog extends KWindow
     gSelect.focusable = false;
     bSelect.focusable = false;
 
+    hInput.respondToValueModification = true;
+    sInput.respondToValueModification = true;
+    vInput.respondToValueModification = true;
+    rInput.respondToValueModification = true;
+    gInput.respondToValueModification = true;
+    bInput.respondToValueModification = true;
+    aInput.respondToValueModification = true;
+    textInput.respondToValueModification = true;
+
     rootGrid.add(0, 2, new KGridLayout(this, "buttonGrid"), 2, 1);
     buttonGrid.alignHorizontal = ALIGN_RIGHT;
     buttonGrid.add(0, 0, new KTextButton(this, "OK", "okButton"));
