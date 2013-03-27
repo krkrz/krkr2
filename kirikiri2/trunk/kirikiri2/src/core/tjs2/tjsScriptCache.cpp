@@ -218,7 +218,7 @@ void tTJSScriptCache::EvalExpression(const ttstr &expression, tTJSVariant *resul
 }
 //---------------------------------------------------------------------------
 // for Bytecode
-void tTJSScriptCache::LoadByteCode( tjs_uint8* buff, size_t len, tTJSVariant *result,
+void tTJSScriptCache::LoadByteCode( const tjs_uint8* buff, size_t len, tTJSVariant *result,
 		iTJSDispatch2 *context, const tjs_char *name )
 {
 	tTJSByteCodeLoader* loader = new tTJSByteCodeLoader();

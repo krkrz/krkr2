@@ -54,6 +54,8 @@ struct tTJSSaveStructuredDataCallback
 	virtual void SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
                                         iTJSTextWriteStream &stream, const ttstr&indentstr) = 0;
 
+	virtual void SaveStructuredBinary(std::vector<iTJSDispatch2 *> &stack, tTJSBinaryStream &stream ) = 0;
+
 };
 //---------------------------------------------------------------------------
 // tTJSArrayClass : tTJSArray TJS class
@@ -108,9 +110,12 @@ private:
 public:
 	void SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
 		iTJSTextWriteStream &stream, const ttstr&indentstr);
+	void SaveStructuredBinary(std::vector<iTJSDispatch2 *> &stack, tTJSBinaryStream &stream );
 		// method from tTJSSaveStructuredDataCallback
 	static void SaveStructuredDataForObject(iTJSDispatch2 *dsp,
 		std::vector<iTJSDispatch2 *> &stack, iTJSTextWriteStream &stream, const ttstr&indentstr);
+	static void SaveStructuredBinaryForObject(iTJSDispatch2 *dsp,
+		std::vector<iTJSDispatch2 *> &stack, tTJSBinaryStream &stream );
 
 	void AssignStructure(iTJSDispatch2 * dsp, std::vector<iTJSDispatch2 *> &stack);
 //---------------------------------------------------------------------------

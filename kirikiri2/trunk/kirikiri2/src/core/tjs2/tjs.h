@@ -159,7 +159,7 @@ public:
 	void DoGarbageCollection();
 
 	// for Bytecode
-	void LoadByteCode( tjs_uint8* buff, size_t len, tTJSVariant *result = NULL,
+	void LoadByteCode( const tjs_uint8* buff, size_t len, tTJSVariant *result = NULL,
 		iTJSDispatch2 *context = NULL, const tjs_char *name = NULL);
 
 	bool LoadByteCode( class tTJSBinaryStream* stream, tTJSVariant *result = NULL,
@@ -192,6 +192,10 @@ public:
 extern iTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
 	const tTJSString &modestr);
 extern iTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
+	const tTJSString &modestr);
+extern class tTJSBinaryStream * (*TJSCreateBinaryStreamForRead)(const tTJSString &name,
+	const tTJSString &modestr);
+extern class tTJSBinaryStream * (*TJSCreateBinaryStreamForWrite)(const tTJSString &name,
 	const tTJSString &modestr);
 //---------------------------------------------------------------------------
 

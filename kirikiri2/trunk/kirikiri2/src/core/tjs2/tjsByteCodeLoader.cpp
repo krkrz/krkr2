@@ -26,12 +26,12 @@ bool tTJSByteCodeLoader::IsTJS2ByteCode( const tjs_uint8* buff )
 	if( ver != VER_TAG_LE ) return false;
 	return true;
 }
-tTJSScriptBlock* tTJSByteCodeLoader::ReadByteCode( tTJS* owner, const tjs_char* name, tjs_uint8* buf, size_t size ) {
+tTJSScriptBlock* tTJSByteCodeLoader::ReadByteCode( tTJS* owner, const tjs_char* name, const tjs_uint8* buf, size_t size ) {
 	ReadBuffer = buf;
 	ReadIndex = 0;
 	ReadSize = size;
 
-	tjs_uint8* databuff = ReadBuffer;
+	const tjs_uint8* databuff = ReadBuffer;
 
 	// TJS2
 	int tag = read4byte( databuff );
@@ -62,7 +62,7 @@ tTJSScriptBlock* tTJSByteCodeLoader::ReadByteCode( tTJS* owner, const tjs_char* 
 	return block;
 }
 
-void tTJSByteCodeLoader::ReadDataArea( tjs_uint8* buff, int offset, size_t size ) {
+void tTJSByteCodeLoader::ReadDataArea( const tjs_uint8* buff, int offset, size_t size ) {
 	int count = read4byte( &(buff[offset]) );
 	offset += 4;
 	if( count > 0 ) {
@@ -145,7 +145,7 @@ void tTJSByteCodeLoader::ReadDataArea( tjs_uint8* buff, int offset, size_t size 
 	}
 }
 
-void tTJSByteCodeLoader::ReadObjects( tTJSScriptBlock* block, tjs_uint8* buff, int offset, int size ) {
+void tTJSByteCodeLoader::ReadObjects( tTJSScriptBlock* block, const tjs_uint8* buff, int offset, int size ) {
 	int toplevel = read4byte( &(buff[offset]) );
 	offset += 4;
 	int objcount = read4byte( &(buff[offset]) );

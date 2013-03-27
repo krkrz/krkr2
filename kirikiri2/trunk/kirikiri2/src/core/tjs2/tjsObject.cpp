@@ -742,12 +742,17 @@ tTJSCustomObject::tTJSSymbolData * tTJSCustomObject::AddTo(tTJSVariantString *na
 //---------------------------------------------------------------------------
 void tTJSCustomObject::RebuildHash()
 {
+	RebuildHash( Count );
+}
+//---------------------------------------------------------------------------
+void tTJSCustomObject::RebuildHash( tjs_int requestcount )
+{
 	// rebuild hash table
 	RebuildHashMagic = TJSGlobalRebuildHashMagic;
 
 	// decide new hash table size
 
-	tjs_int r, v = Count;
+	tjs_int r, v = requestcount;
 	if(v & 0xffff0000) r = 16, v >>= 16; else r = 0;
 	if(v & 0xff00) r += 8, v >>= 8;
 	if(v & 0xf0) r += 4, v >>= 4;

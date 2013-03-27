@@ -17,6 +17,7 @@
 #include "tjsArray.h"
 #include "tjsDictionary.h"
 #include "tjsUtils.h"
+#include "tjsBinarySerializer.h"
 
 #ifndef TJS_NO_REGEXP
 #include "tjsRegExp.h"
@@ -417,6 +418,19 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */saveStruct)
 	ttstr mode;
 	if(numparams >= 2 && param[1]->Type() != tvtVoid) mode = *param[1];
 
+	if( TJS_strchr(mode.c_str(), TJS_W('b')) != NULL ) {
+		tTJSBinaryStream* stream = TJSCreateBinaryStreamForWrite(name, mode);
+		try {
+			stream->Write( tTJSBinarySerializer::HEADER, tTJSBinarySerializer::HEADER_LENGTH );
+			std::vector<iTJSDispatch2 *> stack;
+			stack.push_back(objthis);
+			ni->SaveStructuredBinary(stack, *stream);
+		} catch(...) {
+			delete stream;
+			throw;
+		}
+		delete stream;
+	} else {
 	iTJSTextWriteStream * stream = TJSCreateTextStreamForWrite(name, mode);
 	try
 	{
@@ -430,6 +444,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/* func. name */saveStruct)
 		throw;
 	}
 	stream->Destruct();
+	}
 
 	if(result) *result = tTJSVariant(objthis, objthis);
 
@@ -1135,6 +1150,61 @@ void tTJSArrayNI::SaveStructuredDataForObject(iTJSDispatch2 *dsp,
 	{
 		// null
 		stream.Write(TJS_W("null"));
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSArrayNI::SaveStructuredBinary(std::vector<iTJSDispatch2 *> &stack, tTJSBinaryStream &stream )
+{
+	tjs_uint count = Items.size();
+	tTJSBinarySerializer::PutStartArray( &stream, count );
+
+	tArrayItemIterator i;
+	for( i = Items.begin(); i != Items.end(); i++ ) {
+		tTJSVariantType type = i->Type();
+		if( type == tvtObject ){
+			// object
+			tTJSVariantClosure clo = i->AsObjectClosureNoAddRef();
+			SaveStructuredBinaryForObject( clo.SelectObjectNoAddRef(), stack, stream );
+		} else {
+			tTJSBinarySerializer::PutVariant( &stream, *i );
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void tTJSArrayNI::SaveStructuredBinaryForObject(iTJSDispatch2 *dsp,
+		std::vector<iTJSDispatch2 *> &stack, tTJSBinaryStream &stream )
+{
+	// check object recursion
+	std::vector<iTJSDispatch2 *>::iterator i;
+	for( i = stack.begin(); i != stack.end(); i++ ) {
+		if( *i == dsp ) {
+			// object recursion detected
+			tTJSBinarySerializer::PutNull( &stream );
+			return;
+		}
+	}
+
+	// determin dsp's object type
+	tTJSDictionaryNI *dicni = NULL;
+	tTJSArrayNI *arrayni = NULL;
+	if(dsp && TJS_SUCCEEDED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+		TJSGetDictionaryClassID(), (iTJSNativeInstance**)&dicni)) ) {
+		// dictionary
+		stack.push_back(dsp);
+		dicni->SaveStructuredBinary( stack, stream );
+		stack.pop_back();
+	} else if(dsp && TJS_SUCCEEDED(dsp->NativeInstanceSupport(TJS_NIS_GETINSTANCE,
+		ClassID_Array, (iTJSNativeInstance**)&arrayni)) ) {
+		// array
+		stack.push_back(dsp);
+		arrayni->SaveStructuredBinary( stack, stream );
+		stack.pop_back();
+	} else if(dsp != NULL) {
+		// other objects
+		tTJSBinarySerializer::PutNull( &stream );
+	} else {
+		// null
+		tTJSBinarySerializer::PutNull( &stream );
 	}
 }
 //---------------------------------------------------------------------------

@@ -41,6 +41,8 @@ TJS_EXP_FUNC_DEF(void, TVPExecuteStorage, (const ttstr &name, iTJSDispatch2 *con
 	bool isexpression = false, const tjs_char *modestr = NULL));
 TJS_EXP_FUNC_DEF(void, TVPDumpScriptEngine, ());
 
+TJS_EXP_FUNC_DEF(void, TVPExecuteBytecode, (const tjs_uint8* content, size_t len, iTJSDispatch2 *context, tTJSVariant *result = NULL, const tjs_char *name = NULL ));
+
 extern void TVPExecuteStartupScript();
 TJS_EXP_FUNC_DEF(void, TVPCreateMessageMapFile, (const ttstr &filename));
 

@@ -564,6 +564,10 @@ private:
 	//---------------------------------------------------------------------
 public:
 	void Clear() { DeleteAllMembers(); }
+	/**
+	 * rebuild hash table
+	 */
+	void RebuildHash( tjs_int requestcount );
 
 	//---------------------------------------------------------------------
 public:

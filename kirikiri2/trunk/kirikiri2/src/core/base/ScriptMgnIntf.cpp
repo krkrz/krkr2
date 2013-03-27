@@ -38,6 +38,7 @@
 #include "SysInitIntf.h"
 #include "PhaseVocoderFilter.h"
 #include "PassThroughDrawDevice.h"
+#include "BinaryStream.h"
 
 //---------------------------------------------------------------------------
 // Script system initialization script
@@ -445,6 +446,10 @@ void TVPInitScriptEngine()
 	// set text stream functions
 	TJSCreateTextStreamForRead = TVPCreateTextStreamForRead;
 	TJSCreateTextStreamForWrite = TVPCreateTextStreamForWrite;
+	
+	// set binary stream functions
+	TJSCreateBinaryStreamForRead = TVPCreateBinaryStreamForRead;
+	TJSCreateBinaryStreamForWrite = TVPCreateBinaryStreamForWrite;
 
 	// register some TVP classes/objects/functions/propeties
 	iTJSDispatch2 *dsp;
@@ -659,7 +664,16 @@ void TVPExecuteExpression(const ttstr& content, const ttstr &name, tjs_int lineo
 }
 //---------------------------------------------------------------------------
 
+//---------------------------------------------------------------------------
+// TVPExecuteBytecode
+//---------------------------------------------------------------------------
+void TVPExecuteBytecode( const tjs_uint8* content, size_t len, iTJSDispatch2 *context, tTJSVariant *result, const tjs_char *name )
+{
+	if(!TVPScriptEngine) TVPThrowInternalError;
 
+	TVPScriptEngine->LoadByteCode( content, len, result, context, name);
+}
+//---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
@@ -678,7 +692,7 @@ void TVPExecuteStorage(const ttstr &name, iTJSDispatch2 *context, tTJSVariant *r
 	{ // for bytecode
 		ttstr place(TVPSearchPlacedPath(name));
 		ttstr shortname(TVPExtractStorageName(place));
-		tTJSBinaryStream* stream = TVPCreateStream(place, TJS_BS_READ);
+		tTJSBinaryStream* stream = TVPCreateBinaryStreamForRead(place, modestr);
 		if( stream ) {
 			bool isbytecode = false;
 			try {
