@@ -1212,6 +1212,10 @@ extern iTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name
 	const tTJSString &modestr);
 extern iTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
 	const tTJSString &modestr);
+extern class tTJSBinaryStream * (*TJSCreateBinaryStreamForRead)(const tTJSString &name,
+	const tTJSString &modestr);
+extern class tTJSBinaryStream * (*TJSCreateBinaryStreamForWrite)(const tTJSString &name,
+	const tTJSString &modestr);
 //---------------------------------------------------------------------------
 
 
@@ -1859,6 +1863,7 @@ extern void * TVPImportFuncPtr590a1ec7f64904eaa32b5c771bb5f8cd;
 extern void * TVPImportFuncPtrdd13d4bc2b48540a92f047bf015b829b;
 extern void * TVPImportFuncPtr0ff502d492598d2211405180bfb4d1e1;
 extern void * TVPImportFuncPtrcf5401746759bfe38918087aaab6c57b;
+extern void * TVPImportFuncPtr04e84aa7d8cf0477d55c700164544b38;
 extern void * TVPImportFuncPtr449039d3afbfbd52a63130a3b227a490;
 extern void * TVPImportFuncPtr347a4fa85af84e223c4b61d33ead694a;
 extern void * TVPImportFuncPtr4ad1dd24b3b4769ee10149eea006af7a;
@@ -7361,6 +7366,16 @@ inline void TVPDumpScriptEngine()
 	}
 	typedef void (__stdcall * __functype)();
 	((__functype)(TVPImportFuncPtrcf5401746759bfe38918087aaab6c57b))();
+}
+inline void TVPExecuteBytecode(const tjs_uint8 * content , size_t len , iTJSDispatch2 * context , tTJSVariant * result = NULL , const tjs_char * name = NULL)
+{
+	if(!TVPImportFuncPtr04e84aa7d8cf0477d55c700164544b38)
+	{
+		static char funcname[] = "void ::TVPExecuteBytecode(const tjs_uint8 *,size_t,iTJSDispatch2 *,tTJSVariant *,const tjs_char *)";
+		TVPImportFuncPtr04e84aa7d8cf0477d55c700164544b38 = TVPGetImportFuncPtr(funcname);
+	}
+	typedef void (__stdcall * __functype)(const tjs_uint8 *, size_t , iTJSDispatch2 *, tTJSVariant *, const tjs_char *);
+	((__functype)(TVPImportFuncPtr04e84aa7d8cf0477d55c700164544b38))(content, len, context, result, name);
 }
 inline void TVPCreateMessageMapFile(const ttstr & filename)
 {

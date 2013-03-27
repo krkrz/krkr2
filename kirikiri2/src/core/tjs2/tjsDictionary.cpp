@@ -13,6 +13,8 @@
 
 #include "tjsDictionary.h"
 #include "tjsArray.h"
+#include "tjsBinarySerializer.h"
+#include "tjsDebug.h"
 
 namespace TJS
 {
@@ -70,6 +72,19 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/saveStruct)
 	ttstr mode;
 	if(numparams >= 2 && param[1]->Type() != tvtVoid) mode = *param[1];
 
+	if( TJS_strchr(mode.c_str(), TJS_W('b')) != NULL ) {
+		tTJSBinaryStream* stream = TJSCreateBinaryStreamForWrite(name, mode);
+		try {
+			stream->Write( tTJSBinarySerializer::HEADER, tTJSBinarySerializer::HEADER_LENGTH );
+			std::vector<iTJSDispatch2 *> stack;
+			stack.push_back(objthis);
+			ni->SaveStructuredBinary(stack, *stream);
+		} catch(...) {
+			delete stream;
+			throw;
+		}
+		delete stream;
+	} else {
 	iTJSTextWriteStream * stream = TJSCreateTextStreamForWrite(name, mode);
 	try
 	{
@@ -83,6 +98,7 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/saveStruct)
 		throw;
 	}
 	stream->Destruct();
+	}
 
 	if(result) *result = tTJSVariant(objthis, objthis);
 
@@ -162,6 +178,53 @@ iTJSDispatch2 *tTJSDictionaryClass::CreateBaseTJSObject()
 	return new tTJSDictionaryObject();
 }
 //---------------------------------------------------------------------------
+tjs_error TJS_INTF_METHOD
+tTJSDictionaryClass::CreateNew(tjs_uint32 flag, const tjs_char * membername,
+	tjs_uint32 *hint,
+	iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param,
+	iTJSDispatch2 *objthis)
+{
+	// CreateNew
+	if( numparams < 1 || param[0]->Type() != tvtInteger || (tjs_int)(*param[0]) < 8 ) {
+		return inherited::CreateNew( flag, membername, hint, result, numparams, param, objthis );
+	}
+	tjs_int v = (tjs_int)(*param[0]);
+	tjs_int r;
+	if(v & 0xffff0000) r = 16, v >>= 16; else r = 0;
+	if(v & 0xff00) r += 8, v >>= 8;
+	if(v & 0xf0) r += 4, v >>= 4;
+	v<<=1;
+	tjs_int hashbits = r + ((0xffffaa50 >> v) &0x03) + 2;
+	iTJSDispatch2 *dsp = new tTJSDictionaryObject(hashbits);
+
+	// same as tTJSNativeClass
+	tjs_error hr;
+	try 
+	{
+		// set object type for debugging
+		if(TJSObjectHashMapEnabled())
+			TJSObjectHashSetType(dsp, TJS_W("instance of class ") + ClassName);
+
+		// instance initialization
+		hr = FuncCall(0, NULL, NULL, NULL, 0, NULL, dsp); // add member to dsp
+
+		if(TJS_FAILED(hr)) return hr;
+
+		hr = FuncCall(0, ClassName.c_str(), ClassName.GetHint(), NULL, numparams, param, dsp);
+			// call the constructor
+		if(hr == TJS_E_MEMBERNOTFOUND) hr = TJS_S_OK;
+			// missing constructor is OK ( is this ugly ? )
+	}
+	catch(...)
+	{
+		dsp->Release();
+		throw;
+	}
+
+	if(TJS_SUCCEEDED(hr)) *result = dsp;
+	return hr;
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -182,7 +245,8 @@ tjs_error TJS_INTF_METHOD tTJSDictionaryNI::Construct(tjs_int numparams,
 	tTJSVariant **param, iTJSDispatch2 *tjsobj)
 {
 	// called from TJS constructor
-	if(numparams != 0) return TJS_E_BADPARAMCOUNT;
+	//if(numparams != 0) return TJS_E_BADPARAMCOUNT;
+	if(numparams > 1) return TJS_E_BADPARAMCOUNT;
 	Owner = static_cast<tTJSCustomObject*>(tjsobj);
 	return TJS_S_OK;
 }
@@ -206,6 +270,10 @@ void tTJSDictionaryNI::Assign(iTJSDispatch2 * dsp, bool clear)
 		// convert from array
 		if(clear) Owner->Clear();
 
+		// reserve area
+		tjs_int reqcount = Owner->Count + arrayni->Items.size();
+		Owner->RebuildHash( reqcount );
+
 		tTJSArrayNI::tArrayItemIterator i;
 		for(i = arrayni->Items.begin(); i != arrayni->Items.end(); i++)
 		{
@@ -221,6 +289,12 @@ void tTJSDictionaryNI::Assign(iTJSDispatch2 * dsp, bool clear)
 	{
 		// otherwise
 		if(clear) Owner->Clear();
+
+		tSaveMemberCountCallback countCallback;
+		dsp->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&countCallback, NULL), dsp);
+		tjs_int reqcount = countCallback.Count + Owner->Count;
+		Owner->RebuildHash( reqcount );
+
 		tAssignCallback callback;
 		callback.Owner = Owner;
 
@@ -333,6 +407,68 @@ tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tSaveStructCallback::FuncCall(
 	return TJS_S_OK;
 }
 //---------------------------------------------------------------------------
+void tTJSDictionaryNI::SaveStructuredBinary(std::vector<iTJSDispatch2 *> &stack, tTJSBinaryStream &stream )
+{
+	tSaveMemberCountCallback countCallback;
+	Owner->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&countCallback, NULL), Owner);
+
+	tjs_int count = countCallback.Count;
+	tTJSBinarySerializer::PutStartMap( &stream, count );
+
+	tSaveStructBinayCallback callback;
+	callback.Stack = &stack;
+	callback.Stream = &stream;
+	Owner->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&callback, NULL), Owner);
+}
+//---------------------------------------------------------------------------
+tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tSaveStructBinayCallback::FuncCall(
+	tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+	tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
+	iTJSDispatch2 *objthis)
+{
+	// called indirectly from tTJSDictionaryNI::SaveStructuredBinary
+	if(numparams < 3) return TJS_E_BADPARAMCOUNT;
+
+	// hidden members are not processed
+	tjs_uint32 flags = (tjs_int)*param[1];
+	if(flags & TJS_HIDDENMEMBER) {
+		if(result) *result = (tjs_int)1;
+		return TJS_S_OK;
+	}
+
+	tTJSBinarySerializer::PutString( Stream, param[0]->AsStringNoAddRef() );
+
+	tTJSVariantType type = param[2]->Type();
+	if( type == tvtObject ) {
+		// object
+		tTJSVariantClosure clo = param[2]->AsObjectClosureNoAddRef();
+		tTJSArrayNI::SaveStructuredBinaryForObject( clo.SelectObjectNoAddRef(), *Stack, *Stream );
+	} else {
+		tTJSBinarySerializer::PutVariant( Stream, *param[2] );
+	}
+
+	if(result) *result = (tjs_int)1;
+	return TJS_S_OK;
+}
+//---------------------------------------------------------------------------
+tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tSaveMemberCountCallback::FuncCall(
+	tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+	tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
+	iTJSDispatch2 *objthis)
+{
+	// called indirectly from tTJSDictionaryNI::SaveStructuredBinary
+	if(numparams < 3) return TJS_E_BADPARAMCOUNT;
+	// hidden members are not processed
+	tjs_uint32 flags = (tjs_int)*param[1];
+	if(flags & TJS_HIDDENMEMBER) {
+		if(result) *result = (tjs_int)1;
+		return TJS_S_OK;
+	}
+	Count++;
+	if(result) *result = (tjs_int)1;
+	return TJS_S_OK;
+}
+//---------------------------------------------------------------------------
 void tTJSDictionaryNI::AssignStructure(iTJSDispatch2 * dsp,
 	std::vector<iTJSDispatch2 *> &stack)
 {
@@ -346,6 +482,12 @@ void tTJSDictionaryNI::AssignStructure(iTJSDispatch2 * dsp,
 		try
 		{
 			Owner->Clear();
+
+			// reserve area
+			tSaveMemberCountCallback countCallback;
+			dsp->EnumMembers(TJS_IGNOREPROP, &tTJSVariantClosure(&countCallback, NULL), dsp);
+			tjs_int reqcount = countCallback.Count + Owner->Count;
+			Owner->RebuildHash( reqcount );
 
 			tAssignStructCallback callback;
 			callback.Dest = Owner;
@@ -490,6 +632,11 @@ tjs_error TJS_INTF_METHOD tTJSDictionaryNI::tAssignStructCallback::FuncCall(
 // tTJSDictionaryObject
 //---------------------------------------------------------------------------
 tTJSDictionaryObject::tTJSDictionaryObject() : tTJSCustomObject()
+{
+	CallFinalize = false;
+}
+//---------------------------------------------------------------------------
+tTJSDictionaryObject::tTJSDictionaryObject(tjs_int hashbits) : tTJSCustomObject(hashbits)
 {
 	CallFinalize = false;
 }

@@ -29,6 +29,12 @@ public:
 	tTJSDictionaryClass();
 	~tTJSDictionaryClass();
 
+public:
+	tjs_error TJS_INTF_METHOD
+	CreateNew(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint,
+		 iTJSDispatch2 **result,
+			tjs_int numparams, tTJSVariant **param,	iTJSDispatch2 *objthis);
+
 protected:
 	tTJSNativeInstance *CreateNativeInstance();
 	iTJSDispatch2 *CreateBaseTJSObject();
@@ -80,6 +86,7 @@ private:
 public:
 	void SaveStructuredData(std::vector<iTJSDispatch2 *> &stack,
                                 iTJSTextWriteStream & stream, const ttstr&indentstr);
+	void SaveStructuredBinary(std::vector<iTJSDispatch2 *> &stack, tTJSBinaryStream &stream );
 		// method from tTJSSaveStructuredDataCallback
 private:
 	struct tSaveStructCallback : public tTJSDispatch
@@ -95,6 +102,28 @@ private:
 			tTJSVariant **param, iTJSDispatch2 *objthis);
 	};
 	friend class tSaveStructCallback;
+
+	struct tSaveStructBinayCallback : public tTJSDispatch {
+		std::vector<iTJSDispatch2 *> * Stack;
+		tTJSBinaryStream *Stream;
+
+		tjs_error TJS_INTF_METHOD
+		FuncCall(tjs_uint32 flag, const tjs_char * membername,
+			tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams,
+			tTJSVariant **param, iTJSDispatch2 *objthis);
+	};
+	friend class tSaveStructBinayCallback;
+
+	struct tSaveMemberCountCallback : public tTJSDispatch {
+		tjs_uint Count;
+		tSaveMemberCountCallback() : Count(0) {}
+
+		tjs_error TJS_INTF_METHOD
+		FuncCall(tjs_uint32 flag, const tjs_char * membername,
+			tjs_uint32 *hint, tTJSVariant *result, tjs_int numparams,
+			tTJSVariant **param, iTJSDispatch2 *objthis);
+	};
+	friend class tSaveMemberCountCallback;
 
 public:
 	void AssignStructure(iTJSDispatch2 * dsp, std::vector<iTJSDispatch2 *> &stack);
@@ -118,6 +147,7 @@ class tTJSDictionaryObject : public tTJSCustomObject
 
 public:
 	tTJSDictionaryObject();
+	tTJSDictionaryObject(tjs_int hashbits);
 	~tTJSDictionaryObject();
 
 

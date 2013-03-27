@@ -79,7 +79,7 @@ private:
 	std::vector<ttstr> StringArray; // typedef tTJSString ttstr
 	std::vector<tTJSVariantOctet*> OctetArray;
 
-	tjs_uint8* ReadBuffer;
+	const tjs_uint8* ReadBuffer;
 	tjs_uint32 ReadIndex;
 	tjs_uint32 ReadSize;
 
@@ -104,7 +104,7 @@ public:
 			OctetArray[i] = NULL;
 		}
 	}
-	tTJSScriptBlock* ReadByteCode( tTJS* owner, const tjs_char* name, tjs_uint8* buf, size_t size );
+	tTJSScriptBlock* ReadByteCode( tTJS* owner, const tjs_char* name, const tjs_uint8* buf, size_t size );
 
 	/**
 	 * @param buff : 8バイト以上のサイズ
@@ -112,8 +112,8 @@ public:
 	static bool IsTJS2ByteCode( const tjs_uint8* buff );
 
 private:
-	void ReadDataArea( tjs_uint8* buff, int offset, size_t size );
-	void ReadObjects( tTJSScriptBlock* block, tjs_uint8* buff, int offset, int size );
+	void ReadDataArea( const tjs_uint8* buff, int offset, size_t size );
+	void ReadObjects( tTJSScriptBlock* block, const tjs_uint8* buff, int offset, int size );
 	void TranslateCodeAddress( tTJSScriptBlock* block, tjs_int32* code, const tjs_int32 size );
 };
 

@@ -12,6 +12,7 @@
 #include "tjsCommHead.h"
 
 #include <map>
+#include <assert.h>
 #include "tjs.h"
 #include "tjsScriptBlock.h"
 #include "tjsArray.h"
@@ -27,7 +28,7 @@
 #include "tjsGlobalStringMap.h"
 #include "tjsDebug.h"
 #include "tjsByteCodeLoader.h"
-
+#include "tjsBinarySerializer.h"
 
 
 namespace TJS
@@ -512,7 +513,7 @@ void tTJS::DoGarbageCollection()
 }
 //---------------------------------------------------------------------------
 // for Bytecode
-void tTJS::LoadByteCode( tjs_uint8* buff, size_t len, tTJSVariant *result,
+void tTJS::LoadByteCode( const tjs_uint8* buff, size_t len, tTJSVariant *result,
 	iTJSDispatch2 *context, const tjs_char *name )
 {
 	TJS_F_TRACE("tTJS::LoadByteCode");
@@ -535,6 +536,17 @@ bool tTJS::LoadByteCode( class tTJSBinaryStream* stream, tTJSVariant *result,
 				stream->Read( buff, streamlen );
 				LoadByteCode( buff, streamlen, result, context, name );
 				ret = true;
+			} else {
+				assert( tTJSScriptBlock::BYTECODE_FILE_TAG_SIZE == tTJSBinarySerializer::HEADER_LENGTH );
+				if( result != NULL && tTJSBinarySerializer::IsBinary( header ) ) {
+					tTJSBinarySerializer binload;
+					tTJSVariant* var = binload.Read( stream );;
+					if( var ) {
+						*result = *var;
+						delete var;
+						ret = true;
+					}
+				}
 			}
 		}
 	} catch(...) {
@@ -568,6 +580,12 @@ iTJSTextReadStream * TJSDefCreateTextStreamForRead(const tTJSString &name,
 iTJSTextWriteStream * TJSDefCreateTextStreamForWrite(const tTJSString &name,
 	const tTJSString &mode)
 { return NULL; }
+tTJSBinaryStream * TJSDefCreateBinaryStreamForRead(const tTJSString &name,
+	const tTJSString &mode)
+{ return NULL; }
+tTJSBinaryStream * TJSDefCreateBinaryStreamForWrite(const tTJSString &name,
+	const tTJSString &mode)
+{ return NULL; }
 //---------------------------------------------------------------------------
 iTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
 	const tTJSString &mode) =
@@ -575,6 +593,12 @@ iTJSTextReadStream * (*TJSCreateTextStreamForRead)(const tTJSString &name,
 iTJSTextWriteStream * (*TJSCreateTextStreamForWrite)(const tTJSString &name,
 	const tTJSString &mode) =
 	TJSDefCreateTextStreamForWrite;
+tTJSBinaryStream * (*TJSCreateBinaryStreamForRead)(const tTJSString &name,
+	const tTJSString &mode) =
+	TJSDefCreateBinaryStreamForRead;
+tTJSBinaryStream * (*TJSCreateBinaryStreamForWrite)(const tTJSString &name,
+	const tTJSString &mode) =
+	TJSDefCreateBinaryStreamForWrite;
 //---------------------------------------------------------------------------
 
 
