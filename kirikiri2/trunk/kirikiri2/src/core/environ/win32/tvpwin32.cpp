@@ -162,6 +162,10 @@ USE("..\..\utils\ObjectList.h", File);
 USEUNIT("..\..\..\tools\win32\krdevui\ConfSettingsUnit.cpp");
 USEFORM("..\..\..\tools\win32\krdevui\ConfMainFrameUnit.cpp", ConfMainFrame); /* TFrame: File Type */
 USEUNIT("..\..\base\CharacterSet.cpp");
+USEUNIT("..\..\tjs2\tjsConstArrayData.cpp");
+USEUNIT("..\..\tjs2\tjsByteCodeLoader.cpp");
+USEUNIT("..\..\tjs2\tjsBinarySerializer.cpp");
+USEUNIT("..\..\base\BinaryStream.cpp");
 //---------------------------------------------------------------------------
 #ifdef TVP_SUPPORT_ERI
 #	pragma link "../../../../Lib/liberina.lib"
@@ -198,7 +202,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		Application->Title = "‹g—¢‹g—¢";
 		Application->CreateForm(__classid(TTVPMainForm), &TVPMainForm);
-		TVPLoadPluigins(); // load plugin module *.tpm
+                 TVPLoadPluigins(); // load plugin module *.tpm
 		if(TVPProjectDirSelected) TVPInitializeStartupScript();
 
 		Application->Run();
