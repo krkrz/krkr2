@@ -1,4 +1,4 @@
-ï»¿//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 /*
 	TJS2 Script Engine( Byte Code )
 	Copyright (c), Takenori Imoto
@@ -18,7 +18,7 @@
 namespace TJS
 {
 /**
- * TJS2 ãƒã‚¤ãƒˆã‚³ãƒ¼ãƒ‰ã‚’èª­ã¿è¾¼ã‚“ã§ã€ScriptBlock ã‚’è¿”ã™
+ * TJS2 ƒoƒCƒgƒR[ƒh‚ğ“Ç‚İ‚ñ‚ÅAScriptBlock ‚ğ•Ô‚·
  *
  */
 class tTJSByteCodeLoader {
@@ -39,7 +39,7 @@ private:
 		}
 	};
 	/**
-	 * InterCodeObject ã¸ç½®æ›ã™ã‚‹ãŸã‚ã«ä¸€æ™‚çš„ã«è¦šãˆã¦ãŠãã‚¯ãƒ©ã‚¹
+	 * InterCodeObject ‚Ö’uŠ·‚·‚é‚½‚ß‚Éˆê“I‚ÉŠo‚¦‚Ä‚¨‚­ƒNƒ‰ƒX
 	 */
 	struct VariantRepalace {
 		tTJSVariant* Work;
@@ -107,7 +107,7 @@ public:
 	tTJSScriptBlock* ReadByteCode( tTJS* owner, const tjs_char* name, const tjs_uint8* buf, size_t size );
 
 	/**
-	 * @param buff : 8ãƒã‚¤ãƒˆä»¥ä¸Šã®ã‚µã‚¤ã‚º
+	 * @param buff : 8ƒoƒCƒgˆÈã‚ÌƒTƒCƒY
 	 */
 	static bool IsTJS2ByteCode( const tjs_uint8* buff );
 

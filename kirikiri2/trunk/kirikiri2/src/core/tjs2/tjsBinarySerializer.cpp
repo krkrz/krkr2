@@ -1,4 +1,4 @@
-Ôªø//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 /*
 	TJS2 Script Engine( Byte Code )
 	Copyright (c), Takenori Imoto
@@ -22,7 +22,7 @@ bool tTJSBinarySerializer::IsBinary( const tjs_uint8 header[tTJSBinarySerializer
 	return memcmp( HEADER, header, tTJSBinarySerializer::HEADER_LENGTH) == 0;
 }
 /**
- * „Éê„Ç§„Ç¢„É≥„ÉàÂÄ§„ÇíÊ†ºÁ¥ç„Åô„Çã
+ * ÉoÉCÉAÉìÉgílÇäiî[Ç∑ÇÈ
  */
 void tTJSBinarySerializer::PutVariant( tTJSBinaryStream* stream, tTJSVariant& v )
 {
@@ -258,7 +258,7 @@ tTJSVariant* tTJSBinarySerializer::ReadDictionary( const tjs_uint8* buff, const 
 	for( tjs_uint i = 0; i < count; i++ ) {
 		tjs_uint8 type = buff[index];
 		index++;
-		// ÊúÄÂàù„Å´ÊñáÂ≠ó„ÇíË™≠„ÇÄ
+		// ç≈èâÇ…ï∂éöÇì«Çﬁ
 		tTJSVariantString* name = NULL;
 		switch( type ) {
 		case TYPE_STRING8: {
@@ -287,12 +287,12 @@ tTJSVariant* tTJSBinarySerializer::ReadDictionary( const tjs_uint8* buff, const 
 				tjs_int len = type - TYPE_FIX_STRING_MIN;
 				if( (len*sizeof(tjs_char)+index) > size ) TJS_eTJSError( TJSReadError );
 				name = ReadString( buff, len, index );
-			} else { // DictionaryÂΩ¢Âºè„ÅÆÂ†¥Âêà„ÄÅÊúÄÂàù„Å´ÊñáÂ≠óÂàó„Åå„Åì„Å™„ÅÑ„Å®„ÅÑ„Åë„Å™„ÅÑ
+			} else { // Dictionaryå`éÆÇÃèÍçáÅAç≈èâÇ…ï∂éöóÒÇ™Ç±Ç»Ç¢Ç∆Ç¢ÇØÇ»Ç¢
 				 TJS_eTJSError( TJSReadError );
 			}
 			break;
 		}
-		// Ê¨°„Å´Ë¶ÅÁ¥†„ÇíË™≠„ÇÄ
+		// éüÇ…óvëfÇì«Çﬁ
 		tTJSVariant* value = ReadBasicType( buff, size, index );
 		AddDictionary( dic, name, value );
 		name->Release();
