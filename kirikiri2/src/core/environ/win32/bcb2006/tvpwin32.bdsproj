@@ -458,7 +458,7 @@
           <property category="win32.*.win32b.ilink32" name="option.outputdir.arg.merge" value="1"/>
           <property category="win32.*.win32b.ilink32" name="option.outputdir.enabled" value="1"/>
           <property category="win32.*.win32b.ilink32" name="option.v.enabled" value="1"/>
-          <property category="win32.*.win32b.ilink32" name="param.deffile.1" value="E:\work\kirikiri2\kirikiri2\src\core\environ\win32\tvpwin32.def"/>
+          <property category="win32.*.win32b.ilink32" name="param.deffile.1" value="..\tvpwin32.def"/>
           <property category="win32.*.win32b.ilink32" name="param.deffile.merge" value="1"/>
           <property category="win32.*.win32b.ilink32" name="param.libfiles.1" value="$(LIBRARIES)"/>
           <property category="win32.*.win32b.ilink32" name="param.libfiles.2" value="import32.lib"/>
@@ -655,6 +655,10 @@
         <FILE FILENAME="lib\deelibpng.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="deelibpng" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="lib\libjpeg2.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="libjpeg2" FORMNAME="" DESIGNCLASS=""/>
         <FILE FILENAME="lib\zlib.lib" CONTAINERID="LibTool" LOCALCOMMAND="" UNITNAME="zlib" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsBinarySerializer.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsBinarySerializer" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsByteCodeLoader.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsByteCodeLoader" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\base\BinaryStream.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="BinaryStream" FORMNAME="" DESIGNCLASS=""/>
+        <FILE FILENAME="..\..\..\tjs2\tjsConstArrayData.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="tjsConstArrayData" FORMNAME="" DESIGNCLASS=""/>
       </FILELIST>
       <IDEOPTIONS>
         <VersionInfo>
