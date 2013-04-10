@@ -1,0 +1,134 @@
+// プラグインをリンク
+Plugins.link("clipboardEx.dll");
+
+//----------------------------------------------------------------------
+// キャンバス
+//
+// マウス左ドラッグで黒、右ドラッグで白の矩形を描画
+//----------------------------------------------------------------------
+class CanvasLayer extends Layer
+{
+  var dragging = void;
+  var draggingButton;
+
+  function CanvasLayer {
+    super.Layer(...);
+    setSize(300, 300);
+    fillRect(0, 0, width, height, 0xFFFFFFFF);
+    visible = true;
+  }
+
+  function onMouseDown(x, y, button) {
+    if (button == mbLeft 
+        || button == mbRight) {
+      dragging = true;
+      draggingButton = button;
+      drawPen(x, y);
+    }
+  }
+
+  function onMouseMove(x, y) {
+    if (dragging) 
+      drawPen(x, y);
+  }
+
+  function onMouseUp {
+    dragging = false;
+  }
+
+  function drawPen(x, y) {
+    fillRect(x - 10, y - 10, 20, 20, draggingButton == mbLeft ? 0xFF000000 : 0xFFFFFFFF);
+  }
+}
+
+//----------------------------------------------------------------------
+// テストアプリ
+//----------------------------------------------------------------------
+class AppWindow extends Window
+{
+  var editMenuItem;
+  var copyMenuItem;
+  var pasteMenuItem;
+  var toggleClipboardWatchMenuItem;
+  var canvas;
+
+  //------------------------------
+  // コンストラクタ
+  //------------------------------
+  function AppWindow {
+    super.Window();
+
+    // ウィンドウ初期化
+    System.title = caption = "クリップボードテスト";
+    borderStyle = bsSingle;
+    showScrollBars = false;
+
+    // レイヤ作成
+    canvas = new CanvasLayer(this, null);
+    setInnerSize(canvas.width, canvas.height);
+    add(canvas);
+
+    // メニュー生成
+    editMenuItem = new MenuItem(this, "編集");
+    menu.add(editMenuItem);
+    copyMenuItem = new MenuItem(this, "コピー");
+    copyMenuItem.onClick = this.onCopy;
+    copyMenuItem.shortcut = "Ctrl+C";
+    editMenuItem.add(copyMenuItem);
+    pasteMenuItem = new MenuItem(this, "ペースト");
+    pasteMenuItem.onClick = this.onPaste;
+    pasteMenuItem.shortcut = "Ctrl+V";
+    editMenuItem.add(pasteMenuItem);
+    editMenuItem.add(new MenuItem(this, "-"));
+    toggleClipboardWatchMenuItem = new MenuItem(this, "クリップボード監視");
+    toggleClipboardWatchMenuItem.onClick = this.onToggleClipboardWatch;
+    editMenuItem.add(toggleClipboardWatchMenuItem);
+
+    // 最初に一回とりあえずペーストしておく
+    onPaste();
+
+    // ウィンドウの表示開始
+    visible = true;
+  }
+
+  //------------------------------
+  // キャンバスの内容をクリップボードへコピー
+  //------------------------------
+  function onCopy {
+    Clipboard.setAsBitmap(canvas);
+  }
+
+  //------------------------------
+  // キャンバスの内容をクリップボードからペースト
+  //------------------------------
+  function onPaste {
+    if (Clipboard.getAsBitmap(canvas)) {
+      setInnerSize(canvas.width, canvas.height);
+    }
+  }
+
+  //------------------------------
+  // クリップボードの更新を検知
+  //------------------------------
+  function onDrawClipboard {
+    // 自動的にペースト
+    onPaste();
+  }
+
+  //------------------------------
+  // クリップボード検知のトグル
+  //------------------------------
+  function onToggleClipboardWatch {
+    // トグル反転
+    toggleClipboardWatchMenuItem.checked = ! toggleClipboardWatchMenuItem.checked;
+    // クリップボード監視状態切り替え
+    clipboardWatchEnabled = toggleClipboardWatchMenuItem.checked;
+    // 監視を開始したらとりあえずペーストしておく
+    if (clipboardWatchEnabled)
+      onPaste();
+  }
+}
+
+
+// テストアプリ起動    
+var app = new AppWindow();

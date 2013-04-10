@@ -1,0 +1,250 @@
+// stretchCopy 等のテスト
+
+function intrandom(min = 0, max = 0) 
+{
+	if(min>max) { var t=max; max=min; min=t; }
+	return int(Math.random() * (max-min+1)) + min;
+}
+
+class TestWindow extends Window
+{
+	var fore; // プライマリ
+	var src; // レイヤ その1
+	var src2; // レイヤその2
+	var timer; // タイマ
+
+	function TestWindow()
+	{
+		super.Window(...);
+
+		setInnerSize(640, 480);
+
+		add(fore = new Layer(this, null));
+		add(src = new Layer(this, fore));
+		add(src2 = new Layer(this, fore));
+		add(timer = new Timer(this));
+
+		fore.loadImages("../../../kag3/tests/bgimage/_24_3");
+		fore.setSizeToImageSize();
+		src.loadImages("../../../../tlg4comp/bike-d");
+		src.setSizeToImageSize();
+		src.type = ltCoverRect;
+		src2.loadImages("../../../kag3/tests/fgimage/uni");
+		src2.setSizeToImageSize();
+		src2.type = ltTransparent;
+
+		timer.interval = 100;
+		timer.enabled = true;
+
+		visible = true;
+
+		fore.face = dfBoth;
+
+//		fore.setClip(100, 100, 400, 320);
+
+		var start = System.getTickCount();
+		fore.face = dfAlpha;
+		for(var i = 0; i < 10000; i++)
+			fore.operateRect(0, 0, src2, 0, 0, 100, 100, omAlpha, 255);
+
+//			fore.stretchBlend(10, 10, 403, 103, src, 3, 3, 103, 113, 124, stFastLinear, false);
+		System.inform(System.getTickCount() - start);
+
+	}
+
+	function process1()
+	{
+		var dx = intrandom(-3000, 3640);
+		var dy = intrandom(-3000, 3480);
+		var dw = intrandom(-3000, 3640);
+		var dh = intrandom(-3000, 3480);
+		dw -= dx; dh -= dy;
+		var sx = intrandom(src.imageWidth - 1);
+		var sy = intrandom(src.imageHeight - 1);
+		var sw = intrandom(src.imageWidth - 1);
+		var sh = intrandom(src.imageHeight - 1);
+		sw -= sx; sh -= sy;
+		Debug.message("--------------------------1");
+		Debug.message(dx, dy, dw, dh);
+		Debug.message(sx, sy, sw, sh);
+		fore.face = dfBoth;
+		fore.stretchCopy(dx, dy, dw, dh, src, sx, sy, sw, sh);
+	}
+
+	function process2()
+	{
+		var dx = intrandom(-00, 640);
+		var dy = intrandom(-00, 480);
+		var dw = intrandom(-00, 640);
+		var dh = intrandom(-00, 480);
+		dw -= dx; dh -= dy;
+		var sx = intrandom(src.imageWidth - 1);
+		var sy = intrandom(src.imageHeight - 1);
+		var sw = intrandom(src.imageWidth - 1);
+		var sh = intrandom(src.imageHeight - 1);
+		var opa = intrandom(255);
+		sw -= sx; sh -= sy;
+		Debug.message("--------------------------2");
+		Debug.message(dx, dy, dw, dh);
+		Debug.message(sx, sy, sw, sh);
+		Debug.message(opa);
+		fore.face = intrandom(0,1)?dfMain:dfBoth;
+		fore.stretchBlend(dx, dy, dw, dh, src, sx, sy, sw, sh, opa, stFastLinear, intrandom(0,1)/*hda*/);
+	}
+
+	function process2()
+	{
+		var dx = intrandom(-00, 640);
+		var dy = intrandom(-00, 480);
+		var dw = intrandom(-00, 640);
+		var dh = intrandom(-00, 480);
+		dw -= dx; dh -= dy;
+		var sx = intrandom(src.imageWidth - 1);
+		var sy = intrandom(src.imageHeight - 1);
+		var sw = intrandom(src.imageWidth - 1);
+		var sh = intrandom(src.imageHeight - 1);
+		var opa = intrandom(255);
+		sw -= sx; sh -= sy;
+		Debug.message("--------------------------2");
+		Debug.message(dx, dy, dw, dh);
+		Debug.message(sx, sy, sw, sh);
+		Debug.message(opa);
+		fore.face = dfMain;
+		fore.stretchBlend(dx, dy, dw, dh, src, sx, sy, sw, sh, opa, stNearest, false);
+	}
+
+	function process3()
+	{
+		var dx = intrandom(-1000, 1640);
+		var dy = intrandom(-1000, 1480);
+		var dw = intrandom(-1000, 1640);
+		var dh = intrandom(-1000, 1480);
+		dw -= dx; dh -= dy;
+		var sx = intrandom(src2.imageWidth - 1);
+		var sy = intrandom(src2.imageHeight - 1);
+		var sw = intrandom(src2.imageWidth - 1);
+		var sh = intrandom(src2.imageHeight - 1);
+		var opa = 255; //intrandom(255);
+		sw -= sx; sh -= sy;
+		Debug.message("--------------------------3");
+		Debug.message(dx, dy, dw, dh);
+		Debug.message(sx, sy, sw, sh);
+		Debug.message(opa);
+		fore.face = intrandom(0,1)?dfMain:dfBoth;
+		fore.stretchPile(dx, dy, dw, dh, src2, sx, sy, sw, sh, opa, stNearest, intrandom(0,1)/*hda*/);
+	}
+
+	function process4()
+	{
+		var dx = intrandom(-1000, 1640);
+		var dy = intrandom(-1000, 1480);
+		var dw = intrandom(-1000, 1640);
+		var dh = intrandom(-1000, 1480);
+		dw -= dx; dh -= dy;
+		Debug.message("--------------------------4");
+		Debug.message(dx, dy, dw, dh);
+		fore.face = dfBoth;
+		fore.stretchCopy(dx, dy, dw, dh, src, 0, 0, src.imageWidth, src.imageHeight);
+	}
+
+	function process5()
+	{
+		var dx = intrandom(0, 639);
+		var dy = intrandom(0, 479);
+		var sx = intrandom(src2.imageWidth - 2);
+		var sy = intrandom(src2.imageHeight - 2);
+		var sw = intrandom(sx, src2.imageWidth - 1);
+		var sh = intrandom(sy, src2.imageHeight - 1);
+		var opa = intrandom(0, 255);
+		Debug.message("--------------------------5");
+		Debug.message(dx, dy, sx, sy, sw, sh, opa);
+		fore.face = intrandom(0,1)?dfMain:dfBoth;
+		fore.pileRect(dx, dy, src2, sx, sy, sw, sh, opa, intrandom(0,1)/*hda*/);
+	}
+
+	function process6()
+	{
+		var dx = intrandom(0, 639);
+		var dy = intrandom(0, 479);
+		var sx = intrandom(src.imageWidth - 2);
+		var sy = intrandom(src.imageHeight - 2);
+		var sw = intrandom(sx, src.imageWidth - 1);
+		var sh = intrandom(sy, src.imageHeight - 1);
+		var opa = intrandom(0, 255);
+		Debug.message("--------------------------6");
+		Debug.message(dx, dy, sx, sy, sw, sh, opa);
+		fore.face = intrandom(0,1)?dfMain:dfBoth;
+		fore.blendRect(dx, dy, src, sx, sy, sw, sh, opa, intrandom(0,1)/*hda*/);
+	}
+
+	function process7()
+	{
+		var dx = intrandom(0, 639);
+		var dy = intrandom(0, 479);
+		var sx = intrandom(src.imageWidth - 2);
+		var sy = intrandom(src.imageHeight - 2);
+		var sw = intrandom(sx, src.imageWidth - 1);
+		var sh = intrandom(sy, src.imageHeight - 1);
+		sw -= sx;
+		sh -= sy;
+		Debug.message("--------------------------7");
+		Debug.message(dx, dy, sx, sy, sw, sh);
+		fore.face = dfBoth;
+		fore.stretchCopy(dx, dy, intrandom(1)?sw*2:-sw*2, intrandom(1)?sh*2:sh*2, src, sx, sy, sw, sh, stFastLinear);
+	}
+
+	function process8()
+	{
+		
+		var dx = intrandom(0, 638);
+		var dy = intrandom(0, 478);
+		var dw = intrandom(dx+1, 639);
+		var dh = intrandom(dy+1, 479);
+		dw -= dx; dh -= dy;
+		var sx = intrandom(0, src.imageWidth - 2);
+		var sy = intrandom(0, src.imageHeight - 2);
+		var sw = intrandom(sx+1, src.imageWidth - 1);
+		var sh = intrandom(sy+1, src.imageHeight - 1);
+		sw -= sx; sh -= sy;
+		
+		/*
+		var dx = 0;
+		var dy = 0;
+		var dw = intrandom(0, src.imageWidth);
+		var dh = intrandom(0, 480);
+		var sx = 0;
+		var sy = 0;
+		var sw = src.imageWidth;
+		var sh = src.imageHeight;
+		*/
+		/*
+		var dx = 0;
+		var dy = 0;
+		var dw = 640;
+		var dh = 480;
+		var sx = 0;
+		var sy = 0;
+		var sw = intrandom(400);
+		var sh = intrandom(400);
+		*/
+		Debug.message("--------------------------1");
+		Debug.message(dx, dy, dw, dh);
+		Debug.message(sx, sy, sw, sh);
+		fore.face = dfBoth;
+		fore.stretchCopy(dx, dy, dw, dh, src, sx, sy, sw, sh, stCubic);
+	}
+
+	function action(ev)
+	{
+		if(ev.type == 'onTimer')
+		{
+			process2();
+//			this['process' +intrandom(1, 7)]();
+//			fore.face = dfBoth;
+//			fore.stretchCopy(0, 0, 640*2, 480*2, src, 0, 0, 640, 480, stFastLinear);
+		}
+	}
+}
+
+var a = new TestWindow();
+

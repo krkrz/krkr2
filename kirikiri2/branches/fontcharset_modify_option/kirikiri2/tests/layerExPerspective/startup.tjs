@@ -1,0 +1,75 @@
+Plugins.link("win32ole.dll");
+Plugins.link("perspective.dll");
+
+var WIDTH=640;
+var HEIGHT=480;
+
+class MyWindow extends Window
+{
+    //  メニュ
+    var filemenu;
+    var exitmenu;
+    
+    // ベースレイヤ
+    var base;
+    // 表示レイヤ
+    var layer;
+    // 名前
+    var name;
+
+    function init() {
+        layer.loadImages(name);
+        layer.setSizeToImageSize();
+        base.fillRect(0,0,WIDTH,HEIGHT,0xffffff);
+    }
+
+    function perspective(x1, y1, x2, y2, x3, y3, x4, y4) {
+        Debug.message(x1, y1, x2, y2, x3, y3, x4, y4);
+        base.perspectiveCopy(layer, 0, 0, layer.width, layer.height, x1, y1, x2, y2, x3, y3, x4, y4);
+    }
+    
+    function MyWindow(name) {
+
+        super.Window();
+
+        caption = "レイヤ拡張";
+        
+        menu.add(filemenu = new MenuItem(this, "ファイル(&F)"));
+        filemenu.add(exitmenu = new MenuItem(this, "終了(&X)"));
+
+        // ベースレイヤ
+        base = new Layer(this,null);
+        base.visible=true;
+        base.setSize(WIDTH,HEIGHT);
+        base.fillRect(0,0,WIDTH,HEIGHT,0xffffff);
+        setInnerSize(base.width, base.height);
+
+        this.name = name;
+        layer = new Layer(this, base);
+        init();
+
+    }
+
+    function finalize() {
+        invalidate layer;
+        invalidate base;
+        super.finalize();
+    }
+    
+	function action(ev)
+	{
+        if(ev.type == "onClick" && ev.target == exitmenu) {
+            close();
+        }
+	}
+}
+
+// 窓
+var win = new MyWindow("test.png");
+win.visible=true;
+
+// IE窓
+var ie = new ActiveX("Shell.Explorer.2");
+ie.setSize(640, 480);
+ie.Navigate2("krkr:control.html");
+ie.visible = true;

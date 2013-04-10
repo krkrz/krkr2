@@ -1,0 +1,111 @@
+Plugins.link("sqlite3.dll");
+
+function dm()
+{
+	Debug.message(...);
+}
+
+
+function func(name,param)
+{
+	dm("name:" + name + " param:" + param);
+}
+
+var	db = new Sqlite(System.exePath + "test.db");
+
+if (!db.exec("select count(*) from test")) {
+	dm("create db!");
+	db.exec("create table test (name, param)");
+	db.exec("insert into test values('name0', 0)");
+	db.exec("insert into test values(?, ?)", ["name1", 1]);
+	db.exec("insert into test values(?, ?)", ["name2", 2]);
+	db.exec("insert into test values(?, ?)", ["name3", 3]);
+} else {
+	dm("db is exist");
+}
+
+// 引数指定 (第二引数はファンクション, 第三引数以降はパラメータ)
+dm("count:" + db.execValue("select count(*) from test"));
+dm("db.exec で select");
+db.exec("select name,param from test where param>?", [0], func);
+
+dm("--------------------------------------------------------");
+
+var state = new SqliteStatement(db, "insert into test values(?,?)");
+for (var i=2;i<5;i++) {
+	state.bind(["name"+i, i]);
+	state.exec();
+}
+
+state = new SqliteStatement(db, "select name,param from test where param>?", [0]);
+var n = 0;
+while (state.step()) {
+	dm("%d: name:%s param:%s".sprintf(n++, state.name, state.param));
+}
+state = null;
+
+class MySqliteThread extends SqliteThread
+{
+	function MySqliteThread(win, db) {
+		super.SqliteThread(win, db);
+	}
+
+	function onProgress(num) {
+		dm("progress:%d".sprintf(num));
+	}
+
+	function onStateChange(state) {
+		dm("state:%d".sprintf(state));
+		if (state == global.SqliteThread.DONE) {
+			if (errorCode == Sqlite.SQLITE_OK || errorCode == Sqlite.SQLITE_DONE) {
+				if (selectResult !== void) {
+					for (var i=0;i<selectResult.count;i++) {
+						var line = selectResult[i];
+						for (var j=0;j<line.count;j++) {
+							dm("%d:%d %s".sprintf(i,j,line[j]));
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+class MyWindow extends Window
+{
+	var initTrigger;
+	var dbthread;
+
+	function MyWindow() {
+		super.Window(...);
+		dbthread = new MySqliteThread(this, db);
+		initTrigger = new AsyncTrigger(init, "");
+		initTrigger.cached = true;
+		initTrigger.mode = atmExclusive;
+		initTrigger.trigger();
+	}
+
+	function finalize() {
+		invalidate dbthread;
+	}
+
+	function onKeyDown(key, shift) {
+		if(key == VK_ESCAPE) {
+			close();
+		}
+	}
+
+	function init() {
+		if (true) {
+			dbthread.update("insert into test values(?, ?)",
+							[["nameA", 4],
+							 ["nameB", 5],
+							 ["nameC", 6]]);
+		} else {
+			dbthread.select("select name,param from test");
+		}
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;

@@ -1,0 +1,56 @@
+class TrappingWindow extends Window
+{
+	var prim;
+
+	function TrappingWindow()
+	{
+		super.Window(...);
+
+		trapKey = true;
+
+		prim = new Layer(this, null);
+		setInnerSize(100, 100);
+		prim.setImageSize(100, 100);
+		prim.setSizeToImageSize();
+		prim.fillRect(0, 0, 100, 100, 0xff8080);
+
+		prim.focusable = true; // フォーカスは受け取る
+		prim.useAttention = true; // 注視ポイントを使用する
+		prim.imeMode = imDontCare; // IME 使用可
+		prim.focus();
+
+		visible = true;
+	}
+
+	function onKeyPress(key)
+	{
+		prim.fillRect(0, 0, 100, 100, 0xff8080);
+		prim.drawText(10, 10, key, 0);
+	}
+}
+
+
+class MainWindow extends Window
+{
+	var trapper;
+	var prim;
+
+	function MainWindow()
+	{
+		super.Window(...);
+
+		prim = new Layer(this, null);
+		setInnerSize(100, 100);
+		prim.setImageSize(100, 100);
+		prim.setSizeToImageSize();
+		prim.fillRect(0, 0, 100, 100, 0x8080ff);
+
+		trapper = new TrappingWindow();
+
+		visible = true;
+	}
+}
+
+var m = new MainWindow();
+
+

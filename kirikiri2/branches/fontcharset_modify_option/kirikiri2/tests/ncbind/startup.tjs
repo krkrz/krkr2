@@ -1,0 +1,7 @@
+Debug.controller.visible = true;
+Debug.console.visible = true;
+var dm = Debug.message;
+
+//プラグイン読み込み時に自動でテスト
+Plugins.link("testbind.dll");
+
