@@ -1759,6 +1759,9 @@ tTVPNativeBaseBitmap::tTVPNativeBaseBitmap(tjs_uint w, tjs_uint h, tjs_uint bpp)
 	Font = TVPDefaultFont;
 	PrerenderedFont = NULL;
 	LogFont = TVPDefaultLOGFONT;
+    tTJSVariant val;
+    if (TVPGetCommandLine(TJS_W("-fontcharset"), &val))
+      LogFont.lfCharSet = (tjs_int)val;
 	FontChanged = true;
 	GlobalFontState = -1;
 	TextWidth = TextHeight = 0;
@@ -1775,6 +1778,9 @@ tTVPNativeBaseBitmap::tTVPNativeBaseBitmap(const tTVPNativeBaseBitmap & r)
 	Font = r.Font;
 	PrerenderedFont = NULL;
 	LogFont = TVPDefaultLOGFONT;
+    tTJSVariant val;
+    if (TVPGetCommandLine(TJS_W("-fontcharset"), &val))
+      LogFont.lfCharSet = (tjs_int)val;
 	FontChanged = true;
 	TextWidth = TextHeight = 0;
 }
