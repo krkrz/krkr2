@@ -206,6 +206,7 @@ public:
 	iTJSDispatch2 *functhis;
 	tTJSVariant **paramList;
 	tjs_int paramCount;
+	tTJSVariant breakResult;
 
 	DictIterateCaller(iTJSDispatch2 *func,
 					  iTJSDispatch2 *functhis,
@@ -225,15 +226,17 @@ public:
 												tTJSVariant **param,		// parameters
 												iTJSDispatch2 *objthis		// object as "this"
 												) {
+		breakResult.Clear();
 		if (numparams > 1) {
 			if ((int)*param[1] != TJS_HIDDENMEMBER) {
 				paramList[0] = param[0];
 				paramList[1] = param[2];
-				(void)func->FuncCall(0, NULL, NULL, NULL, paramCount, paramList, functhis);
+				(void)func->FuncCall(0, NULL, NULL, &breakResult, paramCount, paramList, functhis);
 			}
 		}
-		if (result)
-			*result = true;
+		if (result) {
+			*result = breakResult.Type() == tvtVoid;
+		}
 		return TJS_S_OK;
 	}
 };
@@ -465,12 +468,20 @@ ScriptsAdd::foreach(tTJSVariant *result,
 		(void)obj.PropGet(0, L"count", &countHint, &arrayCount, NULL);
 		tjs_int count = arrayCount;
 
+		tTJSVariant breakResult;
 		for (tjs_int i = 0; i < count; i++) {
 			key = i;
+			breakResult.Clear();
 			(void)obj.PropGetByNum(TJS_IGNOREPROP, i, &value, NULL);
-			(void)func->FuncCall(0, NULL, NULL, NULL, numparams, paramList, functhis);
+			(void)func->FuncCall(0, NULL, NULL, &breakResult, numparams, paramList, functhis);
+			if (breakResult.Type() != tvtVoid) {
+				break;
+			}
 		}
-
+		if (result) {
+			*result = breakResult;
+		}
+		
 		delete[] paramList;
 
 	} else {
@@ -482,6 +493,9 @@ ScriptsAdd::foreach(tTJSVariant *result,
 		DictIterateCaller *caller = new DictIterateCaller(func, functhis, paramList, numparams);
 		tTJSVariantClosure closure(caller);
 		obj.EnumMembers(TJS_IGNOREPROP, &closure, NULL);
+		if (result) {
+			*result = caller->breakResult;
+		}
 		caller->Release();
 
 		delete[] paramList;
