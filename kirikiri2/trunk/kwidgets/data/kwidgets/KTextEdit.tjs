@@ -510,7 +510,6 @@ class KTextEdit extends KValueWidget
       return textRows.join("\r\n");
     }
     setter(v) {
-      Debug.message(v);
       initAllRows(expandTab(v).split(linefeedPat));
     }
   }
