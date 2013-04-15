@@ -510,6 +510,7 @@ class KTextEdit extends KValueWidget
       return textRows.join("\r\n");
     }
     setter(v) {
+      Debug.message(v);
       initAllRows(expandTab(v).split(linefeedPat));
     }
   }
@@ -723,7 +724,7 @@ class KTextEdit extends KValueWidget
   function pasteAtPointer {
     if (Clipboard.hasFormat(cbfText)) {
       if (hasSelection)
-        deleteSelection();
+        deleteSelection(false);
       insertAtPointer(expandTab(Clipboard.asText));
     }
   }
@@ -1044,7 +1045,7 @@ class KTextEdit extends KValueWidget
   // ポインタ位置に文字列を挿入
   function insertAtPointer(str, locate = true) {
     if (hasSelection)
-      deleteSelection();
+      deleteSelection(false);
 
     // まず文字を改行で分割する
     var list = str.split(linefeedPat);
@@ -1107,7 +1108,7 @@ class KTextEdit extends KValueWidget
   }
 
   // 選択範囲を削除
-  function deleteSelection {
+  function deleteSelection(responce = true) {
     if (! hasSelection)
       return;
 
@@ -1147,7 +1148,8 @@ class KTextEdit extends KValueWidget
     // レイアウトやり直し
     locateLayout();
     // 値の更新を通知
-    if (respondToValueModification)
+    if (respondToValueModification
+        && responce)
       invalidateValue();
   }
 

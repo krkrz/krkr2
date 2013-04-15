@@ -361,7 +361,8 @@ class KColorPickerDialog extends KWindow
     rInput.respondToValueModification = true;
     gInput.respondToValueModification = true;
     bInput.respondToValueModification = true;
-    aInput.respondToValueModification = true;
+    if (hasAlpha)
+      aInput.respondToValueModification = true;
     textInput.respondToValueModification = true;
 
     rootGrid.add(0, 2, new KGridLayout(this, "buttonGrid"), 2, 1);
