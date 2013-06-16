@@ -538,6 +538,13 @@ CHECK(ProxyTest,
 	  SCRIPT_END);
 
 
+////////////////////////////////////////
+// getRef tTJSDispatch
+class RefCountDispatch : public tTJSDispatch {
+public:
+	RefCountDispatch() : tTJSDispatch() {}
+	tjs_uint getRefCount() { return tTJSDispatch::GetRefCount(); }
+};
 
 ////////////////////////////////////////
 // PropAccessor test
@@ -553,6 +560,18 @@ struct AccessorTest : public ncbPropAccessor {
 	bool IntSetValue(IndexT idx, int v) { return SetValue(idx, v); }
 
 	AccessorTest* New() { return new AccessorTest(); }
+
+	static tjs_uint CopyConstruct() {
+		RefCountDispatch *ref = new RefCountDispatch();
+		tjs_uint r = 0;
+		{
+			tTJSVariant v(ref, ref);
+			ncbPropAccessor prop = ncbPropAccessor(v);
+		}
+		r = ref->getRefCount();
+		ref->Release();
+		return r;
+	}
 };
 
 NCB_REGISTER_CLASS(AccessorTest) {
@@ -560,11 +579,14 @@ NCB_REGISTER_CLASS(AccessorTest) {
 	Method("IntGetValue", &Class::IntGetValue);
 	Method("IntSetValue", &Class::IntSetValue);
 	Method("New",         &Class::New);
+	Method("CopyConstruct", &Class::CopyConstruct);
 }
 
 
 CHECK(AccessorTest,
 	  SCRIPT_BEGIN
+	  SCRIPT_EVAL("AccessorTest.CopyConstruct() == 1")
+
 	  "var inst = new AccessorTest();"
 	  SCRIPT_EVAL("inst.IntSetValue(0, 100) != 0")
 	  SCRIPT_EVAL("inst.IntGetValue(0)      == 100")

@@ -618,6 +618,7 @@ struct ncbPropAccessor {
 	ncbPropAccessor(iTJSDispatch2 *obj, bool addref = true) : _obj(obj) {
 		if (addref) _obj->AddRef();
 	}
+	ncbPropAccessor(ncbPropAccessor const &ref) : _obj(ref._obj) { _obj->AddRef(); }
 	ncbPropAccessor(tTJSVariant var) : _obj(var.AsObject()) {
 		//_obj->AddRef();
 	}
@@ -825,9 +826,13 @@ protected:
 
 struct ncbArrayAccessor : public ncbPropAccessor {
 	ncbArrayAccessor() : ncbPropAccessor(TJSCreateArrayObject(), false) {}
+private:
+	ncbArrayAccessor(ncbArrayAccessor const&);
 };
 struct ncbDictionaryAccessor : public ncbPropAccessor {
 	ncbDictionaryAccessor() : ncbPropAccessor(TJSCreateDictionaryObject(), false) {}
+private:
+	ncbDictionaryAccessor(ncbDictionaryAccessor const&);
 };
 
 
