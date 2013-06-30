@@ -15,6 +15,16 @@
 #include "LayerExImage.h"
 
 void
+layerExImage::reset()
+{
+	layerExBase::reset();
+	// バッファ位置をクリッピングにあわせて変更する
+	_buffer += _clipTop * _pitch + _clipLeft * 4;
+	_width  = _clipWidth;
+	_height = _clipHeight;
+}
+
+void
 layerExImage::lut(BYTE* pLut)
 {
 	BYTE *src = (BYTE*)_buffer;
@@ -658,4 +668,5 @@ layerExImage::gaussianBlur(float radius /*= 1.0f*/)
 	delete[] cmatrix;
 	delete[] ctable;
 	delete[] tmpbuf;
+	redraw();
 }

@@ -74,14 +74,17 @@ struct layerExBase
 	 * コンストラクタ
 	 */
 	layerExBase(DispatchT obj)
-		: _obj(obj), _pLeft(  obj, TJS_W("imageLeft")),
-		  _pTop(   obj, TJS_W("imageTop")),
+		: _obj(obj),
 		  _pWidth( obj, TJS_W("imageWidth")),
 		  _pHeight(obj, TJS_W("imageHeight")),
 		  _pBuffer(obj, TJS_W("mainImageBufferForWrite")),
 		  _pPitch( obj, TJS_W("mainImageBufferPitch")),
 		  _pUpdate(obj, TJS_W("update")),
-		  _width(0), _height(0), _pitch(0), _buffer(0)
+		  _pClipLeft(  obj, TJS_W("clipLeft")),
+	      _pClipTop(   obj, TJS_W("clipTop")),
+	      _pClipWidth( obj, TJS_W("clipWidth")),
+	      _pClipHeight(obj, TJS_W("clipHeight")),
+		  _width(0), _height(0), _pitch(0), _buffer(0), _clipLeft(0), _clipTop(0), _clipWidth(0), _clipHeight(0)
 	{
 	}
 
@@ -94,7 +97,7 @@ struct layerExBase
 	 * 再描画指定
 	 */
 	virtual void redraw() {
-		tTJSVariant  vars [4] = { _pLeft, _pTop, _pWidth, _pHeight };
+		tTJSVariant  vars [4] = { _pClipLeft, _pClipTop, _pClipWidth, _pClipHeight };
 		tTJSVariant *varsp[4] = { vars, vars+1, vars+2, vars+3 };
 		_pUpdate(4, varsp);
 	}
@@ -107,14 +110,22 @@ struct layerExBase
 		_height = (GeometryT)_pHeight;
 		_buffer = (BufferT)(ObjectCache::IntegerT)_pBuffer;
 		_pitch  = (PitchT)_pPitch;
+		_clipLeft   = (GeometryT)_pClipLeft;
+		_clipTop    = (GeometryT)_pClipTop;
+		_clipWidth  = (GeometryT)_pClipWidth;
+		_clipHeight = (GeometryT)_pClipHeight;
 	}
 
 protected:
-	ObjectT   _pLeft, _pTop, _pWidth, _pHeight, _pBuffer, _pPitch, _pUpdate;
+	ObjectT   _pWidth, _pHeight, _pBuffer, _pPitch, _pUpdate;
 
 	GeometryT _width, _height;
 	BufferT   _buffer;
 	PitchT    _pitch;
+
+	// クリップ情報
+	ObjectT   _pClipLeft, _pClipTop, _pClipWidth, _pClipHeight;
+	GeometryT _clipLeft, _clipTop, _clipWidth, _clipHeight;
 };
 
 #endif
