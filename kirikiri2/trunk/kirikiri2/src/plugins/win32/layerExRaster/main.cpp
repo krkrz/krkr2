@@ -16,7 +16,7 @@ static void log(const tjs_char *format, ...)
 	va_end(args);
 }
 
-#include "layerExBase.hpp"
+#include "../layerExDraw/LayerExBase.hpp"
 
 /*
  * アウトラインベースのテキスト描画メソッドの追加
@@ -36,11 +36,6 @@ public:
 	 * @param time 現在時刻
 	 */
 	void copyRaster(tTJSVariant layer, int maxh, int lines, int cycle, tjs_int64 time) {
-		
-		_width;
-		_height;
-		_buffer;
-		_pitch;
 		
 		// レイヤ画像情報
 		tjs_int width, height, pitch;
@@ -71,20 +66,25 @@ public:
 		
 		// 初期パラメータを計算
 		double rad = - omega * time / cycle * (height/2);
-		
+
+		// クリップ処理
+		rad += omega * _clipTop;
+		_buffer += _pitch * _clipTop + _clipLeft * 4;
+		buffer  +=  pitch * _clipTop + _clipLeft * 4;
+
 		// ラインごとに処理
 		tjs_int n;
-		for (n = 0; n < height; n++, rad += omega) {
+		for (n = 0; n < _clipHeight; n++, rad += omega) {
 			tjs_int d = (tjs_int)(sin(rad) * CurH);
 			if (d >= 0) {
-				int w = width - d;
+				int w = _clipWidth - d;
 				const tjs_uint32 *src = (const tjs_uint32*)(buffer + n * pitch);
 				tjs_uint32 *dest = (tjs_uint32 *)(_buffer + n * _pitch) + d;
 				for (tjs_int i=0;i<w;i++) {
 					*dest++ = *src++;
 				}
 			} else {
-				int w = width + d;
+				int w = _clipWidth + d;
 				const tjs_uint32 *src = (const tjs_uint32*)(buffer + n * pitch) - d;
 				tjs_uint32 *dest = (tjs_uint32 *)(_buffer + n * _pitch);
 				for (tjs_int i=0;i<w;i++) {
@@ -93,7 +93,7 @@ public:
 			}
 		}
 
-//		redraw();
+		redraw();
 	}
 };
 

@@ -946,10 +946,6 @@ LayerExDraw::updateRect(RectF &rect)
  */
 LayerExDraw::LayerExDraw(DispatchT obj)
 	: layerExBase(obj), width(-1), height(-1), pitch(0), buffer(NULL), bitmap(NULL), graphics(NULL),
-	  _pClipLeft(  obj, TJS_W("clipLeft")),
-	  _pClipTop(   obj, TJS_W("clipTop")),
-	  _pClipWidth( obj, TJS_W("clipWidth")),
-	  _pClipHeight(obj, TJS_W("clipHeight")),
 	  clipLeft(-1), clipTop(-1), clipWidth(-1), clipHeight(-1),
 	  smoothingMode(SmoothingModeAntiAlias), textRenderingHint(TextRenderingHintAntiAlias),
 	  metaHDC(NULL), metaBuffer(NULL), metaStream(NULL), metafile(NULL), metaGraphics(NULL),
@@ -995,10 +991,6 @@ LayerExDraw::reset()
 		clipWidth = clipHeight = -1;
 	}
 	// クリッピング領域変更の場合は設定しなおし
-	GeometryT _clipLeft   = (GeometryT)_pClipLeft;
-	GeometryT _clipTop    = (GeometryT)_pClipTop;
-	GeometryT _clipWidth  = (GeometryT)_pClipWidth;
-	GeometryT _clipHeight = (GeometryT)_pClipHeight;
 	if (_clipLeft != clipLeft ||
 		_clipTop  != clipTop  ||
 		_clipWidth != clipWidth ||

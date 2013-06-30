@@ -17,6 +17,12 @@ iTJSDispatch2 *getLayerClass(void)
 typedef unsigned char       *WrtRefT;
 typedef unsigned char const *ReadRefT;
 
+static tjs_uint32 hasImageHint, imageWidthHint, imageHeightHint;
+static tjs_uint32 mainImageBufferHint, mainImageBufferPitchHint, mainImageBufferForWriteHint;
+static tjs_uint32 provinceImageBufferHint, provinceImageBufferPitchHint, provinceImageBufferForWriteHint;
+static tjs_uint32 clipLeftHint, clipTopHint, clipWidthHint, clipHeightHint;
+static tjs_uint32 updateHint;
+
 /**
  * レイヤのサイズとバッファを取得する
  */
@@ -30,20 +36,17 @@ GetLayerSize(iTJSDispatch2 *lay, long &w, long &h, long &pitch)
 
 	// レイヤイメージは在るか？
 	tTJSVariant val;
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("hasImage"), 0, &val, lay)) || (val.AsInteger() == 0)) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("hasImage"), &hasImageHint, &val, lay)) || (val.AsInteger() == 0)) return false;
 
 	// レイヤサイズを取得
-	val.Clear();
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("imageWidth"), 0, &val, lay))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("imageWidth"), &imageWidthHint, &val, lay))) return false;
 	w = (long)val.AsInteger();
 
-	val.Clear();
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("imageHeight"), 0, &val, lay))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("imageHeight"), &imageHeightHint, &val, lay))) return false;
 	h = (long)val.AsInteger();
 
 	// ピッチ取得
-	val.Clear();
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferPitch"), 0, &val, lay))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferPitch"), &mainImageBufferPitchHint, &val, lay))) return false;
 	pitch = (long)val.AsInteger();
 
 	// 正常な値かどうか
@@ -60,10 +63,63 @@ GetLayerBufferAndSize(iTJSDispatch2 *lay, long &w, long &h, WrtRefT &ptr, long &
 
 	// バッファ取得
 	tTJSVariant val;
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), 0, &val, lay))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), &mainImageBufferForWriteHint, &val, lay))) return false;
 	ptr = reinterpret_cast<WrtRefT>(val.AsInteger());
 	return  (ptr != 0);
 }
+
+/**
+ * クリップ領域のサイズとバッファを取得する
+ */
+static bool
+GetClipSize(iTJSDispatch2 *lay, long &l, long &t, long &w, long &h, long &pitch)
+{
+	iTJSDispatch2 *layerClass = getLayerClass();
+
+	// レイヤインスタンス以外ではエラー
+	if (!lay || TJS_FAILED(lay->IsInstanceOf(0, 0, 0, TJS_W("Layer"), lay))) return false;
+
+	// レイヤイメージは在るか？
+	tTJSVariant val;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("hasImage"), &hasImageHint, &val, lay)) || (val.AsInteger() == 0)) return false;
+
+	// クリップサイズを取得
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("clipLeft"), &clipLeftHint, &val, lay))) return false;
+	l = (long)val.AsInteger();
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("clipTop"),  &clipTopHint, &val, lay))) return false;
+	t = (long)val.AsInteger();
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("clipWidth"), &clipWidthHint, &val, lay))) return false;
+	w = (long)val.AsInteger();
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("clipHeight"), &clipHeightHint, &val, lay))) return false;
+	h = (long)val.AsInteger();
+
+	// ピッチ取得
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferPitch"), &mainImageBufferPitchHint, &val, lay))) return false;
+	pitch = (long)val.AsInteger();
+
+	// 正常な値かどうか
+	return (w > 0 && h > 0 && pitch != 0);
+}
+
+// 書き込み用
+static bool
+GetClipBufferAndSize(iTJSDispatch2 *lay, long &l, long &t, long &w, long &h, WrtRefT &ptr, long &pitch)
+{
+	iTJSDispatch2 *layerClass = getLayerClass();
+
+	if (!GetClipSize(lay, l, t, w, h, pitch)) return false;
+	
+	// バッファ取得
+	tTJSVariant val;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), &mainImageBufferForWriteHint, &val, lay))) return false;
+	ptr = reinterpret_cast<WrtRefT>(val.AsInteger());
+	if (ptr != 0) {
+		ptr += pitch * t + l * 4;
+		return true;
+	}
+	return false;
+}
+
 
 /**
  * Layer.copyRightBlueToLeftAlpha
@@ -96,6 +152,8 @@ copyRightBlueToLeftAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **p
 		sbuf += dpitch;
 		dbuf += dpitch;
 	}
+	ncbPropAccessor layObj(lay);
+	layObj.FuncCall(0, L"update", &updateHint, NULL, 0, 0, dw, dh);
 	return TJS_S_OK;
 }
 
@@ -130,6 +188,8 @@ copyBottomBlueToTopAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **p
 		sbuf += dpitch;
 		dbuf += dpitch;
 	}
+	ncbPropAccessor layObj(lay);
+	layObj.FuncCall(0, L"update", &updateHint, NULL, 0, 0, dw, dh);
 	return TJS_S_OK;
 }
 
@@ -138,12 +198,12 @@ fillAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispa
 {
 	// 書き込み先
 	WrtRefT dbuf = 0;
-	long dw, dh, dpitch;
-	if (!GetLayerBufferAndSize(lay, dw, dh, dbuf, dpitch)) {
+	long l, t, dw, dh, dpitch;
+	if (!GetClipBufferAndSize(lay, l, t, dw, dh, dbuf, dpitch)) {
 		TVPThrowExceptionMessage(TJS_W("dest must be Layer."));
 	}
-	// 全部 0xffでうめる
 	dbuf += 3;
+	// 全部 0xffでうめる
 	for (int i=0;i<dh;i++) {
 		WrtRefT q = dbuf;   // A領域
 		for (int j=0;j<dw;j++) {
@@ -152,6 +212,8 @@ fillAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispa
 		}
 		dbuf += dpitch;
 	}
+	ncbPropAccessor layObj(lay);
+	layObj.FuncCall(0, L"update", &updateHint, NULL, l, t, dw, dh);
 	return TJS_S_OK;
 }
 
@@ -162,31 +224,33 @@ copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 
 	ReadRefT sbuf = 0;
 	WrtRefT  dbuf = 0;
-	long w, h, spitch, dpitch, threshold = -1;
+	long l, t, w, h, spitch, dpitch, threshold = -1;
 	if (numparams > 0 && param[0]->Type() != tvtVoid) {
 		threshold = (long)(param[0]->AsInteger());
 	}
 
-	if (!GetLayerSize(lay, w, h, spitch)) {
+	if (!GetClipSize(lay, l, t, w, h, spitch)) {
 		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
 	}
 
 	tTJSVariant val;
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBuffer"), 0, &val, lay)) ||
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBuffer"), &mainImageBufferHint, &val, lay)) ||
 		(sbuf = reinterpret_cast<ReadRefT>(val.AsInteger())) == NULL) {
 		TVPThrowExceptionMessage(TJS_W("src has no image."));
 	}
+	sbuf += spitch * t + l * 4;
 
 	val.Clear();
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferForWrite"), 0, &val, lay)) ||
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferForWrite"), &provinceImageBufferForWriteHint, &val, lay)) ||
 		(dbuf = reinterpret_cast<WrtRefT>(val.AsInteger())) == NULL) {
 		TVPThrowExceptionMessage(TJS_W("dst has no province image."));
 	}
 	val.Clear();
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferPitch"), 0, &val, lay)) ||
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferPitch"), &provinceImageBufferPitchHint, &val, lay)) ||
 		(dpitch = (long)val.AsInteger()) == 0) {
 		TVPThrowExceptionMessage(TJS_W("dst has no province pitch."));
 	}
+	dbuf += dpitch * t + l;
 
 	sbuf += 3;
 	unsigned char th = (unsigned char)threshold;
@@ -211,6 +275,8 @@ copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 		sbuf += spitch;
 		dbuf += dpitch;
 	}
+	ncbPropAccessor layObj(lay);
+	layObj.FuncCall(0, L"update", &updateHint, NULL, l, t, w, h);
 	return TJS_S_OK;
 }
 
@@ -218,13 +284,14 @@ static tjs_error TJS_INTF_METHOD
 clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *dst)
 {
 	iTJSDispatch2 *layerClass = getLayerClass();
+	ncbPropAccessor layObj(dst);
 
 	ReadRefT sbuf = 0;
 	WrtRefT  dbuf = 0;
 	iTJSDispatch2 *src = 0;
 	tTJSVariant val;
 	long w, h;
-	long dx, dy, diw, dih, dpitch;
+	long dx, dy, dl, dt, diw, dih, dpitch;
 	long sx, sy, siw, sih, spitch;
 	unsigned char clrval = 0;
 	bool clr = false;
@@ -244,12 +311,17 @@ clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSD
 	}
 	if (w <= 0|| h <= 0) return TJS_E_INVALIDPARAM;
 
-	if (!GetLayerSize(dst, diw, dih, dpitch)) {
+	// 描画先クリッピング領域
+	if (!GetClipSize(dst, dl, dt, diw, dih, dpitch)) {
 		TVPThrowExceptionMessage(TJS_W("dest must be Layer."));
 	}
 	if (!GetLayerSize(src, siw, sih, spitch)) {
 		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
 	}
+
+	// 描画領域のクリッピング対応
+	dx -= dl;
+	dy -= dt;
 
 	// クリッピング
 
@@ -281,13 +353,15 @@ clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSD
 	if (w <= 0 || h <= 0) goto none;
 
 	// バッファ取得
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBuffer"), 0, &val, src))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBuffer"), &mainImageBufferHint, &val, src))) return false;
 	sbuf = reinterpret_cast<ReadRefT>(val.AsInteger());
 
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), 0, &val, dst))) return false;
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), &mainImageBufferForWriteHint, &val, dst))) return false;
 	dbuf = reinterpret_cast<WrtRefT>(val.AsInteger());
-
+	
 	if (!sbuf || !dbuf) TVPThrowExceptionMessage(TJS_W("Layer has no images."));
+
+	dbuf += dpitch * dt + dl * 4;
 
 	long x, y;
 	WrtRefT  p;
@@ -307,6 +381,11 @@ clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSD
 		}
 		if (clr) for (x = dx+w; x < diw; x++, p+=4) *p = clrval;
 	}
+	if (clr) {
+		layObj.FuncCall(0, L"update", &updateHint, NULL, dl, dt, diw, dih);
+	} else {
+		layObj.FuncCall(0, L"update", &updateHint, NULL, dl+dx, dt+dy, w, h);
+	}
 	return TJS_S_OK;
 none:
 	// 領域範囲外で演算が行われない場合
@@ -315,6 +394,7 @@ none:
 			WrtRefT  p = dbuf + y * dpitch + 3;
 			for (long x = 0; x < diw; x++, p+=4) *p = clrval;
 		}
+		layObj.FuncCall(0, L"update", &updateHint, NULL, dl, dt, diw, dih);
 	}
 	return TJS_S_OK;
 }
@@ -331,8 +411,8 @@ fillByProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJS
 
 	// 書き込み先
 	WrtRefT dbuf = 0;
-	long dw, dh, dpitch;
-	if (!GetLayerBufferAndSize(lay, dw, dh, dbuf, dpitch)) {
+	long l, t, dw, dh, dpitch;
+	if (!GetClipBufferAndSize(lay, l, t, dw, dh, dbuf, dpitch)) {
 		TVPThrowExceptionMessage(TJS_W("must be Layer."));
 	}
 
@@ -340,16 +420,17 @@ fillByProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJS
 	long spitch;
 	{
 		tTJSVariant val;
-		if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBuffer"), 0, &val, lay)) ||
+		if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBuffer"), &provinceImageBufferHint, &val, lay)) ||
 			(sbuf = reinterpret_cast<ReadRefT>(val.AsInteger())) == NULL) {
 			TVPThrowExceptionMessage(TJS_W("no province image."));
 		}
-		if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferPitch"), 0, &val, lay)) ||
+		if (TJS_FAILED(layerClass->PropGet(0, TJS_W("provinceImageBufferPitch"), &provinceImageBufferPitchHint, &val, lay)) ||
 			(spitch = (long)val.AsInteger()) == 0) {
 			TVPThrowExceptionMessage(TJS_W("no province pitch."));
 		}
 	}
-
+	sbuf += t * spitch + l;
+	
 	for (int y = 0; y < dh; y++) {
 		ReadRefT q = sbuf;
 		DWORD *p = (DWORD*)dbuf;
@@ -364,6 +445,8 @@ fillByProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJS
 		sbuf += spitch;
 		dbuf += dpitch;
 	}
+	ncbPropAccessor layObj(lay);
+	layObj.FuncCall(0, L"update", &updateHint, NULL, l, t, dw, dh);
 	return TJS_S_OK;
 }
 
