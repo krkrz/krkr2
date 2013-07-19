@@ -1855,6 +1855,9 @@ class KValueWidget extends KWidget
    * 永続化辞書を値にバインドする
    ------------------------------*/
   function bindPersistentDictionary(dict) {
+    if (_isAvoidDictionaryRegistration)
+      return;
+
     if (name !== void) {
       this.dict = dict;
       value = dict.init(name, value);
