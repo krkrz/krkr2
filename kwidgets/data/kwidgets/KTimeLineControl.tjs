@@ -2113,6 +2113,7 @@ class KTimeLineLoopItem extends KTimeLineItem
     super.KTimeLineItem(label, name);
     singleFrameColor = 0xFF0000;
     continuousFrameColor = 0xFF8080;
+    markerMask = TIMELINE_MARKER_MASK_LEFT | TIMELINE_MARKER_MASK_RIGHT;
   }
 
   function buildTimeLinneRightClickContextMenu(menu, time) {
