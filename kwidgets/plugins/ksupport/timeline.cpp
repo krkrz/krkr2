@@ -8,7 +8,7 @@
 
 ///----------------------------------------------------------------------
 /// 変数
-tjs_uint32 timeHint, typeHint ,timeLineFrameWidthHint, timelineFrameHeightHint,_singleFrameColorHint, _tweenFrameColorHint, _continuousFrameColorHint, fillRectHint, winDarken2Hint, winDarken1Hint, winLighten1Hint, winWhiteHint, canvasHint, fontHeightHint, getTextWidthHint, drawTextHint, frameListHint, drawFrameHint, selectionHint, colorRectHint, layerHint, topHint, oneSecondFrameBgLayerHint, halfSecondFrameBgLayerHint, fifthFrameBgLayerHint, normalFrameBgLayerHint, copyRectHint, operateRectHint, widthHint, heightHint, frameTopMarkerLayerHint, dashLineAppHint, drawLineHint, fontHint, rootHint, ownerHint, framePerSecondHint;
+tjs_uint32 timeHint, typeHint ,timeLineFrameWidthHint, timelineFrameHeightHint,_singleFrameColorHint, _tweenFrameColorHint, _continuousFrameColorHint, fillRectHint, winDarken2Hint, winDarken1Hint, winLighten1Hint, winWhiteHint, canvasHint, fontHeightHint, getTextWidthHint, drawTextHint, frameListHint, drawFrameHint, selectionHint, colorRectHint, layerHint, topHint, oneSecondFrameBgLayerHint, halfSecondFrameBgLayerHint, fifthFrameBgLayerHint, normalFrameBgLayerHint, copyRectHint, operateRectHint, widthHint, heightHint, frameLeftMarkerLayerHint, frameRightMarkerLayerHint, dashLineAppHint, drawLineHint, fontHint, rootHint, ownerHint, framePerSecondHint;
 ;
 
 enum {
@@ -17,6 +17,14 @@ enum {
   TIMELINE_FRAME_TYPE_CONTINUOUS = 2,
   TIMELINE_FRAME_TYPE_TWEEN = 3,
 };
+
+enum
+{
+  TIMELINE_MARKER_MASK_NONE = 0,
+  TIMELINE_MARKER_MASK_LEFT = 1,
+  TIMELINE_MARKER_MASK_RIGHT = 2,
+};
+
 
 ///----------------------------------------------------------------------
 /// フレームを検索する
@@ -119,7 +127,7 @@ void timeline_draw_bg(tTJSVariant item, tTJSVariant view, tjs_int y, tjs_int fro
 
 ///----------------------------------------------------------------------
 /// フレームを描画する
-void timeline_draw_frame(tTJSVariant item, tTJSVariant view, tjs_int y, tTJSVariant frame, tjs_int length)
+void timeline_draw_frame(tTJSVariant item, tTJSVariant view, tjs_int y, tTJSVariant frame, tjs_int length, tjs_uint markerMask)
 {
   ncbPropAccessor itemObj(item);
   ncbPropAccessor viewObj(view);
@@ -166,25 +174,39 @@ void timeline_draw_frame(tTJSVariant item, tTJSVariant view, tjs_int y, tTJSVari
 		     length * TIMELINE_FRAME_WIDTH - 1,
 		     TIMELINE_FRAME_HEIGHT - 1,
 		     color);
+    bool leftMarker = (markerMask & TIMELINE_MARKER_MASK_LEFT) != 0;
+    bool rightMarker = (markerMask & TIMELINE_MARKER_MASK_RIGHT) != 0;
+    if (rightMarker && leftMarker && length == 1)
+      rightMarker = false;
     // 左マーカー描画
-    tTJSVariant frameTopMarkerLayer = viewObj.GetValue(L"frameTopMarkerLayer", ncbTypedefs::Tag<tTJSVariant>(), 0, &frameTopMarkerLayerHint);
-    ncbPropAccessor frameTopMarkerLayerObj(frameTopMarkerLayer);
-    tjs_int mw = frameTopMarkerLayerObj.GetValue(L"width", ncbTypedefs::Tag<tjs_int>(), 0, &widthHint);
-    tjs_int mh = frameTopMarkerLayerObj.GetValue(L"height", ncbTypedefs::Tag<tjs_int>(), 0, &heightHint);
-    viewObj.FuncCall(0, L"operateRect", &operateRectHint, NULL,
-                     frameTime * TIMELINE_FRAME_WIDTH, y, 
-                     frameTopMarkerLayer, 0, 0, mw, mh);
+    if (leftMarker) {
+      tTJSVariant frameLeftMarkerLayer = viewObj.GetValue(L"frameLeftMarkerLayer", ncbTypedefs::Tag<tTJSVariant>(), 0, &frameLeftMarkerLayerHint);
+      ncbPropAccessor frameLeftMarkerLayerObj(frameLeftMarkerLayer);
+      tjs_int mw = frameLeftMarkerLayerObj.GetValue(L"width", ncbTypedefs::Tag<tjs_int>(), 0, &widthHint);
+      tjs_int mh = frameLeftMarkerLayerObj.GetValue(L"height", ncbTypedefs::Tag<tjs_int>(), 0, &heightHint);
+      viewObj.FuncCall(0, L"operateRect", &operateRectHint, NULL,
+                       frameTime * TIMELINE_FRAME_WIDTH, y, 
+                       frameLeftMarkerLayer, 0, 0, mw, mh);
+    }
     // 右マーカー描画
-    //      for (var i = 0; i < cw; i++) 
-    //        view.fillRect((frame.time + length) * TIMELINE_FRAME_WIDTH - 4 - i, y + (TIMELINE_FRAME_HEIGHT - (cw - i * 2)) / 2, 1, cw - i * 2, WIN_DARKEN2);
+    if (rightMarker) {
+      tTJSVariant frameRightMarkerLayer = viewObj.GetValue(L"frameRightMarkerLayer", ncbTypedefs::Tag<tTJSVariant>(), 0, &frameRightMarkerLayerHint);
+      ncbPropAccessor frameRightMarkerLayerObj(frameRightMarkerLayer);
+      tjs_int mw = frameRightMarkerLayerObj.GetValue(L"width", ncbTypedefs::Tag<tjs_int>(), 0, &widthHint);
+      tjs_int mh = frameRightMarkerLayerObj.GetValue(L"height", ncbTypedefs::Tag<tjs_int>(), 0, &heightHint);
+      viewObj.FuncCall(0, L"operateRect", &operateRectHint, NULL,
+                       (frameTime + length) * TIMELINE_FRAME_WIDTH - mw, y, 
+                       frameRightMarkerLayer, 0, 0, mw, mh);
+    }
     // トゥイーンの破線描画
+    tjs_int fromTime = frameTime + (leftMarker ? 1 : 0), toTime = frameTime + length - (rightMarker ? 1 : 0);
     if (frameType == TIMELINE_FRAME_TYPE_TWEEN) {
       tTJSVariant dashLineApp = viewObj.GetValue(L"dashLineApp", ncbTypedefs::Tag<tTJSVariant>(), 0, &dashLineAppHint);
       if (dashLineApp.Type() != tvtVoid) {
         viewObj.FuncCall(0, L"drawLine", &drawLineHint, NULL,
-                         dashLineApp, (frameTime + 1) * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1, (frameTime + length) * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1);
+                         dashLineApp, fromTime * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1, toTime * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1);
       } else {
-        for (tjs_int i = frameTime + 1; i < frameTime + length; i++) {
+        for (tjs_int i = fromTime; i < toTime; i++) {
           viewObj.FuncCall(0, L"fillRect", &fillRectHint, NULL,
                            i * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1, TIMELINE_FRAME_WIDTH / 2 - 2, 1, WIN_DARKEN2);
           viewObj.FuncCall(0, L"fillRect", &fillRectHint, NULL,

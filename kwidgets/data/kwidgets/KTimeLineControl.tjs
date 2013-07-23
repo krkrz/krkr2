@@ -14,6 +14,10 @@ global.TIMELINE_FRAME_TYPE_SINGLE = 1;
 global.TIMELINE_FRAME_TYPE_CONTINUOUS = 2;
 global.TIMELINE_FRAME_TYPE_TWEEN = 3;
 
+global.TIMELINE_MARKER_MASK_NONE = 0;
+global.TIMELINE_MARKER_MASK_LEFT = 1;
+global.TIMELINE_MARKER_MASK_RIGHT = 2;
+
 global.TIMELINE_FRAME_WIDTH_LIST = [ 4, 6, 10, 14 ];
 global.TIMELINE_FRAME_WIDTH_LABEL_LIST = [ "SS", "S", "M", "L" ];
 
@@ -336,7 +340,8 @@ class KTimeLineLayerView extends KVirtualWidget
   // レイヤリストへの参照
   var list;
   // フレームトップマーカー
-  var frameTopMarkerLayer;
+  var frameLeftMarkerLayer;
+  var frameRightMarkerLayer;
   var oneSecondFrameBgLayer;
   var halfSecondFrameBgLayer;
   var fifthFrameBgLayer;
@@ -392,7 +397,8 @@ class KTimeLineLayerView extends KVirtualWidget
     rangeDragMoving = false;
     updateCursor();
 
-    frameTopMarkerLayer = new global.Layer(window, this);
+    frameLeftMarkerLayer = new global.Layer(window, this);
+    frameRightMarkerLayer = new global.Layer(window, this);
     oneSecondFrameBgLayer = new global.Layer(window, this);
     halfSecondFrameBgLayer = new global.Layer(window, this);
     fifthFrameBgLayer = new global.Layer(window, this);
@@ -420,11 +426,16 @@ class KTimeLineLayerView extends KVirtualWidget
   }
 
   function onUpdateFrameWidth() {
-    frameTopMarkerLayer.setSize(6, TIMELINE_FRAME_HEIGHT);
-    frameTopMarkerLayer.fillRect(0, 0, 6, TIMELINE_FRAME_HEIGHT, 0);
+    frameLeftMarkerLayer.setImageSize(6, TIMELINE_FRAME_HEIGHT);
+    frameLeftMarkerLayer.setSize(6, TIMELINE_FRAME_HEIGHT);
+    frameLeftMarkerLayer.fillRect(0, 0, 6, TIMELINE_FRAME_HEIGHT, 0);
     var cw = 7;
     for (var i = 0; i < cw - 2; i++) 
-      frameTopMarkerLayer.fillRect(2 + i, (TIMELINE_FRAME_HEIGHT - (cw - i * 2)) / 2, 1, cw - i * 2, WIN_DARKEN2);
+      frameLeftMarkerLayer.fillRect(2 + i, (TIMELINE_FRAME_HEIGHT - (cw - i * 2)) / 2, 1, cw - i * 2, WIN_DARKEN2);
+
+    frameRightMarkerLayer.assignImages(frameLeftMarkerLayer);
+    frameRightMarkerLayer.flipLR();
+    frameRightMarkerLayer.setSize(6, TIMELINE_FRAME_HEIGHT);
 
     updateBgLayer(oneSecondFrameBgLayer, 0xffffe0f2);
     updateBgLayer(halfSecondFrameBgLayer, 0xffe0ffff);
@@ -1113,6 +1124,8 @@ class KTimeLineItem extends KListItem
   var _tweenFrameColor = 0xffbfbf;
   // 選択範囲
   var selection = void;
+  // マーカーマスク
+  var markerMask = TIMELINE_MARKER_MASK_LEFT;
 
   /**------------------------------
    * コンストラクタ
@@ -1830,7 +1843,7 @@ class KTimeLineItem extends KListItem
 
   // フレームを描画する
   function drawFrame(view, y, frame, length) {
-    timeline_draw_frame(this, view, y, frame, length);
+    timeline_draw_frame(this, view, y, frame, length, markerMask);
     return;
 
     // C++リファレンス実装
@@ -1857,21 +1870,25 @@ class KTimeLineItem extends KListItem
                     length * TIMELINE_FRAME_WIDTH - 1,
                     TIMELINE_FRAME_HEIGHT - 1,
                     color);
+      var leftMarker = markerMask & TIMELINE_MARKER_MASK_LEFT;
+      var rightMarker = markerMask & TIMELINE_MARKER_MASK_RIGHT;
+      if (rightMarker && leftMarker && length == 1)
+        rightMarker = false;
       // 左マーカー描画
-      view.operateRect(frame.time * TIMELINE_FRAME_WIDTH, y, 
-                       view.frameTopMarkerLayer, 0, 0, view.frameTopMarkerLayer.width, view.frameTopMarkerLayer.height);
-//      var cw = 7;
-//      for (var i = 0; i < cw - 2; i++) 
-//        view.fillRect(frame.time * TIMELINE_FRAME_WIDTH + 2 + i, y + (TIMELINE_FRAME_HEIGHT - (cw - i * 2)) / 2, 1, cw - i * 2, WIN_DARKEN2);
+      if (leftMarker)
+        view.operateRect(frame.time * TIMELINE_FRAME_WIDTH, y, 
+                         view.frameLeftMarkerLayer, 0, 0, view.frameLeftMarkerLayer.width, view.frameLeftMarkerLayer.height);
       // 右マーカー描画
-//      for (var i = 0; i < cw; i++) 
-//        view.fillRect((frame.time + length) * TIMELINE_FRAME_WIDTH - 4 - i, y + (TIMELINE_FRAME_HEIGHT - (cw - i * 2)) / 2, 1, cw - i * 2, WIN_DARKEN2);
+      if (rightMarker)
+        view.operateRect((frame.time + length) * TIMELINE_FRAME_WIDTH - view.frameRightMarkerLayer.width, y, 
+                         view.frameRightMarkerLayer, 0, 0, view.frameRightMarkerLayer.width, view.frameRightMarkerLayer.height);
       // トゥイーンの破線描画
+      var fromTime = frame.time + (leftMarker ? 1 : 0), toTime = frame.time + length - (rightMarker ? 1 : 0);
       if (frame.type == TIMELINE_FRAME_TYPE_TWEEN) {
         if (view.dashLineApp !== void) {
-          view.drawLine(view.dashLineApp, (frame.time + 1) * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1, (frame.time + length) * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1);
+          view.drawLine(view.dashLineApp, (fromTime) * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1, (toTime) * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1);
         } else {
-          for (var i = frame.time + 1; i < frame.time + length; i++) {
+          for (var i = fromTime; i < toTime; i++) {
             view.fillRect(i * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT / 2 - 1, TIMELINE_FRAME_WIDTH / 2 - 2, 1, WIN_DARKEN2);
             view.fillRect(i * TIMELINE_FRAME_WIDTH + TIMELINE_FRAME_WIDTH / 2, y + TIMELINE_FRAME_HEIGHT / 2 - 1, TIMELINE_FRAME_WIDTH / 2 - 2, 1, WIN_DARKEN2);
           }
