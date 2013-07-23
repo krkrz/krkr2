@@ -464,13 +464,13 @@ class KList extends KVirtualWidget
     }
 
     var prevSelection = selection;
-    selection = item;
     if (prevSelection !== void) {
       prevSelection.onDeselect();
       prevSelection.drawLayer();
       for (var i = 0; i < prevAncestors.count; i++)
-	prevAncestors[i].onDescendantDeselect();
+        prevAncestors[i].onDescendantDeselect();
     }
+    selection = item;
     if (selection == void) {
       this.selectionIndex = -1;
       drawSelection();

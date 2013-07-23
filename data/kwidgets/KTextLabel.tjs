@@ -8,7 +8,7 @@
  ----------------------------------------------------------------------*/
 class KTextLabel extends KWidget
 {
-  var _label;
+  var _label = "";
   var lineSpacing = 1;
   var _maxLabelWidth = 0;
 
