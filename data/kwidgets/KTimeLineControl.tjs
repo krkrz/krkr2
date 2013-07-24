@@ -2270,6 +2270,25 @@ class KTimeLineLoopItem extends KTimeLineItem
   }
 }
 
+
+/**----------------------------------------------------------------------
+ * フレーム指定用TextInput 
+ ----------------------------------------------------------------------*/
+class KFrameTextInput extends KTextInput
+{
+  var owner;
+  function KFrameTextInput(_owner, window, w, h, type, name) {
+    owner = _owner;
+    super.KTextInput(window, w, h, type, name);
+  }
+
+  function onValueModified(value) {
+    super.onValueModified(value);
+    owner.selectedTime = value;
+    owner._layerView.notifyMove();
+  }
+}
+
 /**----------------------------------------------------------------------
  * タイムラインコントロール
  ----------------------------------------------------------------------*/
@@ -2281,6 +2300,8 @@ class KTimeLineControl extends KHorizontalSpliterLayout
   var _label;
   // 現在選択している時間
   var _selectedTime;
+  //
+  var _timeInputEnabled = null;
   // fps
   var _framePerSecond;
   // 再生中か？
@@ -2401,7 +2422,8 @@ class KTimeLineControl extends KHorizontalSpliterLayout
     _leftGrid.add(0, 0, new KStatusBar(window, "_titleLabel"));
     _leftGrid.add(1, 0, new KGridLayout(window, "additionalControlGrid"));
     _leftGrid.add(2, 0, new KTextButton(window, "M", "_viewWidthButton"));
-    _leftGrid.add(0, 2, new KStatusBar(window, "_statusBar"), 3);
+    _leftGrid.add(0, 2, new global.KGridLayout(window, "_frameGrid"), 3);
+
     _rightGrid.add(1, 0, new KSpacer(window, _layerViewScroll.verticalBar.width));
     _layerViewScroll.onChildViewModified = this.onLayerViewModified;
     _layerListScroll.onChildViewModified = this.onLayerListModified;
@@ -2410,10 +2432,6 @@ class KTimeLineControl extends KHorizontalSpliterLayout
     _titleLabel.fontHeight = TIMELINE_LOCATOR_HEIGHT - 6;
     _titleLabel.margin = 3;
     _titleLabel.attachToWindow = false;
-    _statusBar.font.bold = true;
-    _statusBar.fontHeight = _layerViewScroll.horizontalBar.height - 10;
-    _statusBar.marginTop = _statusBar.marginBottom = 5;
-    _statusBar.attachToWindow = false;
     _viewWidthButton.alignHorizontal = ALIGN_RIGHT;
     _viewWidthButton.alignVertical = ALIGN_CENTER;
     _viewWidthButton.child.setMargin(2, 2);
@@ -2429,8 +2447,6 @@ class KTimeLineControl extends KHorizontalSpliterLayout
 
     splitRatio = 0;
 
-    redrawStatusBar();
-
     // ウィジェットのデフォルトパラメータ群を復帰。
     window.defaultMarginLeft =  defaultMarginLeft;
     window.defaultMarginRight = defaultMarginRight;
@@ -2440,7 +2456,11 @@ class KTimeLineControl extends KHorizontalSpliterLayout
     window.defaultAlignHorizontal = defaultAlignHorizontal;
     window.defaultSpaceVertical = defaultSpaceVertical;
     window.defaultSpaceHorizontal = defaultSpaceHorizontal;
- }
+
+    // ステータスバー生成 
+    timeInputEnabled = 0;
+    redrawStatusBar();
+  }
 
   /*------------------------------
    * ファイナライザ
@@ -2598,6 +2618,34 @@ class KTimeLineControl extends KHorizontalSpliterLayout
       redrawStatusBar();
       invalidateMaxTime(false);
     }      
+  }
+
+  /**------------------------------
+   * 0以外を設定すると選択フレーム位置をテキスト入力できる 
+   ------------------------------*/
+  property timeInputEnabled {
+    getter {
+      return _timeInputEnabled;
+    }
+    setter(v) {
+      if(_timeInputEnabled != v){
+        _timeInputEnabled = v;
+
+        _frameGrid.removeAll();
+        if(timeInputEnabled){
+          _frameGrid.add(0, 0, new KFrameTextInput(this, window, 30, 20, TEXT_DIGIT, "_frameText"));
+          _frameGrid.add(1, 0, new KStatusBar(window, "_statusBar"));
+        } else {
+          _frameGrid.add(0, 0, new KStatusBar(window, "_statusBar"));
+        }
+        _statusBar.font.bold = true;
+        _statusBar.fontHeight = _layerViewScroll.horizontalBar.height - 10;
+        _statusBar.marginTop = _statusBar.marginBottom = 5;
+        _statusBar.attachToWindow = false;
+
+        redrawStatusBar();
+      }
+    }
   }
 
   /**------------------------------
@@ -2838,8 +2886,13 @@ class KTimeLineControl extends KHorizontalSpliterLayout
 
   // ステータスバーを再描画
   function redrawStatusBar {
-    _statusBar.label = "  %d  %0.1ffps  %0.1fs".sprintf(selectedTime, framePerSecond, selectedTime / framePerSecond);
-  }
+    if(timeInputEnabled){
+      _frameText.value = string(selectedTime);
+      _statusBar.label = " %0.1ffps  %0.1fs".sprintf(framePerSecond, selectedTime / framePerSecond);
+    } else {
+      _statusBar.label = "  %d  %0.1ffps  %0.1fs".sprintf(selectedTime, framePerSecond, selectedTime / framePerSecond);
+    }
+ }
 
   // タイムラインビューの横幅を必要に応じて自動的に拡張する
   function invalidateMaxTime(calcLastTime = true) {
