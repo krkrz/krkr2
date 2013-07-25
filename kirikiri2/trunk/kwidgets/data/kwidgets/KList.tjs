@@ -1769,6 +1769,13 @@ class KListItem
     }
   }
 
+  // window‚ğQÆ‚·‚é
+  property window {
+    getter {
+      return root.window;
+    }
+  }
+
   // •`‰æ‚ğXV‚·‚é
   function updateItems {
     var r = this.root;
