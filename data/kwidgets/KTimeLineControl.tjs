@@ -1117,11 +1117,14 @@ class KTimeLineItem extends KListItem
   // フレーム配列
   var frameList;
   // シングルフレーム描画色
-  var _singleFrameColor = 0xbfffff;
+  var _singleFrameLeftColor = 0xbfffff;
+  var _singleFrameRightColor = 0xbfffff;
   // 連続フレーム描画色
-  var _continuousFrameColor = 0xbfffff;
+  var _continuousFrameLeftColor = 0xbfffff;
+  var _continuousFrameRightColor = 0xbfffff;
   // 補完フレーム描画色
-  var _tweenFrameColor = 0xffbfbf;
+  var _tweenFrameLeftColor = 0xffbfbf;
+  var _tweenFrameRightColor = 0xffbfbf;
   // 選択範囲
   var selection = void;
   // マーカーマスク
@@ -1522,12 +1525,29 @@ class KTimeLineItem extends KListItem
    ------------------------------*/
   property singleFrameColor {
     getter {
-      return _singleFrameColor;
+      return _singleFrameLeftColor;
     }
     setter(v) {
-      if (v == _singleFrameColor)
-        return;
-      _singleFrameColor = v;
+      _singleFrameLeftColor = v;
+      _singleFrameRightColor = v;
+    }
+  }
+
+  property singleFrameLeftColor {
+    getter {
+      return _singleFrameLeftColor;
+    }
+    setter(v) {
+      _singleFrameLeftColor = v;
+    }
+  }
+
+  property singleFrameRightColor {
+    getter {
+      return _singleFrameRightColor;
+    }
+    setter(v) {
+      _singleFrameRightColor = v;
     }
   }
   
@@ -1541,12 +1561,29 @@ class KTimeLineItem extends KListItem
    ------------------------------*/
   property continuousFrameColor {
     getter {
-      return _continuousFrameColor;
+      return _continuousFrameLeftColor;
     }
     setter(v) {
-      if (v == _continuousFrameColor)
-        return;
-      _continuousFrameColor = v;
+      _continuousFrameLeftColor = v;
+      _continuousFrameRightColor = v;
+    }
+  }
+
+  property continuousFrameLeftColor {
+    getter {
+      return _continuousFrameLeftColor;
+    }
+    setter(v) {
+      _continuousFrameLeftColor = v;
+    }
+  }
+
+  property continuousFrameRightColor {
+    getter {
+      return _continuousFrameRightColor;
+    }
+    setter(v) {
+      _continuousFrameRightColor = v;
     }
   }
 
@@ -1560,12 +1597,29 @@ class KTimeLineItem extends KListItem
    ------------------------------*/
   property tweenFrameColor {
     getter {
-      return _tweenFrameColor;
+      return _tweenFrameLeftColor;
     }
     setter(v) {
-      if (v == _tweenFrameColor)
-        return;
-      _tweenFrameColor = v;
+      _tweenFrameLeftColor = v;
+      _tweenFrameRightColor = v;
+    }
+  }
+
+  property tweenFrameLeftColor {
+    getter {
+      return _tweenFrameLeftColor;
+    }
+    setter(v) {
+      _tweenFrameLeftColor = v;
+    }
+  }
+
+  property tweenFrameRightColor {
+    getter {
+      return _tweenFrameRightColor;
+    }
+    setter(v) {
+      _tweenFrameRightColor = v;
     }
   }
 
@@ -1853,23 +1907,27 @@ class KTimeLineItem extends KListItem
       return;
     case TIMELINE_FRAME_TYPE_SINGLE:
       drawBg(view, y, frame.time + 1, frame.time + length - 1);
-      view.fillRect(frame.time * TIMELINE_FRAME_WIDTH, y, TIMELINE_FRAME_WIDTH - 1, TIMELINE_FRAME_HEIGHT - 1, _singleFrameColor | 0xFF000000);
+      view.fillGradientRectLR(frame.time * TIMELINE_FRAME_WIDTH, y, TIMELINE_FRAME_WIDTH - 1, TIMELINE_FRAME_HEIGHT - 1, _singleFrameLeftColor | 0xFF000000, _singleFrameRightColor | 0xFF000000);
       return;
     case TIMELINE_FRAME_TYPE_CONTINUOUS:
     case TIMELINE_FRAME_TYPE_TWEEN:
-      var color;
-      if (frame.type == TIMELINE_FRAME_TYPE_CONTINUOUS)
-        color = _continuousFrameColor;
-      else
-        color = _tweenFrameColor;
-      color = color | 0xFF000000;
+      var leftColor, rightColor;
+      if (frame.type == TIMELINE_FRAME_TYPE_CONTINUOUS) {
+        leftColor = _continuousFrameLeftColor;
+        rightColor = _continuousFrameRightColor;
+      } else {
+        leftColor = _tweenFrameLeftColor;
+        rightColor = _tweenFrameRightColor;
+      }
+      leftColor = leftColor | 0xFF000000;
+      rightColor = rightColor | 0xFF000000;
       // BG描画
       view.fillRect((frame.time + length) * TIMELINE_FRAME_WIDTH - 1, y, 1, TIMELINE_FRAME_HEIGHT, WIN_DARKEN2);
       view.fillRect(frame.time * TIMELINE_FRAME_WIDTH, y + TIMELINE_FRAME_HEIGHT - 1, length * TIMELINE_FRAME_WIDTH, 1, WIN_DARKEN2);
-      view.fillRect(frame.time * TIMELINE_FRAME_WIDTH, y,
-                    length * TIMELINE_FRAME_WIDTH - 1,
-                    TIMELINE_FRAME_HEIGHT - 1,
-                    color);
+      view.fillGradientRectLR(frame.time * TIMELINE_FRAME_WIDTH, y,
+                              length * TIMELINE_FRAME_WIDTH - 1,
+                              TIMELINE_FRAME_HEIGHT - 1,
+                              leftColor, rightColor);
       var leftMarker = markerMask & TIMELINE_MARKER_MASK_LEFT;
       var rightMarker = markerMask & TIMELINE_MARKER_MASK_RIGHT;
       if (rightMarker && leftMarker && length == 1)
@@ -1901,7 +1959,12 @@ class KTimeLineItem extends KListItem
         var textWidth = view.canvas.font.getTextWidth(text);
         var l = frame.time * TIMELINE_FRAME_WIDTH + ((length * TIMELINE_FRAME_WIDTH) - textWidth) / 2;
         var t = y + int((TIMELINE_FRAME_HEIGHT - view.canvas.fontHeight) / 2) - 1;
-        view.fillRect(l - 1, t - 1, textWidth + 2, view.canvas.fontHeight + 2, color);
+        view.setClip(l - 1, t - 1, textWidth + 2, view.canvas.fontHeight + 2);
+        view.fillGradientRectLR(frame.time * TIMELINE_FRAME_WIDTH, y,
+                                length * TIMELINE_FRAME_WIDTH - 1,
+                                TIMELINE_FRAME_HEIGHT - 1,
+                                leftColor, rightColor);
+        view.setClip();
         view.drawText(l, t, text, WIN_DARKEN2 & 0xFFFFFF);
       }
       return;
