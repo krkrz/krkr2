@@ -112,8 +112,10 @@ class KVirtualWidget extends KWidget
     
     clip.left -= _site.left;
     clip.top -= _site.top;
+    clip.right -= _site.left;
+    clip.bottom -= _site.top;
     clip.intersectWith(new KRect(0, 0, _canvas.width, _canvas.height));
-    if (! clip.isValid)
+    if (! clip.isValid) 
       _canvas.setClip(0, 0, 0, 0);
     else
       _canvas.setClip(clip.left, clip.top, clip.width, clip.height);
