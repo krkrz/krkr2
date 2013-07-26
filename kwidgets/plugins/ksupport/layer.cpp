@@ -320,6 +320,66 @@ public:
     }
     update();
   }
+
+  inline tjs_uint blendColor(tjs_uint c0, tjs_uint c1, tjs_int x, tjs_int w) {
+    return (c0 * (w - x - 1) + c1 * x) / (w - 1);
+  }
+
+  void fillGradientRectLR(tjs_int left, tjs_int top, tjs_int width, tjs_int height, tjs_uint32 c0, tjs_uint c1) {
+    ncbPropAccessor layerObj(mObjthis);
+
+    if (c0 == c1) {
+      layerObj.FuncCall(0, TJS_W("fillRect"), NULL, NULL, left, top, width, height, tjs_int(c0));
+      return;
+    }
+
+    tjs_int layerWidth, layerHeight, pitch;
+    unsigned char *imageBuffer;
+    layerWidth = layerObj.GetValue(L"width",  ncbTypedefs::Tag<tjs_int>());
+    layerHeight = layerObj.GetValue(L"height",  ncbTypedefs::Tag<tjs_int>());
+    pitch = layerObj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+    imageBuffer = reinterpret_cast<unsigned char*>(layerObj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int64>()));
+    tjs_int clipLeft, clipTop, clipWidth, clipHeight;
+    clipLeft = layerObj.GetValue(L"clipLeft", ncbTypedefs::Tag<tjs_int>());
+    clipTop = layerObj.GetValue(L"clipTop", ncbTypedefs::Tag<tjs_int>());
+    clipWidth = layerObj.GetValue(L"clipWidth", ncbTypedefs::Tag<tjs_int>());
+    clipHeight = layerObj.GetValue(L"clipHeight", ncbTypedefs::Tag<tjs_int>());
+    
+    tjs_int fromX = std::max(clipLeft, left);
+    tjs_int toX = std::min(clipLeft + clipWidth, left + width);
+    tjs_int fromY = std::max(clipTop, top);
+    tjs_int toY = std::min(clipTop + clipHeight, top + height);
+
+    if (fromY >= toY
+        || fromX >= toX)
+      return;
+
+    tjs_uint a, r, g, b;
+    tjs_uint a0, r0, g0, b0;
+    tjs_uint a1, r1, g1, b1;
+    a0 = (c0 >> 24) & 0xff, r0 = (c0 >> 16) & 0xff, g0 = (c0 >> 8) & 0xff, b0 = c0 & 0xff;
+    a1 = (c1 >> 24) & 0xff, r1 = (c1 >> 16) & 0xff, g1 = (c1 >> 8) & 0xff, b1 = c1 & 0xff;
+    unsigned char *p = imageBuffer + fromY * pitch + fromX * 4;
+    for (tjs_int x = fromX; x < toX; x++, p += 4) {
+      tjs_int f = x - left;
+      a = blendColor(a0, a1, f, width);
+      r = blendColor(r0, r1, f, width);
+      g = blendColor(g0, g1, f, width);
+      b = blendColor(b0, b1, f, width);
+      p[0] = b;
+      p[1] = g; 
+      p[2] = r;
+      p[3] = a;
+    }
+
+    const unsigned char *src = imageBuffer + fromY * pitch + fromX * 4;
+    for (tjs_int y = fromY + 1; y < toY; y++) {
+      unsigned char *dst = imageBuffer + y * pitch + fromX * 4;
+      memcpy(dst, src, (toX - fromX) * 4);
+    }
+
+    this->update();
+  }
 };
 
 NCB_GET_INSTANCE_HOOK(LayerSupport)
@@ -340,6 +400,7 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerSupport, Layer) {
   NCB_METHOD(fillHSV);
   NCB_METHOD(fillRGB);
   NCB_METHOD(copyWrappedRect);
+  NCB_METHOD(fillGradientRectLR);
 };
 
 

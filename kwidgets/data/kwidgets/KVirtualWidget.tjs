@@ -12,6 +12,8 @@ class KVirtualWidget extends KWidget
   var _virtualBufLayer;
   var _avoidSiteUpdateDrawing;
   var _canvas;
+  var _clip = void;
+  var _canvasClip = void;
 
   /**------------------------------
    * コンストラクタ
@@ -77,6 +79,46 @@ class KVirtualWidget extends KWidget
     }
   }
 
+  function setClip(left, top, width, height) {
+    if (left === void) 
+      _clip = void;
+    else
+      _clip = new KRect(left, top, width, height);
+    updateClip();
+  }
+
+  function setCanvasClip(left, top, width, height) {
+    if (left === void) 
+      _canvasClip = void;
+    else
+      _canvasClip = new KRect(left, top, width, height);
+    updateClip();
+  }
+
+  function updateClip() {
+    var clip = void;
+    if (_clip !== void && _canvasClip !== void) {
+      clip = _clip.dup();
+      clip.intersectWith(_canvasClip);
+    } else if (_clip !== void) {
+      clip = _clip.dup();
+    } else if (_canvasClip !== void) {
+      clip = _canvasClip.dup();
+    }
+    if (clip === void) {
+      _canvas.setClip();
+      return;
+    }
+    
+    clip.left -= _site.left;
+    clip.top -= _site.top;
+    clip.intersectWith(new KRect(0, 0, _canvas.width, _canvas.height));
+    if (! clip.isValid)
+      _canvas.setClip(0, 0, 0, 0);
+    else
+      _canvas.setClip(clip.left, clip.top, clip.width, clip.height);
+  }
+
   /**------------------------------
    * 描画要求
    *
@@ -113,10 +155,10 @@ class KVirtualWidget extends KWidget
     var rect = new KRect(vleft, vtop, vwidth, vheight);
     rect.intersectWith(_site);
     if (rect.isValid) {
-      _canvas.setClip(rect.left - _site.left, rect.top - _site.top, rect.width, rect.height);
+      setCanvasClip(rect.left, rect.top, rect.width, rect.height);
       onDraw(rect.left, rect.top,
              rect.width, rect.height);
-      _canvas.setClip();
+      setCanvasClip();
     }
   }
 
@@ -236,6 +278,10 @@ class KVirtualWidget extends KWidget
    ------------------------------*/
   function fillRect(left, top, width, height, value) {
      _canvas.fillRect(left - _site.left, top - _site.top, width, height, value);
+  }
+
+  function fillGradientRectLR(left, top, width, height, value1, value2) {
+    _canvas.fillGradientRectLR(left - _site.left, top - _site.top, width, height, value1, value2);
   }
 
   /**------------------------------
@@ -930,11 +976,11 @@ class KVirtualWidget extends KWidget
     // リージョン中の全矩形に対して描画処理を発行
     for (var i = 0; i < newSiteRegion.rectCount; i++) {
       var rect = newSiteRegion.rectAt(i);
-      _canvas.setClip(rect.left - _site.left, rect.top - _site.top, rect.width, rect.height);
+      setCanvasClip(rect.left, rect.top, rect.width, rect.height);
       onDraw(rect.left, rect.top,
              rect.width, rect.height);
     }
-    _canvas.setClip();
+    setCanvasClip();
   }
 }
 
