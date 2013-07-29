@@ -35,6 +35,38 @@ function ktimeline_shallow_copy_frame_list(frameList)
   return newFrameList;
 }
 
+function ktimeline_invalidate_null_frame(frameList)
+{
+  // 連続するヌルフレームを統合する
+  for (var i = 1; i < frameList.count; i++) {
+    if (frameList[i - 1].type == TIMELINE_FRAME_TYPE_NULL
+        && frameList[i].type == TIMELINE_FRAME_TYPE_NULL) {
+      frameList.erase(i);
+      i--;
+      continue;
+    }
+  }
+  // 先頭のヌルフレームを削除する
+  if (frameList.count
+      && frameList[0].type == TIMELINE_FRAME_TYPE_NULL)
+    frameList.erase(0);
+  // 連続フレームか補完フレームの場合、空リストで無ければ末尾に必ずヌルフレームを追加する
+  if (frameList.count
+      && (frameList[-1].type == TIMELINE_FRAME_TYPE_CONTINUOUS
+          || frameList[-1].type == TIMELINE_FRAME_TYPE_TWEEN))
+    frameList.add(%[ time: frameList[-1].time + 1, type: TIMELINE_FRAME_TYPE_NULL, content: void]);
+}
+                                       
+
+function ktimeline_fix_invalid_frame(frameList)
+{
+  for (var i = frameList.count - 1; i > 0; i--) {
+    if (frameList[i - 1].time >= frameList[i].time) 
+      frameList.erase(i - 1);
+  }
+  ktimeline_invalidate_null_frame(frameList);
+}
+
 /*----------------------------------------------------------------------
  * タイムロケーター(内部パーツ)
  ----------------------------------------------------------------------*/
@@ -1802,24 +1834,7 @@ class KTimeLineItem extends KListItem
 
   // 不要なヌルフレームを削除する
   function invalidateNullFrame {
-    // 連続するヌルフレームを統合する
-    for (var i = 1; i < frameList.count; i++) {
-      if (frameList[i - 1].type == TIMELINE_FRAME_TYPE_NULL
-          && frameList[i].type == TIMELINE_FRAME_TYPE_NULL) {
-        frameList.erase(i);
-        i--;
-        continue;
-      }
-    }
-    // 先頭のヌルフレームを削除する
-    if (frameList.count
-        && frameList[0].type == TIMELINE_FRAME_TYPE_NULL)
-      frameList.erase(0);
-    // 連続フレームか補完フレームの場合、空リストで無ければ末尾に必ずヌルフレームを追加する
-    if (frameList.count
-        && (frameList[-1].type == TIMELINE_FRAME_TYPE_CONTINUOUS
-            || frameList[-1].type == TIMELINE_FRAME_TYPE_TWEEN))
-      frameList.add(createNewFrame(frameList[-1].time + 1, TIMELINE_FRAME_TYPE_NULL, void));
+    ktimeline_invalidate_null_frame(frameList);
   }
 
   // 値の補完
@@ -2076,18 +2091,20 @@ class KTimeLineItem extends KListItem
       for (var i = 0; i < frameList.count; i++) {
         var frame = frameList[i];
         // 変化した時間以前なら、いじらない。
-        if (frame.time < fromTime[leftIndex])
-          continue;
-        // 変化した時間以降なら、直接シフトして終わり
-        if (frame.time >= fromTime[-1]) {
-          frame.time += - fromTime[-1] + toTime[-1];
-          continue;
+        if (frame.time < fromTime[leftIndex]) {
+          ;
         }
+        // 変化した時間以降なら、直接シフトして終わり
+        else if (frame.time >= fromTime[-1]) {
+          frame.time += - fromTime[-1] + toTime[-1];
+        } 
         // 時間指定配列のindexを、現在フレームの時間が範囲内に入るまで進める
-        while (frame.time >= fromTime[leftIndex + 1])
-          leftIndex++;
-        // 時間を更新
-        frame.time += -fromTime[leftIndex] + toTime[leftIndex];
+        else {
+          while (frame.time >= fromTime[leftIndex + 1])
+            leftIndex++;
+          // 時間を更新
+          frame.time += -fromTime[leftIndex] + toTime[leftIndex];
+        }
         // 直前のフレームがアレだったら削除
         if (i > 0
             && frameList[i - 1].time >= frameList[i].time) {
