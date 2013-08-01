@@ -790,7 +790,29 @@ public:
 	static bool copyFile(ttstr from, ttstr to, bool failIfExist)
 	{
 		from	= TVPGetPlacedPath(from);
-                to = TVPNormalizeStorageName(to);
+        to = TVPNormalizeStorageName(to);
+		if(from.length() && to.length() && !wcschr(from.c_str(), '>') && !wcschr(to.c_str(), '>'))
+		{
+			TVPGetLocalName(from);
+			TVPGetLocalName(to);
+			if(CopyFile(from.c_str(), to.c_str(), failIfExist)) {
+				TVPClearStorageCaches();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * パスの正規化を行わず吉里吉里のストレージ空間中の指定ファイルをコピーする
+	 * @param from コピー元ファイル
+	 * @param to コピー先ファイル
+	 * @param failIfExist ファイルが存在するときに失敗するなら ture、上書きするなら false
+	 * @return 実際に移動できたら true
+	 */
+	static bool copyFileNoNormalize(ttstr from, ttstr to, bool failIfExist)
+	{
+		from	= TVPGetPlacedPath(from);
 		if(from.length() && to.length() && !wcschr(from.c_str(), '>') && !wcschr(to.c_str(), '>'))
 		{
 			TVPGetLocalName(from);
@@ -985,6 +1007,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	RawCallback("selectDirectory",     &Class::selectDirectory,     TJS_STATICMEMBER);
 	NCB_METHOD(isExistentDirectory);
 	NCB_METHOD(copyFile);
+	NCB_METHOD(copyFileNoNormalize);
 	NCB_METHOD(isExistentStorageNoSearchNoNormalize);
 	NCB_METHOD(getDisplayName);
 	RawCallback("getMD5HashString",    &Class::getMD5HashString,    TJS_STATICMEMBER);
