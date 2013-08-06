@@ -156,7 +156,7 @@ void timeline_draw_frame(tTJSVariant item, tTJSVariant view, tjs_int y, tTJSVari
     tjs_int singleFrameRightColor  = itemObj.GetValue(L"_singleFrameRightColor", ncbTypedefs::Tag<tjs_int>(), 0, &_singleFrameRightColorHint);
     singleFrameLeftColor |= 0xFF000000;
     singleFrameRightColor |= 0xFF000000;
-    viewObj.FuncCall(0, L"fillGradientRectLRHint", &fillGradientRectLRHint, NULL, 
+    viewObj.FuncCall(0, L"fillGradientRectLR", &fillGradientRectLRHint, NULL, 
                      frameTime * TIMELINE_FRAME_WIDTH, y, TIMELINE_FRAME_WIDTH - 1, TIMELINE_FRAME_HEIGHT - 1, singleFrameLeftColor, singleFrameRightColor);
     return;
   }
