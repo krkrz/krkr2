@@ -15,7 +15,7 @@ class KButton extends KValueWidget
   // 押下中
   var pressing;
   // ボタンの値
-  var value = true;
+  var value = void;
 
   /**------------------------------
    * コンストラクタ
