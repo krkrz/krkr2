@@ -16,6 +16,8 @@ class KMenuItem extends MenuItem
   var _nameCache = %[];
   // アイコンレイヤ
   var iconCheckedLayer = void, iconUncheckedLayer = void;
+  // アイテムの値
+  var value = void;
 
   /**------------------------------
    * コンストラクタ
@@ -259,11 +261,11 @@ class KMenuItem extends MenuItem
   /**------------------------------
    * イベントを発生させ強制的に現在の値を通知する。
    *
-   * KMenuItem では常に 値:true でonValueModifiedを呼びます。
+   * KMenuItem では常に 値:void でonValueModifiedを呼びます。
    ------------------------------*/
   function invalidateValue {
     if (enabled)
-      onValueModified(true);
+      onValueModified(value);
   }
 
   /*------------------------------
