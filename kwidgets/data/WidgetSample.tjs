@@ -223,10 +223,12 @@ class WidgetSample extends KWindow
         widgetGrid = new KGridLayout(this);
           widgetGrid.add(0, 0, new KTextLabel(this, "英数字のみ"));
           widgetGrid.add(1, 0, new KTextInput(this, 100, 20, TEXT_SYMBOL, "textinput1"));
-          widgetGrid.add(0, 1, new KTextLabel(this, "数字のみ"));
+          widgetGrid.add(0, 1, new KTextLabel(this, "整数のみ"));
           widgetGrid.add(1, 1, new KTextInput(this, 100, 20, TEXT_DIGIT, "textinput2"));
-          widgetGrid.add(0, 2, new KTextLabel(this, "なんでも"));
-          widgetGrid.add(1, 2, new KTextInput(this, 100, 20, TEXT_ANY, "textinput3"));
+          widgetGrid.add(0, 3, new KTextLabel(this, "少数のみ"));
+          widgetGrid.add(1, 3, new KTextInput(this, 100, 20, TEXT_REAL, "textinput3"));
+          widgetGrid.add(0, 4, new KTextLabel(this, "なんでも"));
+          widgetGrid.add(1, 4, new KTextInput(this, 100, 20, TEXT_ANY, "textinput4"));
       widgetFrame.add(widgetGrid);
     tabGrid.add(0, 0, widgetFrame);
       widgetFrame = new KFrameLayout(this, FRAME_FLATTEN, "テキストエディット");
@@ -337,8 +339,9 @@ class WidgetSample extends KWindow
     combobox1.status = "コンボボックス1";
     combobox2.status = "コンボボックス2";
     textinput1.status = "テキストインプット(英数字)";
-    textinput2.status = "テキストインプット(数字のみ)";
-    textinput3.status = "テキストインプット(なんでも)";
+    textinput2.status = "テキストインプット(整数のみ)";
+    textinput3.status = "テキストインプット(少数のみ)";
+    textinput4.status = "テキストインプット(なんでも)";
     textedit.status = "テキストエディット";
 
     // 永続化辞書の作成
@@ -363,7 +366,7 @@ class WidgetSample extends KWindow
     switch (child.name) {
     default: {
       // 更新のあったウィジェットの名前と値を表示。
-      Debug.message("child value modified", child.name, value);
+      Debug.message("child value modified", child.name, typeof(value), value);
       break;
     }
       // ズーム変更
