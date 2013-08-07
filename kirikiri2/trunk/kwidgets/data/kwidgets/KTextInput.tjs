@@ -154,7 +154,7 @@ class KTextInputEdit extends KTextEdit
         switch (type) {
         case TEXT_SYMBOL: acceptStrPat = new RegExp("[a-zA-Z0-9_]+");   break;
         case TEXT_DIGIT:  acceptStrPat = new RegExp("[0-9-]+");         break;
-        case TEXT_REAL:   acceptStrPat = new RegExp("[0-9.-]+");         break;
+        case TEXT_REAL:   acceptStrPat = new RegExp("[0-9.e-]+");         break;
         case TEXT_ANY:    acceptStrPat = new RegExp("[^\\000-\\037]+"); break;
         }
       }
@@ -264,7 +264,7 @@ class KTextInput extends KValueWidget
    ------------------------------*/
   property value {
     getter {
-      return text.value;
+      return filterValue(text.value);
     }
     setter(v) {
       // テキストエディットの持つ文字パターンでマッチングする文字のみをフィルタ
@@ -377,7 +377,18 @@ class KTextInput extends KValueWidget
   function onValueModified(value) {
     var ov = oldValue;
     oldValue = value;
-    super.onValueModified(value, ov);
+    super.onValueModified(filterValue(value), filterValue(ov));
+  }
+
+  // 値をフィルタリングして、数値の場合は文字列から数値に変換して返す。
+  function filterValue(v) {
+    switch (type) {
+    case TEXT_DIGIT:
+    case TEXT_REAL:
+      return +v;
+    default:
+      return v;
+    }
   }
 
   function onKeyDown {
