@@ -219,7 +219,8 @@ class KTimeLineTimeLocator extends KVirtualWidget
     if (owner.playing)
       owner.playing = false;
     // Shift+左クリックでレンジドラッグ開始
-    if (_activeRangeEnabled
+    if (owner.editable
+        && _activeRangeEnabled
         && button == mbLeft
         && (shift & ssShift)) {
       owner.selectedTime = int(x / TIMELINE_FRAME_WIDTH);
@@ -230,7 +231,8 @@ class KTimeLineTimeLocator extends KVirtualWidget
       return;
     }
     // Ctrl+左クリックでフレームドラッグ開始
-    if (button == mbLeft
+    if (owner.editable
+        && button == mbLeft
         && (shift & ssCtrl)) {
       var curTime = int(x / TIMELINE_FRAME_WIDTH);
       if (curTime != owner.selectedTime)
@@ -257,7 +259,7 @@ class KTimeLineTimeLocator extends KVirtualWidget
       return;
     }
 
-    // C左クリックでドラッグ開始
+    // 左クリックでドラッグ開始
     if (button == mbLeft) {
       owner.selectedTime = int(x / TIMELINE_FRAME_WIDTH);
       owner.resetSelection();
@@ -265,7 +267,8 @@ class KTimeLineTimeLocator extends KVirtualWidget
       return;
     } 
     // 右クリックでコールバック関数をキック
-    if (button == mbRight) {
+    if (owner.editable
+        && button == mbRight) {
       owner.selectedTime = int(x / TIMELINE_FRAME_WIDTH);
       owner.resetSelection();
       owner.onTimeLocatorRightClick(owner.selectedTime);
@@ -2404,6 +2407,8 @@ class KTimeLineControl extends KHorizontalSpliterLayout
   var _loopEndTime = -1;
   // 再生終了時間
   var _lastTime = -1;
+  // 編集可能？
+  var _editable = true;
 
   /**------------------------------
    * コンストラクタ
@@ -3266,6 +3271,17 @@ class KTimeLineControl extends KHorizontalSpliterLayout
 	    item.setSelection(0, lastTime);
 	}
       }
+    }
+  }
+
+  property editable {
+    getter {
+      return _editable;
+    }
+    setter(v) {
+      _editable = v;
+      _layerList.enabled = v;
+      _layerView.enabled = v;
     }
   }
 }
