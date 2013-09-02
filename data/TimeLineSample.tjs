@@ -426,7 +426,7 @@ class TimeLineSampleItem extends KTimeLineItem
   //------------------------------
   function onPacketDrop(x, y, packet) {
     var item = packet.arg;
-    item.parent.remove(item);
+    item.parent.remove(item, false);
     add(item);
   }
 

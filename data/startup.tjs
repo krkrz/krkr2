@@ -10,6 +10,8 @@ if (! System.createAppLock("kwidgets_sample"))
 Debug.console.visible = true;
 // プラグインをリンク
 Plugins.link("clipboardEx.dll");
+// KListの新規実装を呼び出し
+global.k_list_new_implementation = true;
 // kwidgetsをロード
 Storages.addAutoPath("kwidgets/");
 Scripts.execStorage("KInitialize.tjs");

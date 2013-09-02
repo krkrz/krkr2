@@ -1535,7 +1535,11 @@ class KWidget extends Layer
       // パケットのドラッグ中であれば
       // ターゲットにパケットのドロップを通知
       if (myDraggingPacket) {
-        if (curDragTargetAcceptPacket) {
+        if (curDragTargetAcceptPacket
+            && curDragTarget.isPacketConfirmed(curDragTarget.cursorX,
+                                               curDragTarget.cursorY,
+                                               _dragging_packet_,
+                                               shift)) {
           curDragTarget.onPacketLeave(curDragTarget.cursorX,
                                       curDragTarget.cursorY,
                                       _dragging_packet_,
@@ -1637,6 +1641,16 @@ class KWidget extends Layer
    ------------------------------*/
   function isPacketAcceptable(packet) {
     return false;
+  }
+
+  /**------------------------------
+   * 最終的にパケットを受け入れるかどうか判定する
+   *
+   * @param packet ドラッグ中のパケット
+   * @return パケットを受け入れるかどうか
+   ------------------------------*/
+  function isPacketConfirmed(x, y, packet, shift) {
+    return true;
   }
 
   /**------------------------------
