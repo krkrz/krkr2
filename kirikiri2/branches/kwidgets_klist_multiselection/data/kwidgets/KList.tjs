@@ -82,9 +82,9 @@ class KList extends KVirtualWidget
   var root;
   var slideWidth = 12;
   var drawItemList = [];
-  var updateWidth, updateHeight;
+  var treeWidth, treeHeight;
   var childList = [];
-  var selection = void, selectionIndex = -1;
+  var selection = void;
   var selectionRect = [ 0, 0, 0, 0 ];
   var labelEdit = void;
   var labelTextType = TEXT_SYMBOL;
@@ -94,6 +94,10 @@ class KList extends KVirtualWidget
   var iconDeposit;
   var curDragTargetItem;
   var curDragTargetItemAcceptPacket = false;
+  var curPointItem = void;
+  var relocateRequired = false;
+  var reconstructRequired = false;
+  var resizeRequired = false;
 
   /*------------------------------
    * リストビュー
@@ -144,7 +148,7 @@ class KList extends KVirtualWidget
   function setMarginalSize(w, h) {
     marginalWidth = w;
     marginalHeight = h;
-    relocateItems();
+    requireResize();
   }
 
   /**------------------------------
@@ -156,7 +160,7 @@ class KList extends KVirtualWidget
     item.depth = -1;
     item.parent = this;
     childList.add(item);
-    relocateItems();
+    requireReconstruct();
   }
 
   /**------------------------------
@@ -169,7 +173,7 @@ class KList extends KVirtualWidget
     item.depth = -1;
     item.parent = this;
     childList.insert(index, item);
-    relocateItems();
+    requireReconstruct();
   }
 
   /**------------------------------
@@ -192,10 +196,8 @@ class KList extends KVirtualWidget
           i--;
         childList[i].select();
       } 
-      relocateItems();
     } else {
       childList.remove(item);
-      relocateItems();
     }
 
     item._root = void;
@@ -203,6 +205,8 @@ class KList extends KVirtualWidget
 
     if (doInvalidate)
       invalidate item;
+
+    requireReconstruct();
   }
 
   /**------------------------------
@@ -227,7 +231,7 @@ class KList extends KVirtualWidget
           }
       }
     selection = void;
-    relocateItems();
+    requireReconstruct();
   }
 
   /**------------------------------
@@ -267,6 +271,15 @@ class KList extends KVirtualWidget
         return widget;
     }
     return void;
+  }
+
+  /*------------------------------
+   * 選択アイテムのインデックス
+   ------------------------------*/
+  property selectionIndex {
+    getter {
+      return drawItemList.find(selection);
+    }
   }
 
   /*------------------------------
@@ -381,54 +394,90 @@ class KList extends KVirtualWidget
     }
   }
 
-  // 描画のアップデート
-  function relocateItems() {
-    // update関数を呼ぶことで、onPaint を喚起。
-    update(0, 0, width, height);
+  function requireResize {
+    resizeRequired = true;
+    update();
+  }
+
+  function requireRelocate {
+    relocateRequired = true;
+    resizeRequired = true;
+    update();
+  }
+
+  function requireReconstruct {
+    reconstructRequired = true;
+    relocateRequired = true;
+    resizeRequired = true;
+    update();
+  }
+
+  // 選択アイテムが閉じてしまったら
+  // 上階層のアイテムを選択し直す
+  function invalidateSelectio() {
+    if (selection !== void) {
+      if (selection isvalid) {
+        if (! selection.visible) {
+          var newSelection = selection;
+          while (! newSelection.visible)
+            newSelection = newSelection.parent;
+          selectItem(newSelection);
+        }
+      } else {
+        selectItem(void);
+      }
+    }
   }
 
   // 描画更新
   function onPaint() { 
     var i;
 
-    // リストの描画を更新
-    updateChildrenLocation(this);
+    // ツリーを再構築
+    if (reconstructRequired) {
+      reconstructItems();
+    }
+    // ツリーサイズを再計算
+    if (relocateRequired) {
+      relocateItems();
+    }
 
     // 選択アイテムが閉じてしまったら
     // 上階層のアイテムを選択し直す
-    if (selection !== void
-        && ! selection.visible) {
-      var newSelection = selection;
-      while (! newSelection.visible)
-        newSelection = newSelection.parent;
-      selectItem(newSelection);
-    }
+    invalidateSelectio();
 
     // サイズを再設定
-    setMinMaxSize(updateWidth, updateHeight,
-                  Math.max(marginalWidth, updateWidth),
-                  Math.max(marginalHeight, updateHeight));
+    if (resizeRequired) {
+      setMinMaxSize(treeWidth, treeHeight,
+                    Math.max(marginalWidth, treeWidth),
+                    Math.max(marginalHeight, treeHeight));
+    }
 
     // 選択アイテムの背景色を変更
     redrawAll();
+
+    // フラグリセット
+    relocateRequired = false;
+    reconstructRequired = false;
+    resizeRequired = false;
   }
 
-  // アイテムの再配置
-  function updateChildrenLocation(item) {
-    var i, num, child, v;
-
-    // ツリーをたどって、表示するアイテムを表示し直す
-    drawItemList = [];
-    updateWidth = 0;
-    updateHeight = 0;
+  // アイテムの再構築
+  function reconstructItems() {
+    var i, num, child, v, item;
 
     // 既存アイテムは一旦全て不可視に設定する
     for (var i = 0; i < drawItemList.count; i++)
-      drawItemList[i].visible = false;
+      if (drawItemList[i] isvalid)
+        drawItemList[i].visible = false;
+
+    // ツリーをたどって、表示するアイテムを表示し直す
+    drawItemList = [];
 
     var stack = [];
     
     i = 0;
+    item = this;
     num = item.childList.count;
     v = true;
 
@@ -438,18 +487,11 @@ class KList extends KVirtualWidget
       return;
     for (;;) {
       child = item.childList[i];
-      if (selection == child)
-        selectionIndex = drawItemList.count;
       if (v) {
         child.visible = true;
-        child.locate(child.depth * slideWidth, updateHeight);
-        updateWidth = Math.max(updateWidth,
-                               child.width + 
-                               child.depth * slideWidth);
-        updateHeight += child.height;
         drawItemList.add(child);
-      }      if (child.hasChild
-                 && child.opened) {
+      } if (child.hasChild
+            && child.opened) {
         if (i + 1 < num)
           stack.add([ item, i + 1, num, v ]);
         item = child;
@@ -471,8 +513,22 @@ class KList extends KVirtualWidget
     }
   }
 
+  // アイテムのサイズ再配置
+  function relocateItems() {
+    treeWidth = 0;
+    treeHeight = 0;
+
+    for (var i = 0; i < drawItemList.count; i++) {
+      var item = drawItemList[i];
+      item.locate(item.depth * slideWidth, treeHeight);
+      treeWidth = Math.max(treeWidth,
+                           item.width + item.depth * slideWidth);
+      treeHeight += item.height;
+    }
+  }      
+
   // 特定のアイテムを選択する
-  function selectItem(item, selectionIndex = -1) {
+  function selectItem(item) {
     if (selection === item)
       return;
 
@@ -498,23 +554,18 @@ class KList extends KVirtualWidget
     var prevSelection = selection;
     if (prevSelection !== void) {
       prevSelection.onDeselect();
-//      prevSelection.drawLayer();
       for (var i = 0; i < prevAncestors.count; i++)
         prevAncestors[i].onDescendantDeselect();
     }
-    selection =  void;
+    selection = void;
     if (prevSelection !== void)
       prevSelection.redraw();
 
     selection = item;
-    if (selection == void) {
-      this.selectionIndex = -1;
+    if (selection === void) {
       return;
     }
     selection.redraw();
-    if (selectionIndex == -1)
-      selectionIndex = drawItemList.find(selection);
-    this.selectionIndex = selectionIndex;
     drawSelection();
     if (selection !== void) {
       for (var i = curAncestors.count - 1; i >= 0; i--)
@@ -562,18 +613,42 @@ class KList extends KVirtualWidget
       return;
     var index = findItemIndex(y);
     if (index >= 0) {
-      selectItem(drawItemList[index], index);
+      selectItem(drawItemList[index]);
       selection.onMouseDown(x, y - selection.top, button, shift);
     }
     focus();
   }
 
+  function onMouseUp(x, y, button, shift) {
+    super.onMouseUp(...);
+    var item = findItemIndex(y);
+    if (item !== void)
+      item.onMouseUp(x, y - item.top, button, shift);
+  }
+
+  function onMouseUp(x, y, button, shift) {
+    super.onMouseUp(...);
+    var item = findItem(y);
+    if (item !== void)
+      item.onMouseUp(x, y - item.top, button, shift);
+  }
+
   function onMouseMove(x, y, shift) {
     super.onMouseMove(...);
-    var index = findItemIndex(y);
-    if (index > 0) {
-      hint = drawItemList[index].hint;
-      status = drawItemList[index].status;
+    var item = findItem(y);
+
+    if (item !== curPointItem) {
+      if (curPointItem !== void)
+        curPointItem.onMouseLeave();
+      curPointItem = item;
+      if (curPointItem !== void)
+        curPointItem.onMouseEnter();
+    }
+
+    if (item !== void) {
+      hint = item.hint;
+      status = item.status;
+      item.onMouseMove(x, y - item.top, shift);
     } else {
       hint = "";
       status = "";
@@ -614,20 +689,27 @@ class KList extends KVirtualWidget
     curDragTargetItem = findItem(y);
     if (curDragTargetItem !== prevDragTargetItem) {
       curDragTargetItemAcceptPacket = false;
-      if (prevDragTargetItemAcceptPacket)
+      if (prevDragTargetItemAcceptPacket) {
+        prevDragTargetItem.onPacketLeave();
         prevDragTargetItem.redraw();
+      }
       if (curDragTargetItem !== void) {
         curDragTargetItemAcceptPacket = curDragTargetItem.isPacketAcceptable(packet);
-        if (curDragTargetItemAcceptPacket)
+        if (curDragTargetItemAcceptPacket) {
+          curDragTargetItem.onPacketEnter();
           curDragTargetItem.redraw();
+        }
       }
     }
+    if (curDragTargetItemAcceptPacket)
+      curDragTargetItem.onPacketMove(x, y - curDragTargetItem.top, packet, shift);
   }
 
   function onPacketLeave(x, y, packet, shift) {
     if (curDragTargetItem !== void
         && curDragTargetItemAcceptPacket) {
       curDragTargetItemAcceptPacket = false;
+      curDragTargetItem.onPacketLeave();
       curDragTargetItem.redraw();
       curDragTargetItem = void;
     }
@@ -664,18 +746,17 @@ class KList extends KVirtualWidget
       super.onKeyDown(...);
       return;
     }
+    var selectionIndex = this.selectionIndex;
     if (key == VK_DOWN
         && ! (shift & (ssAlt | ssCtrl | ssShift))) {
       if (selectionIndex + 1 < drawItemList.count) {
-        selectItem(drawItemList[selectionIndex + 1], 
-                   selectionIndex + 1);
+        selectItem(drawItemList[selectionIndex + 1]);
         seeSelection();
       }
     } else if (key == VK_UP
                && ! (shift & (ssAlt | ssCtrl | ssShift))) {
       if (selectionIndex > 0) {
-        selectItem(drawItemList[selectionIndex - 1],
-                   selectionIndex - 1);
+        selectItem(drawItemList[selectionIndex - 1]);
         seeSelection();
       }
     } else if (key == VK_RIGHT
@@ -684,8 +765,7 @@ class KList extends KVirtualWidget
         return;
       }
       if (selection.opened) {
-        selectItem(selection.childList[0],
-                   selectionIndex + 1);
+        selectItem(selection.childList[0]);
       } else {
         selection.opened = true;
       }
@@ -926,8 +1006,10 @@ class KListItem
       
     setter(v) {
       _size = v;
-      if (visible) 
-        relocateSelf();
+      if (visible) {
+        updateSize();
+        requireRelocate();
+      }
       return;
     }
   }
@@ -947,7 +1029,8 @@ class KListItem
         return;
       _label = value;
       if (_visible) {
-        relocateSelf();
+        updateSize();
+        requireRelocate();
       }
     }
   }
@@ -967,7 +1050,7 @@ class KListItem
         return;
       _fontColor = value;
       if (_visible) {
-        relocateSelf();
+        redraw();
       }
     }
   }
@@ -987,7 +1070,8 @@ class KListItem
         return;
       _fontBold = value;
       if (_visible) {
-        relocateSelf();
+        updateSize();
+        requireRelocate();
       }
     }
   }
@@ -1003,8 +1087,6 @@ class KListItem
     }
     setter(v) {
       _hint = v;
-//      if (_visible)
-//        layer.hint = v;
     }
   }
   
@@ -1019,8 +1101,6 @@ class KListItem
     }
     setter(v) {
       _status = v;
-//      if (_visible)
-//        layer.status = v;
     }
   }
   
@@ -1067,7 +1147,7 @@ class KListItem
         return;
       updateIconLayerList();
       updateSize();
-      relocateSelf();
+      requireRelocate();
     }
   }
 
@@ -1142,7 +1222,7 @@ class KListItem
     item.depth = -1;
     item.parent = this;
     childList.add(item);
-    relocateSelf();
+    requireReconstruct();
   }
 
   /**------------------------------
@@ -1155,7 +1235,7 @@ class KListItem
     item.depth = -1;
     item.parent = this;
     childList.insert(index, item);
-    relocateSelf();
+    requireReconstruct();
   }
 
   /**------------------------------
@@ -1180,10 +1260,8 @@ class KListItem
       }  else {
         select();
       }
-      relocateSelf();
     } else {
       childList.remove(item);
-      relocateSelf();
     }
 
     item._root = void;
@@ -1191,6 +1269,8 @@ class KListItem
 
     if (doInvalidate)
       invalidate item;
+
+    requireReconstruct();
   }
 
   /**------------------------------
@@ -1218,7 +1298,7 @@ class KListItem
             child.parent = void;
           }
       }
-    relocateSelf();
+    requireReconstruct();
   }
 
   /**------------------------------
@@ -1331,7 +1411,7 @@ class KListItem
         return;
       parent.childList.erase(curIndex);
       parent.childList.insert(value, this);
-      relocateSelf();
+      requireReconstruct();
     }
   }
 
@@ -1392,7 +1472,7 @@ class KListItem
       if (_opened == o)
         return;
       _opened = o;
-      relocateSelf();
+      requireReconstruct();
     }
   }
 
@@ -1468,8 +1548,29 @@ class KListItem
 
   // マウスダウン
   function onMouseDown(x, y, button, shift) {
+    if (button == mbLeft
+        && hasChild
+        && inToggle(x, y)) {
+      if (! opened
+          && (shift & ssCtrl))
+        openDescendants();
+      opened = ! opened;
+      return;
+    }
+    if (button == mbLeft
+        && hasIcon
+        && inIcon(x, y)) {
+      onIconClick(iconIndexAt(x));
+      return;
+    }
+    if (button == mbLeft) {
+      onClick(x, y, shift);
+    }
+    if (button == mbRight) {
+      onRightClick(x, y, shift);
+    }
   }
-
+  
   // マウスムーブ
   function onMouseMove(x, y, button, shift) {
   }
@@ -1519,7 +1620,6 @@ class KListItem
   // パケット侵入
   function onPacketEnter(x, y, packet, shift) {
     // 背景色を変更
-//    drawLayer(0xffff0000);
   }
 
   // パケットムーブ
@@ -1528,8 +1628,6 @@ class KListItem
 
   // パケット離脱
   function onPacketLeave(x, y, packet, shift) {
-    // 背景色を戻す
-    drawLayer(0x00000000);
   }
 
   // パケットドロップ
@@ -1609,30 +1707,6 @@ class KListItem
       else
         x -= iconLayerList[i].width;
     return i;
-  }
-
-  function onMouseDown(x, y, button, shift) {
-    if (button == mbLeft
-        && hasChild
-        && inToggle(x, y)) {
-      if (! opened
-          && (shift & ssCtrl))
-        openDescendants();
-      opened = ! opened;
-      return;
-    }
-    if (button == mbLeft
-        && hasIcon
-        && inIcon(x, y)) {
-      onIconClick(iconIndexAt(x));
-      return;
-    }
-    if (button == mbLeft) {
-      onClick(x, y, shift);
-    }
-    if (button == mbRight) {
-      onRightClick(x, y, shift);
-    }
   }
 
   function onDoubleClick(x, y) {
@@ -1722,11 +1796,17 @@ class KListItem
     }
   }
 
-  // 描画を更新する
-  function relocateSelf {
-    var r = this.root;
-    if (r) {
-      r.relocateItems();
+  // 再配置を要求
+  function requireRelocate {
+    if (root) {
+      root.requireRelocate();
+    }
+  }
+
+  // 再構築を要求
+  function requireReconstruct {
+    if (root) {
+      root.requireReconstruct();
     }
   }
 
