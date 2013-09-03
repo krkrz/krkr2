@@ -90,7 +90,6 @@ class KList extends KVirtualWidget
   var labelTextType = TEXT_SYMBOL;
   var marginalWidth, marginalHeight;
   var _focusOnSelect;
-  var selectionLayer;
   var iconDeposit;
   var curDragTargetItem;
   var curDragTargetItemAcceptPacket = false;
@@ -120,7 +119,6 @@ class KList extends KVirtualWidget
     focusable = window.defaultFocusable;
     hitThreshold = 0;
     root = this;
-    selectionLayer = new global.Layer(window, this);
     marginalWidth = marginalHeight = 1000;
     setMinMaxSize(0, 0, marginalWidth, marginalHeight);
     _focusOnSelect = true;
@@ -421,7 +419,7 @@ class KList extends KVirtualWidget
           var newSelection = selection;
           while (! newSelection.visible)
             newSelection = newSelection.parent;
-          selectItem(newSelection);
+          selectItem(newSelection);m
         }
       } else {
         selectItem(void);
