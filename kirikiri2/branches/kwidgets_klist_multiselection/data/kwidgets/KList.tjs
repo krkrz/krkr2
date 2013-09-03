@@ -419,7 +419,7 @@ class KList extends KVirtualWidget
           var newSelection = selection;
           while (! newSelection.visible)
             newSelection = newSelection.parent;
-          selectItem(newSelection);m
+          selectItem(newSelection);
         }
       } else {
         selectItem(void);
@@ -570,6 +570,9 @@ class KList extends KVirtualWidget
         curAncestors[i].onDescendantSelect();
       selection.onSelect(prevSelection);
     }
+
+    if (_focusOnSelect)
+      focus();
 
     onSelect(selection);
   }
