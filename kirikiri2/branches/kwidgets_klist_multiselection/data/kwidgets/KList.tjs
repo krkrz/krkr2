@@ -408,6 +408,7 @@ class KList extends KVirtualWidget
     setMinMaxSize(updateWidth, updateHeight,
                   Math.max(marginalWidth, updateWidth),
                   Math.max(marginalHeight, updateHeight));
+
     // 選択アイテムの背景色を変更
     redrawAll();
   }
@@ -420,6 +421,10 @@ class KList extends KVirtualWidget
     drawItemList = [];
     updateWidth = 0;
     updateHeight = 0;
+
+    // 既存アイテムは一旦全て不可視に設定する
+    for (var i = 0; i < drawItemList.count; i++)
+      drawItemList[i].visible = false;
 
     var stack = [];
     
@@ -468,7 +473,7 @@ class KList extends KVirtualWidget
 
   // 特定のアイテムを選択する
   function selectItem(item, selectionIndex = -1) {
-    if (selection == item)
+    if (selection === item)
       return;
 
     // 祖先アイテムを参照
@@ -558,7 +563,7 @@ class KList extends KVirtualWidget
     var index = findItemIndex(y);
     if (index >= 0) {
       selectItem(drawItemList[index], index);
-      selection.onMouseDown(x - selection.left, y - selection.top, button, shift);
+      selection.onMouseDown(x, y - selection.top, button, shift);
     }
     focus();
   }
@@ -566,7 +571,7 @@ class KList extends KVirtualWidget
   function onMouseMove(x, y, shift) {
     super.onMouseMove(...);
     var index = findItemIndex(y);
-    if (index > 0) { 
+    if (index > 0) {
       hint = drawItemList[index].hint;
       status = drawItemList[index].status;
     } else {
@@ -575,9 +580,9 @@ class KList extends KVirtualWidget
     }
   }
 
-  function onDoubleClick() {
+  function onDoubleClick(x, y) {
     if (selection !== void) {
-      selection.onDoubleClick(...);
+      selection.onDoubleClick(x, y - selection.top);
     }
   }
 
@@ -595,7 +600,7 @@ class KList extends KVirtualWidget
   
   function onDragLeave(x, y, shift) {
     if (selection !== void) {
-      selection.onDragLeave(x - selection.left, y - selection.top, shift);
+      selection.onDragLeave(x, y - selection.top, shift);
     }
   }
 
@@ -1062,7 +1067,7 @@ class KListItem
         return;
       updateIconLayerList();
       updateSize();
-      root.relocateSelf();
+      relocateSelf();
     }
   }
 
@@ -1387,8 +1392,6 @@ class KListItem
       if (_opened == o)
         return;
       _opened = o;
-//      if (_visible)
-//        layer.drawToggle();
       relocateSelf();
     }
   }
@@ -1581,19 +1584,23 @@ class KListItem
   }
 
   function inToggle(x, y) {
+    x -= left;
     return x >= 0 && x < toggleWidth;
   }
 
   function inIcon(x, y) {
+    x -= left;
     return x >= toggleWidth && x < toggleWidth + iconWidth;
   }
 
   function inLabel(x, y) {
+    x -= left;
     return x >= toggleWidth + iconWidth && x < width;
   }
 
   // アイコンインデックスを特定
   function iconIndexAt(x) {
+    x -= left;
     x -= toggleWidth + 2;
     var i;
     for (i = 0; i < iconLayerList.count - 1; i++)
