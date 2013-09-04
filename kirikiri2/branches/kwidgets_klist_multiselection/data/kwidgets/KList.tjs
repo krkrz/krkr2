@@ -84,8 +84,8 @@ class KList extends KVirtualWidget
   var drawItemList = [];
   var treeWidth, treeHeight;
   var childList = [];
-  var selection = void;
-  var selectionRect = [ 0, 0, 0, 0 ];
+  var focusedItem = void;
+  var focusedItemRect = [ 0, 0, 0, 0 ];
   var labelEdit = void;
   var labelTextType = TEXT_SYMBOL;
   var marginalWidth, marginalHeight;
@@ -184,9 +184,9 @@ class KList extends KVirtualWidget
     if (! (item isvalid))
       return void;
 
-    if (item == root.selection
-        || (root.selection && item.isAncestorOf(root.selection))) {
-      root.selectItem(void);
+    if (item == root.focusedItem
+        || (root.focusedItem && item.isAncestorOf(root.focusedItem))) {
+      root.focusItem(void);
       var i = item.index;
       childList.remove(item);
       if (childList.count != 0) {
@@ -228,7 +228,7 @@ class KList extends KVirtualWidget
             child.parent = void;
           }
       }
-    selection = void;
+    focusedItem = void;
     requireReconstruct();
   }
 
@@ -272,20 +272,20 @@ class KList extends KVirtualWidget
   }
 
   /*------------------------------
-   * 選択アイテムのインデックス
+   * フォーカスアイテムのインデックス
    ------------------------------*/
-  property selectionIndex {
+  property focusedItemIndex {
     getter {
-      return drawItemList.find(selection);
+      return drawItemList.find(focusedItem);
     }
   }
 
   /*------------------------------
-   * 選択が変更された時に呼ばれる
+   * フォーカスが変更された時に呼ばれる
    *
-   * @param selection セレクション
+   * @param focusedItem セレクション
    ------------------------------*/
-  function onSelect(item) {
+  function onFocusItem(item) {
   }
 
   // 祖先であるかどうか判定
@@ -382,7 +382,7 @@ class KList extends KVirtualWidget
       
       for (var i = from; i <= to; i++) {
         var item = drawItemList[i];
-        if (item.selected) 
+        if (item.focused) 
           fillRect(0, item.top, width, item.height, focused ? WIN_SELECTED : WIN_BG);
         if (item === curDragTargetItem
             && curDragTargetItemAcceptPacket)
@@ -413,16 +413,16 @@ class KList extends KVirtualWidget
   // 選択アイテムが閉じてしまったら
   // 上階層のアイテムを選択し直す
   function invalidateSelectio() {
-    if (selection !== void) {
-      if (selection isvalid) {
-        if (! selection.visible) {
-          var newSelection = selection;
-          while (! newSelection.visible)
-            newSelection = newSelection.parent;
-          selectItem(newSelection);
+    if (focusedItem !== void) {
+      if (focusedItem isvalid) {
+        if (! focusedItem.visible) {
+          var newFocusedItem = focusedItem;
+          while (! newFocusedItem.visible)
+            newFocusedItem = newFocusedItem.parent;
+          focusItem(newFocusedItem);
         }
       } else {
-        selectItem(void);
+        focusItem(void);
       }
     }
   }
@@ -526,15 +526,15 @@ class KList extends KVirtualWidget
   }      
 
   // 特定のアイテムを選択する
-  function selectItem(item) {
-    if (selection === item)
+  function focusItem(item) {
+    if (focusedItem === item)
       return;
 
     // 祖先アイテムを参照
     var prevAncestors = [], curAncestors = [];
-    if (selection !== void) {
-      prevAncestors = selection.ancestors;
-      prevAncestors.insert(0, selection);
+    if (focusedItem !== void) {
+      prevAncestors = focusedItem.ancestors;
+      prevAncestors.insert(0, focusedItem);
     }
     if (item !== void) {
       curAncestors = item.ancestors;
@@ -549,61 +549,61 @@ class KList extends KVirtualWidget
       curAncestors.erase(curAncestors.count - 1);
     }
 
-    var prevSelection = selection;
-    if (prevSelection !== void) {
-      prevSelection.onDeselect();
+    var prevFocusedItem = focusedItem;
+    if (prevFocusedItem !== void) {
+      prevFocusedItem.onBlur();
       for (var i = 0; i < prevAncestors.count; i++)
-        prevAncestors[i].onDescendantDeselect();
+        prevAncestors[i].onDescendantBlur();
     }
-    selection = void;
-    if (prevSelection !== void)
-      prevSelection.redraw();
+    focusedItem = void;
+    if (prevFocusedItem !== void)
+      prevFocusedItem.redraw();
 
-    selection = item;
-    if (selection === void) {
+    focusedItem = item;
+    if (focusedItem === void) {
       return;
     }
-    selection.redraw();
-    drawSelection();
-    if (selection !== void) {
+    focusedItem.redraw();
+    drawFocusedItem();
+    if (focusedItem !== void) {
       for (var i = curAncestors.count - 1; i >= 0; i--)
-        curAncestors[i].onDescendantSelect();
-      selection.onSelect(prevSelection);
+        curAncestors[i].onDescendantFocus();
+      focusedItem.onFocus();
     }
 
     if (_focusOnSelect)
       focus();
 
-    onSelect(selection);
+    onFocusItem(focusedItem);
   }
 
   // 選択アイテムの背景を選択色で描画する
-  function drawSelection {
-    if (selection !== void)
-      selection.redraw();
+  function drawFocusedItem {
+    if (focusedItem !== void)
+      focusedItem.redraw();
   }
 
   // フォーカス時反応
   function onFocus {
     // セレクション再描画
-    drawSelection();
+    drawFocusedItem();
   }
 
   // フォーカス失った時の反応
   function onBlur {
     // セレクション再描画
-    drawSelection();
+    drawFocusedItem();
   }
 
   // セレクションを注視する
-  function seeSelection {
-    asyncCaller.callOnce(this.doSeeSelection, this);
+  function seeFocusedItem {
+    asyncCaller.callOnce(this.doSeeFocusedItem, this);
   }
 
-  function doSeeSelection {
-    if (selection !== void) {
-      noticeRect(selection.left, selection.top, 
-                 selection.width, selection.height);
+  function doSeeFocusedItem {
+    if (focusedItem !== void) {
+      noticeRect(focusedItem.left, focusedItem.top, 
+                 focusedItem.width, focusedItem.height);
     }
   }
 
@@ -614,8 +614,8 @@ class KList extends KVirtualWidget
       return;
     var index = findItemIndex(y);
     if (index >= 0) {
-      selectItem(drawItemList[index]);
-      selection.onMouseDown(x, y - selection.top, button, shift);
+      focusItem(drawItemList[index]);
+      focusedItem.onMouseDown(x, y - focusedItem.top, button, shift);
     }
     focus();
   }
@@ -657,26 +657,26 @@ class KList extends KVirtualWidget
   }
 
   function onDoubleClick(x, y) {
-    if (selection !== void) {
-      selection.onDoubleClick(x, y - selection.top);
+    if (focusedItem !== void) {
+      focusedItem.onDoubleClick(x, y - focusedItem.top);
     }
   }
 
   function onDragEnter(x, y, shift) {
-    if (selection !== void) {
-      selection.onDragEnter(x - selection.left, y - selection.top, shift);
+    if (focusedItem !== void) {
+      focusedItem.onDragEnter(x - focusedItem.left, y - focusedItem.top, shift);
     }
   }
 
   function onDragMove(x, y, shift) {
-    if (selection !== void) {
-      selection.onDragMove(x - selection.left, y - selection.top, shift);
+    if (focusedItem !== void) {
+      focusedItem.onDragMove(x - focusedItem.left, y - focusedItem.top, shift);
     }
   }
   
   function onDragLeave(x, y, shift) {
-    if (selection !== void) {
-      selection.onDragLeave(x, y - selection.top, shift);
+    if (focusedItem !== void) {
+      focusedItem.onDragLeave(x, y - focusedItem.top, shift);
     }
   }
 
@@ -726,8 +726,8 @@ class KList extends KVirtualWidget
   }
 
   function onPacketCancel(packet) {
-    if (selection !== void) {
-      selection.onPacketCancel(packet);
+    if (focusedItem !== void) {
+      focusedItem.onPacketCancel(packet);
     }
   }
 
@@ -743,47 +743,47 @@ class KList extends KVirtualWidget
   }
 
   function onKeyDown(key, shift) {
-    if (selection === void) {
+    if (focusedItem === void) {
       super.onKeyDown(...);
       return;
     }
-    var selectionIndex = this.selectionIndex;
+    var focusedItemIndex = this.focusedItemIndex;
     if (key == VK_DOWN
         && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (selectionIndex + 1 < drawItemList.count) {
-        selectItem(drawItemList[selectionIndex + 1]);
-        seeSelection();
+      if (focusedItemIndex + 1 < drawItemList.count) {
+        focusItem(drawItemList[focusedItemIndex + 1]);
+        seeFocusedItem();
       }
     } else if (key == VK_UP
                && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (selectionIndex > 0) {
-        selectItem(drawItemList[selectionIndex - 1]);
-        seeSelection();
+      if (focusedItemIndex > 0) {
+        focusItem(drawItemList[focusedItemIndex - 1]);
+        seeFocusedItem();
       }
     } else if (key == VK_RIGHT
                && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (selection.childList.count == 0) {
+      if (focusedItem.childList.count == 0) {
         return;
       }
-      if (selection.opened) {
-        selectItem(selection.childList[0]);
+      if (focusedItem.opened) {
+        focusItem(focusedItem.childList[0]);
       } else {
-        selection.opened = true;
+        focusedItem.opened = true;
       }
     } else if (key == VK_LEFT
                && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (selection.childList.count != 0
-          && selection.opened) {
-        selection.opened = false;
-        seeSelection();
-      } else if (selection.parent != root) {
-        selectItem(selection.parent);
-        seeSelection();
+      if (focusedItem.childList.count != 0
+          && focusedItem.opened) {
+        focusedItem.opened = false;
+        seeFocusedItem();
+      } else if (focusedItem.parent != root) {
+        focusItem(focusedItem.parent);
+        seeFocusedItem();
       }
     } else if (key == VK_F2) {
-      renameSelection();
+      renameFocusedItem();
     } else {
-      selection.onKeyDown(...);
+      focusedItem.onKeyDown(...);
     }
   }
 
@@ -791,27 +791,27 @@ class KList extends KVirtualWidget
   function onKeyPress(key) {
     switch (key) {
     case '+': {
-      selection.opened = true;
+      focusedItem.opened = true;
       break;
     }
     case '-': {
-      selection.opened = false;
+      focusedItem.opened = false;
       break;
     }
     case "*": {
-      selection.openDescendants();
-      selection.opened = true;
+      focusedItem.openDescendants();
+      focusedItem.opened = true;
       break;
     }
     }
   }
 
   // 選択中のアイテムをリネームする
-  function renameSelection {
-    if (selection !== void
-        && selection.labelEditable) {
-      seeSelection();
-      labelEdit = new KLabelEdit(selection);
+  function renameFocusedItem {
+    if (focusedItem !== void
+        && focusedItem.labelEditable) {
+      seeFocusedItem();
+      labelEdit = new KLabelEdit(focusedItem);
       onBeginLabelEdit();
     }
   }
@@ -820,7 +820,7 @@ class KList extends KVirtualWidget
   function removeLabelEdit {
     onFinishLabelEdit();
     discard(labelEdit);
-    focus(selection);
+    focus(focusedItem);
   }
 
   function onBeginLabelEdit {
@@ -839,6 +839,13 @@ class KList extends KVirtualWidget
   function onNodeDisabled {
     canvas.opacity = 64;
     opacity = 64;
+  }
+
+  /**------------------------------
+   * 旧仕様との互換性のためのダミー関数群
+   ------------------------------*/
+  function seeSelection() {
+    seeFocusedItem();
   }
 };
 
@@ -1191,7 +1198,7 @@ class KListItem
    * @param iconIndex アイコンインデックス
    ------------------------------*/
   function onIconClick(iconIndex) {
-    select();
+    focus();
     root.focus();
   } 
 
@@ -1249,9 +1256,9 @@ class KListItem
     if (! (item isvalid))
       return void;
 
-    if (item == root.selection
-        || (root.selection && item.isAncestorOf(root.selection))) {
-      root.selectItem(void);
+    if (item == root.focusedItem
+        || (root.focusedItem && item.isAncestorOf(root.focusedItem))) {
+      root.focusItem(void);
       var i = item.index;
       childList.remove(item);
       if (childList.count != 0) {
@@ -1282,9 +1289,9 @@ class KListItem
   function removeAll(doInvalidate = true)
   {
     if (root !== void
-        && root.selection 
-        && this.isAncestorOf(root.selection)) 
-      root.selectItem(void);
+        && root.focusedItem 
+        && this.isAncestorOf(root.focusedItem)) 
+      root.focusItem(void);
     while(childList.count > 0)
       {
         var child = childList[0];
@@ -1417,46 +1424,54 @@ class KListItem
   }
 
   /**------------------------------
-   * アイテムを「選択」状態にする
+   * アイテムを「フォーカス」状態にする
    ------------------------------*/
-  function select {
-    root.selectItem(this);
-    root.seeSelection();
+  function focus {
+    root.focusItem(this);
+    root.seeFocusedItem();
   }
 
   /**------------------------------
-   * 選択されているか？
-   * @return 選択されているか？
+   * フォーカスされているか？
+   * @return フォーカスされているか？
    ------------------------------*/
-  property selected {
+  property focused {
     getter {
       return root !== void
-        && root.selection === this;
+        && root.focusedItem === this;
     }
   }
 
   /**------------------------------
-   * アイテムが選択状態になった時に呼ばれるフック関数
+   * アイテムがフォーカス状態になった時に呼ばれるフック関数
+   * デフォルト動作では、旧仕様互換のため、onSelect() を呼ぶ。
    ------------------------------*/
-  function onSelect {
+  function onFocus {
+    onSelect();
   }
 
   /**------------------------------
-   * アイテムが非選択状態になった時に呼ばれるフック関数
+   * アイテムが非フォーカス状態になった時に呼ばれるフック関数
+   * デフォルト動作では、旧仕様互換のため、onDeselect() を呼ぶ。
    ------------------------------*/
-  function onDeselect {
+  function onBlur {
+    onDeselect();
   }
 
   /**------------------------------
-   * (自分を含む)子孫アイテムが選択状態になった時に呼ばれるフック関数
+   * (自分を含む)子孫アイテムがフォーカス状態になった時に呼ばれるフック関数
+   * デフォルト動作では、旧仕様互換のため、onDesecndantFocus() を呼ぶ。
    ------------------------------*/
-  function onDescendantSelect {
+  function onDescendantFocus {
+    onDescendantSelect();
   }
 
   /**------------------------------
-   * (自分を含む)子孫アイテムが非選択状態になった時に呼ばれるフック関数
+   * (自分を含む)子孫アイテムがフォーカス状態になった時に呼ばれるフック関数
+   * デフォルト動作では、旧仕様互換のため、onDesecndantBlur() を呼ぶ。
    ------------------------------*/
-  function onDescendantDeselect {
+  function onDescendantBlur {
+    onDescendantDeselect();
   }
 
   /**------------------------------
@@ -1495,8 +1510,8 @@ class KListItem
    * (F2を押した時と同様の動作)
    *------------------------------*/
   function renameAsUserInput {
-    select();
-    root.renameSelection();
+    focus();
+    root.renameFocusedItem();
   }    
 
   /**------------------------------
@@ -1884,5 +1899,33 @@ class KListItem
   function onChildValueModified(child, newValue, oldValue) {
     if (parent !== void)
       parent.onChildValueModified(...);
+  }
+
+  /**------------------------------
+   * 旧仕様との互換性のためのダミー関数群
+   ------------------------------*/
+  function select {
+    focus();
+  }
+
+  function onSelect() {
+  }
+
+  function onDeselect() {
+  }
+  
+  function onDescendantSelect() {
+  }
+
+  function onDescendantDeselect() {
+  }
+
+  property selected {
+    getter {
+      return focused;
+    }
+    setter (v) {
+      focused = v;
+    }
   }
 };
