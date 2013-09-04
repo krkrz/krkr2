@@ -97,6 +97,7 @@ class KList extends KVirtualWidget
   var relocateRequired = false;
   var reconstructRequired = false;
   var resizeRequired = false;
+  var _multipleSelection = false;
 
   /*------------------------------
    * リストビュー
@@ -320,7 +321,19 @@ class KList extends KVirtualWidget
   }
 
   /**------------------------------
-   * セレクト時にフォーカス時を移動するかどうか
+   * マルチセレクションの有効・無効
+   ------------------------------*/
+  property multipleSelection {
+    getter {
+      return _multipleSelection;
+    }
+    setter (v) {
+      _multipleSelection = v;
+    }
+  }
+
+  /**------------------------------
+   * セレクト時にフォーカスを移動するかどうか
    *
    * @param v セレクト時にフォーカス時を移動するかどうか
    * @return セレクト時にフォーカス時を移動するかどうか
@@ -354,7 +367,7 @@ class KList extends KVirtualWidget
   }
 
   // y座標からアイテムのインデックスを検索
-  function findItemIndex(y) {
+  function findItemIndex(y, includeTail = false) {
     var begin, end, mid;
     begin = 0, end = drawItemList.count;
 
@@ -370,24 +383,47 @@ class KList extends KVirtualWidget
       }
     }
 
-    return drawItemList.count - 1;
+    return includeTail ? (drawItemList.count - 1) : -1;
+  }
+
+  // アイテムのフレームを描画
+  function drawFrame(item) {
+    var frameColor;
+    var frameAlpha;
+    if (item == curDragTargetItem
+        && curDragTargetItemAcceptPacket) {
+      frameColor = 0xFF0000;
+      frameAlpha = 128;
+    } else if (focused && item.focused) {
+      frameColor = WIN_SELECTED & 0xFFFFFF;
+      frameAlpha = item == curPointItem ? 128 : 96;
+    } else if (! focused && item.focused) {
+      frameColor = WIN_BG & 0xFFFFFF;
+      frameAlpha = 128;
+    } else if (item === curPointItem) {
+      frameColor = WIN_SELECTED & 0xFFFFFF;
+      frameAlpha = 64;
+    } else {
+      return;
+    }
+    colorRect(1, item.top, width - 2, 1, frameColor, frameAlpha);
+    colorRect(1, item.top + item.height - 1, width - 2, 1, frameColor, frameAlpha);
+    colorRect(0, item.top + 1, 1, item.height - 2, frameColor, frameAlpha);
+    colorRect(width - 1, item.top + 1, 1, item.height - 2, frameColor, frameAlpha);
+    colorGradientRectUD(1, item.top + 1, width - 2, item.height - 2, frameColor, frameColor | (int(frameAlpha / 2) << 24));
   }
 
   // 領域内のアイテムを描画
   function onDraw(left, top, width, height) {
     fillRect(left, top, width, height, WIN_WHITE);
     if (drawItemList.count) {
-      var from = findItemIndex(top);
-      var to = findItemIndex(top + height - 1);
+      var from = findItemIndex(top, true);
+      var to = findItemIndex(top + height - 1, true);
       
       for (var i = from; i <= to; i++) {
         var item = drawItemList[i];
-        if (item.focused) 
-          fillRect(0, item.top, width, item.height, focused ? WIN_SELECTED : WIN_BG);
-        if (item === curDragTargetItem
-            && curDragTargetItemAcceptPacket)
-          fillRect(0, item.top, width, item.height, 0xFFFF0000);
         item.onDraw(...);
+        drawFrame(item);
       }
     }
   }
@@ -622,13 +658,6 @@ class KList extends KVirtualWidget
 
   function onMouseUp(x, y, button, shift) {
     super.onMouseUp(...);
-    var item = findItemIndex(y);
-    if (item !== void)
-      item.onMouseUp(x, y - item.top, button, shift);
-  }
-
-  function onMouseUp(x, y, button, shift) {
-    super.onMouseUp(...);
     var item = findItem(y);
     if (item !== void)
       item.onMouseUp(x, y - item.top, button, shift);
@@ -639,11 +668,16 @@ class KList extends KVirtualWidget
     var item = findItem(y);
 
     if (item !== curPointItem) {
-      if (curPointItem !== void)
-        curPointItem.onMouseLeave();
+      var prevPointItem = curPointItem;
       curPointItem = item;
-      if (curPointItem !== void)
+      if (prevPointItem !== void) {
+        prevPointItem.onMouseLeave();
+        prevPointItem.redraw();
+      }
+      if (curPointItem !== void) {
         curPointItem.onMouseEnter();
+        curPointItem.redraw();
+      }
     }
 
     if (item !== void) {
@@ -653,6 +687,15 @@ class KList extends KVirtualWidget
     } else {
       hint = "";
       status = "";
+    }
+  }
+
+  function onMouseLeave() {
+    var prevPointItem = curPointItem;
+    curPointItem = void;
+    if (prevPointItem !== void) {
+      prevPointItem.onMouseLeave();
+      prevPointItem.redraw();
     }
   }
 
@@ -847,6 +890,18 @@ class KList extends KVirtualWidget
   function seeSelection() {
     seeFocusedItem();
   }
+
+  property selection {
+    getter {
+      return focusedItem;
+    }
+  }
+
+  property selectionIndex {
+    getter {
+      return focusedItemIndex;
+    }
+  }
 };
 
 /**----------------------------------------------------------------------
@@ -880,6 +935,7 @@ class KListItem
   var labelWidth;
   var iconLayerList;
   var ownIconLayerList;
+  var _selected = false;
 
   /**------------------------------
    * コンストラクタ

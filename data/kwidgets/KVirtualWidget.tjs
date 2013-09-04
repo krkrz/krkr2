@@ -311,6 +311,18 @@ class KVirtualWidget extends KWidget
     _canvas.fillGradientRectLR(left - _site.left, top - _site.top, width, height, value1, value2);
   }
 
+  function fillGradientRectUD(left, top, width, height, value1, value2) {
+    _canvas.fillGradientRectUD(left - _site.left, top - _site.top, width, height, value1, value2);
+  }
+
+  function colorGradientRectLR(left, top, width, height, value1, value2) {
+    _canvas.colorGradientRectLR(left - _site.left, top - _site.top, width, height, value1, value2);
+  }
+
+  function colorGradientRectUD(left, top, width, height, value1, value2) {
+    _canvas.colorGradientRectUD(left - _site.left, top - _site.top, width, height, value1, value2);
+  }
+
   /**------------------------------
    * ãÈå`ââéZçáê¨ 
    *
