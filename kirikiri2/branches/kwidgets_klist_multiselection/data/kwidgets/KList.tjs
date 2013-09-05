@@ -396,10 +396,10 @@ class KList extends KVirtualWidget
       frameAlpha = 128;
     } else if (focused && item.focused) {
       frameColor = WIN_SELECTED & 0xFFFFFF;
-      frameAlpha = item == curPointItem ? 128 : 96;
+      frameAlpha = item == curPointItem ? 192 : 112;
     } else if (! focused && item.focused) {
-      frameColor = WIN_BG & 0xFFFFFF;
-      frameAlpha = 128;
+      frameColor = System.toActualColor(clActiveBorder);
+      frameAlpha = item == curPointItem ? 192 : 112;
     } else if (item === curPointItem) {
       frameColor = WIN_SELECTED & 0xFFFFFF;
       frameAlpha = 64;
@@ -410,7 +410,7 @@ class KList extends KVirtualWidget
     colorRect(1, item.top + item.height - 1, width - 2, 1, frameColor, frameAlpha);
     colorRect(0, item.top + 1, 1, item.height - 2, frameColor, frameAlpha);
     colorRect(width - 1, item.top + 1, 1, item.height - 2, frameColor, frameAlpha);
-    colorGradientRectUD(1, item.top + 1, width - 2, item.height - 2, frameColor, frameColor | (int(frameAlpha / 2) << 24));
+    colorGradientRectUD(1, item.top + 1, width - 2, item.height - 2, frameColor, frameColor | (frameAlpha << 24));
   }
 
   // —Ìˆæ“à‚ÌƒAƒCƒeƒ€‚ð•`‰æ
