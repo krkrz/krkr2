@@ -1,0 +1,54 @@
+/*----------------------------------------------------------------------
+ * リストサンプル2(マルチセレクションのテスト)
+ ----------------------------------------------------------------------*/
+class ListSample2 extends KWindow
+{
+  function ListSample2 {
+    super.KWindow("ListSample2");
+
+    // ウィンドウ初期設定
+    caption = 'リストサンプル2';
+    imeMode = imDontCare;
+
+    // デフォルト値
+    defaultFocusable = true;
+
+    // スクロールレイアウトを作リ、その中にリストを配置
+    primaryWidget.add(new KScrollLayout(this, true, true, "scroll"));
+    scroll.resize = true;
+    scroll.add(new KList(this, "list"));
+    
+    list.multipleSelection = true;
+
+    // リスト項目を配置しまくる
+    locateListItem(list, "リストアイテム", 4);
+  }
+
+  function locateListItem(item, label, depth) {
+    if (depth == 0)
+      return;
+    for (var i = 0; i < 5; i++) {
+      var myLabel = label + (i + 1);
+      var child = new KListItem(myLabel);
+      item.add(child);
+      locateListItem(child, myLabel + "-", depth - 1);
+    }
+  }
+}
+
+
+//----------------------------------------------------------------------
+// サンプル表示・非表示の切り替え
+global.listSample2 = void;
+
+function showListSample2
+{
+  if (listSample2 === void)
+    listSample2 = new ListSample2();
+  listSample2.visible = true;
+}
+
+function hideListSample2
+{
+  listSample2.visible = false;
+}
