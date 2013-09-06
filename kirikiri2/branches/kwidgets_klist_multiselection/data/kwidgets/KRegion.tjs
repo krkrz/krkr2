@@ -139,6 +139,20 @@ class KRect
     right = right < rect.right ? right : rect.right;
     bottom = bottom < rect.bottom ? bottom : rect.bottom;
   }
+
+  /**------------------------------
+   * 包含演算
+   *
+   * @param rect 矩形
+   *
+   * rectと自分自身の共通矩形分を、自分自身に割り当て直す
+   ------------------------------*/
+  function unionWith(rect) {
+    left = left < rect.left ? left : rect.left;
+    top = top < rect.top ? top : rect.top;
+    right = right > rect.right ? right : rect.right;
+    bottom = bottom > rect.bottom ? bottom : rect.bottom;
+  }
 }
 
 /**----------------------------------------------------------------------

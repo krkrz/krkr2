@@ -86,6 +86,9 @@ class KList extends KVirtualWidget
   var childList = [];
   var focusedItem = void;
   var focusedItemRect = [ 0, 0, 0, 0 ];
+  var mouseDownTargetItem = void;
+  var mouseDownTargetX, mouseDownTargetY, mouseDownTargetButton, mouseDownTargetShift;
+  var mouseDownTargetSelectedItemList;
   var labelEdit = void;
   var labelTextType = TEXT_SYMBOL;
   var marginalWidth, marginalHeight;
@@ -97,7 +100,11 @@ class KList extends KVirtualWidget
   var relocateRequired = false;
   var reconstructRequired = false;
   var resizeRequired = false;
-  var _multipleSelection = false;
+  var _multipleSelection = false; 
+  var lastFocusedItem = void;
+  var inMouseSelection = false;
+  var mouseSelectionBaseX, mouseSelectionBaseY;
+  var curMouseSelectionRect;
 
   /*------------------------------
    * リストビュー
@@ -386,31 +393,81 @@ class KList extends KVirtualWidget
     return includeTail ? (drawItemList.count - 1) : -1;
   }
 
+  // 選択リスト
+  property selectedItemList {
+    getter {
+      var result = [];
+      for (var i = 0; i < drawItemList.count; i++) {
+        var item = drawItemList[i];
+        if (item.selected)
+          result.add(item);
+      }
+      return result;
+    }
+  }
+  
   // アイテムのフレームを描画
-  function drawFrame(item) {
-    var frameColor;
-    var frameAlpha;
+  function drawItemFrame(item) {
+    var color;
+    var fillAlpha = 0;
+    var edgeAlpha = 0;
+    var pointed = (item == curPointItem);
+
     if (item == curDragTargetItem
         && curDragTargetItemAcceptPacket) {
-      frameColor = 0xFF0000;
-      frameAlpha = 128;
-    } else if (focused && item.focused) {
-      frameColor = WIN_SELECTED & 0xFFFFFF;
-      frameAlpha = item == curPointItem ? 192 : 112;
-    } else if (! focused && item.focused) {
-      frameColor = System.toActualColor(clActiveBorder);
-      frameAlpha = item == curPointItem ? 192 : 112;
-    } else if (item === curPointItem) {
-      frameColor = WIN_SELECTED & 0xFFFFFF;
-      frameAlpha = 64;
+      color = 0xFF0000;
+      fillAlpha = 2;
+      edgeAlpha = 2;
     } else {
+      if (item.focused && item.selected)
+        fillAlpha = 4;
+      else {
+        if (pointed)
+          fillAlpha += 1;
+        if (item.selected)
+          fillAlpha += 3;
+      }
+
+      if (pointed)
+        edgeAlpha = 2;
+      else if (item.focused || item.selected)
+        edgeAlpha = 3;
+
+      if (pointed
+          || focused)
+        color = WIN_SELECTED & 0xFFFFFF;
+      else
+        color = System.toActualColor(clActiveBorder);
+    }
+    fillAlpha *= 32;
+    edgeAlpha *= 64;
+    colorRect(1, item.top, width - 2, 1, color, edgeAlpha);
+    colorRect(1, item.top + item.height - 1, width - 2, 1, color, edgeAlpha);
+    colorRect(0, item.top + 1, 1, item.height - 2, color, edgeAlpha);
+    colorRect(width - 1, item.top + 1, 1, item.height - 2, color, edgeAlpha);
+    colorGradientRectUD(1, item.top + 1, width - 2, item.height - 2, color, color | (fillAlpha << 24));
+  }
+
+  // マウス選択領域を描画
+  function drawMouseSelection() {
+    if (! inMouseSelection
+        || curMouseSelectionRect === void)
+      return;
+    var range = curMouseSelectionRect;
+    var color = WIN_SELECTED & 0xFFFFFF;
+    var edgeAlpha = 192;
+    var fillAlpha = 64;
+    if (range.width * range.height == 0)
+      return;
+    if (range.width == 1 || range.height == 1) {
+      colorRect(range.left, range.top, range.width, range.height, color, edgeAlpha);
       return;
     }
-    colorRect(1, item.top, width - 2, 1, frameColor, frameAlpha);
-    colorRect(1, item.top + item.height - 1, width - 2, 1, frameColor, frameAlpha);
-    colorRect(0, item.top + 1, 1, item.height - 2, frameColor, frameAlpha);
-    colorRect(width - 1, item.top + 1, 1, item.height - 2, frameColor, frameAlpha);
-    colorGradientRectUD(1, item.top + 1, width - 2, item.height - 2, frameColor, frameColor | (frameAlpha << 24));
+    colorRect(range.left, range.top, range.width, 1, color, edgeAlpha);
+    colorRect(range.left, range.top + range.height - 1, range.width, 1, color, edgeAlpha);
+    colorRect(range.left, range.top + 1, 1, range.height - 2, color, edgeAlpha);
+    colorRect(range.left + range.width - 1, range.top + 1, 1, range.height - 2, color, edgeAlpha);
+    colorRect(range.left + 1, range.top + 1, range.width - 2, range.height - 2, color, fillAlpha);
   }
 
   // 領域内のアイテムを描画
@@ -423,9 +480,10 @@ class KList extends KVirtualWidget
       for (var i = from; i <= to; i++) {
         var item = drawItemList[i];
         item.onDraw(...);
-        drawFrame(item);
+        drawItemFrame(item);
       }
     }
+    drawMouseSelection();
   }
 
   function requireResize {
@@ -561,10 +619,19 @@ class KList extends KVirtualWidget
     }
   }      
 
-  // 特定のアイテムを選択する
-  function focusItem(item) {
-    if (focusedItem === item)
+  // 特定のアイテムをフォーカスする
+  function focusItem(item, resetSelection = true) {
+    resetSelection = resetSelection && multipleSelection;
+
+    if (resetSelection) 
+      clearAllSelection();
+
+    if (focusedItem === item) {
+      if (resetSelection
+          && focusedItem !== void)
+        focusedItem.selected = true;
       return;
+    }
 
     // 祖先アイテムを参照
     var prevAncestors = [], curAncestors = [];
@@ -599,13 +666,15 @@ class KList extends KVirtualWidget
     if (focusedItem === void) {
       return;
     }
-    focusedItem.redraw();
-    drawFocusedItem();
     if (focusedItem !== void) {
       for (var i = curAncestors.count - 1; i >= 0; i--)
         curAncestors[i].onDescendantFocus();
       focusedItem.onFocus();
     }
+
+    if (resetSelection)
+      focusedItem.selected = true;
+    focusedItem.redraw();
 
     if (_focusOnSelect)
       focus();
@@ -643,21 +712,104 @@ class KList extends KVirtualWidget
     }
   }
 
+  // 全選択状態をリセット
+  function clearAllSelection() {
+    for (var i = 0; i < drawItemList.count; i++)
+      drawItemList[i].selected = false;
+  }
+
+  // アイテムの範囲を選択
+  function selectItemRange(item1, item2) {
+    var index1 = drawItemList.find(item1);
+    var index2 = drawItemList.find(item2);
+    if (index1 < 0 || index2 < 0)
+      return;
+    var from = int(Math.min(index1, index2));
+    var to = int(Math.max(index1, index2));
+    for (var i = from; i <= to; i++)
+      drawItemList[i].selected = true;
+  }
+
+  // アイテム一個押下
+  function pressItem(targetItem, x, y, button, shift) {
+    if (multipleSelection) {
+      // Shiftキーを押してる時はアイテムを前のチョイスから範囲選択
+      if (button == mbLeft
+          && targetItem !== void
+          && shift & ssShift) {
+        if (focusedItem === void) {
+          focusItem(targetItem);
+        } else {
+          if (drawItemList.find(lastFocusedItem) < 0)
+            lastFocusedItem = focusedItem;
+          clearAllSelection();
+          selectItemRange(lastFocusedItem, targetItem);
+          focusItem(targetItem, false);
+        }
+      } 
+      // Ctrlキーを押してる時は選択の反転。
+      else if (button == mbLeft
+                 && targetItem !== void
+                 && shift & ssCtrl) {
+        targetItem.selected = ! targetItem.selected;
+        lastFocusedItem = targetItem;
+        focusItem(targetItem, false);
+      } 
+      // 何も押してなければ選択とフォーカスを同時に移動。
+      else {
+        focusItem(targetItem);
+        if (targetItem)
+          targetItem.selected = true;
+      }
+    } else {
+      focusItem(targetItem);
+    }
+    if (targetItem !== void) 
+      targetItem.onMouseDown(x, y - targetItem.top, button, shift);
+    focus();
+  }
+
   // マウス押されたらその位置のアイテムをセレクト
   function onMouseDown(x, y, button, shift) {
     super.onMouseDown(...);
     if (button == mbMiddle)
       return;
-    var index = findItemIndex(y);
-    if (index >= 0) {
-      focusItem(drawItemList[index]);
-      focusedItem.onMouseDown(x, y - focusedItem.top, button, shift);
+
+    var targetItem = findItem(y);
+    if (multipleSelection) {
+      // ターゲットが選択状態でなく、
+      // ラベルの範囲外をクリックした時は、
+      // マウスドラッグによる範囲選択を試みる。
+      // この場合、ドラッグしなかった場合のボタン押下動作は、MouseUp時まで遅延させる。
+      if (targetItem === void
+          || (! targetItem.selected
+              && ! targetItem.inMarking(x, y))) {
+        inMouseSelection = true;
+        mouseDownTargetItem = targetItem;
+        mouseDownTargetX = x;
+        mouseDownTargetY = y;
+        mouseDownTargetButton = button;
+        mouseDownTargetShift = shift;
+        mouseDownTargetSelectedItemList = selectedItemList;
+        focusItem(targetItem, false);
+        focus();
+        return;
+      } else
+        inMouseSelection = false;
     }
-    focus();
+    pressItem(targetItem, x, y, button, shift);
   }
 
   function onMouseUp(x, y, button, shift) {
     super.onMouseUp(...);
+    // マウスドラッグによる範囲選択を試みて結局
+    // ドラッグされなかった場合、ここでボタン押下動作を実行する。
+    if (inMouseSelection
+        && button == mouseDownTargetButton) {
+      inMouseSelection = false;
+      pressItem(mouseDownTargetItem, mouseDownTargetX, mouseDownTargetY, mouseDownTargetButton, mouseDownTargetShift);
+      return;
+    }
     var item = findItem(y);
     if (item !== void)
       item.onMouseUp(x, y - item.top, button, shift);
@@ -666,7 +818,6 @@ class KList extends KVirtualWidget
   function onMouseMove(x, y, shift) {
     super.onMouseMove(...);
     var item = findItem(y);
-
     if (item !== curPointItem) {
       var prevPointItem = curPointItem;
       curPointItem = item;
@@ -706,20 +857,78 @@ class KList extends KVirtualWidget
   }
 
   function onDragEnter(x, y, shift) {
-    if (focusedItem !== void) {
-      focusedItem.onDragEnter(x - focusedItem.left, y - focusedItem.top, shift);
+    if (! inMouseSelection) {
+      if (focusedItem !== void) {
+        focusedItem.onDragEnter(x - focusedItem.left, y - focusedItem.top, shift);
+      }
+    } else {
+      mouseSelectionBaseX = x;
+      mouseSelectionBaseY = y;
+      curMouseSelectionRect = new KRect(x, y, 0, 0);
     }
   }
 
   function onDragMove(x, y, shift) {
-    if (focusedItem !== void) {
-      focusedItem.onDragMove(x - focusedItem.left, y - focusedItem.top, shift);
+    if (! inMouseSelection ) {
+      if (focusedItem !== void) {
+        focusedItem.onDragMove(x - focusedItem.left, y - focusedItem.top, shift);
+      }
+    } else {
+      // マウスドラッグによる範囲選択
+      var range = curMouseSelectionRect;
+      curMouseSelectionRect = new KRect(Math.min(mouseSelectionBaseX, x),
+                                        Math.min(mouseSelectionBaseY, y),
+                                        Math.abs(mouseSelectionBaseX - x),
+                                        Math.abs(mouseSelectionBaseY - y));
+      range.unionWith(curMouseSelectionRect);
+
+      redrawRect(range.left, range.top, range.width, range.height);
+
+      // 選択範囲に含まれるアイテム群を判定
+      var from = findItemIndex(Math.min(mouseSelectionBaseY, y));
+      var to = findItemIndex(Math.max(mouseSelectionBaseY, y));
+
+      if (to < 0 && from >= 0)
+        to = drawItemList.count - 1;
+
+      // Shiftを押しながらなら、範囲を追加
+      if (mouseDownTargetShift & ssShift) {
+        clearAllSelection();
+        for (var i = 0; i < mouseDownTargetSelectedItemList.count; i++)
+          mouseDownTargetSelectedItemList[i].selected = true;
+        if (from >= 0) 
+          for (var i = from; i <= to; i++) 
+            drawItemList[i].selected = true;
+      } 
+      // Ctrlを押しながらなら、範囲を反転
+      else if (mouseDownTargetShift & ssCtrl) {
+        clearAllSelection();
+        for (var i = 0; i < mouseDownTargetSelectedItemList.count; i++)
+          mouseDownTargetSelectedItemList[i].selected = true;
+        if (from >= 0) 
+          for (var i = from; i <= to; i++) 
+            drawItemList[i].selected = ! drawItemList[i].selected;
+      } 
+      // 何も押してなければ、新規に範囲を選択
+      else {
+        clearAllSelection();
+        if (from >= 0) 
+          for (var i = from; i <= to; i++) 
+            drawItemList[i].selected = ! drawItemList[i].selected;
+      }        
     }
   }
   
   function onDragLeave(x, y, shift) {
-    if (focusedItem !== void) {
-      focusedItem.onDragLeave(x, y - focusedItem.top, shift);
+    if (! inMouseSelection) {
+      if (focusedItem !== void) {
+        focusedItem.onDragLeave(x, y - focusedItem.top, shift);
+      }
+    } else {
+      var range = curMouseSelectionRect;
+      curMouseSelectionRect = void;
+      inMouseSelection = false;
+      redrawRect(range.left, range.top, range.width, range.height);
     }
   }
 
@@ -1258,6 +1467,28 @@ class KListItem
     root.focus();
   } 
 
+  // 選択状態
+  // multipleSelectionがオフの場合は、focusedとselectedは常に一致する。
+  // そうでない場合は focused プロパティの値が反映される。
+  property selected {
+    getter {
+      if (! multipleSelection)
+        return focused;
+      else
+        return _selected;
+    }
+    setter (v) {
+      if (! multipleSelection)
+        focused = v;
+      else {
+        if (_selected == v)
+          return;
+        _selected = v;
+        redraw();
+      }
+    }
+  }
+
   /*------------------------------
    * depth
    ------------------------------*/
@@ -1768,6 +1999,10 @@ class KListItem
     return x >= toggleWidth + iconWidth && x < width;
   }
 
+  function inMarking(x, y) {
+    return inToggle(x, y) || inIcon(x, y) || inLabel(x, y);
+  }
+
   // アイコンインデックスを特定
   function iconIndexAt(x) {
     x -= left;
@@ -1868,6 +2103,16 @@ class KListItem
     }
   }
 
+  // マルチセレンクション？
+  property multipleSelection {
+    getter {
+      if (root)
+        return root.multipleSelection;
+      else
+        return false;
+    }
+  }
+
   // 再配置を要求
   function requireRelocate {
     if (root) {
@@ -1893,7 +2138,7 @@ class KListItem
 
   function redraw() {
     if (visible)
-      root.onDraw(0, top, root.width, size);
+      root.redrawRect(0, top, root.width, size);
   }
 
   function onDraw {
@@ -1974,14 +2219,5 @@ class KListItem
   }
 
   function onDescendantDeselect() {
-  }
-
-  property selected {
-    getter {
-      return focused;
-    }
-    setter (v) {
-      focused = v;
-    }
   }
 };
