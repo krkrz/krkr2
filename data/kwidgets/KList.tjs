@@ -757,6 +757,7 @@ class KList extends KVirtualWidget
       } 
       // 何も押してなければ選択とフォーカスを同時に移動。
       else {
+        lastFocusedItem = targetItem;
         focusItem(targetItem);
         if (targetItem)
           targetItem.selected = true;
@@ -890,6 +891,9 @@ class KList extends KVirtualWidget
 
       if (to < 0 && from >= 0)
         to = drawItemList.count - 1;
+
+      // ラストフォーカスはターゲットアイテムに移す
+      lastFocusedItem = mouseDownTargetItem;
 
       // Shiftを押しながらなら、範囲を追加
       if (mouseDownTargetShift & ssShift) {

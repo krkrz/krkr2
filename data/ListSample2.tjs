@@ -22,6 +22,11 @@ class ListSample2 extends KWindow
 
     // リスト項目を配置しまくる
     locateListItem(list, "リストアイテム", 4);
+
+    // 永続化辞書の作成
+    var dict = new KPersistentDictionary(System.dataPath + name + "_dict.txt");
+    add(dict);
+    bindPersistentDictionary(dict);
   }
 
   function locateListItem(item, label, depth) {
