@@ -2,7 +2,7 @@
 // $Id: KList.tjs,v 1.7 2007/09/14 17:13:00 m2 Exp $
 //
 
-
+  
 /*----------------------------------------------------------------------
  * リスト項目リネーム時のテキストエディット
  ----------------------------------------------------------------------*/
@@ -70,7 +70,6 @@ class KLabelEdit extends KTextInput {
     text.cancelValue();
   }    
 };   
-    
 
 /**----------------------------------------------------------------------
  * リストビュー
@@ -103,6 +102,7 @@ class KList extends KVirtualWidget
   var _multipleSelection = false; 
   var lastFocusedItem = void;
   var inMouseSelection = false;
+  var delayMouseEvent = false;
   var mouseSelectionBaseX, mouseSelectionBaseY;
   var curMouseSelectionRect;
 
@@ -758,9 +758,13 @@ class KList extends KVirtualWidget
       // 何も押してなければ選択とフォーカスを同時に移動。
       else {
         lastFocusedItem = targetItem;
-        focusItem(targetItem);
-        if (targetItem)
-          targetItem.selected = true;
+        if (targetItem !== void) {
+          focusItem(targetItem);
+          if (targetItem)
+            targetItem.selected = true;
+        } else {
+          clearAllSelection();
+        }
       }
     } else {
       focusItem(targetItem);
@@ -778,6 +782,8 @@ class KList extends KVirtualWidget
 
     var targetItem = findItem(y);
     if (multipleSelection) {
+      // マウス選択オフから初めてー…
+      inMouseSelection = false;
       // ターゲットが選択状態でなく、
       // ラベルの範囲外をクリックした時は、
       // マウスドラッグによる範囲選択を試みる。
@@ -786,17 +792,26 @@ class KList extends KVirtualWidget
           || (! targetItem.selected
               && ! targetItem.inMarking(x, y))) {
         inMouseSelection = true;
+        delayMouseEvent = true;
+      }
+      // 選択中のアイテムをクリックした時は、ドラッグしなかった場合のボタン押下動作は、MouseUp時まで遅延させる。
+      else if (targetItem !== void
+               && targetItem.selected)  {
+        delayMouseEvent = true;
+      }
+      // マウスダウンイベントの遅延処理
+      if (delayMouseEvent) {
         mouseDownTargetItem = targetItem;
         mouseDownTargetX = x;
         mouseDownTargetY = y;
         mouseDownTargetButton = button;
         mouseDownTargetShift = shift;
         mouseDownTargetSelectedItemList = selectedItemList;
-        focusItem(targetItem, false);
+        if (targetItem !== void)
+          focusItem(targetItem, false);
         focus();
         return;
-      } else
-        inMouseSelection = false;
+      }
     }
     pressItem(targetItem, x, y, button, shift);
   }
@@ -805,8 +820,9 @@ class KList extends KVirtualWidget
     super.onMouseUp(...);
     // マウスドラッグによる範囲選択を試みて結局
     // ドラッグされなかった場合、ここでボタン押下動作を実行する。
-    if (inMouseSelection
+    if (delayMouseEvent
         && button == mouseDownTargetButton) {
+      delayMouseEvent = false;
       inMouseSelection = false;
       pressItem(mouseDownTargetItem, mouseDownTargetX, mouseDownTargetY, mouseDownTargetButton, mouseDownTargetShift);
       return;
@@ -858,11 +874,15 @@ class KList extends KVirtualWidget
   }
 
   function onDragEnter(x, y, shift) {
+    delayMouseEvent = false;
+
     if (! inMouseSelection) {
       if (focusedItem !== void) {
         focusedItem.onDragEnter(x - focusedItem.left, y - focusedItem.top, shift);
       }
     } else {
+      // ラストフォーカスはターゲットアイテムに移す
+      lastFocusedItem = mouseDownTargetItem;
       mouseSelectionBaseX = x;
       mouseSelectionBaseY = y;
       curMouseSelectionRect = new KRect(x, y, 0, 0);
@@ -885,15 +905,22 @@ class KList extends KVirtualWidget
 
       redrawRect(range.left, range.top, range.width, range.height);
 
+      // アイテムが無かったらここまで。
+      if (drawItemList.count == 0)
+        return;
+
       // 選択範囲に含まれるアイテム群を判定
-      var from = findItemIndex(Math.min(mouseSelectionBaseY, y));
-      var to = findItemIndex(Math.max(mouseSelectionBaseY, y));
-
-      if (to < 0 && from >= 0)
-        to = drawItemList.count - 1;
-
-      // ラストフォーカスはターゲットアイテムに移す
-      lastFocusedItem = mouseDownTargetItem;
+      var fromY, toY, from, to;
+      fromY = Math.min(mouseSelectionBaseY, y);
+      toY = Math.max(mouseSelectionBaseY, y);
+      // 完全に範囲外なら添え字を0に。
+      if (toY < 0 || fromY >= drawItemList[-1].top + drawItemList[-1].height) {
+        from = to = 0;
+      } else {
+        // 範囲をインデックスで確定
+        from = (fromY < 0) ? 0 : findItemIndex(fromY);
+        to = findItemIndex(toY, true) + 1;
+      }
 
       // Shiftを押しながらなら、範囲を追加
       if (mouseDownTargetShift & ssShift) {
@@ -901,7 +928,7 @@ class KList extends KVirtualWidget
         for (var i = 0; i < mouseDownTargetSelectedItemList.count; i++)
           mouseDownTargetSelectedItemList[i].selected = true;
         if (from >= 0) 
-          for (var i = from; i <= to; i++) 
+          for (var i = from; i < to; i++) 
             drawItemList[i].selected = true;
       } 
       // Ctrlを押しながらなら、範囲を反転
@@ -910,14 +937,14 @@ class KList extends KVirtualWidget
         for (var i = 0; i < mouseDownTargetSelectedItemList.count; i++)
           mouseDownTargetSelectedItemList[i].selected = true;
         if (from >= 0) 
-          for (var i = from; i <= to; i++) 
+          for (var i = from; i < to; i++) 
             drawItemList[i].selected = ! drawItemList[i].selected;
       } 
       // 何も押してなければ、新規に範囲を選択
       else {
         clearAllSelection();
         if (from >= 0) 
-          for (var i = from; i <= to; i++) 
+          for (var i = from; i < to; i++) 
             drawItemList[i].selected = ! drawItemList[i].selected;
       }        
     }
@@ -2225,3 +2252,4 @@ class KListItem
   function onDescendantDeselect() {
   }
 };
+
