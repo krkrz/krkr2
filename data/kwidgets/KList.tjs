@@ -102,6 +102,7 @@ class KList extends KVirtualWidget
   var _multipleSelection = false; 
   var lastFocusedItem = void;
   var inMouseSelection = false;
+  var pressSelection = false;
   var delayMouseEvent = false;
   var mouseSelectionBaseX, mouseSelectionBaseY;
   var curMouseSelectionRect;
@@ -393,7 +394,17 @@ class KList extends KVirtualWidget
     return includeTail ? (drawItemList.count - 1) : -1;
   }
 
-  // 選択リスト
+  // 選択範囲を持っている？
+  property hasSelection {
+    getter {
+      for (var i = 0; i < drawItemList.count; i++) 
+        if (drawItemList[i].selected)
+          return true;
+      return false;
+    }
+  }
+
+  // 選択アイテムのリスト
   property selectedItemList {
     getter {
       var result = [];
@@ -401,6 +412,23 @@ class KList extends KVirtualWidget
         var item = drawItemList[i];
         if (item.selected)
           result.add(item);
+      }
+      return result;
+    }
+  }
+
+  // 選択アイテムの内、自分の親が存在するアイテムを抜き取って
+  // 親アイテムのみを残したリスト。
+  // (削除動作や移動動作の対象として使う)
+  property selectedItemParentOnlyList {
+    getter {
+      var result = [];
+      for (var i = 0; i < drawItemList.count; i++) {
+        var item = drawItemList[i];
+        if (item.selected
+            && (result.count == 0
+                || ! result[-1].isAncestorOf(item)))
+            result.add(item);
       }
       return result;
     }
@@ -755,22 +783,35 @@ class KList extends KVirtualWidget
         lastFocusedItem = targetItem;
         focusItem(targetItem, false);
       } 
-      // 何も押してなければ選択とフォーカスを同時に移動。
-      else {
+      // ターゲットアイテムがあったら選択とフォーカスを同時に移動。
+      else if (targetItem !== void) {
         lastFocusedItem = targetItem;
-        if (targetItem !== void) {
-          focusItem(targetItem);
-          if (targetItem)
-            targetItem.selected = true;
-        } else {
-          clearAllSelection();
-        }
+        focusItem(targetItem);
+        targetItem.selected = true;
       }
+      // ターゲットアイテムが無かったら選択をクリア。
+      else {
+        clearAllSelection();
+        lastFocusedItem = void;
+      }
+
+      // 右クリックしていたら専用コールバックをコール
+      if (button == mbRight) {
+        // 選択範囲右クリックコールバック
+        if (pressSelection)
+          onSelectionRightClick(...);
+        // バックグラウンド右クリックコールバック
+        else
+          onBackgroundRightClick(...);
+      } 
+      // そうでなければ該当アイテムのマウスダウンルーチン直接コール
+      else if (targetItem !== void) 
+        targetItem.onMouseDown(x, y - targetItem.top, button, shift);
     } else {
       focusItem(targetItem);
+      if (targetItem !== void) 
+        targetItem.onMouseDown(x, y - targetItem.top, button, shift);    
     }
-    if (targetItem !== void) 
-      targetItem.onMouseDown(x, y - targetItem.top, button, shift);
     focus();
   }
 
@@ -784,19 +825,25 @@ class KList extends KVirtualWidget
     if (multipleSelection) {
       // マウス選択オフから初めてー…
       inMouseSelection = false;
-      // ターゲットが選択状態でなく、
-      // ラベルの範囲外をクリックした時は、
-      // マウスドラッグによる範囲選択を試みる。
-      // この場合、ドラッグしなかった場合のボタン押下動作は、MouseUp時まで遅延させる。
+      pressSelection = false;
+      // ターゲットが選択状態でなく、ラベルの範囲外をクリックしたケース
       if (targetItem === void
           || (! targetItem.selected
               && ! targetItem.inMarking(x, y))) {
-        inMouseSelection = true;
-        delayMouseEvent = true;
+        // 右クリックだったら、ターゲットを解除する
+        if (button == mbRight) {
+          targetItem = void;
+        } 
+        // 左クリックだったら、マウスドラッグによる範囲選択を開始する。
+        else {
+          inMouseSelection = true;
+          delayMouseEvent = true;
+        }
       }
       // 選択中のアイテムをクリックした時は、ドラッグしなかった場合のボタン押下動作は、MouseUp時まで遅延させる。
       else if (targetItem !== void
                && targetItem.selected)  {
+        pressSelection = true;
         delayMouseEvent = true;
       }
       // マウスダウンイベントの遅延処理
@@ -812,6 +859,10 @@ class KList extends KVirtualWidget
         focus();
         return;
       }
+
+      // ターゲットアイテムがある場合は、選択範囲クリックフラグを立てる。
+      if (targetItem !== void)
+        pressSelection = true;
     }
     pressItem(targetItem, x, y, button, shift);
   }
@@ -822,9 +873,10 @@ class KList extends KVirtualWidget
     // ドラッグされなかった場合、ここでボタン押下動作を実行する。
     if (delayMouseEvent
         && button == mouseDownTargetButton) {
+      pressItem(mouseDownTargetItem, mouseDownTargetX, mouseDownTargetY, mouseDownTargetButton, mouseDownTargetShift);
       delayMouseEvent = false;
       inMouseSelection = false;
-      pressItem(mouseDownTargetItem, mouseDownTargetX, mouseDownTargetY, mouseDownTargetButton, mouseDownTargetShift);
+      pressSelection = false;
       return;
     }
     var item = findItem(y);
@@ -876,25 +928,23 @@ class KList extends KVirtualWidget
   function onDragEnter(x, y, shift) {
     delayMouseEvent = false;
 
-    if (! inMouseSelection) {
-      if (focusedItem !== void) {
-        focusedItem.onDragEnter(x - focusedItem.left, y - focusedItem.top, shift);
-      }
-    } else {
+    if (inMouseSelection) {
       // ラストフォーカスはターゲットアイテムに移す
       lastFocusedItem = mouseDownTargetItem;
       mouseSelectionBaseX = x;
       mouseSelectionBaseY = y;
       curMouseSelectionRect = new KRect(x, y, 0, 0);
+    } else if (pressSelection) {
+      onSelectionDragEnter(...);
+    } else {
+      if (focusedItem !== void) {
+        focusedItem.onDragEnter(x - focusedItem.left, y - focusedItem.top, shift);
+      }
     }
   }
 
   function onDragMove(x, y, shift) {
-    if (! inMouseSelection ) {
-      if (focusedItem !== void) {
-        focusedItem.onDragMove(x - focusedItem.left, y - focusedItem.top, shift);
-      }
-    } else {
+    if (inMouseSelection ) {
       // マウスドラッグによる範囲選択
       var range = curMouseSelectionRect;
       curMouseSelectionRect = new KRect(Math.min(mouseSelectionBaseX, x),
@@ -948,18 +998,26 @@ class KList extends KVirtualWidget
             drawItemList[i].selected = ! drawItemList[i].selected;
       }        
     }
+    else if (pressSelection) {
+      onSelectionDragMove(...);
+    }
+    else {
+      focusedItem.onDragMove(x - focusedItem.left, y - focusedItem.top, shift);
+    }
   }
   
   function onDragLeave(x, y, shift) {
-    if (! inMouseSelection) {
-      if (focusedItem !== void) {
-        focusedItem.onDragLeave(x, y - focusedItem.top, shift);
-      }
-    } else {
+    if (inMouseSelection) {
       var range = curMouseSelectionRect;
       curMouseSelectionRect = void;
       inMouseSelection = false;
       redrawRect(range.left, range.top, range.width, range.height);
+    } else if (pressSelection) {
+      onSelectionDragLeave(...);
+    } else {
+      if (focusedItem !== void) {
+        focusedItem.onDragLeave(x, y - focusedItem.top, shift);
+      }
     }
   }
 
@@ -1022,14 +1080,22 @@ class KList extends KVirtualWidget
         || key == VK_LEFT)
       return;
     else
-      super.onKeyDown(...);
+      super.onKeyDown(key, shift, true);
   }
 
   function onKeyDown(key, shift) {
+    if (! multipleSelection)
+      defaultKeyDownFunc(key, shift);
+    else
+      onSelectionKeyDown(key, shift);
+  }
+
+  function defaultKeyDownFunc(key, shift) {
     if (focusedItem === void) {
       super.onKeyDown(...);
       return;
     }
+
     var focusedItemIndex = this.focusedItemIndex;
     if (key == VK_DOWN
         && ! (shift & (ssAlt | ssCtrl | ssShift))) {
@@ -1122,6 +1188,42 @@ class KList extends KVirtualWidget
   function onNodeDisabled {
     canvas.opacity = 64;
     opacity = 64;
+  }
+
+  /**------------------------------
+   * マルチプルセレクションフック関数
+   ------------------------------*/
+  function onSelectionDragEnter(x, y, shift) {
+    Debug.message("onSelectionDragEnter", x, y, shift);
+    if (focusedItem !== void)
+      focusedItem.onDragEnter(...);
+  }
+
+  function onSelectionDragMove(x, y, shift) {
+    Debug.message("onSelectionDragMove", x, y, shift);
+    if (focusedItem !== void)
+      focusedItem.onDragMove(...);
+  }
+
+  function onSelectionDragLeave(x, y, shift) {
+    Debug.message("onSelectionDragLeave", x, y, shift);
+    if (focusedItem !== void)
+      focusedItem.onDragLeave(...);
+  }
+
+  function onSelectionKeyDown(key, shift) {
+    Debug.message("onSelectionKeyDown", key, shift);
+    defaultKeyDownFunc(key, shift);
+  }
+  
+  function onSelectionRightClick() {
+    Debug.message("onSelectionRightClick");
+    if (focusedItem !== void)
+      focusedItem.onRightClick();
+  }
+
+  function onBackgroundRightClick() {
+    Debug.message("onBackgroundRightClick");
   }
 
   /**------------------------------

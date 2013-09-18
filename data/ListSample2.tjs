@@ -18,6 +18,7 @@ class ListSample2 extends KWindow
     scroll.resize = true;
     scroll.add(new KList(this, "list"));
     
+    list.spaceVertical = 2;
     list.multipleSelection = true;
 
     // リスト項目を配置しまくる
