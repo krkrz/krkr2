@@ -1192,6 +1192,16 @@ class KList extends KVirtualWidget
   }
 
   /**------------------------------
+   * ドラッグ＆ドロップフック関数
+   ------------------------------*/
+  function isChildPacketAcceptable(index, packet) {
+    return false;
+  }
+
+  function onChipldPacketDrop(index, packet) {
+  }
+
+  /**------------------------------
    * マルチプルセレクションフック関数
    ------------------------------*/
   function onSelectionDragEnter(x, y, shift) {
@@ -2073,6 +2083,15 @@ class KListItem
 
   // パケットキャンセル
   function onPacketCancel(packet) {
+  }
+
+  // 子パケット受け入れ可能
+  function isChildPacketAcceptable(index, packet) {
+    return false;
+  }
+
+  // 子パケットドロップ
+  function onChipldPacketDrop(index, packet) {
   }
 
   /*------------------------------
