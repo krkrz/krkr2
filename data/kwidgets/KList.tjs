@@ -1002,7 +1002,8 @@ class KList extends KVirtualWidget
       onSelectionDragMove(...);
     }
     else {
-      focusedItem.onDragMove(x - focusedItem.left, y - focusedItem.top, shift);
+      if (focusedItem !== void)
+        focusedItem.onDragMove(x - focusedItem.left, y - focusedItem.top, shift);
     }
   }
   
