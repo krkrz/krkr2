@@ -79,7 +79,7 @@ class KList extends KVirtualWidget
   var isRoot = true;
   var depth = -1;
   var root;
-  var slideWidth = 12;
+  var slideWidth = 14;
   var drawItemList = [];
   var treeWidth, treeHeight;
   var childList = [];
@@ -93,8 +93,6 @@ class KList extends KVirtualWidget
   var marginalWidth, marginalHeight;
   var _focusOnSelect;
   var iconDeposit;
-  var curDragTargetItem;
-  var curDragTargetItemAcceptPacket = false;
   var curPointItem = void;
   var relocateRequired = false;
   var reconstructRequired = false;
@@ -106,6 +104,14 @@ class KList extends KVirtualWidget
   var delayMouseEvent = false;
   var mouseSelectionBaseX, mouseSelectionBaseY;
   var curMouseSelectionRect;
+
+  var DRAG_ACCEPT_TYPE_NONE   = 0;
+  var DRAG_ACCEPT_TYPE_DIRECT = 1;
+  var DRAG_ACCEPT_TYPE_CHILD  = 2;
+  var confirmedDragTarget;
+  var curDragInfo;
+  var curDragRegion;
+  var toggleWidth;
 
   /*------------------------------
    * リストビュー
@@ -132,6 +138,10 @@ class KList extends KVirtualWidget
     setMinMaxSize(0, 0, marginalWidth, marginalHeight);
     _focusOnSelect = true;
     iconDeposit = %[];
+    toggleWidth = findIcon("k_list_open").width + 4;;
+    curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_NONE ];
+    curDragRegion = new KRegion();
+    mouseDragThreshold = 8;
   }
 
   /*------------------------------
@@ -355,6 +365,48 @@ class KList extends KVirtualWidget
     }
   }
 
+  // ひとつ前のアイテム
+  property prevSibling {
+    getter {
+      return void;
+    }
+  }
+
+  // ひとつ後のアイテム
+  property nextSibling {
+    getter {
+      return void;
+    }
+  }
+
+  // ひとつ前の描画アイテム
+  property prevDrawItem {
+    getter {
+      return void;
+    }
+  }
+
+  // ひとつ後の描画アイテム
+  property nextDrawItem {
+    getter {
+      return void;
+    }
+  }
+
+  // 終端アイテムか？
+  property isLastItem {
+    getter {
+      return false;
+    }
+  }
+
+  // 先端アイテムか？
+  property isTopItem {
+    getter {
+      return false;
+    }
+  }
+
   // アイコンをロードしてキャッシュする
   function findIcon(filename) {
     if (typeof(iconDeposit[filename]) == "undefined") {
@@ -436,44 +488,52 @@ class KList extends KVirtualWidget
   
   // アイテムのフレームを描画
   function drawItemFrame(item) {
-    var color;
+    var fillColor = 0;
+    var edgeColor = 0;
     var fillAlpha = 0;
     var edgeAlpha = 0;
-    var pointed = (item == curPointItem);
+    var pointed = (item == curPointItem) && (curDragInfo.acceptType == DRAG_ACCEPT_TYPE_NONE);
 
-    if (item == curDragTargetItem
-        && curDragTargetItemAcceptPacket) {
-      color = 0xFF0000;
+    // フレーム・エッジのカラーと不透明度を決定
+    if (item.focused && item.selected)
+      fillAlpha = 4;
+    else {
+      if (pointed)
+        fillAlpha += 1;
+      if (item.selected)
+        fillAlpha += 3;
+    }
+    
+    if (pointed)
+      edgeAlpha = 2;
+    else if (item.focused || item.selected)
+      edgeAlpha = 3;
+    
+    if (pointed
+        || focused)
+      fillColor = edgeColor = WIN_SELECTED & 0xFFFFFF;
+    else
+      fillColor = edgeColor = System.toActualColor(clActiveBorder);
+
+    // パケットをドラッグ中なら色を変える
+    if (curDragInfo.acceptType == DRAG_ACCEPT_TYPE_DIRECT
+        && curDragInfo.item === item) {
+      fillColor = edgeColor = 0xFF0000;
       fillAlpha = 2;
       edgeAlpha = 2;
-    } else {
-      if (item.focused && item.selected)
-        fillAlpha = 4;
-      else {
-        if (pointed)
-          fillAlpha += 1;
-        if (item.selected)
-          fillAlpha += 3;
-      }
-
-      if (pointed)
-        edgeAlpha = 2;
-      else if (item.focused || item.selected)
-        edgeAlpha = 3;
-
-      if (pointed
-          || focused)
-        color = WIN_SELECTED & 0xFFFFFF;
-      else
-        color = System.toActualColor(clActiveBorder);
-    }
+    } else if (curDragInfo.acceptType == DRAG_ACCEPT_TYPE_CHILD
+               && curDragInfo.item === item) {
+      edgeColor = 0xFF0000;
+      edgeAlpha = 2;
+    } 
+    // 描画
     fillAlpha *= 32;
     edgeAlpha *= 64;
-    colorRect(1, item.top, width - 2, 1, color, edgeAlpha);
-    colorRect(1, item.top + item.height - 1, width - 2, 1, color, edgeAlpha);
-    colorRect(0, item.top + 1, 1, item.height - 2, color, edgeAlpha);
-    colorRect(width - 1, item.top + 1, 1, item.height - 2, color, edgeAlpha);
-    colorGradientRectUD(1, item.top + 1, width - 2, item.height - 2, color, color | (fillAlpha << 24));
+    colorRect(1, item.top, width - 2, 1, edgeColor, edgeAlpha);
+    colorRect(1, item.top + item.height - 1, width - 2, 1, edgeColor, edgeAlpha);
+    colorRect(0, item.top + 1, 1, item.height - 2, edgeColor, edgeAlpha);
+    colorRect(width - 1, item.top + 1, 1, item.height - 2, edgeColor, edgeAlpha);
+    colorGradientRectUD(1, item.top + 1, width - 2, item.height - 2, fillColor, fillColor | (fillAlpha << 24));
   }
 
   // マウス選択領域を描画
@@ -498,6 +558,19 @@ class KList extends KVirtualWidget
     colorRect(range.left + 1, range.top + 1, range.width - 2, range.height - 2, color, fillAlpha);
   }
 
+  // 子アイテムの挿入位置を描画
+  function drawChildPacketInsertion() {
+    if (curDragInfo.acceptType != DRAG_ACCEPT_TYPE_CHILD)
+      return;
+    var y = curDragInfo.item.getChildInsertionY(curDragInfo.insertionIndex);
+    var edgeColor = 0xFF0000;
+    var edgeAlpha = 2 * 64;
+    var x = curDragInfo.item.getChildInsertionX();
+    colorRect(x + 3, y - 1, width, 2, edgeColor, edgeAlpha);
+    for (var i = 2; i <= 5; i++) 
+      colorRect(x + 3 - (i - 1), y - i, 1, i * 2, edgeColor, edgeAlpha);
+  }
+
   // 領域内のアイテムを描画
   function onDraw(left, top, width, height) {
     fillRect(left, top, width, height, WIN_WHITE);
@@ -512,6 +585,7 @@ class KList extends KVirtualWidget
       }
     }
     drawMouseSelection();
+    drawChildPacketInsertion();
   }
 
   function requireResize {
@@ -532,26 +606,11 @@ class KList extends KVirtualWidget
     update();
   }
 
-  // 選択アイテムが閉じてしまったら
-  // 上階層のアイテムを選択し直す
-  function invalidateSelectio() {
-    if (focusedItem !== void) {
-      if (focusedItem isvalid) {
-        if (! focusedItem.visible) {
-          var newFocusedItem = focusedItem;
-          while (! newFocusedItem.visible)
-            newFocusedItem = newFocusedItem.parent;
-          focusItem(newFocusedItem);
-        }
-      } else {
-        focusItem(void);
-      }
-    }
-  }
-
   // 描画更新
   function onPaint() { 
     var i;
+
+    var prevFocusedItem = focusedItem;
 
     // ツリーを再構築
     if (reconstructRequired) {
@@ -564,7 +623,13 @@ class KList extends KVirtualWidget
 
     // 選択アイテムが閉じてしまったら
     // 上階層のアイテムを選択し直す
-    invalidateSelectio();
+    if (prevFocusedItem !== void
+        && ! prevFocusedItem.visible) {
+      var newFocusedItem = prevFocusedItem;
+      while (! newFocusedItem.visible)
+        newFocusedItem = newFocusedItem.parent;
+      focusItem(newFocusedItem);
+    }
 
     // サイズを再設定
     if (resizeRequired) {
@@ -1026,45 +1091,156 @@ class KList extends KVirtualWidget
     return true;
   }
 
-  function onPacketMove(x, y, packet, shift) {
-    var prevDragTargetItem = curDragTargetItem;
-    var prevDragTargetItemAcceptPacket = curDragTargetItemAcceptPacket;
-    curDragTargetItem = findItem(y);
-    if (curDragTargetItem !== prevDragTargetItem) {
-      curDragTargetItemAcceptPacket = false;
-      if (prevDragTargetItemAcceptPacket) {
-        prevDragTargetItem.onPacketLeave();
-        prevDragTargetItem.redraw();
-      }
-      if (curDragTargetItem !== void) {
-        curDragTargetItemAcceptPacket = curDragTargetItem.isPacketAcceptable(packet);
-        if (curDragTargetItemAcceptPacket) {
-          curDragTargetItem.onPacketEnter();
-          curDragTargetItem.redraw();
-        }
-      }
-    }
-    if (curDragTargetItemAcceptPacket)
-      curDragTargetItem.onPacketMove(x, y - curDragTargetItem.top, packet, shift);
+  // 子の挿入X座標を得る
+  function getChildInsertionX {
+    return toggleWidth;
   }
 
-  function onPacketLeave(x, y, packet, shift) {
-    if (curDragTargetItem !== void
-        && curDragTargetItemAcceptPacket) {
-      curDragTargetItemAcceptPacket = false;
-      curDragTargetItem.onPacketLeave();
-      curDragTargetItem.redraw();
-      curDragTargetItem = void;
+  // 子の挿入Y座標を得る
+  function getChildInsertionY(insertionIndex) {
+    if (insertionIndex == 0)
+      return 0;
+    var item = childList[insertionIndex - 1].nextSibling;
+ 
+  if (item !== void)
+      return item.top;
+    else
+      return drawItemList[-1].top + drawItemList[-1].height;
+  }
+
+  // パケット移動
+  function onPacketMove(x, y, packet, shift) {
+    var prevDragInfo = curDragInfo;
+    var prevDragRegion = curDragRegion;
+    var item = findItem(y);
+
+    if (item === void) {
+      curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_NONE ];
+    } else {
+      var directItem = void, upperChildItemList = [], lowerChildItemList = [];
+      // アイテム自身はパケットを受け入れ可能か？
+      if (item.isPacketAcceptable(packet))
+        directItem = item;
+
+      // アイテムの上半分、リスト間の子アイテム挿入位置の受け入れ候補を得る
+      if (item.prevDrawItem !== void)
+        upperChildItemList = item.prevDrawItem.getChildPacketInsertionHierarchyList(packet);
+      else if (isChildPacketAcceptable(0, packet))
+        upperChildItemList = [ %[ item: this, insertionIndex: 0] ];
+      
+      // アイテムの下半分、リスト間の子アイテム挿入位置の受け入れ候補を得る
+      lowerChildItemList = item.getChildPacketInsertionHierarchyList(packet);
+
+      // 上半分の判定
+      if (y < item.top + item.height / 2) {
+        if (upperChildItemList.count
+            && (directItem === void
+                || y < item.top + item.height / 4)) {
+          // 候補が複数ある場合はX座標に合わせて決定する
+          for (var i = 0; i < upperChildItemList.count; i++)
+            if (i == upperChildItemList.count - 1
+                || x >= upperChildItemList[i].item.getChildInsertionX()) {
+              curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_CHILD, 
+                                 item: upperChildItemList[i].item, 
+                                 insertionIndex: upperChildItemList[i].insertionIndex ];
+              break;
+            }
+        } else if (directItem !== void) {
+          curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_DIRECT, item: directItem ];
+        } else {
+          curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_NONE ];
+        }
+      } 
+      // 下半分の判定
+      else {
+        if (lowerChildItemList.count
+            && (directItem === void
+                || y >= item.top + item.height * 3 / 4)) {
+          // 候補が複数ある場合はX座標に合わせて決定する
+          for (var i = 0; i < lowerChildItemList.count; i++)
+            if (i == lowerChildItemList.count - 1
+                || x >= lowerChildItemList[i].item.getChildInsertionX()) {
+              curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_CHILD, 
+                                 item: lowerChildItemList[i].item, 
+                                 insertionIndex: lowerChildItemList[i].insertionIndex ];
+              break;
+            }
+        } else if (directItem !== void) {
+          curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_DIRECT, item: directItem ];
+        } else {
+          curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_NONE ];
+        }
+      }
+
+      // 新規ドラッグ先の、描画が必要な領域を記録する
+      curDragRegion = new KRegion();
+      switch (curDragInfo.acceptType) {
+      case DRAG_ACCEPT_TYPE_DIRECT: 
+        curDragRegion.include(new KRect(0, curDragInfo.item.top, width, curDragInfo.item.height));
+        break;
+
+      case DRAG_ACCEPT_TYPE_CHILD:
+        curDragRegion.include(new KRect(0, curDragInfo.item.top, width, curDragInfo.item.height));
+        curDragRegion.include(new KRect(0, curDragInfo.item.getChildInsertionY(curDragInfo.insertionIndex) - 5, width,10));
+        break;
+      }
     }
+
+    // 前回の状態からドラッグ対象が変化したら、アイテムの当該関数を呼ぶ
+    if (curDragInfo.acceptType != prevDragInfo.acceptType
+        || curDragInfo.item !== prevDragInfo.item
+        || curDragInfo.insertionIndex != prevDragInfo.insertionIndex) {
+      switch (prevDragInfo.acceptType) {
+      case DRAG_ACCEPT_TYPE_DIRECT: prevDragInfo.item.onPacketLeave(x, y - prevDragInfo.item.top, packet, shift); break;
+      case DRAG_ACCEPT_TYPE_CHILD: prevDragInfo.item.onChildPacketLeave(prevDragInfo.insertionIndex, x, y - prevDragInfo.item.top, packet, shift); break;
+      }
+      switch (curDragInfo.acceptType) {
+      case DRAG_ACCEPT_TYPE_DIRECT: curDragInfo.item.onPacketEnter(x, y - curDragInfo.item.top, packet, shift); break;
+      case DRAG_ACCEPT_TYPE_CHILD: curDragInfo.item.onChildPacketEnter(curDragInfo.insertionIndex, x, y - curDragInfo.item.top, packet, shift); break;
+      }
+    }
+
+    // アイテムの当該関数を呼ぶ
+    switch (curDragInfo.acceptType) {
+    case DRAG_ACCEPT_TYPE_DIRECT: curDragInfo.item.onPacketMove(x, y - curDragInfo.item.top, packet, shift); break;
+    case DRAG_ACCEPT_TYPE_CHILD: curDragInfo.item.onChildPacketMove(curDragInfo.insertionIndex, x, y - curDragInfo.item.top, packet, shift); break;
+    }
+
+    // 再描画実行
+    var drawRegion = new KRegion();
+    drawRegion.include(prevDragRegion);
+    drawRegion.include(curDragRegion);
+    for (var i = 0; i < drawRegion.rectCount; i++) {
+      var rect = drawRegion.rectAt(i);
+      redrawRect(rect.left, rect.top, rect.width, rect.height);
+    }
+  }  
+
+  function onPacketLeave(x, y, packet, shift) {
+    // アイテムの当該関数を呼ぶ
+    switch (curDragInfo.acceptType) {
+    case DRAG_ACCEPT_TYPE_DIRECT: curDragInfo.item.onPacketLeave(x, y - curDragInfo.item.top, packet, shift); break;
+    case DRAG_ACCEPT_TYPE_CHILD: curDragInfo.item.onChildPacketLeave(curDragInfo.insertionIndex, x, y - curDragInfo.item.top, packet, shift); break;
+    }
+    // 承認したターゲット情報を記録した上でドラッグ情報をクリア
+    confirmedDragTarget = curDragInfo;
+    curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_NONE ];
+    curDragRegion = new KRegion();
+    // 再描画
+    redrawAll();
   }
 
   function isPacketConfirmed(x, y, packet, shift) {
-    return curDragTargetItemAcceptPacket;
+    // 受け入れられるタイプのパケットを選択中か？
+    return curDragInfo.acceptType != DRAG_ACCEPT_TYPE_NONE;
   }
 
   function onPacketDrop(x, y, packet, shift) {
-    var target = findItem(y);
-    target.onPacketDrop(x - target.left, y - target.top, packet, shift);
+    // パケット受け入れ
+    switch (confirmedDragTarget.acceptType) {
+    case DRAG_ACCEPT_TYPE_DIRECT: confirmedDragTarget.item.onPacketDrop(x, y - confirmedDragTarget.item.top, packet, shift); break;
+    case DRAG_ACCEPT_TYPE_CHILD: confirmedDragTarget.item.onChildPacketDrop(confirmedDragTarget.insertionIndex, x, y - confirmedDragTarget.item.top, packet, shift); break;
+    }
   }
 
   function onPacketCancel(packet) {
@@ -1198,43 +1374,46 @@ class KList extends KVirtualWidget
     return false;
   }
 
-  function onChipldPacketDrop(index, packet) {
+  function onChildPacketEnter(index, x, y, packet, shift) {
+  }
+
+  function onChildPacketMove(index, x, y, packet, shift) {
+  }
+
+  function onChildPacketLeave(index, x, y, packet, shift) {
+  }
+
+  function onChildPacketDrop(index, x, y, packet, shift) {
   }
 
   /**------------------------------
    * マルチプルセレクションフック関数
    ------------------------------*/
   function onSelectionDragEnter(x, y, shift) {
-    Debug.message("onSelectionDragEnter", x, y, shift);
     if (focusedItem !== void)
       focusedItem.onDragEnter(...);
   }
 
   function onSelectionDragMove(x, y, shift) {
-    Debug.message("onSelectionDragMove", x, y, shift);
     if (focusedItem !== void)
       focusedItem.onDragMove(...);
   }
 
   function onSelectionDragLeave(x, y, shift) {
-    Debug.message("onSelectionDragLeave", x, y, shift);
     if (focusedItem !== void)
       focusedItem.onDragLeave(...);
   }
 
   function onSelectionKeyDown(key, shift) {
-    Debug.message("onSelectionKeyDown", key, shift);
     defaultKeyDownFunc(key, shift);
   }
   
   function onSelectionRightClick() {
-    Debug.message("onSelectionRightClick");
     if (focusedItem !== void)
       focusedItem.onRightClick();
   }
 
   function onBackgroundRightClick() {
-    Debug.message("onBackgroundRightClick");
   }
 
   /**------------------------------
@@ -1781,6 +1960,85 @@ class KListItem
     return childList[index];
   }
 
+  // ひとつ前のアイテム
+  property prevSibling {
+    getter {
+      if (parent === void)
+        return void;
+      var index = this.index - 1;
+      if (index < 0)
+        return void;
+      return parent.childAt(index);
+    }
+  }
+
+  // ひとつ後のアイテム
+  property nextSibling {
+    getter {
+      if (parent === void)
+        return void;
+      var index = this.index + 1;
+      if (index >= parent.childCount)
+        return void;
+      return parent.childAt(index);
+    }
+  }
+
+  // ひとつ前の描画アイテム
+  property prevDrawItem {
+    getter {
+      if (root === void)
+        return void;
+      var index = root.drawItemList.find(this);
+      if (index < 1)
+        return void;
+      return root.drawItemList[index - 1];
+    }
+  }
+
+  // ひとつ後の描画アイテム
+  property nextDrawItem {
+    getter {
+      if (root === void)
+        return void;
+      var index = root.drawItemList.find(this);
+      if (index < 0 || index >= root.drawItemList.count - 1)
+        return void;
+      return root.drawItemList[index + 1];
+    }
+  }
+
+  // 終端アイテムか？
+  property isLastItem {
+    getter {
+      return parent !== void && index == parent.childList.count - 1;
+    }
+  }
+
+  // 先端アイテムか？
+  property isTopItem {
+    getter {
+      return parent !== void && index == 0;
+    }
+  }
+
+  // 自分の次の位置にD&Dで挿入可能な階層のリスト
+  function getChildPacketInsertionHierarchyList(packet) {
+    var result = [];
+    var item = this;
+    var insertionIndex = 0;
+    var nextItemDepth = nextDrawItem === void ? 0 : nextDrawItem.depth;
+    for (;;) {
+      if (item.isChildPacketAcceptable(insertionIndex, packet))
+        result.add(%[ item: item, insertionIndex: insertionIndex ]);
+      if (item.depth < nextItemDepth)
+        break;
+      insertionIndex = item.index + 1;
+      item = item.parent;
+    }
+    return result;
+  }
+
   /**------------------------------
    * 子孫アイテムから特定の名前を持った子ウィジェットを捜す
    * 
@@ -1891,7 +2149,7 @@ class KListItem
 
   /**------------------------------
    * (自分を含む)子孫アイテムがフォーカス状態になった時に呼ばれるフック関数
-   * デフォルト動作では、旧仕様互換のため、onDesecndantFocus() を呼ぶ。
+   * デフォルト動作では、旧仕様互換のため、onDesecndantSelect() を呼ぶ。
    ------------------------------*/
   function onDescendantFocus {
     onDescendantSelect();
@@ -1899,7 +2157,7 @@ class KListItem
 
   /**------------------------------
    * (自分を含む)子孫アイテムがフォーカス状態になった時に呼ばれるフック関数
-   * デフォルト動作では、旧仕様互換のため、onDesecndantBlur() を呼ぶ。
+   * デフォルト動作では、旧仕様互換のため、onDesecndantDeselect() を呼ぶ。
    ------------------------------*/
   function onDescendantBlur {
     onDescendantDeselect();
@@ -2090,8 +2348,17 @@ class KListItem
     return false;
   }
 
+  function onChildPacketEnter(index, x, y, packet, shift) {
+  }
+
+  function onChildPacketMove(index, x, y, packet, shift) {
+  }
+
+  function onChildPacketLeave(index, x, y, packet, shift) {
+  }
+
   // 子パケットドロップ
-  function onChipldPacketDrop(index, packet) {
+  function onChildPacketDrop(index, x, y, packet, shift) {
   }
 
   /*------------------------------
@@ -2135,6 +2402,21 @@ class KListItem
     labelWidth = root.font.getTextWidth(label);
     width = toggleWidth + iconWidth + labelWidth;
     height = Math.max(height, size);
+  }
+
+  function getChildInsertionX {
+    return left + toggleWidth + root.slideWidth;
+  }
+
+  function getChildInsertionY(insertionIndex) {
+    if (insertionIndex == 0)
+      return top + height;
+
+    var item = childList[insertionIndex - 1].nextSibling;
+    if (item !== void)
+      return item.top;
+    else
+      return parent.getChildInsertionY(index + 1);;
   }
 
   function inToggle(x, y) {

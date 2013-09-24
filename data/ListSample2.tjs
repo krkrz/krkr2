@@ -1,4 +1,82 @@
 /*----------------------------------------------------------------------
+ * マルチセレクション用のリスト
+ ----------------------------------------------------------------------*/
+class MultiSelectionList extends KList
+{
+  function MultiSelectionList(window, name = "") {
+    super.KList(...);
+  }
+
+  function onSelectionDragEnter() {
+    // 選択範囲についてまとめてドラッグを開始する
+    beginDragPacket(new KPacket("ddlistitem2", selectedItemParentOnlyList));
+  }
+
+  function isChildPacketAcceptable(insertionIndex, packet) {
+    // 同テスト用のパケットを受け入れる
+    return (packet.name == "ddlistitem2");
+  }
+
+  function onChildPacketDrop(insertionIndex, x, y, packet, shift) {
+    // 直前にフォーカスしていたアイテムを記憶
+    var prevFocusedItem = focusedItem;
+    // 選択範囲のアイテムを指定位置に挿入。
+    for (var i = 0; i < packet.arg.count; i++) {
+      var item = packet.arg[i];
+      if (item.parent == this && item.index < insertionIndex)
+        insertionIndex--;
+      item.parent.remove(item, false);
+      insert(insertionIndex, item);
+      insertionIndex++;
+    }
+    // 直前にフォーカスしていたアイテムを再びフォーカス
+    if (prevFocusedItem !== void)
+      prevFocusedItem.focus();
+  }
+};
+
+/*----------------------------------------------------------------------
+ * マルチセレクション用のリストアイテム
+ ----------------------------------------------------------------------*/
+class MultiSelectionListItem extends KListItem
+{
+  function MultiSelectionListItem(label = "", name = "") {
+    super.KListItem(...);
+  }
+
+  function isChildPacketAcceptable(insertionIndex, packet) {
+    // 同テスト用のパケットのみ受け入れる
+    if (packet.name != "ddlistitem2")
+      return false;
+    // 移動対象候補が自分の祖先だったら受け入れない
+    for (var i = 0; i < packet.arg.count; i++)
+      if (packet.arg[i].isAncestorOf(this))
+        return false;
+    // そうでなければ受け入れる
+    return true;
+  }
+
+  function onChildPacketDrop(insertionIndex, x, y, packet, shift) {
+    // 子を挿入したのでオープン状態にして可視化。
+    opened = true;
+    // 直前にフォーカスしていたアイテムを記憶
+    var prevFocusedItem = root.focusedItem;
+    // 選択範囲のアイテムを指定位置に挿入。
+    for (var i = 0; i < packet.arg.count; i++) {
+      var item = packet.arg[i];
+      if (item.parent == this && item.index < insertionIndex)
+        insertionIndex--;
+      item.parent.remove(item, false);
+      insert(insertionIndex, item);
+      insertionIndex++;
+    }
+    // 直前にフォーカスしていたアイテムを再びフォーカス
+    if (prevFocusedItem !== void)
+      prevFocusedItem.focus();
+  }
+};
+
+/*----------------------------------------------------------------------
  * リストサンプル2(マルチセレクションのテスト)
  ----------------------------------------------------------------------*/
 class ListSample2 extends KWindow
@@ -16,7 +94,7 @@ class ListSample2 extends KWindow
     // スクロールレイアウトを作リ、その中にリストを配置
     primaryWidget.add(new KScrollLayout(this, true, true, "scroll"));
     scroll.resize = true;
-    scroll.add(new KList(this, "list"));
+    scroll.add(new MultiSelectionList(this, "list"));
     
     list.spaceVertical = 2;
     list.multipleSelection = true;
@@ -35,7 +113,7 @@ class ListSample2 extends KWindow
       return;
     for (var i = 0; i < 5; i++) {
       var myLabel = label + (i + 1);
-      var child = new KListItem(myLabel);
+      var child = new MultiSelectionListItem(myLabel);
       item.add(child);
       locateListItem(child, myLabel + "-", depth - 1);
     }
