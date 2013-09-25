@@ -83,8 +83,7 @@ class KList extends KVirtualWidget
   var drawItemList = [];
   var treeWidth, treeHeight;
   var childList = [];
-  var focusedItem = void;
-  var focusedItemRect = [ 0, 0, 0, 0 ];
+  var _focusedItem = void;
   var mouseDownTargetItem = void;
   var mouseDownTargetX, mouseDownTargetY, mouseDownTargetButton, mouseDownTargetShift;
   var mouseDownTargetSelectedItemList;
@@ -93,7 +92,7 @@ class KList extends KVirtualWidget
   var marginalWidth, marginalHeight;
   var _focusOnSelect;
   var iconDeposit;
-  var curPointItem = void;
+  var _curPointItem = void;
   var relocateRequired = false;
   var reconstructRequired = false;
   var resizeRequired = false;
@@ -603,7 +602,30 @@ class KList extends KVirtualWidget
     reconstructRequired = true;
     relocateRequired = true;
     resizeRequired = true;
+    drawItemList = [];
     update();
+  }
+
+  property focusedItem {
+    getter {
+      if (! _focusedItem isvalid)
+        _focusedItem = void;
+      return _focusedItem;
+    }
+    setter (v) {
+      _focusedItem = v;
+    }
+  }
+
+  property curPointItem {
+    getter {
+      if (! _curPointItem isvalid)
+        _curPointItem = void;
+      return _curPointItem;
+    }
+    setter (v) {
+      _curPointItem = v;
+    }
   }
 
   // ï`âÊçXêV
@@ -884,7 +906,7 @@ class KList extends KVirtualWidget
   function onMouseDown(x, y, button, shift) {
     super.onMouseDown(...);
     if (button == mbMiddle)
-      return;
+     return;
 
     var targetItem = findItem(y);
     if (multipleSelection) {
@@ -952,6 +974,7 @@ class KList extends KVirtualWidget
   function onMouseMove(x, y, shift) {
     super.onMouseMove(...);
     var item = findItem(y);
+
     if (item !== curPointItem) {
       var prevPointItem = curPointItem;
       curPointItem = item;
@@ -976,6 +999,7 @@ class KList extends KVirtualWidget
   }
 
   function onMouseLeave() {
+    super.onMouseLeave();
     var prevPointItem = curPointItem;
     curPointItem = void;
     if (prevPointItem !== void) {
@@ -1433,6 +1457,10 @@ class KList extends KVirtualWidget
     getter {
       return focusedItemIndex;
     }
+  }
+
+  function selectItem(item) {
+    focusItem(item);
   }
 };
 
@@ -2584,16 +2612,16 @@ class KListItem
     
     if (childCount) {
       var toggle = root.findIcon(opened ? "k_list_open" : "k_list_close");
-      root.blendRect(left + 2, top + (size - toggle.height) / 2,
-                     toggle,
-                     0, 0, 
-                     toggle.width, toggle.height);
+      root.operateRect(left + 2, top + (size - toggle.height) / 2,
+                       toggle,
+                       0, 0, 
+                       toggle.width, toggle.height);
     }
     if (_icon.count) {
       var x = left + toggleWidth + 2;
       for (var i = 0; i < _icon.count; i++) {
         var iconLayer = iconLayerList[i];
-        root.blendRect(x, top + (size - iconLayer.height) / 2, iconLayer, 0, 0, iconLayer.width, iconLayer.height);
+        root.operateRect(x, top + (size - iconLayer.height) / 2, iconLayer, 0, 0, iconLayer.width, iconLayer.height);
         x += iconLayer.width;
       }
     }
