@@ -31,11 +31,7 @@ Scripts.execStorage("KRelativeLayout.tjs");
 Scripts.execStorage("KScrollLayout.tjs");
 Scripts.execStorage("KMenu.tjs");
 Scripts.execStorage("KContextMenu.tjs");
-if (typeof(global["k_list_new_implementation"]) != "undefined"
-    && k_list_new_implementation)
-  Scripts.execStorage("KList.tjs");
-else
-  Scripts.execStorage("KListOld.tjs");
+Scripts.execStorage("KList.tjs");
 Scripts.execStorage("KFrameLayout.tjs");
 Scripts.execStorage("KTabLayout.tjs");
 Scripts.execStorage("KSpliterLayout.tjs");
