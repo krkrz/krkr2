@@ -630,6 +630,10 @@ class KList extends KVirtualWidget
 
   // 描画更新
   function onPaint() { 
+    updateDrawItemList();
+  }
+
+  function updateDrawItemList() {
     var i;
 
     var prevFocusedItem = focusedItem;
@@ -829,8 +833,8 @@ class KList extends KVirtualWidget
 
   // 全選択状態をリセット
   function clearAllSelection() {
-    for (var i = 0; i < drawItemList.count; i++)
-      drawItemList[i].selected = false;
+    for (var i = 0; i < childList.count; i++)
+      childList[i].clearAllSelection();
   }
 
   // アイテムの範囲を選択
@@ -847,57 +851,79 @@ class KList extends KVirtualWidget
 
   // アイテム一個押下
   function pressItem(targetItem, x, y, button, shift) {
+    //　マルチ選択時
     if (multipleSelection) {
-      // Shiftキーを押してる時はアイテムを前のチョイスから範囲選択
-      if (button == mbLeft
-          && targetItem !== void
-          && shift & ssShift) {
-        if (focusedItem === void) {
-          focusItem(targetItem);
-        } else {
-          if (drawItemList.find(lastFocusedItem) < 0)
-            lastFocusedItem = focusedItem;
-          clearAllSelection();
-          selectItemRange(lastFocusedItem, targetItem);
-          focusItem(targetItem, false);
-        }
-      } 
-      // Ctrlキーを押してる時は選択の反転。
-      else if (button == mbLeft
-                 && targetItem !== void
+      // 左クリック時の挙動
+      if (button == mbLeft) {
+        // Shiftキーを押してる時はアイテムを前のチョイスから範囲選択
+        if (targetItem !== void
+            && shift & ssShift) {
+          if (focusedItem === void) {
+            focusItem(targetItem);
+          } else {
+            if (drawItemList.find(lastFocusedItem) < 0)
+              lastFocusedItem = focusedItem;
+            clearAllSelection();
+            selectItemRange(lastFocusedItem, targetItem);
+            focusItem(targetItem, false);
+          }
+        } 
+        // Ctrlキーを押してる時は選択の反転。
+        else if (targetItem !== void
                  && shift & ssCtrl) {
-        targetItem.selected = ! targetItem.selected;
-        lastFocusedItem = targetItem;
-        focusItem(targetItem, false);
-      } 
-      // ターゲットアイテムがあったら選択とフォーカスを同時に移動。
-      else if (targetItem !== void) {
-        lastFocusedItem = targetItem;
-        focusItem(targetItem);
-        targetItem.selected = true;
-      }
-      // ターゲットアイテムが無かったら選択をクリア。
-      else {
-        clearAllSelection();
-        lastFocusedItem = void;
+          targetItem.selected = ! targetItem.selected;
+          lastFocusedItem = targetItem;
+          focusItem(targetItem, false);
+        } 
+        // ターゲットアイテムがあったら選択とフォーカスを同時に移動。
+        else if (targetItem !== void) {
+          lastFocusedItem = targetItem;
+          focusItem(targetItem);
+          targetItem.selected = true;
+          pressSelection = true;
+        }
+        // ターゲットアイテムが無かったら選択をクリア。
+        else {
+          clearAllSelection();
+          lastFocusedItem = void;
+        }
+
+        // ターゲットアイテムの onMouseDown をコール
+        if (targetItem !== void) 
+          targetItem.onMouseDown(x, y - targetItem.top, button, shift);
       }
 
-      // 右クリックしていたら専用コールバックをコール
-      if (button == mbRight) {
+      // 右クリック時の挙動
+      else if (button == mbRight) {
+        // 選択していないターゲットアイテムがあったらそのアイテムのみを選択し、
+        // 選択フラグを立てる
+        if (targetItem !== void
+            && ! targetItem.selected) {
+          lastFocusedItem = targetItem;
+          focusItem(targetItem);
+          targetItem.selected = true;
+          pressSelection = true;
+        } 
+          // ターゲットアイテムが無かったら選択をクリア。
+        else if (targetItem === void) {
+          clearAllSelection();
+          lastFocusedItem = void;
+        }
+
         // 選択範囲右クリックコールバック
-        if (pressSelection)
+        if (pressSelection) 
           onSelectionRightClick(...);
         // バックグラウンド右クリックコールバック
         else
           onBackgroundRightClick(...);
-      } 
-      // そうでなければ該当アイテムのマウスダウンルーチン直接コール
-      else if (targetItem !== void) 
-        targetItem.onMouseDown(x, y - targetItem.top, button, shift);
-    } else {
+      }
+    } 
+    // シングル選択時
+    else {
       focusItem(targetItem);
-      if (targetItem !== void) 
+      if (targetItem !== void)  {
         targetItem.onMouseDown(x, y - targetItem.top, button, shift);    
+      }
     }
     focus();
   }
@@ -917,12 +943,8 @@ class KList extends KVirtualWidget
       if (targetItem === void
           || (! targetItem.selected
               && ! targetItem.inMarking(x, y))) {
-        // 右クリックだったら、ターゲットを解除する
-        if (button == mbRight) {
-          targetItem = void;
-        } 
         // 左クリックだったら、マウスドラッグによる範囲選択を開始する。
-        else {
+        if (button == mbLeft) {
           inMouseSelection = true;
           delayMouseEvent = true;
         }
@@ -946,10 +968,6 @@ class KList extends KVirtualWidget
         focus();
         return;
       }
-
-      // ターゲットアイテムがある場合は、選択範囲クリックフラグを立てる。
-      if (targetItem !== void)
-        pressSelection = true;
     }
     pressItem(targetItem, x, y, button, shift);
   }
@@ -1414,18 +1432,12 @@ class KList extends KVirtualWidget
    * マルチプルセレクションフック関数
    ------------------------------*/
   function onSelectionDragEnter(x, y, shift) {
-    if (focusedItem !== void)
-      focusedItem.onDragEnter(...);
   }
 
   function onSelectionDragMove(x, y, shift) {
-    if (focusedItem !== void)
-      focusedItem.onDragMove(...);
   }
 
   function onSelectionDragLeave(x, y, shift) {
-    if (focusedItem !== void)
-      focusedItem.onDragLeave(...);
   }
 
   function onSelectionKeyDown(key, shift) {
@@ -1433,8 +1445,6 @@ class KList extends KVirtualWidget
   }
   
   function onSelectionRightClick() {
-    if (focusedItem !== void)
-      focusedItem.onRightClick();
   }
 
   function onBackgroundRightClick() {
@@ -1818,6 +1828,13 @@ class KListItem
     root.focus();
   } 
 
+  // 全選択状態をリセット
+  function clearAllSelection() {
+    selected = false;
+    for (var i = 0; i < childList.count; i++)
+      childList[i].clearAllSelection();
+  }
+
   // 選択状態
   // multipleSelectionがオフの場合は、focusedとselectedは常に一致する。
   // そうでない場合は focused プロパティの値が反映される。
@@ -2054,7 +2071,7 @@ class KListItem
   function getChildPacketInsertionHierarchyList(packet) {
     var result = [];
     var item = this;
-    var insertionIndex = 0;
+    var insertionIndex = opened ? 0 : childList.count;
     var nextItemDepth = nextDrawItem === void ? 0 : nextDrawItem.depth;
     for (;;) {
       if (item.isChildPacketAcceptable(insertionIndex, packet))

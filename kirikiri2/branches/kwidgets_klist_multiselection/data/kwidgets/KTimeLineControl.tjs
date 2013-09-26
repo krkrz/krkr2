@@ -1142,6 +1142,30 @@ class KTimeLineLayerList extends KList
   function onFinishLabelEdit {
     owner.onFinishLabelEdit(...);
   }
+
+  function onSelectionDragEnter(x, y, shift) {
+    owner.onListSelectionDragEnter(...);
+  }
+
+  function onSelectionDragMove(x, y, shift) {
+    owner.onListSelectionDragMove(...);
+  }
+
+  function onSelectionDragLeave(x, y, shift) {
+    owner.onListSelectionDragLeave(...);
+  }
+
+  function onSelectionKeyDown(key, shift) {
+    owner.onListSelectionKeyDown(...);
+  }
+  
+  function onSelectionRightClick() {
+    owner.onListSelectionRightClick(...);
+  }
+
+  function onBackgroundRightClick() {
+    owner.onListBackgroundRightClick(...);
+  }
 }
 
 /**----------------------------------------------------------------------
@@ -3284,5 +3308,51 @@ class KTimeLineControl extends KHorizontalSpliterLayout
       _layerView.enabled = v;
     }
   }
-}
+
+  property multipleSelection {
+    getter {
+      return _layerList.multipleSelection;
+    }
+
+    setter(v) {
+      _layerList.multipleSelection = v;
+    }
+  }
+
+  function onListSelectionDragEnter(x, y, shift) {
+  }
+
+  function onListSelectionDragMove(x, y, shift) {
+  }
+
+  function onListSelectionDragLeave(x, y, shift) {
+  }
+
+  function onListSelectionKeyDown(key, shift) {
+    _layerList.defaultKeyDownFunc(key, shift);
+  }
+
+  function onListSelectionRightClick() {
+  }
+
+  function onListBackgroundRightClick() {
+  }
+
+  property listSelectedItemList {
+    getter {
+      return _layerList.selectedItemList;
+    }
+  }
+
+  property listSelectedItemParentOnlyList {
+    getter {
+      return _layerList.selectedItemParentOnlyList;
+    }
+  }
+
+  function listBeginDragPacket(packet) {
+    _layerList.beginDragPacket(packet);
+  }
+};
+
 
