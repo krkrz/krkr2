@@ -18,6 +18,8 @@ class MultiSelectionList extends KList
   }
 
   function onChildPacketDrop(insertionIndex, x, y, packet, shift) {
+    // 直前に選択していたアイテムを記憶
+    var prevSelectedItemList = selectedItemList;
     // 直前にフォーカスしていたアイテムを記憶
     var prevFocusedItem = focusedItem;
     // 選択範囲のアイテムを指定位置に挿入。
@@ -29,9 +31,12 @@ class MultiSelectionList extends KList
       insert(insertionIndex, item);
       insertionIndex++;
     }
-    // 直前にフォーカスしていたアイテムを再びフォーカス
-    if (prevFocusedItem !== void)
-      prevFocusedItem.focus();
+    // 直前の選択状態とフォーカスを再現。
+    updateDrawItemList();
+    clearAllSelection();
+    for (var i = 0; i < prevSelectedItemList.count; i++)
+      prevSelectedItemList[i].selected = true;
+    focusItem(prevFocusedItem, false);
   }
 };
 
@@ -57,10 +62,12 @@ class MultiSelectionListItem extends KListItem
   }
 
   function onChildPacketDrop(insertionIndex, x, y, packet, shift) {
-    // 子を挿入したのでオープン状態にして可視化。
-    opened = true;
+    // 直前に選択していたアイテムを記憶
+    var prevSelectedItemList = root.selectedItemList;
     // 直前にフォーカスしていたアイテムを記憶
     var prevFocusedItem = root.focusedItem;
+    // 子を挿入したのでオープン状態にして可視化。
+    opened = true;
     // 選択範囲のアイテムを指定位置に挿入。
     for (var i = 0; i < packet.arg.count; i++) {
       var item = packet.arg[i];
@@ -70,9 +77,12 @@ class MultiSelectionListItem extends KListItem
       insert(insertionIndex, item);
       insertionIndex++;
     }
-    // 直前にフォーカスしていたアイテムを再びフォーカス
-    if (prevFocusedItem !== void)
-      prevFocusedItem.focus();
+    // 直前の選択状態とフォーカスを再現。
+    root.updateDrawItemList();
+    root.clearAllSelection();
+    for (var i = 0; i < prevSelectedItemList.count; i++)
+      prevSelectedItemList[i].selected = true;
+    root.focusItem(prevFocusedItem, false);
   }
 };
 
