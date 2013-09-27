@@ -435,7 +435,7 @@ class KList extends KVirtualWidget
       var item = drawItemList[mid];
       if (y < item.top) 
         end = mid;
-      else if (y >= item.top + item.size)
+      else if (y >= item.top + item.height)
         begin = mid + 1;
       else {
         return mid;
@@ -1291,68 +1291,19 @@ class KList extends KVirtualWidget
     }
   }
 
-  // キー反応
-  function onKeyDownSuper(key, shift) {
-    if (key == VK_DOWN
-        || key == VK_UP
-        || key == VK_RIGHT
-        || key == VK_LEFT)
-      return;
-    else
-      super.onKeyDown(key, shift, true);
-  }
-
   function onKeyDown(key, shift) {
-    if (! multipleSelection)
-      defaultKeyDownFunc(key, shift);
-    else
-      onSelectionKeyDown(key, shift);
+    if (multipleSelection) {
+      onSelectionKeyDown(...);
+    } else {
+      if (focusedItem !== void)
+        focusedItem.onKeyDown(...);
+      else
+        defaultKeyDownFunc(...);
+    }
   }
 
   function defaultKeyDownFunc(key, shift) {
-    if (focusedItem === void) {
-      super.onKeyDown(...);
-      return;
-    }
-
-    var focusedItemIndex = this.focusedItemIndex;
-    if (key == VK_DOWN
-        && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (focusedItemIndex + 1 < drawItemList.count) {
-        focusItem(drawItemList[focusedItemIndex + 1]);
-        seeFocusedItem();
-      }
-    } else if (key == VK_UP
-               && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (focusedItemIndex > 0) {
-        focusItem(drawItemList[focusedItemIndex - 1]);
-        seeFocusedItem();
-      }
-    } else if (key == VK_RIGHT
-               && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (focusedItem.childList.count == 0) {
-        return;
-      }
-      if (focusedItem.opened) {
-        focusItem(focusedItem.childList[0]);
-      } else {
-        focusedItem.opened = true;
-      }
-    } else if (key == VK_LEFT
-               && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (focusedItem.childList.count != 0
-          && focusedItem.opened) {
-        focusedItem.opened = false;
-        seeFocusedItem();
-      } else if (focusedItem.parent != root) {
-        focusItem(focusedItem.parent);
-        seeFocusedItem();
-      }
-    } else if (key == VK_F2) {
-      renameFocusedItem();
-    } else {
-      focusedItem.onKeyDown(...);
-    }
+    super.onKeyDown(...);
   }
 
   // キー反応
@@ -1441,10 +1392,15 @@ class KList extends KVirtualWidget
   }
 
   function onSelectionKeyDown(key, shift) {
-    defaultKeyDownFunc(key, shift);
+    if (focusedItem !== void)
+      focusedItem.onKeyDown(...);
+    else
+      defaultKeyDownFunc(...);
   }
   
   function onSelectionRightClick() {
+    if (focusedItem !== void)
+      focusedItem.onRightClick();
   }
 
   function onBackgroundRightClick() {
@@ -2291,9 +2247,68 @@ class KListItem
    * 各種ウィジェットイベントフック関数。
    * 引数の詳細は KWidgetを参照されたし
    ------------------------------*/
+  function defaultKeyDownFunc(key, shift) {
+    if (key == VK_DOWN
+        && ! (shift & (ssAlt | ssCtrl | ssShift))) {
+      if (nextDrawItem !== void) {
+        nextDrawItem.focus();
+        root.seeFocusedItem();
+      }
+    } else if (key == VK_UP
+               && ! (shift & (ssAlt | ssCtrl | ssShift))) {
+      if (prevDrawItem !== void) {
+        prevDrawItem.focus();
+        root.seeFocusedItem();
+      }
+    } else if (key == VK_RIGHT
+               && ! (shift & (ssAlt | ssCtrl | ssShift))) {
+      if (childList.count == 0) {
+        return;
+      }
+      if (opened) {
+        childList[0].focus();
+      } else {
+        opened = true;
+      }
+    } else if (key == VK_LEFT
+               && ! (shift & (ssAlt | ssCtrl | ssShift))) {
+      if (childList.count != 0
+          && opened) {
+        opened = false;
+        root.seeFocusedItem();
+      } else if (parent != root) {
+        parent.focus();
+        root.seeFocusedItem();
+      }
+    } else if (key == VK_F2) {
+      root.renameFocusedItem();
+    } else {
+      root.defaultKeyDownFunc(...);
+    }
+  }
+
+  // キー反応
+  function onKeyPress(key) {
+    switch (key) {
+    case '+': {
+      focusedItem.opened = true;
+      break;
+    }
+    case '-': {
+      focusedItem.opened = false;
+      break;
+    }
+    case "*": {
+      focusedItem.openDescendants();
+      focusedItem.opened = true;
+      break;
+    }
+    }
+  }
+
   // キーダウン
   function onKeyDown(key, shift) {
-    root.onKeyDownSuper(...);
+    defaultKeyDownFunc(...);
   }
 
   // マウスダウン
@@ -2618,18 +2633,18 @@ class KListItem
 
   function redraw() {
     if (visible)
-      root.redrawRect(0, top, root.width, size);
+      root.redrawRect(0, top, root.width, height);
   }
 
   function onDraw {
     var root = this.root;
     root.font.bold = _fontBold;
-    root.drawText(left + toggleWidth + iconWidth, top + root.spaceVertical / 2, label, fontColor,
+    root.drawText(left + toggleWidth + iconWidth, top + (height - size) / 2 + root.spaceVertical / 2, label, fontColor,
                   255, true, 2048, WIN_WHITE, 2.5);
     
     if (childCount) {
       var toggle = root.findIcon(opened ? "k_list_open" : "k_list_close");
-      root.operateRect(left + 2, top + (size - toggle.height) / 2,
+      root.operateRect(left + 2, top + (height- toggle.height) / 2,
                        toggle,
                        0, 0, 
                        toggle.width, toggle.height);
@@ -2638,7 +2653,7 @@ class KListItem
       var x = left + toggleWidth + 2;
       for (var i = 0; i < _icon.count; i++) {
         var iconLayer = iconLayerList[i];
-        root.operateRect(x, top + (size - iconLayer.height) / 2, iconLayer, 0, 0, iconLayer.width, iconLayer.height);
+        root.operateRect(x, top + (height - iconLayer.height) / 2, iconLayer, 0, 0, iconLayer.width, iconLayer.height);
         x += iconLayer.width;
       }
     }
