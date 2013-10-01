@@ -176,6 +176,7 @@ class KList extends KVirtualWidget
     item.depth = -1;
     item.parent = this;
     childList.add(item);
+    item.invalidateNodeEnability();
     requireReconstruct();
   }
 
@@ -189,6 +190,7 @@ class KList extends KVirtualWidget
     item.depth = -1;
     item.parent = this;
     childList.insert(index, item);
+    item.invalidateNodeEnability();
     requireReconstruct();
   }
 
@@ -289,6 +291,19 @@ class KList extends KVirtualWidget
     return void;
   }
 
+  /**------------------------------
+   * 永続化辞書をバインドする
+   ------------------------------*/
+  function bindPersistentDictionary(dict) {
+    if (_isAvoidDictionaryRegistration)
+      return;
+
+    for (var i = 0; i < childList.count; i++) {
+      var child = childList[i];
+      child.bindPersistentDictionary(dict);
+    }
+  }
+
   /*------------------------------
    * フォーカスアイテムのインデックス
    ------------------------------*/
@@ -304,6 +319,19 @@ class KList extends KVirtualWidget
    * @param focusedItem セレクション
    ------------------------------*/
   function onFocusItem(item) {
+  }
+
+  function invalidateFocus() {
+    var item = focusedItem;
+    if (item === void)
+      return;
+    while (item !== root
+           && ! item.focusable)
+      item = item.parent;
+    if (item === root)
+      item = void;
+    if (item !== focusedItem)
+      focusItem(item);
   }
 
   // 祖先であるかどうか判定
@@ -364,48 +392,6 @@ class KList extends KVirtualWidget
     }
   }
 
-  // ひとつ前のアイテム
-  property prevSibling {
-    getter {
-      return void;
-    }
-  }
-
-  // ひとつ後のアイテム
-  property nextSibling {
-    getter {
-      return void;
-    }
-  }
-
-  // ひとつ前の描画アイテム
-  property prevDrawItem {
-    getter {
-      return void;
-    }
-  }
-
-  // ひとつ後の描画アイテム
-  property nextDrawItem {
-    getter {
-      return void;
-    }
-  }
-
-  // 終端アイテムか？
-  property isLastItem {
-    getter {
-      return false;
-    }
-  }
-
-  // 先端アイテムか？
-  property isTopItem {
-    getter {
-      return false;
-    }
-  }
-
   // アイコンをロードしてキャッシュする
   function findIcon(filename) {
     if (typeof(iconDeposit[filename]) == "undefined") {
@@ -417,8 +403,8 @@ class KList extends KVirtualWidget
   }
 
   // y座標からアイテムを検索
-  function findItem(y) {
-    var index = findItemIndex(y);
+  function findItem(y, includeTail = false, onlyFocusable = true) {
+    var index = findItemIndex(y, includeTail, onlyFocusable);
     if (index < 0)
       return void;
     else
@@ -426,9 +412,11 @@ class KList extends KVirtualWidget
   }
 
   // y座標からアイテムのインデックスを検索
-  function findItemIndex(y, includeTail = false) {
+  function findItemIndex(y, includeTail = false, onlyFocusable = true) {
     var begin, end, mid;
     begin = 0, end = drawItemList.count;
+
+    var result = void;
 
     while (begin < end) {
       mid = int((begin + end) / 2);
@@ -438,11 +426,20 @@ class KList extends KVirtualWidget
       else if (y >= item.top + item.height)
         begin = mid + 1;
       else {
-        return mid;
+        result = mid; 
+        break;
       }
     }
 
-    return includeTail ? (drawItemList.count - 1) : -1;
+    if (result === void)
+      result = includeTail ? (drawItemList.count - 1) : -1;
+
+    if (onlyFocusable
+        && result >= 0
+        && ! drawItemList[result].focusable)
+      result = -1;
+
+    return result;
   }
 
   // 選択範囲を持っている？
@@ -574,8 +571,8 @@ class KList extends KVirtualWidget
   function onDraw(left, top, width, height) {
     fillRect(left, top, width, height, WIN_WHITE);
     if (drawItemList.count) {
-      var from = findItemIndex(top, true);
-      var to = findItemIndex(top + height - 1, true);
+      var from = findItemIndex(top, true, false);
+      var to = findItemIndex(top + height - 1, true, false);
       
       for (var i = from; i <= to; i++) {
         var item = drawItemList[i];
@@ -602,6 +599,10 @@ class KList extends KVirtualWidget
     reconstructRequired = true;
     relocateRequired = true;
     resizeRequired = true;
+    // 既存アイテムは一旦全て不可視に設定する
+    for (var i = 0; i < drawItemList.count; i++)
+      if (drawItemList[i] isvalid)
+        drawItemList[i].visible = false;
     drawItemList = [];
     update();
   }
@@ -676,15 +677,6 @@ class KList extends KVirtualWidget
   // アイテムの再構築
   function reconstructItems() {
     var i, num, child, v, item;
-
-    // 既存アイテムは一旦全て不可視に設定する
-    for (var i = 0; i < drawItemList.count; i++)
-      if (drawItemList[i] isvalid)
-        drawItemList[i].visible = false;
-
-    // ツリーをたどって、表示するアイテムを表示し直す
-    drawItemList = [];
-
     var stack = [];
     
     i = 0;
@@ -935,6 +927,16 @@ class KList extends KVirtualWidget
      return;
 
     var targetItem = findItem(y);
+    var voidTargetItem = findItem(y, false, false);
+    if (button == mbLeft
+        && targetItem === void
+        && voidTargetItem !== void
+        && voidTargetItem.hasChild
+        && voidTargetItem.inToggle(x, y)) {
+      voidTargetItem.opened = ! voidTargetItem.opened;
+      return;
+    }
+
     if (multipleSelection) {
       // マウス選択オフから初めてー…
       inMouseSelection = false;
@@ -1352,12 +1354,19 @@ class KList extends KVirtualWidget
   function onNodeEnabled {
     canvas.opacity = 255;
     opacity = 255;
+    redrawAll();
   } 
 
   // enabled=falseなら半透明で表示
   function onNodeDisabled {
     canvas.opacity = 64;
     opacity = 64;
+    redrawAll();
+   }
+
+  function invalidateNodeEnability() {
+    for (var i = 0; i < childList.count; i++)
+      childList[i].invalidateNodeEnability();
   }
 
   /**------------------------------
@@ -1435,6 +1444,8 @@ class KList extends KVirtualWidget
  ----------------------------------------------------------------------*/
 class KListItem
 {
+  var _dict;
+  var _isAvoidDictionaryRegistration = false;
   var isRoot = false;
   var _depth;
   var _opened;
@@ -1462,6 +1473,9 @@ class KListItem
   var iconLayerList;
   var ownIconLayerList;
   var _selected = false;
+  var _isRecordOpenedToDictionary = false;
+  var _enabled = true;
+  var _curNodeEnabled = true;
 
   /**------------------------------
    * コンストラクタ
@@ -1469,9 +1483,10 @@ class KListItem
    * @param label ラベル
    * @param name 名前
    ------------------------------*/
-  function KListItem(label = "", name = "") {
+  function KListItem(label = "", name = "", isRecordOpenedToDictionary = false) {
     _opened = false;
     this.name = name;
+    _isRecordOpenedToDictionary = isRecordOpenedToDictionary;
     _depth = -1;
     _label = label;
     _hint = "";
@@ -1486,6 +1501,11 @@ class KListItem
    * ファイナライザ
    ------------------------------*/
   function finalize {
+    if (_dict !== void) {
+      if (_isRecordOpenedToDictionary) {
+        _dict.set(name + "_opened", opened);
+      }
+    }
     discardArray(childList);
     discard(layer);
     discardArray(ownIconLayerList);
@@ -1799,12 +1819,14 @@ class KListItem
       if (! multipleSelection)
         return focused;
       else
-        return _selected;
+        return _selected && focusable;
     }
     setter (v) {
       if (! multipleSelection)
         focused = v;
       else {
+        if (! focusable)
+          v = false;
         if (_selected == v)
           return;
         _selected = v;
@@ -1838,9 +1860,14 @@ class KListItem
    * @param item アイテム
    ------------------------------*/
   function add(item) {
+    if (item instanceof "KWidget") {
+      add(new KWidgetHolderListItem(item));
+      return;
+    }
     item.depth = -1;
     item.parent = this;
     childList.add(item);
+    item.invalidateNodeEnability();
     requireReconstruct();
   }
 
@@ -1851,9 +1878,14 @@ class KListItem
    * @param item アイテム
    ------------------------------*/
   function insert(index, item) {
+    if (item instanceof "KWidget") {
+      insert(index, new KWidgetHolderListItem(item));
+      return;
+    }
     item.depth = -1;
     item.parent = this;
     childList.insert(index, item);
+    item.invalidateNodeEnability();
     requireReconstruct();
   }
 
@@ -1864,6 +1896,20 @@ class KListItem
    * @param doInvalidate invalidateするかどうか
    ------------------------------*/
   function remove(item, doInvalidate = true) {
+    if (item instanceof "KWidget") {
+      for (var i = 0; i < childList.count; i++) {
+        if (childList[i] instanceof "KWidgetHolderListItem"
+            && childList[i]._widget === item) {
+          if (! doInvalidate) {
+            childList[i].detachWidget();
+            remove(childList[i], true);
+            return;
+          }
+          item = childList[i];
+        }
+      }
+    }            
+
     if (! (item isvalid))
       return void;
 
@@ -2009,17 +2055,68 @@ class KListItem
     }
   }
 
-  // 終端アイテムか？
-  property isLastItem {
+  // ひとつ前のフォーカス可能な描画アイテム
+  property prevFocusableDrawItem {
     getter {
-      return parent !== void && index == parent.childList.count - 1;
+      if (root === void)
+        return void;
+      var index = root.drawItemList.find(this);
+      if (index < 0)
+        return void;
+      while (index > 0) {
+        index--;
+        if (root.drawItemList[index].focusable)
+          return root.drawItemList[index];
+      }
+      return void;
     }
   }
 
-  // 先端アイテムか？
-  property isTopItem {
+  // ひとつ後のフォーカス可能な描画アイテム
+  property nextFocusableDrawItem {
     getter {
-      return parent !== void && index == 0;
+      if (root === void)
+        return void;
+      var index = root.drawItemList.find(this);
+      if (index < 0)
+        return void;
+      while (index < root.drawItemList.count - 1) {
+        index++;
+        if (root.drawItemList[index].focusable)
+          return root.drawItemList[index];
+      }
+      return void;
+    }
+  }
+
+  /**------------------------------
+   * open状態を辞書に記録する？
+   ------------------------------*/
+  property isRecordOpenedToDictionary {
+    getter {
+      return _isRecordOpenedToDictionary;
+    }
+    setter(v) {
+      _isRecordOpenedToDictionary = v;
+    }
+  }
+
+  /**------------------------------
+   * 永続化辞書をバインドする
+   ------------------------------*/
+  function bindPersistentDictionary(dict) {
+    if (_isAvoidDictionaryRegistration)
+      return;
+
+    if (name != "") {
+      _dict = dict;
+      if (_isRecordOpenedToDictionary)  {
+        opened = _dict.init(name + "_opened", opened);
+      }
+    }
+    for (var i = 0; i < childList.count; i++) {
+      var child = childList[i];
+      child.bindPersistentDictionary(dict);
     }
   }
 
@@ -2110,6 +2207,15 @@ class KListItem
       parent.childList.erase(curIndex);
       parent.childList.insert(value, this);
       requireReconstruct();
+    }
+  }
+
+  /**------------------------------
+   * フォーカス可能？
+   ------------------------------*/
+  property focusable {
+    getter {
+      return nodeEnabled;
     }
   }
 
@@ -2250,14 +2356,14 @@ class KListItem
   function defaultKeyDownFunc(key, shift) {
     if (key == VK_DOWN
         && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (nextDrawItem !== void) {
-        nextDrawItem.focus();
+      if (nextFocusableDrawItem !== void) {
+        nextFocusableDrawItem.focus();
         root.seeFocusedItem();
       }
     } else if (key == VK_UP
                && ! (shift & (ssAlt | ssCtrl | ssShift))) {
-      if (prevDrawItem !== void) {
-        prevDrawItem.focus();
+      if (prevFocusableDrawItem !== void) {
+        prevFocusableDrawItem.focus();
         root.seeFocusedItem();
       }
     } else if (key == VK_RIGHT
@@ -2265,7 +2371,7 @@ class KListItem
       if (childList.count == 0) {
         return;
       }
-      if (opened) {
+      if (opened && childList[0].focusable) {
         childList[0].focus();
       } else {
         opened = true;
@@ -2638,22 +2744,24 @@ class KListItem
 
   function onDraw {
     var root = this.root;
+    var opacity = (root.nodeEnabled && ! nodeEnabled) ? 64 : 255;
     root.font.bold = _fontBold;
-    root.drawText(left + toggleWidth + iconWidth, top + (height - size) / 2 + root.spaceVertical / 2, label, fontColor,
-                  255, true, 2048, WIN_WHITE, 2.5);
+    root.drawText(left + toggleWidth + iconWidth, top + int((height - size) / 2 + root.spaceVertical / 2), label, fontColor,
+                  opacity, true, 2048, WIN_WHITE, 2.5);
     
     if (childCount) {
       var toggle = root.findIcon(opened ? "k_list_open" : "k_list_close");
-      root.operateRect(left + 2, top + (height- toggle.height) / 2,
+      root.operateRect(left + 2, int(top + (height- toggle.height) / 2),
                        toggle,
                        0, 0, 
-                       toggle.width, toggle.height);
+                       toggle.width, toggle.height,
+                       omAuto, 255);
     }
     if (_icon.count) {
       var x = left + toggleWidth + 2;
       for (var i = 0; i < _icon.count; i++) {
         var iconLayer = iconLayerList[i];
-        root.operateRect(x, top + (height - iconLayer.height) / 2, iconLayer, 0, 0, iconLayer.width, iconLayer.height);
+        root.operateRect(x, int(top + (height - iconLayer.height) / 2), iconLayer, 0, 0, iconLayer.width, iconLayer.height, omAuto, opacity);
         x += iconLayer.width;
       }
     }
@@ -2698,6 +2806,55 @@ class KListItem
   }
 
   /**------------------------------
+   * ノードの有効、無効の切り替え
+   ------------------------------*/
+  property enabled {
+    getter {
+      return _enabled;
+    }
+    setter(v) {
+      if (_enabled == v)
+        return;
+      _enabled = v;
+      invalidateNodeEnability();
+    }
+  }
+
+  property nodeEnabled {
+    getter {
+      if (! _enabled
+          || parent === void)
+        return _enabled;
+      else
+        return parent.nodeEnabled;
+    }
+  }
+
+  function invalidateNodeEnability() {
+    var prevNodeEnabled = _curNodeEnabled;
+    _curNodeEnabled = nodeEnabled;
+    if (_curNodeEnabled != prevNodeEnabled) {
+      if (_curNodeEnabled)
+        onNodeEnabled();
+      else {
+        onNodeDisabled();
+        if (root !== void)
+          root.invalidateFocus();
+        _selected = false;
+      }
+      redraw();
+      for (var i = 0; i < childList.count; i++)
+        childList[i].invalidateNodeEnability();
+    }
+  }
+
+  function onNodeEnabled() {
+  }
+
+  function onNodeDisabled() {
+  }
+
+  /**------------------------------
    * 旧仕様との互換性のためのダミー関数群
    ------------------------------*/
   function select {
@@ -2717,3 +2874,159 @@ class KListItem
   }
 };
 
+/**----------------------------------------------------------------------
+ * ウィジェットホルダーリストアイテム
+ ----------------------------------------------------------------------*/
+class KWidgetHolderListItem extends KListItem
+{ 
+  var _widget = void;
+  var widgetPropsBackup;
+
+  function KWidgetHolderListItem(widget, name = "") {
+    super.KListItem(name);
+    attachWidget(widget);
+  }
+
+  function finalize {
+    invalidate _widget;
+    super.finalize();
+  }
+
+  property enabledOverrideForWidget {
+    getter {
+      return _enabledSelf;
+    }
+    setter(v) {
+      _enabledSelf = v;
+      invalidateNodeEnability();
+    }
+  }    
+
+  property parentWidgetOverrideForWidget {
+    getter {
+      return _parentItem;
+    }
+  }
+
+  function attachWidget(widget) {
+    _widget = widget;
+    _widget._parentItem = this;
+    widgetPropsBackup = %[ enabled: &_widget.enabled, parentWidget: &_widget.parentWidget ];
+    _widget._enabledSelf = _widget.enabled;
+    &_widget.enabled = &enabledOverrideForWidget incontextof (_widget);
+    _widget.invalidateNodeEnability = function() {
+      _parentItem.widgetPropsBackup.enabled = _enabledSelf && _parentItem.nodeEnabled;
+    } incontextof (_widget);
+    &_widget.parentWidget = &parentWidgetOverrideForWidget incontextof (_widget);
+  }
+
+  function detachWidget() {
+    if (_widget === void)
+      return;
+    _widget.parent = _widget.widgetDepot;
+    &_widget.parentWidget = widgetPropsBackup.parentWidget;
+    &_widget.enabled = widgetPropsBackup.enabled;
+    delete _widget["_parentItem"];
+    delete _widget["_enabledSelf"];
+    delete _widget["_enabledOrig"];
+    delete _widget["invalidateNodeEnability"];
+    _widget = void;
+  }
+
+  /**------------------------------
+   * フォーカス可能？
+   ------------------------------*/
+  property focusable {
+    getter {
+      return false;
+    }
+  }
+
+  property selected {
+    getter {
+      return false;
+    }
+    setter (v) {
+    }
+  }    
+
+  property visible {
+    getter {
+      return super.visible;
+    }
+    setter (v) {
+      super.visible = v;
+      if (_widget !== void) {
+        if (v) {
+          _widget.parent = root;
+          _widget.visible = true;
+        } else {
+          _widget.parent = root.widgetDepot;
+          _widget.visible = false;
+        }
+      }
+    }
+  }
+
+  function updateSize() {
+    if (_widget === void) {
+      width = height = 0;
+      return;
+    }
+    _widget.setSize(_widget.minWidth, _widget.minHeight);
+    width = _widget.minWidth + _widget.marginHorizontal;
+    height = _widget.minHeight + _widget.marginVertical + root.spaceVertical;
+  }
+
+  function locate(x, y) {
+    super.locate(x, y);
+    if (_widget !== void)
+      _widget.setPos(x + _widget.marginHorizontal / 2, y + (_widget.marginVertical + root.spaceVertical) / 2);
+  }
+
+  function find(name) {
+    if (this.name === name)
+      return this;
+    if (_widget !== void)
+      return _widget.find(name);
+    else
+      return void;
+  }
+
+  /**------------------------------
+   * 永続化辞書をバインドする
+   ------------------------------*/
+  function bindPersistentDictionary(dict) {
+    if (_isAvoidDictionaryRegistration)
+      return;
+
+    super.bindPersistentDictionary(dict);
+    if (_widget !== void)
+      _widget.bindPersistentDictionary(dict);
+  }
+
+  function invalidateNodeEnability() {
+    super.invalidateNodeEnability();
+    if (_widget === void)
+      reeturn;
+    _widget.invalidateNodeEnability();
+  }
+
+  function onChildMinMaxSizeModified() {
+    updateSize();
+    requireRelocate();
+  }
+
+  function onChildMarginModified() {
+    updateSize();
+    requireRelocate();
+  }
+
+  function onChildAlignModified() {
+  }
+
+  function onChildNoticeRect() {
+    root.onChildNoticeRect(...);
+  }
+};
+  

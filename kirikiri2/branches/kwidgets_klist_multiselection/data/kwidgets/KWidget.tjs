@@ -97,7 +97,7 @@ class KWidget extends Layer
   // nameƒvƒƒpƒeƒB‚ğã‘‚«
   var _name;
   // «‘“o˜^‚ğ”ğ‚¯‚é‚©‚Ç‚¤‚©
-  var _isAvoidDictionaryRegistration;
+  var _isAvoidDictionaryRegistration = false;
   // ‚c•‚c
   var isReadyToDrag, isDragging;
   var myDraggingPacket;
