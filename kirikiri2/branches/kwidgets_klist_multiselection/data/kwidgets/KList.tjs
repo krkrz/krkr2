@@ -111,6 +111,7 @@ class KList extends KVirtualWidget
   var curDragInfo;
   var curDragRegion;
   var toggleWidth;
+  var openNoticeItem;
 
   /*------------------------------
    * リストビュー
@@ -584,6 +585,11 @@ class KList extends KVirtualWidget
     drawChildPacketInsertion();
   }
 
+  function requireOpenNotice(item) {
+    if (openNoticeItem === void)
+      openNoticeItem = item;
+  }
+
   function requireResize {
     resizeRequired = true;
     update();
@@ -665,6 +671,10 @@ class KList extends KVirtualWidget
                     Math.max(marginalHeight, treeHeight));
     }
 
+    // リストを開いた場合その子を注視
+    if (openNoticeItem !== void) 
+      openNotice(openNoticeItem);
+
     // 選択アイテムの背景色を変更
     redrawAll();
 
@@ -672,6 +682,7 @@ class KList extends KVirtualWidget
     relocateRequired = false;
     reconstructRequired = false;
     resizeRequired = false;
+    openNoticeItem = void;
   }
 
   // アイテムの再構築
@@ -729,6 +740,21 @@ class KList extends KVirtualWidget
       treeHeight += item.height;
     }
   }      
+
+  // 開いたばかりのアイテムを注視
+  function openNotice(openNoticeItem) {
+    var r = 0, h = 0;
+    var fromIndex = drawItemList.find(openNoticeItem) + 1;
+    var toIndex = openNoticeItem.childList[-1].nextDrawItem !== void ? drawItemList.find(openNoticeItem.childList[-1].nextDrawItem) : drawItemList.count;
+    for (var i = fromIndex; i < toIndex; i++) {
+      r = Math.max(r, drawItemList[i].left + drawItemList[i].width);
+      h += drawItemList[i].height;
+    }
+    var l = openNoticeItem.childList[0].left, t = openNoticeItem.childList[0].top;
+    var w = r - l;
+    noticeRect(l, t, w, h);
+    noticeRect(openNoticeItem.left, openNoticeItem.top, openNoticeItem.width, openNoticeItem.height);
+  }
 
   // 特定のアイテムをフォーカスする
   function focusItem(item, resetSelection = true) {
@@ -2285,6 +2311,8 @@ class KListItem
         return;
       _opened = o;
       requireReconstruct();
+      if (o && hasChild)
+        requireOpenNotice();
     }
   }
 
@@ -2711,6 +2739,12 @@ class KListItem
         return root.multipleSelection;
       else
         return false;
+    }
+  }
+
+  function requireOpenNotice {
+    if (root) {
+      root.requireOpenNotice(this);
     }
   }
 
