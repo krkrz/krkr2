@@ -3008,6 +3008,7 @@ class KWidgetHolderListItem extends KListItem
       return;
     }
     _widget.setSize(_widget.minWidth, _widget.minHeight);
+    _widget.onViewModified(0, 0, _widget.minWidth, _widget.minHeight);
     width = _widget.minWidth + _widget.marginHorizontal;
     height = _widget.minHeight + _widget.marginVertical + root.spaceVertical;
   }
