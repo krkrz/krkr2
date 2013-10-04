@@ -112,6 +112,7 @@ class KList extends KVirtualWidget
   var curDragRegion;
   var toggleWidth;
   var openNoticeItem;
+  var _backgroundColor = WIN_WHITE;
 
   /*------------------------------
    * リストビュー
@@ -150,6 +151,21 @@ class KList extends KVirtualWidget
   function finalize {
     discardArray(childList);
     super.finalize(...);
+  }
+
+  /**------------------------------
+   * 背景カラー
+   ------------------------------*/
+  property backgroundColor {
+    getter {
+      return _backgroundColor;
+    }
+    setter (v) {
+      if (_backgroundColor == v)
+        return;
+      _backgroundColor = v;
+      redrawAll();
+    }
   }
 
   /**------------------------------
@@ -570,7 +586,7 @@ class KList extends KVirtualWidget
 
   // 領域内のアイテムを描画
   function onDraw(left, top, width, height) {
-    fillRect(left, top, width, height, WIN_WHITE);
+    fillRect(0, treeHeight, width, height - treeHeight, backgroundColor);
     if (drawItemList.count) {
       var from = findItemIndex(top, true, false);
       var to = findItemIndex(top + height - 1, true, false);
@@ -1502,6 +1518,7 @@ class KListItem
   var _isRecordOpenedToDictionary = false;
   var _enabled = true;
   var _curNodeEnabled = true;
+  var _backgroundColor = void;
 
   /**------------------------------
    * コンストラクタ
@@ -1537,7 +1554,25 @@ class KListItem
     discardArray(ownIconLayerList);
   }
 
-  
+  /*------------------------------
+   * 背景カラー
+   ------------------------------*/
+  property backgroundColor {
+    getter {
+      if (_backgroundColor === void
+          && parent !== void)
+        return parent.backgroundColor;
+      else
+        return _backgroundColor;
+    }
+    setter(v) {
+      if (_backgroundColo === v)
+        return;
+      _backgroundColo = v;
+      redraw();
+    }
+  }
+
   /*------------------------------
    * 旧仕様と互換性を保つためだけのダミープロパティ
    ------------------------------*/
@@ -2779,6 +2814,7 @@ class KListItem
   function onDraw {
     var root = this.root;
     var opacity = (root.nodeEnabled && ! nodeEnabled) ? 64 : 255;
+    root.fillRect(0, top, root.width, height, backgroundColor);
     root.font.bold = _fontBold;
     root.drawText(left + toggleWidth + iconWidth, top + int((height - size) / 2 + root.spaceVertical / 2), label, fontColor,
                   opacity, true, 2048, WIN_WHITE, 2.5);
