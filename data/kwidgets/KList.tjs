@@ -1396,6 +1396,7 @@ class KList extends KVirtualWidget
   function onNodeEnabled {
     canvas.opacity = 255;
     opacity = 255;
+    invalidateNodeEnability();
     redrawAll();
   } 
 
@@ -1403,6 +1404,7 @@ class KList extends KVirtualWidget
   function onNodeDisabled {
     canvas.opacity = 64;
     opacity = 64;
+    invalidateNodeEnability();
     redrawAll();
    }
 
