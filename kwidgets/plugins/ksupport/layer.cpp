@@ -3,10 +3,10 @@
 //
 
 
+#define NOMINMAX
 #include <windows.h>
-#undef max
-#undef min
 
+#include <cstdio>
 #include <algorithm>
 #include "ncbind.hpp"
 
@@ -49,8 +49,8 @@ hsv_to_rgb(const hsv_t *hsv, rgb_t *rgb)
   }
   if (h == 360)
     h = 0;
-  hi = int(h) / 60 % 6;
-  f = h / 60 - hi;
+  hi = (int)floor(h) / 60 % 6;
+  f = h / 60 - floor(h / 60.0f);
   p = v * (1 - s);
   q = v * (1 - f * s);
   t = v * (1 - (1 - f) * s);
@@ -73,11 +73,11 @@ rgb_to_hsv(const rgb_t *rgb, hsv_t *hsv)
 {
   double r, g, b;
   double max_v, min_v;
-  r = rgb->r / 255.0;
-  g = rgb->g / 255.0;
-  b = rgb->b / 255.0;
-  max_v = double(std::max(r, std::max(g, b)));
-  min_v = double(std::min(r, std::min(g, b)));
+  r = rgb->r;
+  g = rgb->g;
+  b = rgb->b;
+  max_v = std::max(r, std::max(g, b));
+  min_v = std::min(r, std::min(g, b));
   if (max_v == 0) {
     hsv->h = 0;
     hsv->s = 0;
@@ -90,16 +90,16 @@ rgb_to_hsv(const rgb_t *rgb, hsv_t *hsv)
     hsv->v = max_v * 100;
     return;
   }
-  if (max_v == r)
+  if (max_v == r) 
     hsv->h = ((g - b) / (max_v - min_v)) * 60;
-  else if (max_v == g)
+  else if (max_v == g) 
     hsv->h = ((b - r) / (max_v - min_v)) * 60 + 120;
-  else
+  else 
     hsv->h = ((r - g) / (max_v - min_v)) * 60 + 240;
   if (hsv->h < 0)
     hsv->h += 360;
   hsv->s = (max_v - min_v) / max_v * 100;
-  hsv->v = max_v * 100;
+  hsv->v = max_v * 100 / 255;
 }
 
 
