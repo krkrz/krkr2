@@ -87,7 +87,7 @@ rgb_to_hsv(const rgb_t *rgb, hsv_t *hsv)
   if (max_v == min_v) {
     hsv->h = 0;
     hsv->s = 0;
-    hsv->v = max_v * 100;
+    hsv->v = max_v * 100 / 255;
     return;
   }
   if (max_v == r) 
