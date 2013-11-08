@@ -114,6 +114,8 @@ class KList extends KVirtualWidget
   var openNoticeItem;
   var _backgroundColor = WIN_WHITE;
 
+  var _disabledItemCapabilityMask = 0;
+
   /*------------------------------
    * リストビュー
    *
@@ -318,6 +320,19 @@ class KList extends KVirtualWidget
     for (var i = 0; i < childList.count; i++) {
       var child = childList[i];
       child.bindPersistentDictionary(dict);
+    }
+  }
+
+
+  /*------------------------------
+   * 非選択状態のアイテムが受け入れる操作のマスク
+   ------------------------------*/
+  property disabledItemCapabilityMask {
+    getter {
+      return _disabledItemCapabilityMask;
+    }
+    setter(v) {
+      _disabledItemCapabilityMask = v;
     }
   }
 
@@ -923,7 +938,7 @@ class KList extends KVirtualWidget
         }
 
         // ターゲットアイテムの onMouseDown をコール
-        if (targetItem !== void) 
+        if (targetItem !== void)
           targetItem.onMouseDown(x, y - targetItem.top, button, shift);
       }
 
@@ -955,7 +970,7 @@ class KList extends KVirtualWidget
     // シングル選択時
     else {
       focusItem(targetItem);
-      if (targetItem !== void)  {
+      if (targetItem !== void) {
         targetItem.onMouseDown(x, y - targetItem.top, button, shift);    
       }
     }
@@ -1088,7 +1103,8 @@ class KList extends KVirtualWidget
     } else if (pressSelection) {
       onSelectionDragEnter(...);
     } else {
-      if (focusedItem !== void) {
+      if (focusedItem !== void
+          && focusedItem.draggable) {
         focusedItem.onDragEnter(x - focusedItem.left, y - focusedItem.top, shift);
       }
     }
@@ -1205,7 +1221,8 @@ class KList extends KVirtualWidget
     } else {
       var directItem = void, upperChildItemList = [], lowerChildItemList = [];
       // アイテム自身はパケットを受け入れ可能か？
-      if (item.isPacketAcceptable(packet))
+      if (item.droppable
+          && item.isPacketAcceptable(packet))
         directItem = item;
 
       // アイテムの上半分、リスト間の子アイテム挿入位置の受け入れ候補を得る
@@ -1339,7 +1356,8 @@ class KList extends KVirtualWidget
     if (multipleSelection) {
       onSelectionKeyDown(...);
     } else {
-      if (focusedItem !== void)
+      if (focusedItem !== void
+          && focusedItem.keyDownAvailable)
         focusedItem.onKeyDown(...);
       else
         defaultKeyDownFunc(...);
@@ -1445,18 +1463,31 @@ class KList extends KVirtualWidget
   }
 
   function onSelectionKeyDown(key, shift) {
-    if (focusedItem !== void)
+    if (focusedItem !== void
+        && focusedItem.keyDownAvailable)
       focusedItem.onKeyDown(...);
     else
       defaultKeyDownFunc(...);
   }
   
   function onSelectionRightClick() {
-    if (focusedItem !== void)
-      focusedItem.onRightClick();
+    if (focusedItem !== void) {
+      Debug.message("hoge", focusedItem.rightClickable);
+      if (focusedItem.rightClickable)
+        focusedItem.onRightClick(...);
+      else
+        onBackgroundRightClick(...);
+    }
   }
 
   function onBackgroundRightClick() {
+  }
+
+  // dummy
+  property droppable {
+    getter {
+      return true;
+    }
   }
 
   /**------------------------------
@@ -1540,12 +1571,14 @@ class KListItem
     iconLayerList = [];
     ownIconLayerList = [];    // missing を有効にする
     Scripts.setCallMissing(this);
+    Debug.message("new list item");
   }
 
   /*------------------------------
    * ファイナライザ
    ------------------------------*/
   function finalize {
+    Debug.message("invalidate list item");
     if (_dict !== void) {
       if (_isRecordOpenedToDictionary) {
         _dict.set(name + "_opened", opened);
@@ -2190,7 +2223,8 @@ class KListItem
     var insertionIndex = opened ? 0 : childList.count;
     var nextItemDepth = nextDrawItem === void ? 0 : nextDrawItem.depth;
     for (;;) {
-      if (item.isChildPacketAcceptable(insertionIndex, packet))
+      if (item.droppable
+          && item.isChildPacketAcceptable(insertionIndex, packet))
         result.add(%[ item: item, insertionIndex: insertionIndex ]);
       if (item.depth < nextItemDepth)
         break;
@@ -2278,7 +2312,75 @@ class KListItem
    ------------------------------*/
   property focusable {
     getter {
-      return nodeEnabled;
+      return nodeEnabled
+        || (root !== void 
+            && (root.disabledItemCapabilityMask & LIST_ITEM_CAPABILITY_MASK_FOCUS));
+    }
+  }
+
+  /**------------------------------
+   * ライトクリック可能？
+   ------------------------------*/
+  property rightClickable {
+    getter {
+      return nodeEnabled
+        || (root !== void 
+            && (root.disabledItemCapabilityMask & LIST_ITEM_CAPABILITY_MASK_RIGHTCLICK));
+    }
+  }
+
+  /**------------------------------
+   * キーダウン可能？
+   ------------------------------*/
+  property keyDownAvailable {
+    getter {
+      return nodeEnabled
+        || (root !== void 
+            && (root.disabledItemCapabilityMask & LIST_ITEM_CAPABILITY_MASK_KEYDOWN));
+    }
+  }
+
+  /**------------------------------
+   * アイコンクリック可能？
+   ------------------------------*/
+  property iconClickable {
+    getter {
+      return nodeEnabled
+        || (root !== void 
+            && (root.disabledItemCapabilityMask & LIST_ITEM_CAPABILITY_MASK_ICONCLICK));
+    }
+  }
+
+  /**------------------------------
+   * ドラッグ可能？
+   ------------------------------*/
+  property draggable {
+    getter {
+      return nodeEnabled
+        || (root !== void 
+            && (root.disabledItemCapabilityMask & LIST_ITEM_CAPABILITY_MASK_DRAG));
+    }
+  }
+
+  /**------------------------------
+   * ドロップ可能？
+   ------------------------------*/
+  property droppable {
+    getter {
+      return nodeEnabled
+        || (root !== void 
+            && (root.disabledItemCapabilityMask & LIST_ITEM_CAPABILITY_MASK_DROP));
+    }
+  }
+
+  /**------------------------------
+   * ドロップ可能？
+   ------------------------------*/
+  property droppable {
+    getter {
+      return nodeEnabled
+        || (root !== void 
+            && (root.disabledItemCapabilityMask & LIST_ITEM_CAPABILITY_MASK_DROP));
     }
   }
 
@@ -2495,6 +2597,7 @@ class KListItem
     }
     if (button == mbLeft
         && hasIcon
+        && iconClickable
         && inIcon(x, y)) {
       onIconClick(iconIndexAt(x));
       return;
@@ -2502,7 +2605,8 @@ class KListItem
     if (button == mbLeft) {
       onClick(x, y, shift);
     }
-    if (button == mbRight) {
+    if (button == mbRight
+        && rightClickable) {
       onRightClick(x, y, shift);
     }
   }
