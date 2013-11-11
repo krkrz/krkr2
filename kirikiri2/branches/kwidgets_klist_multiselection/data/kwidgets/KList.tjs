@@ -2,7 +2,7 @@
 // $Id: KList.tjs,v 1.7 2007/09/14 17:13:00 m2 Exp $
 //
 
-  
+
 /*----------------------------------------------------------------------
  * リスト項目リネーム時のテキストエディット
  ----------------------------------------------------------------------*/
@@ -3048,10 +3048,104 @@ class KListItem
 };
 
 /**----------------------------------------------------------------------
+ * ウィジェットホルダーフレーム
+ ----------------------------------------------------------------------*/
+class KWidgetHolderFrame extends KWidget
+{
+  var child;
+  var redrawn;
+  
+  function KWidgetHolderFrame(window) {
+    super.KWidget(window);
+//    hasImage = false;
+  }
+
+  /**------------------------------
+   * 子ウィジェットを配置する
+   *
+   * @param child 子ウィジェット
+   ------------------------------*/
+  function add(child) {
+    this.child = child;
+    child.parent = this;
+    invalidateLayout();
+  }
+
+  /**------------------------------
+   * 子ウィジェットを削除する
+   *
+   * @param child 子ウィジェット
+   * @param doInvalidate invalidateするかどうか
+   ------------------------------*/
+  function remove(child, doInvalidate = true) {
+    this.child = void;
+    child.parent = widgetDepot;
+    invalidateLayout();
+    if (doInvalidate)
+      invalidate child;
+  }
+
+
+  /*------------------------------
+   * 各種フック関数
+   ------------------------------*/
+  function onChildMinMaxSizeModified {
+    invalidateLayout();
+  }
+
+  function onChildMarginModified {
+    invalidateLayout();
+  }
+
+  function onChildAlignModified {
+    invalidateLayout();
+  }
+
+  function onSizeModified {
+    redraw();
+  }
+
+  function invalidateLayout {
+    var minW, minH, maxW, maxH;
+    var labelW, labelH;
+
+    minW = minH = maxW = maxH = 0;
+    labelW = labelH = 0;
+
+    if (child) {
+      minW = child.minWidth + child.marginHorizontal;
+      minH = child.minHeight + child.marginVertical;
+      maxW = child.maxWidth + child.marginHorizontal;
+      maxH = child.maxHeight + child.marginVertical;
+    }
+
+    redrawn = false;
+    setMinMaxSize(minW, minH, maxW, maxH);
+    if (! redrawn)
+      redraw();
+  }
+
+  function redraw {
+    redrawn = true;
+
+    if (! child)
+      return;
+
+    child.setSize(width - child.marginHorizontal, height - child.marginVertical);
+    locateChild(0, 0, width, height, child);
+  }
+
+  function setEnabled(v) {
+    enabled = v;
+  }
+};
+
+/**----------------------------------------------------------------------
  * ウィジェットホルダーリストアイテム
  ----------------------------------------------------------------------*/
 class KWidgetHolderListItem extends KListItem
 { 
+  var _widgetFrame;
   var _widget = void;
   var widgetPropsBackup;
 
@@ -3061,19 +3155,9 @@ class KWidgetHolderListItem extends KListItem
   }
 
   function finalize {
-    invalidate _widget;
+    invalidate _widgetFrame;
     super.finalize();
   }
-
-  property enabledOverrideForWidget {
-    getter {
-      return _enabledSelf;
-    }
-    setter(v) {
-      _enabledSelf = v;
-      invalidateNodeEnability();
-    }
-  }    
 
   property parentWidgetOverrideForWidget {
     getter {
@@ -3084,26 +3168,21 @@ class KWidgetHolderListItem extends KListItem
   function attachWidget(widget) {
     _widget = widget;
     _widget._parentItem = this;
-    widgetPropsBackup = %[ enabled: &_widget.enabled, parentWidget: &_widget.parentWidget ];
-    _widget._enabledSelf = _widget.enabled;
-    &_widget.enabled = &enabledOverrideForWidget incontextof (_widget);
-    _widget.invalidateNodeEnability = function() {
-      _parentItem.widgetPropsBackup.enabled = _enabledSelf && _parentItem.nodeEnabled;
-    } incontextof (_widget);
+    widgetPropsBackup = %[ parentWidget: &_widget.parentWidget ];
     &_widget.parentWidget = &parentWidgetOverrideForWidget incontextof (_widget);
+    _widgetFrame = new KWidgetHolderFrame(widget.window);
+    _widgetFrame.add(_widget);
   }
 
   function detachWidget() {
     if (_widget === void)
       return;
-    _widget.parent = _widget.widgetDepot;
     &_widget.parentWidget = widgetPropsBackup.parentWidget;
-    &_widget.enabled = widgetPropsBackup.enabled;
     delete _widget["_parentItem"];
-    delete _widget["_enabledSelf"];
-    delete _widget["_enabledOrig"];
-    delete _widget["invalidateNodeEnability"];
+    _widgetFrame.remove(_widget, false);
     _widget = void;
+    invalidate _widgetFrame;
+    _widgetFrame = void;
   }
 
   /**------------------------------
@@ -3128,14 +3207,18 @@ class KWidgetHolderListItem extends KListItem
       return super.visible;
     }
     setter (v) {
+      if (super.visible == v)
+        return;
       super.visible = v;
       if (_widget !== void) {
         if (v) {
-          _widget.parent = root;
-          _widget.visible = true;
+          _widgetFrame.invalidateLayout();
+          _widgetFrame.parent = root;
+          _widgetFrame.visible = true;
+          asyncCaller.call(_widgetFrame.setEnabled, nodeEnabled);
         } else {
-          _widget.parent = root.widgetDepot;
-          _widget.visible = false;
+          _widgetFrame.parent = root.widgetDepot;
+          _widgetFrame.visible = false;
         }
       }
     }
@@ -3146,8 +3229,8 @@ class KWidgetHolderListItem extends KListItem
       width = height = 0;
       return;
     }
-    _widget.setSize(_widget.minWidth, _widget.minHeight);
-    _widget.onViewModified(0, 0, _widget.minWidth, _widget.minHeight);
+    _widgetFrame.setSize(_widget.minWidth, _widget.minHeight);
+    _widgetFrame.onViewModified(0, 0, _widget.minWidth, _widget.minHeight);
     width = _widget.minWidth + _widget.marginHorizontal;
     height = _widget.minHeight + _widget.marginVertical + root.spaceVertical;
   }
@@ -3155,7 +3238,7 @@ class KWidgetHolderListItem extends KListItem
   function locate(x, y) {
     super.locate(x, y);
     if (_widget !== void)
-      _widget.setPos(x + _widget.marginHorizontal / 2, y + (_widget.marginVertical + root.spaceVertical) / 2);
+      _widgetFrame.setPos(x + _widget.marginHorizontal / 2, y + (_widget.marginVertical + root.spaceVertical) / 2);
   }
 
   function find(name) {
@@ -3182,8 +3265,8 @@ class KWidgetHolderListItem extends KListItem
   function invalidateNodeEnability() {
     super.invalidateNodeEnability();
     if (_widget === void)
-      reeturn;
-    _widget.invalidateNodeEnability();
+      return;
+    asyncCaller.call(_widgetFrame.setEnabled, nodeEnabled);
   }
 
   function onChildMinMaxSizeModified() {
