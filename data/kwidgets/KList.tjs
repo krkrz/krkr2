@@ -114,7 +114,7 @@ class KList extends KVirtualWidget
   var openNoticeItem;
   var _backgroundColor = WIN_WHITE;
 
-  var _disabledItemCapabilityMask = 0;
+  var _disabledItemCapabilityMask = LIST_ITEM_CAPABILITY_MASK_FOCUS;
 
   /*------------------------------
    * リストビュー
