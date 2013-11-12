@@ -1214,8 +1214,17 @@ class KList extends KVirtualWidget
   function onPacketMove(x, y, packet, shift) {
     var prevDragInfo = curDragInfo;
     var prevDragRegion = curDragRegion;
-    var item = findItem(y);
+    var item;
 
+    if (y < treeHeight)
+      item = findItem(y);
+    else {
+      item = findItem(treeHeight - 1);
+      if (item !== void
+          && item.getChildPacketInsertionHierarchyList(packet).count == 0)
+        item = void;
+    }
+    
     if (item === void) {
       curDragInfo = %[ acceptType: DRAG_ACCEPT_TYPE_NONE ];
     } else {
