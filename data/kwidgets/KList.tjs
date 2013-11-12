@@ -601,7 +601,7 @@ class KList extends KVirtualWidget
 
   // —Ìˆæ“à‚ÌƒAƒCƒeƒ€‚ð•`‰æ
   function onDraw(left, top, width, height) {
-    fillRect(0, treeHeight, width, height - treeHeight, backgroundColor);
+    fillRect(0, treeHeight, this.width, this.height - treeHeight, backgroundColor);
     if (drawItemList.count) {
       var from = findItemIndex(top, true, false);
       var to = findItemIndex(top + height - 1, true, false);
