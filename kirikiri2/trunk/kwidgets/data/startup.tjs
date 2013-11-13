@@ -18,6 +18,7 @@ Scripts.execStorage("WidgetSample.tjs");
 Scripts.execStorage("ScrollSample.tjs");
 Scripts.execStorage("DragDropSample.tjs");
 Scripts.execStorage("ListSample.tjs");
+Scripts.execStorage("ListSample2.tjs");
 Scripts.execStorage("SpiralSample.tjs");
 Scripts.execStorage("TimeLineSample.tjs");
 Scripts.execStorage("TestCase.tjs");
@@ -47,9 +48,10 @@ class SampleLauncher extends KWindow
     grid.add(0, 0, new KTextToggleButton(this, "ウィジェットサンプル", "widget_sample"));
     grid.add(0, 1, new KTextToggleButton(this, "スクロールサンプル", "scroll_sample"));
     grid.add(0, 2, new KTextToggleButton(this, "リストサンプル", "list_sample"));
-    grid.add(0, 3, new KTextToggleButton(this, "ドラッグ＆ドロップサンプル", "dragdrop_sample"));
-    grid.add(0, 4, new KTextToggleButton(this, "スパイラルサンプル", "spiral_sample"));
-    grid.add(0, 5, new KTextToggleButton(this, "タイムラインサンプル", "timeline_sample"));
+    grid.add(0, 3, new KTextToggleButton(this, "リストサンプル2", "list_sample_2"));
+    grid.add(0, 4, new KTextToggleButton(this, "ドラッグ＆ドロップサンプル", "dragdrop_sample"));
+    grid.add(0, 5, new KTextToggleButton(this, "スパイラルサンプル", "spiral_sample"));
+    grid.add(0, 6, new KTextToggleButton(this, "タイムラインサンプル", "timeline_sample"));
 
     //グリッドを配置
     primaryWidget.add(grid);
@@ -71,6 +73,8 @@ class SampleLauncher extends KWindow
       showScrollSample();
     if (list_sample.value)
       showListSample();
+    if (list_sample_2.value)
+      showListSample2();
     if (dragdrop_sample.value)
       showDragDropSample();
     if (spiral_sample.value)
@@ -88,37 +92,44 @@ class SampleLauncher extends KWindow
 
     case "widget_sample": 
       if (value)
-	showWidgetSample();
+        showWidgetSample();
       else
-	hideWidgetSample();
+        hideWidgetSample();
       break;
 
     case "scroll_sample": 
       if (value)
-	showScrollSample();
+        showScrollSample();
       else
-	hideScrollSample();
+        hideScrollSample();
       break;
 
     case "list_sample": 
       if (value)
-	showListSample();
+        showListSample();
       else
-	hideListSample();
+        hideListSample();
+      break;
+
+    case "list_sample_2": 
+      if (value)
+        showListSample2();
+      else
+        hideListSample2();
       break;
 
     case "dragdrop_sample":
       if (value)
-	showDragDropSample();
+        showDragDropSample();
       else
-	hideDragDropSample();
+        hideDragDropSample();
       break;
 
     case "spiral_sample":
       if (value)
-	showSpiralSample();
+        showSpiralSample();
       else
-	hideSpiralSample();
+        hideSpiralSample();
       break;
 
     case "timeline_sample":

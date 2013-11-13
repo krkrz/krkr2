@@ -97,7 +97,7 @@ class KWidget extends Layer
   // nameプロパティを上書き
   var _name;
   // 辞書登録を避けるかどうか
-  var _isAvoidDictionaryRegistration;
+  var _isAvoidDictionaryRegistration = false;
   // Ｄ＆Ｄ
   var isReadyToDrag, isDragging;
   var myDraggingPacket;
@@ -1535,7 +1535,11 @@ class KWidget extends Layer
       // パケットのドラッグ中であれば
       // ターゲットにパケットのドロップを通知
       if (myDraggingPacket) {
-        if (curDragTargetAcceptPacket) {
+        if (curDragTargetAcceptPacket
+            && curDragTarget.isPacketConfirmed(curDragTarget.cursorX,
+                                               curDragTarget.cursorY,
+                                               _dragging_packet_,
+                                               shift)) {
           curDragTarget.onPacketLeave(curDragTarget.cursorX,
                                       curDragTarget.cursorY,
                                       _dragging_packet_,
@@ -1637,6 +1641,16 @@ class KWidget extends Layer
    ------------------------------*/
   function isPacketAcceptable(packet) {
     return false;
+  }
+
+  /**------------------------------
+   * 最終的にパケットを受け入れるかどうか判定する
+   *
+   * @param packet ドラッグ中のパケット
+   * @return パケットを受け入れるかどうか
+   ------------------------------*/
+  function isPacketConfirmed(x, y, packet, shift) {
+    return true;
   }
 
   /**------------------------------
@@ -1798,6 +1812,17 @@ n   ------------------------------*/
    * - KRelativeLayout
    ------------------------------*/
   function onViewModified(vleft, vtop, vwidth, vheight) {
+    for (var i = 0; i < children.count; i++) {
+      var child = children[i];
+      if (child instanceof "KWidget") {
+        var rect = %[ left: vleft, top: vtop, right :vleft + vwidth, bottom: vtop + vheight ];
+        rect.left = Math.max(rect.left, child.left);
+        rect.top = Math.max(rect.top, child.top);
+        rect.right = Math.min(rect.right, child.left + child.width);
+        rect.bottom = Math.min(rect.bottom, child.top + child.height);
+        child.onViewModified(rect.left - child.left, rect.top - child.top, rect.right - rect.left, rect.bottom - rect.top);
+      }
+    }
   }
 
   function onWindowActivate {

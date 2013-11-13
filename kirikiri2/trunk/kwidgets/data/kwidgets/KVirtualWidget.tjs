@@ -221,6 +221,15 @@ class KVirtualWidget extends KWidget
   /*----------------------------------------------------------------------
    * レイヤ描画関数
    ----------------------------------------------------------------------*/
+  property font {
+    getter {
+      if (hasImage)
+        return super.font;
+      else
+        return _canvas.font;
+    }
+  }
+
   /**------------------------------
    * 矩形重ね合わせ
    *
@@ -248,6 +257,22 @@ class KVirtualWidget extends KWidget
    ------------------------------*/
   function copyRect(left, top, src, sleft, stop, swidth, sheight) {
      _canvas.copyRect(left - _site.left, top - _site.top, src, sleft, stop, swidth, sheight);
+  }
+
+  /**------------------------------
+   * 矩形ブレンド
+   *
+   * @param left 重ね合わせ先の矩形の左端位置を ( コピー先レイヤの画像位置における ) ピクセル単位で、仮想座標系において指定します。
+   * @param top 重ね合わせ先の矩形の上端位置を ( コピー先レイヤの画像位置における ) ピクセル単位で、仮想座標系において指定します。
+   * @param src 　重ね合わせ元のレイヤオブジェクトを指定します。
+   * @param sleft 　重ね合わせする矩形の左端位置を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param stop 　重ね合わせする矩形の上端位置を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param swidth 　重ね合わせする矩形の横幅を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param sheight 　重ね合わせする矩形の縦幅を ( コピー元レイヤの画像位置における ) ピクセル単位で指定します。
+   * @param opa 　重ね合わせの不透明度 ( 0 ～ 255 ) を指定します。
+   ------------------------------*/
+  function blendRect(left, top, src, sleft, stop, swidth, sheight, opa = 255) {
+    _canvas.blendRect(left - _site.left, top - _site.top, src, sleft, stop, swidth, sheight, opa);
   }
 
   /**------------------------------
@@ -284,6 +309,18 @@ class KVirtualWidget extends KWidget
 
   function fillGradientRectLR(left, top, width, height, value1, value2) {
     _canvas.fillGradientRectLR(left - _site.left, top - _site.top, width, height, value1, value2);
+  }
+
+  function fillGradientRectUD(left, top, width, height, value1, value2) {
+    _canvas.fillGradientRectUD(left - _site.left, top - _site.top, width, height, value1, value2);
+  }
+
+  function colorGradientRectLR(left, top, width, height, value1, value2) {
+    _canvas.colorGradientRectLR(left - _site.left, top - _site.top, width, height, value1, value2);
+  }
+
+  function colorGradientRectUD(left, top, width, height, value1, value2) {
+    _canvas.colorGradientRectUD(left - _site.left, top - _site.top, width, height, value1, value2);
   }
 
   /**------------------------------
