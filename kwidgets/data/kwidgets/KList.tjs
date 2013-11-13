@@ -2932,7 +2932,7 @@ class KListItem
                   opacity, true, 2048, WIN_WHITE, 2.5);
     
     if (childCount) {
-      var toggle = root.findIcon(opened ? "k_list_open" : "k_list_close");
+      var toggle = root.findIcon(opened ? "k_list_close" : "k_list_open");
       root.operateRect(left + 2, int(top + (height- toggle.height) / 2),
                        toggle,
                        0, 0, 
