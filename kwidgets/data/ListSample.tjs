@@ -160,6 +160,7 @@ class ListSample extends KWindow
     // リスト項目を配置しまくる
     list.spaceVertical = 2;
     list.add(new DragDropTopListItem("トップ項目1", "listitem1"));
+
     list.add(new DragDropTopListItem("トップ項目2", "listitem2"));
     list.add(new KListItem("トップ項目3はちょっと横長に表示しますですよ", "listitem3"));
     list.add(new KListItem("トップ項目4はF2で名前を編集可能", "listitem4"));
@@ -188,12 +189,38 @@ class ListSample extends KWindow
     listitem4.labelEditable = true;
     listitem4.labelTextType = TEXT_ANY;
 
-    primaryWidget.add(scroll);
+    defaultSpace = 4;
+    defaultMargin = 6;
+    defaultAlignHorizontal = ALIGN_CENTER;
+    defaultAlignVertical = ALIGN_CENTER;
+
+    list.add(new KListItem("ボタンウィジェット", "buttonWidgetHolder", true));
+    buttonWidgetHolder.add(new KFrameLayout(this, FRAME_FLATTEN, "", "buttonFrame"));
+    buttonFrame.add(new KGridLayout(this, "buttonGrid"));
+    buttonGrid.add(0, 0, new KFrameLayout(this, FRAME_FLATTEN, "ノーマルボタン", "normalButtonFrame"));
+    normalButtonFrame.add(new KGridLayout(this, "normalButtonGrid"));
+    normalButtonGrid.add(0, 0, new KTextButton(this, "ボタン", "textbutton"));
+    normalButtonGrid.add(1, 0, new KImageButton(this, "gotta_mail", "imagebutton"));
+    buttonGrid.add(0, 1, new KFrameLayout(this, FRAME_FLATTEN, "ノーマルボタン", "toggleButtonFrame"));
+    toggleButtonFrame.add(new KGridLayout(this, "toggleButtonGrid"));
+    toggleButtonGrid.add(0, 0, new KTextToggleButton(this, "ボタン", "texttogglebutton"));
+    toggleButtonGrid.add(1, 0, new KImageToggleButton(this, "gotta_mail", "imagetogglebutton"));
 
     // 永続化辞書の作成
     var dict = new KPersistentDictionary(System.dataPath + name + "_dict.txt");
     add(dict);
     bindPersistentDictionary(dict);
+  }
+
+  // ウィジェットの値が更新された時に呼ばれるフック関数
+  function onChildValueModified(child, value) {
+    switch (child.name) {
+    default: {
+      // 更新のあったウィジェットの名前と値を表示。
+      Debug.message("child value modified", child.name, typeof(value), value);
+      break;
+    }
+    }
   }
 }
 

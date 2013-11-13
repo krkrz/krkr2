@@ -917,7 +917,7 @@ class KTimeLineLayerView extends KVirtualWidget
                 item.setSelection(item.selection[0] - step, item.selection[1] - step);
               }
             }
-            list.redrawAll();
+            list.redrawAllItemsView();
             owner.onMultipleFrameDragged();
             owner.onRenderFrame();
           }
@@ -970,7 +970,7 @@ class KTimeLineLayerView extends KVirtualWidget
               item.setSelection(item.selection[0] + step, item.selection[1] + step);
             }
           }
-          list.redrawAll();
+          list.redrawAllItemsView();
           owner.onMultipleFrameDragged();
           owner.onRenderFrame();
         } else {
@@ -1102,7 +1102,7 @@ class KTimeLineLayerList extends KList
   }
 
   // 選択イベントをオーナーに通知
-  function onSelect {
+  function onFocusItem() {
     if (owner.playing)
       owner.playing = false;
     owner.onListSelect(...);
@@ -1113,7 +1113,7 @@ class KTimeLineLayerList extends KList
     super.onSearchPrevFocusable(owner.searchTarget);
   }
 
-  function redrawAll {
+  function redrawAllItemsView {
     for (var i = 0; i < drawItemList.count; i++) {
       if (drawItemList[i] !== void
           && (drawItemList[i] isvalid))
@@ -2168,7 +2168,7 @@ class KTimeLineItem extends KListItem
     }
     if (render) {
       if (this instanceof "KTimeLineLoopItem")
-        root.redrawAll();
+        root.redrawAllItemsView();
       else
         redrawAllFrame();
     }
@@ -2239,7 +2239,7 @@ class KTimeLineLoopItem extends KTimeLineItem
       if (v == -1) {
         if (hasLastFrame) {
           frameList = [];
-          root.redrawAll();
+          root.redrawAllItemsView();
         }
         return;
       }
@@ -2249,7 +2249,7 @@ class KTimeLineLoopItem extends KTimeLineItem
       } else {
         frameList[0].time = v;
       }
-      root.redrawAll();
+      root.redrawAllItemsView();
     }
   }
 
@@ -2264,7 +2264,7 @@ class KTimeLineLoopItem extends KTimeLineItem
       if (v == -1) {
         if (hasLoopFrame) {
           frameList = [];
-          root.redrawAll();
+          root.redrawAllItemsView();
         }
         return;
       }
@@ -2277,7 +2277,7 @@ class KTimeLineLoopItem extends KTimeLineItem
         if (frameAt(0).time >= frameAt(1).time)
           frameAt(1).time = v + 1;
       }
-      root.redrawAll();
+      root.redrawAllItemsView();
     }
   }
 
@@ -2292,7 +2292,7 @@ class KTimeLineLoopItem extends KTimeLineItem
       if (v == -1) {
         if (hasLoopFrame) {
           frameList = [];
-          root.redrawAll();
+          root.redrawAllItemsView();
         }
         return;
       }
@@ -2307,7 +2307,7 @@ class KTimeLineLoopItem extends KTimeLineItem
         if (frameAt(0).time >= frameAt(1).time)
           frameAt(0).time = v - 1;
       }
-      root.redrawAll();
+      root.redrawAllItemsView();
     }
   }
 
@@ -2325,7 +2325,7 @@ class KTimeLineLoopItem extends KTimeLineItem
         frameAt(1).time = endTime;
       }
     }
-    root.redrawAll();
+    root.redrawAllItemsView();
   }
   
   function onSetLoopBeginTime(time) {
@@ -3284,5 +3284,16 @@ class KTimeLineControl extends KHorizontalSpliterLayout
       _layerView.enabled = v;
     }
   }
-}
+
+  property multipleSelection {
+    getter {
+      return _layerList.multipleSelection;
+    }
+
+    setter(v) {
+      _layerList.multipleSelection = v;
+    }
+  }
+};
+
 

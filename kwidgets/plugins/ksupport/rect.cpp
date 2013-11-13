@@ -187,6 +187,20 @@ public:
     right = right < rect->right ? right : rect->right;
     bottom = bottom < rect->bottom ? bottom : rect->bottom;
   }
+
+  /**------------------------------
+   * 包含演算
+   *
+   * @param rect 矩形
+   *
+   * rectと自分自身の共通矩形を、自分自身に割り当て直す
+   ------------------------------*/
+  void unionWith(const KRect *rect) {
+    left = left < rect->left ? left : rect->left;
+    top = top < rect->top ? top : rect->top;
+    right = right > rect->right ? right : rect->right;
+    bottom = bottom > rect->bottom ? bottom : rect->bottom;
+  }
 };
 
 NCB_REGISTER_CLASS(KRect)
@@ -199,6 +213,7 @@ NCB_REGISTER_CLASS(KRect)
   NCB_METHOD(contains);
   NCB_METHOD(include);
   NCB_METHOD(intersectWith);
+  NCB_METHOD(unionWith);
 
   NCB_PROPERTY_RO(isValid, getIsValid);
   NCB_PROPERTY(left, getLeft, setLeft);
