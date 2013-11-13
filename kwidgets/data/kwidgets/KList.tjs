@@ -351,6 +351,7 @@ class KList extends KVirtualWidget
    * @param focusedItem ƒZƒŒƒNƒVƒ‡ƒ“
    ------------------------------*/
   function onFocusItem(item) {
+    onSelect(item);
   }
 
   function invalidateFocus() {
@@ -1519,6 +1520,9 @@ class KList extends KVirtualWidget
 
   function selectItem(item) {
     focusItem(item);
+  }
+
+  function onSelect(item) {
   }
 };
 
