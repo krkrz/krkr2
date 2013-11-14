@@ -21,6 +21,7 @@ class KTab extends KWidget
     super.KWidget(window);
     _label = label;
     hitThreshold = 0;
+    mouseDragThreshold = 8;
   }
 
   /**------------------------------
@@ -72,10 +73,7 @@ class KTab extends KWidget
 
   function redraw {
     var selected = parent.tabIndex == index;
-    drawFrame(parent.type, 0, 0, width, height + 2);
-    if (parent.focused
-        && selected)
-      fillRect(fontHeight / 2, fontHeight / 2, width - fontHeight, fontHeight, WIN_HIGHLIGHT);
+    drawFrame(parent.type, 0, 0, width, height + 2, parent.neutralColor);
     drawText(fontHeight / 2, fontHeight / 2 + (selected ? -1 : 1), label, fontColor, selected ? 255 : 128);
   }
 
@@ -458,7 +456,7 @@ class KTabLayout extends KWidget
     }
 
     frameLayer.setFixedSize(width, height);
-    frameLayer.fillRect(0, 0, width, tabH, neutralColor);
+    frameLayer.fillRect(0, 0, width, tabH, 0);
     frameLayer.drawFrame(type, 0, tabH, width, height - tabH, neutralColor);
     var tab = tabAt(tabIndex);
     if (tab.top + tab.height == tabH)
