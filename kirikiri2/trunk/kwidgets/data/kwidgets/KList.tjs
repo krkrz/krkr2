@@ -907,20 +907,21 @@ class KList extends KVirtualWidget
       if (button == mbLeft) {
         // Shiftキーを押してる時はアイテムを前のチョイスから範囲選択
         if (targetItem !== void
-            && shift & ssShift) {
+            && (shift & ssShift)) {
           if (focusedItem === void) {
             focusItem(targetItem);
           } else {
             if (drawItemList.find(lastFocusedItem) < 0)
               lastFocusedItem = focusedItem;
-            clearAllSelection();
+            if (! (shift & ssCtrl))
+              clearAllSelection();
             selectItemRange(lastFocusedItem, targetItem);
             focusItem(targetItem, false);
           }
         } 
         // Ctrlキーを押してる時は選択の反転。
         else if (targetItem !== void
-                 && shift & ssCtrl) {
+                 && (shift & ssCtrl)) {
           targetItem.selected = ! targetItem.selected;
           lastFocusedItem = targetItem;
           focusItem(targetItem, false);
@@ -983,6 +984,11 @@ class KList extends KVirtualWidget
     super.onMouseDown(...);
     if (button == mbMiddle)
      return;
+
+    // 再構築中は無視
+    if (childCount > 0
+        && drawItemList.count == 0)
+      return;
 
     var targetItem = findItem(y);
     var voidTargetItem = findItem(y, false, false);
@@ -1087,7 +1093,8 @@ class KList extends KVirtualWidget
   }
 
   function onDoubleClick(x, y) {
-    if (focusedItem !== void) {
+    if (focusedItem !== void
+        && findItem(y) === focusedItem) {
       focusedItem.onDoubleClick(x, y - focusedItem.top);
     }
   }
