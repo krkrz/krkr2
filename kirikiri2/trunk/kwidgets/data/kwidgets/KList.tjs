@@ -3033,7 +3033,8 @@ class KListItem
         onNodeDisabled();
         if (root !== void)
           root.invalidateFocus();
-        _selected = false;
+        if (! focusable)
+          _selected = false;
       }
       redraw();
       for (var i = 0; i < childList.count; i++)
