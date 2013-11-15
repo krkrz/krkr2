@@ -325,6 +325,7 @@ public:
 	// 各種 Item 操作関数
 	HWND GetItemHWND(int id) const {
 		checkDialogValid();
+		if (!id) return dialogHWnd; // [XXX] 自分自身を操作するためにid==0でdialogHWndを返す
 		HWND ret = GetDlgItem(dialogHWnd, id);
 		if (!ret) ThrowLastError();
 		return ret;
@@ -441,7 +442,8 @@ public:
 protected:
 	LRESULT _sendItemMessage(int id, UINT msg, WPARAM wparam, LPARAM lparam) {
 		checkDialogValid();
-		return SendDlgItemMessage(dialogHWnd, id, msg, wparam, lparam);
+		return id ? SendDlgItemMessage(dialogHWnd, id, msg, wparam, lparam)
+			:       SendMessage       (dialogHWnd,     msg, wparam, lparam); // [XXX]自分自身を操作するためにid==0でdialogHWndへメッセージ
 	}
 
 	// TJS辞書⇒RECTへ値をコピー
@@ -485,7 +487,7 @@ public:
 	}
 	bool InvalidateAll(bool erase) {
 		checkDialogValid();
-		return ::InvalidateRect(dialogHWnd, NULL, erase);
+		return !!::InvalidateRect(dialogHWnd, NULL, erase);
 	}
 	bool InvalidateRect(VarT vrect, bool erase) {
 		checkDialogValid();
@@ -804,7 +806,7 @@ public:
 		TC_ITEM	tc;
 		tc.mask		= TCIF_TEXT;
 		tc.pszText	= tx;
-		tjs_int	ins	= pos.Type() == tvtVoid ? 0 : pos.AsInteger();
+		tjs_int	ins	= pos.Type() == tvtVoid ? 0 : (tjs_int)pos.AsInteger();
 		HWND	htab= GetItemHWND(tabid);
 		TabCtrl_InsertItem(htab, ins, &tc);
 		return TJS_S_OK;
@@ -833,7 +835,7 @@ public:
 	//	タブを選択
 	tjs_int SetCurSelTab(int tabid, VarT pos) {
 		HWND	htab = GetItemHWND(tabid);
-		int idx = pos.Type() == tvtVoid ? 0 : pos.AsInteger();
+		int idx = pos.Type() == tvtVoid ? 0 : (int)pos.AsInteger();
 		return TabCtrl_SetCurSel(htab, idx);
 	}
 
@@ -883,22 +885,22 @@ public:
 		WIN32Dialog* dlg = SelfAdaptorT::GetNativeInstance(objthis);
 		if(!dlg) return TJS_E_NATIVECLASSCRASH;
 
-		HWND		hscr	= dlg->GetItemHWND(param[0]->AsInteger());
+		HWND		hscr	= dlg->GetItemHWND((int)param[0]->AsInteger());
 		SCROLLINFO	si;
 		ZeroMemory(&si, sizeof(SCROLLINFO));
 		si.cbSize	= sizeof(SCROLLINFO);
 		if(num > 1 && param[1]->Type() != tvtVoid) {
 			si.fMask|= SIF_POS;
-			si.nPos	= param[1]->AsInteger();
+			si.nPos	= (int)param[1]->AsInteger();
 		}
 		if(num > 3 && param[2]->Type() != tvtVoid && param[3]->Type() != tvtVoid) {
 			si.fMask|= SIF_RANGE;
-			si.nMin	= param[2]->AsInteger();
-			si.nMax	= param[3]->AsInteger();
+			si.nMin	= (int)param[2]->AsInteger();
+			si.nMax	= (int)param[3]->AsInteger();
 		}
 		if(num > 4 && param[4]->Type() != tvtVoid) {
 			si.fMask|= SIF_PAGE;
-			si.nPage= param[4]->AsInteger();
+			si.nPage= (UINT)param[4]->AsInteger();
 		}
 		SetScrollInfo(hscr, SB_CTL, &si, true);
 
