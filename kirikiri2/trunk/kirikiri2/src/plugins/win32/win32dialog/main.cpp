@@ -93,6 +93,18 @@ struct Bitmap {
 	}
 };
 
+// HBRUSHラッパ
+struct SolidBrush {
+	HBRUSH brush;
+	SolidBrush(DWORD rgb) : brush(NULL) {
+		brush = CreateSolidBrush(RGB(((rgb>>16)&0xFF), ((rgb>>8)&0xFF), (rgb&0xFF)));
+	}
+	~SolidBrush() {
+		if (brush) DeleteObject(brush);
+		brush = NULL;
+	}
+};
+
 // DRAWITEMアクセス用クラス
 struct DrawItem {
 	DrawItem() : ref(0) {}
@@ -186,6 +198,7 @@ private:
 	typedef ncbInstanceAdaptor<Header>      HeadAdaptorT;
 	typedef ncbInstanceAdaptor<Items>       ItemAdaptorT;
 	typedef ncbInstanceAdaptor<Bitmap>      BitmapAdaptorT;
+	typedef ncbInstanceAdaptor<SolidBrush>  SolidBrushAdaptorT;
 
 	HWND dialogHWnd;
 	HICON icon;
@@ -240,17 +253,23 @@ public:
 	}
 
 	// コールバック呼び出し
-	LRESULT callback(NameT event, tjs_int numparams, tTJSVariant **params) {
+	DspT *_hasCallback(NameT event, tTJSVariant &rslt) {
 		DspT *obj = owner ? owner : objthis;
-		if (!obj) return FALSE;
+		if (!obj) return NULL;
 
 		// コールバックが存在するか
 		tjs_uint32 hint = 0;
+		if (TJS_FAILED(obj->PropGet(TJS_MEMBERMUSTEXIST, event, &hint, &rslt, obj))) return NULL;
+
+		rslt.Clear();
+		return obj;
+	}
+	LRESULT callback(NameT event, tjs_int numparams, tTJSVariant **params) {
 		tTJSVariant rslt;
-		if (TJS_FAILED(obj->PropGet(TJS_MEMBERMUSTEXIST, event, &hint, &rslt, obj))) return FALSE;
+		DspT *obj = _hasCallback(event, rslt);
+		if (!obj) return FALSE;
 
 		// 引数を渡してコールバックを呼ぶ
-		rslt.Clear();
 		Try_iTJSDispatch2_FuncCall(obj, 0, event, 0, &rslt, numparams, params, obj);
 		return (rslt.AsInteger() != 0) ? TRUE : FALSE;
 	}
@@ -281,6 +300,48 @@ public:
 
 		tTJSVariant *params[] = { &vwp, &vdi };
 		return callback(event, 2, params);
+	}
+	// WM_CTLCOLOR*用コールバック
+	LRESULT callback(NameT event, int id, HDC hdc) {
+		tTJSVariant rslt;
+		DspT *obj = _hasCallback(event, rslt);
+		if (!obj) return FALSE;
+
+		tTJSVariant vid(id);
+		tTJSVariant *params[] = { &vid };
+		Try_iTJSDispatch2_FuncCall(obj, 0, event, 0, &rslt, 1, params, obj);
+		if (rslt.Type() != tvtObject) return FALSE;
+		LRESULT r = FALSE;
+		ncbPropAccessor elm(rslt);
+		if (elm.IsValid()) {
+			tTJSVariantType type = tvtVoid;
+			if (elm.HasValue(TJS_W("fgcolor"), 0, &type) && type == tvtInteger) {
+				::SetTextColor(hdc, ConvertRGBtoColorRef(elm.getIntValue(TJS_W("fgcolor"))));
+			}
+			if (elm.HasValue(TJS_W("bgcolor"), 0, &type)) {
+				if (type == tvtInteger) {
+					::SetBkMode (hdc, OPAQUE);
+					::SetBkColor(hdc, ConvertRGBtoColorRef(elm.getIntValue(TJS_W("bgcolor"))));
+				} else if (type == tvtObject) {
+					::SetBkMode (hdc, TRANSPARENT);
+				}
+			}
+			tTJSVariant bgbrush;
+			if (elm.checkVariant(TJS_W("bgbrush"), bgbrush)) {
+				type = bgbrush.Type();
+				if (type == tvtObject) {
+					iTJSDispatch2 *obj = bgbrush.AsObjectNoAddRef();
+					if (obj) {
+						SolidBrush *brush = SolidBrushAdaptorT::GetNativeInstance(obj, true);
+						if (brush) r = (LRESULT)brush->brush;
+					}
+				} else if (type == tvtInteger) {
+					r = (LRESULT)::GetStockObject((int)bgbrush.AsInteger());
+				}
+			}
+			if (r == FALSE) r = (LRESULT)::GetStockObject(NULL_BRUSH);
+		}
+		return r;
 	}
 
 	// リソース読み込み
@@ -354,8 +415,15 @@ public:
 	tjs_int64 GetItem(int id) const { return (tjs_int64)GetItemHWND(id); }
 	int GetItemID(tjs_int64 hwnd) const { return GetDlgCtrlItem((HWND)hwnd); }
 	bool IsExistentItem(int id) const { return GetDlgItem(dialogHWnd, id) != NULL; }
-	long SetItemLong(int id, int index, long newlong) { return SetWindowLong(GetItemHWND(id), index, newlong); } 
 	long GetItemLong(int id, int index) { return GetWindowLong(GetItemHWND(id), index); }
+	long SetItemLong(int id, int index, long newlong) {
+		HWND hwnd = GetItemHWND(id);
+		long r = SetWindowLong(hwnd, index, newlong);
+		// スタイル変更の反映
+		if (!id && (index == GWL_STYLE || GWL_EXSTYLE))
+			SetWindowPos(hwnd, 0, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
+		return r;
+	}
 
 	int GetItemInt(int id) const {
 		checkDialogValid();
@@ -372,14 +440,17 @@ public:
 		checkDialogValid();
 		SizeT len = GetWindowTextLength(GetItemHWND(id));
 		tjs_char *p = new tjs_char[len+1];
-		GetDlgItemTextW(dialogHWnd, id, p, len+1);
+		if(id) GetDlgItemTextW(dialogHWnd, id, p, len+1);
+		else   GetWindowTextW (dialogHWnd,     p, len+1);
 		StringT ret = p;
 		delete[] p;
 		return ret;
 	}
 	void SetItemText(int id, NameT string) {
 		checkDialogValid();
-		if (!SetDlgItemTextW(dialogHWnd, id, string))ThrowLastError();
+		BOOL success = id ? SetDlgItemTextW(dialogHWnd, id, string)
+			:               SetWindowTextW (dialogHWnd,     string);
+		if (!success) ThrowLastError();
 	}
 
 	void SetItemEnabled(int id, bool en) {
@@ -617,6 +688,24 @@ public:
 		case WM_DESTROY:
 			if ((inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER)) != 0 && inst->hHook != NULL)
 				UnhookWindowsHookEx(inst->hHook);
+			return FALSE;
+		case WM_CTLCOLORBTN:
+		case WM_CTLCOLOREDIT:
+		case WM_CTLCOLORSTATIC:
+//		case WM_CTLCOLORLISTBOX:
+//		case WM_CTLCOLORSCROLLBAR:
+			if ((inst = (WIN32Dialog *)GetWindowLong(hwnd, DWL_USER)) != 0) {
+				int id = GetDlgCtrlID((HWND)lparam);
+				tjs_char *event = NULL;
+				switch (msg) {
+				case WM_CTLCOLORBTN:       event = TJS_W("onCtrlColorButton"   ); break;
+				case WM_CTLCOLOREDIT:      event = TJS_W("onCtrlColorEdit"     ); break;
+				case WM_CTLCOLORSTATIC:    event = TJS_W("onCtrlColorStatic"   ); break;
+//				case WM_CTLCOLORLISTBOX:   event = TJS_W("onCtrlColorListBox"  ); break;
+//				case WM_CTLCOLORSCROLLBAR: event = TJS_W("onCtrlColorScrollBar"); break;
+				}
+				if (event) return inst->callback(event, id, (HDC)wparam);
+			}
 			return FALSE;
 		}
 		return FALSE;
@@ -1481,6 +1570,9 @@ NCB_REGISTER_SUBCLASS(Items) {
 NCB_REGISTER_SUBCLASS(Bitmap) {
 	Constructor<iTJSDispatch2*>(0);
 }
+NCB_REGISTER_SUBCLASS(SolidBrush) {
+	Constructor<DWORD>(0);
+}
 
 NCB_REGISTER_SUBCLASS(DrawItem) {
 	Constructor();
@@ -1524,6 +1616,7 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	NCB_SUBCLASS(Header, Header);
 	NCB_SUBCLASS(Items,  Items);
 	NCB_SUBCLASS(Bitmap, Bitmap);
+	NCB_SUBCLASS(SolidBrush, SolidBrush);
 	NCB_SUBCLASS(DrawItem, DrawItem);
 	NCB_SUBCLASS(Notify, NotifyAccessor);
 	NCB_SUBCLASS(Blob, Blob);
@@ -1586,6 +1679,12 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Property(TJS_W("isValid"),        &Class::IsValid, (int)0);
 
 	// 定数定義
+
+	// stock object
+	ENUM(BLACK_BRUSH);
+	ENUM(HOLLOW_BRUSH);
+	ENUM(NULL_BRUSH);
+	ENUM(WHITE_BRUSH);
 
 	// Window Long index
 	ENUM(GWL_STYLE);
