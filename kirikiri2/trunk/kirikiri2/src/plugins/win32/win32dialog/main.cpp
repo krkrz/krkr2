@@ -424,6 +424,8 @@ public:
 			SetWindowPos(hwnd, 0, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
 		return r;
 	}
+	bool   LockItemUpdate(int id) const { return !!::LockWindowUpdate(GetItemHWND(id)); }
+	bool UnlockItemUpdate()       const { return !!::LockWindowUpdate(NULL); }
 
 	int GetItemInt(int id) const {
 		checkDialogValid();
@@ -1648,6 +1650,8 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Method(TJS_W("setItemSize"),     &Class::SetItemSize);
 	RawCallback(TJS_W("setItemBitmap"),   &Class::SetItemBitmap, 0);
 	Method(TJS_W("isExistentItem"),  &Class::IsExistentItem);
+	Method(TJS_W("lockItemUpdate"),  &Class::LockItemUpdate);
+	Method(TJS_W("unlockItemUpdate"),  &Class::UnlockItemUpdate);
 
 	RawCallback(TJS_W("sendItemMessage"), &Class::sendItemMessage, 0);
 
