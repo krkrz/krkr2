@@ -2,12 +2,26 @@
 // $Id: startup.tjs,v 1.31 2007/09/10 08:37:00 m2 Exp $
 //
 
-
 // 二重起動回避
 if (! System.createAppLock("kwidgets_sample"))
   System.exit();
 // デバッグコンソールを表示
+@if (!kirikiriz)
 Debug.console.visible = true;
+@endif
+
+@if (kirikiriz)
+property _dummyProp { getter {} setter (v) {} }
+with(Window) {
+    &.innerSunken    = &_dummyProp;
+    &.showScrollBars = &_dummyProp;
+    &.focusable    = &_dummyProp;
+    //&.setSize    = function(w,h){width = w;height = h;};
+}
+Plugins.link("plugin/menu.dll");
+class Pad {} Debug.console = %[];
+@endif
+
 // プラグインをリンク
 Plugins.link("clipboardEx.dll");
 // kwidgetsをロード

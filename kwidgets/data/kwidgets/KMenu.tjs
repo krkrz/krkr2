@@ -292,7 +292,12 @@ class KMenuItem extends MenuItem
    * セパレータを追加
    ------------------------------*/
   function addSeparator {
+@if (kirikiriz)
+    return add(new global.MenuItem(root.window, "-"));
+@endif
+@if (!kirikiriz)
     return add(new global.MenuItem(window, "-"));
+@endif
   }
 
   /**------------------------------
@@ -304,7 +309,13 @@ class KMenuItem extends MenuItem
    * @param func onValueModified 関数のオーバーライド指定
    ------------------------------*/
   function addItem(caption, name = "", enabled = true, func = void) {
+@if (kirikiriz)
+    var item = new global.KMenuItem(root.window, caption, name);
+@endif
+@if (!kirikiriz)
     var item = new global.KMenuItem(window, caption, name);
+@endif
+
     item.enabled = enabled;
     if (func)
       item.onValueModified = func;
@@ -340,7 +351,12 @@ class KMenuItem extends MenuItem
    * @param func onValueModified 関数のオーバーライド指定
    ------------------------------*/
   function addToggleItem(caption, value = false, name = "", enabled = true, func = void) {
+@if (kirikiriz)
+    var item = new global.KToggleMenuItem(root.window, caption, name);
+@endif
+@if (!kirikiriz)
     var item = new global.KToggleMenuItem(window, caption, name);
+@endif
     item.enabled = enabled;
     item.value = value;
     if (func)
@@ -359,7 +375,12 @@ class KMenuItem extends MenuItem
    * @param func onValueModified 関数のオーバーライド指定
    ------------------------------*/
   function addRadioItem(caption, value, name = "", enabled = true, func = void) {
+@if (kirikiriz)
+    var item = new global.KRadioMenuItem(root.window, caption, value, name);
+@endif
+@if (!kirikiriz)
     var item = new global.KRadioMenuItem(window, caption, value, name);
+@endif
     item.enabled = enabled;
     if (func)
       item.onValueModified = func;

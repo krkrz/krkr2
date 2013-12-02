@@ -458,7 +458,12 @@ class KTextEdit extends KValueWidget
     undoPasteEnd = new KTextEditPoint(0, 0);
     // 正規表現初期化
     linefeedPat = new RegExp("\r\n|\r|\n");
+@if (kirikiriz)
+    strPat = new RegExp("[^\\000\\000-\\037\\000]");
+@endif
+@if (!kirikiriz)
     strPat = new RegExp("[^\\000-\\037]");
+@endif
     wordPat = new RegExp("[a-zA-Z0-9]+|[ァ-ヶー]+[ぁ-んー]*|[亜-龠ー]+[ぁ-んー]*|[ぁ-んー]+");
     tabPat = new RegExp("\t", "g");
     // キーバインド配列
