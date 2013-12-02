@@ -1,0 +1,120 @@
+// popup テスト
+
+
+Debug.console.visible = true;
+
+
+class ChildPopupWindow extends PopupWindow
+{
+	function ChildPopupWindow(parent)
+	{
+		super.PopupWindow(parent);
+	}
+
+	function finalize()
+	{
+		parent.popup = void;
+		super.finalize(...);
+	}
+
+	function onMouseDown(*)
+	{
+		global.Window.onMouseDown(*);
+		Debug.message("C: onMouseDown", *);
+	}
+
+	function onKeyDown(*)
+	{
+		global.Window.onKeyDown(*);
+		Debug.message("C: onKeyDown", *);
+	}
+}
+
+class PopupWindow extends Window
+{
+	var parent;
+	var layer;
+
+	var popup;
+
+	function PopupWindow(parent)
+	{
+		// PopupWindow コンストラクタ
+		super.Window();
+
+		this.parent = parent;
+
+		focusable = false;
+		stayOnTop = true;
+		trapKey = true;
+
+		add(layer = new Layer(this, null));
+		layer.setSize(innerWidth, innerHeight);
+
+		visible = true;
+	}
+
+	function finalize()
+	{
+		parent.popup = void;
+		super.finalize(...);
+	}
+
+	function onPopupHide()
+	{
+		super.onPopupHide(*);
+		close();
+	}
+
+	function onMouseDown(*)
+	{
+		super.onMouseDown(*);
+		Debug.message("P: onMouseDown", *);
+		if(popup === void)
+			popup = new ChildPopupWindow(this);
+	}
+
+	function onKeyDown(*)
+	{
+		super.onKeyDown(*);
+		Debug.message("P: onKeyDown", *);
+	}
+}
+
+class MainWindow extends Window // メインウィンドウクラス
+{
+	var layer;
+	var popup;
+
+	function MainWindow()
+	{
+		// MainWindow コンストラクタ
+		super.Window();
+
+		borderStyle = bsSingle;
+		setInnerSize(640, 480);
+
+		caption = System.title = "popupテスト";
+
+		// プライマリレイヤを作成
+		add(layer = new Layer(this, null));
+		layer.setSize(innerWidth, innerHeight);
+
+		// 表示状態に
+		visible = true;
+	}
+
+	function finalize()
+	{
+		invalidate popup if popup !== void;
+		super.finalize(...);
+	}
+
+	function onClick()
+	{
+		if(popup === void)
+			popup = new PopupWindow(this);
+	}
+}
+
+var win = new MainWindow();

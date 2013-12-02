@@ -1,0 +1,60 @@
+/**
+ * System クラスへの標準入出力拡張
+ */
+class System {
+
+	/**
+	 * 標準入出力との接続状態を返す
+	 * @return 接続状態
+	 * 標準入力:0x01 標準出力:0x02 標準エラー出力:0x04 の論理和
+	 */
+	property stdioState;
+
+	/**
+	 * 標準入出力を既存のコンソールと接続する
+	 * @param bind 0:未接続の部分だけ接続 それ以外:指定した部分を強制接続
+	 * 標準入力:0x01 標準出力:0x02 標準エラー出力:0x04 の論理和
+	 * @return 成功したかどうか
+	 */
+	function attachConsole(bind=0);
+
+	/**
+	 * 標準入出力をコンソールを作成して接続する
+	 * @param bind 0:未接続の部分だけ接続 それ以外:指定した部分を強制接続
+	 * 標準入力:0x01 標準出力:0x02 標準エラー出力:0x04 の論理和
+	 * @return 成功したかどうか
+	 */
+	function allocConsole(bind=0);
+
+	/**
+	 * コンソールから切り離す
+	 * @return 成功したかどうか
+	 */
+	function freeConsole();
+	
+	/**
+	 * 標準入力からテキストを入力する。入力はブロッキングします。
+	 * @param utf8 UTF8として読み込む場合はtrue
+	 * @return 入力されたテキスト
+	 */
+	function stdin(utf8=false);
+
+	/**
+	 * 標準出力に文字列を出力
+	 * @param string 出力するメッセージ
+	 * @param utf8 UTF8で出力する場合はtrue
+	 */
+	function stdout(string, utf8=false);
+
+	/**
+	 * 標準エラー出力に文字列を出力
+	 * @param string 出力するメッセージ
+	 * @param utf8 UTF8で出力する場合はtrue
+	 */
+	function stderr(string, utf8=false);
+
+	/**
+	 * 標準出力をフラッシュする
+	 */
+	function flush();
+};

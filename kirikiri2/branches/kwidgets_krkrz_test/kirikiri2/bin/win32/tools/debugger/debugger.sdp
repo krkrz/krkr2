@@ -1,0 +1,6 @@
+[Debugee]
+Path=krkr.eXe
+Args=-debug
+DataFolder=data
+WorkingFolder=.
+ScriptExt=.tjs 

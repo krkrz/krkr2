@@ -1,0 +1,32 @@
+Plugins.link("javascript.dll");
+
+Debug.console.visible = true;
+
+function test()
+{
+	return 100;
+}
+
+// JS 実行
+Scripts.execJS("var a=10;");
+Scripts.execJS("function b(){return 10;}");
+Scripts.execJS("var c = krkr.test();");
+
+// JS参照
+Debug.message("a  :" + jsglobal.a);
+Debug.message("b():" + jsglobal.b());
+Debug.message("c  :" + jsglobal.c);
+
+// デバッガ有効化
+// d8.exe などで接続可能です
+Scripts.enableDebugJS();
+
+// デバッガ駆動用処理をエントリ
+var debugTimer = new Timer(Scripts.processDebugJS, "");
+debugTimer.capacity = 1;
+debugTimer.interval = 10;
+debugTimer.enabled = true;
+
+// Javascriptに制御を移す
+Scripts.execStorageJS("startup.js");
+

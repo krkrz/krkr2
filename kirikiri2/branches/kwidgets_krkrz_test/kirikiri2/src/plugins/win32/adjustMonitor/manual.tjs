@@ -1,0 +1,107 @@
+/**
+ * 擬似コードによるマニュアル
+ *
+ * Copyright 2009 ねい
+ */
+
+    /**
+	 * ウィンドウ(又は矩形)Ａを表示しているモニタ内で、ウィンドウ(又は矩形)Ｂがはみ出さないように調整する
+	 * マルチモニタに対応。
+	 * ２つ以上のモニタにウィンドウ(又は矩形)がまたがっている場合は占める面積の大きい方で判定します。
+	 * @param dic 引数の辞書配列
+	 * @return dic 戻り値の辞書配列 位置型の場合は [x,y] 矩形型の場合は [left,top,right,bottom]
+	 */
+	global.AdjustMoni( dic );
+
+
+	// 例)		windowA を表示しているモニタ内で、windowB がはみ出さないように位置を調整する。
+	// 注意)	渡すwindowには既に位置と大きさが設定されている必要があります。
+	var posAdjustPos = global.AdjustMoni( %[ "window" => windowA, "window2" => windowB ] );
+	windowB.setPos( posAdjustPos.x, posAdjustPos.y );
+
+	// 例)		window をモニタからはみ出さないように位置を調整する。
+	// 注意)	渡すwindowには既に位置と大きさが設定されている必要があります。
+	var posAdjustPos = global.AdjustMoni( %[ "window" => window, "window2" => window ] );
+	window.setPos( posAdjustPos.x, posAdjustPos.y );
+
+	// 例)		window を表示しているモニタ内で、矩形がはみ出さないように位置を調整する。
+	// 注意)	渡すwindowには既に位置と大きさが設定されている必要があります。
+	var posAdjustPos = global.AdjustMoni( %[ "window" => window, "left2" => left, "top2" => top, "right2" => right, "bottom2" => bottom ] );
+
+	var width = right - left;
+	var height = bottom - top;
+	
+	left = posAdjustPos.x;
+	top = posAdjustPos.y;
+	right = posAdjustPos.x + width;
+	bottom = posAdjustPos.y + height;
+	
+	// 例)		矩形A があるモニタ内で、矩形B がはみ出さないように位置を調整する。
+	var posAdjustPos = global.AdjustMoni( %[ "left" => leftA, "top" => topA, "right" => rightA, "bottom" => bottomA, "left2" => leftB, "top2" => topB, "right2" => rightB, "bottom2" => bottomB ] );
+
+	var width = rightB - leftB;
+	var height = bottomB - topB;
+
+	leftB = posAdjustPos.x;
+	topB = posAdjustPos.y;
+	rightB = posAdjustPos.x + width;
+	bottomB = posAdjustPos.y + height;
+
+	// 例)		windowA を表示しているモニタの表示可能領域の矩形を得る。
+	// 注意)	マルチモニタに対応なので、マイナスの値が帰って来ることもある。
+	var rectMoniArea = global.AdjustMoni( %[ "window" => windowA ] );
+
+	rectMoniArea.left;
+	rectMoniArea.top;
+	rectMoniArea.right;
+	rectMoniArea.bottom;
+
+	// 例)		矩形があるモニタの表示可能領域の矩形を得る。
+	// 注意)	マルチモニタに対応なので、マイナスの値が帰って来ることもある。
+	var rectMoniArea = global.AdjustMoni( %[ "left" => left, "top" => top, "right" => right, "bottom" => bottom ] );
+
+	rectMoniArea.left;
+	rectMoniArea.top;
+	rectMoniArea.right;
+	rectMoniArea.bottom;
+
+	// 例)		引数が矩形ではなく、left,top,width,height形式でも渡せる例１。
+	var posAdjustPos = global.AdjustMoni( %[ "left" => leftA, "top" => topA, "width" => widthA, "height" => heightA, "left2" => leftB, "top2" => topB, "width2" => widthB, "height2" => heightB ] );
+
+	// 例)		引数が矩形ではなく、left,top,width,height形式でも渡せる例２。
+	// 注意)	戻り値には対応していない。
+	var rectMoniArea = global.AdjustMoni( %[ "left" => left, "top" => top, "width" => width, "height" => height ] );
+
+
+	// 実例)	終了ダイアログをマルチモニタに対応させる。
+	//			デフォルトではマルチモニタ環境で、サブディスプレイに吉里吉里ウィンドウを表示させていると、
+	//			終了ダイアログがプライマリディスプレイに表示されてしまう。
+	//			以下のコードでは、吉里吉里ウィンドウが表示されているモニタに終了ダイアログを表示できる。
+	
+	//			YesNoDialog.tjs 66行目付近より
+	
+	
+		// ウィンドウ位置の調整
+		if(global.Window.mainWindow !== null && global.Window.mainWindow isvalid)
+		{
+			var win = global.Window.mainWindow;	// 親ウィンドウ
+			var l, t;
+			l = ((win.width - width)>>1) + win.left;
+			t = ((win.height - height)>>1) + win.top;
+			//if(l < 0) l = 0;
+			//if(t < 0) t = 0;
+			//if(l + width > System.screenWidth) l = System.screenWidth - width;
+			//if(t + height > System.screenHeight) t = System.screenHeight - height;
+			
+			var posAdjustPos = global.AdjustMoni( %[ "window" => win, "left2" => l, "top2" => t, "width2" => this.width, "height2" => this.height ] );
+			
+			l = posAdjustPos.x;
+			t = posAdjustPos.y;
+			setPos(l, t);
+		}
+		else
+		{
+			setPos((System.screenWidth - width)>>1, (System.screenHeight - height)>>1);
+		}
+
+

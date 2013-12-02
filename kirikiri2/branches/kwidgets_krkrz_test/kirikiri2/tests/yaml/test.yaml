@@ -1,0 +1,14 @@
+# ŠÔî•ñ
+times:
+  ’‹:
+    prefix: "01"
+  —[:
+    prefix: "02"
+    lightColor: 0xc0ff6010
+
+# êŠî•ñ
+stages:
+  "“¹˜H":
+    image: bg01_TIME
+
+defaultTime: ’‹

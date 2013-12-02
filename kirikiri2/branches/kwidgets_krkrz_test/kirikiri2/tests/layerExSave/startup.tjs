@@ -1,0 +1,84 @@
+Plugins.link("layerExSave.dll");
+
+var WIDTH=800;
+var HEIGHT=600;
+
+function dm() {
+	Debug.message(...);
+}
+
+class MyWindow extends Window
+{
+	var sendmenu;
+
+	var base;
+	var layer;
+	var savemenu1;
+	var savemenu2;
+	var savemenu3;
+	var savemenu4;
+	
+	function MyWindow() {
+		super.Window();
+		menu.add(savemenu1 = new MenuItem(this, "TLG保存1(blk)"));
+		menu.add(savemenu2 = new MenuItem(this, "TLG保存2(bg)"));
+		menu.add(savemenu3 = new MenuItem(this, "PNG保存1(blk)"));
+		menu.add(savemenu4 = new MenuItem(this, "PNG保存2(bg)"));
+		setInnerSize(WIDTH, HEIGHT);
+
+		// プライマリレイヤ
+		base = new Layer(this, null);
+		base.setSize(WIDTH, HEIGHT);
+		base.fillRect(0,0,WIDTH,HEIGHT,0xff000000);
+		add(base);
+
+		// 表示レイヤ
+		layer = new Layer(this, base);
+		layer.setSize(WIDTH, HEIGHT);
+		layer.setPos(0, 0);
+		layer.visible = true;
+		add(layer);
+
+		layer.fillRect(0,0,200,20,0xff8040FF);
+		layer.drawText(10, 30, "テストのテキスト", 0xffffff);
+	}
+
+	// 実行部
+	function action(ev)	{
+		if(ev.type == "onClick") {
+			switch (ev.target) {
+			case savemenu1:
+				layer.saveLayerImageTlg5("test.tlg");
+				layer.saveLayerImageTlg5("test2.tlg", %[xoff:layer.left, yoff:layer.top]);
+				System.inform("saved");
+				break;
+			case savemenu2:
+				Debug.console.visible = true;
+				startSaveLayerImage(layer, "test3.tlg", %[xoff:layer.left, yoff:layer.top]);
+				break;
+			case savemenu3:
+				var oct = layer.saveLayerImagePngOctet(9);
+				dm(typeof oct, oct.length);
+				layer.saveLayerImagePng("test.png");
+				layer.saveLayerImagePng("test2.png", %[xoff:layer.left, yoff:layer.top, comp_lv:9]);
+				System.inform("saved");
+				break;
+			case savemenu4:
+				Debug.console.visible = true;
+				startSaveLayerImage(layer, "test3.png", %[xoff:layer.left, yoff:layer.top, comp_lv:0 ]);
+				break;
+			}
+		}
+	}
+
+	function onSaveLayerImageProgress(handler, progress, layer, filename) {
+		dm(handler + ":" + filename + ":" + progress + "%");
+	}
+
+	function onSaveLayerImageDone(handler, canceled, layer, filename) {
+		System.inform(handler + ":" + filename + ":" + (canceled ? "canceled" : "done"));
+	}
+};
+
+var win = new MyWindow();
+win.visible = true;
