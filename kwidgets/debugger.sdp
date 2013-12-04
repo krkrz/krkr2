@@ -1,0 +1,7 @@
+[Debugee]
+Path=tvpwin32_dbg.exe
+Args=-readencoding=Shift_JIS -debug
+DataFolder=data
+WorkingFolder=.\
+ScriptExt=.tjs 
+ScriptEncoding=Shift_JIS
