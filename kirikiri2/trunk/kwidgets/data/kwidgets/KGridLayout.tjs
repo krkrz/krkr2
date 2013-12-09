@@ -427,12 +427,14 @@ class KHorizontalBarLayout extends KGridLayout
    ------------------------------*/
   function remove(child, doInvalidate = true) {
     var pos = revItems[child];
+    var prevItems = items;
     items = %[];
-    eachDictionary(revItems, function(key, value) {
-      if (value[0] >= pos[0])
+    eachDictionary(revItems, function(key, value, pos, prevItems) {
+      var item = prevItems[posExp(value[0], value[1])];
+      if (value[0] > pos[0])
         value[0] --;
-      items[posExp(value[0], value[1])] = key;
-    } incontextof(this));
+      items[posExp(value[0], value[1])] = item;
+    } incontextof(this), pos, prevItems);
     super.remove(child, doInvalidate);
   }
 }
@@ -470,12 +472,14 @@ class KVerticalBarLayout extends KGridLayout
    ------------------------------*/
   function remove(child, doInvalidate = true) {
     var pos = revItems[child];
-    items = %[];
-    eachDictionary(revItems, function(key, value) {
-      if (value[1] >= pos[1])
+    var prevItems = items;
+    var items = %[];
+    eachDictionary(revItems, function(key, value, pos, prevItems) {
+      var item = prevItems[posExp(value[0], value[1])];
+      if (value[1] > pos[1])
         value[1] --;
-      items[posExp(value[0], value[1])] = key;
-    } incontextof(this));
+      items[posExp(value[0], value[1])] = item;
+    } incontextof(this), pos, prevItems);
     super.remove(child, doInvalidate);
   }
 }
