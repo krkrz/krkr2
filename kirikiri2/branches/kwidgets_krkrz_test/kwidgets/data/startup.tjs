@@ -10,18 +10,6 @@ if (! System.createAppLock("kwidgets_sample"))
 Debug.console.visible = true;
 @endif
 
-@if (kirikiriz)
-property _dummyProp { getter {} setter (v) {} }
-with(Window) {
-    &.innerSunken    = &_dummyProp;
-    &.showScrollBars = &_dummyProp;
-    &.focusable    = &_dummyProp;
-    //&.setSize    = function(w,h){width = w;height = h;};
-}
-Plugins.link("plugin/menu.dll");
-class Pad {} Debug.console = %[];
-@endif
-
 // プラグインをリンク
 Plugins.link("clipboardEx.dll");
 // kwidgetsをロード

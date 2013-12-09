@@ -1,3 +1,15 @@
+@if (kirikiriz)
+property _dummyProp { getter {} setter (v) {} }
+with(Window) {
+    &.innerSunken    = &_dummyProp;
+    &.showScrollBars = &_dummyProp;
+    &.focusable    = &_dummyProp;
+}
+Plugins.link("plugin/menu.dll");
+class Pad {}
+Debug.console = %[];
+@endif
+
 Plugins.link("ksupport.dll");
 Plugins.link("windowEx.dll");
 Plugins.link("LayerExScreen.dll");
