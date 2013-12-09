@@ -333,7 +333,12 @@ class KMenuItem extends MenuItem
    * @param func onValueModified 関数のオーバーライド指定
    ------------------------------*/
   function addValueItem(caption, value, name = "", enabled = true, func = void) {
+@if (kirikiriz)
+    var item = new global.KValueMenuItem(root.window, caption, value, name);
+@endif
+@if (!kirikiriz)
     var item = new global.KValueMenuItem(window, caption, value, name);
+@endif
     item.enabled = enabled;
     if (func)
       item.onValueModified = func;
