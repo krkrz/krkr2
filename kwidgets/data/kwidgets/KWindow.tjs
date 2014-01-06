@@ -56,10 +56,10 @@ class KWindow extends Window
    *
    * @param name –¼‘O
    ------------------------------*/
-  function KWindow(name) {
+  function KWindow(name, parent=null) {
     _existentWindowList.insert(0, this);
 
-    super.Window();
+    super.Window(parent);
 
     // –¼‘O
     this.name = name;
