@@ -3,7 +3,6 @@ property _dummyProp { getter {} setter (v) {} }
 with(Window) {
     &.innerSunken    = &_dummyProp;
     &.showScrollBars = &_dummyProp;
-    &.focusable    = &_dummyProp;
 }
 Plugins.link("plugin/menu.dll");
 class Pad {}
