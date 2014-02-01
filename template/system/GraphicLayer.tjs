@@ -474,6 +474,12 @@ class BaseLayer extends GraphicLayer
 		super.exchangeInfo();
 		window.swapBaseLayer();
 	}
+
+    property isPrimary {
+        getter() {
+            return this === window.fore.base;
+        }
+    }
 }
 
 class CharacterLayer extends GraphicLayer
