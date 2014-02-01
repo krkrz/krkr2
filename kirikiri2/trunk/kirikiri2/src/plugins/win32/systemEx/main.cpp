@@ -301,6 +301,36 @@ struct System
 		}
 		return TJS_S_OK;
 	}
+
+	// MutexÇ™è¡Ç¶ÇÈÇÃÇë“Ç¬
+	static tjs_error TJS_INTF_METHOD waitForAppLock(tTJSVariant *result,
+													tjs_int numparams,
+													tTJSVariant **param,
+													iTJSDispatch2 *objthis) {
+		DWORD timeout = 0;
+		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
+		if (numparams >= 2) timeout = (DWORD)param[1]->AsInteger();
+		ttstr key(param[0]->AsStringNoAddRef());
+
+		int status = 0;
+		HANDLE mutex = ::OpenMutex(SYNCHRONIZE, FALSE, key.c_str());
+		if (   mutex != NULL) {
+			DWORD r = ::WaitForSingleObject(mutex, timeout);
+			::CloseHandle(mutex);
+			switch (r) {
+			case WAIT_ABANDONED:
+			case WAIT_OBJECT_0: status = 0; break;
+			case WAIT_TIMEOUT:  status = 1; break;
+			case WAIT_FAILED:
+			default: status = -1; break;
+			}
+		}
+		if (result) {
+			if (status < 0) result->Clear();
+			else *result = !status;
+		}
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_FUNCTION(writeRegValue,      System, System::writeRegValue);
@@ -311,4 +341,5 @@ NCB_ATTACH_FUNCTION(urlencode,          System, System::urlencode);
 NCB_ATTACH_FUNCTION(urldecode,          System, System::urldecode);
 NCB_ATTACH_FUNCTION(getAboutString,     System, TVPGetAboutString);
 NCB_ATTACH_FUNCTION(confirm,            System, System::confirm);
+NCB_ATTACH_FUNCTION(waitForAppLock,     System, System::waitForAppLock);
 

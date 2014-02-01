@@ -64,4 +64,12 @@ class System
 	 * @return YESがおされたら true
 	 */
 	function confirm(text, caption="", window=void);
+
+	/**
+	 * System.createAppLockで作成されたMutexが消えるのを待つ
+	 * @param key AppLockのキー文字列
+	 * @param timeout タイムアウト待ち時間(ms)
+	 * @return true:正常終了(AppLockは存在しないもしくはタイムアウト時間内に消えた),  false:タイムアウトした, (void:エラー)
+	 */
+	function waitForAppLock(key, timeout=0);
 };
