@@ -66,10 +66,12 @@ class System
 	function confirm(text, caption="", window=void);
 
 	/**
-	 * System.createAppLockで作成されたMutexが消えるのを待つ
+	 * 他プロセスのSystem.createAppLockで作成されたMutexがリリースされるのを待ち所有権を取得する
 	 * @param key AppLockのキー文字列
 	 * @param timeout タイムアウト待ち時間(ms)
 	 * @return true:正常終了(AppLockは存在しないもしくはタイムアウト時間内に消えた),  false:タイムアウトした, (void:エラー)
+	 *
+	 * ※この関数の後に再度同じキーでcreateAppLockを呼ぶ必要はありません（すでに所有権があるため失敗する）
 	 */
 	function waitForAppLock(key, timeout=0);
 };
