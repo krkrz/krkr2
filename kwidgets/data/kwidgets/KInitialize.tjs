@@ -1,9 +1,4 @@
 @if (kirikiriz)
-property _dummyProp { getter {} setter (v) {} }
-with(Window) {
-    &.innerSunken    = &_dummyProp;
-    &.showScrollBars = &_dummyProp;
-}
 Plugins.link("plugin/menu.dll");
 class Pad {}
 Debug.console = %[];

@@ -600,7 +600,7 @@ class KTimeLineLayerView extends KVirtualWidget
       boundaryDragFrameIndex = frameIndex;
       boundaryDragTime = frame.time;
       boundaryDragLayer = curLayer;
-      cursor = crSizeWE;//crHSplit;
+      cursor = crHSplit;
       return;
     }
     var frameIndex = item.findFrame(curTime) + 1;
@@ -610,7 +610,7 @@ class KTimeLineLayerView extends KVirtualWidget
       boundaryDragFrameIndex = frameIndex;
       boundaryDragTime = frame.time;
       boundaryDragLayer = curLayer;
-      cursor = crSizeWE;//crHSplit;
+      cursor = crHSplit;
       return;
     }
   }
