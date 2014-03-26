@@ -1,3 +1,9 @@
+@if (kirikiriz)
+Plugins.link("menu.dll");
+class Pad {}
+Debug.console = %[];
+@endif
+
 Plugins.link("ksupport.dll");
 Plugins.link("windowEx.dll");
 Plugins.link("LayerExScreen.dll");

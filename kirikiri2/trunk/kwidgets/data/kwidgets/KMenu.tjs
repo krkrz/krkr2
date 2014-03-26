@@ -48,6 +48,15 @@ class KMenuItem extends MenuItem
   }
 
   /**------------------------------
+   * windowプロパティはルートの意味のある値を返す
+   */
+  property window {
+    getter {
+      return root.window;
+    }
+  }
+
+  /**------------------------------
    * 親ウィジェット。
    *
    * @return ルートメニューの子ならwindowを、それ以外のアイテムならparentを返す
@@ -305,6 +314,7 @@ class KMenuItem extends MenuItem
    ------------------------------*/
   function addItem(caption, name = "", enabled = true, func = void) {
     var item = new global.KMenuItem(window, caption, name);
+
     item.enabled = enabled;
     if (func)
       item.onValueModified = func;

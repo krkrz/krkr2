@@ -2,12 +2,14 @@
 // $Id: startup.tjs,v 1.31 2007/09/10 08:37:00 m2 Exp $
 //
 
-
 // 二重起動回避
 if (! System.createAppLock("kwidgets_sample"))
   System.exit();
 // デバッグコンソールを表示
+@if (!kirikiriz)
 Debug.console.visible = true;
+@endif
+
 // プラグインをリンク
 Plugins.link("clipboardEx.dll");
 // kwidgetsをロード

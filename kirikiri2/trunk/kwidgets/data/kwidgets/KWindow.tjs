@@ -46,6 +46,16 @@ class KWindow extends Window
   var _nameCache = %[];
   // checked画像
   var menuCheckedLayer;
+  // mainウィンドウか？
+  var isMain = false;
+  // 新規ウィンドウを全て直系の子にするか？
+  var _createNewWindowAsChild = true;
+
+@if (kirikiriz)
+  // 吉里吉里Zでは存在しないプロパティーをダミー対応
+  var innerSunken = false;
+  var showScrollBars = true;
+@endif
 
   /**------------------------------
    * コンストラクタ
@@ -56,20 +66,32 @@ class KWindow extends Window
    *
    * @param name 名前
    ------------------------------*/
-  function KWindow(name) {
+  function KWindow(name, parentWindow = null) {
     _existentWindowList.insert(0, this);
 
+@if (kirikiriz)
+    // メインウィンドウ以外のウィンドウを全て直系の子にするかどうか
+    if (parentWindow == null
+        && global.Window.mainWindow != null
+        && global.Window.mainWindow.createNewWindowAsChild)
+      super.Window(global.Window.mainWindow);
+    else
+      super.Window(parentWindow);
+@endif
+@if (!kirikiriz)
     super.Window();
+@endif
+
+    isMain = (mainWindow === this);
+    // 自分自身がメインウィンドウでなかったら、メインウィンドウの管理オブジェクトにする。
+    if (isMain)
+      mainWindow.add(this);
 
     // 名前
     this.name = name;
 
     // とりあえず最小に
     setSize(0, 0);
-
-    // 自分自身がメインウィンドウでなかったら、メインウィンドウの管理オブジェクトにする。
-    if (mainWindow !== this) 
-      mainWindow.add(this);
 
     // スクロールバー無し
     showScrollBars = false;
@@ -182,6 +204,19 @@ class KWindow extends Window
     _existentWindowList.remove(this);
     invalidate(menu);
     super.finalize(...);
+  }
+
+  property createNewWindowAsChild {
+    setter (v) {
+      if (! isMain) 
+        throw new Exception("Window.createNewWindowAsChild property is only available at main window");
+      _createNewWindowAsChild = v;
+    }
+    getter {
+      if (! isMain) 
+        throw new Exception("Window.createNewWindowAsChild property is only available at main window");
+      return _createNewWindowAsChild;
+    }
   }
 
   property defaultMargin {
