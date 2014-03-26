@@ -55,7 +55,7 @@ class KHorizontalSpliterLayout extends KWidget
     childList = [];
     spliterHandle = new KSpliterHandle(window, 0, 0);
     spliterHandle.hitThreshold = 0;
-    spliterHandle.cursor = crSizeWE;//crHSplit;
+    spliterHandle.cursor = crHSplit;
     spliterHandle.parent = this;
     hasImage = false;
     hitThreshold = 256;
@@ -334,7 +334,7 @@ class KVerticalSpliterLayout extends KHorizontalSpliterLayout
    ------------------------------*/
   function KVerticalSpliterLayout(window, name) {
     super.KHorizontalSpliterLayout(window, name);
-    spliterHandle.cursor = crSizeNS;  //crVSplit;
+    spliterHandle.cursor = crVSplit;
   }
 
   function calcMinMaxSize {

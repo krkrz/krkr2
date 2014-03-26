@@ -48,6 +48,15 @@ class KMenuItem extends MenuItem
   }
 
   /**------------------------------
+   * windowプロパティはルートの意味のある値を返す
+   */
+  property window {
+    getter {
+      return root.window;
+    }
+  }
+
+  /**------------------------------
    * 親ウィジェット。
    *
    * @return ルートメニューの子ならwindowを、それ以外のアイテムならparentを返す
@@ -333,12 +342,7 @@ class KMenuItem extends MenuItem
    * @param func onValueModified 関数のオーバーライド指定
    ------------------------------*/
   function addValueItem(caption, value, name = "", enabled = true, func = void) {
-@if (kirikiriz)
-    var item = new global.KValueMenuItem(root.window, caption, value, name);
-@endif
-@if (!kirikiriz)
     var item = new global.KValueMenuItem(window, caption, value, name);
-@endif
     item.enabled = enabled;
     if (func)
       item.onValueModified = func;
@@ -356,12 +360,7 @@ class KMenuItem extends MenuItem
    * @param func onValueModified 関数のオーバーライド指定
    ------------------------------*/
   function addToggleItem(caption, value = false, name = "", enabled = true, func = void) {
-@if (kirikiriz)
-    var item = new global.KToggleMenuItem(root.window, caption, name);
-@endif
-@if (!kirikiriz)
     var item = new global.KToggleMenuItem(window, caption, name);
-@endif
     item.enabled = enabled;
     item.value = value;
     if (func)
@@ -380,12 +379,7 @@ class KMenuItem extends MenuItem
    * @param func onValueModified 関数のオーバーライド指定
    ------------------------------*/
   function addRadioItem(caption, value, name = "", enabled = true, func = void) {
-@if (kirikiriz)
-    var item = new global.KRadioMenuItem(root.window, caption, value, name);
-@endif
-@if (!kirikiriz)
     var item = new global.KRadioMenuItem(window, caption, value, name);
-@endif
     item.enabled = enabled;
     if (func)
       item.onValueModified = func;
