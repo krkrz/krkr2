@@ -84,7 +84,7 @@ class KWindow extends Window
 
     isMain = (mainWindow === this);
     // 自分自身がメインウィンドウでなかったら、メインウィンドウの管理オブジェクトにする。
-    if (isMain)
+    if (! isMain)
       mainWindow.add(this);
 
     // 名前
