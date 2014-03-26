@@ -362,6 +362,9 @@ protected:
 		tTJSVariant krkrHwnd;
 		if (TJS_SUCCEEDED(window->PropGet(0, TJS_W("HWND"), NULL, &krkrHwnd, window))) {
 			hParent = ::FindWindowEx((HWND)(tjs_int)krkrHwnd, NULL, KRKRDISPWINDOWCLASS, NULL);
+            // KRKRDISPWINDOWCLASSÇ™å©Ç¬Ç©ÇÁÇ»Ç¢èÍçáÇÕãgó¢ãgó¢ZÇ»ÇÃÇ≈é©êgÇhParentÇ∆Ç∑ÇÈ 
+            if (! hParent)
+              hParent = (HWND)(tjs_int)krkrHwnd;
 			if (hParent) {
 				thread = (HANDLE)_beginthreadex(NULL, 0, threadFunc, this, 0, NULL);
 				if (thread) {
@@ -401,7 +404,7 @@ protected:
 			int top    = point.y;
 			int width  = rect.right  - rect.left;
 			int height = rect.bottom - rect.top;
-			hWnd = ::CreateWindowEx(0, CLASSNAME, _T(""), WS_POPUP, left, top, width, height, 0, 0, GetModuleHandle(NULL), NULL);
+			hWnd = ::CreateWindowEx(0, CLASSNAME, _T(""), WS_POPUP, left, top, width, height, hParent, 0, GetModuleHandle(NULL), NULL);
 			if (hWnd && !doneflag) {
 				::SetWindowLong(hWnd, GWL_USERDATA, (LONG)this);
 				::ShowWindow(hWnd,TRUE);
