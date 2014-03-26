@@ -301,12 +301,7 @@ class KMenuItem extends MenuItem
    * セパレータを追加
    ------------------------------*/
   function addSeparator {
-@if (kirikiriz)
-    return add(new global.MenuItem(root.window, "-"));
-@endif
-@if (!kirikiriz)
     return add(new global.MenuItem(window, "-"));
-@endif
   }
 
   /**------------------------------
@@ -318,12 +313,7 @@ class KMenuItem extends MenuItem
    * @param func onValueModified 関数のオーバーライド指定
    ------------------------------*/
   function addItem(caption, name = "", enabled = true, func = void) {
-@if (kirikiriz)
-    var item = new global.KMenuItem(root.window, caption, name);
-@endif
-@if (!kirikiriz)
     var item = new global.KMenuItem(window, caption, name);
-@endif
 
     item.enabled = enabled;
     if (func)
