@@ -21,9 +21,13 @@ struct Stdio
 		int state = numparams > 0 ? *param[0] : 0;
 		bool ret = true;
 		if (state == 0) {
-			if (_fileno(stdin)  == -2) state |= 0x01;
-			if (_fileno(stdout) == -2) state |= 0x02;
-			if (_fileno(stderr) == -2) state |= 0x04;
+			//VS2012以降でこの記述で正しく判定できない。ランタイムのバグと思われる
+			//if (_fileno(stdin)  == -2) state |= 0x01;
+			//if (_fileno(stdout) == -2) state |= 0x02;
+			//if (_fileno(stderr) == -2) state |= 0x04;
+			if (GetStdHandle(STD_INPUT_HANDLE) == 0) state |= 0x01;
+			if (GetStdHandle(STD_OUTPUT_HANDLE) == 0) state |= 0x02;
+			if (GetStdHandle(STD_ERROR_HANDLE) == 0) state |= 0x04;
 		}
 		// 接続先が無い場合はコンソールを開いてそこに接続する
 		if (state != 0) {
