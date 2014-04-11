@@ -55,6 +55,8 @@ class KWindow extends Window
   // 吉里吉里Zでは存在しないプロパティーをダミー対応
   var innerSunken = false;
   var showScrollBars = true;
+  // 吉里吉里Zではヒントは独自実装が必要
+  var hintLayer;
 @endif
 
   /**------------------------------
@@ -189,6 +191,15 @@ class KWindow extends Window
 
     // missing を有効にする
     Scripts.setCallMissing(this);
+
+@if (kirikiriz)
+    // ヒントレイヤを用意
+    hintLayer = new Layer(this, primaryLayer);
+    hintLayer.visible = false;
+	hintLayer.ignoreHintSensing = true;
+	hintLayer.font.height = 14;
+	hintLayer.hitThreshold = 256;
+@endif
   }
 
   function finalize {
@@ -517,6 +528,36 @@ class KWindow extends Window
 
   function invalidateMenuIcon {
     asyncCaller.callOnce(menu.invalidateMenuIcon);
+  }
+
+  /**------------------------------
+   * ヒントを表示する
+   ------------------------------*/
+  function onHintChanged(text,x,y,isshow) {
+    if( isshow ) {
+      var w = hintLayer.font.getTextWidth( text ) + 6;
+      var h = hintLayer.font.getTextHeight( text ) + 4 + 4;
+      hintLayer.bringToFront();
+      hintLayer.setImageSize( w, h );
+      hintLayer.setSizeToImageSize();
+      
+      if( (x+w) > innerWidth ) { x = innerWidth - w; }
+      if( (y+h) > innerHeight ) { y = innerHeight - h; }
+      hintLayer.setPos( x, y );
+      
+      hintLayer.fillRect( 0, 0, w, h, 0 );
+      hintLayer.colorRect( 0, 0, w, h, clInfoBk, 196 );
+      
+      hintLayer.colorRect( 0, 0, 1, h, 0xFFFFFF );
+      hintLayer.colorRect( 0, 0, w, 1, 0xFFFFFF );
+      hintLayer.colorRect( w-1, 0, 1, h, 0xFFFFFF );
+      hintLayer.colorRect( 0, h-1, w, 1, 0xFFFFFF );
+      
+      hintLayer.drawText( 2, 2, text, clInfoText, 220 );
+      hintLayer.visible = true;
+    } else {
+      hintLayer.visible = false;
+    }
   }
 };
 
