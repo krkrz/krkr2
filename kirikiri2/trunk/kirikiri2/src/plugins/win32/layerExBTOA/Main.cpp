@@ -319,6 +319,17 @@ clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSD
 		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
 	}
 
+	// バッファ取得
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBuffer"), &mainImageBufferHint, &val, src))) return false;
+	sbuf = reinterpret_cast<ReadRefT>(val.AsInteger());
+
+	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), &mainImageBufferForWriteHint, &val, dst))) return false;
+	dbuf = reinterpret_cast<WrtRefT>(val.AsInteger());
+	
+	if (!sbuf || !dbuf) TVPThrowExceptionMessage(TJS_W("Layer has no images."));
+
+	dbuf += dpitch * dt + dl * 4;
+
 	// 描画領域のクリッピング対応
 	dx -= dl;
 	dy -= dt;
@@ -351,17 +362,6 @@ clipAlphaRect(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSD
 	if ((cut = dy + h - dih) > 0) h -= cut;
 
 	if (w <= 0 || h <= 0) goto none;
-
-	// バッファ取得
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBuffer"), &mainImageBufferHint, &val, src))) return false;
-	sbuf = reinterpret_cast<ReadRefT>(val.AsInteger());
-
-	if (TJS_FAILED(layerClass->PropGet(0, TJS_W("mainImageBufferForWrite"), &mainImageBufferForWriteHint, &val, dst))) return false;
-	dbuf = reinterpret_cast<WrtRefT>(val.AsInteger());
-	
-	if (!sbuf || !dbuf) TVPThrowExceptionMessage(TJS_W("Layer has no images."));
-
-	dbuf += dpitch * dt + dl * 4;
 
 	long x, y;
 	WrtRefT  p;
