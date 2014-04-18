@@ -396,46 +396,114 @@ namespace psd {
     }
   }
 
-  // アルファチャネルにマスクチャネルをマージして別バッファに結果を出力する
+  // アルファチャネルにマスクチャネルをマージ
   template <typename T>
   void
-  mergeMaskToAlpha(uint8_t *aOut,
-                   uint8_t *aCh, int al, int at, int ar, int ab,
-                   uint8_t *mCh, int ml, int mt, int mr, int mb)
+  mergeMaskToAlpha(uint8_t *aCh, int al, int at, int ar, int ab,
+                   uint8_t *mCh, int ml, int mt, int mr, int mb,
+                   uint8_t defaultColor)
   {
-    // TODO 効率無視でとりあえず全域memsetしてしまう(そのうち対応したい)
-    memset(aOut, 0x0, (ar - al) * (ab - at) * sizeof(T));
-    
+    int aw = ar - al; int ah = ab - at;
+    int mw = mr - ml; int mh = mb - mt;
+    int aPitch = aw * sizeof(T);
+    int mPitch = mw * sizeof(T);
+
+    // マージ領域を処理
     // alphaとmaskの重なり領域
-    int l = std::max(al, ml);
-    int t = std::max(at, mt);
-    int r = std::min(ar, mr);
-    int b = std::min(ab, mb);
-    int w = r - l;
-    int h = b - t;
-    if (w <= 0 || h <= 0) {
-      // ピクセルに重なりがないので合成を行わない
+    int l = std::max(al, ml); int t = std::max(at, mt);
+    int r = std::min(ar, mr); int b = std::min(ab, mb);
+    int w = r - l; int h = b - t;
+    if (w > 0 && h > 0) {
+      // maskをalphaにマージ
+      int aOffsetX = l - al; int aOffsetY = t - at;
+      int mOffsetX = l - ml; int mOffsetY = t - mt;
+      static float f = 1.0f / ((1 << (sizeof(T) * 8)) - 1);
+      for (int y = 0; y < h; y++) {
+        T *ap  = (T*)(aCh + (aOffsetY + y) * aPitch + aOffsetX);
+        T *mp  = (T*)(mCh + (mOffsetY + y) * mPitch + mOffsetX);
+        T *out = ap;
+        for (int x = 0; x < w; x++) {
+          *out++ = (T)(*ap++ * *mp++ * f);
+        }
+      }
+    } else {
+      // alphaとmaskの重なりがないのでここで終わり
+      if (defaultColor == 0) {
+        memset(aCh, 0x0, aw * ah * sizeof(T));
+      }
       return;
     }
 
-    int aw = ar - al; int aOffsetX = l - al;
-    int ah = ab - at; int aOffsetY = t - at;
-    int mw = mr - ml; int mOffsetX = l - ml;
-    int mh = mb - mt; int mOffsetY = t - mt;
-    int aPitch = aw * sizeof(T);
-    int mPitch = mw * sizeof(T);
-    static float f = 1.0f / ((1 << (sizeof(T) * 8)) - 1);
+    // デフォルトカラーが0xffの場合は、マージ領域外は
+    // αチャネルの値そのままになるので、何もしないで戻る
+    if (defaultColor != 0) {
+      return;
+    }
 
-    for (int y = 0; y < h; y++) {
-      T *out = (T*)(aOut + (aOffsetY + y) * aPitch + aOffsetX);
-      T *ap  = (T*)(aCh  + (aOffsetY + y) * aPitch + aOffsetX);
-      T *mp  = (T*)(mCh  + (mOffsetY + y) * mPitch + mOffsetX);
-      for (int x = 0; x < w; x++) {
-        *out++ = (T)(*ap++ * *mp++ * f);
+    // マージ対象外の領域を処理
+    // αチャネル領域をマージ範囲の座標で9個の矩形に分割
+    struct rectangle {
+      int w, h, l, t, r, b;
+      rectangle() : w(0), h(0), l(0), t(0), r(0), b(0) {}
+      void set(int _l, int _t, int _r, int _b) {
+        l = _l; t = _t; r = _r; b = _b; w = r - l; h = b - t;
+      }
+      bool valid() { return (w > 0 && h > 0); }
+      void invalidate() { w = h = 0; }
+    } rect[3][3];
+    
+    // 座標をαチャネル領域相対に変換
+    ml = std::max(0,  ml - al); mt = std::max(0,  mt - at);
+    mr = std::min(aw, mr - al); mb = std::min(ah, mb - at);
+    al = 0;  at = 0;
+    ar = aw; ab = ah;
+
+    rect[0][0].set(al, at, ml, mt);
+    rect[0][1].set(ml, at, mr, mt);
+    rect[0][2].set(mr, at, ar, mt);
+    rect[1][0].set(al, mt, ml, mb);
+    rect[1][1].invalidate(); // マージ対象なのでinvalidのまま残して無視
+    rect[1][2].set(mr, mt, ar, mb);
+    rect[2][0].set(al, mb, ml, ab);
+    rect[2][1].set(ml, mb, mr, ab);
+    rect[2][2].set(mr, mb, ar, ab);
+  
+    // 同じ行の矩形領域を結合
+    bool lineCombined[3] = { true, true, true };
+    for (int y = 0; y < 3; y++) {
+      for (int x = 1; x >= 0; x--) {
+        if (rect[y][x].valid() && rect[y][x+1].valid()) {
+          rect[y][x].r = rect[y][x+1].r;
+          rect[y][x].w = rect[y][x].r - rect[y][x].l;
+          rect[y][x+1].invalidate();
+        } else {
+          lineCombined[y] = false;
+        }
+      }
+    }
+
+    // マージ対象以外をケア
+    for (int y = 0; y < 3; y++) {
+      if (lineCombined[y]) {
+        // 行結合状態ならmemsetで領域一括セット
+        rectangle &r = rect[y][0];
+        uint8_t *out = aCh + r.t * aPitch;
+        memset(out, 0x0, r.h * aPitch);
+      } else {
+        // 行結合済でなければ個別にライン単位処理
+        for (int x = 0; x < 3; x++) {
+          rectangle &r = rect[y][x];
+          if (r.valid()) {
+            for (int l = 0; l < r.h; l++) {
+              uint8_t *out = aCh + (r.t + l) * aPitch + r.l * sizeof(T);
+              memset(out, 0x0, r.w * sizeof(T));
+            }
+          }
+        }
       }
     }
   }
-  
+
   // --------------------------------------------------------------------------
   // 圧縮展開
   // --------------------------------------------------------------------------
@@ -753,29 +821,25 @@ namespace psd {
           alphaChannelIndex >= 0) {
         uint8_t *maskChannel  = decodedChannels[maskChannelIndex];
         uint8_t *alphaChannel = decodedChannels[alphaChannelIndex];
-        uint8_t *newAlpha     = new uint8_t[imageChannelBytes];
         switch (header.depth) {
         case 8:
           mergeMaskToAlpha<uint8_t>(
-            newAlpha, alphaChannel, layer.left, layer.top, layer.right, layer.bottom,
-            maskChannel, mask.left, mask.top, mask.right, mask.bottom);
+            alphaChannel, layer.left, layer.top, layer.right, layer.bottom,
+            maskChannel, mask.left, mask.top, mask.right, mask.bottom, mask.defaultColor);
           break;
         case 16:
           mergeMaskToAlpha<uint16_t>(
-            newAlpha, alphaChannel, layer.left, layer.top, layer.right, layer.bottom,
-            maskChannel, mask.left, mask.top, mask.right, mask.bottom);
+            alphaChannel, layer.left, layer.top, layer.right, layer.bottom,
+            maskChannel, mask.left, mask.top, mask.right, mask.bottom, mask.defaultColor);
           break;
         case 32:
           mergeMaskToAlpha<uint32_t>(
-            newAlpha, alphaChannel, layer.left, layer.top, layer.right, layer.bottom,
-                                     maskChannel, mask.left, mask.top, mask.right, mask.bottom);
+            alphaChannel, layer.left, layer.top, layer.right, layer.bottom,
+            maskChannel, mask.left, mask.top, mask.right, mask.bottom, mask.defaultColor);
           break;
         default:
-          delete [] newAlpha;
           break;
         }
-        decodedChannels[alphaChannelIndex] = newAlpha;
-        delete [] alphaChannel;
       }
       break;
     case IMAGE_MODE_MASK:
