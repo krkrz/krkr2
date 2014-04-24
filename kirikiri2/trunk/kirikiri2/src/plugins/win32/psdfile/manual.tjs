@@ -99,6 +99,8 @@ class PSD {
 	 * visible      表示状態
 	 * name         レイヤ名
 	 * type         合成モード（吉里吉里の対応モード)
+     * clipping     クリッピングマスクの対象か？
+     * mask         レイヤマスクを持っているかどうか？
 	 * layer_comp    レイヤーカンプ情報(カンプIDをキーとした辞書)
 	 *   %[ <id>: [ id,       // カンプID(getLayerComp() を参照してください)
 	 *              offset_x, // レイヤのXオフセット
@@ -113,6 +115,7 @@ class PSD {
 	 * @param layer 読み出し先レイヤ
 	 * @param no レイヤ番号
 	 * layer_type が layer_type_normal の場合のみ読み込みできます
+     * イメージとマスクを合成した状態で読み出します。
 	 * データ内容のほか以下のプロパティが自動的にレイヤに設定されます
 	 * left          左座標
 	 * top           上座標
@@ -128,6 +131,50 @@ class PSD {
 	 * name          name が設定されます
 	 */
 	function getLayerData(layer, no);
+
+	/**
+	 * レイヤデータの読み出し
+	 * @param layer 読み出し先レイヤ
+	 * @param no レイヤ番号
+	 * layer_type が layer_type_normal の場合のみ読み込みできます
+     * イメージのみを読み出します。
+	 * データ内容のほか以下のプロパティが自動的にレイヤに設定されます
+	 * left          左座標
+	 * top           上座標
+	 * width         横幅
+	 * height        縦幅
+	 * type          合成モード
+	 * opacity       不透明度
+	 * visible       表示状態
+	 * imageLeft     0になります
+	 * imageTop      0になります
+	 * imageWidth    width になります
+	 * imageHeight   height になります
+	 * name          name が設定されます
+	 */
+	function getLayerDataRaw(layer, no);
+
+	/**
+	 * レイヤデータの読み出し
+	 * @param layer 読み出し先レイヤ
+	 * @param no レイヤ番号
+	 * layer_type が layer_type_normal の場合のみ読み込みできます
+     * マスクのみを読み出します。
+	 * データ内容のほか以下のプロパティが自動的にレイヤに設定されます
+	 * left          左座標
+	 * top           上座標
+	 * width         横幅
+	 * height        縦幅
+	 * type          合成モード
+	 * opacity       不透明度
+	 * visible       表示状態
+	 * imageLeft     0になります
+	 * imageTop      0になります
+	 * imageWidth    width になります
+	 * imageHeight   height になります
+	 * name          name が設定されます
+	 */
+	function getLayerDataMask(layer, no);
 
 	/**
 	 * スライスデータの読み出し

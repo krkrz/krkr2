@@ -172,6 +172,16 @@ public:
 			SETPROP(dict, lay, width);
 			SETPROP(dict, lay, height);
 			SETPROP(dict, lay, opacity);
+            bool mask = false;
+            for (std::vector<psd::ChannelInfo>::iterator i = lay.channels.begin();
+                 i != lay.channels.end();
+                 i++) {
+              if (i->isMaskChannel()) {
+                mask = true;
+                break;
+              }
+            }
+            dict.SetValue(L"mask", mask);
       dict.SetValue(L"type",       convBlendMode(lay.blendMode));
       dict.SetValue(L"layer_type", lay.layerType);
       dict.SetValue(L"blend_mode", lay.blendMode);
@@ -233,13 +243,14 @@ public:
 
 		return result;
 	}
-	
+
 	/**
-	 * レイヤデータの読み出し
+	 * レイヤデータの読み出し(内部処理)
 	 * @param layer 読み出し先レイヤ
 	 * @param no レイヤ番号
+     * @param imageMode イメージモード
 	 */
-	void getLayerData(tTJSVariant layer, int no) {
+  void _getLayerData(tTJSVariant layer, int no, psd::ImageMode imageMode) {
 		if (!layer.AsObjectNoAddRef()->IsInstanceOf(0, 0, 0, L"Layer", NULL)) {
 			TVPThrowExceptionMessage(L"not layer");
 		}
@@ -275,7 +286,35 @@ public:
 		// 画像データのコピー
     unsigned char *buffer = (unsigned char*)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
     int pitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
-    psdFile.getLayerImage(lay, buffer, psd::BGRA_LE, pitch, psd::IMAGE_MODE_MASKEDIMAGE);
+    psdFile.getLayerImage(lay, buffer, psd::BGRA_LE, pitch, imageMode);
+	}
+
+	
+	/**
+	 * レイヤデータの読み出し
+	 * @param layer 読み出し先レイヤ
+	 * @param no レイヤ番号
+	 */
+	void getLayerData(tTJSVariant layer, int no) {
+      _getLayerData(layer, no, psd::IMAGE_MODE_MASKEDIMAGE);
+	}
+
+	/**
+	 * レイヤデータの読み出し(生イメージ)
+	 * @param layer 読み出し先レイヤ
+	 * @param no レイヤ番号
+	 */
+	void getLayerDataRaw(tTJSVariant layer, int no) {
+      _getLayerData(layer, no, psd::IMAGE_MODE_IMAGE);
+	}
+
+	/**
+	 * レイヤデータの読み出し(マスクのみ)
+	 * @param layer 読み出し先レイヤ
+	 * @param no レイヤ番号
+	 */
+	void getLayerDataMask(tTJSVariant layer, int no) {
+      _getLayerData(layer, no, psd::IMAGE_MODE_MASK);
 	}
 
 	/**
@@ -498,6 +537,8 @@ NCB_REGISTER_CLASS(PSD) {
 	NCB_METHOD(getLayerName);
 	NCB_METHOD(getLayerInfo);
 	NCB_METHOD(getLayerData);
+	NCB_METHOD(getLayerDataRaw);
+	NCB_METHOD(getLayerDataMask);
 
 	NCB_METHOD(getSlices);
 	NCB_METHOD(getGuides);
