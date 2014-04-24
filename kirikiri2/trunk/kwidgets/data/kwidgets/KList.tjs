@@ -1618,9 +1618,9 @@ class KListItem
         return _backgroundColor;
     }
     setter(v) {
-      if (_backgroundColo === v)
+      if (_backgroundColor === v)
         return;
-      _backgroundColo = v;
+      _backgroundColor = v;
       redraw();
     }
   }
