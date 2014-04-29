@@ -1,0 +1,289 @@
+/**
+ * XP3のファイル一覧を取得する
+ *
+ * @param name 対象のXP3ファイルパス
+ * @return ファイル名の配列（パス文字も含まれます）
+ *
+ * ※要 BinaryStream.dll, memfile.dll プラグイン
+ * コードの構成は XP3Archive.cpp に習って作ってあります（TJS翻訳のため一部異なる部分あり）
+ * ファイル名取得のみで，サイズやセグメント情報等は取得しません
+ * 厳密なチェックをしていないため壊れたXP3ファイルを読ませると例外が発生する場合があります
+ */
+
+Storages.getXP3ArchiveIndex = function (name)
+{
+	////////////////////////////////////////////////////////////
+	// Plugins check
+
+	if (typeof global.BinaryStream != "Object") Plugins.link("BinaryStream.dll");
+	if (typeof Storages.deleteMemoryFile != "Object") Plugins.link("memfile.dll");
+
+	////////////////////////////////////////////////////////////
+	// utilities
+
+	var TVPReadError = @"GetXP3ArchiveIndex: ReadError: ${name}";
+	var TVP_XP3_INDEX_ENCODE_METHOD_MASK = 0x07;
+	var TVP_XP3_INDEX_ENCODE_RAW         = 0;
+	var TVP_XP3_INDEX_ENCODE_ZLIB        = 1;
+	var TVP_XP3_INDEX_CONTINUE           = 0x80;
+
+	var ReadI16FromOctet = function (data, ofs) {
+		return data[ofs+0] | (data[ofs+1]<<8);
+	};
+	var ReadStringFromOctet = function (data, ofs, len) {
+		var r;
+		for (var i=0, pos=0; i < len; i++,pos+=2)
+			r += $(data[ofs+pos] | (data[ofs+pos+1]<<8));
+		return r;
+	};
+
+	var FindXP3ArchiveChunk = function(data, name, elm, error) {
+		if (typeof name == "String") name = [ #name[0], #name[1], #name[2], #name[3] ];
+
+		var start = elm.start;
+		var size  = elm.size;
+
+		var pos = 0;
+		while(pos < size)
+		{
+			var found = (data[start+0] == name[0] &&
+						 data[start+1] == name[1] &&
+						 data[start+2] == name[2] &&
+						 data[start+3] == name[3]);
+			start += 4;
+			var size_chunk = ((data[start+0]    ) |
+							  (data[start+1]<<8 ) |
+							  (data[start+2]<<16) |
+							  (data[start+3]<<24));
+			if(data[start+4] | data[start+5] | data[start+6] | data[start+7])
+				throw new Exception(error);
+			start += 8;
+			if(found)
+			{
+				// found
+				elm.start = start;
+				elm.size = size_chunk;
+				return true;
+			}
+			start += size_chunk;
+			pos += size_chunk + 4 + 8;
+		}
+		return false;
+	} incontextof global;
+
+	var GetXP3ArchiveOffset = function (st, name, raise) {
+		var offset = -1;
+
+		st.seek(0, BinaryStream.bsSeekSet);
+		var XP3Mark = [
+			0x58/*'X'*/, 0x50/*'P'*/, 0x33/*'3'*/, 0x0d/*'\r'*/,
+			0x0a/*'\n'*/, 0x20/*' '*/, 0x0a/*'\n'*/, 0x1a/*EOF*/,
+			0x8b, 0x67, 0x01 ];
+		var memcmp = function(a, b, ofs, len) {
+			for (var i = 0; i < len; i++) if (a[i] != b[i+ofs]) return a[i] - b[i+ofs];
+			return 0;
+		};
+
+		var mark = st.read(11);
+		if (mark === void || mark.length < 11) mark = <% 00 00 00 00 00 00 00 00 00 00 00 %>; // sentinel
+
+		if (mark[0] == 0x4d/*'M'*/ && mark[1] == 0x5a/*'Z'*/)
+		{
+			// "MZ" is a mark of Win32/DOS executables,
+			// TVP searches the first mark of XP3 archive
+			// in the executeble file.
+			var found = false;
+
+			offset = 16;
+			st.seek(16, BinaryStream.bsSeekSet);
+
+			// XP3 mark must be aligned by a paragraph ( 16 bytes )
+			var one_read_size = 256*1024;
+			var buffer; // read 256kbytes at once
+
+			while ((buffer = st.read(one_read_size)) !== void)
+			{
+				var p = 0, read = buffer.length;
+				while (p<read)
+				{
+					if(!memcmp(XP3Mark, buffer, p, 11))
+					{
+						// found the mark
+						offset += p;
+						found = true;
+						break;
+					}
+					p+=16;
+				}
+				if(found) break;
+				offset += one_read_size;
+			}
+
+			if(!found)
+			{
+				if(raise)
+					throw new Exception(@"GetXP3ArchiveOffset: CannotUnbindXP3EXE: ${name}");
+				else
+					return -1;
+			}
+		}
+		else if(!memcmp(XP3Mark, mark, 0, 11))
+		{
+			// XP3 mark found
+			offset = 0;
+		}
+		else
+		{
+			if(raise)
+				throw new Exception(@"GetXP3ArchiveOffset: CannotFindXP3Mark: ${name}");
+			return -1;
+		}
+
+		return offset;
+	} incontextof global;
+
+
+	////////////////////////////////////////////////////////////
+	// main code
+
+	var int32mask = 0xFFFFFFFF;
+
+	var ItemVector = [];
+
+	//var Name = name;
+	//var Count = 0;
+
+	var offset;
+
+	var st = new BinaryStream(name, BinaryStream.bsRead);
+
+	var indexdata = null;
+
+	var cn_File = [ 0x46/*'F'*/, 0x69/*'i'*/, 0x6c/*'l'*/, 0x65/*'e'*/ ];
+	var cn_info = [ 0x69/*'i'*/, 0x6e/*'n'*/, 0x66/*'f'*/, 0x6f/*'o'*/ ];
+	// cn_segm, cn_adlr
+
+	//Debug.message("(info) Trying to read XP3 virtual file system information from : "+name);
+
+	//var segmentcount = 0;
+	try
+	{
+		// retrieve archive offset
+		offset = GetXP3ArchiveOffset(st, name, true);
+
+		// read index position and seek
+		st.seek(11 + offset, BinaryStream.bsSeekSet);
+
+		// read all XP3 indices
+		while (true)
+		{
+			var index_ofs = st.readI64LE();
+			st.seek(index_ofs + offset, BinaryStream.bsSeekSet);
+
+			// read index to memory
+			var index_flag = st.readI8();
+			var index_size;
+
+			if ((index_flag & TVP_XP3_INDEX_ENCODE_METHOD_MASK) ==
+				TVP_XP3_INDEX_ENCODE_ZLIB)
+			{
+				// compressed index
+				var compressed_size = st.readI64LE();
+				index_size = st.readI64LE();
+
+				if((compressed_size & int32mask) != compressed_size ||
+				   (index_size & int32mask) != index_size)
+					throw new Exception(TVPReadError);
+						// too large to handle, or corrupted
+
+				index_size &= int32mask;
+				var temp = "mem://./"+System.createUUID();
+				var tempst = new BinaryStream(temp, BinaryStream.bsWrite);
+				try
+				{
+					tempst.decompress(name, %[ offset:st.tell(), length:compressed_size ]);
+					tempst.close();
+					tempst.open(temp, BinaryStream.bsRead);
+					indexdata = tempst.read(index_size);
+				}
+				catch (e)
+				{
+					if (tempst) invalidate tempst;
+					Storages.deleteMemoryFile(temp);
+					throw e;
+				}
+				if (tempst) invalidate tempst;
+				Storages.deleteMemoryFile(temp);
+			}
+			else if ((index_flag & TVP_XP3_INDEX_ENCODE_METHOD_MASK) ==
+					 TVP_XP3_INDEX_ENCODE_RAW)
+			{
+				// uncompressed index
+				index_size = st.readI64LE();
+				if((index_size & int32mask) != index_size)
+					throw new Exception(TVPReadError);
+						// too large to handle or corrupted
+
+				index_size &= int32mask;
+				indexdata = st.read(index_size);
+			}
+			else
+			{
+				throw new Exception(TVPReadError);
+			}
+
+			// check indexdata validation
+			if (indexdata && indexdata.length != index_size)
+			{
+				throw new Exception(TVPReadError);
+			}
+
+			// read index information from memory
+			var ch_file = %[ start: 0, size: index_size ];
+			if (indexdata) for(;;)
+			{
+				// find 'File' chunk
+				if(!FindXP3ArchiveChunk(indexdata, cn_File, ch_file, TVPReadError))
+					break; // not found
+
+				// find 'info' sub-chunk
+				var ch_info = %[ start: ch_file.start, size: ch_file.size ];
+				if(!FindXP3ArchiveChunk(indexdata, cn_info, ch_info, TVPReadError))
+					throw new Exception(TVPReadError);
+
+				// read info sub-chunk
+				var len = ReadI16FromOctet(indexdata, ch_info.start + 20);
+				var name = ReadStringFromOctet(indexdata, ch_info.start + 22, len);
+
+				// push information
+				ItemVector.add(name);
+
+				// to next file
+				ch_file.start += ch_file.size;
+				ch_file.size = index_size - ch_file.start;
+				//Count++;
+			}
+
+			if (indexdata) invalidate indexdata;
+			indexdata = null;
+			if(!(index_flag & TVP_XP3_INDEX_CONTINUE))
+				break; // continue reading index when the bit sets
+		}
+
+		// sort item vector by its name
+		//ItemVector.sort();
+	}
+	catch (e)
+	{
+		if (indexdata) invalidate indexdata;
+		invalidate st;
+		throw e;
+	}
+//	if (indexdata) invalidate indexdata;
+	invalidate st;
+
+	//Debug.message(@"(info) Done. (contains ${ItemVector.count} file(s))");
+	return ItemVector;
+} incontextof global;
+
+
