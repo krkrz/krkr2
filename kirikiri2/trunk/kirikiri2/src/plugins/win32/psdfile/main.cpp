@@ -152,7 +152,7 @@ public:
 		checkLayerNo(no);
     return layname(psdFile.layerList[no]);
 	}
-	
+
 	/**
 	 * レイヤ情報の取得
 	 * @param no レイヤ番号
@@ -256,40 +256,73 @@ public:
 		}
 		checkLayerNo(no);
 
-    psd::LayerInfo &lay = psdFile.layerList[no];
-    if (lay.layerType != psd::LAYER_TYPE_NORMAL) {
-			TVPThrowExceptionMessage(L"invalid layer type");
-		}
+        psd::LayerInfo &lay = psdFile.layerList[no];
+        psd::LayerMask &mask  = lay.extraData.layerMask;
 
-		int width  = lay.width;
-		int height = lay.height;
+        if (lay.layerType != psd::LAYER_TYPE_NORMAL
+            && ! (lay.layerType == psd::LAYER_TYPE_FOLDER 
+                  && imageMode == psd::IMAGE_MODE_MASK)) {
+          TVPThrowExceptionMessage(L"invalid layer type");
+        }
 
-		if (width <= 0 || height <= 0) {
-			// サイズ０のレイヤはロードできない
-			return;
-		}
+        int left, top, width, height, opacity, type;
+
+        bool dummyMask = false;
+        if (imageMode == psd::IMAGE_MODE_MASK) {
+          left = mask.left;
+          top = mask.top;
+          width = mask.width;
+          height = mask.height;
+          opacity = 255;
+          type = ltPsNormal;
+          if (width == 0 || height == 0) {
+            left = top = 0;
+            width = height = 1;
+            dummyMask = true;
+          }
+        } else {
+          left = lay.left;
+          top = lay.top;
+          width = lay.width;
+          height = lay.height;
+          opacity = lay.opacity;
+          type = convBlendMode(lay.blendMode);
+        }
+        if (width <= 0 || height <= 0) {
+          // サイズ０のレイヤはロードできない
+          return;
+        }
 
 		ncbPropAccessor obj(layer);
-		SETPROP(obj, lay, left);
-		SETPROP(obj, lay, top);
-		SETPROP(obj, lay, opacity);
+        obj.SetValue(L"left", left);
+        obj.SetValue(L"top", top);
+        obj.SetValue(L"opacity", opacity);
 		obj.SetValue(L"width",  width);
 		obj.SetValue(L"height", height);
-		obj.SetValue(L"type",   convBlendMode(lay.blendMode));
-    obj.SetValue(L"visible", lay.isVisible());
+		obj.SetValue(L"type",   type);
+        obj.SetValue(L"visible", lay.isVisible());
 		obj.SetValue(L"imageLeft",  0);
 		obj.SetValue(L"imageTop",   0);
 		obj.SetValue(L"imageWidth",  width);
 		obj.SetValue(L"imageHeight", height);
 		obj.SetValue(L"name", layname(lay));
 
+        if (imageMode == psd::IMAGE_MODE_MASK)
+          obj.SetValue(L"defaultMaskColor", mask.defaultColor);
+
 		// 画像データのコピー
-    unsigned char *buffer = (unsigned char*)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
-    int pitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
-    psdFile.getLayerImage(lay, buffer, psd::BGRA_LE, pitch, imageMode);
+        unsigned char *buffer = (unsigned char*)obj.GetValue(L"mainImageBufferForWrite", ncbTypedefs::Tag<tjs_int>());
+        int pitch = obj.GetValue(L"mainImageBufferPitch", ncbTypedefs::Tag<tjs_int>());
+        if (dummyMask) {
+          buffer[0] = buffer[1] = buffer[2] = mask.defaultColor;
+          buffer[3] = 255;
+        } else {
+          psdFile.getLayerImage(lay, buffer, psd::BGRA_LE, pitch, imageMode);
+        }
+
 	}
 
-	
+
 	/**
 	 * レイヤデータの読み出し
 	 * @param layer 読み出し先レイヤ

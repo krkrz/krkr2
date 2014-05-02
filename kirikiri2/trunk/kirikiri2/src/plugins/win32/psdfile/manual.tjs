@@ -160,6 +160,9 @@ class PSD {
 	 * @param no レイヤ番号
 	 * layer_type が layer_type_normal の場合のみ読み込みできます
      * マスクのみを読み出します。
+     * マスクのイメージサイズが0でdefualtMaskColorのみが設定されているケースでは、
+     * 「レイヤサイズを0には設定できない」と言う吉里吉里の制限を回避するため、
+     * (0,0)-(1,1)の最小サイズのレイヤをダミーで作り、defaultMaskColorでfillして返します。
 	 * データ内容のほか以下のプロパティが自動的にレイヤに設定されます
 	 * left          左座標
 	 * top           上座標
@@ -173,6 +176,7 @@ class PSD {
 	 * imageWidth    width になります
 	 * imageHeight   height になります
 	 * name          name が設定されます
+     * defaultMaskColor  取得領域外のマスクカラー(常に0か255のどちらか)
 	 */
 	function getLayerDataMask(layer, no);
 
