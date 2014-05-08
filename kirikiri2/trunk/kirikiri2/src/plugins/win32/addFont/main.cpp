@@ -36,12 +36,13 @@ struct FontEx
 
 		ttstr filename = TVPGetPlacedPath(*param[0]);
 		if (filename.length()) {
-			if (!wcschr(filename.c_str(), '>')) {
+			// ※TVPGetLocallyAccessibleNameはrev.5221以降のtp_stubが必要
+			ttstr localname(TVPGetLocallyAccessibleName(filename));
+			if (localname.length()) {
 				// 実ファイルが存在した場合
-				TVPGetLocalName(filename);
 				int ret;
-				if ((ret =  AddFontResourceEx(filename.c_str(), FR_PRIVATE, NULL)) > 0) {
-					fontlist.push_back(filename);
+				if ((ret =  AddFontResourceEx(localname.c_str(), FR_PRIVATE, NULL)) > 0) {
+					fontlist.push_back(localname);
 				}
 				if (result) {
 					*result = ret;
