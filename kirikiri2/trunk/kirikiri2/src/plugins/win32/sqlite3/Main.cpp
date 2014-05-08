@@ -201,9 +201,11 @@ public:
 				sqlite3_open16(database, &db);
 			} else {
 				filename = TVPNormalizeStorageName(filename);
-				if (filename.length() && !wcschr(filename.c_str(), '>')) {
-					TVPGetLocalName(filename);
-					sqlite3_open16(filename.c_str(), &db);
+				ttstr localname(TVPGetLocallyAccessibleName(filename));
+				if (filename.length() && localname.length()) {
+					sqlite3_open16(localname.c_str(), &db);
+				} else {
+					TVPThrowExceptionMessage(L"Unable to open the database file, try readonly if exists: %1", filename);;
 				}
 			}
 		}
