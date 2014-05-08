@@ -257,10 +257,9 @@ public:
 		{
 			SYSTEMTIME time;
 			GetLocalTime(&time); // Œ»ÝŽž
-			if (!wcschr(filename.c_str(), '>')) {
+			ttstr name(TVPGetLocallyAccessibleName(filename));
+			if (name.length() > 0) {
 				// ŽÀƒtƒ@ƒCƒ‹‚ª‘¶Ý‚·‚éê‡‚ÍŽž‚ð”²‚¢‚Ä‚­‚é
-				ttstr name = filename;
-				TVPGetLocalName(name);
 				HANDLE hFile;
 				if ((hFile = CreateFileW(name.c_str(), GENERIC_READ, 0, NULL ,
 										 OPEN_EXISTING , FILE_ATTRIBUTE_NORMAL , NULL)) != INVALID_HANDLE_VALUE) {
