@@ -10758,5 +10758,12 @@ extern tjs_error Try_iTJSDispatch2_NativeInstanceSupport(iTJSDispatch2 * _this, 
 extern tjs_error Try_iTJSDispatch2_ClassInstanceInfo(iTJSDispatch2 * _this, tjs_uint32 flag, tjs_uint num, tTJSVariant *value);
 extern tjs_error Try_iTJSDispatch2_Reserved2(iTJSDispatch2 * _this);
 extern tjs_error Try_iTJSDispatch2_Reserved3(iTJSDispatch2 * _this);
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// other compatibility function stub
+//---------------------------------------------------------------------------
+extern ttstr TVPGetLocallyAccessibleName(const ttstr &name);
+
 
 #endif

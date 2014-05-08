@@ -1121,11 +1121,6 @@ print OHFH <<EOF;
 
 EOF
 print OHFH $hc;
-print OHFH <<EOF;
-
-#endif
-EOF
-close OHFH;
 
 open OCFH,">>$output_tpstub_cpp" or die;
 print OCFH <<EOF;
@@ -1136,6 +1131,68 @@ print OCFH <<EOF;
 EOF
 print OCFH $cc;
 
+close OCFH;
+close OHFH;
+
+
+
+;#---------------------------------------------------------------------------
+;# other compatibility function stub
+;#---------------------------------------------------------------------------
+
+open(OHFH, ">>$output_tpstub_h") or die;
+open(OCFH, ">>$output_tpstub_cpp") or die;
+print OHFH <<EOF;
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// other compatibility function stub
+//---------------------------------------------------------------------------
+extern ttstr TVPGetLocallyAccessibleName(const ttstr &name);
+
+EOF
+print OCFH <<EOF;
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// other compatibility function stub
+//---------------------------------------------------------------------------
+
+static bool TJS_USERENTRY _Catch_TVPGetLocalName(void *data, const tTVPExceptionDesc & desc)
+{
+	ttstr *result = (ttstr*)data;
+	result->Clear();
+	return false;
+}
+static void TJS_USERENTRY _Try_TVPGetLocalName(void *data)
+{
+	ttstr *name = (ttstr*)data;
+	TVPGetLocalName(*name);
+}
+ttstr TVPGetLocallyAccessibleName(const ttstr &name)
+{
+	ttstr result(name);
+	TVPDoTryBlock(_Try_TVPGetLocalName, _Catch_TVPGetLocalName, NULL, &result);
+	return result;
+}
+
+EOF
+
+close OCFH;
+close OHFH;
+
+
+
+;#---------------------------------------------------------------------------
+;# end of header
+;#---------------------------------------------------------------------------
+
+open(OHFH, ">>$output_tpstub_h") or die;
+print OHFH <<EOF;
+
+#endif
+EOF
+close OHFH;
 
 ;#---------------------------------------------------------------------------
 

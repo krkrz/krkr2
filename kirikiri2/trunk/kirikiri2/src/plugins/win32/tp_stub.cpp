@@ -2187,3 +2187,27 @@ tjs_error Try_iTJSDispatch2_Reserved3(iTJSDispatch2 * _this)
 	TVPDoTryBlock(_Try_iTJSDispatch2_Reserved3, _CatchFuncCall, NULL, &arg);
 	return arg._ret;
 }
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+// other compatibility function stub
+//---------------------------------------------------------------------------
+
+static bool TJS_USERENTRY _Catch_TVPGetLocalName(void *data, const tTVPExceptionDesc & desc)
+{
+	ttstr *result = (ttstr*)data;
+	result->Clear();
+	return false;
+}
+static void TJS_USERENTRY _Try_TVPGetLocalName(void *data)
+{
+	ttstr *name = (ttstr*)data;
+	TVPGetLocalName(*name);
+}
+ttstr TVPGetLocallyAccessibleName(const ttstr &name)
+{
+	ttstr result(name);
+	TVPDoTryBlock(_Try_TVPGetLocalName, _Catch_TVPGetLocalName, NULL, &result);
+	return result;
+}
+
