@@ -103,6 +103,23 @@ class StoragesFstat {
 			delete[] tmp;
 		}
 	}
+	/**
+	 * ローカルパスの有無判定
+	 * @param in  path  パス名
+	 * @param out local ローカルパス
+	 * @return ローカルパスがある場合はtrue
+	 */
+	static bool getLocallyAccessibleName(const ttstr &path, ttstr *local = NULL) {
+		bool r = false;
+		if (local) {
+			*local = TVPGetLocallyAccessibleName(path);
+			r = ! local->IsEmpty();
+		} else {
+			ttstr local(TVPGetLocallyAccessibleName(path));
+			r = ! local.IsEmpty();
+		}
+		return r;
+	}
 
 	/**
 	 * ファイルハンドルを取得
@@ -217,6 +234,7 @@ public:
 	 * 指定されたファイルの情報を取得する
 	 * @param filename ファイル名
 	 * @return サイズ・時刻辞書
+	 * ※アーカイブ内ファイルはサイズのみ返す
 	 */
 	static tjs_error TJS_INTF_METHOD fstat(tTJSVariant *result,
 										   tjs_int numparams,
@@ -225,7 +243,7 @@ public:
 		if (numparams < 1) return TJS_E_BADPARAMCOUNT;
 
 		ttstr filename = TVPGetPlacedPath(*param[0]);
-		if (filename.length() > 0 && wcschr(filename.c_str(), '>')) {
+		if (filename.length() > 0 && !getLocallyAccessibleName(filename)) {
 			// アーカイブ内ファイル
 			IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
 			if (in) {
@@ -350,11 +368,10 @@ public:
 	 * @return 実際に削除されたら true
 	 * 実ファイルがある場合のみ削除されます
 	 */
-	static bool deleteFile(ttstr filename) {
+	static bool deleteFile(const tjs_char *file) {
 		BOOL r = false;
-		filename = TVPGetPlacedPath(filename);
-		if (filename.length() && !wcschr(filename.c_str(), '>')) {
-			TVPGetLocalName(filename);
+		ttstr filename(TVPGetLocallyAccessibleName(TVPGetPlacedPath(file)));
+		if (filename.length()) {
 			r	= DeleteFile(filename.c_str());
 			if (r == FALSE) {
 				ttstr mes;
@@ -375,11 +392,10 @@ public:
 	 * @return サイズ変更できたら true
 	 * 実ファイルがある場合のみ処理されます
 	 */
-	static bool truncateFile(ttstr filename, tjs_int size) {
+	static bool truncateFile(const tjs_char *file, tjs_int size) {
 		BOOL r = false;
-		filename = TVPGetPlacedPath(filename);
-		if (filename.length() && !wcschr(filename.c_str(), '>')) {
-			TVPGetLocalName(filename);
+		ttstr filename(TVPGetLocallyAccessibleName(TVPGetPlacedPath(file)));
+		if (filename.length()) {
 			HANDLE hFile = _getFileHandle(filename, true);
 			if (hFile != INVALID_HANDLE_VALUE) {
 				LARGE_INTEGER ofs;
@@ -405,12 +421,12 @@ public:
 	 * @return 実際に移動されたら true
 	 * 移動対象ファイルが実在し、移動先パスにファイルが無い場合のみ移動されます
 	 */
-	static bool moveFile(ttstr fromFile, ttstr toFile) {
+	static bool moveFile(const tjs_char *from, const tjs_char *to) {
 		BOOL r = false;
-		if (fromFile.length() && !wcschr(fromFile.c_str(), '>')
-			&& toFile.length() && !wcschr(toFile.c_str(), '>')) {
-			TVPGetLocalName(fromFile);
-			TVPGetLocalName(toFile);
+		ttstr fromFile(TVPGetLocallyAccessibleName(from));
+		ttstr   toFile(TVPGetLocallyAccessibleName(to));
+		if (fromFile.length()
+			&& toFile.length()) {
 			r	= MoveFile(fromFile.c_str(), toFile.c_str());
 			if (r == FALSE) {
 				ttstr mes;
@@ -787,14 +803,17 @@ public:
 	 * @param failIfExist ファイルが存在するときに失敗するなら ture、上書きするなら false
 	 * @return 実際に移動できたら true
 	 */
-	static bool copyFile(ttstr from, ttstr to, bool failIfExist)
+	static bool copyFile(const tjs_char *from, const tjs_char *to, bool failIfExist)
 	{
-		from	= TVPGetPlacedPath(from);
-        to = TVPNormalizeStorageName(to);
-		if(from.length() && to.length() && !wcschr(from.c_str(), '>') && !wcschr(to.c_str(), '>'))
+		ttstr fromFile(TVPGetLocallyAccessibleName(TVPGetPlacedPath(from)));
+		ttstr toFile  (TVPGetLocallyAccessibleName(TVPNormalizeStorageName(to)));
+		return _copyFile(fromFile, toFile, failIfExist);
+	}
+private:
+	static bool _copyFile(const ttstr &from, const ttstr &to, bool failIfExist)
+	{
+		if(from.length() && to.length())
 		{
-			TVPGetLocalName(from);
-			TVPGetLocalName(to);
 			if(CopyFile(from.c_str(), to.c_str(), failIfExist)) {
 				TVPClearStorageCaches();
 				return true;
@@ -802,6 +821,7 @@ public:
 		}
 		return false;
 	}
+public:
 
 	/**
 	 * パスの正規化を行わず吉里吉里のストレージ空間中の指定ファイルをコピーする
@@ -810,17 +830,15 @@ public:
 	 * @param failIfExist ファイルが存在するときに失敗するなら ture、上書きするなら false
 	 * @return 実際に移動できたら true
 	 */
-	static bool copyFileNoNormalize(ttstr from, ttstr to, bool failIfExist)
+	static bool copyFileNoNormalize(const tjs_char *from, const tjs_char *to, bool failIfExist)
 	{
-		from	= TVPGetPlacedPath(from);
-		if(from.length() && to.length() && !wcschr(from.c_str(), '>') && !wcschr(to.c_str(), '>'))
+		ttstr fromFile(TVPGetLocallyAccessibleName(TVPGetPlacedPath(from)));
+		ttstr toFile(to);
+		if(toFile.length())
 		{
-			TVPGetLocalName(from);
-			TVPGetLocalName(to);
-			if(CopyFile(from.c_str(), to.c_str(), failIfExist)) {
-				TVPClearStorageCaches();
-				return true;
-			}
+			// ※指定次第で例外を発生させるためTVPGetLocallyAccessibleNameは使わない
+			TVPGetLocalName(toFile);
+			return _copyFile(fromFile, toFile, failIfExist);
 		}
 		return false;
 	}

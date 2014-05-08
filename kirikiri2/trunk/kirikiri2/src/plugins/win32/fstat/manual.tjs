@@ -51,6 +51,7 @@ class Storages {
 	 * @param toFile 移動先パス
 	 * @return 実際に移動されたら true
 	 * 移動対象ファイルが実在し、移動先パスにファイルが無い場合のみ移動されます
+	 * ※パスはNormalize/Placedチェックされないのでフルパスで記入のこと
 	 */
 	function moveFile(fromFile, toFile);
 
@@ -184,6 +185,7 @@ class Storages {
 	 * @param to コピー先ファイル
 	 * @param failIfExist ファイルが存在するときに失敗するなら ture、上書きするなら false
 	 * @return 実際にコピーできたら true
+	 * ※toには「file://./c/～」のようにフルパスで記述しないと例外が発生します
 	 */
 	function copyFileNoNormalize(from, to, failIfExist);
 
