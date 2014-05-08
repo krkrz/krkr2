@@ -97,14 +97,14 @@ struct WindowEx
 		WindowEx *self = GetInstance(obj);
 		return (self != NULL) ? self->_setWindowIcon(n > 0 ? p[0] : NULL, n > 1 ? p[1]->operator bool() : false) : TJS_E_ACCESSDENYED;
 	}
-	static HICON _loadExternalIcon(ttstr file) {
+	static HICON _loadExternalIcon(const ttstr &file) {
 		HICON ret = NULL;
 		if (file.length() > 0) {
-			file = TVPGetPlacedPath(file);
-			if (!file.length()) TVPThrowExceptionMessage(TJS_W("file not found."));
-			if (wcschr(file.c_str(), '>')) TVPThrowExceptionMessage(TJS_W("cannot get in archive icon."));
-			TVPGetLocalName(file);
-			ret = ::ExtractIconW(GetModuleHandle(0), file.c_str(), 0);
+			ttstr placed = TVPGetPlacedPath(file);
+			if (!placed.length()) TVPThrowExceptionMessage(TJS_W("file not found."));
+			ttstr local = TVPGetLocallyAccessibleName(placed);
+			if (!local.length()) TVPThrowExceptionMessage(TJS_W("cannot get in archive icon."));
+			ret = ::ExtractIconW(GetModuleHandle(0), local.c_str(), 0);
 			if (ret == NULL) TVPThrowExceptionMessage(TJS_W("icon not found."));
 		}
 		return ret;
