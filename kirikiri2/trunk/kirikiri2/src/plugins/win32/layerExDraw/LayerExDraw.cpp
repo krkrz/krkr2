@@ -55,11 +55,15 @@ Image *loadImage(const tjs_char *name)
 	Image *image = NULL;
 	ttstr filename = TVPGetPlacedPath(name);
 	if (filename.length()) {
-		if (false && !wcschr(filename.c_str(), '>')) {// にぎりっぱになるのでやめ
+		/* ファイルを握ったままになるので廃止
+		ttstr localname(TVPGetLocallyAccessibleName(filename));
+		if (localname.length()) {
 			// 実ファイルが存在
-			TVPGetLocalName(filename);
-			image = Image::FromFile(filename.c_str(),false);
-		} else {
+			image = Image::FromFile(localname.c_str(),false);
+		}
+		else
+		 */
+		{
 			// 直接吉里吉里からもらったストリームを使うとなぜかwmf/emfでOutOfMemory
 			// なる場合があるようなのでいったんメモリにメモリに展開してから使う
 			IStream *in = TVPCreateIStream(filename, TJS_BS_READ);
@@ -155,10 +159,10 @@ GdiPlus::addPrivateFont(const tjs_char *fontFileName)
 	}
 	ttstr filename = TVPGetPlacedPath(fontFileName);
 	if (filename.length()) {
-		if (!wcschr(filename.c_str(), '>')) {
+		ttstr localname(TVPGetLocallyAccessibleName(filename));
+		if (localname.length()) {
 			// 実ファイルが存在
-			TVPGetLocalName(filename);
-			privateFontCollection->AddFontFile(filename.c_str());
+			privateFontCollection->AddFontFile(localname.c_str());
 			return;
 		} else {
 			// メモリにロードして展開
