@@ -113,10 +113,10 @@ public:
 		if (transfer_type == FILE) {
 			ttstr fname = TVPGetPlacedPath(transfer_file);
 			if (fname.length() > 0 && TVPIsExistentStorage(fname)) {
-				if (fname.length() > 0 && !wcschr(fname.c_str(), '>')) {
+				ttstr local = TVPGetLocallyAccessibleName(fname);
+				if (local.length() > 0) {
 					// 通常のファイルはローカルパスで直接渡す
-					TVPGetLocalName(fname);
-					transfer_file = fname;
+					transfer_file = local;
 				} else {
 					// アーカイブ内の場合はオンメモリでバイナリ転送に変更する
 					IStream *file = TVPCreateIStream(fname, TJS_BS_READ);
