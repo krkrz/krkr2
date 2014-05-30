@@ -87,6 +87,14 @@ class Storages {
 	function createDirectory(dir);	// by Kiyobee
 
 	/**
+	 * パスの正規化を行なわずディレクトリを作成する
+     * (ディレクトリ名が小文字に変換されない)
+	 * @param dir ディレクトリ名
+	 * @return 実際に作成できたら true
+	 */
+	function createDirectoryNoNormalize(dir);	// by Kiyobee
+
+	/**
 	 * カレントディレクトリを変更する
 	 * @param dir ディレクトリ名
 	 * @return 実際に変更できたら true

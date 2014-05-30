@@ -593,6 +593,27 @@ public:
 	}
 
 	/**
+	 * ディレクトリの作成
+	 * @param dir ディレクトリ名
+	 * @return 実際に作成できたら true
+	 */
+	static bool createDirectoryNoNormalize(ttstr dir)
+	{
+		if(dir.GetLastChar() != TJS_W('/'))
+		{
+			TVPThrowExceptionMessage(TJS_W("'/' must be specified at the end of given directory name."));
+		}
+		TVPGetLocalName(dir);
+		BOOL	r = CreateDirectory(dir.c_str(), NULL);
+		if (r == FALSE) {
+			ttstr mes;
+			getLastError(mes);
+			TVPAddLog(ttstr(TJS_W("createDirectory : ")) + dir + TJS_W(" : ") + mes);
+		}
+		return !! r;
+	}
+
+	/**
 	 * カレントディレクトリの変更
 	 * @param dir ディレクトリ名
 	 * @return 実際に作成できたら true
@@ -1018,6 +1039,7 @@ NCB_ATTACH_CLASS(StoragesFstat, Storages) {
 	NCB_METHOD(dirlistEx);
 	NCB_METHOD(removeDirectory);
 	NCB_METHOD(createDirectory);
+	NCB_METHOD(createDirectoryNoNormalize);
 	NCB_METHOD(changeDirectory);
 	NCB_METHOD(setFileAttributes);
 	NCB_METHOD(resetFileAttributes);
