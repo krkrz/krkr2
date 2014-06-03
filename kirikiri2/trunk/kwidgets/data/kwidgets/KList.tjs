@@ -704,7 +704,8 @@ class KList extends KVirtualWidget
     }
 
     // リストを開いた場合その子を注視
-    if (openNoticeItem !== void) 
+    if (openNoticeItem !== void
+        && openNoticeItem isvalid)
       openNotice(openNoticeItem);
 
     // 選択アイテムの背景色を変更
