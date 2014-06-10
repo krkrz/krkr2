@@ -1020,13 +1020,46 @@ public:
 	// -------------------------------------------------------------
 	// ƒAƒCƒRƒ“‘‚«Š·‚¦
 
+#ifndef IDI_TVPWIN32
+#define IDI_TVPWIN32 107 // [XXX]
+#endif
 	static HICON getIconHandle(HWND hwnd, VarT const &bmp) {
-		if (bmp.Type() == tvtObject) {
+		tTJSVariantType type = bmp.Type();
+		if (type == tvtObject) {
 			iTJSDispatch2 *dsp = bmp.AsObjectNoAddRef();
-			if (!dsp) return LoadIcon(GetModuleHandle(0), L"MAINICON");
-			else {
+			if (!dsp) {
+				// null object
+				HINSTANCE hinst = GetModuleHandle(0);
+				HICON   r = LoadIcon(hinst, L"MAINICON"); // for krkr2
+				if (!r) r = LoadIcon(hinst, MAKEINTRESOURCE(IDI_TVPWIN32)); // for krkrz
+				if (!r) r = LoadIcon(hinst, IDI_APPLICATION); // for others
+				return r;
+			} else {
+				// layer object
 				Bitmap *bmp = BitmapAdaptorT::GetNativeInstance(dsp, true);
 				if (bmp) return bmp->createIcon(hwnd);
+			}
+		} else if (type == tvtString) {
+			// string "file.ico" or "module.dll|name" or "module.dll?num"
+			const tjs_char *str = bmp.GetString();
+			if (str && *str) {
+				bool resource = true;
+				LPCTSTR name = NULL;
+				const tjs_char *sep;
+				if      ((sep = wcschr(str, '|')) != NULL) name = sep+1;
+				else if ((sep = wcschr(str, '?')) != NULL) {
+					tjs_int num = TJS_atoi(sep+1);
+					name = MAKEINTRESOURCE(num);
+				} else {
+					name = str;
+					resource = false;
+				}
+				if (name) {
+					HINSTANCE hinst = resource ? GetModuleHandle(sep == str ? NULL : ttstr(str, sep-str).c_str()) : NULL;
+					HICON r = (HICON)LoadImage(hinst, name, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE|LR_SHARED| (resource?0:LR_LOADFROMFILE));
+					//if (!r) ThrowLastError();
+					return r;
+				}
 			}
 		}
 		return NULL;

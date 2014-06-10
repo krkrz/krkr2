@@ -301,6 +301,7 @@ class WIN32Dialog {
 	 * ダイアログのアイコン画像
 	 *   WIN32Dialog.Bitmapクラスのインスタンス:その画像
 	 *   null:実行ファイルのアイコン
+	 *   文字列:任意のリソース内アイコン( module?番号 もしくは module|リソース名 )
 	 *   void:アイコンなし
 	 */
 	property icon { setter; getter; }
