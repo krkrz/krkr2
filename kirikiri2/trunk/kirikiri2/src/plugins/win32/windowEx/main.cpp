@@ -469,6 +469,9 @@ struct WindowEx
 			case SW_PARENTCLOSING: callback(EXEV_HIDE); break;
 			}
 			break;
+		case WM_QUERYOPEN:
+			callback(EXEV_SHOW);
+			break;
 		case WM_ENTERSIZEMOVE: callback(EXEV_MVSZBEGIN); break;
 		case WM_EXITSIZEMOVE:  callback(EXEV_MVSZEND);   break;
 		case WM_SIZING: if (hasResizing) callback(EXEV_RESIZING, (RECT*)mes->LParam, mes->WParam); break;
