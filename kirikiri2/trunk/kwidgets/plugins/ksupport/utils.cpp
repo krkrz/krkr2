@@ -255,7 +255,7 @@ bool equalStructNumericLoose(tTJSVariant v1, tTJSVariant v2)
 
   // Real“¯Žm‚È‚çfloat‚É•ÏŠ·‚µ‚Ä”äŠr
   if (v1.Type() == tvtReal && v2.Type() == tvtReal) {
-    return  ((float(tjs_real(v1)) - float(tjs_real(v2))) < FLT_EPSILON);
+    return  (fabs(float(tjs_real(v1)) - float(tjs_real(v2))) < FLT_EPSILON);
   }
 
   // ”Žš‚Ìê‡‚Í
