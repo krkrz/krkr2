@@ -228,6 +228,12 @@ class Window {
 	property disableResize { getter; setter; }
 
 	/**
+	 * 移動の抑制
+	 * SYSTEMCOMMANDのSC_MOVEを抑制する
+	 */
+	property disableMove   { getter; setter; }
+
+	/**
 	 * ■拡張イベント：アクティブ状態変更通知
 	 * @param active 0:非アクティブ化 1:マウスクリック以外でアクティブ化 2:マウスクリックでアクティブ化
 	 * @param minimize 0:ウィンドウは最小化されていない それ以外:最小化されている
@@ -307,6 +313,14 @@ class Window {
 	 * このメニューが選択されると onExSystemMenuSelected(選択されたオブジェクト) コールバックが発生
 	 */
 	property exSystemMenu { getter; setter; }
+
+	/**
+	 * 追加システムメニューを再生成する(吉里吉里Z向け)
+	 * 吉里吉里ZではborderStyleを変更でシステムメニューがリセットされるため
+	 * プロパティ変更後にこのメソッドを呼ぶこと
+	 * ※WM_INITMENUPOPUPで検知して再生成するとメニューの表示位置がズレてしまう問題があるため
+	 */
+	function resetExSystemMenu();
 
 
 	// 以下特殊用途
