@@ -196,16 +196,19 @@ bool equalStructNumericLoose(tTJSVariant v1, tTJSVariant v2)
   // タイプがオブジェクトなら特殊判定
   if (v1.Type() == tvtObject
       && v2.Type() == tvtObject) {
-    if (v1.AsObjectNoAddRef() == v2.AsObjectNoAddRef())
+    if (v1.AsObjectNoAddRef() == v2.AsObjectNoAddRef()) {
       return true;
+    }
 
     tTJSVariantClosure &o1 = v1.AsObjectClosureNoAddRef();
     tTJSVariantClosure &o2 = v2.AsObjectClosureNoAddRef();
     
     // 関数どうしなら特別扱いで関数比較
     if (o1.IsInstanceOf(0, NULL, NULL, L"Function", NULL)== TJS_S_TRUE
-	&& o2.IsInstanceOf(0, NULL, NULL, L"Function", NULL)== TJS_S_TRUE)
+        && o2.IsInstanceOf(0, NULL, NULL, L"Function", NULL)== TJS_S_TRUE) {
+
       return v1.DiscernCompare(v2);
+    }
 
     // Arrayどうしなら全項目を比較
     if (o1.IsInstanceOf(0, NULL, NULL, L"Array", NULL)== TJS_S_TRUE
@@ -214,17 +217,19 @@ bool equalStructNumericLoose(tTJSVariant v1, tTJSVariant v2)
       tTJSVariant o1Count, o2Count;
       (void)o1.PropGet(0, L"count", &countHint, &o1Count, NULL);
       (void)o2.PropGet(0, L"count", &countHint, &o2Count, NULL);
-      if (! o1Count.DiscernCompare(o2Count))
-	return false;
+      if (! o1Count.DiscernCompare(o2Count)) {
+        return false;
+      }
       // 全項目を順番に比較
       tjs_int count = o1Count;
       tTJSVariant o1Val, o2Val;
       for (tjs_int i = 0; i < count; i++) {
-	(void)o1.PropGetByNum(TJS_IGNOREPROP, i, &o1Val, NULL);
-	(void)o2.PropGetByNum(TJS_IGNOREPROP, i, &o2Val, NULL);
-	if (! equalStructNumericLoose(o1Val, o2Val))
-	  return false;
-      }
+        (void)o1.PropGetByNum(TJS_IGNOREPROP, i, &o1Val, NULL);
+        (void)o2.PropGetByNum(TJS_IGNOREPROP, i, &o2Val, NULL);
+        if (! equalStructNumericLoose(o1Val, o2Val)) {
+          return false;
+        }
+      }        
       return true;
     }
 
@@ -235,8 +240,9 @@ bool equalStructNumericLoose(tTJSVariant v1, tTJSVariant v2)
       tjs_int o1Count, o2Count;
       (void)o1.GetCount(&o1Count, NULL, NULL, NULL);
       (void)o2.GetCount(&o2Count, NULL, NULL, NULL);
-      if (o1Count != o2Count)
-	return false;
+      if (o1Count != o2Count) {
+        return false;
+      }
       // 全項目を順番に比較
       DictMemberCompareNumericLooseCaller *caller = new DictMemberCompareNumericLooseCaller(o2);
       tTJSVariantClosure closure(caller);
@@ -247,10 +253,16 @@ bool equalStructNumericLoose(tTJSVariant v1, tTJSVariant v2)
     }      
   }
 
+  // Real同士ならfloatに変換して比較
+  if (v1.Type() == tvtReal && v2.Type() == tvtReal) {
+    return  ((float(tjs_real(v1)) - float(tjs_real(v2))) < FLT_EPSILON);
+  }
+
   // 数字の場合は
   if ((v1.Type() == tvtInteger || v1.Type() == tvtReal)
-      && (v2.Type() == tvtInteger || v2.Type() == tvtReal))
-      return v1.NormalCompare(v2);
+      && (v2.Type() == tvtInteger || v2.Type() == tvtReal)) {
+    return v1.NormalCompare(v2);
+  }
 
   return v1.DiscernCompare(v2);
 }
