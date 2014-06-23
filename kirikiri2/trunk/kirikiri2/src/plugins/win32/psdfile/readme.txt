@@ -18,6 +18,9 @@ http://www.boost.org/
 
 またビルドする際は、なるべくVS2012以降を使用することをおすすめします。
 
+WindowsXPでも動作するようにするためには、以下のURLを参考に VS2012のUpdateを導入して下さい。
+http://blogs.msdn.com/b/jpvsblog/archive/2013/04/17/visual-studio-2012-windows-xp-visual-c.aspx
+
 ●使い方
 
 詳細は manual.tjs 参照
