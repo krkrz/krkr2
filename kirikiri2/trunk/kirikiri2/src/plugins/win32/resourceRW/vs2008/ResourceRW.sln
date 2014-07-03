@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ResourceRW", "ResourceRW.vcproj", "{772375B6-1457-784B-AE8E-B3FD27640D04}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|Win32 = Release|Win32
+		Debug|Win32 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{772375B6-1457-784B-AE8E-B3FD27640D04}.Release|Win32.ActiveCfg = Release|Win32
+		{772375B6-1457-784B-AE8E-B3FD27640D04}.Release|Win32.Build.0 = Release|Win32
+		{772375B6-1457-784B-AE8E-B3FD27640D04}.Debug|Win32.ActiveCfg = Debug|Win32
+		{772375B6-1457-784B-AE8E-B3FD27640D04}.Debug|Win32.Build.0 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

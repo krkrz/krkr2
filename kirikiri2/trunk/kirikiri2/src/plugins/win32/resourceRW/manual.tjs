@@ -1,0 +1,119 @@
+//擬似コードによるマニュアル
+
+class ResourceReader {
+	function ResourceReader(file) { if (file !== void) open(file); }
+	function finalize { close(); }
+
+	/**
+	 * 操作対象のファイルをオープン
+	 * @param file ファイル名(exeまたはdll)
+	 */
+	function open(file);
+
+	/**
+	 * 操作対象のファイルをクローズ
+	 */
+	function close();
+
+	/**
+	 * 読み出しの言語を指定
+	 * @param primaryLang 主言語
+	 * @param subLang 副言語
+	 * @return 設定されたWORD値
+	 * いずれもLANG_*やSUBLANG_*の文字列か，数値を指定します。
+	 * 詳細は MAKELANGID などで検索してください。
+	 */
+	function setLang(primaryLang, subLang);
+
+	/**
+	 * リソースが存在するかどうか
+	 * @param type リソースタイプ（文字列か数値，もしくは rt*定数を指定）
+	 * @param name リソース名（文字列か数値）
+	 * @return 存在する場合はtrue
+	 */
+	function isExistentResource(type, name);
+
+	/**
+	 * リソースの読み込み
+	 * @param type リソースタイプ（文字列か数値，もしくは rt*定数を指定）
+	 * @param name リソース名（文字列か数値）
+	 * @param utf8 (readToTextのみ)対象がUTF-8エンコードの場合はtrue（falseの場合はUnicode）
+	 * @param file (readToFileのみ)書き出しファイル名
+	 * @return voidの場合はリソースが存在しない，存在する場合は関数ごとに値が異なる
+	 */
+	function readToText (type, name, utf8=false); // -> リソースのテキスト
+	function readToFile (type, name, file); // -> 書き出したファイルサイズ
+	function readToOctet(type, name); //-> リソースのoctet
+	
+}
+
+class ResourceWriter {
+	function ResourceWriter(file, clean) { if (file !== void) open(file, clean); }
+
+	/**
+	 * 操作対象のファイルをオープン
+	 * @param file ファイル名(exeまたはdll)
+	 * @param clean 既存のリソースを全てクリアするかどうか
+	 * 基本的にオープンされていないファイルのみ操作可能です
+	 * ＞自分自身のkrkr.exeやPlugins.linkでリンク済みのプラグインは操作できません
+	 */
+	function open(file, clean=false);
+
+	/**
+	 * 操作対象のファイルをクローズ＆実書き出し
+	 * @param write 書き出す場合はtrue
+	 * write=falseの場合，writeFrom～やclearの処理がすべてキャンセルされ，書き出しは行われません
+	 * write=trueでも一度もwriteFrom～/clearを呼ばなかった場合も書き出しは行われません
+	 */
+	function close(write=true);
+
+	/**
+	 * 書き出しの言語を指定
+	 * パラメータ内容は ResourceReader.setLang と同じです
+	 */
+	function setLang(primaryLang, subLang);
+
+	/**
+	 * 対象のリソースを削除
+	 * @param type リソースタイプ（文字列か数値，もしくは rt*定数を指定）
+	 * @param name リソース名（文字列か数値）
+	 * ※この関数を呼んでもclose(true)するまでは書き出しは保留されています
+	 */
+	function clear(type, name);
+
+	/**
+	 * リソースの書き出し
+	 * @param type リソースタイプ（文字列か数値，もしくは rt*定数を指定）
+	 * @param name リソース名（文字列か数値）
+	 * @param text (writeFromTextのみ)対象のテキスト
+	 * @param utf8 (writeFromTextのみ)UTF-8エンコードで書き出す場合はtrue（falseの場合はUnicode）
+	 * @param file (writeFromFileのみ)対象のファイル名
+	 * @param oct  (writeFromOctetのみ)対象のoctet
+	 * ※この関数を呼んでもclose(true)するまでは書き出しは保留されています
+	 */
+	function writeFromText (type, name, text, utf8=false);
+	function writeFromFile (type, name, file);
+	function writeFromOctet(type, name, oct);
+}
+
+/**
+ * リソースタイプ定数
+ */
+var rtAccelerator  = RT_ACCELERATOR;
+var rtAniCursor    = RT_ANICURSOR;
+var rtAniIcon      = RT_ANIICON;
+var rtBitmap       = RT_BITMAP;
+var rtCursor       = RT_CURSOR;
+var rtDialog       = RT_DIALOG;
+var rtFont         = RT_FONT;
+var rtFontDir      = RT_FONTDIR;
+var rtGroupCursor  = RT_GROUP_CURSOR;
+var rtGroupIcon    = RT_GROUP_ICON;
+var rtHtml         = RT_HTML;
+var rtIcon         = RT_ICON;
+var rtMenu         = RT_MENU;
+var rtMessageTable = RT_MESSAGETABLE;
+var rtRcData       = RT_RCDATA;
+var rtString       = RT_STRING;
+var rtVersion      = RT_VERSION;
+
