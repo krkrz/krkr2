@@ -187,12 +187,12 @@ public:
 
 		LPVOID lpData = 0;
 		DWORD  cbData = 0;
-		ttstr tmp(name->GetString());
+		ttstr tmp(text->GetString());
 		bool utf8 = optnum>0 && optargs[0]->operator bool();
 		if (utf8) {
 			int maxlen = tmp.length() * 6 + 1;
 			char *out = (char*)tmp.AllocBuffer(maxlen); // [XXX]
-			cbData = TVPWideCharToUtf8String(name->GetString(), out);
+			cbData = TVPWideCharToUtf8String(text->GetString(), out);
 			lpData = (LPVOID)out;
 		} else {
 			lpData = (void*)tmp.c_str();
@@ -278,6 +278,13 @@ public:
 		}
 		if (r) r->Clear();
 		return TJS_S_OK;
+	}
+
+	/**
+	 * function setLang(primlang, sublang);
+	 */
+	tjs_error setLang(tTJSVariant *r, tTJSVariant *arg, tjs_int optnum, tTJSVariant **optargs) {
+		return ResourceUtil::setLang(r, arg, optnum, optargs);
 	}
 };
 
@@ -447,6 +454,12 @@ public:
 		return TJS_S_OK;
 	}
 
+	/**
+	 * function setLang(primlang, sublang);
+	 */
+	tjs_error setLang(tTJSVariant *r, tTJSVariant *arg, tjs_int optnum, tTJSVariant **optargs) {
+		return ResourceUtil::setLang(r, arg, optnum, optargs);
+	}
 };
 
 bool Entry(bool link) {
