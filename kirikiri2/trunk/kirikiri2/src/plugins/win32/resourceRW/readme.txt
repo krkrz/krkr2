@@ -49,7 +49,8 @@ gmake/		gcc用プロジェクト
 	MESSAGE_RESOURCE_ENTRY
 　のtypedef/structのフォーマットを自前で読み書きしてください。
 　参考；http://www.codeproject.com/Articles/14444/Enumerating-Message-Table-Contents
-
+・アイコンは rtIcon,rtGroupIconリソースをを適切に設定する必要があります
+　参考；http://www.codeproject.com/Articles/30644/Replacing-ICON-resources-in-EXE-and-DLL-files
 
 ●ライセンス
 
