@@ -659,12 +659,12 @@ public:
 	/**
 	 * ƒvƒƒpƒeƒB‚ğ“o˜^
 	 * @param key “o˜^ƒvƒƒpƒeƒB–¼
-	 * @param set “o˜^‘ÎÛ‚ÌsetterŒ^‚ÌŠÖ”
 	 * @param get “o˜^‘ÎÛ‚ÌgetterŒ^‚ÌŠÖ”
+	 * @param set “o˜^‘ÎÛ‚ÌsetterŒ^‚ÌŠÖ”
 	 * ¦setter/getter‚Ç‚¿‚ç‚©‚ª–³‚¢ê‡‚Í 0 ‚ğw’è‚µ‚Ü‚·
 	 */
-	template <typename SET, typename GET>
-	BindUtil& Property(const ttstr &key, const SET &set, const GET &get) {
+	template <typename GET, typename SET>
+	BindUtil& Property(const ttstr &key, const GET &get, const SET &set) {
 		if (_store) _error |= !(_link ? PropertyStore::Link(_store, key, set, get)
 								/**/ :   StoreUtil::Unlink(_store, key));
 		return *this;

@@ -43,7 +43,7 @@ using SimpleBinder::BindUtil;
 
 BindUtil(link)
  .Function(name, method)
- .Property(name, setter, getter)
+ .Property(name, getter, setter)
  .Constant(name, value)
  .Variant(name, value);
 
@@ -179,7 +179,7 @@ bool Entry(bool link) {
   return 
 	(BindUtil(link)
 	 .Function(TJS_W("Hoge"), &Hoge)
-	 .Property(TJS_W("Fuga"), &FugaSet, &FugaGet)
+	 .Property(TJS_W("Fuga"), &FugaGet, &FugaSet)
 	 .IsValid()
 	);
 }
@@ -241,13 +241,13 @@ public:
   /**
    * ƒvƒƒpƒeƒB‚ğ“o˜^
    * @param name “o˜^ƒvƒƒpƒeƒB–¼
-   * @param set “o˜^‘ÎÛ‚ÌsetterŒ^‚ÌŠÖ”
    * @param get “o˜^‘ÎÛ‚ÌgetterŒ^‚ÌŠÖ”
+   * @param set “o˜^‘ÎÛ‚ÌsetterŒ^‚ÌŠÖ”
    * ¦setter/getter‚Ç‚¿‚ç‚©‚ª–³‚¢ê‡‚Í 0 ‚ğw’è‚µ‚Ü‚·
    */
-  BindUtil& Property(const ttstr &name, const Setter &set, const Getter &get);
-  BindUtil& Property(const ttstr &name, int noset, const Getter &get);
-  BindUtil& Property(const ttstr &name, const Setter &set, int noget);
+  BindUtil& Property(const ttstr &name, const Getter &get, const Setter &set);
+  BindUtil& Property(const ttstr &name, const Getter &get, int noset);
+  BindUtil& Property(const ttstr &name, int noget, const Setter &set);
 
   /**
    * ’è”‚ğ“o˜^
