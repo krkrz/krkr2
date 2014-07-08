@@ -123,6 +123,7 @@ struct layerExAreaAverage
 
 				fixdot		totalarea_a = 0, a = 0;
 				fixdot		totalarea_rgb = 0, r = 0, g = 0, b = 0;
+                fixdot      totalarea_trgb = 0, tr = 0, tg = 0, tb = 0;
 				for(tjs_int ay=sy; ay<ey; ay++)
 				{
 					tjs_uint32*	inpixel	= (tjs_uint32*)(sBuffer + ay * sPitch);
@@ -144,12 +145,18 @@ struct layerExAreaAverage
 						totalarea_a	+= area;
 						tjs_uint32	alpha = (*inpixel >> 24) & 0xFF;
 						a	+= alpha * area;
-						area	= (area * alpha) >> 8;	// α値が低いピクセルは、色への影響を小さくする
-						r	+= ((*inpixel >> 16) & 0xFF) * area;
-						g	+= ((*inpixel >>  8) & 0xFF) * area;
-						b	+= ((*inpixel      ) & 0xFF) * area;
-						totalarea_rgb	+= area;
-
+                        if (alpha > 0) {
+                          area	= (area * alpha) >> 8;	// α値が低いピクセルは、色への影響を小さくする
+                          r	+= ((*inpixel >> 16) & 0xFF) * area;
+                          g	+= ((*inpixel >>  8) & 0xFF) * area;
+                          b	+= ((*inpixel      ) & 0xFF) * area;
+                          totalarea_rgb	+= area;
+                        } else {
+                          tr	+= ((*inpixel >> 16) & 0xFF) * area;
+                          tg	+= ((*inpixel >>  8) & 0xFF) * area;
+                          tb	+= ((*inpixel      ) & 0xFF) * area;
+                          totalarea_trgb += area;
+                        }
 						inpixel++;
 					}
 				}
@@ -158,6 +165,12 @@ struct layerExAreaAverage
 
 				//	平均値を計算し、設定
 				a	= DIVFIXDOT(a, totalarea_a);
+                if (totalarea_rgb == 0) {
+                  totalarea_rgb = totalarea_trgb;
+                  r = tr;
+                  g = tg;
+                  b = tb;
+                }
 				if(totalarea_rgb == 0)
 				{
 					r = g = b = 0;
