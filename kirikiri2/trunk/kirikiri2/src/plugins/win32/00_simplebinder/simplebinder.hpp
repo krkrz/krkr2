@@ -96,13 +96,19 @@ template <typename FUNC> struct FactoryInvoker;
 
 #define DEF_SCF(CNT, ARGS, EXT) \
 	template <class C> struct FactoryInvoker<tjs_error (*) ARGS> : public MethodInvokerBase { enum { Count = CNT  }; typedef tjs_error (*Func) ARGS; typedef C Class; typedef C*& Inst; \
-		static inline tjs_error Invoke(const Func &func, Inst result, Num numparams, Vp *param) { return func EXT; } }
+		static inline tjs_error Invoke(const Func &func, Inst result, Num numparams, Vp *param, iTJSDispatch2 *objthis) { return func EXT; } }
 
-// factory(args*)
+// factory(inst, args*)
 UNROLL_FOREACH(DEF_SCF, UNROLL_AM, (C*&, ARGTYPE), (result, ARGREF));
 
-// factory(args*, optnum, optargs)
+// factory(inst, args*, optnum, optargs)
 UNROLL_FOREACH(DEF_SCF, UNROLL_AMYZ, (C*&, ARGTYPE, tjs_int, tTJSVariant**), (result, ARGREF, VARGNUM, VARGREF));
+
+// factory(objthis, inst, args*)
+UNROLL_FOREACH(DEF_SCF, UNROLL_ABM, (iTJSDispatch2*, C*&, ARGTYPE), (objthis, result, ARGREF));
+
+// factory(objthis, inst, args*, optnum, optargs)
+UNROLL_FOREACH(DEF_SCF, UNROLL_ABMYZ, (iTJSDispatch2*, C*&, ARGTYPE, tjs_int, tTJSVariant**), (objthis, result, ARGREF, VARGNUM, VARGREF));
 
 
 ////============================
@@ -444,7 +450,7 @@ class ClassEntryInterface {
 public:
 	virtual ~ClassEntryInterface() {}
 	virtual void release() { delete this; }
-	virtual tjs_error createNew(void **instance, tjs_int numparams, tTJSVariant **param) = 0;
+	virtual tjs_error createNew(void **instance, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) = 0;
 	virtual tjs_error invalidate(void *instance) = 0;
 	virtual tjs_error entryMembers(iTJSDispatch2 *classobj) = 0;
 };
@@ -463,10 +469,10 @@ public:
 	ClassEntryCallback(const Callback &cb, iTJSDispatch2 **clsobj, DeleteCB del = &AutoDelete<Class>::Delete)
 		: _minparams(Invoker::Count), _callback(cb), _delete(del), _outclsobj(clsobj) {}
 
-	tjs_error createNew(void **instance, tjs_int numparams, tTJSVariant **param) {
+	tjs_error createNew(void **instance, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
 		if(numparams < _minparams) return TJS_E_BADPARAMCOUNT;
 		Class *self = 0;
-		tjs_error r = Invoker::Invoke(_callback, self, numparams, param);
+		tjs_error r = Invoker::Invoke(_callback, self, numparams, param, objthis);
 		if (instance) *instance = reinterpret_cast<void*>(self);
 		return r;
 	}
@@ -503,9 +509,9 @@ public:
 	InstanceWrapper() : _instance(0) {}
 
 	// iTJSNativeInstance::Construct
-	tjs_error TJS_INTF_METHOD Construct(tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *tjs_obj) {
+	tjs_error TJS_INTF_METHOD Construct(tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis) {
 		Entry entry = GetEntry();
-		return entry ? entry->createNew(reinterpret_cast<void**>(&_instance), numparams, param) : TJS_E_FAIL;
+		return entry ? entry->createNew(reinterpret_cast<void**>(&_instance), numparams, param, objthis) : TJS_E_FAIL;
 	}
 	// iTJSNativeInstance::Invalidate
 	void TJS_INTF_METHOD Invalidate() {

@@ -159,6 +159,9 @@ tjs_error (*)(Class *instance, const tTJSVariant *value); //Å¶ÉNÉâÉXìoò^éûÇÃÇ›
 tjs_error (*)(Class* &instance, tTJSVariant *arg1, ... tTJSVariant *argN);
 tjs_error (*)(Class* &instance, tTJSVariant *arg1, ... tTJSVariant *argN, tjs_int optnum, tTJSVariant **optargs);
 
+tjs_error (*)(iTJSDispatch2 *objthis, Class* &instance, tTJSVariant *arg1, ... tTJSVariant *argN);
+tjs_error (*)(iTJSDispatch2 *objthis, Class* &instance, tTJSVariant *arg1, ... tTJSVariant *argN, tjs_int optnum, tTJSVariant **optargs);
+
 ÅEterminatorå^
 
 void (*)(Class *instance);
