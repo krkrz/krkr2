@@ -7,8 +7,8 @@
 #include "tjsinstance.h"
 
 // 値の格納・取得用
-Local<Value> toJSValue(const tTJSVariant &variant);
-tTJSVariant toVariant(Handle<Value> value);
+Local<Value> toJSValue(Isolate *isolate, const tTJSVariant &variant);
+tTJSVariant toVariant(Isolate *isolate, Handle<Value> value);
 
 #define JSOBJECTCLASS L"JavascriptObject"
 
@@ -22,22 +22,22 @@ public:
 	 * コンストラクタ
 	 * @param obj IDispatch
 	 */
-	iTJSDispatch2Wrapper(Handle<Object> obj) {
-		this->obj = Persistent<Object>::New(obj);
+	iTJSDispatch2Wrapper(Isolate *isolate, Handle<Object> obj) : isolate(isolate) {
+		this->obj.Reset(isolate,obj);
 	}
 	
 	/**
 	 * デストラクタ
 	 */
 	~iTJSDispatch2Wrapper() {
-		obj.Dispose();
+		obj.Reset();
 	}
 
 	/**
 	 * 保持してる値を返す
 	 */
-	Local<Value> getValue() {
-		return *obj;
+	Local<Object> getObject() {
+		return Local<Object>::New(isolate, obj);
 	}
 
 public:
@@ -50,7 +50,7 @@ public:
 		tjs_int numparams,
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis) {
-		return TJSInstance::createMethod(obj->ToObject(), membername, result, numparams, param);
+		return TJSInstance::createMethod(isolate, getObject(), membername, result, numparams, param);
 	}
 
 	// メソッド呼び出し
@@ -63,7 +63,7 @@ public:
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis
 		) {
-		return TJSInstance::callMethod(obj->ToObject(), membername, result, numparams, param, objthis);
+		return TJSInstance::callMethod(isolate, getObject(), membername, result, numparams, param, objthis);
 	}
 
 	// プロパティ取得
@@ -76,7 +76,7 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-		return TJSInstance::getProp(obj->ToObject(), membername, result);
+		return TJSInstance::getProp(isolate, getObject(), membername, result);
 	}
 
 	// プロパティ設定
@@ -86,14 +86,14 @@ public:
 		tjs_uint32 *hint,
 		const tTJSVariant *param,
 		iTJSDispatch2 *objthis) {
-		return TJSInstance::setProp(obj->ToObject(), membername, param);
+		return TJSInstance::setProp(isolate, getObject(), membername, param);
 	}
 
 	// メンバ削除
 	tjs_error TJS_INTF_METHOD DeleteMember(
 		tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 		iTJSDispatch2 *objthis) {
-		return TJSInstance::remove(obj->ToObject(), membername);
+		return TJSInstance::remove(isolate, getObject(), membername);
 	}
 
 	tjs_error TJS_INTF_METHOD IsInstanceOf(
@@ -112,6 +112,7 @@ public:
 protected:
 	/// 内部保持用
 	Persistent<Object> obj;
+	Isolate *isolate;
 };
 
 //----------------------------------------------------------------------------
@@ -124,21 +125,21 @@ protected:
  * @param variant tTJSVariant
  */
 Local<Value>
-toJSValue(const tTJSVariant &variant)
+toJSValue(Isolate *isolate, const tTJSVariant &variant)
 {
 	switch (variant.Type()) {
 	case tvtVoid:
-		return *Undefined();
+		return Undefined(isolate);
 	case tvtObject:
 		{
 			iTJSDispatch2 *obj = variant.AsObjectNoAddRef();
 			if (obj == NULL) {
 				// NULLの処理
-				return *Null();
+				return Null(isolate);
 			} else if (obj->IsInstanceOf(0, NULL, NULL, JSOBJECTCLASS, obj) == TJS_S_TRUE) {
 				// Javascript ラッピングオブジェクトの場合
 				iTJSDispatch2Wrapper *wobj = (iTJSDispatch2Wrapper*)obj;
-				return wobj->getValue();
+				return wobj->getObject();
 			} else {
 				Local<Object> result;
 				if (TJSInstance::getJSObject(result, variant)) {
@@ -146,27 +147,27 @@ toJSValue(const tTJSVariant &variant)
 					return result;
 				}
 				// 単純ラッピング
-				return TJSObject::toJSObject(variant);
+				return TJSObject::toJSObject(isolate, variant);
 			}
 		}
 		break;
 	case tvtString:
-		return String::New(variant.GetString(), -1);
+		return String::NewFromTwoByte(isolate, variant.GetString());
 	case tvtOctet:
-		return *Null();
+		return Null(isolate);
 	case tvtInteger:
 	case tvtReal:
-		return Number::New((tTVReal)variant);
+		return Number::New(isolate, (tTVReal)variant);
 	}
-	return *Undefined();
+	return Undefined(isolate);
 }
 
 tTJSVariant
-toVariant(Handle<Object> object, Handle<Object> context)
+toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context)
 {
 	tTJSVariant result;
-	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(object);
-	iTJSDispatch2 *tjsctx = new iTJSDispatch2Wrapper(context);
+	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(isolate, object);
+	iTJSDispatch2 *tjsctx = new iTJSDispatch2Wrapper(isolate, context);
 	if (tjsobj && tjsctx) {
 		result = tTJSVariant(tjsobj, tjsctx);
 		tjsobj->Release();
@@ -179,10 +180,10 @@ toVariant(Handle<Object> object, Handle<Object> context)
 }
 
 tTJSVariant
-toVariant(Handle<Object> object)
+toVariant(Isolate *isolate, Handle<Object> object)
 {
 	tTJSVariant result;
-	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(object);
+	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(isolate, object);
 	if (tjsobj) {
 		result = tTJSVariant(tjsobj, tjsobj);
 		tjsobj->Release();
@@ -196,7 +197,7 @@ toVariant(Handle<Object> object)
  * @return tTJSVariant
  */
 tTJSVariant
-toVariant(Handle<Value> value)
+toVariant(Isolate *isolate, Handle<Value> value)
 {
 	tTJSVariant result;
 	if (value->IsNull()) {
@@ -210,12 +211,12 @@ toVariant(Handle<Value> value)
 		result = *str;
 	} else if (value->IsFunction() || value->IsArray() || value->IsDate()) {
 		// 単純ラッピング
-		result = toVariant(value->ToObject());
+		result = toVariant(isolate, value->ToObject());
 	} else if (value->IsObject()) {
 		Local<Object> obj = value->ToObject();
 		if (!TJSBase::getVariant(result, obj)) {
 			// 単純ラッピング
-			result = toVariant(obj);
+			result = toVariant(isolate, obj);
 		}
 	} else if (value->IsBoolean()) {
 		result = value->BooleanValue();

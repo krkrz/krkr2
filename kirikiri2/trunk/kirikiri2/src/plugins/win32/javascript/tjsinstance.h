@@ -11,7 +11,7 @@ class TJSInstance : public TJSBase, iTJSNativeInstance {
 
 public:
 	// 初期化用
-	static void init(Handle<ObjectTemplate> globalTemplate);
+	static void init(Isolate *isolate, Handle<ObjectTemplate> globalTemplate);
 
 	/**
 	 * 吉里吉里オブジェクトを Javascrip オブジェクトに変換
@@ -22,11 +22,11 @@ public:
 	static bool getJSObject(Local<Object> &result, const tTJSVariant &variant);
 
 	// メソッド呼び出し用
-	static tjs_error getProp(Local<Object> obj, const tjs_char *membername, tTJSVariant *result);
-	static tjs_error setProp(Local<Object> obj, const tjs_char *membername, const tTJSVariant *param);
-	static tjs_error remove(Local<Object> obj, const tjs_char *membername);
-	static tjs_error createMethod(Local<Object> obj, const tjs_char *membername, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param);
-	static tjs_error callMethod(Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+	static tjs_error getProp(Isolate *isolate, Local<Object> obj, const tjs_char *membername, tTJSVariant *result);
+	static tjs_error setProp(Isolate *isolate, Local<Object> obj, const tjs_char *membername, const tTJSVariant *param);
+	static tjs_error remove(Isolate *isolate, Local<Object> obj, const tjs_char *membername);
+	static tjs_error createMethod(Isolate *isolate, Local<Object> obj, const tjs_char *membername, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param);
+	static tjs_error callMethod(Isolate *isolate, Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
 	
 	// ---------------------------------------------------------------
 
@@ -53,24 +53,24 @@ public:
 	 * @param args 引数
 	 * @return 結果
 	 */
-	static Handle<Value> tjsInvoker(const Arguments& args);
+	static void tjsInvoker(const FunctionCallbackInfo<Value>& args);
 
 	/**
 	 * TJSオブジェクト用のプロパティゲッター
 	 */
-	static Handle<Value> tjsGetter(Local<String> property, const AccessorInfo& info);
+	static void tjsGetter(Local<String> property, const PropertyCallbackInfo<Value>& info);
 	
 	/**
 	 * TJSオブジェクト用のプロパティセッター
 	 */
-	static void tjsSetter(Local<String> property, Local<Value> value, const AccessorInfo& info);
+	static void tjsSetter(Local<String> property, Local<Value> value, const PropertyCallbackInfo<void>& info);
 
 	/**
 	 * コンストラクタ
 	 * @param obj 自己オブジェクト
 	 * @param instance バインド対象のTJSオブジェクト
 	 */
-	TJSInstance(Handle<Object> obj, const tTJSVariant &instance);
+	TJSInstance(Isolate *isolate, Handle<Object> obj, const tTJSVariant &instance);
 	
 private:
 
@@ -79,50 +79,58 @@ private:
 	 * @param args 引数
 	 * @return 結果
 	 */
-	static Handle<Value> createTJSClass(const Arguments& args);
+	static void createTJSClass(const FunctionCallbackInfo<Value>& args);
 
 	/**
 	 * 破棄処理
 	 */
 	void invalidate();
-	
-	/**
-	 * オブジェクトのディスポーザ
-	 */
-	static void release(Persistent<Value> handle, void* parameter);
 
+	template<class T>
+	static void release(const WeakCallbackData<T,TJSInstance>& data) {
+		TJSInstance *self = data.GetParameter();
+		if (self) {
+			self->invalidate();
+		}
+	}
+	
 	/**
 	 * TJSオブジェクトの有効確認
 	 * @param args 引数
 	 * @return 結果
 	 */
-	static Handle<Value> tjsIsValid(const Arguments& args);
+	static void tjsIsValid(const FunctionCallbackInfo<Value>& args);
 
 	/**
 	 * TJSオブジェクトに対するオーバライド処理
 	 * @param args 引数
 	 * @return 結果
 	 */
-	static Handle<Value> tjsOverride(const Arguments& args);
+	static void tjsOverride(const FunctionCallbackInfo<Value>& args);
 	
 	/**
 	 * TJSオブジェクトのコンストラクタ
 	 * @param args 引数
 	 * @return 結果
 	 */
-	static Handle<Value> tjsConstructor(const Arguments& args);
+	static void tjsConstructor(const FunctionCallbackInfo<Value>& args);
 
 	// NativeClass ID
 	static int classId;
 	
 	// 自己参照用
 	Persistent<Object> self;
+	Isolate *isolate;
 
 public:
 	// NativeInstance 対応用メンバ
 	virtual tjs_error TJS_INTF_METHOD Construct(tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *tjs_obj);
 	virtual void TJS_INTF_METHOD Invalidate();
 	virtual void TJS_INTF_METHOD Destruct();
+
+	operator Local<Object> () {
+		return Local<Object>::New(isolate, self);
+	}
 };
 
 #endif

@@ -1,39 +1,39 @@
 #include "tjsobj.h"
-extern Local<Value> toJSValue(const tTJSVariant &variant);
-extern tTJSVariant toVariant(Handle<Value> value);
+extern Local<Value> toJSValue(Isolate *, const tTJSVariant &variant);
+extern tTJSVariant toVariant(Isolate *, Handle<Value> value);
 
 /**
  * Javascriptに対してエラー通知
  */
 Handle<Value>
-ERROR_KRKR(tjs_error error)
+ERROR_KRKR(Isolate *isolate, tjs_error error)
 {
 	switch (error) {
 	case TJS_E_MEMBERNOTFOUND:
-		return ThrowException(String::New("member not found"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "member not found"));
 	case TJS_E_NOTIMPL:
-		return ThrowException(String::New("not implemented"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "not implemented"));
 	case TJS_E_INVALIDPARAM:
-		return ThrowException(String::New("invalid param"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "invalid param"));
 	case TJS_E_BADPARAMCOUNT:
-		return ThrowException(String::New("bad param count"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "bad param count"));
 	case TJS_E_INVALIDTYPE:
-		return ThrowException(String::New("invalid type"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "invalid type"));
 	case TJS_E_INVALIDOBJECT:
-		return ThrowException(String::New("invalid object"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "invalid object"));
 	case TJS_E_ACCESSDENYED:
-		return ThrowException(String::New("access denyed"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "access denyed"));
 	case TJS_E_NATIVECLASSCRASH:
-		return ThrowException(String::New("navive class crash"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "navive class crash"));
 	default:
-		return ThrowException(String::New("failed"));
+		return isolate->ThrowException(String::NewFromUtf8(isolate, "failed"));
 	}
 }
 
 Handle<Value>
-ERROR_BADINSTANCE()
+ERROR_BADINSTANCE(Isolate *isolate)
 {
-	return ThrowException(String::New("bad instance"));
+	return isolate->ThrowException(String::NewFromUtf8(isolate, "bad instance"));
 }
 
 //----------------------------------------------------------------------------
@@ -44,81 +44,79 @@ Persistent<ObjectTemplate> TJSObject::objectTemplate;
 
 // オブジェクト定義初期化
 void
-TJSObject::init()
+TJSObject::init(Isolate *isolate)
 {
-	objectTemplate = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
-	objectTemplate->SetNamedPropertyHandler(getter, setter);
-	objectTemplate->SetCallAsFunctionHandler(caller);
+	HandleScope handle_scope(isolate);
+	Local<ObjectTemplate> obj = ObjectTemplate::New(isolate);
+	obj->SetNamedPropertyHandler(getter, setter);
+	obj->SetCallAsFunctionHandler(caller);
+	objectTemplate.Reset(isolate, obj);
 }
 
 // オブジェクト定義解放
 void
-TJSObject::done()
+TJSObject::done(Isolate *isolate)
 {
-	objectTemplate.Dispose();
+	HandleScope handle_scope(isolate);
+	objectTemplate.Reset();
 }
 
 // コンストラクタ
-TJSObject::TJSObject(Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
+TJSObject::TJSObject(Isolate *isolate, Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
 {
-	wrap(obj);
-	Persistent<Object> ref = Persistent<Object>::New(obj);
-	ref.MakeWeak(this, release);
-}
-
-// パラメータ解放
-void
-TJSObject::release(Persistent<Value> object, void *parameter)
-{
-	TJSObject *self = (TJSObject*)parameter;
-	if (self) {
-		delete self;
-	}
+	HandleScope handle_scope(isolate);
+	wrap(isolate, obj);
+	Persistent<Object> ref(isolate, obj);
+	ref.SetWeak(this, release); 
 }
 
 // プロパティの取得
-Handle<Value>
-TJSObject::getter(Local<String> property, const AccessorInfo& info)
+void
+TJSObject::getter(Local<String> property, const PropertyCallbackInfo<Value>& info)
 {
+	HandleScope handle_scope(info.GetIsolate());
 	String::Value propName(property);
 	if (wcscmp(*propName, TJSINSTANCENAME) == 0) {
-		return Handle<Value>();
+		return;
 	}
 	tTJSVariant self;
 	if (getVariant(self, info.This())) {
 		tjs_error error;
 		tTJSVariant result;
 		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().PropGet(0, *propName, NULL, &result, NULL))) {
-			return toJSValue(result);
+			info.GetReturnValue().Set(toJSValue(info.GetIsolate(), result));
 		} else {
-			return ERROR_KRKR(error);
+			info.GetReturnValue().Set(ERROR_KRKR(info.GetIsolate(), error));
 		}
+		return;
 	}
-	return ERROR_BADINSTANCE();
+	info.GetReturnValue().Set(ERROR_BADINSTANCE(info.GetIsolate()));
 }
 
 // プロパティの設定
-Handle<Value>
-TJSObject::setter(Local<String> property, Local<Value> value, const AccessorInfo& info)
+void
+TJSObject::setter(Local<String> property, Local<Value> value, const PropertyCallbackInfo<Value>& info)
 {
+	HandleScope handle_scope(info.GetIsolate());
 	tTJSVariant self;
 	if (getVariant(self, info.This())) {
 		String::Value propName(property);
-		tTJSVariant param = toVariant(value);
+		tTJSVariant param = toVariant(info.GetIsolate(), value);
 		tjs_error error;
 		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, *propName, NULL, &param, NULL))) {
-			return Undefined();
 		} else {
-			return ERROR_KRKR(error);
+			info.GetReturnValue().Set(ERROR_KRKR(info.GetIsolate(), error));
 		}
+		return;
 	}
-	return ERROR_BADINSTANCE();
+	info.GetReturnValue().Set(ERROR_BADINSTANCE(info.GetIsolate()));
 }
 
 // メソッドの呼び出し
-Handle<Value>
-TJSObject::caller(const Arguments& args)
+void
+TJSObject::caller(const FunctionCallbackInfo<Value>& args)
 {
+	HandleScope handle_scope(args.GetIsolate());
 	tTJSVariant self;
 	if (getVariant(self, args.This())) {
 		Handle<Value> ret;
@@ -128,7 +126,7 @@ TJSObject::caller(const Arguments& args)
 		tTJSVariant **argv = new tTJSVariant*[argc];
 		for (tjs_int i=0;i<argc;i++) {
 			argv[i] = new tTJSVariant();
-			*argv[i] = toVariant(args[i]);
+			*argv[i] = toVariant(args.GetIsolate(), args[i]);
 		}
 
 		if (self.AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Class", NULL) == TJS_S_TRUE) {
@@ -136,19 +134,19 @@ TJSObject::caller(const Arguments& args)
 			iTJSDispatch2 *instance = NULL;
 			tjs_error error;
 			if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().CreateNew(0, NULL, NULL, &instance, argc, argv, NULL))) {
-				ret = toJSValue(tTJSVariant(instance, instance));
+				ret = toJSValue(args.GetIsolate(), tTJSVariant(instance, instance));
 				instance->Release();
 			} else {
-				ret = ERROR_KRKR(error);
+				ret = ERROR_KRKR(args.GetIsolate(), error);
 			}
 		} else {
 			// メソッド呼び出し
 			tTJSVariant result;
 			tjs_error error;
 			if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().FuncCall(0, NULL, NULL, &result, argc, argv, NULL))) {
-				ret = toJSValue(result);
+				ret = toJSValue(args.GetIsolate(), result);
 			} else {
-				ret = ERROR_KRKR(error);
+				ret = ERROR_KRKR(args.GetIsolate(), error);
 			}
 		}
 
@@ -160,16 +158,19 @@ TJSObject::caller(const Arguments& args)
 			delete[] argv;
 		}
 		
-		return ret;
+		args.GetReturnValue().Set(ret);
+		return;
 	}
-	return ERROR_BADINSTANCE();
+	args.GetReturnValue().Set(ERROR_BADINSTANCE(args.GetIsolate()));
 }
 
 // tTJSVariant をオブジェクト化
 Local<Object>
-TJSObject::toJSObject(const tTJSVariant &variant)
+TJSObject::toJSObject(Isolate *isolate, const tTJSVariant &variant)
 {
-	Local<Object> obj = objectTemplate->NewInstance();
-	new TJSObject(obj, variant);
+	HandleScope handle_scope(isolate);
+	Handle<ObjectTemplate> templ = Local<ObjectTemplate>::New(isolate, objectTemplate);
+	Local<Object> obj = templ->NewInstance();
+	new TJSObject(isolate, obj, variant);
 	return obj;
 }

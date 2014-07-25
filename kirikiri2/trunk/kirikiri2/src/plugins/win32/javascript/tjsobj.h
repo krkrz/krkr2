@@ -10,26 +10,28 @@ class TJSObject : public TJSBase {
 
 public:
 	// 初期化用
-	static void init();
-	static void done();
+	static void init(Isolate *isolate);
+	static void done(Isolate *isolate);
 
 	// オブジェクト生成
-	static Local<Object> toJSObject(const tTJSVariant &variant);
+	static Local<Object> toJSObject(Isolate *isolate, const tTJSVariant &variant);
 
 private:
 	// オブジェクト定義
 	static Persistent<ObjectTemplate> objectTemplate;
 
-	// 解放用
-	static void release(Persistent<Value> object, void *parameter);
-
+	template<class T>
+	static void release(const WeakCallbackData<T,TJSObject>& data) {
+		delete data.GetParameter();
+	}
+	
 	// アクセス用メソッド
-	static Handle<Value> getter(Local<String> property, const AccessorInfo& info);
-	static Handle<Value> setter(Local<String> property, Local<Value> value, const AccessorInfo& info);
-	static Handle<Value> caller(const Arguments& args);
+	static void getter(Local<String> property, const PropertyCallbackInfo<Value>& info);
+	static void setter(Local<String> property, Local<Value> value, const PropertyCallbackInfo<Value>& info);
+	static void caller(const FunctionCallbackInfo<Value>& info);
 
 	// 格納情報コンストラクタ
-	TJSObject(Handle<Object> obj, const tTJSVariant &variant);
+	TJSObject(Isolate *isolate, Handle<Object> obj, const tTJSVariant &variant);
 };
 
 #endif

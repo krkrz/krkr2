@@ -16,8 +16,8 @@ using namespace v8;
 #define JAVASCRIPT_GLOBAL L"jsglobal"
 
 // 値の格納・取得用
-extern Local<Value> toJSValue(const tTJSVariant &variant);
-extern tTJSVariant toVariant(Handle<Value> value);
+extern Local<Value> toJSValue(Isolate *isolate, const tTJSVariant &variant);
+extern tTJSVariant toVariant(Isolate *isolate, Handle<Value> value);
 extern void JSEXCEPTION(TryCatch *try_catch);
 
 // コピーライト表記
@@ -26,7 +26,7 @@ static const char *copyright =
 ;
 
 // Javascriptグローバルコンテキスト
-Persistent<Context> mainContext;
+Isolate *isolate;
 
 //---------------------------------------------------------------------------
 
@@ -47,11 +47,11 @@ public:
 	static tjs_error TJS_INTF_METHOD _exec(const tjs_char *filename,
 										   const tjs_char *scriptText,
 										   tTJSVariant *result) {
-		HandleScope handle_scope;
-		Context::Scope context_scope(mainContext);
+		HandleScope handle_scope(isolate);
+		Context::Scope context_scope(isolate->GetCurrentContext());
 		TryCatch try_catch;
 
-		Local<Script> script = Script::Compile(String::New(scriptText), filename ? String::New(filename) : Undefined());
+		Local<Script> script = Script::Compile(String::NewFromTwoByte(isolate, scriptText), filename ? String::NewFromTwoByte(isolate, filename) : String::NewFromTwoByte(isolate, L""));
 		if (script.IsEmpty()) {
 			// Print errors that happened during compilation.
 			JSEXCEPTION(&try_catch);
@@ -62,7 +62,7 @@ public:
 			} else {
 				// 結果を格納
 				if (result) {
-					*result = toVariant(ret);
+					*result = toVariant(isolate, ret);
 				}
 			}
 		}
@@ -110,27 +110,13 @@ public:
 		return ret;
 	}
 
-	/**
-	 * デバッガの有効化
-	 * @param port ポート番号(デフォルトは5858)
-	 * @return 実行結果
-	 */
-	static tjs_error TJS_INTF_METHOD enableDebug(tTJSVariant *result,
-												 tjs_int numparams,
-												 tTJSVariant **param,
-												 iTJSDispatch2 *objthis) {
-		int  port  = numparams > 0 ? (int)*param[0] : 5858;
-		bool wait  = numparams > 1 ? (int)*param[1] != 0 : false;
-		Debug::EnableAgent("kirikiriV8", port, wait);
-		return TJS_S_OK;
-	}
-
 	// デバッガ駆動用
 	static tjs_error TJS_INTF_METHOD processDebug(tTJSVariant *result,
 												  tjs_int numparams,
 												  tTJSVariant **param,
 												  iTJSDispatch2 *objthis) {
-		Context::Scope context_scope(mainContext);
+		HandleScope handle_scope(isolate);
+		Context::Scope context_scope(isolate->GetCurrentContext());
 		Debug::ProcessDebugMessages();
 		return TJS_S_OK;
 	}
@@ -139,7 +125,6 @@ public:
 NCB_ATTACH_CLASS(ScriptsJavascript, Scripts) {
 	RawCallback("execJS",        &ScriptsJavascript::exec,          TJS_STATICMEMBER);
 	RawCallback("execStorageJS", &ScriptsJavascript::execStorage,   TJS_STATICMEMBER);
-	RawCallback("enableDebugJS", &ScriptsJavascript::enableDebug,   TJS_STATICMEMBER);
 	RawCallback("processDebugJS", &ScriptsJavascript::processDebug, TJS_STATICMEMBER);
 };
 
@@ -150,19 +135,20 @@ NCB_ATTACH_CLASS(ScriptsJavascript, Scripts) {
  */
 static void PreRegistCallback()
 {
-	HandleScope handle_scope;
-
 	// Copyright 表示
 	TVPAddImportantLog(ttstr(copyright));
 
-	// グローバルテンプレートの準備
-	Local<ObjectTemplate> globalTemplate = ObjectTemplate::New();
+	isolate = Isolate::New();
+	HandleScope handle_scope(isolate);
 
-	TJSInstance::init(globalTemplate);
-	TJSObject::init();
+	// グローバルテンプレートの準備
+	Local<ObjectTemplate> globalTemplate = ObjectTemplate::New(isolate);
+	
+	TJSInstance::init(isolate, globalTemplate);
+	TJSObject::init(isolate);
 
 	// コンテキスト生成
-	mainContext = Persistent<Context>::New(Context::New(NULL, globalTemplate));
+	Local<Context> mainContext = Context::New(isolate, 0, globalTemplate);
 	Context::Scope context_scope(mainContext);
 	
 	// グローバルオブジェクトの準備
@@ -170,11 +156,11 @@ static void PreRegistCallback()
 	if (global) {
 		// 吉里吉里のグローバルに Javascript のグローバルを登録する
 		{
-			tTJSVariant result = toVariant(mainContext->Global());
+			tTJSVariant result = toVariant(isolate, mainContext->Global());
 			global->PropSet(TJS_MEMBERENSURE, JAVASCRIPT_GLOBAL, NULL, &result, global);
 		}
 		// Javascript の グローバルに吉里吉里の グローバルを登録する
-		mainContext->Global()->Set(String::New(KIRIKIRI_GLOBAL), toJSValue(tTJSVariant(global, global)));
+		mainContext->Global()->Set(String::NewFromTwoByte(isolate, KIRIKIRI_GLOBAL), toJSValue(isolate, tTJSVariant(global, global)));
 		global->Release();
 	}
 }
@@ -184,8 +170,9 @@ static void PreRegistCallback()
  */
 static void PostUnregistCallback()
 {
-	mainContext.Dispose();
-	TJSObject::done();
+	TJSObject::done(isolate);
+	isolate->Dispose();
+	isolate = NULL;
 	V8::Dispose();
 }
 

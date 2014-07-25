@@ -18,13 +18,6 @@ class Scripts {
 	function execStorageJS(filename);
 
 	/**
-	 * デバッガの有効化
-	 * @param port ポート番号
-	 * @param wait 即実行待ちするかどうか
-	 */
-	function enableDebugJS(port=5858, wait=false);
-
-	/**
 	 * デバッガ処理駆動
 	 * javascript実行時以外にもデバッガからの処理を受け付ける場合は
 	 * タイマもしくは continuous ハンドラからメソッドを定期的に呼び出してください。
