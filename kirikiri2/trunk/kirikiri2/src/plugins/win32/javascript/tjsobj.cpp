@@ -8,6 +8,7 @@ extern tTJSVariant toVariant(Isolate *, Handle<Value> value);
 Handle<Value>
 ERROR_KRKR(Isolate *isolate, tjs_error error)
 {
+	HandleScope handle_scope(isolate);
 	switch (error) {
 	case TJS_E_MEMBERNOTFOUND:
 		return isolate->ThrowException(String::NewFromUtf8(isolate, "member not found"));
@@ -33,6 +34,7 @@ ERROR_KRKR(Isolate *isolate, tjs_error error)
 Handle<Value>
 ERROR_BADINSTANCE(Isolate *isolate)
 {
+	HandleScope handle_scope(isolate);
 	return isolate->ThrowException(String::NewFromUtf8(isolate, "bad instance"));
 }
 

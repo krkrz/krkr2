@@ -23,6 +23,7 @@ public:
 	 * @param obj IDispatch
 	 */
 	iTJSDispatch2Wrapper(Isolate *isolate, Handle<Object> obj) : isolate(isolate) {
+		HandleScope handle_scope(isolate);
 		this->obj.Reset(isolate,obj);
 	}
 	
@@ -37,6 +38,7 @@ public:
 	 * ï€éùÇµÇƒÇÈílÇï‘Ç∑
 	 */
 	Local<Object> getObject() {
+		HandleScope handle_scope(isolate);
 		return Local<Object>::New(isolate, obj);
 	}
 
@@ -127,6 +129,7 @@ protected:
 Local<Value>
 toJSValue(Isolate *isolate, const tTJSVariant &variant)
 {
+	HandleScope handle_scope(isolate);
 	switch (variant.Type()) {
 	case tvtVoid:
 		return Undefined(isolate);
@@ -165,6 +168,7 @@ toJSValue(Isolate *isolate, const tTJSVariant &variant)
 tTJSVariant
 toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context)
 {
+	HandleScope handle_scope(isolate);
 	tTJSVariant result;
 	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(isolate, object);
 	iTJSDispatch2 *tjsctx = new iTJSDispatch2Wrapper(isolate, context);
@@ -182,6 +186,7 @@ toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context)
 tTJSVariant
 toVariant(Isolate *isolate, Handle<Object> object)
 {
+	HandleScope handle_scope(isolate);
 	tTJSVariant result;
 	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(isolate, object);
 	if (tjsobj) {
@@ -199,6 +204,7 @@ toVariant(Isolate *isolate, Handle<Object> object)
 tTJSVariant
 toVariant(Isolate *isolate, Handle<Value> value)
 {
+	HandleScope handle_scope(isolate);
 	tTJSVariant result;
 	if (value->IsNull()) {
 		result = (iTJSDispatch2*)0;

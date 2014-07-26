@@ -121,6 +121,7 @@ int TJSInstance::classId;
 void
 TJSInstance::init(Isolate *isolate, Handle<ObjectTemplate> globalTemplate)
 {
+	HandleScope handle_scope(isolate);
 	// ネイティブインスタンス登録用クラスID記録
 	classId = TJSRegisterNativeClass(L"JavascriptClass");
 	// メソッドを登録
@@ -195,6 +196,8 @@ TJSInstance::getJSObject(Local<Object> &result, const tTJSVariant &variant)
 	return false;
 }
 
+extern Local<Context> getContext();
+
 // プロパティ取得共通処理
 tjs_error
 TJSInstance::getProp(Isolate *isolate, Local<Object> obj, const tjs_char *membername, tTJSVariant *result)
@@ -204,7 +207,7 @@ TJSInstance::getProp(Isolate *isolate, Local<Object> obj, const tjs_char *member
 	}
 	
 	HandleScope handle_scope(isolate);
-	Context::Scope context_scope(isolate->GetCurrentContext());
+	Context::Scope context_scope(getContext());
 	TryCatch try_catch;
 	
 	Local<Value> ret = obj->Get(String::NewFromTwoByte(isolate, membername));
@@ -231,7 +234,7 @@ TJSInstance::setProp(Isolate *isolate, Local<Object> obj, const tjs_char *member
 	}
 
 	HandleScope handle_scope(isolate);
-	Context::Scope context_scope(isolate->GetCurrentContext());
+	Context::Scope context_scope(getContext());
 	TryCatch try_catch;
 	
 	if (obj->Set(String::NewFromTwoByte(isolate, membername), toJSValue(isolate, *param))) {
@@ -248,7 +251,7 @@ TJSInstance::remove(Isolate *isolate, Local<Object> obj, const tjs_char *membern
 	}
 
 	HandleScope handle_scope(isolate);
-	Context::Scope context_scope(isolate->GetCurrentContext());
+	Context::Scope context_scope(getContext());
 	TryCatch try_catch;
 	return obj->Delete(String::NewFromTwoByte(isolate, membername)) ? TJS_S_OK : TJS_S_FALSE;
 }
@@ -262,7 +265,7 @@ TJSInstance::createMethod(Isolate *isolate, Local<Object> obj, const tjs_char *m
 	}
 
 	HandleScope handle_scope(isolate);
-	Context::Scope context_scope(isolate->GetCurrentContext());
+	Context::Scope context_scope(getContext());
 	TryCatch try_catch;
 
 	if (!obj->IsFunction()) {
@@ -294,10 +297,10 @@ tjs_error
 TJSInstance::callMethod(Isolate *isolate, Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
 	HandleScope handle_scope(isolate);
-	Context::Scope context_scope(isolate->GetCurrentContext());
+	Context::Scope context_scope(getContext());
 	TryCatch try_catch;
 
-	Local<Object> context = membername ? obj : objthis ? toJSValue(isolate, tTJSVariant(objthis))->ToObject() : isolate->GetCurrentContext()->Global();
+	Local<Object> context = membername ? obj : objthis ? toJSValue(isolate, tTJSVariant(objthis))->ToObject() : getContext()->Global();
 	Local<Object> method  = membername ? obj->Get(String::NewFromTwoByte(isolate, membername))->ToObject() : obj;
 
 	if (!method->IsFunction()) {
@@ -406,6 +409,8 @@ TJSInstance::call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint
  */
 TJSInstance::TJSInstance(Isolate *isolate, Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
 {
+	HandleScope handle_scope(isolate);
+
 	// Javascript オブジェクトに格納
 	wrap(isolate, obj);
 	self.Reset(isolate, obj);

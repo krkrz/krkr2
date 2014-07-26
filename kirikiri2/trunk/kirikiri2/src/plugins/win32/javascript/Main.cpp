@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include "ncbind/ncbind.hpp"
 #include <vector>
-#include <v8.h>
-#include <v8-debug.h>
+#include <include/v8.h>
+#include <include/v8-debug.h>
+#include <include/libplatform/libplatform.h>
 
 using namespace v8;
 
@@ -25,9 +26,6 @@ static const char *copyright =
 #include "LICENSE.h"
 ;
 
-// Javascriptグローバルコンテキスト
-Isolate *isolate = 0;
-
 //---------------------------------------------------------------------------
 
 /**
@@ -36,40 +34,22 @@ Isolate *isolate = 0;
 class ScriptsJavascript {
 
 public:
-	ScriptsJavascript(){};
-
 	/**
-	 * javascript スクリプトの実行
-	 * @param script スクリプト
-	 * @param ... 引数
-	 * @return 実行結果
+	 * 登録処理前
 	 */
-	static tjs_error TJS_INTF_METHOD _exec(const tjs_char *filename,
-										   const tjs_char *scriptText,
-										   tTJSVariant *result) {
-		HandleScope handle_scope(isolate);
-		Context::Scope context_scope(isolate->GetCurrentContext());
-		TryCatch try_catch;
-
-		Local<Script> script = Script::Compile(String::NewFromTwoByte(isolate, scriptText), filename ? String::NewFromTwoByte(isolate, filename) : String::NewFromTwoByte(isolate, L""));
-		if (script.IsEmpty()) {
-			// Print errors that happened during compilation.
-			JSEXCEPTION(&try_catch);
-		} else {
-			Local<Value> ret = script->Run();
-			if (ret.IsEmpty()) {
-				JSEXCEPTION(&try_catch);
-			} else {
-				// 結果を格納
-				if (result) {
-					*result = toVariant(isolate, ret);
-				}
-			}
-		}
-		return TJS_S_OK;
+	static void PreRegisterCallback() {
+		// Copyright 表示
+		TVPAddImportantLog(ttstr(copyright));
+		getInstance();
+	}
+	
+	/**
+	 * 開放処理後
+	 */
+	static void PostUnregisterCallback() {
+		destroy();
 	}
 
-	
 	/**
 	 * javascript スクリプトの実行
 	 * @param script スクリプト
@@ -80,7 +60,7 @@ public:
 										  tTJSVariant **param,
 										  iTJSDispatch2 *objthis) {
 		if (numparams <= 0) return TJS_E_BADPARAMCOUNT;
-		return _exec(NULL, param[0]->GetString(), result);
+		return getInstance()->_exec(NULL, param[0]->GetString(), result);
 	}
 
 	/**
@@ -106,8 +86,7 @@ public:
 			stream->Destruct();
 			throw;
 		}
-		tjs_error ret = _exec(filename, data.c_str(), result);
-		return ret;
+		return getInstance()->_exec(filename, data.c_str(), result);
 	}
 
 	// デバッガ駆動用
@@ -115,70 +94,157 @@ public:
 												  tjs_int numparams,
 												  tTJSVariant **param,
 												  iTJSDispatch2 *objthis) {
-		HandleScope handle_scope(isolate);
-		Context::Scope context_scope(isolate->GetCurrentContext());
-		Debug::ProcessDebugMessages();
+		getInstance()->processDebug();
 		return TJS_S_OK;
 	}
+
+	static ScriptsJavascript *getInstance() {
+		if (!instance) {
+			instance = new ScriptsJavascript();
+		}
+		return instance;
+	}
+	
+	Local<Context> getContext() {
+		return Local<Context>::New(isolate, mainContext);
+	}
+	
+protected:
+
+	/**
+	 * コンストラクタ
+	 */
+	ScriptsJavascript(){
+		v8::V8::InitializeICU();
+		platform = v8::platform::CreateDefaultPlatform();
+		v8::V8::InitializePlatform(platform);
+		//v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
+		
+		isolate = Isolate::New();
+		isolate->Enter();
+		
+		HandleScope handle_scope(isolate);
+		
+		// グローバルテンプレートの準備
+		Local<ObjectTemplate> globalTemplate = ObjectTemplate::New(isolate);
+		// グローバル関数に登録
+		//globalTemplate->Set(String::NewFromUtf8(isolate, "log"), FunctionTemplate::New(isolate, LogCallback));
+		
+		TJSInstance::init(isolate, globalTemplate);
+		TJSObject::init(isolate);
+		
+		// コンテキスト生成
+		Local<Context> context = Context::New(isolate, 0, globalTemplate);
+		// 記録しておく
+		mainContext.Reset(isolate, context);
+
+		Context::Scope context_scope(context);
+		
+		// グローバルオブジェクトの準備
+		iTJSDispatch2 * global = TVPGetScriptDispatch();
+		if (global) {
+			// 吉里吉里のグローバルに Javascript のグローバルを登録する
+			{
+				tTJSVariant result = toVariant(isolate, context->Global());
+				global->PropSet(TJS_MEMBERENSURE, JAVASCRIPT_GLOBAL, NULL, &result, global);
+			}
+			// Javascript の グローバルに吉里吉里の グローバルを登録する
+			context->Global()->Set(String::NewFromTwoByte(isolate, KIRIKIRI_GLOBAL), toJSValue(isolate, tTJSVariant(global, global)));
+			global->Release();
+		}
+	};
+
+	/**
+	 * デストラクタ
+	 */
+	~ScriptsJavascript(){
+		mainContext.Reset();
+		TJSObject::done(isolate);
+		isolate->Dispose();
+		isolate = 0;
+		V8::Dispose();
+		v8::V8::ShutdownPlatform();
+		delete platform;
+		platform = 0;
+	}
+	
+	/**
+	 * javascript スクリプトの実行
+	 * @param script スクリプト
+	 * @param ... 引数
+	 * @return 実行結果
+	 */
+	tjs_error _exec(const tjs_char *filename,
+					const tjs_char *scriptText,
+					tTJSVariant *result) {
+
+		HandleScope handle_scope(isolate);
+		Context::Scope context_scope(getContext());
+		TryCatch try_catch;
+
+		Local<Script> script = Script::Compile(String::NewFromTwoByte(isolate, scriptText), filename ? String::NewFromTwoByte(isolate, filename) : String::NewFromTwoByte(isolate, L""));
+		if (script.IsEmpty()) {
+			// Print errors that happened during compilation.
+			JSEXCEPTION(&try_catch);
+		} else {
+			Local<Value> ret = script->Run();
+			if (ret.IsEmpty()) {
+				JSEXCEPTION(&try_catch);
+			} else {
+				// 結果を格納
+				if (result) {
+					*result = toVariant(isolate, ret);
+				}
+			}
+		}
+		return TJS_S_OK;
+	}
+
+	void processDebug() {
+		HandleScope handle_scope(isolate);
+		Context::Scope context_scope(getContext());
+		Debug::ProcessDebugMessages();
+	}
+
+	static void destroy() {
+		if (instance) {
+			delete instance;
+			instance = 0;
+		}
+	}
+
+private:
+	static ScriptsJavascript *instance;
+	v8::Platform* platform;
+	Isolate* isolate;
+	Persistent<Context> mainContext;
 };
 
-NCB_ATTACH_CLASS(ScriptsJavascript, Scripts) {
-	RawCallback("execJS",        &ScriptsJavascript::exec,          TJS_STATICMEMBER);
-	RawCallback("execStorageJS", &ScriptsJavascript::execStorage,   TJS_STATICMEMBER);
-	RawCallback("processDebugJS", &ScriptsJavascript::processDebug, TJS_STATICMEMBER);
-};
+ScriptsJavascript *ScriptsJavascript::instance = 0;
+
+NCB_ATTACH_FUNCTION(execJS, Scripts, ScriptsJavascript::exec);
+NCB_ATTACH_FUNCTION(execStorageJS, Scripts, ScriptsJavascript::execStorage);
+NCB_ATTACH_FUNCTION(processDebugJS, Scripts, ScriptsJavascript::processDebug);
+
+Local<Context> getContext() {
+	return ScriptsJavascript::getInstance()->getContext();
+}
 
 //---------------------------------------------------------------------------
 
-/**
- * 登録処理前
- */
-static void PreRegistCallback()
+static void PreRegisterCallback()
 {
-	// Copyright 表示
-	TVPAddImportantLog(ttstr(copyright));
-
-	isolate = Isolate::New();
-	isolate->Enter();
-
-	HandleScope handle_scope(isolate);
-
-	// グローバルテンプレートの準備
-	Local<ObjectTemplate> globalTemplate = ObjectTemplate::New(isolate);
-	
-	TJSInstance::init(isolate, globalTemplate);
-	TJSObject::init(isolate);
-
-	// コンテキスト生成
-	Local<Context> mainContext = Context::New(isolate, 0, globalTemplate);
-	Context::Scope context_scope(mainContext);
-	
-	// グローバルオブジェクトの準備
-	iTJSDispatch2 * global = TVPGetScriptDispatch();
-	if (global) {
-		// 吉里吉里のグローバルに Javascript のグローバルを登録する
-		{
-			tTJSVariant result = toVariant(isolate, mainContext->Global());
-			global->PropSet(TJS_MEMBERENSURE, JAVASCRIPT_GLOBAL, NULL, &result, global);
-		}
-		// Javascript の グローバルに吉里吉里の グローバルを登録する
-		mainContext->Global()->Set(String::NewFromTwoByte(isolate, KIRIKIRI_GLOBAL), toJSValue(isolate, tTJSVariant(global, global)));
-		global->Release();
-	}
+	ScriptsJavascript::PreRegisterCallback();
 }
 
 /**
- * 開放処理後
+ * 開放処理前
  */
-static void PostUnregistCallback()
+static void PostUnregisterCallback()
 {
-	if (isolate) {
-		TJSObject::done(isolate);
-		isolate->Dispose();
-		isolate = NULL;
-	}
-	V8::Dispose();
+	ScriptsJavascript::PostUnregisterCallback();
 }
 
-NCB_PRE_REGIST_CALLBACK(PreRegistCallback);
-NCB_POST_UNREGIST_CALLBACK(PostUnregistCallback);
+
+NCB_PRE_REGIST_CALLBACK(PreRegisterCallback);
+NCB_POST_UNREGIST_CALLBACK(PostUnregisterCallback);

@@ -3,7 +3,7 @@
 
 #include <windows.h>
 #include "tp_stub.h"
-#include <v8.h>
+#include <include/v8.h>
 using namespace v8;
 
 #define TJSINSTANCENAME L"__tjsinstance__"

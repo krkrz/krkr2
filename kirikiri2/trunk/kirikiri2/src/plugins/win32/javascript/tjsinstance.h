@@ -129,6 +129,7 @@ public:
 	virtual void TJS_INTF_METHOD Destruct();
 
 	operator Local<Object> () {
+		HandleScope handle_scope(isolate);
 		return Local<Object>::New(isolate, self);
 	}
 };
