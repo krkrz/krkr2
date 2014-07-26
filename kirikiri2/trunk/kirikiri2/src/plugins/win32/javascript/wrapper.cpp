@@ -23,7 +23,6 @@ public:
 	 * @param obj IDispatch
 	 */
 	iTJSDispatch2Wrapper(Isolate *isolate, Handle<Object> obj) : isolate(isolate) {
-		HandleScope handle_scope(isolate);
 		this->obj.Reset(isolate,obj);
 	}
 	
@@ -38,7 +37,6 @@ public:
 	 * 保持してる値を返す
 	 */
 	Local<Object> getObject() {
-		HandleScope handle_scope(isolate);
 		return Local<Object>::New(isolate, obj);
 	}
 
@@ -52,7 +50,9 @@ public:
 		tjs_int numparams,
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis) {
-		return TJSInstance::createMethod(isolate, getObject(), membername, result, numparams, param);
+		HandleScope handle_scope(isolate);
+		Local<Object> lobj = Local<Object>::New(isolate, obj);
+		return TJSInstance::createMethod(isolate, lobj, membername, result, numparams, param);
 	}
 
 	// メソッド呼び出し
@@ -65,7 +65,9 @@ public:
 		tTJSVariant **param,
 		iTJSDispatch2 *objthis
 		) {
-		return TJSInstance::callMethod(isolate, getObject(), membername, result, numparams, param, objthis);
+		HandleScope handle_scope(isolate);
+		Local<Object> lobj = Local<Object>::New(isolate, obj);
+		return TJSInstance::callMethod(isolate, lobj, membername, result, numparams, param, objthis);
 	}
 
 	// プロパティ取得
@@ -78,7 +80,9 @@ public:
 		if (!membername) {
 			return TJS_E_NOTIMPL;
 		}
-		return TJSInstance::getProp(isolate, getObject(), membername, result);
+		HandleScope handle_scope(isolate);
+		Local<Object> lobj = Local<Object>::New(isolate, obj);
+		return TJSInstance::getProp(isolate, lobj, membername, result);
 	}
 
 	// プロパティ設定
@@ -88,14 +92,18 @@ public:
 		tjs_uint32 *hint,
 		const tTJSVariant *param,
 		iTJSDispatch2 *objthis) {
-		return TJSInstance::setProp(isolate, getObject(), membername, param);
+		HandleScope handle_scope(isolate);
+		Local<Object> lobj = Local<Object>::New(isolate, obj);
+		return TJSInstance::setProp(isolate, lobj, membername, param);
 	}
 
 	// メンバ削除
 	tjs_error TJS_INTF_METHOD DeleteMember(
 		tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint,
 		iTJSDispatch2 *objthis) {
-		return TJSInstance::remove(isolate, getObject(), membername);
+		HandleScope handle_scope(isolate);
+		Local<Object> lobj = Local<Object>::New(isolate, obj);
+		return TJSInstance::remove(isolate, lobj, membername);
 	}
 
 	tjs_error TJS_INTF_METHOD IsInstanceOf(
@@ -129,7 +137,6 @@ protected:
 Local<Value>
 toJSValue(Isolate *isolate, const tTJSVariant &variant)
 {
-	HandleScope handle_scope(isolate);
 	switch (variant.Type()) {
 	case tvtVoid:
 		return Undefined(isolate);
