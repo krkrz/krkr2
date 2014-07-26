@@ -74,51 +74,54 @@ TJSObject::TJSObject(Isolate *isolate, Handle<Object> obj, const tTJSVariant &va
 void
 TJSObject::getter(Local<String> property, const PropertyCallbackInfo<Value>& info)
 {
-	HandleScope handle_scope(info.GetIsolate());
+	Isolate *isolate = info.GetIsolate();
+	HandleScope handle_scope(isolate);
 	String::Value propName(property);
 	if (wcscmp(*propName, TJSINSTANCENAME) == 0) {
 		return;
 	}
 	tTJSVariant self;
-	if (getVariant(self, info.This())) {
+	if (getVariant(isolate, self, info.This())) {
 		tjs_error error;
 		tTJSVariant result;
 		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().PropGet(0, *propName, NULL, &result, NULL))) {
-			info.GetReturnValue().Set(toJSValue(info.GetIsolate(), result));
+			info.GetReturnValue().Set(toJSValue(isolate, result));
 		} else {
-			info.GetReturnValue().Set(ERROR_KRKR(info.GetIsolate(), error));
+			info.GetReturnValue().Set(ERROR_KRKR(isolate, error));
 		}
 		return;
 	}
-	info.GetReturnValue().Set(ERROR_BADINSTANCE(info.GetIsolate()));
+	info.GetReturnValue().Set(ERROR_BADINSTANCE(isolate));
 }
 
 // プロパティの設定
 void
 TJSObject::setter(Local<String> property, Local<Value> value, const PropertyCallbackInfo<Value>& info)
 {
-	HandleScope handle_scope(info.GetIsolate());
+	Isolate *isolate = info.GetIsolate();
+	HandleScope handle_scope(isolate);
 	tTJSVariant self;
-	if (getVariant(self, info.This())) {
+	if (getVariant(isolate, self, info.This())) {
 		String::Value propName(property);
-		tTJSVariant param = toVariant(info.GetIsolate(), value);
+		tTJSVariant param = toVariant(isolate, value);
 		tjs_error error;
 		if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, *propName, NULL, &param, NULL))) {
 		} else {
-			info.GetReturnValue().Set(ERROR_KRKR(info.GetIsolate(), error));
+			info.GetReturnValue().Set(ERROR_KRKR(isolate, error));
 		}
 		return;
 	}
-	info.GetReturnValue().Set(ERROR_BADINSTANCE(info.GetIsolate()));
+	info.GetReturnValue().Set(ERROR_BADINSTANCE(isolate));
 }
 
 // メソッドの呼び出し
 void
 TJSObject::caller(const FunctionCallbackInfo<Value>& args)
 {
-	HandleScope handle_scope(args.GetIsolate());
+	Isolate *isolate = args.GetIsolate();
+	HandleScope handle_scope(isolate);
 	tTJSVariant self;
-	if (getVariant(self, args.This())) {
+	if (getVariant(isolate, self, args.This())) {
 		Handle<Value> ret;
 		
 		// 引数変換
@@ -126,7 +129,7 @@ TJSObject::caller(const FunctionCallbackInfo<Value>& args)
 		tTJSVariant **argv = new tTJSVariant*[argc];
 		for (tjs_int i=0;i<argc;i++) {
 			argv[i] = new tTJSVariant();
-			*argv[i] = toVariant(args.GetIsolate(), args[i]);
+			*argv[i] = toVariant(isolate, args[i]);
 		}
 
 		if (self.AsObjectClosureNoAddRef().IsInstanceOf(0, NULL, NULL, L"Class", NULL) == TJS_S_TRUE) {
@@ -134,19 +137,19 @@ TJSObject::caller(const FunctionCallbackInfo<Value>& args)
 			iTJSDispatch2 *instance = NULL;
 			tjs_error error;
 			if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().CreateNew(0, NULL, NULL, &instance, argc, argv, NULL))) {
-				ret = toJSValue(args.GetIsolate(), tTJSVariant(instance, instance));
+				ret = toJSValue(isolate, tTJSVariant(instance, instance));
 				instance->Release();
 			} else {
-				ret = ERROR_KRKR(args.GetIsolate(), error);
+				ret = ERROR_KRKR(isolate, error);
 			}
 		} else {
 			// メソッド呼び出し
 			tTJSVariant result;
 			tjs_error error;
 			if (TJS_SUCCEEDED(error = self.AsObjectClosureNoAddRef().FuncCall(0, NULL, NULL, &result, argc, argv, NULL))) {
-				ret = toJSValue(args.GetIsolate(), result);
+				ret = toJSValue(isolate, result);
 			} else {
-				ret = ERROR_KRKR(args.GetIsolate(), error);
+				ret = ERROR_KRKR(isolate, error);
 			}
 		}
 
@@ -161,7 +164,7 @@ TJSObject::caller(const FunctionCallbackInfo<Value>& args)
 		args.GetReturnValue().Set(ret);
 		return;
 	}
-	args.GetReturnValue().Set(ERROR_BADINSTANCE(args.GetIsolate()));
+	args.GetReturnValue().Set(ERROR_BADINSTANCE(isolate));
 }
 
 // tTJSVariant をオブジェクト化

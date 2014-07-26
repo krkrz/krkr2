@@ -26,7 +26,7 @@ static const char *copyright =
 ;
 
 // Javascriptグローバルコンテキスト
-Isolate *isolate;
+Isolate *isolate = 0;
 
 //---------------------------------------------------------------------------
 
@@ -139,6 +139,8 @@ static void PreRegistCallback()
 	TVPAddImportantLog(ttstr(copyright));
 
 	isolate = Isolate::New();
+	isolate->Enter();
+
 	HandleScope handle_scope(isolate);
 
 	// グローバルテンプレートの準備
@@ -170,9 +172,11 @@ static void PreRegistCallback()
  */
 static void PostUnregistCallback()
 {
-	TJSObject::done(isolate);
-	isolate->Dispose();
-	isolate = NULL;
+	if (isolate) {
+		TJSObject::done(isolate);
+		isolate->Dispose();
+		isolate = NULL;
+	}
 	V8::Dispose();
 }
 

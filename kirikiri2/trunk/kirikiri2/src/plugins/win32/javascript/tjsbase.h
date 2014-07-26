@@ -13,7 +13,7 @@ public:
 	TJSBase(const tTJSVariant &variant) : variant(variant) {}
 	virtual ~TJSBase() {};
 	void wrap(Isolate *isolate, Handle<Object> obj);
-	static bool getVariant(tTJSVariant &result, Handle<Object> obj);
+	static bool getVariant(Isolate *isolate, tTJSVariant &result, Handle<Object> obj);
 protected:
 	tTJSVariant variant;
 };

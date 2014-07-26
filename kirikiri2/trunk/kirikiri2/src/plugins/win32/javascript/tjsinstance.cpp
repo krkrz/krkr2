@@ -718,14 +718,15 @@ private:
 void
 TJSInstance::tjsConstructor(const FunctionCallbackInfo<Value>& args)
 {
-	HandleScope handle_scope(args.GetIsolate());
+	Isolate *isolate = args.GetIsolate();
+	HandleScope handle_scope(isolate);
 	tTJSVariant classObj;
-	if (getVariant(classObj, args.Data()->ToObject())) {
+	if (getVariant(isolate, classObj, args.Data()->ToObject())) {
 		CreateInfo info(classObj, args);
 		args.GetReturnValue().Set(info.create());
 		return;
 	}
-	args.GetReturnValue().Set(ERROR_BADINSTANCE(args.GetIsolate()));
+	args.GetReturnValue().Set(ERROR_BADINSTANCE(isolate));
 }
 
 /**
@@ -736,15 +737,16 @@ TJSInstance::tjsConstructor(const FunctionCallbackInfo<Value>& args)
 void
 TJSInstance::tjsInvoker(const FunctionCallbackInfo<Value>& args)
 {
-	HandleScope handle_scope(args.GetIsolate());
+	Isolate *isolate = args.GetIsolate();
+	HandleScope handle_scope(isolate);
 	tTJSVariant instance;
 	tTJSVariant method;
-	if (getVariant(instance, args.This()) && getVariant(method, args.Data()->ToObject())) {
+	if (getVariant(isolate, instance, args.This()) && getVariant(isolate, method, args.Data()->ToObject())) {
 		FuncInfo info(instance, method, args);
 		args.GetReturnValue().Set(info.exec());
 		return;
 	}
-	args.GetReturnValue().Set(ERROR_BADINSTANCE(args.GetIsolate()));
+	args.GetReturnValue().Set(ERROR_BADINSTANCE(isolate));
 }
 
 /**
@@ -754,15 +756,16 @@ TJSInstance::tjsInvoker(const FunctionCallbackInfo<Value>& args)
 void
 TJSInstance::tjsGetter(Local<String> property, const PropertyCallbackInfo<Value>& info)
 {
-	HandleScope handle_scope(info.GetIsolate());
+	Isolate *isolate = info.GetIsolate();
+	HandleScope handle_scope(isolate);
 	tTJSVariant instance;
 	tTJSVariant method;
-	if (getVariant(instance, info.This()) && getVariant(method, info.Data()->ToObject())) {
+	if (getVariant(isolate, instance, info.This()) && getVariant(isolate, method, info.Data()->ToObject())) {
 		PropGetter get(instance, method, info);
 		info.GetReturnValue().Set(get.exec());
 		return;
 	}
-	info.GetReturnValue().Set(ERROR_BADINSTANCE(info.GetIsolate()));
+	info.GetReturnValue().Set(ERROR_BADINSTANCE(isolate));
 }
 
 /**
@@ -773,10 +776,11 @@ TJSInstance::tjsGetter(Local<String> property, const PropertyCallbackInfo<Value>
 void
 TJSInstance::tjsSetter(Local<String> property, Local<Value> value, const PropertyCallbackInfo<void>& info)
 {
-	HandleScope handle_scope(info.GetIsolate());
+	Isolate *isolate = info.GetIsolate();
+	HandleScope handle_scope(isolate);
 	tTJSVariant instance;
 	tTJSVariant method;
-	if (getVariant(instance, info.This()) && getVariant(method, info.Data()->ToObject())) {
+	if (getVariant(isolate, instance, info.This()) && getVariant(isolate, method, info.Data()->ToObject())) {
 		PropSetter set(instance, method, value, info);
 		set.exec();
 	}
@@ -790,13 +794,14 @@ TJSInstance::tjsSetter(Local<String> property, Local<Value> value, const Propert
 void
 TJSInstance::tjsIsValid(const FunctionCallbackInfo<Value>& args)
 {
-	HandleScope handle_scope(args.GetIsolate());
+	Isolate *isolate = args.GetIsolate();
+	HandleScope handle_scope(isolate);
 	tTJSVariant instance;
-	if (getVariant(instance, args.This())) {
-		args.GetReturnValue().Set(Boolean::New(args.GetIsolate(), instance.AsObjectClosureNoAddRef().IsValid(0, NULL, NULL, NULL) == TJS_S_TRUE));
+	if (getVariant(isolate, instance, args.This())) {
+		args.GetReturnValue().Set(Boolean::New(isolate, instance.AsObjectClosureNoAddRef().IsValid(0, NULL, NULL, NULL) == TJS_S_TRUE));
 		return;
 	}
-	args.GetReturnValue().Set(ERROR_BADINSTANCE(args.GetIsolate()));
+	args.GetReturnValue().Set(ERROR_BADINSTANCE(isolate));
 }
 
 /**
@@ -807,25 +812,26 @@ TJSInstance::tjsIsValid(const FunctionCallbackInfo<Value>& args)
 void
 TJSInstance::tjsOverride(const FunctionCallbackInfo<Value>& args)
 {
-	HandleScope handle_scope(args.GetIsolate());
+	Isolate *isolate = args.GetIsolate();
+	HandleScope handle_scope(isolate);
 	tTJSVariant instance;
-	if (getVariant(instance, args.This())) {
+	if (getVariant(isolate, instance, args.This())) {
 		if (args.Length() > 0) {
 			Handle<Value> func = args.Length() > 1 ? args[1] : args.This()->Get(args[0]);
 			if (func->IsFunction()) {
-				tTJSVariant value = toVariant(args.GetIsolate(), func->ToObject(), args.This());
+				tTJSVariant value = toVariant(isolate, func->ToObject(), args.This());
 				String::Value methodName(args[0]);
 				tjs_error error;
 				if (TJS_FAILED(error = instance.AsObjectClosureNoAddRef().PropSet(TJS_MEMBERENSURE, *methodName, NULL, &value, NULL))) {
-					args.GetReturnValue().Set(ERROR_KRKR(args.GetIsolate(), error));
+					args.GetReturnValue().Set(ERROR_KRKR(isolate, error));
 					return;
 				}
-				args.GetReturnValue().Set(Undefined(args.GetIsolate()));
+				args.GetReturnValue().Set(Undefined(isolate));
 				return;
 			}
 		}
-		args.GetReturnValue().Set(args.GetIsolate()->ThrowException(String::NewFromUtf8(args.GetIsolate(), "not function")));
+		args.GetReturnValue().Set(isolate->ThrowException(String::NewFromUtf8(isolate, "not function")));
 		return;
 	}
-	args.GetReturnValue().Set(ERROR_BADINSTANCE(args.GetIsolate()));
+	args.GetReturnValue().Set(ERROR_BADINSTANCE(isolate));
 }

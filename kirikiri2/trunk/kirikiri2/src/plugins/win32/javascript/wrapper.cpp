@@ -214,7 +214,7 @@ toVariant(Isolate *isolate, Handle<Value> value)
 		result = toVariant(isolate, value->ToObject());
 	} else if (value->IsObject()) {
 		Local<Object> obj = value->ToObject();
-		if (!TJSBase::getVariant(result, obj)) {
+		if (!TJSBase::getVariant(isolate, result, obj)) {
 			// 単純ラッピング
 			result = toVariant(isolate, obj);
 		}
