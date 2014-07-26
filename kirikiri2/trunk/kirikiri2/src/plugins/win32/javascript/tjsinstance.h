@@ -22,11 +22,11 @@ public:
 	static bool getJSObject(Local<Object> &result, const tTJSVariant &variant);
 
 	// メソッド呼び出し用
-	static tjs_error getProp(Isolate *isolate, Local<Object> obj, const tjs_char *membername, tTJSVariant *result);
-	static tjs_error setProp(Isolate *isolate, Local<Object> obj, const tjs_char *membername, const tTJSVariant *param);
-	static tjs_error remove(Isolate *isolate, Local<Object> obj, const tjs_char *membername);
-	static tjs_error createMethod(Isolate *isolate, Local<Object> obj, const tjs_char *membername, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param);
-	static tjs_error callMethod(Isolate *isolate, Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
+	static tjs_error getProp(Isolate *isolate, Local<Object> &obj, const tjs_char *membername, tTJSVariant *result);
+	static tjs_error setProp(Isolate *isolate, Local<Object> &obj, const tjs_char *membername, const tTJSVariant *param);
+	static tjs_error remove(Isolate *isolate, Local<Object> &obj, const tjs_char *membername);
+	static tjs_error createMethod(Isolate *isolate, Local<Object> &obj, const tjs_char *membername, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param);
+	static tjs_error callMethod(Isolate *isolate, Local<Object> &obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis);
 	
 	// ---------------------------------------------------------------
 
@@ -128,8 +128,7 @@ public:
 	virtual void TJS_INTF_METHOD Invalidate();
 	virtual void TJS_INTF_METHOD Destruct();
 
-	operator Local<Object> () {
-		HandleScope handle_scope(isolate);
+	Local<Object> getObject() {
 		return Local<Object>::New(isolate, self);
 	}
 };

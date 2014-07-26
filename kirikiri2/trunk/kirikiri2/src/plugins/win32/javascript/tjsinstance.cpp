@@ -190,7 +190,7 @@ TJSInstance::getJSObject(Local<Object> &result, const tTJSVariant &variant)
 	if (TJS_SUCCEEDED(dispatch->NativeInstanceSupport(TJS_NIS_GETINSTANCE, classId, &ninstance))) {
 		// Javascript側から登録されたオブジェクトの場合は元の Javascriptオブジェクト情報をそのまま返す
 		TJSInstance *self = (TJSInstance*)ninstance;
-		result = *self;
+		result = self->getObject();
 		return true;
 	}
 	return false;
@@ -200,7 +200,7 @@ extern Local<Context> getContext();
 
 // プロパティ取得共通処理
 tjs_error
-TJSInstance::getProp(Isolate *isolate, Local<Object> obj, const tjs_char *membername, tTJSVariant *result)
+TJSInstance::getProp(Isolate *isolate, Local<Object> &obj, const tjs_char *membername, tTJSVariant *result)
 {
 	if (!membername) {
 		return TJS_E_NOTIMPL;
@@ -227,7 +227,7 @@ TJSInstance::getProp(Isolate *isolate, Local<Object> obj, const tjs_char *member
 
 // プロパティ設定共通処理
 tjs_error
-TJSInstance::setProp(Isolate *isolate, Local<Object> obj, const tjs_char *membername, const tTJSVariant *param)
+TJSInstance::setProp(Isolate *isolate, Local<Object> &obj, const tjs_char *membername, const tTJSVariant *param)
 {
 	if (!membername) {
 		return TJS_E_NOTIMPL;
@@ -244,7 +244,7 @@ TJSInstance::setProp(Isolate *isolate, Local<Object> obj, const tjs_char *member
 }
 
 tjs_error
-TJSInstance::remove(Isolate *isolate, Local<Object> obj, const tjs_char *membername)
+TJSInstance::remove(Isolate *isolate, Local<Object> &obj, const tjs_char *membername)
 {
 	if (!membername) {
 		return TJS_E_NOTIMPL;
@@ -258,7 +258,7 @@ TJSInstance::remove(Isolate *isolate, Local<Object> obj, const tjs_char *membern
 
 // コンストラクタ呼び出し共通処理
 tjs_error
-TJSInstance::createMethod(Isolate *isolate, Local<Object> obj, const tjs_char *membername, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param)
+TJSInstance::createMethod(Isolate *isolate, Local<Object> &obj, const tjs_char *membername, iTJSDispatch2 **result, tjs_int numparams, tTJSVariant **param)
 {
 	if (membername) {
 		return TJS_E_MEMBERNOTFOUND;
@@ -294,7 +294,7 @@ TJSInstance::createMethod(Isolate *isolate, Local<Object> obj, const tjs_char *m
 
 // メソッド呼び出し共通処理
 tjs_error
-TJSInstance::callMethod(Isolate *isolate, Local<Object> obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+TJSInstance::callMethod(Isolate *isolate, Local<Object> &obj, const tjs_char *membername, tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
 {
 	HandleScope handle_scope(isolate);
 	Context::Scope context_scope(getContext());
@@ -354,15 +354,16 @@ tjs_error TJSInstance::missing(tjs_uint32 flag, const tjs_char * membername, tjs
 	iTJSNativeInstance *ninstance;
 	if (TJS_SUCCEEDED(objthis->NativeInstanceSupport(TJS_NIS_GETINSTANCE, classId, &ninstance))) {
 		TJSInstance *self = (TJSInstance*)ninstance;
+		HandleScope handle_scope(self->isolate);
 		bool ret = false;
 		if (!(int)*params[0]) { // get
 			tTJSVariant result;
-			if (TJS_SUCCEEDED(getProp(self->isolate, *self, params[1]->GetString(), &result))) {
+			if (TJS_SUCCEEDED(getProp(self->isolate, self->getObject(), params[1]->GetString(), &result))) {
 				params[2]->AsObjectClosureNoAddRef().PropSet(0, NULL, NULL, &result, NULL);
 				ret = true;
 			}
 		} else { // set
-			if (TJS_SUCCEEDED(setProp(self->isolate, *self, params[1]->GetString(), params[2]))) {
+			if (TJS_SUCCEEDED(setProp(self->isolate, self->getObject(), params[1]->GetString(), params[2]))) {
 				ret = true;
 			}
 		}
@@ -398,7 +399,8 @@ TJSInstance::call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint
 	iTJSNativeInstance *ninstance;
 	if (TJS_SUCCEEDED(objthis->NativeInstanceSupport(TJS_NIS_GETINSTANCE, classId, &ninstance))) {
 		TJSInstance *self = (TJSInstance*)ninstance;
-		return callMethod(self->isolate, *self, param[0]->GetString(), result, numparams-1, param+1, objthis);
+		HandleScope handle_scope(self->isolate);
+		return callMethod(self->isolate, self->getObject(), param[0]->GetString(), result, numparams-1, param+1, objthis);
 	}
 	return TJS_E_NATIVECLASSCRASH;
 }

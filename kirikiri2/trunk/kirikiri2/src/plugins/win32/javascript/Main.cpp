@@ -160,6 +160,7 @@ protected:
 	~ScriptsJavascript(){
 		mainContext.Reset();
 		TJSObject::done(isolate);
+		isolate->Exit();
 		isolate->Dispose();
 		isolate = 0;
 		V8::Dispose();
