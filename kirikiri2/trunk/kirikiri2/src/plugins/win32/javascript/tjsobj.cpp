@@ -1,6 +1,6 @@
 #include "tjsobj.h"
 extern Local<Value> toJSValue(Isolate *, const tTJSVariant &variant);
-extern tTJSVariant toVariant(Isolate *, Handle<Value> value);
+extern tTJSVariant toVariant(Isolate *, Local<Value> &value);
 
 /**
  * Javascriptに対してエラー通知
@@ -75,7 +75,7 @@ TJSObject::done(Isolate *isolate)
 }
 
 // コンストラクタ
-TJSObject::TJSObject(Isolate *isolate, Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
+TJSObject::TJSObject(Isolate *isolate, Local<Object> &obj, const tTJSVariant &variant) : TJSBase(variant)
 {
 	HandleScope handle_scope(isolate);
 	wrap(isolate, obj);
@@ -135,7 +135,7 @@ TJSObject::caller(const FunctionCallbackInfo<Value>& args)
 	HandleScope handle_scope(isolate);
 	tTJSVariant self;
 	if (getVariant(isolate, self, args.This())) {
-		Handle<Value> ret;
+		Local<Value> ret;
 		
 		// 引数変換
 		tjs_int argc = args.Length();
@@ -185,7 +185,7 @@ Local<Object>
 TJSObject::toJSObject(Isolate *isolate, const tTJSVariant &variant)
 {
 	EscapableHandleScope handle_scope(isolate);
-	Handle<ObjectTemplate> templ = Local<ObjectTemplate>::New(isolate, objectTemplate);
+	Local<ObjectTemplate> templ = Local<ObjectTemplate>::New(isolate, objectTemplate);
 	Local<Object> obj = templ->NewInstance();
 	new TJSObject(isolate, obj, variant);
 	return handle_scope.Escape(obj);

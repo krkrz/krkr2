@@ -2,8 +2,9 @@
 #include "tjsobj.h"
 
 extern Local<Value> toJSValue(Isolate *isolate, const tTJSVariant &variant);
-extern tTJSVariant toVariant(Isolate *isolate, Handle<Value> value);
-extern tTJSVariant toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context);
+extern tTJSVariant toVariant(Isolate *isolate, Local<Value> &value);
+extern tTJSVariant toVariant(Isolate *isolate, Local<Object> &value);
+extern tTJSVariant toVariant(Isolate *isolate, Local<Object> &object, Local<Object> &context);
 
 extern Local<Value> ERROR_KRKR(Isolate *isolate, tjs_error error);
 extern Local<Value> ERROR_BADINSTANCE(Isolate *isolate);
@@ -12,12 +13,14 @@ extern Local<Value> ERROR_BADINSTANCE(Isolate *isolate);
  * 吉里吉里に対して例外通知
  */
 void
-JSEXCEPTION(TryCatch *try_catch)
+JSEXCEPTION(Isolate* isolate, TryCatch *try_catch)
 {
+	HandleScope handle_scope(isolate);
+
 	//HandleScope handle_scope;
 	String::Value exception(try_catch->Exception());
 
-	Handle<Message> message = try_catch->Message();
+	Local<Message> message = try_catch->Message();
 	if (!message.IsEmpty()) {
 		// 例外表示
 		String::Value filename(message->GetScriptResourceName());
@@ -119,7 +122,7 @@ int TJSInstance::classId;
 
 // 初期化用
 void
-TJSInstance::init(Isolate *isolate, Handle<ObjectTemplate> globalTemplate)
+TJSInstance::init(Isolate *isolate, Local<ObjectTemplate> &globalTemplate)
 {
 	HandleScope handle_scope(isolate);
 	// ネイティブインスタンス登録用クラスID記録
@@ -279,11 +282,11 @@ TJSInstance::createMethod(Isolate *isolate, Local<Object> &obj, const tjs_char *
 	for (int i=0;i<numparams;i++) {
 		argv[i] = toJSValue(isolate, *param[i]);
 	}
-	Handle<Object> ret = func->NewInstance(numparams, argv);
+	Local<Object> ret = func->NewInstance(numparams, argv);
 	delete argv;
 	
 	if (ret.IsEmpty()) {
-		JSEXCEPTION(&try_catch);
+		JSEXCEPTION(isolate, &try_catch);
 	} else {
 		if (result) {
 			*result = toVariant(isolate, ret);
@@ -314,11 +317,11 @@ TJSInstance::callMethod(Isolate *isolate, Local<Object> &obj, const tjs_char *me
 	for (int i=0;i<numparams;i++) {
 		argv[i] = toJSValue(isolate, *param[i]);
 	}
-	Handle<Value> ret = func->Call(context, numparams, argv);
+	Local<Value> ret = func->Call(context, numparams, argv);
 	delete argv;
 	
 	if (ret.IsEmpty()) {
-		JSEXCEPTION(&try_catch);
+		JSEXCEPTION(isolate, &try_catch);
 	} else {
 		if (result) {
 			*result = toVariant(isolate, ret);
@@ -409,7 +412,7 @@ TJSInstance::call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint
 /**
  * コンストラクタ
  */
-TJSInstance::TJSInstance(Isolate *isolate, Handle<Object> obj, const tTJSVariant &variant) : TJSBase(variant)
+TJSInstance::TJSInstance(Isolate *isolate, Local<Object> &obj, const tTJSVariant &variant) : TJSBase(variant)
 {
 	HandleScope handle_scope(isolate);
 
@@ -520,7 +523,7 @@ public:
 		}
 	}
 	
-	Handle<Value> create() {
+	Local<Value> create() {
 		TVPDoTryBlock(TryCreate, Catch, Finally, (void *)this);
 		return ret;
 	}
@@ -559,7 +562,7 @@ private:
 	const FunctionCallbackInfo<Value>& args;
 	tjs_int argc;
 	tTJSVariant **argv;
-	Handle<Value> ret;
+	Local<Value> ret;
 };
 
 // TJSの例外回避呼び出し処理用
@@ -590,7 +593,7 @@ public:
 		}
 	}
 	
-	Handle<Value> exec() {
+	Local<Value> exec() {
 		TVPDoTryBlock(TryExec, Catch, Finally, (void *)this);
 		return ret;
 	}
@@ -601,8 +604,7 @@ private:
 		tjs_error error;
 		tTJSVariant r;
 		if (TJS_SUCCEEDED(error = method.AsObjectNoAddRef()->FuncCall(0, NULL, NULL, &r, argc, argv, instance.AsObjectNoAddRef()))) {
-			result = toJSValue(args.GetIsolate(), r);
-			ret = result;
+			ret = toJSValue(args.GetIsolate(), r);
 		} else {
 			ret = ERROR_KRKR(args.GetIsolate(), error);
 		}
@@ -629,8 +631,7 @@ private:
 	const FunctionCallbackInfo<Value>& args;
 	tjs_int argc;
 	tTJSVariant **argv;
-	Local<Value> result;
-	Handle<Value> ret;
+	Local<Value> ret;
 };
 
 // TJSの例外回避呼び出し処理用
@@ -679,7 +680,7 @@ public:
 	PropGetter(const tTJSVariant &instance, const tTJSVariant &method, const PropertyCallbackInfo<Value>& info) : instance(instance), method(method), info(info) {
 	}
 	
-	Handle<Value> exec() {
+	Local<Value> exec() {
 		TVPDoTryBlock(TryGetter, Catch, Finally, (void *)this);
 		return ret;
 	}
@@ -689,8 +690,7 @@ private:
 		tjs_error error;
 		tTJSVariant r;
 		if (TJS_SUCCEEDED(error = method.AsObjectNoAddRef()->PropGet(0, NULL, NULL, &r, instance.AsObjectNoAddRef()))) {
-			result = toJSValue(info.GetIsolate(), r);
-			ret = result;
+			ret = toJSValue(info.GetIsolate(), r);
 		} else {
 			ret = ERROR_KRKR(info.GetIsolate(), error);
 		}
@@ -715,8 +715,7 @@ private:
 	const tTJSVariant &instance;
 	const tTJSVariant &method;
 	const PropertyCallbackInfo<Value>& info;
-	Local<Value> result;
-	Handle<Value> ret;
+	Local<Value> ret;
 };
 
 /**
@@ -824,7 +823,7 @@ TJSInstance::tjsOverride(const FunctionCallbackInfo<Value>& args)
 	tTJSVariant instance;
 	if (getVariant(isolate, instance, args.This())) {
 		if (args.Length() > 0) {
-			Handle<Value> func = args.Length() > 1 ? args[1] : args.This()->Get(args[0]);
+			Local<Value> func = args.Length() > 1 ? args[1] : args.This()->Get(args[0]);
 			if (func->IsFunction()) {
 				tTJSVariant value = toVariant(isolate, func->ToObject(), args.This());
 				String::Value methodName(args[0]);

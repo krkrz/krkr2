@@ -11,7 +11,7 @@ class TJSInstance : public TJSBase, iTJSNativeInstance {
 
 public:
 	// 初期化用
-	static void init(Isolate *isolate, Handle<ObjectTemplate> globalTemplate);
+	static void init(Isolate *isolate, Local<ObjectTemplate> &globalTemplate);
 
 	/**
 	 * 吉里吉里オブジェクトを Javascrip オブジェクトに変換
@@ -70,7 +70,7 @@ public:
 	 * @param obj 自己オブジェクト
 	 * @param instance バインド対象のTJSオブジェクト
 	 */
-	TJSInstance(Isolate *isolate, Handle<Object> obj, const tTJSVariant &instance);
+	TJSInstance(Isolate *isolate, Local<Object> &obj, const tTJSVariant &instance);
 	
 private:
 

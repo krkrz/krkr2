@@ -31,7 +31,7 @@ private:
 	static void caller(const FunctionCallbackInfo<Value>& info);
 
 	// 格納情報コンストラクタ
-	TJSObject(Isolate *isolate, Handle<Object> obj, const tTJSVariant &variant);
+	TJSObject(Isolate *isolate, Local<Object> &obj, const tTJSVariant &variant);
 };
 
 #endif

@@ -17,8 +17,8 @@ using namespace v8;
 
 // 値の格納・取得用
 extern Local<Value> toJSValue(Isolate *isolate, const tTJSVariant &variant);
-extern tTJSVariant toVariant(Isolate *isolate, Handle<Value> value);
-extern void JSEXCEPTION(TryCatch *try_catch);
+extern tTJSVariant toVariant(Isolate *isolate, Local<Value> &value);
+extern void JSEXCEPTION(Isolate *isolate, TryCatch *try_catch);
 
 // コピーライト表記
 static const char *copyright =
@@ -140,8 +140,7 @@ protected:
 	static void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 		if (args.Length() < 1) return;
 		HandleScope scope(args.GetIsolate());
-		Handle<Value> arg = args[0];
-		String::Utf8Value value(arg);
+		String::Utf8Value value(args[0]);
 		ttstr msg;
 		msg += *value;
 		TVPAddLog(msg);
@@ -183,7 +182,8 @@ protected:
 				if (global) {
 					// 吉里吉里のグローバルに Javascript のグローバルを登録する
 					{
-						tTJSVariant result = toVariant(isolate, context->Global());
+						Local<Value> g = context->Global();
+						tTJSVariant result = toVariant(isolate, g);
 						global->PropSet(TJS_MEMBERENSURE, JAVASCRIPT_GLOBAL, NULL, &result, global);
 					}
 					// Javascript の グローバルに吉里吉里の グローバルを登録する
@@ -224,11 +224,11 @@ protected:
 		Local<Script> script = Script::Compile(String::NewFromTwoByte(isolate, scriptText), filename ? String::NewFromTwoByte(isolate, filename) : String::NewFromTwoByte(isolate, L""));
 		if (script.IsEmpty()) {
 			// Print errors that happened during compilation.
-			JSEXCEPTION(&try_catch);
+			JSEXCEPTION(isolate, &try_catch);
 		} else {
 			Local<Value> ret = script->Run();
 			if (ret.IsEmpty()) {
-				JSEXCEPTION(&try_catch);
+				JSEXCEPTION(isolate, &try_catch);
 			} else {
 				// 結果を格納
 				if (result) {

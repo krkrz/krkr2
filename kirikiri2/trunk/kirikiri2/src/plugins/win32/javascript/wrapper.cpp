@@ -8,7 +8,7 @@
 
 // 値の格納・取得用
 Local<Value> toJSValue(Isolate *isolate, const tTJSVariant &variant);
-tTJSVariant toVariant(Isolate *isolate, Handle<Value> value);
+tTJSVariant toVariant(Isolate *isolate, Local<Value> &value);
 
 #define JSOBJECTCLASS L"JavascriptObject"
 
@@ -22,7 +22,7 @@ public:
 	 * コンストラクタ
 	 * @param obj IDispatch
 	 */
-	iTJSDispatch2Wrapper(Isolate *isolate, Handle<Object> obj) : isolate(isolate) {
+	iTJSDispatch2Wrapper(Isolate *isolate, Local<Object> &obj) : isolate(isolate) {
 		this->obj.Reset(isolate,obj);
 	}
 	
@@ -168,7 +168,7 @@ toJSValue(Isolate *isolate, const tTJSVariant &variant)
 }
 
 tTJSVariant
-toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context)
+toVariant(Isolate *isolate, Local<Object> &object, Local<Object> &context)
 {
 	tTJSVariant result;
 	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(isolate, object);
@@ -185,7 +185,7 @@ toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context)
 }
 
 tTJSVariant
-toVariant(Isolate *isolate, Handle<Object> object)
+toVariant(Isolate *isolate, Local<Object> &object)
 {
 	tTJSVariant result;
 	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(isolate, object);
@@ -202,7 +202,7 @@ toVariant(Isolate *isolate, Handle<Object> object)
  * @return tTJSVariant
  */
 tTJSVariant
-toVariant(Isolate *isolate, Handle<Value> value)
+toVariant(Isolate *isolate, Local<Value> &value)
 {
 	tTJSVariant result;
 	if (value->IsNull()) {
