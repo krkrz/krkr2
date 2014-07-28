@@ -5,8 +5,8 @@ extern Local<Value> toJSValue(Isolate *isolate, const tTJSVariant &variant);
 extern tTJSVariant toVariant(Isolate *isolate, Handle<Value> value);
 extern tTJSVariant toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context);
 
-extern Handle<Value> ERROR_KRKR(Isolate *isolate, tjs_error error);
-extern Handle<Value> ERROR_BADINSTANCE(Isolate *isolate);
+extern Local<Value> ERROR_KRKR(Isolate *isolate, tjs_error error);
+extern Local<Value> ERROR_BADINSTANCE(Isolate *isolate);
 
 /**
  * ‹g—¢‹g—¢‚É‘Î‚µ‚Ä—áŠO’Ê’m

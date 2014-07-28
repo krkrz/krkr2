@@ -170,7 +170,6 @@ toJSValue(Isolate *isolate, const tTJSVariant &variant)
 tTJSVariant
 toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context)
 {
-	HandleScope handle_scope(isolate);
 	tTJSVariant result;
 	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(isolate, object);
 	iTJSDispatch2 *tjsctx = new iTJSDispatch2Wrapper(isolate, context);
@@ -188,7 +187,6 @@ toVariant(Isolate *isolate, Handle<Object> object, Handle<Object> context)
 tTJSVariant
 toVariant(Isolate *isolate, Handle<Object> object)
 {
-	HandleScope handle_scope(isolate);
 	tTJSVariant result;
 	iTJSDispatch2 *tjsobj = new iTJSDispatch2Wrapper(isolate, object);
 	if (tjsobj) {
@@ -206,7 +204,6 @@ toVariant(Isolate *isolate, Handle<Object> object)
 tTJSVariant
 toVariant(Isolate *isolate, Handle<Value> value)
 {
-	HandleScope handle_scope(isolate);
 	tTJSVariant result;
 	if (value->IsNull()) {
 		result = (iTJSDispatch2*)0;
@@ -221,6 +218,7 @@ toVariant(Isolate *isolate, Handle<Value> value)
 		// 単純ラッピング
 		result = toVariant(isolate, value->ToObject());
 	} else if (value->IsObject()) {
+		HandleScope handle_scope(isolate);
 		Local<Object> obj = value->ToObject();
 		if (!TJSBase::getVariant(isolate, result, obj)) {
 			// 単純ラッピング

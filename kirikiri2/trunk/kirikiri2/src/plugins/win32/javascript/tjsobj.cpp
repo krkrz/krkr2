@@ -5,41 +5,52 @@ extern tTJSVariant toVariant(Isolate *, Handle<Value> value);
 /**
  * Javascriptに対してエラー通知
  */
-Handle<Value>
+Local<Value>
 ERROR_KRKR(Isolate *isolate, tjs_error error)
 {
-	HandleScope handle_scope(isolate);
+	EscapableHandleScope handle_scope(isolate);
+	Local<Value> ret;
 	switch (error) {
 	case TJS_E_MEMBERNOTFOUND:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "member not found"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "member not found"));
+		break;
 	case TJS_E_NOTIMPL:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "not implemented"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "not implemented"));
+		break;
 	case TJS_E_INVALIDPARAM:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "invalid param"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "invalid param"));
+		break;
 	case TJS_E_BADPARAMCOUNT:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "bad param count"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "bad param count"));
+		break;
 	case TJS_E_INVALIDTYPE:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "invalid type"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "invalid type"));
+		break;
 	case TJS_E_INVALIDOBJECT:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "invalid object"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "invalid object"));
+		break;
 	case TJS_E_ACCESSDENYED:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "access denyed"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "access denyed"));
+		break;
 	case TJS_E_NATIVECLASSCRASH:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "navive class crash"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "navive class crash"));
+		break;
 	default:
-		return isolate->ThrowException(String::NewFromUtf8(isolate, "failed"));
+		ret = isolate->ThrowException(String::NewFromUtf8(isolate, "failed"));
+		break;
 	}
+	return handle_scope.Escape(ret);
 }
 
-Handle<Value>
+Local<Value>
 ERROR_BADINSTANCE(Isolate *isolate)
 {
-	HandleScope handle_scope(isolate);
-	return isolate->ThrowException(String::NewFromUtf8(isolate, "bad instance"));
+	EscapableHandleScope handle_scope(isolate);
+	return handle_scope.Escape(isolate->ThrowException(String::NewFromUtf8(isolate, "bad instance")));
 }
 
 //----------------------------------------------------------------------------
-// tTJSVariantをオブジェクトとして保持するための機構
+// tTJSVariantをJSオブジェクトとして保持するための機構
 //----------------------------------------------------------------------------
 
 Persistent<ObjectTemplate> TJSObject::objectTemplate;
@@ -68,8 +79,8 @@ TJSObject::TJSObject(Isolate *isolate, Handle<Object> obj, const tTJSVariant &va
 {
 	HandleScope handle_scope(isolate);
 	wrap(isolate, obj);
-	//Persistent<Object> ref(isolate, obj);
-	//ref.SetWeak(this, release); 
+	Persistent<Object> ref(isolate, obj);
+	ref.SetWeak(this, release); 
 }
 
 // プロパティの取得
@@ -173,9 +184,9 @@ TJSObject::caller(const FunctionCallbackInfo<Value>& args)
 Local<Object>
 TJSObject::toJSObject(Isolate *isolate, const tTJSVariant &variant)
 {
-	HandleScope handle_scope(isolate);
+	EscapableHandleScope handle_scope(isolate);
 	Handle<ObjectTemplate> templ = Local<ObjectTemplate>::New(isolate, objectTemplate);
 	Local<Object> obj = templ->NewInstance();
 	new TJSObject(isolate, obj, variant);
-	return obj;
+	return handle_scope.Escape(obj);
 }
