@@ -51,14 +51,6 @@ class KWindow extends Window
   // 新規ウィンドウを全て直系の子にするか？
   var _createNewWindowAsChild = true;
 
-@if (kirikiriz)
-  // 吉里吉里Zでは存在しないプロパティーをダミー対応
-  var innerSunken = false;
-  var showScrollBars = true;
-  // 吉里吉里Zではヒントは独自実装が必要
-  var hintLayer;
-@endif
-
   /**------------------------------
    * コンストラクタ
    *
@@ -71,18 +63,23 @@ class KWindow extends Window
   function KWindow(name, parentWindow = null) {
     _existentWindowList.insert(0, this);
 
-@if (kirikiriz)
-    // メインウィンドウ以外のウィンドウを全て直系の子にするかどうか
-    if (parentWindow == null
-        && global.Window.mainWindow != null
-        && global.Window.mainWindow.createNewWindowAsChild)
-      super.Window(global.Window.mainWindow);
-    else
-      super.Window(parentWindow);
-@endif
-@if (!kirikiriz)
-    super.Window();
-@endif
+    if (k_kirikiriz) {
+      // 吉里吉里Zでは存在しないプロパティーをダミー対応
+      this.innerSunken = false;
+      this.showScrollBars = true;
+      // 吉里吉里Zではヒントは独自実装が必要
+      this.hintLayer = void;
+
+      // メインウィンドウ以外のウィンドウを全て直系の子にするかどうか
+      if (parentWindow == null
+          && global.Window.mainWindow != null
+          && global.Window.mainWindow.createNewWindowAsChild)
+        super.Window(global.Window.mainWindow);
+      else
+        super.Window(parentWindow);
+    } else {
+      super.Window();
+    }
 
     isMain = (mainWindow === this);
     // 自分自身がメインウィンドウでなかったら、メインウィンドウの管理オブジェクトにする。
@@ -192,14 +189,14 @@ class KWindow extends Window
     // missing を有効にする
     Scripts.setCallMissing(this);
 
-@if (kirikiriz)
-    // ヒントレイヤを用意
-    hintLayer = new Layer(this, primaryLayer);
-    hintLayer.visible = false;
-	hintLayer.ignoreHintSensing = true;
-	hintLayer.font.height = 14;
-	hintLayer.hitThreshold = 256;
-@endif
+    if (k_kirikiriz) {
+      // ヒントレイヤを用意
+      hintLayer = new Layer(this, primaryLayer);
+      hintLayer.visible = false;
+      hintLayer.ignoreHintSensing = true;
+      hintLayer.font.height = 14;
+      hintLayer.hitThreshold = 256;
+    }
   }
 
   function finalize {

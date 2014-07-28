@@ -155,17 +155,17 @@ class KTextInputEdit extends KTextEdit
         case TEXT_SYMBOL: acceptStrPat = new RegExp("[a-zA-Z0-9_]+");   break;
         case TEXT_DIGIT:  acceptStrPat = new RegExp("[0-9-]+");         break;
         case TEXT_REAL:   acceptStrPat = new RegExp("[0-9.e-]+");         break;
-@if (kirikiriz)
-        case TEXT_ANY:    acceptStrPat = new RegExp("[^\\000\\000-\\037\\000]+"); break;
-@endif
-@if (!kirikiriz)
-        case TEXT_ANY:    acceptStrPat = new RegExp("[^\\000-\\037]+"); break;
-@endif
+        case TEXT_ANY:
+          if (k_kirikiriz)
+            acceptStrPat = new RegExp("[^\\000\\000-\\037\\000]+"); 
+          else
+            acceptStrPat = new RegExp("[^\\000-\\037]+");
+          break;
         }
       }
     }
   }
-}
+};
 
 /*----------------------------------------------------------------------
  * テキストインプットフレーム(KTextInputEditを自動スクロールさせるために必要

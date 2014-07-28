@@ -36,9 +36,9 @@ global.LIST_ITEM_CAPABILITY_MASK_DRAG        = 1 << 3;
 global.LIST_ITEM_CAPABILITY_MASK_DROP        = 1 << 4;
 global.LIST_ITEM_CAPABILITY_MASK_MOUSEDOWN   = 1 << 5;
 
-@if (kirikiriz)
+if (k_kirikiriz) {
 // 吉里吉里Zでは未定義のマウスカーソル定数への対処
-global.crHSplit = crSizeWE;
-global.crVSplit = crSizeNS;
-global.crDrag = "crDrag.cur";
-@endif
+  global.crHSplit = crSizeWE;
+  global.crVSplit = crSizeNS;
+  global.crDrag = "crDrag.cur";
+ }

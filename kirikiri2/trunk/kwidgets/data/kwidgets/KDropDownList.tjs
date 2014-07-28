@@ -12,13 +12,12 @@ class KDropDownList extends Window
 
 	var	items, scroll;
 
-@if (kirikiriz)
-  var innerSunken = false;
-@endif
-
 	function KDropDownList(toExit = true, selfunc = void, unselfunc = void)
 	{
 		super.Window(...);
+
+        if (k_kirikiriz)
+          this.innerSunken = false;
 
 		this.toExit	= toExit;
 		this.selfunc	= selfunc;

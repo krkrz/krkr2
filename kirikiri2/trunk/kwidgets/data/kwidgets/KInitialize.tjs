@@ -1,8 +1,11 @@
-@if (kirikiriz)
-Plugins.link("menu.dll");
-class Pad {}
-Debug.console = %[];
-@endif
+if (typeof(Debug["console"]) == "undefined") {
+  global.k_kirikiriz = 1;
+  Plugins.link("menu.dll");
+  global.Pad = %[];
+  Debug.console = %[];
+} else {
+  global.k_kirikiriz = 0;
+}
 
 Plugins.link("ksupport.dll");
 Plugins.link("windowEx.dll");
