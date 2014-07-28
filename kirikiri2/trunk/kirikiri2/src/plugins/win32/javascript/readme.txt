@@ -5,10 +5,16 @@ Author: わたなべごう
 
 V8 JavaScript Engine (http://code.google.com/p/v8/) の吉里吉里バインドです。
 
+Google のコードは互換性に問題があるので、Node.js (http://nodejs.org/) の
+ソース (https://github.com/joyent/node) を使って構築してあります
+
 ●コンパイル方法
 
-(1) このフォルダ直下に、V8 Javascript Engine を "v8" という名前でチェックアウト
-(2) VisualStudio 用にコンパイルして v8/v8.lib, v8/v8_g.lib を準備
+(1) c:\node に node.js を取得して、Visual Studio でビルドします
+
+c:\node\build 以下に v8 がライブラリとして生成されています
+v8 だけを使っていて、node.js の他の機能は含まれません
+
 (3) javascript.sln を開いてコンパイル
 
 ●システム概要

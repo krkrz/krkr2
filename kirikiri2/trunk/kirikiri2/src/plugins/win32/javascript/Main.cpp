@@ -3,7 +3,6 @@
 #include <vector>
 #include <include/v8.h>
 #include <include/v8-debug.h>
-#include <include/libplatform/libplatform.h>
 
 using namespace v8;
 
@@ -89,6 +88,21 @@ public:
 		return getInstance()->_exec(filename, data.c_str(), result);
 	}
 
+	/**
+	 * デバッガの有効化
+	 * @param port ポート番号(デフォルトは5858)
+	 * @return 実行結果
+	 */
+	static tjs_error TJS_INTF_METHOD enableDebug(tTJSVariant *result,
+												 tjs_int numparams,
+												 tTJSVariant **param,
+												 iTJSDispatch2 *objthis) {
+		int  port  = numparams > 0 ? (int)*param[0] : 5858;
+		bool wait  = numparams > 1 ? (int)*param[1] != 0 : false;
+		//Debug::EnableAgent("kirikiriV8", port, wait);
+		return TJS_S_OK;
+	}
+	
 	// デバッガ駆動用
 	static tjs_error TJS_INTF_METHOD processDebug(tTJSVariant *result,
 												  tjs_int numparams,
@@ -111,13 +125,24 @@ public:
 	
 protected:
 
+	static void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
+		if (args.Length() < 1) return;
+		HandleScope scope(args.GetIsolate());
+		Handle<Value> arg = args[0];
+		String::Utf8Value value(arg);
+		ttstr msg;
+		msg += *value;
+		TVPAddLog(msg);
+	}
+
+	
 	/**
 	 * コンストラクタ
 	 */
 	ScriptsJavascript(){
 		v8::V8::InitializeICU();
-		platform = v8::platform::CreateDefaultPlatform();
-		v8::V8::InitializePlatform(platform);
+		//platform = v8::platform::CreateDefaultPlatform();
+		//v8::V8::InitializePlatform(platform);
 		//v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
 		
 		isolate = Isolate::New();
@@ -128,7 +153,7 @@ protected:
 		// グローバルテンプレートの準備
 		Local<ObjectTemplate> globalTemplate = ObjectTemplate::New(isolate);
 		// グローバル関数に登録
-		//globalTemplate->Set(String::NewFromUtf8(isolate, "log"), FunctionTemplate::New(isolate, LogCallback));
+		globalTemplate->Set(String::NewFromUtf8(isolate, "log"), FunctionTemplate::New(isolate, LogCallback));
 		
 		TJSInstance::init(isolate, globalTemplate);
 		TJSObject::init(isolate);
@@ -165,8 +190,8 @@ protected:
 		isolate = 0;
 		V8::Dispose();
 		v8::V8::ShutdownPlatform();
-		delete platform;
-		platform = 0;
+		//delete platform;
+		//platform = 0;
 	}
 	
 	/**
@@ -216,7 +241,7 @@ protected:
 
 private:
 	static ScriptsJavascript *instance;
-	v8::Platform* platform;
+	//v8::Platform* platform;
 	Isolate* isolate;
 	Persistent<Context> mainContext;
 };
@@ -225,6 +250,7 @@ ScriptsJavascript *ScriptsJavascript::instance = 0;
 
 NCB_ATTACH_FUNCTION(execJS, Scripts, ScriptsJavascript::exec);
 NCB_ATTACH_FUNCTION(execStorageJS, Scripts, ScriptsJavascript::execStorage);
+NCB_ATTACH_FUNCTION(enableDebugJS, Scripts, ScriptsJavascript::enableDebug);
 NCB_ATTACH_FUNCTION(processDebugJS, Scripts, ScriptsJavascript::processDebug);
 
 Local<Context> getContext() {
