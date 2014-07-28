@@ -39,6 +39,7 @@ public:
 	static void PreRegisterCallback() {
 		// Copyright 表示
 		TVPAddImportantLog(ttstr(copyright));
+		V8::SetFatalErrorHandler(OnFatalError);
 		getInstance();
 	}
 	
@@ -99,7 +100,7 @@ public:
 												 iTJSDispatch2 *objthis) {
 		int  port  = numparams > 0 ? (int)*param[0] : 5858;
 		bool wait  = numparams > 1 ? (int)*param[1] != 0 : false;
-		//Debug::EnableAgent("kirikiriV8", port, wait);
+		Debug::EnableAgent("kirikiriV8", port, wait);
 		return TJS_S_OK;
 	}
 	
@@ -125,6 +126,17 @@ public:
 	
 protected:
 
+	static void OnFatalError(const char* location, const char* message) {
+		char msg[1024];
+		if (location) {
+			_snprintf_s(msg, 1024, _TRUNCATE, "FATAL ERROR: %s %s\n", location, message);
+		} else {
+			_snprintf_s(msg, 1024, _TRUNCATE, "FATAL ERROR: %s\n", message);
+		}
+		TVPAddLog(msg);
+		::DebugBreak();
+	}
+	
 	static void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 		if (args.Length() < 1) return;
 		HandleScope scope(args.GetIsolate());
@@ -141,41 +153,45 @@ protected:
 	 */
 	ScriptsJavascript(){
 		v8::V8::InitializeICU();
-		//platform = v8::platform::CreateDefaultPlatform();
-		//v8::V8::InitializePlatform(platform);
-		//v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
-		
-		isolate = Isolate::New();
-		isolate->Enter();
-		
-		HandleScope handle_scope(isolate);
-		
-		// グローバルテンプレートの準備
-		Local<ObjectTemplate> globalTemplate = ObjectTemplate::New(isolate);
-		// グローバル関数に登録
-		globalTemplate->Set(String::NewFromUtf8(isolate, "log"), FunctionTemplate::New(isolate, LogCallback));
-		
-		TJSInstance::init(isolate, globalTemplate);
-		TJSObject::init(isolate);
-		
-		// コンテキスト生成
-		Local<Context> context = Context::New(isolate, 0, globalTemplate);
-		// 記録しておく
-		mainContext.Reset(isolate, context);
+		int argc = 0;
+		char *argv[] = { "process" };
+		v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
 
-		Context::Scope context_scope(context);
+		isolate = v8::Isolate::GetCurrent();
+		isolate->Enter();
+
+		{
+			HandleScope handle_scope(isolate);
 		
-		// グローバルオブジェクトの準備
-		iTJSDispatch2 * global = TVPGetScriptDispatch();
-		if (global) {
-			// 吉里吉里のグローバルに Javascript のグローバルを登録する
+			// グローバルテンプレートの準備
+			Local<ObjectTemplate> globalTemplate = ObjectTemplate::New(isolate);
+			// グローバル関数に登録
+			globalTemplate->Set(String::NewFromUtf8(isolate, "log"), FunctionTemplate::New(isolate, LogCallback));
+			
+			TJSInstance::init(isolate, globalTemplate);
+			TJSObject::init(isolate);
+			
+			// コンテキスト生成
+			Local<Context> context = Context::New(isolate, 0, globalTemplate);
+			// 記録しておく
+			mainContext.Reset(isolate, context);
+
 			{
-				tTJSVariant result = toVariant(isolate, context->Global());
-				global->PropSet(TJS_MEMBERENSURE, JAVASCRIPT_GLOBAL, NULL, &result, global);
+				Context::Scope context_scope(context);
+				// グローバルオブジェクトの準備
+				iTJSDispatch2 * global = TVPGetScriptDispatch();
+				if (global) {
+					// 吉里吉里のグローバルに Javascript のグローバルを登録する
+					{
+						tTJSVariant result = toVariant(isolate, context->Global());
+						global->PropSet(TJS_MEMBERENSURE, JAVASCRIPT_GLOBAL, NULL, &result, global);
+					}
+					// Javascript の グローバルに吉里吉里の グローバルを登録する
+					// XXX
+					//context->Global()->Set(String::NewFromTwoByte(isolate, KIRIKIRI_GLOBAL), toJSValue(isolate, tTJSVariant(global, global)));
+					global->Release();
+				}
 			}
-			// Javascript の グローバルに吉里吉里の グローバルを登録する
-			context->Global()->Set(String::NewFromTwoByte(isolate, KIRIKIRI_GLOBAL), toJSValue(isolate, tTJSVariant(global, global)));
-			global->Release();
 		}
 	};
 
@@ -189,9 +205,6 @@ protected:
 		isolate->Dispose();
 		isolate = 0;
 		V8::Dispose();
-		v8::V8::ShutdownPlatform();
-		//delete platform;
-		//platform = 0;
 	}
 	
 	/**
@@ -241,7 +254,6 @@ protected:
 
 private:
 	static ScriptsJavascript *instance;
-	//v8::Platform* platform;
 	Isolate* isolate;
 	Persistent<Context> mainContext;
 };

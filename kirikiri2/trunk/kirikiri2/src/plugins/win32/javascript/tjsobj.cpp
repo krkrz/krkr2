@@ -68,8 +68,8 @@ TJSObject::TJSObject(Isolate *isolate, Handle<Object> obj, const tTJSVariant &va
 {
 	HandleScope handle_scope(isolate);
 	wrap(isolate, obj);
-	Persistent<Object> ref(isolate, obj);
-	ref.SetWeak(this, release); 
+	//Persistent<Object> ref(isolate, obj);
+	//ref.SetWeak(this, release); 
 }
 
 // プロパティの取得
