@@ -1074,11 +1074,13 @@ class KList extends KVirtualWidget
     }
 
     if (item !== void) {
-      hint = item.hint;
+      if (hint != item.hint)
+        hint = item.hint;
       status = item.status;
       item.onMouseMove(x, y - item.top, shift);
     } else {
-      hint = "";
+      if (hint != "")
+        hint = "";
       status = "";
     }
   }
