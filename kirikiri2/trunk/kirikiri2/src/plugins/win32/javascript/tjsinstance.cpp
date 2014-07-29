@@ -412,7 +412,7 @@ TJSInstance::call(tjs_uint32 flag, const tjs_char * membername, tjs_uint32 *hint
 /**
  * コンストラクタ
  */
-TJSInstance::TJSInstance(Isolate *isolate, Local<Object> &obj, const tTJSVariant &variant) : TJSBase(variant)
+TJSInstance::TJSInstance(Isolate *isolate, Local<Object> &obj, const tTJSVariant &variant) : isolate(isolate), TJSBase(variant)
 {
 	HandleScope handle_scope(isolate);
 
