@@ -187,7 +187,6 @@ protected:
 						global->PropSet(TJS_MEMBERENSURE, JAVASCRIPT_GLOBAL, NULL, &result, global);
 					}
 					// Javascript ‚Ì ƒOƒ[ƒoƒ‹‚É‹g—¢‹g—¢‚Ì ƒOƒ[ƒoƒ‹‚ð“o˜^‚·‚é
-					// XXX
 					context->Global()->Set(String::NewFromTwoByte(isolate, KIRIKIRI_GLOBAL), toJSValue(isolate, tTJSVariant(global, global)));
 					global->Release();
 				}
