@@ -70,7 +70,6 @@ TJSObject::init(Isolate *isolate)
 void
 TJSObject::done(Isolate *isolate)
 {
-	HandleScope handle_scope(isolate);
 	objectTemplate.Reset();
 }
 

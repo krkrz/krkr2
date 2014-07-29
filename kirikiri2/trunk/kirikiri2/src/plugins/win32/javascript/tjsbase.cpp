@@ -13,7 +13,7 @@ TJSBase::getVariant(Isolate *isolate, tTJSVariant &result, Local<Object> &obj)
 	Local<Value> v = obj->GetHiddenValue(String::NewFromTwoByte(isolate, TJSINSTANCENAME));
 	bool empty = v.IsEmpty();
 	if (!v.IsEmpty()) {
-		TJSBase *base = (TJSBase*)External::Cast(*v);
+		TJSBase *base = (TJSBase*)External::Cast(*v)->Value();
 		result = base->variant;
 		return true;
 	}
