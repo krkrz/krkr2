@@ -157,7 +157,10 @@ toJSValue(Isolate *isolate, const tTJSVariant &variant)
 		}
 		break;
 	case tvtString:
-		return String::NewFromTwoByte(isolate, variant.GetString());
+		{
+			const tjs_char *str = variant.GetString();
+			return String::NewFromTwoByte(isolate, str ? str : L"");
+		}
 	case tvtOctet:
 		return Null(isolate);
 	case tvtInteger:
