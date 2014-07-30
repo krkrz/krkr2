@@ -140,9 +140,8 @@ protected:
 	static void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
 		if (args.Length() < 1) return;
 		HandleScope scope(args.GetIsolate());
-		String::Utf8Value value(args[0]);
-		ttstr msg;
-		msg += *value;
+		String::Value value(args[0]);
+		ttstr msg = *value;
 		TVPAddLog(msg);
 	}
 
