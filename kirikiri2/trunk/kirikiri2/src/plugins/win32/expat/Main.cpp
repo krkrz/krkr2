@@ -67,7 +67,7 @@ static void log(const tjs_char *format, ...)
 	va_end(args);
 }
 
-#define XML_UNICODE
+#define XML_UNICODE_WCHAR_T
 #include "expat.h"
 
 // -----------------------------------------------------------------
@@ -516,7 +516,8 @@ static iTJSDispatch2 * Create_NC_XMLParser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_XMLParser);
 			if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-			bool ret = _this->parse(param[0]->AsStringNoAddRef(), objthis);
+			iTJSDispatch2 *target = numparams > 1 ? *param[1] : objthis;
+			bool ret = _this->parse(param[0]->AsStringNoAddRef(), target);
 			if (result) {
 				*result = ret;
 			}
@@ -528,7 +529,8 @@ static iTJSDispatch2 * Create_NC_XMLParser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_XMLParser);
 			if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-			bool ret = _this->parseStorage(param[0]->AsStringNoAddRef(), objthis);
+			iTJSDispatch2 *target = numparams > 1 ? *param[1] : objthis;
+			bool ret = _this->parseStorage(param[0]->AsStringNoAddRef(), target);
 			if (result) {
 				*result = ret;
 			}
