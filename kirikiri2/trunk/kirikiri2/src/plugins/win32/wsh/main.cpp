@@ -45,6 +45,26 @@ protected:
 	/// tjs global 保持用
 	IDispatchEx *global;
 
+	// コンテキスト情報
+	map<DWORD, ttstr> contextMap;
+	DWORD contextCount;
+	
+	DWORD getContextCookie(const tjs_char *filename) {
+		DWORD ret = contextCount++;
+		contextMap[ret] = ttstr(filename);
+		return ret;
+	}
+
+	ttstr getContextCookieName(DWORD cookie) {
+		if (cookie > 0) {
+			map<DWORD,ttstr>::const_iterator it = contextMap.find(cookie);
+			if (it != contextMap.end()) {
+				return it->second;
+			}
+		}
+		return "";
+	}
+	
 	// ------------------------------------------------------
 	// IUnknown 実装
 	// ------------------------------------------------------
@@ -115,7 +135,7 @@ public:
 			&sourceContext,
 			&lineNumber,
 			&charPosition) == S_OK) {
-			log(TJS_W("context:%ld lineNo:%d pos:%d"), sourceContext, lineNumber, charPosition);
+			log(TJS_W("context:%ls lineNo:%d pos:%d"), getContextCookieName(sourceContext).c_str(), lineNumber, charPosition);
 		}		
 		EXCEPINFO ei;
 		memset(&ei, 0, sizeof ei);
@@ -215,7 +235,7 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	WindowsScriptHost() : global(NULL), refCount(1) {
+	WindowsScriptHost() : global(NULL), contextCount(1), refCount(1) {
 		// global の取得
 		iTJSDispatch2 * tjsGlobal = TVPGetScriptDispatch();
 		global = new IDispatchWrapper(tjsGlobal);
@@ -265,7 +285,7 @@ public:
 	 * @param progId スクリプトの種別
 	 * @param result 結果格納先
 	 */
-	tjs_error exec(const tjs_char *script, const tjs_char *progId, tTJSVariant *result) {
+	tjs_error exec(const tjs_char *script, const tjs_char *progId, tTJSVariant *result, DWORD cookie=0) {
 		IActiveScript *pScript = getScript(getProgId(progId));
 		if (pScript) {
 			IActiveScriptParse *pScriptParse;
@@ -278,7 +298,7 @@ public:
 				memset(&ei, 0, sizeof ei);
 
 				BSTR pParseText = ::SysAllocString(script);
-				if (SUCCEEDED(hr = pScriptParse->ParseScriptText(pParseText, GLOBAL, NULL, NULL, 0, 0, 0L, &rs, &ei))) {
+				if (SUCCEEDED(hr = pScriptParse->ParseScriptText(pParseText, GLOBAL, NULL, NULL, cookie, 0, 0L, &rs, &ei))) {
 					hr = pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 				}
 				::SysFreeString(pParseText);
@@ -328,13 +348,14 @@ public:
 		if (!progId) {
 			return TJS_E_FAIL;
 		}
-		
+
+		DWORD cookie = getContextCookie(filename);
 		iTJSTextReadStream * stream = TVPCreateTextStreamForRead(filename, TJS_W(""));
 		tjs_error ret;
 		try {
 			ttstr data;
 			stream->Read(data, 0);
-			ret = exec(data.c_str(), progId, result);
+			ret = exec(data.c_str(), progId, result, cookie);
 		}
 		catch(...)
 		{
