@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="00_simplebinder">
+      <UniqueIdentifier>{2CAC34DC-6FAA-6E41-AB0F-9F9F9ACDF051}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fakeFiles">
+      <UniqueIdentifier>{45056C7E-75D5-424A-8CE7-9999F7ACCBCF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tp_stub.cpp" />
+    <ClCompile Include="..\..\00_simplebinder\v2link.cpp">
+      <Filter>00_simplebinder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fakeFiles\DrawDevice.cpp">
+      <Filter>fakeFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Main.cpp" />
+    <ClCompile Include="..\errmsgs.cpp" />
+  </ItemGroup>
+</Project>

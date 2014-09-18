@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DrawDeviceZ", "DrawDeviceZ.vcproj", "{4539A1E8-99D5-7B48-B25D-60C44C0E1FEC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|Win32 = Release|Win32
+		Debug|Win32 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4539A1E8-99D5-7B48-B25D-60C44C0E1FEC}.Release|Win32.ActiveCfg = Release|Win32
+		{4539A1E8-99D5-7B48-B25D-60C44C0E1FEC}.Release|Win32.Build.0 = Release|Win32
+		{4539A1E8-99D5-7B48-B25D-60C44C0E1FEC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4539A1E8-99D5-7B48-B25D-60C44C0E1FEC}.Debug|Win32.Build.0 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
