@@ -38,7 +38,7 @@ premake4にてプロジェクトを作成してください。
 
 このプラグインのライセンスは吉里吉里本体および吉里吉里Zに準拠してください。
 
-DrawDeviceZ/* のファイルは吉里吉里Zのソースそのまま流用しています。
+DrawDeviceZ/* のファイルは吉里吉里Zのソースコードをそのまま使用しています。
 Main.cpp 内の一部のコード（Direct3D9の初期化部分など）は
 吉里吉里ZのWindowImpl.cppから流用しています。
 errmsg.cpp のテキストは吉里吉里Zのstring_table_en.rcから流用した
