@@ -26,12 +26,24 @@ class MyWindow extends Window {
 
 ●コンパイル
 
-premake4にてプロジェクトを作成してください。
+premake4にてプロジェクトを作成してください。(vs20xxフォルダ作成済み）
 コンパイルには
 ../tp_stub.*
 ../drawdevice/BasicDrawDevice.*
 ../00_simplebinder/*
 のフォルダ・ファイルが必要です。
+
+
+●既知の問題
+
+吉里吉里由来の例外のプラグイン内でのキャッチ（再送なし）は
+例外発生時にメモリリークが起こる可能性があります。
+（../exceptiontest/Main.cpp ソースコメント参照）
+
+try/catchの例外吸収を使用している下記実装を再検討のこと：
+	tTVPBasicDrawDevice::EnsureDevice()
+	tTVPBasicDrawDevice::SetDestRectangle()
+	TVPEnsureDirect3DObject()
 
 
 ●ライセンス
