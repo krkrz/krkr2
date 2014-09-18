@@ -1,0 +1,19 @@
+/**
+ * 吉里吉里2向け吉里吉里Z drawdevice クラス
+ *
+ * Direct3D9 を使用する drawdevice です
+ */
+class DrawDeviceZ
+{
+	/**
+	 * コンストラクタ
+	 */
+	function DrawDeviceZ();
+
+	/**
+	 * Drawerの再構築を行う(-smoothzoomオプションなどが再反映されます）
+	 */
+	function recreate();
+
+	property interface { getter; } //< drawdevice インターフェース情報（内部参照用）
+};
