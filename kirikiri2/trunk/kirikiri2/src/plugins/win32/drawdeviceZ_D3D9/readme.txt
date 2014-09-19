@@ -45,6 +45,8 @@ try/catchの例外吸収を使用している下記実装を再検討のこと：
 	tTVPBasicDrawDevice::SetDestRectangle()
 	TVPEnsureDirect3DObject()
 
+	＞TVPDoTryBlockによる実装に変更（ifdef __TP_STUB_H__による場合わけ）
+
 
 ●ライセンス
 
