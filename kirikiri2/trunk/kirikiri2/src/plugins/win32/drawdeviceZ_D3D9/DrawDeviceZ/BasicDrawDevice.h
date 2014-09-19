@@ -92,6 +92,14 @@ public:
 	virtual bool TJS_INTF_METHOD SwitchToFullScreen( HWND window, tjs_uint w, tjs_uint h, tjs_uint bpp, tjs_uint color, bool changeresolution );
 	virtual void TJS_INTF_METHOD RevertFromFullScreen( HWND window, tjs_uint w, tjs_uint h, tjs_uint bpp, tjs_uint color );
 
+#ifdef __TP_STUB_H__
+private:
+	// for TVPDoTryBlock
+	static void TJS_USERENTRY EnsureDevice_Try(void * data);
+	static bool TJS_USERENTRY EnsureDevice_Catch(void * data, const tTVPExceptionDesc & desc);
+	static void TJS_USERENTRY SetDestRectangle_Try(void * data);
+	static bool TJS_USERENTRY SetDestRectangle_Catch(void * data, const tTVPExceptionDesc & desc);
+#endif
 };
 //---------------------------------------------------------------------------
 

@@ -96,10 +96,11 @@ static IDirect3D9* (WINAPI * TVPDirect3DCreate)( UINT SDKVersion ) = NULL;
 static HMODULE TVPDirect3DDLLHandle=NULL;
 
 static tjs_int TVPGetDisplayColorFormat() { return 0; } // unused
+static bool TJS_USERENTRY CatchBlockNoRethrow(void * data, const tTVPExceptionDesc & desc) { return false; } // for TVPDoTryBlcok
 
 //---------------------------------------------------------------------------
 static void TVPUnloadDirect3D();
-static void TVPInitDirect3D()
+static void TJS_USERENTRY TVPInitDirect3D(void *data=NULL)
 {
 	if(!TVPDirect3DDLLHandle)
 	{
@@ -149,13 +150,7 @@ static void TVPUnloadDirect3D()
 //---------------------------------------------------------------------------
 void TVPEnsureDirect3DObject()
 {
-	try
-	{
-		TVPInitDirect3D();
-	}
-	catch(...)
-	{
-	}
+	TVPDoTryBlock(&TVPInitDirect3D, &CatchBlockNoRethrow, NULL, NULL);
 }
 //---------------------------------------------------------------------------
 IDirect3D9 * TVPGetDirect3DObjectNoAddRef()

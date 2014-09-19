@@ -310,10 +310,44 @@ bool tTVPBasicDrawDevice::CreateTexture() {
 	return true;
 }
 //---------------------------------------------------------------------------
+#ifdef __TP_STUB_H__
+void TJS_USERENTRY tTVPBasicDrawDevice::EnsureDevice_Try(void * data) {
+	tTVPBasicDrawDevice *_this = reinterpret_cast<tTVPBasicDrawDevice *>(data);
+
+	bool recreate = false;
+	if( _this->Direct3D == NULL || _this->Direct3DDevice == NULL ) {
+		if( _this->GetDirect3D9Device() == false ) {
+			return;
+		}
+		recreate = true;
+	}
+	if( _this->Texture == NULL ) {
+		if( _this->CreateTexture() == false ) {
+			return;
+		}
+		recreate = true;
+	}
+	if( recreate ) {
+		_this->InvalidateAll();
+	}
+}
+bool TJS_USERENTRY tTVPBasicDrawDevice::EnsureDevice_Catch(void * data, const tTVPExceptionDesc & desc) {
+	tTVPBasicDrawDevice *_this = reinterpret_cast<tTVPBasicDrawDevice *>(data);
+
+	if (desc.type == TJS_W("eTJS")) {
+		TVPAddImportantLog( TVPFormatMessage(TVPBasicDrawDeviceFailedToCreateDirect3DDevice,desc.message ) );
+	} else {
+		TVPAddImportantLog( (const tjs_char*)TVPBasicDrawDeviceFailedToCreateDirect3DDeviceUnknownReason );
+	}
+	_this->DestroyD3DDevice();
+	return false; // no rethrow
+}
+#endif
 void tTVPBasicDrawDevice::EnsureDevice()
 {
 	TVPInitBasicDrawDeviceOptions();
 	if( TargetWindow ) {
+#ifndef __TP_STUB_H__
 		try {
 			bool recreate = false;
 			if( Direct3D == NULL || Direct3DDevice == NULL ) {
@@ -338,6 +372,9 @@ void tTVPBasicDrawDevice::EnsureDevice()
 			TVPAddImportantLog( (const tjs_char*)TVPBasicDrawDeviceFailedToCreateDirect3DDeviceUnknownReason );
 			DestroyD3DDevice();
 		}
+#else
+		TVPDoTryBlock(&EnsureDevice_Try, &EnsureDevice_Catch, NULL, (void*)this);
+#endif
 	}
 }
 //---------------------------------------------------------------------------
@@ -494,6 +531,27 @@ void TJS_INTF_METHOD tTVPBasicDrawDevice::SetTargetWindow(HWND wnd, bool is_main
 	IsMainWindow = is_main;
 }
 //---------------------------------------------------------------------------
+#ifdef __TP_STUB_H__
+struct SetDestRectangleTryCatchBlockParam {
+	tTVPBasicDrawDevice * Self;
+	bool * Success;
+};
+void TJS_USERENTRY tTVPBasicDrawDevice::SetDestRectangle_Try(void * data) {
+	SetDestRectangleTryCatchBlockParam *param = reinterpret_cast<SetDestRectangleTryCatchBlockParam *>(data);
+	param->Self->EnsureDevice();
+}
+bool TJS_USERENTRY tTVPBasicDrawDevice::SetDestRectangle_Catch(void * data, const tTVPExceptionDesc & desc) {
+	SetDestRectangleTryCatchBlockParam *param = reinterpret_cast<SetDestRectangleTryCatchBlockParam *>(data);
+
+	if (desc.type == TJS_W("eTJS")) {
+		TVPAddImportantLog( TVPFormatMessage(TVPBasicDrawDeviceFailedToCreateDirect3DDevices,desc.message ) );
+	} else {
+		TVPAddImportantLog( (const tjs_char*)TVPBasicDrawDeviceFailedToCreateDirect3DDevicesUnknownReason );
+	}
+	*(param->Success) = false;
+	return false; // no rethrow
+}
+#endif
 void TJS_INTF_METHOD tTVPBasicDrawDevice::SetDestRectangle(const tTVPRect & rect)
 {
 	BackBufferDirty = true;
@@ -506,6 +564,7 @@ void TJS_INTF_METHOD tTVPBasicDrawDevice::SetDestRectangle(const tTVPRect & rect
 		bool success = true;
 		inherited::SetDestRectangle(rect);
 
+#ifndef __TP_STUB_H__
 		try {
 			EnsureDevice();
 		} catch(const eTJS & e) {
@@ -515,6 +574,10 @@ void TJS_INTF_METHOD tTVPBasicDrawDevice::SetDestRectangle(const tTVPRect & rect
 			TVPAddImportantLog( (const tjs_char*)TVPBasicDrawDeviceFailedToCreateDirect3DDevicesUnknownReason );
 			success = false;
 		}
+#else
+		SetDestRectangleTryCatchBlockParam param = { this, &success };
+		TVPDoTryBlock(&SetDestRectangle_Try, &SetDestRectangle_Catch, NULL, (void*)&param);
+#endif
 		if( success == false ) {
 			DestroyD3DDevice();
 		}
