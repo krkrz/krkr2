@@ -379,7 +379,8 @@ void TWaveReader::LoadWave(AnsiString filename)
 			{
 				res = false;
 			}
-			if(!res) delete FInputContext, FInputContext = NULL;
+			if(res) break;
+			delete FInputContext, FInputContext = NULL;
 		}
 	}
 
