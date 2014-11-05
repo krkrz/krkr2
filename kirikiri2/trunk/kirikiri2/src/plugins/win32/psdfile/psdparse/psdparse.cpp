@@ -206,6 +206,9 @@ Data::processParsed()
       case 'lsct': // Section divider setting (Photoshop 6.0)
         success = loadLayerSectionDivider(layer, additional);
         break;
+      case 'lsdk': // *UNDOCUMENTED* key (may be incorrect..)
+        success = loadLayerSectionDivider(layer, additional);
+        break;
       case 'luni': // Unicode layer name (Photoshop 5.0)
         success = loadLayerUnicodeName(layer, additional);
         break;
