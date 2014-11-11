@@ -223,12 +223,13 @@ UNROLL_FOREACH(DEF_SCS, UNROLL_ABMYZ, (C*, tTJSVariant*, ARGTYPE, tjs_int, tTJSV
 
 class StoreUtil : public tTJSDispatch {
 public:
-	StoreUtil() : _flag(TJS_MEMBERENSURE) {}
+	static const tjs_uint32 DEFAULT_FLAG = TJS_MEMBERENSURE | TJS_IGNOREPROP;
+	StoreUtil() : _flag(DEFAULT_FLAG) {}
 	StoreUtil(tjs_uint32 flag) : _flag(flag) {}
 protected:
 	tjs_uint32 _flag;
-	bool store(iTJSDispatch2 *obj, const ttstr &key) {
-		tTJSVariant val(static_cast<iTJSDispatch2*>(this));
+	bool store(iTJSDispatch2 *obj, const ttstr &key, iTJSDispatch2 *context=NULL) {
+		tTJSVariant val(static_cast<iTJSDispatch2*>(this), context);
 		this->Release();
 		return obj && TJS_SUCCEEDED(obj->PropSet(_flag, key.c_str(), NULL, &val, obj));
 	}
@@ -236,8 +237,8 @@ protected:
 		TVPAddImportantLog(message);
 	}
 public:
-	static inline bool Link(iTJSDispatch2 *obj, const ttstr &key, StoreUtil *self) {
-		return self && self->store(obj, key);
+	static inline bool Link(iTJSDispatch2 *obj, const ttstr &key, StoreUtil *self, iTJSDispatch2 *context=NULL) {
+		return self && self->store(obj, key, context);
 	}
 	static inline bool Unlink(iTJSDispatch2 *obj, const ttstr &key) {
 		return obj && TJS_SUCCEEDED(obj->DeleteMember(0, key.c_str(), NULL, obj));
@@ -296,7 +297,7 @@ private:
 	FunctionInterface *_function;
 public:
 	template <typename T>
-	FunctionStore(const T& func, bool autoStatic = false, tjs_uint32 flag = TJS_MEMBERENSURE) : StoreUtil(flag), _function(0) {
+	FunctionStore(const T& func, bool autoStatic = false, tjs_uint32 flag = StoreUtil::DEFAULT_FLAG) : StoreUtil(flag), _function(0) {
 		if (autoStatic && MethodInvoker<T>::Static) _flag |= TJS_STATICMEMBER;
 		_function = static_cast<FunctionInterface*>(new FunctionCallback<T>(func));
 	}
@@ -313,8 +314,8 @@ public:
 	}
 
 	template <typename T>
-	static bool Link(iTJSDispatch2 *obj, const ttstr &key, const T &func) {
-		return StoreUtil::Link(obj, key, new FunctionStore(func));
+	static bool Link(iTJSDispatch2 *obj, const ttstr &key, const T &func, iTJSDispatch2 *context=NULL) {
+		return StoreUtil::Link(obj, key, new FunctionStore(func), context);
 	}
 };
 
@@ -357,7 +358,9 @@ DEF_SCCB(Setter, SETTERARG, C::, (    const tTJSVariant*),        self->*, (para
 DEF_SCCB(Setter, SETTERARG,    , (C*, const tTJSVariant*),,      (self,     param));
 
 DEF_SCCB(Getter, GETTERARG, C::, (          tTJSVariant*) const,  self->*, (result));
+DEF_SCCB(Getter, GETTERARG, C::, (          tTJSVariant*),        self->*, (result));
 DEF_SCCB(Getter, GETTERARG,    , (const C*, tTJSVariant*),,      (self,     result));
+DEF_SCCB(Getter, GETTERARG,    , (      C*, tTJSVariant*),,      (self,     result));
 
 #undef  DEF_SPCB
 #undef  DEF_SCCB
@@ -405,8 +408,8 @@ public:
 	}
 
 	template <typename SET, typename GET>
-	static bool Link(iTJSDispatch2 *obj, const ttstr &key, const SET &set, const GET &get) {
-		return StoreUtil::Link(obj, key, new PropertyStore(set, get));
+	static bool Link(iTJSDispatch2 *obj, const ttstr &key, const SET &set, const GET &get, iTJSDispatch2 *context=NULL) {
+		return StoreUtil::Link(obj, key, new PropertyStore(set, get), context);
 	}
 };
 
@@ -564,13 +567,13 @@ class ClassStore : public StoreUtil {
 public:
 	typedef InstanceWrapper<C> Wrapper;
 
-	ClassStore(tjs_int32 id, ClassEntryInterface *entry) : StoreUtil(TJS_MEMBERENSURE|TJS_HIDDENMEMBER|TJS_STATICMEMBER), _id(id), _entry(entry) {}
-	~ClassStore() { if (_entry) _entry->release(); }
+	ClassStore(tjs_int32 id, ClassEntryInterface *entry) : StoreUtil(StoreUtil::DEFAULT_FLAG|TJS_HIDDENMEMBER|TJS_STATICMEMBER), _id(id), _entry(entry) {}
+	~ClassStore() { if (_entry) _entry->release(); _entry = NULL; _Singleton = NULL; }
 
 	tjs_int32 getID() const { return _id; }
 	ClassEntryInterface* getEntry() const { return _entry; }
 
-	static bool Link(iTJSDispatch2 *obj, const ttstr &key, ClassEntryInterface *entry, tjs_uint32 flag = TJS_MEMBERENSURE) {
+	static bool Link(iTJSDispatch2 *obj, const ttstr &key, ClassEntryInterface *entry, tjs_uint32 flag = StoreUtil::DEFAULT_FLAG) {
 		iTJSDispatch2  *classobj = CreateClassObject(key, entry);
 		if (!classobj) return false;
 		tTJSVariant val(classobj);
@@ -578,11 +581,11 @@ public:
 		return obj && TJS_SUCCEEDED(obj->PropSet(flag, key.c_str(), NULL, &val, obj));
 	}
 	template <typename CTOR>
-	static bool Link(iTJSDispatch2 *obj, const ttstr &name, const CTOR& ctor, iTJSDispatch2 **clsobj = 0, tjs_uint32 flag = TJS_MEMBERENSURE) {
+	static bool Link(iTJSDispatch2 *obj, const ttstr &name, const CTOR& ctor, iTJSDispatch2 **clsobj = 0, tjs_uint32 flag = StoreUtil::DEFAULT_FLAG) {
 		return Link(obj, name, static_cast<ClassEntryInterface*>(new ClassEntryCallback<CTOR>(ctor, clsobj)), flag);
 	}
 	template <typename CTOR, typename DTOR>
-	static bool Link(iTJSDispatch2 *obj, const ttstr &name, const CTOR& ctor, const DTOR& dtor, iTJSDispatch2 **clsobj = 0, tjs_uint32 flag = TJS_MEMBERENSURE) {
+	static bool Link(iTJSDispatch2 *obj, const ttstr &name, const CTOR& ctor, const DTOR& dtor, iTJSDispatch2 **clsobj = 0, tjs_uint32 flag = StoreUtil::DEFAULT_FLAG) {
 		return Link(obj, name, static_cast<ClassEntryInterface*>(new ClassEntryCallback<CTOR>(ctor, clsobj, dtor)), flag);
 	}
 
@@ -642,24 +645,27 @@ template <class C> struct ClassInstanceResolver<const C> { typedef InstanceWrapp
 
 class BindUtil {
 	bool _link, _error;
-	iTJSDispatch2 *_store;
+	iTJSDispatch2 *_store, *_context;
 public:
-	BindUtil(bool link) : _link(link), _error(false), _store(0) {
+	BindUtil(bool link) : _link(link), _error(false), _store(0), _context(0) {
 		_store = TVPGetScriptDispatch();
 		if (_store) _store->Release(); // NoAddRef.
 		else _error = true;
 	}
-	BindUtil(const ttstr &base, bool link) : _link(link), _error(false), _store(0) {
+	BindUtil(const ttstr &base, bool link) : _link(link), _error(false), _store(0), _context(0) {
 		_store = StoreUtil::GetObject(base);
 	}
-	BindUtil(iTJSDispatch2 *store, bool link) : _link(link), _error(false), _store(store) {}
+	BindUtil(const ttstr &base, iTJSDispatch2 *root, bool link) : _link(link), _error(false), _store(0), _context(0) {
+		_store = StoreUtil::GetObject(base, root);
+	}
+	BindUtil(iTJSDispatch2 *store, bool link) : _link(link), _error(false), _store(store), _context(0) {}
 
 	virtual ~BindUtil() {}
 
 	template <typename FUNC>
 	BindUtil& Function(const ttstr &key, const FUNC &func) {
-		if (_store) _error |= !(_link ? FunctionStore::Link(_store, key, func)
-								/**/ :   StoreUtil::Unlink(_store, key));
+		if (_store) _error |= !(_link ? FunctionStore::Link(_store, key, func, _context)
+								/**/ :    StoreUtil::Unlink(_store, key));
 		return *this;
 	}
 	/**
@@ -671,8 +677,8 @@ public:
 	 */
 	template <typename GET, typename SET>
 	BindUtil& Property(const ttstr &key, const GET &get, const SET &set) {
-		if (_store) _error |= !(_link ? PropertyStore::Link(_store, key, set, get)
-								/**/ :   StoreUtil::Unlink(_store, key));
+		if (_store) _error |= !(_link ? PropertyStore::Link(_store, key, set, get, _context)
+								/**/ :    StoreUtil::Unlink(_store, key));
 		return *this;
 	}
 	/**
@@ -684,7 +690,7 @@ public:
 	template <typename T>
 	BindUtil& Constant(const ttstr &key, const T &value) {
 		if (_store) _error |= !(_link ? ConstantStore::Link(_store, key, value)
-								/**/ :   StoreUtil::Unlink(_store, key));
+								/**/ :    StoreUtil::Unlink(_store, key));
 		return *this;
 	}
 	/**
@@ -694,7 +700,7 @@ public:
 	 * @param flag PropSetに渡すフラグ値
 	 */
 	template <typename T>
-	BindUtil& Variant(const ttstr &key, const T &value, tjs_uint32 flag = TJS_MEMBERENSURE) {
+	BindUtil& Variant(const ttstr &key, const T &value, tjs_uint32 flag = StoreUtil::DEFAULT_FLAG) {
 		if (_store) {
 			if (_link) {
 				tTJSVariant v(value);
@@ -740,6 +746,15 @@ public:
 	}
 
 	/**
+	 * 以降のFunction/Property登録コンテキストを変更
+	 * @param context コンテキスト
+	 */
+	BindUtil& SetContext(iTJSDispatch2 *context = NULL) {
+		_context = context;
+		return *this;
+	}
+
+	/**
 	 * エラーチェック
 	 * 今までの登録／解除動作でエラーがなかったかどうか確認
 	 * @return valid エラーが無い場合はtrue
@@ -757,6 +772,16 @@ public:
 	static C* GetInstance(iTJSDispatch2 *obj, C *instance) {
 		return MethodInvokerBase::GetSelf(obj, instance) ? instance : 0;
 	}
+
+	/**
+	 * 任意階層にあるオブジェクトを取得
+	 * @param base 基点階層（"."で区切って階層指定可能）
+	 * @param store 基点オブジェクト（省略時orNULLの場合はglobal）
+	 * @return オブジェクトがあればiTJSDispatch2ポインタ，なければNULL
+	 */
+	static inline iTJSDispatch2* GetObject(const ttstr &base, iTJSDispatch2 *root = 0) {
+		return StoreUtil::GetObject(base, root);
+	}
 };
 
 } //namespace Detail
@@ -772,3 +797,9 @@ typedef Detail::BindUtil BindUtil;
 } // namespace SimpleBinder
 
 
+// util macro (for BindUtil::SetContext)
+#define SIMPLEBINDER_CUSTOM_CONTEXT_RESOLV(CLASS) \
+	template <> struct SimpleBinder::Detail::ClassInstanceResolver<CLASS>       { typedef CLASS Wrapper; }; \
+	template <> struct SimpleBinder::Detail::ClassInstanceResolver<const CLASS> { typedef CLASS Wrapper; }
+// -> implement "CLASS* CLASS::GetInstance(iTJSDispatch2*)" static method.
+//    and this macro use before BindUtil using.

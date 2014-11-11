@@ -138,7 +138,9 @@ tjs_error (*)(tTJSVariant *result);
 tjs_error (*)(iTJSDispatch2 *objthis, tTJSVariant *result);
 
 tjs_error (Class::*)(tTJSVariant *result) const; //※クラス登録時のみ
+tjs_error (Class::*)(tTJSVariant *result); //※クラス登録時のみ
 tjs_error (*)(const Class *instance, tTJSVariant *result); //※クラス登録時のみ
+tjs_error (*)(Class *instance, tTJSVariant *result); //※クラス登録時のみ
 
 
 ・setter型
@@ -228,11 +230,12 @@ public:
    * コンストラクタ
    * @param link リンク／解除指定
    * @param base 基点階層（"."で区切って階層指定可能）
-   * @param store 基点オブジェクト
+   * @param store 基点オブジェクト（指定がない場合はglobal）
    */
   BindUtil(bool link); //< global基点
   BindUtil(const ttstr &base, bool link); //< 指定階層基点
   BindUtil(iTJSDispatch2 *store, bool link); //< 指定object基点
+  BindUtil(const ttstr &base, iTJSDispatch2 *store, bool link); //< 組み合わせ
 
   /**
    * 関数を登録
@@ -266,7 +269,7 @@ public:
    * @param value 登録対象の値(tTJSVariantのコンストラクタに渡せる型)
    * @param flag PropSetに渡すフラグ値
    */
-  BindUtil& Variant(const ttstr &name, const Value &value, tjs_uint32 flag=TJS_MEMBERENSURE);
+  BindUtil& Variant(const ttstr &name, const Value &value, tjs_uint32 flag=TJS_MEMBERENSURE|TJS_IGNOREPROP);
 
   /**
    * クラスをを登録
@@ -277,6 +280,14 @@ public:
    */
   BindUtil& Class(const ttstr &name, const Factory& ctor);
   BindUtil& Class(const ttstr &name, const Factory& ctor, const Terminator& dtor);
+
+  /**
+   * 以降のFunction/Property登録の関数のコンテキストを変更
+   * @param context コンテキスト
+   * ※既存のSingletonなクラスオブジェクトに関数やプロパティを差し込む場合に
+   *   コンテキストからthisを取得するなど特殊な目的で使用します
+   */
+  BindUtil& SetContext(iTJSDispatch2 *context = 0);
 
   /**
    * エラーチェック
@@ -293,6 +304,14 @@ public:
    */
   template <class Class>
   static Class* GetInstance(iTJSDispatch2 *obj, Class *instance);
+
+  /**
+   * 任意階層にあるオブジェクトを取得
+   * @param base 基点階層（"."で区切って階層指定可能）
+   * @param store 基点オブジェクト（省略時orNULLの場合はglobal）
+   * @return オブジェクトがあればiTJSDispatch2ポインタ，なければNULL
+   */
+  static iTJSDispatch2* GetObject(const ttstr &base, iTJSDispatch2 *root = 0);
 };
 
 
