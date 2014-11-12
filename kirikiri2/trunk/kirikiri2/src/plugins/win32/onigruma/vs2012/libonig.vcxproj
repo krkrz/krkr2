@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{96D467B6-D760-0D4A-A189-59D1F860642A}</ProjectGuid>
+    <RootNamespace>libonig</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\..\..\..\bin\win32\plugin\</OutDir>
+    <IntDir>obj\Release\libonig\</IntDir>
+    <TargetName>libonig</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\bin\</OutDir>
+    <IntDir>obj\Debug\libonig\</IntDir>
+    <TargetName>libonig-d</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>..\..;..\..\00_simplebinder;..\fakeFiles;..\onig;..\onig;..\onig\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;__WIN32__;_CRT_SECURE_NO_WARNINGS;TJS_TEXT_OUT_CRLF;HAVE_CONFIG_H;NOT_RUBY;ONIG_EXTERN=extern;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;__WIN32__;_CRT_SECURE_NO_WARNINGS;TJS_TEXT_OUT_CRLF;HAVE_CONFIG_H;NOT_RUBY;ONIG_EXTERN=extern;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..;..\..\00_simplebinder;..\fakeFiles;..\onig;..\onig;..\onig\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)libonig.lib</OutputFile>
+  </Lib>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..;..\..\00_simplebinder;..\fakeFiles;..\onig;..\onig;..\onig\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;__WIN32__;_CRT_SECURE_NO_WARNINGS;TJS_TEXT_OUT_CRLF;HAVE_CONFIG_H;NOT_RUBY;ONIG_EXTERN=extern;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)libonig-d.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;__WIN32__;_CRT_SECURE_NO_WARNINGS;TJS_TEXT_OUT_CRLF;HAVE_CONFIG_H;NOT_RUBY;ONIG_EXTERN=extern;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..;..\..\00_simplebinder;..\fakeFiles;..\onig;..\onig;..\onig\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)libonig-d.lib</OutputFile>
+  </Lib>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\onig\regcomp.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regenc.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regerror.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regexec.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regext.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\reggnu.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regparse.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regposerr.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regposix.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regsyntax.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regtrav.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\regversion.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\st.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\ascii.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\big5.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\cp1251.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\euc_jp.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\euc_kr.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\euc_tw.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\gb18030.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_1.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_10.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_11.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_13.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_14.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_15.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_16.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_2.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_3.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_4.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_5.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_6.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_7.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_8.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_9.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\koi8.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\koi8_r.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\sjis.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\unicode.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf16_be.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf16_le.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf32_be.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf32_le.c">
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf8.c">
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

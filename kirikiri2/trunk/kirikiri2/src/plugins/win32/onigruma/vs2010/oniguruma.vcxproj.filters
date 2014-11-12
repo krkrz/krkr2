@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="00_simplebinder">
+      <UniqueIdentifier>{2B679B1D-5B84-004B-BD85-B8196576B432}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tp_stub.cpp" />
+    <ClCompile Include="..\..\00_simplebinder\v2link.cpp">
+      <Filter>00_simplebinder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Main.cpp" />
+  </ItemGroup>
+</Project>

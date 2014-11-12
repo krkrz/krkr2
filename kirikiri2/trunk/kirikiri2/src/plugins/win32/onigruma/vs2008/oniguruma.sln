@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "oniguruma", "oniguruma.vcproj", "{ECA1A74B-BE13-1648-ADB7-9FAB4C2572B6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6BA50A40-436D-A74B-96BA-E34B66E86A29} = {6BA50A40-436D-A74B-96BA-E34B66E86A29}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libonig", "libonig.vcproj", "{6BA50A40-436D-A74B-96BA-E34B66E86A29}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|Win32 = Release|Win32
+		Debug|Win32 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ECA1A74B-BE13-1648-ADB7-9FAB4C2572B6}.Release|Win32.ActiveCfg = Release|Win32
+		{ECA1A74B-BE13-1648-ADB7-9FAB4C2572B6}.Release|Win32.Build.0 = Release|Win32
+		{ECA1A74B-BE13-1648-ADB7-9FAB4C2572B6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ECA1A74B-BE13-1648-ADB7-9FAB4C2572B6}.Debug|Win32.Build.0 = Debug|Win32
+		{6BA50A40-436D-A74B-96BA-E34B66E86A29}.Release|Win32.ActiveCfg = Release|Win32
+		{6BA50A40-436D-A74B-96BA-E34B66E86A29}.Release|Win32.Build.0 = Release|Win32
+		{6BA50A40-436D-A74B-96BA-E34B66E86A29}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6BA50A40-436D-A74B-96BA-E34B66E86A29}.Debug|Win32.Build.0 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

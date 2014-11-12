@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="onig">
+      <UniqueIdentifier>{6214E03A-5993-5748-9BFE-E293EEEF478F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="onig\enc">
+      <UniqueIdentifier>{9DC78693-F6B7-7146-B39A-FF48E9BAE8C1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\onig\regcomp.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regenc.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regerror.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regexec.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regext.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\reggnu.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regparse.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regposerr.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regposix.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regsyntax.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regtrav.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\regversion.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\st.c">
+      <Filter>onig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\ascii.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\big5.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\cp1251.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\euc_jp.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\euc_kr.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\euc_tw.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\gb18030.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_1.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_10.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_11.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_13.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_14.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_15.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_16.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_2.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_3.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_4.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_5.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_6.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_7.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_8.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\iso8859_9.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\koi8.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\koi8_r.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\sjis.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\unicode.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf16_be.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf16_le.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf32_be.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf32_le.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\onig\enc\utf8.c">
+      <Filter>onig\enc</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
