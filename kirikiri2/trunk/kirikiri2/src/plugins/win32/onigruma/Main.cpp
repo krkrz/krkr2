@@ -26,7 +26,7 @@ public:
 	}
 
 	// Array.split オーバーライド
-	static tjs_error TJS_INTF_METHOD FuncCall(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
+	static tjs_error _Split(iTJSDispatch2 *objthis, tTJSVariant *r, tjs_int n, tTJSVariant **p) {
 		return self ? self->Split(r, n, p, objthis) : TJS_E_FAIL;
 	}
 
@@ -51,7 +51,7 @@ private:
 		if (arr) {
 			arr->PropGet(0, split, NULL, &arraySplit, arr);
 
-			BindUtil(arr, true).Variant(split, tTJSVariant(this, NULL));
+			if (!BindUtil(arr, true).Function(split, &tTJSNativeClassForRegExp::_Split).IsValid()) r = false;
 		}
 		return r;
 	}
@@ -71,15 +71,19 @@ private:
 	tjs_error Split(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *objthis) {
 		if(n >= 2 && p[0]->Type() == tvtObject) {
 			tTJSVariantClosure clo = p[0]->AsObjectClosureNoAddRef();
-			if(clo.Object) {
+			if (clo.Object) {
 				// func call split(targetstring, reserved, purgeempty, this);
-				tTJSVariant array(objthis, objthis), tvoid, dummy;
-				tTJSVariant *params[] = { p[1], &tvoid, &tvoid, &array };
+				tTJSVariant result, tvoid;
+				tTJSVariant *params[] = { p[1], &tvoid, &tvoid };
 				if (n >= 3)  params[1] = p[2];
 				if (n >= 4)  params[2] = p[3];
 				static ttstr split(TJS_W("split"));
 				if(TJS_SUCCEEDED(clo.FuncCall(0, split.c_str(), split.GetHint(),
-											  &dummy, 4, params, NULL))) {
+											  &result, 3, params, NULL))) {
+					static ttstr assign(TJS_W("assign"));
+					params[0] = &result;
+					Try_iTJSDispatch2_FuncCall(objthis, 0, assign.c_str(), assign.GetHint(), NULL, 1, params, NULL);
+					result.Clear(); // release array object created on RegExp.split
 					if(r) *r = tTJSVariant(objthis, objthis);
 					return TJS_S_OK;
 				}
