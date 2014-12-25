@@ -236,7 +236,19 @@ protected:
 	static inline void Error(const ttstr &message) {
 		TVPAddImportantLog(message);
 	}
+	virtual bool checkInstanceOf(const tjs_char *classname) { return false; }
+	inline static bool compareString(const tjs_char *s1, const tjs_char *s2) {
+		return !TJS_stricmp(s1, s2); // [XXX] ignore case compare
+	}
 public:
+	tjs_error TJS_INTF_METHOD IsInstanceOf(tjs_uint32 flag, const tjs_char *membername, tjs_uint32 *hint, const tjs_char *classname, iTJSDispatch2 *objthis) {
+		if (!membername) {
+			return (checkInstanceOf(classname) ||
+					compareString(classname, TJS_W("Object"))) ? TJS_S_TRUE : TJS_S_FALSE;
+		}
+		return tTJSDispatch::IsInstanceOf(flag, membername, hint, classname, objthis);
+	}
+
 	static inline bool Link(iTJSDispatch2 *obj, const ttstr &key, StoreUtil *self, iTJSDispatch2 *context=NULL) {
 		return self && self->store(obj, key, context);
 	}
@@ -249,6 +261,7 @@ public:
 		const tjs_char *r = p;
 		if(!target) {
 			target = TVPGetScriptDispatch();
+			if (!target) return NULL;
 			target->Release(); // NoAddRef.
 		}
 		while (*p != 0) {
@@ -295,6 +308,8 @@ private:
 class FunctionStore : public StoreUtil {
 private:
 	FunctionInterface *_function;
+protected:
+	bool checkInstanceOf(const tjs_char *classname) { return compareString(classname, TJS_W("Function")); }
 public:
 	template <typename T>
 	FunctionStore(const T& func, bool autoStatic = false, tjs_uint32 flag = StoreUtil::DEFAULT_FLAG) : StoreUtil(flag), _function(0) {
@@ -371,6 +386,8 @@ class PropertyStore : public StoreUtil {
 private:
 	SetterInterface *_setter;
 	GetterInterface *_getter;
+protected:
+	bool checkInstanceOf(const tjs_char *classname) { return compareString(classname, TJS_W("Property")); }
 public:
 	PropertyStore() : _setter(0), _getter(0) {}
 	template <typename SET, typename GET>
@@ -419,6 +436,11 @@ public:
 class ConstantStore : public StoreUtil {
 private:
 	tTJSVariant _value;
+protected:
+	bool checkInstanceOf(const tjs_char *classname) {
+		return (compareString(classname, TJS_W("Property")) ||
+				compareString(classname, TJS_W("Constant")));
+	}
 public:
 	template <typename T>
 	ConstantStore(const T &value) : _value(value) {}
