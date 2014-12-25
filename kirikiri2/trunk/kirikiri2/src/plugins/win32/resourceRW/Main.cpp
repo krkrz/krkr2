@@ -94,9 +94,7 @@ class ResourceWriter : public ResourceUtil {
 public:
 	ResourceWriter() : handle_(NULL), changed_(false) {}
 	ResourceWriter(const tjs_char *file, bool clean = false) : handle_(NULL), changed_(false) { open_(file, clean); }
-	virtual ~ResourceWriter() {
-		if (handle_) close_(false);
-	}
+	virtual ~ResourceWriter() { close_(false); }
 
 protected:
 	void open_(const tjs_char *file, bool clean = false) {
@@ -293,6 +291,8 @@ class ResourceReader : public ResourceUtil {
 public:
 	ResourceReader() : handle_(NULL) {}
 	ResourceReader(const tjs_char *file) : handle_(NULL) { open_(file); }
+	virtual ~ResourceReader() { close_(); }
+
 protected:
 	void open_(const tjs_char *file) {
 		if (handle_) close_();
@@ -302,7 +302,7 @@ protected:
 		if (!handle_) ThrowLastError(TJS_W("LoadLibraryEx: %1"));
 	}
 
-	void close_(bool write = true) {
+	void close_() {
 		if (!handle_) return;
 		if (!::FreeLibrary(handle_)) {
 			handle_ = NULL;

@@ -43,7 +43,8 @@ gmake/		gcc用プロジェクト
 ・とりあえず書き起こしただけなので，動作確認が不十分です。
 ・文字列でないリソースに対してResourceReader.readToTextなどしないでください
 ・MessageTableのリソースを読み書きする場合は自前のパーサ等を作る必要があります
-　BinaryStream.dllなどを利用し，WinNT.hなどに定義されている
+　BinaryStream.dllや吉里吉里ZのTJSのArray.pack/Octet.unpackなどを利用し，
+　WinNT.hなどに定義されている
 	MESSAGE_RESOURCE_DATA
 	MESSAGE_RESOURCE_BLOCK
 	MESSAGE_RESOURCE_ENTRY

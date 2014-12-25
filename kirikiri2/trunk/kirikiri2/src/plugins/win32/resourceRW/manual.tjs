@@ -49,6 +49,7 @@ class ResourceReader {
 
 class ResourceWriter {
 	function ResourceWriter(file, clean) { if (file !== void) open(file, clean); }
+	function finalize { close(false); }
 
 	/**
 	 * 操作対象のファイルをオープン
