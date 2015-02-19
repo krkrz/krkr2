@@ -912,6 +912,8 @@ NCB_ATTACH_CLASS_WITH_HOOK(LayerExDraw, Layer) {
 
 	NCB_METHOD_RAW_CALLBACK(saveImage, &LayerExDraw::saveImage, 0);
 
+	NCB_METHOD(getColorRegionRects);
+	
 #define ENUM(n) Variant(#n, (int)n)
 	ENUM(EncoderValueCompressionLZW);
     ENUM(EncoderValueCompressionCCITT3);

@@ -988,5 +988,14 @@ class Layer {
     EncoderValueTransformRotate270;
 	EncoderValueTransformFlipHorizontal;
 	EncoderValueTransformFlipVertical;
+
+	// -------------------------------------------------------------
+
+	/**
+	 * 指定した色の領域が含まれるリージョンを返す
+	 * @param color 色指定
+	 * @return 矩形の配列
+	 */
+	function getColorRegionRects(color);
 };
 

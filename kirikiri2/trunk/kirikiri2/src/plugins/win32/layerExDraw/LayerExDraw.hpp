@@ -722,6 +722,12 @@ public:
 											   tjs_int numparams,
 											   tTJSVariant **param,
 											   iTJSDispatch2 *objthis);
+
+	// ------------------------------------------------
+	// ƒŠ[ƒWƒ‡ƒ“æ“¾
+	// ------------------------------------------------
+	
+	tTJSVariant getColorRegionRects(ARGB color);
 };
 
 #endif

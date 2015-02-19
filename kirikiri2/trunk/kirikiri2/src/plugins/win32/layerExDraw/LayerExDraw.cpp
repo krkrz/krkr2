@@ -2171,7 +2171,7 @@ LayerExDraw::drawPathString2(const FontInfo *font, const Appearance *app, REAL x
 {
   // •¶Žš—ñ‚ÌƒpƒX‚ð€”õ
   GraphicsPath path;
-  PointF offset(x + LONG(0.167 * font->emSize) - 0.5, y - 0.5);
+  PointF offset(x + LONG(0.167 * font->emSize) - 0.5f, y - 0.5f);
   this->getTextOutline(font, offset, &path, text);
   RectF result = _drawPath(app, &path);
   result.X = x;
@@ -2316,4 +2316,58 @@ LayerExDraw::saveImage(tTJSVariant *result, tjs_int numparams, tTJSVariant **par
 		*result = ret == 0;
 	}
 	return TJS_S_OK;
+}
+
+static ARGB getColor(Bitmap *bitmap, int x, int y)
+{
+	Color c;
+	bitmap->GetPixel(x, y, &c);
+	return c.GetValue();
+}
+
+tTJSVariant
+LayerExDraw::getColorRegionRects(ARGB color)
+{
+	iTJSDispatch2 *array = TJSCreateArrayObject();
+	if (bitmap) {
+		int width  = bitmap->GetWidth();
+		int height = bitmap->GetHeight();
+		
+		Region region(Rect(0,0,0,0));
+		for (int j=0;j<height;j++) {
+			for (int i=0;i<width;i++) {
+				if (getColor(bitmap, i, j) == color) {
+					int x0 = i++;
+					while (i < width && getColor(bitmap, i, j) == color) i++;
+					region.Union(Rect(x0, j, i - x0, 1));
+				}
+			}
+		}
+
+		// ‹éŒ`ˆê——Žæ“¾
+		Matrix matrix;
+		int count = region.GetRegionScansCount(&matrix);
+		if (count > 0) {
+			RectF *rects = (RectF*)malloc(count*sizeof(RectF));
+			region.GetRegionScans(&matrix, rects, &count);
+			for (int i=0;i<count;i++) {
+				RectF *rect = &rects[i];
+				tTJSVariant x(rect->X);
+				tTJSVariant y(rect->Y);
+				tTJSVariant w(rect->Width);
+				tTJSVariant h(rect->Height);
+				tTJSVariant *points[4] = {&x, &y, &w, &h};
+				static tjs_uint32 pushHint;
+				iTJSDispatch2 *rarray = TJSCreateArrayObject();
+				rarray->FuncCall(0, TJS_W("push"), &pushHint, 0, 4, points, rarray);
+				tTJSVariant var(rarray,rarray), *param = &var;
+				rarray->Release();
+				array->FuncCall(0, TJS_W("push"), &pushHint, 0, 1, &param, array);
+			}
+			delete[] rects;
+		}
+	}
+	tTJSVariant ret(array,array);
+	array->Release();
+	return ret;
 }
