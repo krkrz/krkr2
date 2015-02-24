@@ -88,4 +88,20 @@ class Scripts {
 	 *  カウンタで何千～万回に1回等の間隔で呼び出すようにすると効果的かと思われます。
 	 */
 	function rehash();
+
+	/**
+	 * 指定オブジェクトのPropSet/Getを呼ぶ
+	 * @param obj 対象オブジェクト
+	 * @param member メンバ名(typeof member == "Integer"ならProp{Set,Get}ByNumを呼ぶ)
+	 * @param value セットする値(propSetのみ)
+	 * @param flag フラグ
+	 * @return 取得した値(propGetのみ，set時はvoid)
+	 */
+	function propSet(obj, member, value, flag=Scripts.pfMemberEnsure);
+	function propGet(obj, member, flag=Scripts.pfMemberMustExist);
+	var pfMemberEnsure    = 0x00000200; //TJS_MEMBERENSURE
+	var pfMemberMustExist = 0x00000400; //TJS_MEMBERMUSTEXIST
+	var pfIgnoreProp      = 0x00000800; //TJS_IGNOREPROP
+	var pfHiddenMember    = 0x00001000; //TJS_HIDDENMEMBER
+	var pfStaticMember    = 0x00010000; //TJS_STATICMEMBER
 }

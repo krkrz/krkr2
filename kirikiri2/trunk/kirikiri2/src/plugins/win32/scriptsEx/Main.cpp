@@ -60,6 +60,17 @@ public:
 	//----------------------------------------------------------------------
 	// オブジェクト複製
 	static tTJSVariant clone(tTJSVariant v1);
+
+	//----------------------------------------------------------------------
+	// フラグ指定つきプロパティ操作
+	static tjs_error TJS_INTF_METHOD propSet(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis);
+	static tjs_error TJS_INTF_METHOD propGet(tTJSVariant *result,
+											 tjs_int numparams,
+											 tTJSVariant **param,
+											 iTJSDispatch2 *objthis);
 };
 
 /**
@@ -613,16 +624,56 @@ ScriptsAdd::clone(tTJSVariant obj)
 	return obj;
 }
 
+//----------------------------------------------------------------------
+// フラグ指定つきプロパティ操作
+tjs_error TJS_INTF_METHOD
+ScriptsAdd::propSet(tTJSVariant *result,
+					tjs_int numparams,
+					tTJSVariant **param,
+					iTJSDispatch2 *objthis)
+{
+	if (numparams < 3) return TJS_E_BADPARAMCOUNT;
+	tTJSVariantClosure clo = param[0]->AsObjectClosureNoAddRef();
+
+	tjs_uint32 flag = (numparams > 3) ? (tjs_uint32)param[3]->operator tjs_int() : TJS_MEMBERENSURE;
+	return ((param[1]->Type() != tvtInteger)
+			? Try_iTJSDispatch2_PropSet     (clo.Object, flag, param[1]->GetString(), param[1]->GetHint(), param[2], clo.ObjThis)
+			: Try_iTJSDispatch2_PropSetByNum(clo.Object, flag, param[1]->operator tjs_int(),               param[2], clo.ObjThis));
+}
+tjs_error TJS_INTF_METHOD
+ScriptsAdd::propGet(tTJSVariant *result,
+					tjs_int numparams,
+					tTJSVariant **param,
+					iTJSDispatch2 *objthis)
+{
+	if (numparams < 2) return TJS_E_BADPARAMCOUNT;
+	tTJSVariantClosure clo = param[0]->AsObjectClosureNoAddRef();
+
+	tjs_uint32 flag = (numparams > 2) ? (tjs_uint32)param[2]->operator tjs_int() : TJS_MEMBERMUSTEXIST;
+	return ((param[1]->Type() != tvtInteger)
+			? Try_iTJSDispatch2_PropGet     (clo.Object, flag, param[1]->GetString(), param[1]->GetHint(), result, clo.ObjThis)
+			: Try_iTJSDispatch2_PropGetByNum(clo.Object, flag, param[1]->operator tjs_int(),               result, clo.ObjThis));
+}
+
+//----------------------------------------------------------------------
 NCB_ATTACH_CLASS(ScriptsAdd, Scripts) {
-	RawCallback("getObjectKeys", &ScriptsAdd::getKeys, TJS_STATICMEMBER);
-	RawCallback("getObjectCount", &ScriptsAdd::getCount, TJS_STATICMEMBER);
+	RawCallback(TJS_W("getObjectKeys"), &ScriptsAdd::getKeys, TJS_STATICMEMBER);
+	RawCallback(TJS_W("getObjectCount"), &ScriptsAdd::getCount, TJS_STATICMEMBER);
 	NCB_METHOD(getObjectContext);
 	NCB_METHOD(isNullContext);
 	NCB_METHOD(equalStruct);
 	NCB_METHOD(equalStructNumericLoose);
-	RawCallback("foreach", &ScriptsAdd::foreach, TJS_STATICMEMBER);
-	RawCallback("getMD5HashString", &ScriptsAdd::getMD5HashString, TJS_STATICMEMBER);
+	RawCallback(TJS_W("foreach"), &ScriptsAdd::foreach, TJS_STATICMEMBER);
+	RawCallback(TJS_W("getMD5HashString"), &ScriptsAdd::getMD5HashString, TJS_STATICMEMBER);
 	NCB_METHOD(clone);
+
+	RawCallback("propSet", &ScriptsAdd::propSet, TJS_STATICMEMBER);
+	RawCallback("propGet", &ScriptsAdd::propGet, TJS_STATICMEMBER);
+	Variant(TJS_W("pfMemberEnsure"),    TJS_MEMBERENSURE);
+	Variant(TJS_W("pfMemberMustExist"), TJS_MEMBERMUSTEXIST);
+	Variant(TJS_W("pfIgnoreProp"),      TJS_IGNOREPROP);
+	Variant(TJS_W("pfHiddenMember"),    TJS_HIDDENMEMBER);
+	Variant(TJS_W("pfStaticMember"),    TJS_STATICMEMBER);
 };
 
 NCB_ATTACH_FUNCTION(rehash, Scripts, TJSDoRehash);
