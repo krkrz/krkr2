@@ -94,7 +94,12 @@ class Scripts {
 	 * @param obj 対象オブジェクト
 	 * @param member メンバ名(typeof member == "Integer"ならProp{Set,Get}ByNumを呼ぶ)
 	 * @param value セットする値(propSetのみ)
-	 * @param flag フラグ
+	 * @param flag フラグ(Scripts.pf* の"|"(or)による組み合わせ指定，もしくは0)
+	 *             Scripts.pfMemberEnsure    : (set時)メンバを新規追加する場合に指定（ない場合は既存メンバのみ書き換え可能）
+	 *             Scripts.pfMemberMustExist : (get時)メンバがない場合はエラー（辞書のundefinedもvoidを返さずエラーになります）
+	 *             Scripts.pfIgnoreProp      : (get/set時)プロパティの動作を無視（TJSの&指定と同じ動作です）
+	 *             Scripts.pfHiddenMember    : (set時)隠しメンバ指定（assignStruct/saveStruct等のEnumMembers系の処理で無視されます）
+	 *             Scripts.pfStaticMember    : (set時)Staticメンバ指定（クラスオブジェクトなどに使用します）
 	 * @return 取得した値(propGetのみ，set時はvoid)
 	 */
 	function propSet(obj, member, value, flag=Scripts.pfMemberEnsure);
