@@ -49,6 +49,7 @@ Scripts.execStorage("KFixedSizeLayout.tjs");
 Scripts.execStorage("KColorBox.tjs");
 Scripts.execStorage("KColorPickerDialog.tjs");
 Scripts.execStorage("KTimeLineControl.tjs");
+Scripts.execStorage("KCustomDialog.tjs");
 
 // マウスホイールはメッセージで取得
 // (DirectInput経由で取得するとたまにバグって吉里吉里が応答しなくなるのでその対策)

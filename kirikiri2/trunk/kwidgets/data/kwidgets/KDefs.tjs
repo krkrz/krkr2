@@ -36,6 +36,17 @@ global.LIST_ITEM_CAPABILITY_MASK_DRAG        = 1 << 3;
 global.LIST_ITEM_CAPABILITY_MASK_DROP        = 1 << 4;
 global.LIST_ITEM_CAPABILITY_MASK_MOUSEDOWN   = 1 << 5;
 
+// シンプルダイアログのウィジェットタイプ
+global.DIALOG_WIDGET_TYPE_CHECKBOX = 0;
+global.DIALOG_WIDGET_TYPE_TEXTINPUT = 1;
+global.DIALOG_WIDGET_TYPE_DROPDOWNLIST = 2;
+global.DIALOG_WIDGET_TYPE_TEXTAREA = 3;
+
+// 問い合わせの答え
+global.DIALOG_RESPONSE_OK = 1 << 0;
+global.DIALOG_RESPONSE_CANCEL = 1 << 1;
+
+
 if (k_kirikiriz) {
 // 吉里吉里Zでは未定義のマウスカーソル定数への対処
   global.crHSplit = crSizeWE;

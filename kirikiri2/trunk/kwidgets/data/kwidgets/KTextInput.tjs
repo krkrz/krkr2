@@ -269,7 +269,10 @@ class KTextInput extends KValueWidget
    ------------------------------*/
   property value {
     getter {
-      return filterValue(text.value);
+      var result = filterValue(text.value);
+      if (type == TEXT_DIGIT || type == TEXT_REAL)
+        result = +result;
+      return result;
     }
     setter(v) {
       // テキストエディットの持つ文字パターンでマッチングする文字のみをフィルタ

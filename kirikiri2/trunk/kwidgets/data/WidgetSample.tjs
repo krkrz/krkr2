@@ -1,5 +1,5 @@
 //
-// $Id: WidgetSample.tjs,v 1.10 2007/09/22 21:38:39 cvs Exp $
+// $id: WidgetSample.tjs,v 1.10 2007/09/22 21:38:39 cvs Exp $
 //
 
 /*----------------------------------------------------------------------
@@ -123,6 +123,8 @@ class WidgetSample extends KWindow
     menuNest.addRadioItem("ラジオその1", 1, "menuRadio");
     menuNest.addRadioItem("ラジオその2", 2, "menuRadio");
     menuNest.addRadioItem("ラジオその3", 3, "menuRadio");
+    menuTop.addSeparator();
+    menuTop.addItem("カスタムダイアログ", "customDialogTest");
 
     menu.addItem("ズーム", "zoomRoot");
     zoomRoot.addRadioItem("50%", 50, "zoom");
@@ -372,6 +374,22 @@ class WidgetSample extends KWindow
       // ズーム変更
     case "zoom":
       setZoom(value, 100);
+      break;
+
+      // プレーンダイアログテスト
+    case "customDialogTest":
+      queryCustomDialog(this, dict, 
+                       %[ 
+                         name: "test_dialog",
+                         caption: "Test Dialog",
+                         widgetList: [ %[ name: "check", label: "チェックボックス", type: DIALOG_WIDGET_TYPE_CHECKBOX,  defaultValue: true ],
+                                       %[ name: "int",   label: "整数入力",         type: DIALOG_WIDGET_TYPE_TEXTINPUT, textType: TEXT_DIGIT ],
+                                       %[ name: "real",  label: "小数入力",         type: DIALOG_WIDGET_TYPE_TEXTINPUT, textType: TEXT_REAL, defaultValue: 0.5 ],
+                                       %[ name: "str",   label: "文字入力",         type: DIALOG_WIDGET_TYPE_TEXTINPUT, textType: TEXT_ANY ],
+                                       %[ name: "text",  label: "テキスト",         type: DIALOG_WIDGET_TYPE_TEXTAREA,   defaultValue: "ほげ\nもげ" ],
+                                       %[ name: "list",  label: "リスト",           type: DIALOG_WIDGET_TYPE_DROPDOWNLIST, listItems: [ "項目1", [ "項目2", 2 ], [ "項目3", 3 ] ], defaultValue: 2]
+                                       ]
+                          ]);
       break;
     }
   }
