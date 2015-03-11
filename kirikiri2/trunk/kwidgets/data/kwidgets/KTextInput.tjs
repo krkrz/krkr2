@@ -270,8 +270,6 @@ class KTextInput extends KValueWidget
   property value {
     getter {
       var result = filterValue(text.value);
-      if (type == TEXT_DIGIT || type == TEXT_REAL)
-        result = +result;
       return result;
     }
     setter(v) {
@@ -353,7 +351,9 @@ class KTextInput extends KValueWidget
 
   // 子(テキストエディット)の更新をそのまま自分の更新にすり替えて通知
   function onChildValueModified(child, value) {
-    onValueModified(value);
+    var ov = oldValue;
+    oldValue = value;
+    onValueModified(filterValue(value), filterValue(ov));
   }
 
   // フォーカスしたらボックスを再描画
@@ -379,13 +379,6 @@ class KTextInput extends KValueWidget
   // DISABLEされたらボックスを半透明に
   function onNodeDisabled {
     box.opacity = 64;
-  }
-
-  // 値を更新
-  function onValueModified(value) {
-    var ov = oldValue;
-    oldValue = value;
-    super.onValueModified(filterValue(value), filterValue(ov));
   }
 
   // 値をフィルタリングして、数値の場合は文字列から数値に変換して返す。
