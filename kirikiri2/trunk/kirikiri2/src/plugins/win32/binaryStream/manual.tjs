@@ -73,7 +73,7 @@ class BinaryStream
 	 *        offset  :[in] コピー元ストレージの読み込み開始オフセット（省略時先頭）
 	 *        length  :[in] コピー元ストレージの最大読み込みサイズ（省略時ファイルサイズ）
 	 *
-	 *        filter  :[in] フィルタ処理を行う関数名（省略時はフィルタ処理なし）
+	 *        filter  :[in] フィルタ処理を行う関数名(string)もしくは関数アドレス(int)（省略/void/0の時はフィルタ処理なし）
 	 *        fparam  :[in] フィルタに渡すパラメータ値(int)
 	 *
 	 *        nocopy  :[in] trueを指定すると出力を書き込まない（省略時はfalse，hashのみ取得したい場合などに指定）
@@ -134,8 +134,10 @@ class BinaryStream
 	 * @param dll 対象のDLLファイル（voidの場合は設定解除）
 	 *
 	 * copy/compress/decompressのデータに対して外部DLLを使用したフィルタを設定します
-	 * elm.filter に関数名を指定た場合に，このDLL中の下記の形式でエクスポートされた関数をフィルタとして使用します
-	 * void (__stdcall *FilterProc)(uint32 hash, uint64 offset, void *buffer, uint32 length);
+	 * elm.filter に文字列の関数名を指定た場合に，このDLL中の下記の形式でエクスポートされた関数をフィルタとして使用します
+	 * void (__stdcall *FilterProc)(uint32 fparam, uint64 offset, void *buffer, uint32 length);
+	 * elm.filter に数値を渡した場合は上記形式の関数のポインタとみなされるため，setFilterの指定は不要です
+	 * （その場合は，別のプラグインを利用して目的の関数ポインタを取得してください）
 	 */
 	function setFilter(dll);
 

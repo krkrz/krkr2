@@ -127,7 +127,21 @@ class BinaryStream
 		virtual void detailOptionLoad(ncbPropAccessor &elm) {
 			inputOffset  = elm.GetValue(TJS_W("offset"), ncbTypedefs::Tag<tjs_int64>());
 			inputMaxsize = elm.GetValue(TJS_W("length"), ncbTypedefs::Tag<tjs_int64>());
-			filterProc   = owner->getFilterProc(elm.getStrValue(TJS_W("filter")));
+			filterProc   = 0;
+			{   // filterProcŽæ“¾
+				tTJSVariantType type = tvtVoid;
+				const tjs_char *key = TJS_W("filter");
+				if (elm.HasValue(key, 0, &type)) {
+					switch (type) {
+					case tvtVoid: break;
+					case tvtString:  filterProc = owner->getFilterProc(        elm.GetValue(key, ncbTypedefs::Tag<ttstr     >())); break;
+					case tvtInteger: filterProc = reinterpret_cast<FilterProc>(elm.GetValue(key, ncbTypedefs::Tag<tTVInteger>())); break;
+					default:
+						error(TJS_W("invalid filter type"));
+						break;
+					}
+				}
+			}
 			filterValue  = elm.getIntValue(TJS_W("fparam"));
 			noCopy       = !!elm.getIntValue(TJS_W("nocopy"));
 			calcMD5      = !!elm.getIntValue(TJS_W("md5"));
