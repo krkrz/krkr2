@@ -1574,6 +1574,8 @@ class KListItem
   var _enabled = true;
   var _curNodeEnabled = true;
   var _backgroundColor = void;
+  var _lineSpacing = 0;
+  var labelSize = %[ width: 0, height: 0];
 
   /**------------------------------
    * コンストラクタ
@@ -1715,7 +1717,7 @@ class KListItem
   /**------------------------------
    * アイテムの縦幅
    *
-   * 指定しないと、MList の fontHeight から spaceVertical から自動設定される
+   * 指定しないと、MList の fontHeight と spaceVertical から自動設定される
    *
    * @param v 縦幅
    * @return 縦幅
@@ -1737,6 +1739,27 @@ class KListItem
         requireRelocate();
       }
       return;
+    }
+  }
+
+  /**------------------------------
+   * 改行入りテキストを設定した場合の行間
+   * 
+   * @param value 行間
+   * @return 行間
+   ------------------------------*/
+  property lineSpacing {
+    getter {
+      return _lineSpacing;
+    }
+    setter(v) {
+      if (_lineSpacing == v)
+        return;
+      _lineSpacing = v;
+      if (visible) {
+        updateSize();
+        requireRelocate();
+      }
     }
   }
 
@@ -2744,6 +2767,19 @@ class KListItem
     top = y;
   }
 
+  function calcLabelSize() {
+   // 改行で分割
+    var lines = label.split(/\r\n|\r|\n/);
+    // サイズを計算して返す
+    var tw = 0, th = 0;
+    var linseSpacing;
+    for(var i=0; i<lines.count; i++) {
+      tw = Math.max(tw, root.font.getTextWidth(lines[i]));
+    }
+    th = (size - root.spaceVertical) * lines.count + root.spaceVertical + lineSpacing * (lines.count - 1);
+    return %[ width: tw, height: th ];
+  }
+
   function updateSize() {
     height = 0;
     toggleWidth = root.findIcon("k_list_open").width + 4;;
@@ -2754,9 +2790,9 @@ class KListItem
       height = Math.max(iconLayerList[i].height);
     }
     root.font.bold = _fontBold;
-    labelWidth = root.font.getTextWidth(label);
-    width = toggleWidth + iconWidth + labelWidth;
-    height = Math.max(height, size);
+    labelSize = calcLabelSize();
+    width = toggleWidth + iconWidth + labelSize.width;
+    height = Math.max(height, labelSize.height);
   }
 
   function getChildInsertionX {
@@ -2942,9 +2978,15 @@ class KListItem
     var opacity = (root.nodeEnabled && ! nodeEnabled) ? 64 : 255;
     root.fillRect(0, top, root.width, height, backgroundColor);
     root.font.bold = _fontBold;
-    root.drawText(left + toggleWidth + iconWidth, top + int((height - size) / 2 + root.spaceVertical / 2), label, fontColor,
-                  opacity, true, 2048, WIN_WHITE, 2.5);
-    
+//    root.drawText(left + toggleWidth + iconWidth, top + int((height - size) / 2 + root.spaceVertical / 2), label, fontColor,
+//                  opacity, true, 2048, WIN_WHITE, 2.5);
+    var lines = label.split(/\r\n|\r|\n/);
+    var rect = labelRect;
+    for (var i = 0; i < lines.count; i++) {
+      var text = lines[i];
+      root.drawText(left + rect.left, top + rect.top + (size - root.spaceVertical) * i + int(root.spaceVertical / 2) + lineSpacing * i, text, fontColor,
+                    opacity, true, 2048, WIN_WHITE, 2.5);
+    }      
     if (childCount) {
       var toggle = root.findIcon(opened ? "k_list_close" : "k_list_open");
       root.operateRect(left + 2, int(top + (height- toggle.height) / 2),
@@ -2966,8 +3008,9 @@ class KListItem
   // ラベル矩形
   property labelRect {
     getter {
-      return %[ left:(toggleWidth + iconWidth), top:0, 
-                width:width - (toggleWidth + iconWidth), height:size];
+      var hmargin = height - labelSize.height;
+      return %[ left:(toggleWidth + iconWidth), top:int(hmargin / 2),
+                width:width - (toggleWidth + iconWidth), height:labelSize.height];
     }
   }
 
