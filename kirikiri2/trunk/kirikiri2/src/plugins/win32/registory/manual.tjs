@@ -3,6 +3,8 @@
  */
 class System
 {
+	// レジストリの読み込みは、組み込みの System.readRegValue を使用のこと
+
 	/**
 	 * レジストリにデータを書き込みます
 	 * @param key 書き込み先のキー(readRegValue と同様に HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\hoeg\installdir と指定する)
@@ -10,5 +12,15 @@ class System
 	 */
 	function writeRegValue(key, value);
 
-	// レジストリの読み込みは、組み込みの System.readRegValue を使用のこと
+	/**
+	 * レジストリの値を削除する
+	 * @param key 削除先の値(readRegValue と同様に HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\hoeg\installdir と指定する)
+	 */
+	function writeDeleteValue(key, value);
+
+	/**
+	 * レジストリのキーを削除します
+	 * @param key 削除するキー(readRegValue と同様に HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\hoeg\installdir と指定する)
+	 */
+    function deleteRegKey(key);
 };

@@ -11,7 +11,7 @@ class SystemRegistory
 public:
 	SystemRegistory(){}
 
-	static tjs_error TJS_INTF_METHOD writeRegistory(
+	static tjs_error TJS_INTF_METHOD writeRegistoryValue(
 		tTJSVariant	*result,
 		tjs_int numparams,
 		tTJSVariant **param,
@@ -71,7 +71,7 @@ public:
 		DWORD	dwDisposition;
 		LONG	res;
 		res	= RegCreateKeyEx(hKey, keyname.c_str(), 0, NULL,
-			REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, &dwDisposition);
+                             REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, &dwDisposition);
 		if(res != ERROR_SUCCESS)
 			return TJS_E_FAIL;
 
@@ -95,9 +95,149 @@ public:
 
 		return TJS_S_OK;
 	}
+
+	static tjs_error TJS_INTF_METHOD deleteRegistoryValue(
+		tTJSVariant	*result,
+		tjs_int numparams,
+		tTJSVariant **param,
+		iTJSDispatch2 *objthis)
+	{
+		if(numparams < 1)
+			return TJS_E_BADPARAMCOUNT;
+
+		// ルートキーを確定
+		ttstr		key	= param[0]->AsStringNoAddRef();
+		tjs_int		len = key.length();
+		ttstr		hkey= "";
+		tjs_int		i;
+		for(i=0; i<len; i++)
+		{
+			if(key[i] == '\\')
+				break;
+			hkey	+= key[i];
+		}
+		hkey.ToUppserCase();
+		dm(hkey);
+		HKEY	hKey	= HKEY_CURRENT_USER;
+		if(hkey[5] == 'C')
+		{
+			if(hkey[6] == 'L')
+				hKey	= HKEY_CLASSES_ROOT;
+			else if(hkey[13] == 'C')
+				hKey	= HKEY_CURRENT_CONFIG;
+			else if(hkey[23] == 'U')
+				hKey	= HKEY_CURRENT_USER;
+		}
+		else if(hkey[5] == 'L')
+			hKey	= HKEY_LOCAL_MACHINE;
+		else if(hkey[5] == 'U')
+			hKey	= HKEY_USERS;
+		else if(hkey[5] == 'P')
+			hKey	= HKEY_PERFORMANCE_DATA;
+		else if(hkey[5] == 'D')
+			hKey	= HKEY_DYN_DATA;
+
+		//	キー名、値名を取り出す
+		tjs_int	j;
+		for(j=len-1; j>=0; j--)
+		{
+			if(key[j] == '\\')
+				break;
+		}
+		ttstr	keyname	= "";
+		for(i++; i<j; i++)
+			keyname	+= key[i];
+		ttstr	valname	= "";
+		for(j++; j<len; j++)
+			valname	+= key[j];
+		dm(keyname);
+		dm(valname);
+
+		LONG	res;
+        res	= RegOpenKeyEx(hKey, keyname.c_str(), 0, KEY_WRITE, &hKey);
+		if(res != ERROR_SUCCESS)
+          return TJS_E_FAIL;
+
+        RegDeleteValue(hKey, valname.c_str());
+
+		RegCloseKey(hKey);
+
+		return TJS_S_OK;
+	}
+
+	static tjs_error TJS_INTF_METHOD deleteRegistoryKey(
+		tTJSVariant	*result,
+		tjs_int numparams,
+		tTJSVariant **param,
+		iTJSDispatch2 *objthis)
+	{
+		if(numparams < 1)
+			return TJS_E_BADPARAMCOUNT;
+
+		// ルートキーを確定
+		ttstr		key	= param[0]->AsStringNoAddRef();
+		tjs_int		len = key.length();
+		ttstr		hkey= "";
+		tjs_int		i;
+		for(i=0; i<len; i++)
+		{
+			if(key[i] == '\\')
+				break;
+			hkey	+= key[i];
+		}
+		hkey.ToUppserCase();
+		dm(hkey);
+		HKEY	hKey	= HKEY_CURRENT_USER;
+		if(hkey[5] == 'C')
+		{
+			if(hkey[6] == 'L')
+				hKey	= HKEY_CLASSES_ROOT;
+			else if(hkey[13] == 'C')
+				hKey	= HKEY_CURRENT_CONFIG;
+			else if(hkey[23] == 'U')
+				hKey	= HKEY_CURRENT_USER;
+		}
+		else if(hkey[5] == 'L')
+			hKey	= HKEY_LOCAL_MACHINE;
+		else if(hkey[5] == 'U')
+			hKey	= HKEY_USERS;
+		else if(hkey[5] == 'P')
+			hKey	= HKEY_PERFORMANCE_DATA;
+		else if(hkey[5] == 'D')
+			hKey	= HKEY_DYN_DATA;
+
+		//	キー名、値名を取り出す
+		tjs_int	j;
+		for(j=len-1; j>=0; j--)
+		{
+			if(key[j] == '\\')
+				break;
+		}
+		ttstr	keyname	= "";
+		for(i++; i<j; i++)
+			keyname	+= key[i];
+		ttstr	valname	= "";
+		for(j++; j<len; j++)
+			valname	+= key[j];
+		dm(keyname);
+		dm(valname);
+
+		LONG	res;
+        res	= RegOpenKeyEx(hKey, keyname.c_str(), 0, KEY_READ, &hKey);
+		if(res != ERROR_SUCCESS)
+          return TJS_E_FAIL;
+
+        RegDeleteKey(hKey, valname.c_str());
+
+		RegCloseKey(hKey);
+
+		return TJS_S_OK;
+	}
 };
 
 NCB_ATTACH_CLASS(SystemRegistory, System)
 {
-	RawCallback("writeRegValue", &Class::writeRegistory, 0);
+	RawCallback("writeRegValue", &Class::writeRegistoryValue, 0);
+	RawCallback("deleteRegValue", &Class::deleteRegistoryValue, 0);
+	RawCallback("deleteRegKey", &Class::deleteRegistoryKey, 0);
 };
