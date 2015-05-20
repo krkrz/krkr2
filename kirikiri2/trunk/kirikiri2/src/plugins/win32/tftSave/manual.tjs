@@ -13,6 +13,15 @@ class System
 	 *                   function(ch) { return layer; }
 	 */
 	function savePreRenderedFont(storage, characters, callback);
+
+	/**
+	 * レンダリング済みフォントデータをファイルから読み込む
+	 *
+	 * @param storage    読み込みファイル名
+	 * @param characters 一覧の文字を受け取るための配列
+	 * @param callback   将来的に画像イメージを受け取るコールバックが実装される予定(現状では必ずvoidを渡すこと）
+	 */
+	function loadPreRenderedFont(storage, characters, callback);
 }
 
 /**

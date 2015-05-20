@@ -3,46 +3,55 @@
 
 ////////////////////////////////////////////////////////////////
 
-// レンダリング済みフォントファイルの保存処理
+// レンダリング済みフォントファイルの保存/情報読み取り処理
 
 ////////////////////////////////////////////////////////////////
 
 
 //--------------------------------------------------------------
-// ファイル操作クラス
+// ファイル操作クラス(共通)
 
-struct PFontSaver
+struct PFontFile
 {
-	PFontSaver(tjs_char const *storage) : stream(0), storage(storage)
+	PFontFile(tjs_char const *storage, tjs_uint32 flags) : stream(0), storage(storage), commit(false)
 	{
-		stream = TVPCreateIStream(storage, TJS_BS_WRITE);
+		stream = TVPCreateIStream(storage, flags);
 		if (!stream) error(TJS_W("can't open storage"));
-		else {
-			write("TVP pre-rendered font\x1a\x01\x02", 24);
-			write("            ", 12);
-		}
 	}
-	~PFontSaver() {
+
+	virtual ~PFontFile() {
 		if (stream) {
-			stream->Commit(STGC_DEFAULT);
+			if (commit) stream->Commit(STGC_DEFAULT);
 			stream->Release();
 		}
 		stream = 0;
 	}
-	void error(tjs_char const *message) {
+
+	void error(tjs_char const *message) const {
 		ttstr mes(message);
 		mes += TJS_W(":");
 		mes += storage;
 		TVPThrowExceptionMessage(mes.c_str());
 	}
 
-	void write(void const *buf, ULONG length) {
+	typedef ULONG SizeType;
+
+	void write(void const *buf, SizeType length) {
 		if (!stream) return;
-		ULONG written = 0;
+		SizeType written = 0;
 		if (stream->Write(buf, length, &written) != S_OK || written != length)
 			error(TJS_W("can't write storage"));
+		commit = true;
 	}
-	void seek(ULONG pos) {
+
+	void read(void *buf, SizeType length) {
+		if (!stream) return;
+		SizeType readed = 0;
+		if (stream->Read(buf, length, &readed) != S_OK || readed != length)
+			error(TJS_W("can't read storage"));
+	}
+
+	void seek(SizeType pos) {
 		if (!stream) return;
 		LARGE_INTEGER lpos;
 		ULARGE_INTEGER newpos;
@@ -50,24 +59,49 @@ struct PFontSaver
 		newpos.QuadPart = 0;
 		stream->Seek(lpos, STREAM_SEEK_SET, &newpos);
 	}
-	ULONG getPos() const {
+
+	SizeType getPos() const {
 		if (!stream) return 0;
 		LARGE_INTEGER lpos;
 		ULARGE_INTEGER curpos;
 		lpos.QuadPart  = 0;
 		curpos.QuadPart = 0;
 		stream->Seek(lpos, STREAM_SEEK_CUR, &curpos);
-		return (ULONG)curpos.QuadPart;
+		return (SizeType)curpos.QuadPart;
 	}
+
 	template <typename typename T>
-	ULONG align(T t) {
-		ULONG pos = getPos();
+	SizeType align(T t) {
+		SizeType pos = getPos();
 		write(&t, sizeof(T) - (pos % sizeof(T)));
 		return getPos();
 	}
 
-	void writeHeader(tjs_uint32 count, ULONG chindexpos, ULONG indexpos) {
-		seek(24);
+protected:
+	IStream *stream;
+	ttstr storage;
+	bool commit;
+
+	static const char*    headerText;
+	static const SizeType headerLength;
+};
+const char*               PFontFile::headerText   = "TVP pre-rendered font\x1a\x01\x02";
+const PFontFile::SizeType PFontFile::headerLength = 24;
+
+//--------------------------------------------------------------
+// ファイル操作クラス(書き込み)
+
+struct PFontSaver : public PFontFile
+{
+	PFontSaver(tjs_char const *storage) : PFontFile(storage, TJS_BS_WRITE)
+	{
+		write(headerText, headerLength);
+		write("            ", 12); // dummy index
+	}
+	virtual ~PFontSaver() {}
+
+	void writeHeader(tjs_uint32 count, SizeType chindexpos, SizeType indexpos) {
+		seek(headerLength);
 		write(&count,      4);
 		write(&chindexpos, 4);
 		write(&indexpos,   4);
@@ -94,13 +128,14 @@ struct PFontSaver
 		}
 		newsize = _writeRunLength65(last, newbuf, newsize, count);
 		try {
-			write(newbuf, (ULONG)newsize);
+			write(newbuf, (SizeType)newsize);
 		} catch(...) {
 			delete [] newbuf;
 			throw;
 		}
 		delete [] newbuf;
 	}
+private:
 	inline int _writeRunLength65(unsigned char last, unsigned char *newbuf, int newsize, int count) {
 		if(count >= 2) {
 			while (count) {
@@ -113,11 +148,41 @@ struct PFontSaver
 		}
 		return newsize;
 	}
-private:
-	IStream *stream;
-	ttstr storage;
 };
 
+
+//--------------------------------------------------------------
+// ファイル操作クラス(読み取り)
+
+struct PFontLoader : public PFontFile
+{
+	PFontLoader(tjs_char const *storage) : PFontFile(storage, TJS_BS_READ)
+	{
+		if (stream && !check(headerText, headerLength))
+			error(TJS_W("invalid tft header"));
+	}
+	virtual ~PFontLoader() {}
+
+	void readHeader(tjs_uint32 &count, SizeType &chindexpos, SizeType &indexpos) {
+		seek(headerLength);
+		read(&count,      4);
+		read(&chindexpos, 4);
+		read(&indexpos,   4);
+	}
+
+	bool check(void const *buf, SizeType length) {
+		char * checkbuf = new char[length];
+		try {
+			read(checkbuf, length);
+		} catch (...) {
+			delete [] checkbuf;
+			throw;
+		}
+		bool r = !memcmp(checkbuf, buf, length);
+		delete [] checkbuf;
+		return r;
+	}
+};
 
 //--------------------------------------------------------------
 // グリフ情報保持＆イメージ変換クラス
@@ -233,6 +298,29 @@ public:
 		tjs_int16 reserved = 0;
 		saver.write(&reserved, 2);
 	}
+
+	////////////////////////////////////////////////
+	tjs_char loadCode(PFontLoader &loader) {
+		loader.read(&code, sizeof(code));
+		return code;
+	}
+	void loadInfo(PFontLoader &loader) {
+		loader.read(&offset,   4);
+		loader.read(&width,    2);
+		loader.read(&height,   2);
+		loader.read(&origin_x, 2);
+		loader.read(&origin_y, 2);
+		loader.read(&inc_x,    2);
+		loader.read(&inc_y,    2);
+		loader.read(&inc,      2);
+
+		tjs_int16 reserved = 0;
+		loader.read(&reserved, 2);
+	}
+	void loadImage(PFontLoader &loader, tTJSVariantClosure *closure) {
+		loader.seek(offset);
+		// [TODO] convert tft-image to layer
+	}
 };
 
 //--------------------------------------------------------------
@@ -250,13 +338,15 @@ static void savePreRenderedFont(tjs_char const *storage, tTJSVariant characters,
 
 	// キャラ個数
 	tjs_uint32 count = charray.GetArrayCount();
+	if (!count) saver.error(TJS_W("empty characters"));
 
 	// 文字情報をキャラ個数分用意
 	PFontImage *images = new PFontImage[count];
 
-	ULONG chindexpos = 0;
-	ULONG indexpos   = 0;
-	ULONG padding    = 0;
+	typedef PFontFile::SizeType SizeType;
+	SizeType chindexpos = 0;
+	SizeType indexpos   = 0;
+	SizeType padding    = 0;
 	try {
 		tjs_uint32 i;
 		for (i = 0; i < count; i++) images[i].saveImage(saver, charray.getIntValue((tjs_int32)i), &closure);
@@ -277,6 +367,57 @@ static void savePreRenderedFont(tjs_char const *storage, tTJSVariant characters,
 }
 
 NCB_ATTACH_FUNCTION(savePreRenderedFont, System, savePreRenderedFont);
+
+//--------------------------------------------------------------
+// 読み込み処理
+
+static void loadPreRenderedFont(tjs_char const *storage, tTJSVariant characters, tTJSVariant callback)
+{
+	PFontLoader loader(storage);
+
+	ncbPropAccessor charray(characters);
+	tTJSVariantClosure closure;
+	bool encb = (callback.Type() == tvtObject);
+	if (encb) closure = callback.AsObjectClosureNoAddRef();
+
+	typedef PFontFile::SizeType SizeType;
+	SizeType chindexpos = 0;
+	SizeType indexpos   = 0;
+	SizeType imagepos   = 0;
+
+	tjs_uint32 count = 0;
+	loader.readHeader(count, chindexpos, indexpos);
+	if (!count) loader.error(TJS_W("empty characters"));
+
+	// 文字情報をキャラ個数分用意
+	PFontImage *images = new PFontImage[count];
+
+	try {
+		tjs_uint32 i;
+		imagepos = loader.getPos();
+		loader.seek(chindexpos);
+		for (i = 0; i < count; i++) {
+			tjs_char ch = images[i].loadCode(loader);
+			charray.SetValue(i, (tjs_int)ch);
+		}
+
+		if (encb) {
+			loader.seek(indexpos);
+			for (i = 0; i < count; i++) images[i].loadInfo(loader);
+
+			loader.seek(imagepos);
+			for (i = 0; i < count; i++) {
+				images[i].loadImage(loader, &closure);
+			}
+		}
+	} catch (...) {
+		delete [] images;
+		throw;
+	}
+	delete [] images;
+}
+
+NCB_ATTACH_FUNCTION(loadPreRenderedFont, System, loadPreRenderedFont);
 
 
 
