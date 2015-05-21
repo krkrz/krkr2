@@ -160,7 +160,7 @@ public:
 	}
 	
 	// Žæ“¾‚³‚ê‚½ƒRƒ“ƒeƒ“ƒc‚Ì’·‚³
-	int getContentLength() const {
+	DWORD getContentLength() const {
 		return contentLength;
 	}
 

@@ -149,7 +149,8 @@ public:
 			inputLength = (DWORD)stat.cbSize.QuadPart;
 		}
 		if (inputLength > 0) {
-			ttstr len(inputLength);
+            tTJSVariant val = tjs_int64(inputLength);
+            ttstr len(val);
 			http.addHeader(_T("Content-Length"), len.c_str());
 		}
 		startThread();
@@ -327,7 +328,7 @@ public:
 		return http.getEncoding();
 	}
 
-	int getContentLength() {
+	DWORD getContentLength() {
 		return http.getContentLength();
 	}
 	
@@ -380,7 +381,7 @@ protected:
 	 * @param upload 送信中
 	 * @param percent 進捗
 	 */
-	void onProgress(bool upload, int percent) {
+	void onProgress(bool upload, tjs_real percent) {
 		tTJSVariant params[2];
 		params[0] = upload;
 		params[1] = percent;
@@ -414,7 +415,7 @@ protected:
 		case WM_HTTP_PROGRESS:
 			if (self == (HttpRequest*)Message->WParam) {
 				int lparam = (int)Message->LParam;
-				self->onProgress((lparam & 0xff00)!=0, (lparam & 0xff));
+				self->onProgress((lparam & 0x8000)!=0, tjs_real(lparam & 0x7fff) / 100.0);
 				return true;
 			}
 			break;
@@ -468,8 +469,8 @@ protected:
 		}
 		if (size > 0) {
 			inputSize += size;
-			int percent = (inputLength > 0) ? inputSize * 100 / inputLength : 0;
-			::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, 0x0100 | percent);
+			int bp = (inputLength > 0) ? (DWORDLONG)inputSize * 10000 / inputLength : 0;
+			::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, 0x8000 | bp);
 		}
 		return !canceled;
 	}
@@ -511,8 +512,8 @@ protected:
 			memcpy(&outputData[outputSize], buffer, size);
 		}
 		outputSize += size;
-		int percent = (outputLength > 0) ? outputSize * 100 / outputLength : 0;
-		::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, percent);
+		int bp = (outputLength > 0) ? (DWORDLONG)outputSize * 10000 / outputLength : 0;
+		::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, bp);
 		return !canceled;
 	}
 	
@@ -619,14 +620,14 @@ private:
 	// リクエスト
 	IStream *inputStream;   ///< 送信用ストリーム
 	vector<BYTE>inputData;  ///< 送信用データ
-	int inputLength; ///< 送信データサイズ
-	int inputSize;   ///< 送信済みデータサイズ
+	DWORD inputLength; ///< 送信データサイズ
+	DWORD inputSize;   ///< 送信済みデータサイズ
 
 	// レスポンス
 	IStream *outputStream;  ///< 受信用ストリーム
 	vector<BYTE>outputData; ///< 受信用データ
-	int outputLength; ///< 受信データサイズ
-	int outputSize;   ///< 受信済みデータサイズ
+	DWORD outputLength; ///< 受信データサイズ
+	DWORD outputSize;   ///< 受信済みデータサイズ
 
 	int readyState;
 	int statusCode; ///< HTTPステータスコード
