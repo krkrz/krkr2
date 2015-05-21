@@ -22,6 +22,9 @@ extern void convWCToMB(int enc, const wchar_t *wc, UINT *wclen, char *mb, UINT *
 extern UINT getMBToWCLen(int enc, const char *mb, UINT mblen);
 extern void convMBToWC(int enc, const char *mb, UINT *mblen, wchar_t *wc, UINT *wclen);
 
+// カウンタ
+static int sRefCount;
+
 /**
  * HttpRequest クラス
  */
@@ -50,7 +53,8 @@ public:
 		   readyState(READYSTATE_UNINITIALIZED), statusCode(0)
 	{
 		window->AddRef();
-		setReceiver(true);
+        if (sRefCount++ == 0)
+          setReceiver(true);
 	}
 	
 	/**
@@ -58,7 +62,8 @@ public:
 	 */
 	~HttpRequest() {
 		abort();
-		setReceiver(false);
+        if (--sRefCount <= 0)
+          setReceiver(false);
 		window->Release();
 	}
 
@@ -393,7 +398,7 @@ protected:
 	void setReceiver(bool enable) {
 		tTJSVariant mode     = enable ? (tTVInteger)(tjs_int)wrmRegister : (tTVInteger)(tjs_int)wrmUnregister;
 		tTJSVariant proc     = (tTVInteger)(tjs_int)receiver;
-		tTJSVariant userdata = (tTVInteger)(tjs_int)this;
+		tTJSVariant userdata = (tTVInteger)0;
 		tTJSVariant *p[] = {&mode, &proc, &userdata};
 		if (window->FuncCall(0, L"registerMessageReceiver", NULL, NULL, 4, p, objthis) != TJS_S_OK) {
 			TVPThrowExceptionMessage(L"can't regist user message receiver");
@@ -404,21 +409,15 @@ protected:
 	 * イベント受信処理
 	 */
 	static bool __stdcall receiver(void *userdata, tTVPWindowMessage *Message) {
-		HttpRequest *self = (HttpRequest*)userdata;
+        HttpRequest *self = (HttpRequest*)Message->WParam;
 		switch (Message->Msg) {
 		case WM_HTTP_READYSTATE:
-			if (self == (HttpRequest*)Message->WParam) {
-				self->onReadyStateChange((ReadyState)Message->LParam);
-				return true;
-			}
-			break;
+          self->onReadyStateChange((ReadyState)Message->LParam);
+          return true;
 		case WM_HTTP_PROGRESS:
-			if (self == (HttpRequest*)Message->WParam) {
-				int lparam = (int)Message->LParam;
-				self->onProgress((lparam & 0x8000)!=0, tjs_real(lparam & 0x7fff) / 100.0);
-				return true;
-			}
-			break;
+          int lparam = (int)Message->LParam;
+          self->onProgress((lparam & 0x8000)!=0, tjs_real(lparam & 0x7fff) / 100.0);
+          return true;
 		}
 		return false;
 	}
