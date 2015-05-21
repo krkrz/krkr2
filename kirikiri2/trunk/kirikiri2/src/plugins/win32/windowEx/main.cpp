@@ -190,6 +190,38 @@ struct WindowEx
 		return TJS_S_OK;
 	}
 
+	// property maximized box
+	static tjs_error TJS_INTF_METHOD getMaximizeBox(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND(obj);
+		if (r) *r = (GetWindowLong(hwnd, GWL_STYLE) & WS_MAXIMIZEBOX) != 0;
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setMaximizeBox(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		bool m = !!p[0]->AsInteger();
+		HWND hwnd = GetHWND(obj);
+        LONG style = GetWindowLong(hwnd, GWL_STYLE);
+        style &= ~WS_MAXIMIZEBOX;
+        if (m) style |= WS_MAXIMIZEBOX;
+        SetWindowLong(hwnd, GWL_STYLE, style);
+		return TJS_S_OK;
+	}
+
+	// property minimized box
+	static tjs_error TJS_INTF_METHOD getMinimizeBox(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		HWND hwnd = GetHWND(obj);
+		if (r) *r = (GetWindowLong(hwnd, GWL_STYLE) & WS_MINIMIZEBOX) != 0;
+		return TJS_S_OK;
+	}
+	static tjs_error TJS_INTF_METHOD setMinimizeBox(tTJSVariant *r, tjs_int n, tTJSVariant **p, iTJSDispatch2 *obj) {
+		bool m = !!p[0]->AsInteger();
+		HWND hwnd = GetHWND(obj);
+        LONG style = GetWindowLong(hwnd, GWL_STYLE);
+        style &= ~WS_MINIMIZEBOX;
+        if (m) style |= WS_MINIMIZEBOX;
+        SetWindowLong(hwnd, GWL_STYLE, style);
+		return TJS_S_OK;
+	}
+
 	// property maximized
 	static bool isMaximized(iTJSDispatch2 *obj) {
 		HWND hwnd = GetHWND(obj);
@@ -978,6 +1010,8 @@ NCB_ATTACH_CLASS_WITH_HOOK(WindowEx, Window)
 
 	RawCallback(TJS_W("minimize"),            &Class::minimize,          0);
 	RawCallback(TJS_W("maximize"),            &Class::maximize,          0);
+	RawCallback(TJS_W("maximizeBox"),           &Class::getMaximizeBox,      &Class::setMaximizeBox, 0);
+	RawCallback(TJS_W("minimizeBox"),           &Class::getMinimizeBox,      &Class::setMinimizeBox, 0);
 	RawCallback(TJS_W("maximized"),           &Class::getMaximized,      &Class::setMaximized, 0);
 	RawCallback(TJS_W("minimized"),           &Class::getMinimized,      &Class::setMinimized, 0);
 	RawCallback(TJS_W("showRestore"),         &Class::showRestore,       0);

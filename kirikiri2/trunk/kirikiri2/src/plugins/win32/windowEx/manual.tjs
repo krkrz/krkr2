@@ -14,6 +14,16 @@ class Window {
 	function maximize();
 
 	/**
+	 * ウィンドウ最大化ボタンの有無
+	 */
+    property maximizeBox;
+
+	/**
+	 * ウィンドウ最小化ボタンの有無
+	 */
+    property minimizeBox;
+
+	/**
 	 * ウィンドウが最大化かどうか取得
 	 * setterも一応あるが使わないことを推奨
 	 */
