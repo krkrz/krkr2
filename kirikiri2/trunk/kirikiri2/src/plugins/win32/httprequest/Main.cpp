@@ -23,7 +23,7 @@ extern UINT getMBToWCLen(int enc, const char *mb, UINT mblen);
 extern void convMBToWC(int enc, const char *mb, UINT *mblen, wchar_t *wc, UINT *wclen);
 
 // カウンタ
-static int sRefCount;
+static std::map<iTJSDispatch2 *, int> sRefCount;
 
 /**
  * HttpRequest クラス
@@ -53,8 +53,9 @@ public:
 		   readyState(READYSTATE_UNINITIALIZED), statusCode(0)
 	{
 		window->AddRef();
-        if (sRefCount++ == 0)
+        if (sRefCount[window]++ == 0) {
           setReceiver(true);
+        }
 	}
 	
 	/**
@@ -62,8 +63,10 @@ public:
 	 */
 	~HttpRequest() {
 		abort();
-        if (--sRefCount <= 0)
+        if (--sRefCount[window] <= 0) {
           setReceiver(false);
+          sRefCount.erase(window);
+        }
 		window->Release();
 	}
 
