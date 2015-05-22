@@ -275,6 +275,14 @@ class AsyncCaller
     call(func, args*);
   }
 
+  function cancel(func) {
+    for (var i = 0; i < funcs.count; i++)
+      if (equalStruct(funcs[i][0], func)) {
+        funcs.erase(i);
+        i--;
+      }
+  }
+
   function action {
     var funcs = this.funcs;
     this.funcs = [];
