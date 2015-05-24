@@ -132,10 +132,11 @@ class KCustomDialog extends KWindow
 
     setPos(owner.left + (owner.width - width) / 2,
            owner.top + (owner.height - height) / 2);
-    
 
     if (dict !== void)
       bindPersistentDictionary(dict);
+
+    callFunc(def, "onInit");
 
     storeWidgetValue();
   }
@@ -214,12 +215,14 @@ class KCustomDialog extends KWindow
       var widget = widgetList[i];
       result[widget.key] = widget.widget.value;
     }
+    callFunc(def, "onSubmit");
     done = true;
     close();
   }
 
   function cancel() {
     result = DIALOG_RESPONSE_CANCEL;
+    callFunc(def, "onCancel");
     close();
   }
 };
