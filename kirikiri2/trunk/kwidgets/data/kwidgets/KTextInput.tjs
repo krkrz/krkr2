@@ -302,6 +302,18 @@ class KTextInput extends KValueWidget
   }
 
   /*------------------------------
+   * テキストを隠す？
+   ------------------------------*/
+  property hideText {
+    getter {
+      return text.hideText;
+    }
+    setter(v) {
+      text.hideText = v;
+    }
+  }
+
+  /*------------------------------
    * 文字の受け入れタイプを設定する
    *
    * @param v 値

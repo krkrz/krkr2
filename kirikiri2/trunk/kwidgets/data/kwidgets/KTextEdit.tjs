@@ -9,6 +9,10 @@ class KTextEditRow extends Layer
 {
   // キャラのリスト(文字列そのもの)  
   var charList;
+  // 見た目上の文字列のリスト
+  var charViewList;
+  // キャラのリスト(文字列そのもの)  
+  var charList;
   // キャラの表示幅のリスト
   var charWidthList;
   // 最小幅(キャラの表示幅の内最大のもの)
@@ -23,6 +27,10 @@ class KTextEditRow extends Layer
   var requireLayout;
   // 選択範囲
   var selectionBegin, selectionEnd;
+  // テキストを隠す？
+  var _hideText = false;
+  // 隠しパターン
+  var hidePat = /./g;
 
   /*------------------------------
    * コンストラクタ
@@ -33,7 +41,7 @@ class KTextEditRow extends Layer
     font.height = parent.font.height;
     font.face = parent.font.face;
     // 初期化
-    charList = "";
+    charList = charViewList = "";
     charWidthList = [];
     charX = [];
     charY = [];
@@ -45,6 +53,35 @@ class KTextEditRow extends Layer
   }
 
   /*------------------------------
+   * 隠しテキストエンコード
+   ------------------------------*/
+  function encodeHidden(v) {
+    if (_hideText)
+      return v.replace(hidePat, "*");
+    else
+      return v;
+  }
+
+  /*------------------------------
+   * テキストを隠す？
+   ------------------------------*/
+  property hideText {
+    getter {
+      return _hideText;
+    }
+    setter(v) {
+      if (v == _hideText)
+        return;
+      _hideText = v;
+      charViewList = encodeHidden(charList);
+      for (var i = 0; i < charList.length; i++) {
+        charWidthList[i] = font.getTextWidth(charViewList[i]);
+      }
+      calcMinWidth();
+    }
+  }
+
+  /*------------------------------
    * フォントアップデート
    ------------------------------*/
   function updateFont {
@@ -52,7 +89,7 @@ class KTextEditRow extends Layer
     font.height = parent.font.height;
     font.face = parent.font.face;
     for (var i = 0; i < charList.length; i++) {
-      charWidthList[i] = font.getTextWidth(charList[i]);
+      charWidthList[i] = font.getTextWidth(charViewList[i]);
     }
     calcMinWidth();
   }
@@ -62,6 +99,8 @@ class KTextEditRow extends Layer
    ------------------------------*/
   function add(str) {
     charList += str;
+    str = encodeHidden(str);
+    charViewList += str;
     for (var i = 0; i < str.length; i++) {
       charWidthList.add(font.getTextWidth(str[i]));
     }
@@ -73,6 +112,8 @@ class KTextEditRow extends Layer
    ------------------------------*/
   function insert(index, str) {
     charList = charList.substr(0, index) + str + charList.substr(index);
+    str = encodeHidden(str);
+    charViewList = charViewList.substr(0, index) + str + charViewList.substr(index);
     for (var i = 0; i < str.length; i++) {
       charWidthList.insert(index + i, font.getTextWidth(str[i]));
     }
@@ -84,6 +125,7 @@ class KTextEditRow extends Layer
    ------------------------------*/
   function erase(index, size = 1) {
     charList = charList.substr(0, index) + charList.substr(index + size);
+    charViewList = charViewList.substr(0, index) + charViewList.substr(index + size);
     for (var i = 0; i < size; i++)
       charWidthList.erase(index);
     calcMinWidth();
@@ -93,7 +135,7 @@ class KTextEditRow extends Layer
    * テキストをクリアする
    ------------------------------*/
   function clear() {
-    charList = "";
+    charList = charViewList = "";
     charWidthList = [];
     calcMinWidth();
     width = 0;
@@ -232,7 +274,7 @@ class KTextEditRow extends Layer
       var from, to;
       from = rowRange[i][0];
       to = rowRange[i][1];
-      drawText(charX[from], charY[from], charList.substr(from, to - from), 0);
+      drawText(charX[from], charY[from], charViewList.substr(from, to - from), 0);
       // 選択範囲に入っていたら、その分の文字を描画
       if (selectionBegin <= to && selectionEnd >= from) {
         from = int(Math.max(selectionBegin, from));
@@ -243,7 +285,7 @@ class KTextEditRow extends Layer
         else
           w = charX[to] - charX[from];
         fillRect(charX[from], charY[from], w, font.height, WIN_SELECTED);
-        drawText(charX[from], charY[from], charList.substr(from, to - from), 0xFFFFFF);
+        drawText(charX[from], charY[from], charViewList.substr(from, to - from), 0xFFFFFF);
       }
     }
   }
@@ -419,6 +461,8 @@ class KTextEdit extends KValueWidget
   var _lineWrapping;
   // 値の更新に反応する？
   var _respondToValueModification;
+  // テキストを隠す？
+  var _hideText;
 
   /**------------------------------
    * コンストラクタ
@@ -452,6 +496,8 @@ class KTextEdit extends KValueWidget
     // ポインタ座標は(0,0)から
     pointer = new KTextEditPoint(0, 0);
     marker = new KTextEditPoint(0, 0);
+    // テキストは隠さない
+    _hideText = false;
     // UNDO初期化
     undoDeletePoint = new KTextEditPoint(0, 0);
     undoPasteBegin = new KTextEditPoint(0, 0);
@@ -1159,6 +1205,8 @@ class KTextEdit extends KValueWidget
   function copySelection {
     if (! hasSelection)
       return;
+    if (hideText)
+      return;
 
     Clipboard.asText = selectionStr;
   }
@@ -1591,6 +1639,25 @@ class KTextEdit extends KValueWidget
     pointerLayer.setSize(2, font.height);
     pointerLayer.fillRect(0, 0, 2, font.height, WIN_WHITE);
     locateLayout();
+  }
+
+  // テキスト隠蔽
+  property hideText {
+    getter {
+      return _hideText;
+    }
+    setter(v) {
+      if (v == _hideText)
+        return;
+      _hideText = v;
+      for (var i = 0; i < rowList.count; i++)
+        rowList[i].hideText = v;
+      for (var i = 0; i < rowPool.count; i++)
+        rowPool[i].hideText = v;
+      pointerLayer.setSize(2, font.height);
+      pointerLayer.fillRect(0, 0, 2, font.height, WIN_WHITE);
+      locateLayout();
+    }
   }
 
   // タブを展開する
