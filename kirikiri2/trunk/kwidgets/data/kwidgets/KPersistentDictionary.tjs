@@ -121,7 +121,7 @@ class KPersistentDictionary
     return dict.values[key];
   }
 
-  property crtpy {
+  property crypt {
     getter {
       return _crypt;
     }
