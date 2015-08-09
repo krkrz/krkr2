@@ -71,6 +71,11 @@ public:
 											 tjs_int numparams,
 											 tTJSVariant **param,
 											 iTJSDispatch2 *objthis);
+private:
+		/**
+	 * メンバ名一覧の取得
+	 */
+	static void _getKeys(tTJSVariant *result, tTJSVariant &obj);
 };
 
 /**
@@ -155,11 +160,16 @@ public:
 				const tjs_char *key = param[0]->GetString();
 				tTJSVariant value = *param[2];
 				tTJSVariant targetValue;
-				if (target.PropGet(0, key, NULL, &targetValue, NULL)
+				if (target.PropGet(TJS_MEMBERMUSTEXIST, key, NULL, &targetValue, NULL)
 					== TJS_S_OK) {
 					match = match && ScriptsAdd::equalStruct(value, targetValue);
 					if (result)
 						*result = match;
+				} else {
+					match = false;
+					if (result) {
+						*result = match;
+					}
 				}
 			}
 		}
@@ -256,6 +266,23 @@ public:
 // 変数
 tjs_uint32 countHint;
 
+void
+ScriptsAdd::_getKeys(tTJSVariant *result, tTJSVariant &obj)
+{
+	if (result) {
+		iTJSDispatch2 *array = TJSCreateArrayObject();
+		DictMemberGetCaller *caller = new DictMemberGetCaller(array);
+		tTJSVariantClosure closure(caller);
+		obj.AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
+		caller->Release();
+		static tjs_uint sortHint = NULL;
+		// 返すキーはソートする
+		array->FuncCall(0, TJS_W("sort"), &sortHint, 0, 0, 0, array);
+		*result = tTJSVariant(array, array);
+		array->Release();
+	}
+}
+
 	/**
 	 * メンバ名一覧の取得
 	 */
@@ -266,15 +293,7 @@ ScriptsAdd::getKeys(tTJSVariant *result,
 					iTJSDispatch2 *objthis)
 {
 	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-	if (result) {
-		iTJSDispatch2 *array = TJSCreateArrayObject();
-		DictMemberGetCaller *caller = new DictMemberGetCaller(array);
-		tTJSVariantClosure closure(caller);
-		param[0]->AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
-		caller->Release();
-		*result = tTJSVariant(array, array);
-		array->Release();
-	}
+	_getKeys(result, *param[0]);
 	return TJS_S_OK;
 }
 
@@ -359,12 +378,13 @@ ScriptsAdd::equalStruct(tTJSVariant v1, tTJSVariant v2)
 		// Dictionaryどうしなら全項目を比較
 		if (o1.IsInstanceOf(0, NULL, NULL, L"Dictionary", NULL)== TJS_S_TRUE
 			&& o2.IsInstanceOf(0, NULL, NULL, L"Dictionary", NULL)== TJS_S_TRUE) {
-			// 項目数が一致していなければ比較失敗
-			tjs_int o1Count, o2Count;
-			(void)o1.GetCount(&o1Count, NULL, NULL, NULL);
-			(void)o2.GetCount(&o2Count, NULL, NULL, NULL);
-			if (o1Count != o2Count)
+			// キー一覧が一致してなければ比較失敗
+			tTJSVariant k1, k2;
+			_getKeys(&k1, v1);
+			_getKeys(&k2, v2);
+			if (!equalStruct(k1, k2)) {
 				return false;
+			}
 			// 全項目を順番に比較
 			DictMemberCompareCaller *caller = new DictMemberCompareCaller(o2);
 			tTJSVariantClosure closure(caller);
