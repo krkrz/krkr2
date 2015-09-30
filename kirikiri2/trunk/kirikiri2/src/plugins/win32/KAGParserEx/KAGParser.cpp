@@ -1656,6 +1656,7 @@ parse_start:
 	static ttstr __target_name(TJSMapGlobalStringMap(TJS_W("target")));
 	static ttstr __exp_name(TJSMapGlobalStringMap(TJS_W("exp")));
 	static ttstr __name_name(TJSMapGlobalStringMap(TJS_W("name")));
+	static ttstr __escape_name(TJSMapGlobalStringMap(TJS_W("escape")));
 
 	while(true)
 	{
@@ -2088,12 +2089,16 @@ parse_start:
 							TVPExecuteExpression(exp, Owner, &val);
 							exp = val;
 
+							bool escape = true;
+							args.getProp(__escape_name, val);
+							if(val.Type() != tvtVoid) escape = val.operator bool();
+
 							// count '['
 							const tjs_char *p = exp.c_str();
 							tjs_int r_count = 0;
 							while(*p)
 							{
-								if(*p == TJS_W('[')) r_count++;
+								if(escape && *p == TJS_W('[')) r_count++;
 								p++;
 								r_count++;
 							}
@@ -2114,7 +2119,7 @@ parse_start:
 							p = exp.c_str();
 							while(*p)
 							{
-								if(*p == TJS_W('['))
+								if(escape && *p == TJS_W('['))
 								{
 									*d = TJS_W('['); d++;
 									*d = TJS_W('['); d++;
