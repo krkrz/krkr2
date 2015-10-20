@@ -18,7 +18,7 @@ protected:
 		case tvtString:  lpType = type->GetString(); break;
 		default: return false;
 		}
-		switch (name->Type()) {
+		if (name) switch (name->Type()) {
 		case tvtInteger: lpName = MAKEINTRESOURCEW((int)name->AsInteger()); break;
 		case tvtString:  lpName = name->GetString(); break;
 		default: return false;
@@ -188,10 +188,21 @@ public:
 		ttstr tmp(text->GetString());
 		bool utf8 = optnum>0 && optargs[0]->operator bool();
 		if (utf8) {
-			int maxlen = tmp.length() * 6 + 1;
-			char *out = (char*)tmp.AllocBuffer(maxlen); // [XXX]
-			cbData = TVPWideCharToUtf8String(text->GetString(), out);
-			lpData = (LPVOID)out;
+			const tjs_char *error = 0;
+			int maxlen = TVPWideCharToUtf8String(text->GetString(), NULL);
+			if (maxlen < 0) error = TJS_W("invalid character in %1");
+			else {
+				char *out = (char*)tmp.AllocBuffer(maxlen + 1);
+				cbData = TVPWideCharToUtf8String(text->GetString(), out);
+				if (cbData != (DWORD)maxlen) error = TJS_W("mismatch length %1");
+				out[maxlen] = 0;
+				lpData = (LPVOID)out;
+			}
+			if (error) {
+				tTJSVariant strname(*name);
+				strname.ToString();
+				TVPThrowExceptionMessage(error, strname.GetString());
+			}
 		} else {
 			lpData = (void*)tmp.c_str();
 			cbData = (tmp.length()+1) * sizeof(tjs_char);
@@ -345,6 +356,29 @@ protected:
 		return NULL;
 	}
 
+	static BOOL CALLBACK EnumTypesProc(HMODULE hModule, LPWSTR lpszType, LONG_PTR lParam) {
+		if (IS_INTRESOURCE(lpszType)) AddEnumResult(lParam, (tTVInteger)lpszType);
+		else                          AddEnumResult(lParam,             lpszType);
+		return TRUE;
+	}
+	static BOOL CALLBACK EnumNamesProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszName, LONG_PTR lParam) {
+		if (IS_INTRESOURCE(lpszName)) AddEnumResult(lParam, (tTVInteger)lpszName);
+		else                          AddEnumResult(lParam,             lpszName);
+		return TRUE;
+	}
+	static BOOL CALLBACK EnumLangsProc(HMODULE hModule, LPCWSTR lpszType, LPCWSTR lpszName, WORD wIDLanguage, LONG_PTR lParam) {
+		AddEnumResult(lParam, (tTVInteger)wIDLanguage);
+		return TRUE;
+	}
+	static void AddEnumResult(LONG_PTR lParam, tTJSVariant v) {
+		iTJSDispatch2 *arr = reinterpret_cast<iTJSDispatch2*>(lParam);
+		if (arr) {
+			static ttstr s_add(TJS_W("add"));
+			tTJSVariant *param[] = { &v };
+			Try_iTJSDispatch2_FuncCall(arr, 0, s_add.c_str(), s_add.GetHint(), NULL, 1, param, arr);
+		}
+	}
+
 public:
 	/**
 	 * function ResorceReader(file) { if (file !== void) open(file); }
@@ -460,6 +494,58 @@ public:
 	tjs_error setLang(tTJSVariant *r, tTJSVariant *arg, tjs_int optnum, tTJSVariant **optargs) {
 		return ResourceUtil::setLang(r, arg, optnum, optargs);
 	}
+
+	/**
+	 * function enumTypes()
+	 */
+	tjs_error enumTypes(tTJSVariant *r) {
+		if (r && handle_) {
+			iTJSDispatch2 *arr = TJSCreateArrayObject();
+			*r = tTJSVariant(arr, arr);
+			arr->Release();
+			if (!::EnumResourceTypesW(handle_, EnumTypesProc, (LONG_PTR)arr)) {
+				ThrowLastError(TJS_W("EnumResourceTypes: %1"));
+			}
+		}
+		return TJS_S_OK;
+	}
+	/**
+	 * function enumTypes(type)
+	 */
+	tjs_error enumNames(tTJSVariant *r, tTJSVariant *type) {
+		if (r && handle_) {
+			iTJSDispatch2 *arr = TJSCreateArrayObject();
+			*r = tTJSVariant(arr, arr);
+			arr->Release();
+
+			LPCWSTR lpType, lpName;
+			if (getResTypeAndName(type, NULL, lpType, lpName)) {
+				if (!::EnumResourceNamesW(handle_, lpType, EnumNamesProc, (LONG_PTR)arr)) {
+					ThrowLastError(TJS_W("EnumResourceNames: %1"));
+				}
+			}
+		}
+		return TJS_S_OK;
+	}
+	/**
+	 * function enumLangs(type, name)
+	 */
+	tjs_error enumLangs(tTJSVariant *r, tTJSVariant *type, tTJSVariant *name) {
+		if (r && handle_) {
+			iTJSDispatch2 *arr = TJSCreateArrayObject();
+			*r = tTJSVariant(arr, arr);
+			arr->Release();
+
+			LPCWSTR lpType, lpName;
+			if (getResTypeAndName(type, name, lpType, lpName)) {
+				if (!::EnumResourceLanguagesW(handle_, lpType, lpName, EnumLangsProc, (LONG_PTR)arr)) {
+					ThrowLastError(TJS_W("EnumResourceLanguages: %1"));
+				}
+			}
+		}
+		return TJS_S_OK;
+	}
+
 };
 
 bool Entry(bool link) {
@@ -495,6 +581,9 @@ bool Entry(bool link) {
 		 .Function(TJS_W("readToText"), &ResourceReader::readToText)
 		 .Function(TJS_W("readToFile"), &ResourceReader::readToFile)
 		 .Function(TJS_W("readToOctet"), &ResourceReader::readToOctet)
+		 .Function(TJS_W("enumTypes"), &ResourceReader::enumTypes)
+		 .Function(TJS_W("enumNames"), &ResourceReader::enumNames)
+		 .Function(TJS_W("enumLangs"), &ResourceReader::enumLangs)
 		 .IsValid()) &&
 		(BindUtil(link)
 		 .Variant(TJS_W("rtAccelerator"), (tjs_int)RT_ACCELERATOR)

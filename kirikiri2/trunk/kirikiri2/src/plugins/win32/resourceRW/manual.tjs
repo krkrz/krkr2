@@ -44,7 +44,29 @@ class ResourceReader {
 	function readToText (type, name, utf8=false); // -> リソースのテキスト
 	function readToFile (type, name, file); // -> 書き出したファイルサイズ
 	function readToOctet(type, name); //-> リソースのoctet
-	
+
+	/**
+	 * リソースタイプ一覧取得
+	 * @return [ type1, type2, ... ]
+	 */
+	function enumTypes();
+
+	/**
+	 * リソース名一覧取得
+	 * @param type リソースタイプ（文字列か数値，もしくは rt*定数を指定）
+	 * @return [ name1, name2, ... ]
+	 */
+	function enumNames(type);
+
+	/**
+	 * リソース言語一覧取得
+	 * @param type リソースタイプ（文字列か数値，もしくは rt*定数を指定）
+	 * @param name リソース名（文字列か数値）
+	 * @return [ lang1, lang2, ... ]
+	 * 返る言語はprimaryLang,subLangを統合した数値なので注意してください。
+	 * この値をsetLangに渡したい場合は，setLang(lang&0x3FF, lang>>10) とします。
+	 */
+	function enumLangs(type, name);
 }
 
 class ResourceWriter {
