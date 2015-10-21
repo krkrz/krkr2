@@ -41,11 +41,10 @@ gmake/		gcc用プロジェクト
 ●その他注意事項
 
 ・とりあえず書き起こしただけなので，動作確認が不十分です。
-・ResorceWriterでclean=falseにてリソースを書き換えると
-　破損したexeが生成される可能性があります
-（プラグイン側のAPIの呼び出しの問題かWindows側の問題か不明）
 ・ResorceWriterでリソースを書き換えるとリソースデータの隙間にPADDINGXXといった
 　パディングを埋める文字列が書き加わる場合があります（UpdateResourceの仕様？）
+＞※このせいで吉里吉里Zのリソースを書き換えると特定条件下で
+　バッファオーバーラン的な問題が発生するバグがある模様？
 ・文字列でないリソースに対してResourceReader.readToTextなどしないでください
 ・MessageTableのリソースを読み書きする場合は自前のパーサ等を作る必要があります
 　BinaryStream.dllや吉里吉里ZのTJSのArray.pack/Octet.unpackなどを利用し，
