@@ -432,8 +432,21 @@ public:
 			bool utf8 = optnum>0 && optargs[0]->operator bool();
 			if (utf8) {
 				ttstr tmp;
-				tjs_char *out = tmp.AllocBuffer(size * sizeof(tjs_char) + 2); // [XXX]
-				tjs_int len = TVPUtf8ToWideCharString((const char *)ptr , out);
+				char *data = 0;
+				tjs_int len = 0;
+				try {
+					data = new char[size+1];
+					memcpy(data, ptr, size);
+					data[size] = 0; // terminator
+					len = TVPUtf8ToWideCharString(data, NULL);
+					tjs_char *out = tmp.AllocBuffer((len+1) * sizeof(tjs_char)); // [XXX]
+					TVPUtf8ToWideCharString(data, out);
+					out[len] = 0;
+				} catch (...) {
+					delete [] data;
+					throw;
+				}
+				delete [] data;
 				tmp.FixLen();
 				if (r) *r = tmp;
 			} else {

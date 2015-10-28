@@ -43,8 +43,10 @@ gmake/		gcc用プロジェクト
 ・とりあえず書き起こしただけなので，動作確認が不十分です。
 ・ResorceWriterでリソースを書き換えるとリソースデータの隙間にPADDINGXXといった
 　パディングを埋める文字列が書き加わる場合があります（UpdateResourceの仕様？）
-＞※このせいで吉里吉里Zのリソースを書き換えると特定条件下で
-　バッファオーバーラン的な問題が発生するバグがある模様？
+＞※このせいでver1.2以下の吉里吉里Zのリソースを書き換えると
+　-aboutのダイアログを表示したりTVPGetAboutString()を呼ぶプラグインを使用すると
+　AccessViorationで落ちる問題が発生するというバグがあります
+　（吉里吉里Z最新版ではd0b979aにて修正済み）
 ・文字列でないリソースに対してResourceReader.readToTextなどしないでください
 ・MessageTableのリソースを読み書きする場合は自前のパーサ等を作る必要があります
 　BinaryStream.dllや吉里吉里ZのTJSのArray.pack/Octet.unpackなどを利用し，
