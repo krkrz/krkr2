@@ -224,9 +224,15 @@ copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 
 	ReadRefT sbuf = 0;
 	WrtRefT  dbuf = 0;
-	long l, t, w, h, spitch, dpitch, threshold = -1;
-	if (numparams > 0 && param[0]->Type() != tvtVoid) {
+	long l, t, w, h, spitch, dpitch, threshold = -1, matched = 1, otherwise = 0;
+	if (TJS_PARAM_EXIST(0)) {
 		threshold = (long)(param[0]->AsInteger());
+	}
+	if (TJS_PARAM_EXIST(1)) {
+		matched = (long)(param[1]->AsInteger());
+	}
+	if (TJS_PARAM_EXIST(2)) {
+		otherwise = (long)(param[2]->AsInteger());
 	}
 
 	if (!GetClipSize(lay, l, t, w, h, spitch)) {
@@ -254,9 +260,18 @@ copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 
 	sbuf += 3;
 	unsigned char th = (unsigned char)threshold;
+	unsigned char on  = (unsigned char)matched;
+	unsigned char off = (unsigned char)otherwise;
 	int mode = 0;
-	if (threshold >= 0 && threshold < 256) mode = 1;
-	else if (threshold >= 256) mode = 2;
+	if (threshold >= 0 && threshold < 256) {
+		bool enmatch = (matched   >= 0 && matched   < 256);
+		bool enother = (otherwise >= 0 && otherwise < 256);
+		if (!enmatch && !enother) return TJS_S_OK; // •ÏX‚È‚µ
+		mode = (enmatch && enother) ? 1 : enmatch ? 3 : 4;
+	} else if (threshold >= 256) {
+		if (otherwise >= 0 && otherwise < 256) mode = 2;
+		else return TJS_S_OK; // •ÏX‚È‚µ
+	}
 
 	for (int y = 0; y < h; y++) {
 		WrtRefT  p = dbuf;
@@ -266,10 +281,16 @@ copyAlphaToProvince(tTJSVariant *result, tjs_int numparams, tTJSVariant **param,
 			for (int x = 0; x < w; x++, q+=4) *p++ = *q;
 			break;
 		case 1:
-			for (int x = 0; x < w; x++, q+=4) *p++ = (*q >= th);
+			for (int x = 0; x < w; x++, q+=4) *p++ = (*q >= th) ? on : off;
 			break;
 		case 2:
-			for (int x = 0; x < w; x++, q+=4) *p++ = 0;
+			for (int x = 0; x < w; x++, q+=4) *p++ = off;
+			break;
+		case 3:
+			for (int x = 0; x < w; x++, q+=4, p++) if (*q >= th) *p = on;
+			break;
+		case 4:
+			for (int x = 0; x < w; x++, q+=4, p++) if (*q < th) *p = off;
 			break;
 		}
 		sbuf += spitch;

@@ -23,9 +23,11 @@ class Layer {
 	/**
 	 * レイヤの Alpha CHANNEL を Province Image（領域画像）にコピーする
 	 * @param threshold 閾値。省略時またはvoidならそのままコピーする
-	 *                  数値を指定するとAlphaが閾値以上なら1，それ以外を0に埋める
+	 *                  数値を指定するとAlphaが閾値以上ならmatched，それ以外をotherwiseに埋める
+	 * @param matched   thresholdを指定した時に閾値以上で埋める場合の値。0-255の範囲外にすると塗りつぶさない
+	 * @param otherwise thresholdを指定した時に閾値未満で埋める場合の値。0-255の範囲外にすると塗りつぶさない
 	 */
-	function copyAlphaToProvince(threshold);
+	function copyAlphaToProvince(threshold,matched=1,otherwise=0);
 	
 	/**
 	 * レイヤの Alpha CHANNEL を src の Alpha CHANNEL で乗算する
