@@ -899,7 +899,11 @@ protected:
 		
 		HRESULT hr;
 		HWND parent;
-		if (krkr && (parent = FindWindowEx(krkr, NULL, KRKRDISPWINDOWCLASS, NULL))) {
+		if (krkr) {
+			if (!(parent = FindWindowEx(krkr, NULL, KRKRDISPWINDOWCLASS, NULL))) {
+				// KRKRZ ‚Ìê‡‚Íª‚Ì‘‹‚ª–³‚¢
+				parent = krkr;
+			}
 			if (width == -1 || height == -1) {
 				::GetClientRect(parent, &rect);
 			}
