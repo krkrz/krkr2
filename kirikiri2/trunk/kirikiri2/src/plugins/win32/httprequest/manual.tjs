@@ -49,8 +49,14 @@ class HttpRequest {
 	 * @throw "saveStorage open failed" 保存先ファイルが開けなかった場合
 	 */
 	function send(data=void, storeStorage=void);
-	
-	/**
+
+    /*
+     * send の同期版
+	 * @return status
+	 */
+	function sendSync(data=void, storeStorage=void);
+
+  /**
 	 * リクエストの送信。送受信は非同期実行されます。
 	 * エラー時も例外は発生しませんので、readyState と status で判定してください。
 	 * @param storage 送信するファイルデータ
@@ -61,7 +67,13 @@ class HttpRequest {
 	 * @throw "saveStorage open failed" 保存先ファイルが開けなかった場合
 	 */
 	function sendStorage(storage, storeStorage=void);
-	
+
+    /*
+     * sendStorage の同期版
+	 * @return status
+	 */
+	function sendStorageSync(storage, storeStorage=void);
+  
 	/**
 	 * 現在実行中の送受信のキャンセル
 	 */

@@ -111,7 +111,7 @@ public:
 	 * @param sendStorage 送信ファイル
 	 * @param saveStorage 保存先ファイル
 	 */
-	void _send(tTJSVariant *data, const tjs_char *sendStorage, const tjs_char *saveStorage) {
+	void _send(tTJSVariant *data, const tjs_char *sendStorage, const tjs_char *saveStorage, bool async=true) {
 		checkRunning();
 		checkOpen();
 		if (saveStorage) {
@@ -161,7 +161,11 @@ public:
             ttstr len(val);
 			http.addHeader(_T("Content-Length"), len.c_str());
 		}
-		startThread();
+	    if (async) {
+		    startThread();
+		} else {
+		    threadMain(false);
+		}
 	}
 	
 	/**
@@ -175,6 +179,17 @@ public:
 	/**
 	 * リクエストの送信
 	 */
+	static tjs_error sendSync(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, HttpRequest *self) {
+		self->_send(numparams > 0 ? params[0] : NULL, NULL, numparams > 1 ? params[1]->GetString() : NULL, false);
+	    if (result) {
+		  *result = self->statusCode;
+		}
+	    return TJS_S_OK;
+	}
+  
+	/**
+	 * リクエストの送信
+	 */
 	static tjs_error sendStorage(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, HttpRequest *self) {
 		if (numparams < 1) {
 			return TJS_E_BADPARAMCOUNT;
@@ -182,7 +197,21 @@ public:
 		self->_send(NULL, params[0]->GetString(), numparams > 1 ? params[1]->GetString() : NULL);
 		return TJS_S_OK;
 	}
-	
+  
+	/**
+	 * リクエストの送信
+	 */
+	static tjs_error sendStorageSync(tTJSVariant *result, tjs_int numparams, tTJSVariant **params, HttpRequest *self) {
+		if (numparams < 1) {
+			return TJS_E_BADPARAMCOUNT;
+		}
+		self->_send(NULL, params[0]->GetString(), numparams > 1 ? params[1]->GetString() : NULL, false);
+	    if (result) {
+		  *result = self->statusCode;
+		}
+		return TJS_S_OK;
+	}
+
 	void clearInput() {
 		if (inputStream) {
 			inputStream->Release();
@@ -455,7 +484,7 @@ protected:
 	 * @param buffer 読み取りバッファ
 	 * @param size 読み出したサイズ
 	 */
-	bool upload(void *buffer, DWORD &size) {
+	bool upload(void *buffer, DWORD &size, bool async=true) {
 		if (inputStream) {
 			// ファイルから読み込む
 			inputStream->Read(buffer, size, &size);
@@ -471,8 +500,10 @@ protected:
 		}
 		if (size > 0) {
 			inputSize += size;
-			int bp = (inputLength > 0) ? (DWORDLONG)inputSize * 10000 / inputLength : 0;
-			::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, 0x8000 | bp);
+		    if (async) {
+			  int bp = (inputLength > 0) ? (DWORDLONG)inputSize * 10000 / inputLength : 0;
+			  ::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, 0x8000 | bp);
+			}
 		}
 		return !canceled;
 	}
@@ -485,13 +516,23 @@ protected:
 		HttpRequest *self = (HttpRequest*)context;
 		return self ? self->upload(buffer, size) : false;
 	}
-	
+
 	/**
+	 * 通信時のコールバック処理
+	 * @return キャンセルなら false
+	 */
+	static bool uploadCallbackSync(void *context, void *buffer, DWORD &size) {
+		HttpRequest *self = (HttpRequest*)context;
+		return self ? self->upload(buffer, size, false) : false;
+	}
+
+  /**
 	 * ファイル読み取り処理
 	 * @param buffer 読み取りバッファ
 	 * @param size 読み出したサイズ
+	 * @param async 非同期時はtrue
 	 */
-	bool download(const void *buffer, DWORD size) {
+	bool download(const void *buffer, DWORD size, bool async=true) {
 		if (outputStream) {
 			if (buffer) {
 				DWORD n = 0;
@@ -514,8 +555,10 @@ protected:
 			memcpy(&outputData[outputSize], buffer, size);
 		}
 		outputSize += size;
-		int bp = (outputLength > 0) ? (DWORDLONG)outputSize * 10000 / outputLength : 0;
-		::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, bp);
+	    if (async) {
+		  int bp = (outputLength > 0) ? (DWORDLONG)outputSize * 10000 / outputLength : 0;
+		  ::PostMessage(hwnd, WM_HTTP_PROGRESS, (WPARAM)this, bp);
+		}
 		return !canceled;
 	}
 	
@@ -529,9 +572,19 @@ protected:
 	}
 
 	/**
+	 * 通信時のコールバック処理(同期用)
+	 * @return キャンセルなら false
+	 */
+	static bool downloadCallbackSync(void *context, const void *buffer, DWORD size) {
+		HttpRequest *self = (HttpRequest*)context;
+		return self ? self->download(buffer, size, false) : false;
+	}
+
+  
+	/**
 	 * バックグラウンドで実行する処理
 	 */
-	void threadMain() {
+	void threadMain(bool async=true) {
 
 		{
 			tTJSVariant val;
@@ -539,14 +592,14 @@ protected:
 			hwnd = reinterpret_cast<HWND>((tjs_int)(val));
 		}
 
-		::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_SENT);
+	    if (async) ::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_SENT);
 		inputSize = 0;
 		int errorCode;
 		if (canceled) {
 			errorCode = HttpConnection::ERROR_CANCEL;
 			clearInput();
 		} else {
-			if ((errorCode = http.request(uploadCallback, rewindUploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+		    if ((errorCode = http.request(async ? uploadCallback : uploadCallbackSync, rewindUploadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
 				clearInput();
 				if (canceled) {
 					errorCode = HttpConnection::ERROR_CANCEL;
@@ -555,8 +608,8 @@ protected:
 					http.queryInfo();
 					outputSize = 0;
 					outputLength = http.getContentLength();
-					::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
-					if ((errorCode = http.response(downloadCallback, (void*)this)) == HttpConnection::ERROR_NONE) {
+					if (async) ::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_RECEIVING);
+				    if ((errorCode = http.response(async ? downloadCallback : downloadCallbackSync, (void*)this)) == HttpConnection::ERROR_NONE) {
 						closeOutput();
 					} else {
 						clearOutput();
@@ -580,7 +633,7 @@ protected:
 			statusText = http.getErrorMessage();
 			break;
 		}
-		::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_LOADED);
+		if (async) ::PostMessage(hwnd, WM_HTTP_READYSTATE, (WPARAM)this, (LPARAM)READYSTATE_LOADED);
 	}
 
 	// 実行スレッド
@@ -648,7 +701,9 @@ NCB_REGISTER_CLASS(HttpRequest) {
 	RawCallback(TJS_W("open"), &Class::open, 0);
 	NCB_METHOD(setRequestHeader);
 	RawCallback(TJS_W("send"), &Class::send, 0);
+	RawCallback(TJS_W("sendSync"), &Class::sendSync, 0);
 	RawCallback(TJS_W("sendStorage"), &Class::sendStorage, 0);
+	RawCallback(TJS_W("sendStorageSync"), &Class::sendStorageSync, 0);
 	NCB_METHOD(abort);
 	NCB_METHOD(getAllResponseHeaders);
 	NCB_METHOD(getResponseHeader);
