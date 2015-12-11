@@ -199,6 +199,13 @@ class WIN32Dialog {
 	property top    { getter; }
 	property width  { getter; }
 	property height { getter; }
+	function getWindowRect(); //< return %[ left, top, right, bottom ]
+
+	/**
+	 * ダイアログのクライアント領域を取得
+	 * @return %[ left, top, right, bottom ]
+	 */
+	function getClientRect();
 
 	/**
 	 * WM_INITDIALOG のコールバック

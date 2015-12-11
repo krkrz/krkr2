@@ -467,7 +467,7 @@ public:
 #define GetItemSize(id, rect, result) \
 	checkDialogValid(); \
 	RECT rect; \
-	GetWindowRect(GetItemHWND(id), &(rect)); \
+	::GetWindowRect(GetItemHWND(id), &(rect)); \
 	return (result)
 	long GetItemLeft(int id)   const { GetItemSize(id, r, r.left); }
 	long GetItemTop(int id)    const { GetItemSize(id, r, r.top); }
@@ -495,13 +495,35 @@ public:
 #define GetDialogSize(rect, result) \
 	if (!dialogHWnd) return 0; \
 	RECT rect; \
-	GetWindowRect(dialogHWnd, &(rect)); \
+	::GetWindowRect(dialogHWnd, &(rect)); \
 	return (result)
 
 	long GetLeft  () const { GetDialogSize(r, r.left); }
 	long GetTop   () const { GetDialogSize(r, r.top);  }
 	long GetWidth () const { GetDialogSize(r, r.right - r.left); }
 	long GetHeight() const { GetDialogSize(r, r.bottom - r.top); }
+	VarT GetWindowRect() const {
+		VarT r;
+		if (dialogHWnd) {
+			RECT rect;
+			::GetWindowRect(dialogHWnd, &rect);
+			DictT to;
+			_setRect(rect, to);
+			r = to;
+		}
+		return r;
+	}
+	VarT GetClientRect() const {
+		VarT r;
+		if (dialogHWnd) {
+			RECT rect;
+			::GetClientRect(dialogHWnd, &rect);
+			DictT to;
+			_setRect(rect, to);
+			r = to;
+		}
+		return r;
+	}
 
 	static tjs_error TJS_INTF_METHOD sendItemMessage(VarT *result, tjs_int numparams, VarT **param, WIN32Dialog *self) {
 		if (numparams < 2) return TJS_E_BADPARAMCOUNT;
@@ -529,6 +551,15 @@ protected:
 		rect.bottom = prop.GetValue(TJS_W("bottom"), tagInt);
 		return true;
 	}
+	// RECT⇒TJS辞書へ値をコピー
+	static inline bool _setRect(RECT &rect, PropT &prop) {
+		if (!prop.IsValid()) return false;
+		prop.SetValue(TJS_W("left"),   rect.left);
+		prop.SetValue(TJS_W("top"),    rect.top);
+		prop.SetValue(TJS_W("right"),  rect.right);
+		prop.SetValue(TJS_W("bottom"), rect.bottom);
+		return true;
+	}
 
 public:
 	VarT GetBaseUnits() const {
@@ -550,10 +581,7 @@ public:
 		RECT rect;
 		if (_getRect(rect, from) && to.IsValid()) {
 			if (!MapDialogRect(dialogHWnd, &rect)) ThrowLastError();
-			to.SetValue(TJS_W("left"),   rect.left);
-			to.SetValue(TJS_W("top"),    rect.top);
-			to.SetValue(TJS_W("right"),  rect.right);
-			to.SetValue(TJS_W("bottom"), rect.bottom);
+			_setRect(rect, to);
 			var = to;
 		}
 		return var;
@@ -945,7 +973,7 @@ public:
 
 		//	切替
 		RECT	rect;
-		GetClientRect(htab, &rect);
+		::GetClientRect(htab, &rect);
 		TabCtrl_AdjustRect(htab, false, &rect);
 		MapWindowPoints(htab, dialogHWnd, (LPPOINT)&rect, 2);
 		MoveWindow(hchild, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, false);
@@ -1121,8 +1149,8 @@ public:
 		if (nCode == HCBT_ACTIVATE && MessageBoxOwnerHWND != 0) {
 			RECT win, box;
 			HWND hwnd = (HWND)wParam;
-			GetWindowRect(MessageBoxOwnerHWND, &win);
-			GetWindowRect(hwnd,                &box);
+			::GetWindowRect(MessageBoxOwnerHWND, &win);
+			::GetWindowRect(hwnd,                &box);
 			int sw = GetSystemMetrics(SM_CXSCREEN), sh = GetSystemMetrics(SM_CYSCREEN);
 			int w = (box.right - box.left), h = (box.bottom - box.top);
 			int x = (win.left + (win.right  - win.left) / 2) - (w / 2);
@@ -1699,6 +1727,8 @@ NCB_REGISTER_CLASS(WIN32Dialog) {
 	Property(TJS_W("top"),           &Class::GetTop,    (int)0);
 	Property(TJS_W("width"),         &Class::GetWidth,  (int)0);
 	Property(TJS_W("height"),        &Class::GetHeight, (int)0);
+	Method(TJS_W("getWindowRect"),   &Class::GetWindowRect);
+	Method(TJS_W("getClientRect"),   &Class::GetClientRect);
 
 	Method(TJS_W("onInit"),    &Class::onInit);
 	Method(TJS_W("onCommand"), &Class::onCommand);
