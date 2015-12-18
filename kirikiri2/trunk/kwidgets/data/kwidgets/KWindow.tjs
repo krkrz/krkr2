@@ -556,6 +556,21 @@ class KWindow extends Window
       hintLayer.visible = false;
     }
   }
+
+  /**------------------------------
+   * ディスプレイに収まるようにサイズ調整する
+   * windowExプラグインをリンクしてる時のみ機能する
+   ------------------------------*/
+  function inscribeIntoDisplay {
+    if (typeof(System.getMonitorInfo) == "undefined")
+      return;
+
+    var monitorInfo = System.getMonitorInfo(true, this);
+    setPos(Math.max(monitorInfo.monitor.x, Math.min(monitorInfo.monitor.x + monitorInfo.monitor.w - width, left)),
+           Math.max(monitorInfo.monitor.y, Math.min(monitorInfo.monitor.y + monitorInfo.monitor.h - height, top)));
+    setSize(Math.min(monitorInfo.monitor.w, width),
+            Math.min(monitorInfo.monitor.h, height));
+  }
 };
 
 
