@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "layerExSave", "layerExSave.vcproj", "{1CD2DA2E-1394-694C-B3A7-C40506B4989C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E31CDA23-E3DF-2B46-A840-78D57148CBE3} = {E31CDA23-E3DF-2B46-A840-78D57148CBE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deflate", "deflate.vcproj", "{E31CDA23-E3DF-2B46-A840-78D57148CBE3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|Win32 = Release|Win32
+		Debug|Win32 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1CD2DA2E-1394-694C-B3A7-C40506B4989C}.Release|Win32.ActiveCfg = Release|Win32
+		{1CD2DA2E-1394-694C-B3A7-C40506B4989C}.Release|Win32.Build.0 = Release|Win32
+		{1CD2DA2E-1394-694C-B3A7-C40506B4989C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1CD2DA2E-1394-694C-B3A7-C40506B4989C}.Debug|Win32.Build.0 = Debug|Win32
+		{E31CDA23-E3DF-2B46-A840-78D57148CBE3}.Release|Win32.ActiveCfg = Release|Win32
+		{E31CDA23-E3DF-2B46-A840-78D57148CBE3}.Release|Win32.Build.0 = Release|Win32
+		{E31CDA23-E3DF-2B46-A840-78D57148CBE3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E31CDA23-E3DF-2B46-A840-78D57148CBE3}.Debug|Win32.Build.0 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

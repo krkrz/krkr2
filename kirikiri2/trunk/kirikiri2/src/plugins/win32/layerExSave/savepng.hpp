@@ -12,7 +12,9 @@ public:
 
 	virtual bool compress(long width, long height, BufRefT buffer, long pitch, iTJSDispatch2 *tagsDict);
 
-	void encodeToOctet(iTJSDispatch2 *layer, int comp_lv, tTJSVariant&);
+	// for Layer.saveLayerImage{Png,PngOctet}
+	void encodeToFile (iTJSDispatch2 *layer, const tjs_char *filename, iTJSDispatch2 *info);
+	void encodeToOctet(iTJSDispatch2 *layer, tTJSVariant *comp_lv, tTJSVariant&);
 
 protected:
 	void compress_first (PngChunk&, long width, long height, long flag);

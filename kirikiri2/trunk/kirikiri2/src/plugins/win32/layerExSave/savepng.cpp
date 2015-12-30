@@ -17,6 +17,8 @@ class PngChunk : public CompressBase {
 public:
 	PngChunk(CompressBase const *ref)
 		: CompressBase(ref), level(Z_DEFAULT_COMPRESSION) { init(); }
+	PngChunk()
+		: CompressBase(),    level(Z_DEFAULT_COMPRESSION) { init(); }
 
 	virtual ~PngChunk() {}
 	void init() {
@@ -45,20 +47,20 @@ public:
 		data[cur++] = p[0];
 		data[cur++] = p[3];
 	}
-	bool deflate() {
+	static long Deflate(DATA &out,
+						unsigned char const * in,
+						unsigned long         all,
+						int level = Z_DEFAULT_COMPRESSION,
+						PngChunk *self = 0)
+	{
 		z_stream zs;
 		ZeroMemory(&zs, sizeof(zs));
 		if (::deflateInit(&zs, level) != Z_OK)
 			TVPThrowExceptionMessage(L"deflate initialize");
 
-		unsigned char const * in   = &data[4];
-		unsigned long         rest = size-4;
-		unsigned long         all  = rest;
 		int s = Z_OK, f = Z_NO_FLUSH;
-
-		DATA out;
 		bool canceled = false;
-
+		unsigned long rest = all;
 		do {
 			if (!zs.avail_in) {
 				zs.avail_in = DEFLATE_INSTEP;
@@ -69,7 +71,7 @@ public:
 				}
 				rest -= zs.avail_in;
 				in   += zs.avail_in;
-				if (all > 0 && doProgress((all-rest)*100/all)) {
+				if (all > 0 && self && self->doProgress((all-rest)*100/all)) {
 					canceled = true;
 					break;
 				}
@@ -80,22 +82,32 @@ public:
 				zs.next_out  = (Bytef*)(&out[0]) + cnt;
 				zs.avail_out = out.size()        - cnt;
 			}
-
 		} while ((s = ::deflate(&zs, f)) == Z_OK);
 		::deflateEnd(&zs);
 		if (!canceled) {
-			doProgress(100);
-			if (s == Z_STREAM_END) {
-				unsigned long cnt = zs.total_out;
-				resize(cnt + 4);
-				memcpy((void*)&data[4], &out[0], cnt);
-				size = cnt + 4;
-			}
+			if (self) self->doProgress(100);
+			if (s == Z_STREAM_END) return (long)zs.total_out;
+			return 0;
 		}
-		return canceled;
+		return -1;
+	}
+	bool deflate() {
+		DATA out;
+		long cnt = Deflate(out, &data[4], size-4, level, this);
+		if (cnt > 0) {
+			resize(cnt + 4);
+			memcpy((void*)&data[4], &out[0], cnt);
+			size = cnt + 4;
+		}
+		return cnt < 0;
 	}
 	virtual bool compress(long width, long height, BufRefT buffer, long pitch, iTJSDispatch2 *tagsDict) {
 		return false;
+	}
+
+	void getCurrentData(const unsigned char* &ptr, size_t &length) const {
+		ptr = &data[4];
+		length = size-4;
 	}
 };
 
@@ -128,12 +140,7 @@ void CompressPNG::compress_first (PngChunk &chunk, long width, long height, long
 	chunk.writeInt8(0); // non interlace
 	chunk.writeChunk(this, "IHDR");
 }
-void CompressPNG::compress_second(PngChunk &chunk, iTJSDispatch2 *tagsDict)
-{
-	// additional chunks
-	if (tagsDict == NULL) return;
-	ncbPropAccessor dic(tagsDict);
-
+static const char* ChunkSetResoXY(ncbPropAccessor &dic, PngChunk &chunk, CompressPNG *self=NULL) {
 	// pHYs chunk
 	if (dic.HasValue(TJS_W("reso_x")) || dic.HasValue(TJS_W("reso_y"))) {
 		tjs_int x = dic.getIntValue(TJS_W("reso_x"));
@@ -141,9 +148,13 @@ void CompressPNG::compress_second(PngChunk &chunk, iTJSDispatch2 *tagsDict)
 		chunk.writeBigInt32((long)x);
 		chunk.writeBigInt32((long)y);
 		chunk.writeUnitType(dic, TJS_W("reso_unit"), TJS_W("meter"));
-		chunk.writeChunk(this, "pHYs");
+		const char *tag = "pHYs";
+		if (self) chunk.writeChunk(self, tag);
+		return tag;
 	}
-
+	return 0;
+}
+static const char* ChunkSetOffsXY(ncbPropAccessor &dic, PngChunk &chunk, CompressPNG *self=NULL) {
 	// oFFs chunk
 	if (dic.HasValue(TJS_W("offs_x")) || dic.HasValue(TJS_W("offs_y"))) {
 		tjs_int x = dic.getIntValue(TJS_W("offs_x"));
@@ -151,9 +162,13 @@ void CompressPNG::compress_second(PngChunk &chunk, iTJSDispatch2 *tagsDict)
 		chunk.writeBigInt32((long)x);
 		chunk.writeBigInt32((long)y);
 		chunk.writeUnitType(dic, TJS_W("offs_unit"), TJS_W("micrometer"));
-		chunk.writeChunk(this, "oFFs");
+		const char *tag = "oFFs";
+		if (self) chunk.writeChunk(self, tag);
+		return tag;
 	}
-
+	return 0;
+}
+static const char* ChunkSetVpagWH(ncbPropAccessor &dic, PngChunk &chunk, CompressPNG *self=NULL) {
 	// vpAg chunk
 	if (dic.HasValue(TJS_W("vpag_w")) || dic.HasValue(TJS_W("vpag_h"))) {
 		tjs_int w = dic.getIntValue(TJS_W("vpag_w"));
@@ -161,8 +176,21 @@ void CompressPNG::compress_second(PngChunk &chunk, iTJSDispatch2 *tagsDict)
 		chunk.writeBigInt32((long)w);
 		chunk.writeBigInt32((long)h);
 		chunk.writeUnitType(dic, TJS_W("vpag_unit"), TJS_W("micrometer"));
-		chunk.writeChunk(this, "vpAg");
+		const char *tag = "vpAg";
+		if (self) chunk.writeChunk(self, tag);
+		return tag;
 	}
+	return 0;
+}
+void CompressPNG::compress_second(PngChunk &chunk, iTJSDispatch2 *tagsDict)
+{
+	// additional chunks
+	if (tagsDict == NULL) return;
+	ncbPropAccessor dic(tagsDict);
+
+	ChunkSetResoXY(dic, chunk, this);
+	ChunkSetOffsXY(dic, chunk, this);
+	ChunkSetVpagWH(dic, chunk, this);
 
 	// compression level
 	chunk.setCompressionLevel((int)dic.getIntValue(TJS_W("comp_lv"), Z_DEFAULT_COMPRESSION));
@@ -213,8 +241,22 @@ static void b64e(tjs_char *p, unsigned char const *r, long len) {
 	}
 }
 
-void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, int comp_lv, tTJSVariant &ret)
+//---------------------------------------------------------------------------
+// ダイレクト保存処理
+//---------------------------------------------------------------------------
+#if defined(LAYEREXSAVE_DISABLE_LODEPNG) && (LAYEREXSAVE_DISABLE_LODEPNG != 0)
+
+#pragma message( ": LodePNG *not* used." )
+
+void CompressPNG::encodeToFile(iTJSDispatch2 *layer, const tjs_char *filename, iTJSDispatch2 *info)
 {
+	save(layer, filename, info);
+}
+
+void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, tTJSVariant *vclv, tTJSVariant &ret)
+{
+	int comp_lv = vclv ? (int)vclv->AsInteger() : 1;
+
 	BufRefT buffer;
 	long width, height, pitch;
 
@@ -232,6 +274,133 @@ void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, int comp_lv, tTJSVariant &
 	}
 }
 
+#else
+
+#pragma message( ": LodePNG used." )
+
+#include "lodepng.h"
+
+static bool MakeVectorImage(iTJSDispatch2 *layer, std::vector<unsigned char> &image, long &width, long &height)
+{
+	BufRefT buffer;
+	long pitch;
+	if (!GetLayerBufferAndSize(layer, width, height, buffer, pitch)) return false;
+
+	size_t len = width * 4;
+	image.resize(len * height);
+	for(long y=0, ofs=0; y < height; y++, ofs+=len, buffer+=pitch) {
+		BufRefT p = buffer;
+		WrtRefT w = &image[ofs];
+		for(long x = 0; x < width; x++, p+=4) {
+			*w++ = p[2];
+			*w++ = p[1];
+			*w++ = p[0];
+			*w++ = p[3];
+		}
+	}
+	return true;
+}
+
+static unsigned CustomDeflate(unsigned char** out, size_t* outsize,
+							  const unsigned char* in, size_t insize,
+							  const LodePNGCompressSettings* settings)
+{
+	int comp_lv = settings ? (int)settings->custom_context : 1; //Z_DEFAULT_COMPRESSION;
+
+	std::vector<BYTE> data;
+	long size = PngChunk::Deflate(data, in, insize, comp_lv);
+	if (size > 0) {
+		*out = (unsigned char*)malloc((size_t)size);
+		if (*out) {
+			memcpy(*out, &data[0], size);
+			*outsize = size;
+			return 0;
+		} else {
+			return 83; /*alloc fail*/
+		}
+	}
+	return 13; /*problem while processing dynamic deflate block*/
+}
+
+static bool SetCustomChunk(lodepng::State &state, const PngChunk &chunk, const char *tag, int chunkpos = 0)
+{
+	if (tag) {
+		const unsigned char *data = 0;
+		size_t length = 0;
+		chunk.getCurrentData(data, length);
+		return lodepng_chunk_create(&state.info_png.unknown_chunks_data[chunkpos],
+									&state.info_png.unknown_chunks_size[chunkpos],
+									(unsigned)length, tag, data) == 0;
+	}
+	return false;
+}
+void CompressPNG::encodeToFile(iTJSDispatch2 *layer, const tjs_char *filename, iTJSDispatch2 *info)
+{
+	long width, height;
+
+	if (MakeVectorImage(layer, data, width, height)) {
+		DATA png;
+		lodepng::State state;
+
+		if (info) {
+			PngChunk chunk;
+			ncbPropAccessor dic(info);
+
+			SetCustomChunk(state, chunk, ChunkSetResoXY(dic, chunk));
+			SetCustomChunk(state, chunk, ChunkSetOffsXY(dic, chunk));
+			SetCustomChunk(state, chunk, ChunkSetVpagWH(dic, chunk));
+
+			// compression level
+			if (dic.HasValue(TJS_W("comp_lv"))) {
+				state.encoder.zlibsettings.custom_zlib = &CustomDeflate;
+				state.encoder.zlibsettings.custom_context = (void*)(int)dic.getIntValue(TJS_W("comp_lv"), Z_DEFAULT_COMPRESSION);
+			}
+		}
+		if (lodepng::encode(png, data, width, height, state) == 0) {
+			IStream *out = TVPCreateIStream(filename, TJS_BS_WRITE);
+			if (!out) {
+				ttstr msg = filename;
+				msg += L":can't open";
+				TVPThrowExceptionMessage(msg.c_str());
+			}
+			try {
+				ULONG s;
+				out->Write(&png[0], png.size(), &s);
+			} catch (...) {
+				out->Release();
+				throw;
+			}
+			out->Release();
+		}
+	}
+}
+
+void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, tTJSVariant *vclv, tTJSVariant &ret)
+{
+	long width, height;
+
+	ret = TJS_W("");
+	if (MakeVectorImage(layer, data, width, height)) {
+		DATA png;
+		lodepng::State state;
+		if (vclv) {
+			state.encoder.zlibsettings.custom_zlib = &CustomDeflate;
+			state.encoder.zlibsettings.custom_context = (void*)(int)vclv->AsInteger();
+		}
+		if (lodepng::encode(png, data, width, height, state) == 0) {
+			tTJSVariantOctet *oct = TJSAllocVariantOctet(&png[0], png.size());
+			ret = oct;
+			oct->Release();
+		}
+	}
+	// [XXX] reset data
+	data.resize(dataSize);
+	cur = size = 0;
+}
+
+#endif
+
+
 //---------------------------------------------------------------------------
 // レイヤ拡張
 //---------------------------------------------------------------------------
@@ -246,7 +415,8 @@ static tjs_error TJS_INTF_METHOD saveLayerImagePngFunc(tTJSVariant *result,
 														tTJSVariant **param,
 														iTJSDispatch2 *objthis) {
 	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-	CompressAndSave<CompressPNG>::saveLayerImage(
+	CompressPNG png;
+	png.encodeToFile(
 		objthis, // layer
 		param[0]->GetString(),  // filename
 		numparams > 1 ? param[1]->AsObjectNoAddRef() : NULL // info
@@ -265,10 +435,9 @@ static tjs_error TJS_INTF_METHOD saveLayerImagePngOctet(tTJSVariant *result,
 														tTJSVariant **param,
 														iTJSDispatch2 *objthis)
 {
-	int comp_lv = (numparams >= 1) ? (int)param[0]->AsInteger() : 1;
 	if (result) {
 		CompressPNG png;
-		png.encodeToOctet(objthis, comp_lv, *result);
+		png.encodeToOctet(objthis, (numparams >= 1) ? param[0] : NULL, *result);
 	}
 	return TJS_S_OK;
 }

@@ -1,4 +1,5 @@
 Plugins.link("layerExSave.dll");
+//Plugins.link("../../src/plugins/win32/layerExSave/bin/layerExSave-d.dll");
 
 var WIDTH=800;
 var HEIGHT=600;
@@ -13,10 +14,14 @@ class MyWindow extends Window
 
 	var base;
 	var layer;
+	var temp;
+
 	var savemenu1;
 	var savemenu2;
 	var savemenu3;
 	var savemenu4;
+	var savemenu5;
+	var savemenu6;
 	
 	function MyWindow() {
 		super.Window();
@@ -24,6 +29,8 @@ class MyWindow extends Window
 		menu.add(savemenu2 = new MenuItem(this, "TLG保存2(bg)"));
 		menu.add(savemenu3 = new MenuItem(this, "PNG保存1(blk)"));
 		menu.add(savemenu4 = new MenuItem(this, "PNG保存2(bg)"));
+		menu.add(savemenu5 = new MenuItem(this, "PNG保存3(oct)"));
+		menu.add(savemenu6 = new MenuItem(this, "ロードチェック"));
 		setInnerSize(WIDTH, HEIGHT);
 
 		// プライマリレイヤ
@@ -41,6 +48,9 @@ class MyWindow extends Window
 
 		layer.fillRect(0,0,200,20,0xff8040FF);
 		layer.drawText(10, 30, "テストのテキスト", 0xffffff);
+
+		temp = new Layer(this, base);
+		add(temp);
 	}
 
 	// 実行部
@@ -49,25 +59,76 @@ class MyWindow extends Window
 			switch (ev.target) {
 			case savemenu1:
 				layer.saveLayerImageTlg5("test.tlg");
-				layer.saveLayerImageTlg5("test2.tlg", %[xoff:layer.left, yoff:layer.top]);
+				layer.saveLayerImageTlg5("test2.tlg", %[offs_x:layer.left, offs_y:layer.top]);
 				System.inform("saved");
 				break;
 			case savemenu2:
 				Debug.console.visible = true;
-				startSaveLayerImage(layer, "test3.tlg", %[xoff:layer.left, yoff:layer.top]);
+				startSaveLayerImage(layer, "test3.tlg", %[offs_x:layer.left, offs_y:layer.top]);
 				break;
 			case savemenu3:
-				var oct = layer.saveLayerImagePngOctet(9);
-				dm(typeof oct, oct.length);
 				layer.saveLayerImagePng("test.png");
-				layer.saveLayerImagePng("test2.png", %[xoff:layer.left, yoff:layer.top, comp_lv:9]);
+				layer.saveLayerImagePng("test2.png", %[offs_x:layer.left, offs_y:layer.top, comp_lv:9]);
 				System.inform("saved");
 				break;
 			case savemenu4:
 				Debug.console.visible = true;
-				startSaveLayerImage(layer, "test3.png", %[xoff:layer.left, yoff:layer.top, comp_lv:0 ]);
+				startSaveLayerImage(layer, "test3.png", %[offs_x:layer.left, offs_y:layer.top, comp_lv:0 ]);
+				break;
+			case savemenu5:
+				var oct = layer.saveLayerImagePngOctet();
+				dm("-", typeof oct, oct.length);
+				saveOctet(oct, "oct.png");
+				for (var i = 0; i <= 9; i++) {
+					oct = layer.saveLayerImagePngOctet(i);
+					dm(i, typeof oct, oct.length);
+					saveOctet(oct, @"oct_${i}.png");
+				}
+				System.inform("saved");
+				break;
+			case savemenu6:
+				var files = [ "test.tlg", "test2.tlg", "test3.tlg",
+							  "test.png", "test2.png", "test3.png" ];
+				for (var i = 0; i < files.count; i++) {
+					var file = files[i];
+					if (Storages.isExistentStorage(file)) {
+						var info = temp.loadImages(file);
+						var text = file + ":";
+						if (info) {
+							var ext = [], keys = [];
+							ext.assign(info);
+							for (var n = 0; n < ext.count; n+=2) {
+								keys.add(ext[n]) if (ext[n] != "");
+							}
+							keys.sort();
+							text += "%[ ";
+							for (var n = 0; n < keys.count; n++) {
+								text += "%s:%s%c".sprintf(keys[n], info[keys[n]], n == keys.count-1 ? " ":",");
+							}
+							text += "]";
+						} else {
+							text += "void";
+						}
+						Debug.console.visible = true;
+						dm(text);
+					}
+				}
 				break;
 			}
+		}
+	}
+	function saveOctet(oct, file) {
+		try {
+			if (typeof global.BinaryStream == "undefined")
+				Plugins.link("BinaryStream.dll");
+		} catch (e) {
+			global.BinaryStream = null;
+		}
+		if (global.BinaryStream) {
+			var stream = new BinaryStream(file, BinaryStream.bsWrite);
+			stream.write(oct);
+			stream.close();
+			invalidate stream;
 		}
 	}
 

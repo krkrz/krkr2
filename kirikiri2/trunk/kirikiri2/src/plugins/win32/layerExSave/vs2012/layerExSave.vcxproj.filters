@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ncbind">
+      <UniqueIdentifier>{52F156E5-03ED-A041-8B16-12EB9CA0B5F9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools">
+      <UniqueIdentifier>{1EA930F4-D004-5847-ABB9-971FB7F8F8C5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\win32">
+      <UniqueIdentifier>{9BAA6031-FCBA-3C47-9080-BB63CAB567E9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\win32\krdevui">
+      <UniqueIdentifier>{6119B5C9-FFCF-B14A-9F01-15179A8C3BAC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\win32\krdevui\tpc">
+      <UniqueIdentifier>{6BED087A-BCA5-EF4B-BA50-ED943E2A40A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\win32\krdevui\tpc\tlg5">
+      <UniqueIdentifier>{2D74ABF1-E26C-FC40-AB8A-12ED110BF63C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LodePNG">
+      <UniqueIdentifier>{867D1B1F-5055-B342-B783-32FFC2237D9A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\tp_stub.h" />
+    <ClInclude Include="..\..\..\..\tools\win32\krdevui\tpc\tlg5\slide.h">
+      <Filter>tools\win32\krdevui\tpc\tlg5</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tp_stub.cpp" />
+    <ClCompile Include="..\..\ncbind\ncbind.cpp">
+      <Filter>ncbind</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\tools\win32\krdevui\tpc\tlg5\slide.cpp">
+      <Filter>tools\win32\krdevui\tpc\tlg5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Main.cpp" />
+    <ClCompile Include="..\savepng.cpp" />
+    <ClCompile Include="..\savetlg5.cpp" />
+    <ClCompile Include="..\utils.cpp" />
+    <ClCompile Include="..\LodePNG\lodepng.cpp">
+      <Filter>LodePNG</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
