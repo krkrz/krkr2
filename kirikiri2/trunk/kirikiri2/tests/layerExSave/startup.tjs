@@ -41,6 +41,8 @@ class MyWindow extends Window
 
 		// •\Ž¦ƒŒƒCƒ„
 		layer = new Layer(this, base);
+		var src = "original.png";
+		layer.loadImages(src) if (Storages.isExistentStorage(src));
 		layer.setSize(WIDTH, HEIGHT);
 		layer.setPos(0, 0);
 		layer.visible = true;

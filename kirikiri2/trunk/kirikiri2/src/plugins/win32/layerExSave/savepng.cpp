@@ -352,8 +352,10 @@ void CompressPNG::encodeToFile(iTJSDispatch2 *layer, const tjs_char *filename, i
 
 			// compression level
 			if (dic.HasValue(TJS_W("comp_lv"))) {
+				int comp_lv = (int)dic.getIntValue(TJS_W("comp_lv"), Z_DEFAULT_COMPRESSION);
 				state.encoder.zlibsettings.custom_zlib = &CustomDeflate;
-				state.encoder.zlibsettings.custom_context = (void*)(int)dic.getIntValue(TJS_W("comp_lv"), Z_DEFAULT_COMPRESSION);
+				state.encoder.zlibsettings.custom_context = (void*)comp_lv;
+				if (!comp_lv) state.encoder.filter_strategy = LFS_ZERO;
 			}
 		}
 		if (lodepng::encode(png, data, width, height, state) == 0) {
@@ -384,8 +386,10 @@ void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, tTJSVariant *vclv, tTJSVar
 		DATA png;
 		lodepng::State state;
 		if (vclv) {
+			int comp_lv = (int)vclv->AsInteger();
 			state.encoder.zlibsettings.custom_zlib = &CustomDeflate;
-			state.encoder.zlibsettings.custom_context = (void*)(int)vclv->AsInteger();
+			state.encoder.zlibsettings.custom_context = (void*)comp_lv;
+			if (!comp_lv) state.encoder.filter_strategy = LFS_ZERO;
 		}
 		if (lodepng::encode(png, data, width, height, state) == 0) {
 			tTJSVariantOctet *oct = TJSAllocVariantOctet(&png[0], png.size());
