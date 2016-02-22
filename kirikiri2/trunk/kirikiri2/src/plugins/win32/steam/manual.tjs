@@ -80,6 +80,44 @@ class Steam {
 	 * @return 成功したら true
 	 */
 	function deleteCloudFile(name);
+
+	// ---------------------------------------------------------
+	// スクリーンショット
+	// ---------------------------------------------------------
+
+    /**
+	 * スクリーンショット処理をアプリ側から起動させる
+	 */
+    function triggerScreenshot();
+
+    /**
+	 * @param callback コールバック関数（voidの場合は登録解除）
+	 * ※コールバック関数内からwriteScreenshotを呼びます
+	 */
+	function hookScreenshots(callback);
+
+	/**
+	 * スクリーンショットの登録
+	 * @param layer 画像
+	 * @param location "場所文字列" (空文字の場合は登録しない）
+	 */
+	function writeScreenshot(layer, location);
+
+	// ---------------------------------------------------------
+	// 配信状態
+	// ---------------------------------------------------------
+
+    /**
+	 * @return 配信中なら真
+	 */
+   function isBroadcasting();
+
+   /**
+    * 配信状態変更時のコールバック
+	* @param callback コールバック(function (is_start) {})
+    */
+   function hookBroadcasting(callback);
+
 }
 
 
