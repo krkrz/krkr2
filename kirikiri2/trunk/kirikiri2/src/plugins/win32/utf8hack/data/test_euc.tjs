@@ -1,0 +1,4 @@
+// -*- coding: 	euc-japan-dos ; tab-width:4 -*-
+
+System.inform("Ê¸»ú¥³¡¼¥ÉÊÑ´¹¤Î¥Æ¥¹¥È");
+Debug.message("£±£²£³£´£µ£¶£·£¸£¹­ª­«");

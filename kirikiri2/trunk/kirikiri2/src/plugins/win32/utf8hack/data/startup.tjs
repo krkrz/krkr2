@@ -1,0 +1,30 @@
+Debug.controller.visible = true;
+Debug.console.visible = true;
+try {
+	Plugins.link("../bin/k2utf8hack-d.dll");
+} catch (e) {
+	System.inform(e.message);
+	System.exit();
+}
+
+var testType = true; // true:show text, false:exec script
+
+function test(encode, show = testType) {
+	try {
+		var file = @"test_${encode}.tjs";
+		if (show) {
+			Debug.message(encode+"\n"+[].load(file).join("\n"));
+		} else {
+			Scripts.execStorage(file);
+		}
+	} catch (e) {
+		Debug.notice(e.message);
+	}
+}
+Debug.message("readencoding="+Scripts.textEncoding);
+
+test("utf8");
+test("utf8n");
+test("sjis");
+test("euc");
+

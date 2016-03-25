@@ -1,0 +1,4 @@
+// -*- coding: utf-8 ; tab-width:4 -*-
+
+System.inform("文字コード変換のテスト");
+Debug.message("１２３４５６７８９⑩⑪");
