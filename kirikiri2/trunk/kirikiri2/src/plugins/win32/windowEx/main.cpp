@@ -911,7 +911,7 @@ public:
 			HWND base = GetHWND(win);
 			HWND hwnd = NULL;
 			::EnumChildWindows(base, SearchScrollBox, (LPARAM)&hwnd);
-			if (!hwnd) return false;
+			if (!hwnd) hwnd = base; // return false; // for krkrZ
 
 			removeBitmap();
 			HDC dc = ::GetDC(overlay);
