@@ -111,6 +111,7 @@ class Window {
 	/**
 	 * ■拡張イベント：最大化を許可するかどうか確認
 	 * @return true を返すと最大化を許可しない
+	 * ※AeroSnapでの最大化された場合はこのイベントは呼ばれないので注意してください（Windows側の仕様のようです）
 	 */
 	function onMaximizeQuery();
 
