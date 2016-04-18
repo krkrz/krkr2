@@ -244,3 +244,13 @@ Path::drawRectangles(tTJSVariant rects)
 	getRects(rects, rs);
 	path.AddRectangles(&rs[0], (int)rs.size());
 }
+
+/**
+ * パスの描画
+ * @param path パス情報
+ */
+void
+Path::drawPath(const Path *srcpath, bool connect)
+{
+	path.AddPath(&srcpath->path, connect ? TRUE : FALSE);
+}

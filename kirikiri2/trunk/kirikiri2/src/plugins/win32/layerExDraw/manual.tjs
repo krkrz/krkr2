@@ -620,6 +620,13 @@ class GdiPlus {
 		 * @param rects 矩形の配列 [ [x1, y1, width1, height1], [x2, y2, width2, height2] .... ]
 		 */
 		function drawRectangles(rects);
+
+		/**
+		 * パスの描画
+		 * @param path 別のパスオブジェクト
+		 * @param connect 接続をつなげるかどうか
+		 */
+		function drawPath(path, connect);
 	}
 }
 

@@ -589,6 +589,7 @@ NCB_REGISTER_SUBCLASS(Path) {
 	NCB_METHOD(drawPolygon);
 	NCB_METHOD(drawRectangle);
 	NCB_METHOD(drawRectangles);
+	NCB_METHOD(drawPath);
 };
 
 #define ENUM(n) Variant(#n, (int)n)

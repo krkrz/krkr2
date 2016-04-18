@@ -198,6 +198,7 @@ public:
 	void drawPolygon(tTJSVariant points);
 	void drawRectangle(REAL x, REAL y, REAL width, REAL height);
 	void drawRectangles(tTJSVariant rects);
+	void drawPath(const Path *path, bool connect);
 protected:
 	GraphicsPath path;
 };
