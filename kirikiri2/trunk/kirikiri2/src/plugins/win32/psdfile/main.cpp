@@ -81,10 +81,12 @@ static int convBlendMode(psd::BlendMode mode)
 }
 
 class PSDStorage;
+class PSDLayerData;
 
 class PSD {
 
 friend class PSDStorage;
+friend class PSDLayerData;	
 	
 protected:
 	PSDFileEx psdFile;	// PSD データ
@@ -94,7 +96,7 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	PSD():hBuffer(0), storageStarted(false) {
+	PSD():hBuffer(0), storageStarted(false), lastIdx(-1), lastData(0)  {
 	}; 
 
 	/**
@@ -105,6 +107,7 @@ public:
 	};
 
 	void clearData() {
+		clearLayerData();
 		removeFromStorage();
 		if (hBuffer) {
 			::GlobalUnlock(hBuffer);
@@ -739,67 +742,7 @@ protected:
 	 * @param name パスを含むレイヤ名
 	 * @return ファイルストリーム
 	 */
-	IStream *openLayerImage(const ttstr &name) {
-
-		static int n=0;
-
-		int layerIdx;
-		if (CheckExistentStorage(name, &layerIdx)) {
-			if (layerIdx < (int)psdFile.layerList.size()) {
-				psd::LayerInfo &lay = psdFile.layerList[layerIdx];
-
-				if (lay.layerType != psd::LAYER_TYPE_NORMAL || lay.width <= 0 || lay.height <= 0) {
-					return 0;
-        }
-				int width  = lay.width;
-				int height = lay.height;
-				int pitch  = width*4;
-
-				int hsize = sizeof(BITMAPFILEHEADER);
-				int isize = hsize + sizeof(BITMAPINFOHEADER);
-				int size  = isize  + pitch * height;
-				
-				// グローバルヒープにBMP画像を作成してストリームとして返す
-				HGLOBAL handle = ::GlobalAlloc(GMEM_MOVEABLE, size);
-				if (handle) {
-					unsigned char *p = (unsigned char*)::GlobalLock(handle);
-					if (p) {
-
-						BITMAPFILEHEADER bfh;
-						bfh.bfType      = 'B' + ('M' << 8);
-						bfh.bfSize      = size;
-						bfh.bfReserved1 = 0;
-						bfh.bfReserved2 = 0;
-						bfh.bfOffBits   = isize;
-						memcpy(p,        &bfh, sizeof bfh);
-
-						BITMAPINFOHEADER bih;
-						bih.biSize = sizeof(bih);
-						bih.biWidth = width;
-						bih.biHeight = height;
-						bih.biPlanes = 1;
-						bih.biBitCount = 32;
-						bih.biCompression = BI_RGB;
-						bih.biSizeImage = 0;
-						bih.biXPelsPerMeter = 0;
-						bih.biYPelsPerMeter = 0;
-						bih.biClrUsed = 0;
-						bih.biClrImportant = 0;
-						memcpy(p + hsize, &bih, sizeof bih);
-						psdFile.getLayerImage(lay, p + isize, psd::BGRA_LE, pitch, psd::IMAGE_MODE_MASKEDIMAGE);
-						::GlobalUnlock(handle);
-						
-						IStream *pStream = 0;
-						if (SUCCEEDED(::CreateStreamOnHGlobal(handle, TRUE, &pStream))) {
-							return pStream;
-						}
-					}
-					::GlobalFree(handle);
-				}
-			}
-		}
-		return 0;
-	}
+	IStream *openLayerImage(const ttstr &name);
 	
 	// パス名記録用
 
@@ -809,6 +752,38 @@ protected:
 	typedef std::map<ttstr,int> NameIdxMap;     //< レイヤ名とlayerId のマップ
 	typedef std::map<ttstr,NameIdxMap> PathMap; //< パス別のレイヤ名一覧
 	PathMap pathMap;
+
+	/*
+	 * レイヤデータオブジェクト参照を追加
+	 * @param index 参照インデックス
+	 * @param data PSDLayerData オブジェクト
+	 */
+	void addLayerData(int index, PSDLayerData *data) {
+		layerDataMap[index] = data;
+	}
+	
+	/**
+	 * レイヤデータオブジェクト参照の消去要求
+	 * @param data PSDLayerData オブジェクト
+	 */
+	void removeLayerData(PSDLayerData *data) {
+		LayerDataMap::iterator it = layerDataMap.begin();
+		while (it != layerDataMap.end()) {
+			if (it->second == data) {
+				it = layerDataMap.erase(it);
+			} else {
+				it++;
+			}
+		}
+	}
+
+	void clearLayerData();
+
+	typedef std::map<int, PSDLayerData*> LayerDataMap;
+	LayerDataMap layerDataMap;
+
+	PSDLayerData *lastData;
+	int lastIdx;
 };
 
 NCB_REGISTER_CLASS(PSD) {
@@ -892,6 +867,313 @@ NCB_REGISTER_CLASS(PSD) {
 // -----------------------------------------------------------------------------
 
 #define BASENAME L"psd"
+
+class PSDLayerData {
+
+public:
+	PSDLayerData(PSD *owner, HGLOBAL handle) : refCount(1), owner(owner), handle(handle) {
+		base = (tjs_uint8*)::GlobalLock(handle);
+		size = ::GlobalSize(handle);
+	}
+
+	const tjs_uint8 *getBase() {
+		return base;
+	}
+
+	tTVInteger getSize() {
+		return size;
+	}
+
+	
+	void clear() {
+		owner = 0;
+	}
+
+	ULONG STDMETHODCALLTYPE AddRef(void) {
+		refCount++;
+		return refCount;
+	}
+	
+	ULONG STDMETHODCALLTYPE Release(void) {
+		int ret = --refCount;
+		if (ret <= 0) {
+			delete this;
+			ret = 0;
+		}
+		return ret;
+	}
+
+protected:
+	
+	~PSDLayerData() {
+		if (owner) {
+			owner->removeLayerData(this);
+		}
+		::GlobalUnlock(handle);
+		::GlobalFree(handle);
+	}
+
+protected:
+	int refCount;
+	PSD *owner;
+	HGLOBAL handle;
+	tjs_uint8 *base;
+	tTVInteger size;
+};
+
+/**
+ * Stream参照用
+ */
+class PSDLayerStream : public IStream {
+
+public:
+	/**
+	 * コンストラクタ
+	 */
+	PSDLayerStream(PSDLayerData *data) : refCount(1), data(data), cur(0) {
+		data->AddRef();
+	};
+
+	// IUnknown
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) {
+		if (riid == IID_IUnknown || riid == IID_ISequentialStream || riid == IID_IStream) {
+			if (ppvObject == NULL)
+				return E_POINTER;
+			*ppvObject = this;
+			AddRef();
+			return S_OK;
+		} else {
+			*ppvObject = 0;
+			return E_NOINTERFACE;
+		}
+	}
+
+	ULONG STDMETHODCALLTYPE AddRef(void) {
+		refCount++;
+		return refCount;
+	}
+	
+	ULONG STDMETHODCALLTYPE Release(void) {
+		int ret = --refCount;
+		if (ret <= 0) {
+			delete this;
+			ret = 0;
+		}
+		return ret;
+	}
+
+	// ISequentialStream
+	HRESULT STDMETHODCALLTYPE Read(void *pv, ULONG cb, ULONG *pcbRead) {
+		const tjs_uint8 *base = getBase();
+		tTVInteger size = getSize() - cur;
+		if (base && cb > 0 && size > 0) {
+			if (cb > size) {
+				cb = (ULONG)size;
+			}
+			memcpy(pv, base + cur, cb);
+			cur += cb;
+			if (pcbRead) {
+				*pcbRead = cb;
+			}
+			return S_OK;
+		} else {
+			if (pcbRead) {
+				*pcbRead = 0;
+			}
+			return S_FALSE;
+		}
+	}
+
+	HRESULT STDMETHODCALLTYPE Write(const void *pv, ULONG cb, ULONG *pcbWritten) {
+		return E_NOTIMPL;
+	}
+
+	// IStream
+	HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER dlibMove,	DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) {
+		switch (dwOrigin) {
+		case STREAM_SEEK_CUR:
+			cur += dlibMove.QuadPart;
+			break;
+		case STREAM_SEEK_SET:
+			cur = dlibMove.QuadPart;
+			break;
+		case STREAM_SEEK_END:
+			cur = getSize();
+			cur += dlibMove.QuadPart;
+			break;
+		}
+		if (plibNewPosition) {
+			plibNewPosition->QuadPart = cur;
+		}
+		return S_OK;
+	}
+	
+	HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER libNewSize) {
+		return E_NOTIMPL;
+	}
+	
+	HRESULT STDMETHODCALLTYPE CopyTo(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) {
+		return E_NOTIMPL;
+	}
+
+	HRESULT STDMETHODCALLTYPE Commit(DWORD grfCommitFlags) {
+		return E_NOTIMPL;
+	}
+
+	HRESULT STDMETHODCALLTYPE Revert(void) {
+		return E_NOTIMPL;
+	}
+
+	HRESULT STDMETHODCALLTYPE LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {
+		return E_NOTIMPL;
+	}
+	
+	HRESULT STDMETHODCALLTYPE UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {
+		return E_NOTIMPL;
+	}
+	
+	HRESULT STDMETHODCALLTYPE Stat(STATSTG *pstatstg, DWORD grfStatFlag) {
+		return E_NOTIMPL;
+	}
+
+	HRESULT STDMETHODCALLTYPE Clone(IStream **ppstm) {
+		return E_NOTIMPL;
+	}
+
+protected:
+
+	/**
+	 * デストラクタ
+	 */
+	virtual ~PSDLayerStream() {
+		if (data) {
+			data->Release();
+			data = 0;
+		}
+		cur = 0;
+	}
+
+	// 読み込み用メモリ領域取得
+	const tjs_uint8 *getBase() {
+		return data->getBase();
+	}
+
+	// 読み込み用メモリサイズ取得
+	tTVInteger getSize() {
+		return data->getSize();
+	}
+
+private:
+	int refCount;
+  PSDLayerData *data;
+	tTVInteger cur;
+};
+
+
+void
+PSD::clearLayerData()
+{
+	if (lastData) {
+		lastData->Release();
+		lastData = 0;
+	}
+	LayerDataMap::iterator it = layerDataMap.begin();
+	while (it != layerDataMap.end()) {
+		it->second->clear();
+		it = layerDataMap.erase(it);
+	}
+}
+
+/*
+ * 指定した名前のレイヤの画像ファイルをストリームで返す
+ * @param name パスを含むレイヤ名
+ * @return ファイルストリーム
+ */
+IStream *
+PSD::openLayerImage(const ttstr &name)
+{
+	int layerIdx;
+	if (CheckExistentStorage(name, &layerIdx)) {
+		if (layerIdx < (int)psdFile.layerList.size()) {
+
+			psd::LayerInfo &lay = psdFile.layerList[layerIdx];
+			if (lay.layerType != psd::LAYER_TYPE_NORMAL || lay.width <= 0 || lay.height <= 0) {
+				return 0;
+			}
+
+			PSDLayerData *data = 0;
+
+			if (lastIdx == layerIdx && lastData) {
+				data = lastData;
+
+			} else {
+				if (lastData) {
+					lastData->Release();
+					lastData = 0;
+				}
+
+				LayerDataMap::iterator n = layerDataMap.find(layerIdx);
+				if (n != layerDataMap.end()) {
+					// キャッシュに残ってる場合はそれを返す
+					data = n->second;
+					data->AddRef();
+				} else {
+					// キャッシュにないので新規作成
+					int width  = lay.width;
+					int height = lay.height;
+					int pitch  = width*4;
+					
+					int hsize = sizeof(BITMAPFILEHEADER);
+					int isize = hsize + sizeof(BITMAPINFOHEADER); 
+					int size  = isize  + pitch * height;
+
+					// グローバルヒープにBMP画像を作成
+					HGLOBAL handle = ::GlobalAlloc(GMEM_MOVEABLE, size);
+					if (handle) {
+						unsigned char *p = (unsigned char*)::GlobalLock(handle);
+						if (p) {
+							BITMAPFILEHEADER bfh;
+							bfh.bfType      = 'B' + ('M' << 8);
+							bfh.bfSize      = size;
+							bfh.bfReserved1 = 0;
+							bfh.bfReserved2 = 0;
+							bfh.bfOffBits   = isize;
+							memcpy(p,        &bfh, sizeof bfh);
+
+							BITMAPINFOHEADER bih;
+							bih.biSize = sizeof(bih);
+							bih.biWidth = width;
+							bih.biHeight = height;
+							bih.biPlanes = 1;
+							bih.biBitCount = 32;
+							bih.biCompression = BI_RGB;
+							bih.biSizeImage = 0;
+							bih.biXPelsPerMeter = 0;
+							bih.biYPelsPerMeter = 0;
+							bih.biClrUsed = 0;
+							bih.biClrImportant = 0;
+							memcpy(p + hsize, &bih, sizeof bih);
+
+							//psdFile.getLayerImage(lay, p + isize, psd::BGRA_LE, pitch, psd::IMAGE_MODE_MASKEDIMAGE);
+							::GlobalUnlock(handle);
+
+							data = new PSDLayerData(this, handle);
+							addLayerData(layerIdx, data);
+						}
+					}
+				}
+			}
+
+			if (data) {
+				IStream *ret = new PSDLayerStream(data);
+				lastData = data;
+				lastIdx = layerIdx;
+				return ret;
+			}
+		}
+	}
+	return 0;
+}
 
 /**
  * PSDストレージ
