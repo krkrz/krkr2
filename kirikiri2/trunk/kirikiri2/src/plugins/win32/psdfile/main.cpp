@@ -1,4 +1,34 @@
-#include "psdparse/psdfile.h"
+#include "psdfileex.h"
+
+#define BMPEXT L".bmp"
+
+/**
+ * C文字列処理用
+ */
+class NarrowString {
+private:
+	tjs_nchar *_data;
+public:
+	NarrowString(const ttstr &str) : _data(NULL) {
+		tjs_int len = str.GetNarrowStrLen();
+		if (len > 0) {
+			_data = new tjs_nchar[len+1];
+			str.ToNarrowStr(_data, len+1);
+		}
+	}
+	~NarrowString() {
+		delete[] _data;
+	}
+
+	const tjs_nchar *data() {
+		return _data;
+	}
+
+	operator const char *() const
+	{
+		return (const char *)_data;
+	}
+};
 
 // ncb.typeconv: cast: enum->int
 NCB_TYPECONV_CAST_INTEGER(psd::LayerType);
@@ -50,47 +80,101 @@ static int convBlendMode(psd::BlendMode mode)
 	return ltPsNormal;
 }
 
+class PSDStorage;
+
 class PSD {
 
+friend class PSDStorage;
+	
 protected:
-  psd::PSDFile psdFile;	// PSD データ
+	PSDFileEx psdFile;	// PSD データ
+	HGLOBAL hBuffer; // オンメモリ保持用ハンドル
 
 public:
 	/**
 	 * コンストラクタ
 	 */
-  PSD() {}; 
+	PSD():hBuffer(0), storageStarted(false) {
+	}; 
 
 	/**
 	 * デストラクタ
 	 */
-	~PSD() {};
+	~PSD() {
+		clearData();
+	};
+
+	void clearData() {
+		removeFromStorage();
+		if (hBuffer) {
+			::GlobalUnlock(hBuffer);
+			::GlobalFree(hBuffer);
+			hBuffer = 0;
+		}
+		layerIdIdxMap.clear();
+		pathMap.clear();
+		storageStarted = false;
+	}
 
 	/**
 	 * PSD画像のロード
 	 * @param filename ファイル名
 	 * @return ロードに成功したら true
 	 */
-	bool load(const char *filename) {
-    char native_filename[2048];
-    ttstr filename_ttstr(filename);
-    filename_ttstr = TVPGetPlacedPath(filename_ttstr);
-    if (filename_ttstr.length()) {
-      if (!wcschr(filename_ttstr.c_str(), '>')) {
-        // ローカルパス化
-        TVPGetLocalName(filename_ttstr);
-        filename_ttstr.ToNarrowStr(native_filename, 2048);
-      } else {
-        // アーカイブ内部なのでアクセスできない
-        TVPThrowExceptionMessage(L"psd: cannot access to archived file");
-        return false;
+	bool load(ttstr filename) {
+		clearData();
+		
+		ttstr file = TVPGetPlacedPath(filename);
+		if (!file.length()) {
+			psdFile.load(NarrowString(filename));
+		} else {
+			if (!wcschr(file.c_str(), '>')) {
+				// ローカルファイルなので直接読み込む
+				TVPGetLocalName(file);
+				psdFile.load(NarrowString(file));
+			} else {
+				// アーカイブ内部
+				IStream *stream = TVPCreateIStream(file, TJS_BS_READ);
+				if (stream) {
+					try {
+						// 全部メモリに読み込む
+						STATSTG stat;
+						stream->Stat(&stat, STATFLAG_NONAME);
+						tjs_uint64 qsize = (tjs_uint64)stat.cbSize.QuadPart;
+						if (qsize < 0xFFFFFFFF) {
+							DWORD size = (DWORD)qsize;
+							hBuffer = ::GlobalAlloc(GMEM_MOVEABLE, size);
+							unsigned char* pBuffer = (unsigned char*)::GlobalLock(hBuffer);
+							if (pBuffer) {
+								ULONG retsize;
+								stream->Read(pBuffer, size, &retsize);
+								if (!psdFile.loadMemory(pBuffer, pBuffer + size)) {
+									::GlobalUnlock(hBuffer);
+									::GlobalFree(hBuffer);
+									hBuffer = 0;
+								}
+							}
+						}
+					} catch(...) {
+						if (hBuffer) {
+							::GlobalUnlock(hBuffer);
+							::GlobalFree(hBuffer);
+							hBuffer = 0;
+						}
+						stream->Release();
+						throw;
+					}
+					stream->Release();
+				} else {
+					TVPThrowExceptionMessage(L"psd:failed to open file");
+					return false;
+				}
       }
-      psdFile.load(native_filename);
-    } else {
-      // ネイティブパスが直接渡されたとみなす
-      psdFile.load(filename);
-    }
-    return psdFile.isLoaded;
+		}
+		if (psdFile.isLoaded) {
+			addToStorage(filename);
+		}
+		return psdFile.isLoaded;
 	}
 
 #define INTGETTER(tag) int get_ ## tag(){ return psdFile.isLoaded ? psdFile.header.tag : -1; }
@@ -501,6 +585,230 @@ public:
     }
 		return result;
 	}
+
+	// ------------------------------------------------------------
+	// ストレージレイヤ参照用インターフェース
+	// ------------------------------------------------------------
+	
+protected:
+
+	// ストレージ情報登録
+	void addToStorage(const ttstr &filename);
+	void removeFromStorage();
+
+	bool storageStarted; //< ストレージ用の情報初期化済みフラグ
+
+	// レイヤ名を返す
+	ttstr path_layname(psd::LayerInfo &lay) {
+		ttstr ret = layname(lay);
+		// 正規化
+		ttstr from = "/";
+		ttstr to   = "_";
+		ret.Replace(from, to, true);
+		ret.ToLowerCase();
+		return ret;
+	}
+
+	// レイヤのパス名を返す
+	ttstr pathname(psd::LayerInfo &lay) {
+		ttstr name = "";
+		psd::LayerInfo *p = lay.parent;
+		while (p) {
+			name = path_layname(*p) + "/" + name;
+			p = p->parent;
+		}
+		return ttstr("root/") + name;
+	}
+
+	// ストレージ処理用データの初期化
+	void startStorage() {
+		if (!storageStarted) {
+			storageStarted = true;
+			// レイヤ検索用の情報を生成
+			int count = (int)psdFile.layerList.size();
+			for (int i=count-1;i>=0;i--) {
+				psd::LayerInfo &lay = psdFile.layerList[i];
+				if (lay.layerType == psd::LAYER_TYPE_NORMAL) {
+					pathMap[pathname(lay)][path_layname(lay)] = i;
+					layerIdIdxMap[lay.layerId] = i;
+				}
+			}
+		}
+	}
+
+	/*
+	 * 指定した名前のレイヤの存在チェック
+	 * @param name パスを含むレイヤ名
+	 * @param layerIdxRet レイヤインデックス番号を返す
+	 */
+	bool CheckExistentStorage(const ttstr &filename, int *layerIdxRet=0) {
+		startStorage();
+
+		// ルート部を取得
+		const tjs_char *p = filename.c_str();
+
+		// id指定の場合
+		if (wcsncmp(p, L"id/", 3) == 0) {
+
+			p += 3;
+
+			// 拡張子を除去して判定
+			const tjs_char *q;
+			if (!(q = wcsrchr(p, '/')) && ((q = wcschr(p, '.')) && (wcscmp(q, BMPEXT) == 0))) {
+				ttstr name = ttstr(p, q-p);
+				int id = _wtoi(name.c_str());
+				LayerIdIdxMap::const_iterator n = layerIdIdxMap.find(id);
+				if (n != layerIdIdxMap.end()) {
+					if (layerIdxRet) *layerIdxRet = n->second;
+					return true;
+				}
+			}
+
+		} else {
+
+			// パスを分離
+			ttstr pname, fname;
+			// 最後の/を探す
+			const tjs_char *q;
+			if ((q = wcsrchr(p, '/'))) {
+				pname = ttstr(p, q-p+1);
+				fname = ttstr(q+1);
+			} else {
+				return false;
+			}
+			
+			// 拡張子分離
+			ttstr basename;
+			p = fname.c_str();
+			// 最初の . を探す
+			if ((q = wcschr(p, '.')) && (wcscmp(q, BMPEXT) == 0)) {
+				basename = ttstr(p, q-p);
+			} else {
+				return false;
+			}
+
+			// 名前を探す
+			PathMap::const_iterator n = pathMap.find(pname);
+			if (n != pathMap.end()) {
+				const NameIdxMap &names = n->second;
+				NameIdxMap::const_iterator m = names.find(basename);
+				if (m != names.end()) {
+					if (layerIdxRet) *layerIdxRet = m->second;
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+
+	/*
+	 * 指定したパスにあるファイル名一覧の取得
+	 * @param pathname パス名
+	 * @param lister リスト取得用インターフェース
+	 */
+	void GetListAt(const ttstr &pathname, iTVPStorageLister *lister) {
+		startStorage();
+
+		// ID一覧から名前を生成
+		if (pathname == "id/") {
+			LayerIdIdxMap::const_iterator it = layerIdIdxMap.begin();
+			while (it != layerIdIdxMap.end()) {
+				ttstr name = ttstr(it->first);
+				lister->Add(name + BMPEXT);
+				it++;
+			}
+			return;
+		}
+
+		// パス登録情報から名前を生成
+		PathMap::const_iterator n = pathMap.find(pathname);
+		if (n != pathMap.end()) {
+			const NameIdxMap &names = n->second;
+			NameIdxMap::const_iterator it = names.begin();
+			while (it != names.end()) {
+				ttstr name = it->first;
+				lister->Add(name + BMPEXT);
+				it++;
+			}
+		}
+	}
+
+	/*
+	 * 指定した名前のレイヤの画像ファイルをストリームで返す
+	 * @param name パスを含むレイヤ名
+	 * @return ファイルストリーム
+	 */
+	IStream *openLayerImage(const ttstr &name) {
+
+		static int n=0;
+
+		int layerIdx;
+		if (CheckExistentStorage(name, &layerIdx)) {
+			if (layerIdx < (int)psdFile.layerList.size()) {
+				psd::LayerInfo &lay = psdFile.layerList[layerIdx];
+
+				if (lay.layerType != psd::LAYER_TYPE_NORMAL || lay.width <= 0 || lay.height <= 0) {
+					return 0;
+        }
+				int width  = lay.width;
+				int height = lay.height;
+				int pitch  = width*4;
+
+				int hsize = sizeof(BITMAPFILEHEADER);
+				int isize = hsize + sizeof(BITMAPINFOHEADER);
+				int size  = isize  + pitch * height;
+				
+				// グローバルヒープにBMP画像を作成してストリームとして返す
+				HGLOBAL handle = ::GlobalAlloc(GMEM_MOVEABLE, size);
+				if (handle) {
+					unsigned char *p = (unsigned char*)::GlobalLock(handle);
+					if (p) {
+
+						BITMAPFILEHEADER bfh;
+						bfh.bfType      = 'B' + ('M' << 8);
+						bfh.bfSize      = size;
+						bfh.bfReserved1 = 0;
+						bfh.bfReserved2 = 0;
+						bfh.bfOffBits   = isize;
+						memcpy(p,        &bfh, sizeof bfh);
+
+						BITMAPINFOHEADER bih;
+						bih.biSize = sizeof(bih);
+						bih.biWidth = width;
+						bih.biHeight = height;
+						bih.biPlanes = 1;
+						bih.biBitCount = 32;
+						bih.biCompression = BI_RGB;
+						bih.biSizeImage = 0;
+						bih.biXPelsPerMeter = 0;
+						bih.biYPelsPerMeter = 0;
+						bih.biClrUsed = 0;
+						bih.biClrImportant = 0;
+						memcpy(p + hsize, &bih, sizeof bih);
+						psdFile.getLayerImage(lay, p + isize, psd::BGRA_LE, pitch, psd::IMAGE_MODE_MASKEDIMAGE);
+						::GlobalUnlock(handle);
+						
+						IStream *pStream = 0;
+						if (SUCCEEDED(::CreateStreamOnHGlobal(handle, TRUE, &pStream))) {
+							return pStream;
+						}
+					}
+					::GlobalFree(handle);
+				}
+			}
+		}
+		return 0;
+	}
+	
+	// パス名記録用
+
+	typedef std::map<int,int> LayerIdIdxMap; // layerId とレイヤ情報インデックスのマップ
+	LayerIdIdxMap layerIdIdxMap;
+
+	typedef std::map<ttstr,int> NameIdxMap;     //< レイヤ名とlayerId のマップ
+	typedef std::map<ttstr,NameIdxMap> PathMap; //< パス別のレイヤ名一覧
+	PathMap pathMap;
 };
 
 NCB_REGISTER_CLASS(PSD) {
@@ -578,3 +886,221 @@ NCB_REGISTER_CLASS(PSD) {
 	NCB_METHOD(getBlend);
   NCB_METHOD(getLayerComp);
 };
+
+// -----------------------------------------------------------------------------
+// ストレージ機能
+// -----------------------------------------------------------------------------
+
+#define BASENAME L"psd"
+
+/**
+ * PSDストレージ
+ */
+class PSDStorage : public iTVPStorageMedia
+{
+public:
+
+	/**
+	 * コンストラクタ
+	 */
+	PSDStorage() : refCount(1) {
+	}
+
+	/**
+	 * デストラクタ
+	 */
+	virtual ~PSDStorage() {
+	}
+
+	/*
+	 * PSDオブジェクト参照を追加
+	 * @param filename 参照ファイル名
+	 * @param psd PSDオブジェクト
+	 */
+	void add(ttstr filename, PSD *psd) {
+		// ファイル名のみ取得
+		const tjs_char *p = filename.c_str();
+		const tjs_char *q;
+		if ((q = wcsrchr(p, '/'))) {
+			filename = ttstr(p, q-p);
+		}
+		// 小文字で正規化
+		filename.ToLowerCase();
+		psdMap[filename] = psd;
+	}
+	
+	/**
+	 * PSDオブジェクト参照の消去要求
+	 * @param psd PSDオブジェクト
+	 */
+	void remove(PSD *psd) {
+		PSDMap::iterator it = psdMap.begin();
+		while (it != psdMap.end()) {
+			if (it->second == psd) {
+				it = psdMap.erase(it);
+			} else {
+				it++;
+			}
+		}
+	}
+	
+public:
+	// -----------------------------------
+	// iTVPStorageMedia Intefaces
+	// -----------------------------------
+
+	virtual void TJS_INTF_METHOD AddRef() {
+		refCount++;
+	};
+
+	virtual void TJS_INTF_METHOD Release() {
+		if (refCount == 1) {
+			delete this;
+		} else {
+			refCount--;
+		}
+	};
+
+	// returns media name like "file", "http" etc.
+	virtual void TJS_INTF_METHOD GetName(ttstr &name) {
+		name = BASENAME;
+	}
+
+	//	virtual ttstr TJS_INTF_METHOD IsCaseSensitive() = 0;
+	// returns whether this media is case sensitive or not
+
+	// normalize domain name according with the media's rule
+	virtual void TJS_INTF_METHOD NormalizeDomainName(ttstr &name) {
+		// nothing to do
+	}
+
+	// normalize path name according with the media's rule
+	virtual void TJS_INTF_METHOD NormalizePathName(ttstr &name) {
+		// nothing to do
+	}
+
+	// check file existence
+	virtual bool TJS_INTF_METHOD CheckExistentStorage(const ttstr &name) {
+		ttstr fname;
+		PSD *psd = getPSD(name, fname);
+		if (psd) {
+			bool ret = psd->CheckExistentStorage(fname);
+			return ret;
+		}
+		return false;
+	}
+
+	// open a storage and return a tTJSBinaryStream instance.
+	// name does not contain in-archive storage name but
+	// is normalized.
+	virtual tTJSBinaryStream * TJS_INTF_METHOD Open(const ttstr & name, tjs_uint32 flags) {
+		if (flags == TJS_BS_READ) { // 読み込みのみ
+			ttstr fname;
+			PSD *psd = getPSD(name, fname);
+			if (psd) {
+				IStream *stream = psd->openLayerImage(fname);
+				if (stream) {
+					tTJSBinaryStream *ret = TVPCreateBinaryStreamAdapter(stream);
+					stream->Release();
+					return ret;
+				}
+			}
+		}
+		TVPThrowExceptionMessage(TJS_W("%1:cannot open psdfile"), name);
+		return NULL;
+	}
+
+	// list files at given place
+	virtual void TJS_INTF_METHOD GetListAt(const ttstr &name, iTVPStorageLister * lister) {
+		ttstr fname;
+		PSD *psd = getPSD(name, fname);
+		if (psd) {
+			psd->GetListAt(fname, lister);
+		}
+	}
+
+	// basically the same as above,
+	// check wether given name is easily accessible from local OS filesystem.
+	// if true, returns local OS native name. otherwise returns an empty string.
+	virtual void TJS_INTF_METHOD GetLocallyAccessibleName(ttstr &name) {
+		name = "";
+	}
+
+protected:
+	/*
+	 * ファイル名に合致した PSD 情報を取得
+	 * @param name ファイル名
+	 * @param fname ファイル名を返す
+	 * @return PSD情報
+	 */
+	PSD *getPSD(ttstr name, ttstr &fname) {
+		// 小文字で正規化
+		name.ToLowerCase();
+		// ドメイン名とそれ以降を分離
+		ttstr dname;
+		const tjs_char *p = name.c_str();
+		const tjs_char *q;
+		if ((q = wcschr(p, '/'))) {
+			dname = ttstr(p, q-p);
+			fname = ttstr(q+1);
+		} else {
+			TVPThrowExceptionMessage(TJS_W("invalid path:%1"), name);
+		}
+		PSDMap::iterator it = psdMap.find(dname);
+		if (it != psdMap.end()) {
+			// 既存データ
+			return it->second;
+		}
+		return 0;
+	}
+
+private:
+	tjs_uint refCount; //< リファレンスカウント
+
+	// PSDオブジェクトの弱参照
+	typedef std::map<ttstr, PSD*> PSDMap;
+	PSDMap psdMap;
+};
+
+static PSDStorage *psdStorage = 0;
+
+// 弱参照追加
+void
+PSD::addToStorage(const ttstr &filename)
+{
+	if (psdStorage != NULL) {
+		psdStorage->add(filename, this);
+	}
+}
+
+// 弱参照解除
+void
+PSD::removeFromStorage()
+{
+	if (psdStorage != NULL) {
+		psdStorage->remove(this);
+	}
+}
+
+// --------------------------------------------------------------------
+
+
+void initStorage()
+{
+	if (psdStorage== NULL) {
+		psdStorage = new PSDStorage();
+		TVPRegisterStorageMedia(psdStorage);
+	}
+}
+
+void doneStorage()
+{
+	if (psdStorage != NULL) {
+		TVPUnregisterStorageMedia(psdStorage);
+		psdStorage->Release();
+		psdStorage = NULL;
+	}
+}
+
+NCB_PRE_REGIST_CALLBACK(initStorage);
+NCB_POST_UNREGIST_CALLBACK(doneStorage);
