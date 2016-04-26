@@ -636,6 +636,16 @@ protected:
 		}
 	}
 
+	bool checkAllNum(const tjs_char *p) {
+		while (*p != '\0') {
+			if (!(*p >= '0' && *p <= '9')) {
+				return false;
+			}
+			p++;
+		}
+		return true;
+	}
+	
 	/*
 	 * 指定した名前のレイヤの存在チェック
 	 * @param name パスを含むレイヤ名
@@ -656,11 +666,14 @@ protected:
 			const tjs_char *q;
 			if (!(q = wcsrchr(p, '/')) && ((q = wcschr(p, '.')) && (wcscmp(q, BMPEXT) == 0))) {
 				ttstr name = ttstr(p, q-p);
-				int id = _wtoi(name.c_str());
-				LayerIdIdxMap::const_iterator n = layerIdIdxMap.find(id);
-				if (n != layerIdIdxMap.end()) {
-					if (layerIdxRet) *layerIdxRet = n->second;
-					return true;
+				q = name.c_str();
+				if (checkAllNum(q)) { // 文字混入禁止
+					int id = _wtoi(q);
+					LayerIdIdxMap::const_iterator n = layerIdIdxMap.find(id);
+					if (n != layerIdIdxMap.end()) {
+						if (layerIdxRet) *layerIdxRet = n->second;
+						return true;
+					}
 				}
 			}
 
@@ -786,7 +799,7 @@ protected:
 						bih.biClrUsed = 0;
 						bih.biClrImportant = 0;
 						memcpy(p + hsize, &bih, sizeof bih);
-						psdFile.getLayerImage(lay, p + isize, psd::BGRA_LE, pitch, psd::IMAGE_MODE_MASKEDIMAGE);
+						psdFile.getLayerImage(lay, p + isize + pitch * (height - 1), psd::BGRA_LE, -pitch, psd::IMAGE_MODE_MASKEDIMAGE);
 						::GlobalUnlock(handle);
 						
 						IStream *pStream = 0;
