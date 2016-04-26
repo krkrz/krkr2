@@ -935,7 +935,7 @@ public:
 		const tjs_char *p = filename.c_str();
 		const tjs_char *q;
 		if ((q = wcsrchr(p, '/'))) {
-			filename = ttstr(p, q-p);
+			filename = ttstr(q+1);
 		}
 		// ¬•¶š‚Å³‹K‰»
 		filename.ToLowerCase();
