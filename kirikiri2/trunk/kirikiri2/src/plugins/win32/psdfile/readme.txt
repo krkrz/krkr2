@@ -47,7 +47,6 @@ http://blogs.msdn.com/b/jpvsblog/archive/2013/04/17/visual-studio-2012-windows-x
 
 ・PSDレイヤファイルシステム
 
-画像を開いたPSD オブジェクトが存在している間は、
 以下のパス名でPSDファイルのレイヤ画像を直接ファイルとしてロードできます
 
 psd://PSDファイル名/root/フォルダ名/.../レイヤ名.bmp

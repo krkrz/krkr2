@@ -87,6 +87,9 @@ class PSD {
 friend class PSDStorage;
 	
 protected:
+	iTJSDispatch2 *objthis; ///< 自己オブジェクト情報の参照
+	ttstr dname; ///< 登録用ベース名
+
 	PSDFileEx psdFile;	// PSD データ
 	HGLOBAL hBuffer; // オンメモリ保持用ハンドル
 
@@ -94,8 +97,8 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	PSD():hBuffer(0), storageStarted(false) {
-	}; 
+	PSD(iTJSDispatch2 *objthis) : objthis(objthis), hBuffer(0), storageStarted(false) {
+	};
 
 	/**
 	 * デストラクタ
@@ -104,18 +107,21 @@ public:
 		clearData();
 	};
 
-	void clearData() {
-		removeFromStorage();
-		if (hBuffer) {
-			::GlobalUnlock(hBuffer);
-			::GlobalFree(hBuffer);
-			hBuffer = 0;
-		}
-		layerIdIdxMap.clear();
-		pathMap.clear();
-		storageStarted = false;
+	/**
+	 * インスタンス生成ファクトリ
+	 */
+	static tjs_error factory(PSD **result, tjs_int numparams, tTJSVariant **params, iTJSDispatch2 *objthis) {
+		*result = new PSD(objthis);
+		return S_OK;
 	}
 
+	/**
+	 * 生成時の自己オブジェクトを取得
+	 */
+	tTJSVariant getSelf() {
+		return tTJSVariant(objthis, objthis);
+	}
+	
 	/**
 	 * PSD画像のロード
 	 * @param filename ファイル名
@@ -177,6 +183,8 @@ public:
 		return psdFile.isLoaded;
 	}
 
+	static void clearStorageCache();
+	
 #define INTGETTER(tag) int get_ ## tag(){ return psdFile.isLoaded ? psdFile.header.tag : -1; }
 
 	INTGETTER(width);
@@ -188,6 +196,18 @@ public:
 
 protected:
 
+	void clearData() {
+		removeFromStorage();
+		if (hBuffer) {
+			::GlobalUnlock(hBuffer);
+			::GlobalFree(hBuffer);
+			hBuffer = 0;
+		}
+		layerIdIdxMap.clear();
+		pathMap.clear();
+		storageStarted = false;
+	}
+	
 	/**
 	 * レイヤ番号が適切かどうか判定
 	 * @param no レイヤ番号
@@ -826,9 +846,9 @@ protected:
 
 NCB_REGISTER_CLASS(PSD) {
 
-	Constructor();
+	Factory(&ClassT::factory);
 
-  Variant("color_mode_bitmap",              (int)psd::COLOR_MODE_BITMAP);
+	Variant("color_mode_bitmap",              (int)psd::COLOR_MODE_BITMAP);
   Variant("color_mode_grayscale",           (int)psd::COLOR_MODE_GRAYSCALE);
   Variant("color_mode_indexed",             (int)psd::COLOR_MODE_INDEXED);
   Variant("color_mode_rgb",                 (int)psd::COLOR_MODE_RGB);
@@ -898,6 +918,8 @@ NCB_REGISTER_CLASS(PSD) {
 	NCB_METHOD(getGuides);
 	NCB_METHOD(getBlend);
   NCB_METHOD(getLayerComp);
+
+  NCB_METHOD(clearStorageCache);
 };
 
 // -----------------------------------------------------------------------------
@@ -909,7 +931,7 @@ NCB_REGISTER_CLASS(PSD) {
 /**
  * PSDストレージ
  */
-class PSDStorage : public iTVPStorageMedia
+class PSDStorage : public iTVPStorageMedia, tTVPCompactEventCallbackIntf
 {
 public:
 
@@ -931,14 +953,6 @@ public:
 	 * @param psd PSDオブジェクト
 	 */
 	void add(ttstr filename, PSD *psd) {
-		// ファイル名のみ取得
-		const tjs_char *p = filename.c_str();
-		const tjs_char *q;
-		if ((q = wcsrchr(p, '/'))) {
-			filename = ttstr(q+1);
-		}
-		// 小文字で正規化
-		filename.ToLowerCase();
 		psdMap[filename] = psd;
 	}
 	
@@ -956,7 +970,14 @@ public:
 			}
 		}
 	}
-	
+
+	/**
+	 * キャッシュ情報をクリアする
+	 */
+	void clearCache() {
+		cache.Clear();
+	}
+
 public:
 	// -----------------------------------
 	// iTVPStorageMedia Intefaces
@@ -1039,7 +1060,18 @@ public:
 		name = "";
 	}
 
+public:
+	// -----------------------------------
+	// tTVPCompactEventCallbackIntf
+	// -----------------------------------
+	virtual void TJS_INTF_METHOD OnCompact(tjs_int level) {
+		if (level > TVP_COMPACT_LEVEL_MINIMIZE) {
+			clearCache();
+		}
+	}
+	
 protected:
+
 	/*
 	 * ファイル名に合致した PSD 情報を取得
 	 * @param name ファイル名
@@ -1059,17 +1091,44 @@ protected:
 		} else {
 			TVPThrowExceptionMessage(TJS_W("invalid path:%1"), name);
 		}
+
+		PSD *psd = 0;
+
+		// 直近のキャッシュが合致する場合はそれを返す
+		if (cache.Type() == tvtObject &&
+				(psd = ncbInstanceAdaptor<PSD>::GetNativeInstance(cache.AsObjectNoAddRef())) &&
+				psd->dname == dname) {
+			return psd;
+		}
+
+		// PSDオブジェクトの弱参照から探す
 		PSDMap::iterator it = psdMap.find(dname);
 		if (it != psdMap.end()) {
-			// 既存データ
+			// 既存データがある
+			cache = it->second->getSelf();
 			return it->second;
 		}
+
+		// 自分でopenしてそのままキャッシュとして持つ
+		TVPExecuteExpression(L"new PSD()", &cache);
+		psd = ncbInstanceAdaptor<PSD>::GetNativeInstance(cache.AsObjectNoAddRef());
+		if (psd) {
+			if (psd->load(dname)) {
+				return psd;
+			} else {
+				clearCache();
+			}
+		}
+
 		return 0;
 	}
 
 private:
 	tjs_uint refCount; //< リファレンスカウント
 
+	// PSDオブジェクトのキャッシュ参照
+	tTJSVariant cache;
+	
 	// PSDオブジェクトの弱参照
 	typedef std::map<ttstr, PSD*> PSDMap;
 	PSDMap psdMap;
@@ -1081,8 +1140,18 @@ static PSDStorage *psdStorage = 0;
 void
 PSD::addToStorage(const ttstr &filename)
 {
+	// 登録用ベース名を生成
+	const tjs_char *p = filename.c_str();
+	const tjs_char *q;
+	if ((q = wcsrchr(p, '/'))) {
+		dname = ttstr(q+1);
+	} else {
+		dname = filename;
+	}
+	// 小文字で正規化
+	dname.ToLowerCase();
 	if (psdStorage != NULL) {
-		psdStorage->add(filename, this);
+		psdStorage->add(dname, this);
 	}
 }
 
@@ -1092,6 +1161,14 @@ PSD::removeFromStorage()
 {
 	if (psdStorage != NULL) {
 		psdStorage->remove(this);
+	}
+}
+
+void
+PSD::clearStorageCache()
+{
+	if (psdStorage != NULL) {
+		psdStorage->clearCache();
 	}
 }
 
