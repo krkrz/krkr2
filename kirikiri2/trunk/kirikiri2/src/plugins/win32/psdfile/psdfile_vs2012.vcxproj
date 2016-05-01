@@ -99,7 +99,8 @@
     <ClCompile Include="..\ncbind\ncbind.cpp" />
     <ClCompile Include="..\tp_stub.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="psdfileex.cpp" />
+    <ClCompile Include="psdclass.cpp" />
+    <ClCompile Include="psdclass_loadmem.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -110,6 +111,7 @@
     <ClInclude Include="..\ncbind\ncb_foreach.h" />
     <ClInclude Include="..\ncbind\ncb_invoke.hpp" />
     <ClInclude Include="..\tp_stub.h" />
+    <ClInclude Include="psdclass.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

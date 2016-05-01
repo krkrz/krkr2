@@ -1,0 +1,54 @@
+#include "psdclass.h"
+#include "psdparse/psdparse.h"
+
+void
+PSD::clearMemory()
+{
+	if (hBuffer) {
+		::GlobalUnlock(hBuffer);
+		::GlobalFree(hBuffer);
+		hBuffer = 0;
+	}
+}
+
+bool
+PSD::loadMemory(const ttstr &filename)
+{
+	// ‚Ü‚é‚²‚Æƒƒ‚ƒŠ‚É“Ç‚Ýž‚ñ‚Åˆ—
+	isLoaded = false;
+	IStream *stream = TVPCreateIStream(filename, TJS_BS_READ);
+	if (stream) {
+		try {
+			// ‘S•”ƒƒ‚ƒŠ‚É“Ç‚Ýž‚Þ
+			STATSTG stat;
+			stream->Stat(&stat, STATFLAG_NONAME);
+			tjs_uint64 qsize = (tjs_uint64)stat.cbSize.QuadPart;
+			if (qsize < 0xFFFFFFFF) {
+				DWORD size = (DWORD)qsize;
+				hBuffer = ::GlobalAlloc(GMEM_MOVEABLE, size);
+				unsigned char* pBuffer = (unsigned char*)::GlobalLock(hBuffer);
+				if (pBuffer) {
+					ULONG retsize;
+					stream->Read(pBuffer, size, &retsize);
+					psd::Parser<unsigned char*> parser(*this);
+					unsigned char *begin = pBuffer;
+					unsigned char *end   = begin + size;
+					bool r = parse(begin , end,  parser);
+					if (r && begin == end) {
+						dprint("succeeded\n");
+						isLoaded = processParsed();
+					}
+					if (!isLoaded) {
+						clearMemory();
+					}
+				}
+			}
+		} catch(...) {
+			clearMemory();
+			stream->Release();
+			throw;
+		}
+		stream->Release();
+	}
+	return isLoaded;	
+}
