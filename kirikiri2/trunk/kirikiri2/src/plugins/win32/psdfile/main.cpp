@@ -260,12 +260,14 @@ void initStorage()
 	if (psdStorage== NULL) {
 		psdStorage = new PSDStorage();
 		TVPRegisterStorageMedia(psdStorage);
+		TVPAddCompactEventHook((tTVPCompactEventCallbackIntf*)psdStorage);
 	}
 }
 
 void doneStorage()
 {
 	if (psdStorage != NULL) {
+		TVPRemoveCompactEventHook((tTVPCompactEventCallbackIntf*)psdStorage);
 		TVPUnregisterStorageMedia(psdStorage);
 		psdStorage->Release();
 		psdStorage = NULL;

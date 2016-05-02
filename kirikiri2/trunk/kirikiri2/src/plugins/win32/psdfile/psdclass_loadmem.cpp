@@ -1,4 +1,7 @@
 #include "psdclass.h"
+
+#ifdef LOAD_MEMORY
+
 #include "psdparse/psdparse.h"
 
 void
@@ -14,6 +17,8 @@ PSD::clearMemory()
 bool
 PSD::loadMemory(const ttstr &filename)
 {
+	clearData();
+
 	// ‚Ü‚é‚²‚Æƒƒ‚ƒŠ‚É“Ç‚Ýž‚ñ‚Åˆ—
 	isLoaded = false;
 	IStream *stream = TVPCreateIStream(filename, TJS_BS_READ);
@@ -39,12 +44,12 @@ PSD::loadMemory(const ttstr &filename)
 						isLoaded = processParsed();
 					}
 					if (!isLoaded) {
-						clearMemory();
+						clearData();
 					}
 				}
 			}
 		} catch(...) {
-			clearMemory();
+			clearData();
 			stream->Release();
 			throw;
 		}
@@ -52,3 +57,5 @@ PSD::loadMemory(const ttstr &filename)
 	}
 	return isLoaded;	
 }
+
+#endif

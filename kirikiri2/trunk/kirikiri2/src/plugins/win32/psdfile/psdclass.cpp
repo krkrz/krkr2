@@ -84,7 +84,14 @@ public:
 /**
  * コンストラクタ
  */
-PSD::PSD(iTJSDispatch2 *objthis) : objthis(objthis), hBuffer(0), storageStarted(false)
+PSD::PSD(iTJSDispatch2 *objthis) : objthis(objthis)
+#ifdef LOAD_MEMORY
+, hBuffer(0)
+#else
+, pStream(0)
+, mStreamSize(0)
+#endif
+, storageStarted(false)
 {
 };
 
@@ -92,7 +99,6 @@ PSD::PSD(iTJSDispatch2 *objthis) : objthis(objthis), hBuffer(0), storageStarted(
  * デストラクタ
  */
 PSD::~PSD() {
-	clearData();
 };
 
 /**
@@ -122,19 +128,23 @@ PSD::getSelf()
 bool
 PSD::load(ttstr filename)
 {
-	clearData();
-
 	ttstr file = TVPGetPlacedPath(filename);
 	if (!file.length()) {
+		// 見つからなかったのでローカルパスとみなして読み込む
 		psd::PSDFile::load(NarrowString(filename));
 	} else {
-		if (!wcschr(file.c_str(), '>')) {
+		if (false && !wcschr(file.c_str(), '>')) {
 			// ローカルファイルなので直接読み込む
 			TVPGetLocalName(file);
 			psd::PSDFile::load(NarrowString(file));
 		} else {
+#ifdef LOAD_MEMORY
 			// メモリに読み込んでロード
 			loadMemory(file);
+#else
+			// ストリームとしてロード
+			loadStream(file);
+#endif
 		}
 	}
 	if (isLoaded) {
@@ -147,10 +157,16 @@ void
 PSD::clearData()
 {
 	removeFromStorage();
-	clearMemory();
 	layerIdIdxMap.clear();
 	pathMap.clear();
 	storageStarted = false;
+
+	psd::PSDFile::clearData();
+#ifdef LOAD_MEMORY
+	clearMemory();
+#else
+	clearStream();
+#endif
 }
 	
 /**

@@ -1,14 +1,18 @@
 #ifndef __PSDCLASS_H__
 #define __PSDCLASS_H__
 
+//#define LOAD_MEMORY
+
 #include <tp_stub.h>
 #include "psdparse/psdfile.h"
 
 class PSDStorage;
+class PSDIterator;
 
 class PSD : public psd::PSDFile
 {
-friend class PSDStorage;
+	friend class PSDStorage;
+	friend class PSDIterator;
 	
 public:
 	/**
@@ -21,6 +25,11 @@ public:
 	 */
 	~PSD();
 
+	/**
+	 * 内包データの消去
+	 */
+	virtual void clearData();
+	
 	/**
 	 * インスタンス生成ファクトリ
 	 */
@@ -132,14 +141,18 @@ protected:
 	iTJSDispatch2 *objthis; ///< 自己オブジェクト情報の参照
 	ttstr dname; ///< 登録用ベース名
 
+#ifdef LOAD_MEMORY
 	HGLOBAL hBuffer; // オンメモリ保持用ハンドル
 	bool loadMemory(const ttstr &filename);
 	void clearMemory();
-
-	/**
-	 * 内包データの消去
-	 */
-	void clearData();
+#else
+	// ストリームから読み込み
+	IStream *pStream;
+	tTVInteger mStreamSize;
+	bool loadStream(const ttstr &filename);
+	void clearStream();
+	void getStreamValue(const tTVInteger &pos, unsigned char &value);
+#endif
 	
 	/**
 	 * レイヤ番号が適切かどうか判定
