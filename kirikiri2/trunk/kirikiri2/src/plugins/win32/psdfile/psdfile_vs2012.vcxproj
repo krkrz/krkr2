@@ -101,6 +101,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="psdclass.cpp" />
     <ClCompile Include="psdclass_loadmem.cpp" />
+    <ClCompile Include="psdclass_loadstreambase.cpp" />
     <ClCompile Include="psdclass_loadstream.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

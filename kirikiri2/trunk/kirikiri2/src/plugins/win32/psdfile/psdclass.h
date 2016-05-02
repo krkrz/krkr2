@@ -151,7 +151,10 @@ protected:
 	tTVInteger mStreamSize;
 	bool loadStream(const ttstr &filename);
 	void clearStream();
-	void getStreamValue(const tTVInteger &pos, unsigned char &value);
+	unsigned char &getStreamValue(const tTVInteger &pos);
+	unsigned char *mBuffer;
+	tTVInteger mBufferPos;
+	ULONG mBufferSize;
 #endif
 	
 	/**

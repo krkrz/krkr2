@@ -14,7 +14,6 @@ public:
 	typedef size_t diff_t;
 
 	PSDIterator() : _psd(0), _pos(0), _size(0) {
-		count++;
 	}
 
 	/**
@@ -25,7 +24,6 @@ public:
 	PSDIterator(PSD* psd, bool begin) : _psd(psd), _pos(0), _size(0) {
 		_size = psd->mStreamSize;
 		_pos = begin ? 0 : _size;
-		count++;
 	}
 
 	// コピーコンストラクタ
@@ -33,7 +31,6 @@ public:
 		_psd = o._psd;
 		_pos = o._pos;
 		_size = o._size;
-		count++;
 	}
 
 	// 代入演算子
@@ -46,7 +43,6 @@ public:
 	
 	// デストラクタ
 	virtual ~PSDIterator() {
-		count--;
 	}
 
 	// イテレータを進める(前置)
@@ -105,8 +101,7 @@ public:
 
 	// 読み取り
 	const unsigned char& operator*() {
-		_psd->getStreamValue(_pos, value);
-		return value;
+		return _psd->getStreamValue(_pos);
 	}
 
 	// 差分
@@ -142,21 +137,7 @@ private:
 	PSD *_psd;
 	tTVInteger _size; //< ストリームサイズ保持用
 	tTVInteger _pos;  //< 参照位置
-	unsigned char value;
-	static int count;
 };
-
-int PSDIterator::count = 0;
-
-void
-PSD::clearStream()
-{
-	if (pStream) {
-		pStream->Release();
-		pStream = 0;
-	}
-	mStreamSize = 0;
-}
 
 bool
 PSD::loadStream(const ttstr &filename)
@@ -185,20 +166,6 @@ PSD::loadStream(const ttstr &filename)
 		}
 	}
 	return isLoaded;	
-}
-
-void
-PSD::getStreamValue(const tTVInteger &pos, unsigned char &value)
-{
-	if (pos >=0 && pos < mStreamSize) {
-		LARGE_INTEGER n;
-		n.QuadPart = pos;
-		pStream->Seek(n, STREAM_SEEK_SET, 0);
-		ULONG read;
-		pStream->Read(&value, 1, &read);
-	} else {
-		value = 0;
-	}
 }
 
 #endif

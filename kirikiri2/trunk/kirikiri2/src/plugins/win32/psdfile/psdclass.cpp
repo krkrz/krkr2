@@ -90,6 +90,9 @@ PSD::PSD(iTJSDispatch2 *objthis) : objthis(objthis)
 #else
 , pStream(0)
 , mStreamSize(0)
+, mBuffer(0)
+, mBufferPos(-1)
+, mBufferSize(0)
 #endif
 , storageStarted(false)
 {
