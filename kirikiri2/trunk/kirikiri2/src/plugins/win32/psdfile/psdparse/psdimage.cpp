@@ -417,7 +417,7 @@ namespace psd {
       // mask‚ğalpha‚Éƒ}[ƒW
       int aOffsetX = l - al; int aOffsetY = t - at;
       int mOffsetX = l - ml; int mOffsetY = t - mt;
-      static float f = 1.0f / ((1 << (sizeof(T) * 8)) - 1);
+      static float f = 1.0f / ((1LL << (sizeof(T) * 8)) - 1);
       for (int y = 0; y < h; y++) {
         T *ap  = (T*)(aCh + (aOffsetY + y) * aPitch + aOffsetX);
         T *mp  = (T*)(mCh + (mOffsetY + y) * mPitch + mOffsetX);

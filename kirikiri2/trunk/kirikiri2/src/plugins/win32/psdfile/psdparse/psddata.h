@@ -428,12 +428,18 @@ namespace psd {
 
 		// デストラクタ
 		virtual ~Data() {
-			delete colorModeIterator;
-			delete channelImageData;
-			delete imageData;
+			clearData();
 		}
 
-    // レイヤをレイヤIDで取得
+		// 保持データの消去
+		virtual void clearData() {
+			delete colorModeIterator; colorModeIterator = 0;
+			delete channelImageData; channelImageData = 0;
+			delete imageData; imageData = 0;
+		}
+
+
+		// レイヤをレイヤIDで取得
     LayerInfo *getLayerById(int layerId);
 
 		// ---------------------------------------

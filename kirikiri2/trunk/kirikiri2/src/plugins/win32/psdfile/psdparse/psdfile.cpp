@@ -9,7 +9,9 @@ namespace psd {
 bool
 PSDFile::load(const char *filename)
 { 
-  namespace spirit = boost::spirit;
+	clearData();
+
+	namespace spirit = boost::spirit;
   namespace fs = boost::filesystem;
 
   isLoaded = false;
