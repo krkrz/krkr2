@@ -7,9 +7,12 @@
 /**
  * Stream 用の Iterator
  */
-class PSDIterator : public std::iterator<std::forward_iterator_tag, const unsigned char>
+class PSDIterator : public std::iterator<std::random_access_iterator_tag, const unsigned char>
 {
 public:
+
+	typedef size_t diff_t;
+
 	PSDIterator() : _psd(0), _pos(0), _size(0) {
 		count++;
 	}
@@ -61,13 +64,13 @@ public:
 		return ret;
 	}
 
-	PSDIterator& operator+=(size_t n) {
+	PSDIterator& operator+=(diff_t n) {
 		_pos += n;
 		if (_pos > _size) _pos = _size;
 		return *this;
 	}
 
-	PSDIterator operator+(size_t n) {
+	PSDIterator operator+(diff_t n) {
 		PSDIterator ret = *this;
 		ret += n;
 		return ret;
@@ -88,13 +91,13 @@ public:
 		return ret;
 	}
 
-	PSDIterator& operator-=(size_t n) {
+	PSDIterator& operator-=(diff_t n) {
 		_pos -= n;
 		if (_pos < 0) _pos = 0;
 		return *this;
 	}
 
-	PSDIterator operator-(size_t n) {
+	PSDIterator operator-(diff_t n) {
 		PSDIterator ret = *this;
 		ret -= n;
 		return ret;
@@ -106,15 +109,34 @@ public:
 		return value;
 	}
 
+	// 差分
+	diff_t operator-(const PSDIterator& b) const {
+		return (diff_t)(_pos - b._pos);
+	}
+	
 	// イテレータの一致判定
-	bool operator==(const PSDIterator& o) {
+	bool operator==(const PSDIterator& o) const {
 		return o._pos == _pos;
 	}
-
 	// イテレータの一致判定
-	bool operator!=(const PSDIterator& o) {
+	bool operator!=(const PSDIterator& o) const {
 		return o._pos != _pos;
 	}
+
+	bool operator<(const PSDIterator& o) const {
+		return _pos < o._pos;
+	}
+	bool operator>(const PSDIterator& o) const {
+		return _pos > o._pos;
+	}
+	bool operator<=(const PSDIterator& o) const {
+		return _pos <= o._pos;
+	}
+	bool operator>=(const PSDIterator& o) const {
+		return _pos >= o._pos;
+	}
+	
+
 	
 private:
 	PSD *_psd;
