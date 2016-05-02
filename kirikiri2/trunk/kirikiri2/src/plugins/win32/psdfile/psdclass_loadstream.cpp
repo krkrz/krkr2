@@ -104,6 +104,10 @@ public:
 		return _psd->getStreamValue(_pos);
 	}
 
+	void copyToBuffer(char *buf, int size) {
+		return _psd->copyToBuffer(buf, _pos, size);
+	}
+	
 	// 差分
 	diff_t operator-(const PSDIterator& b) const {
 		return (diff_t)(_pos - b._pos);
@@ -138,6 +142,13 @@ private:
 	tTVInteger _size; //< ストリームサイズ保持用
 	tTVInteger _pos;  //< 参照位置
 };
+
+namespace psd {
+
+	inline void copyToBuffer(char *buffer, PSDIterator start, int size) {
+		start.copyToBuffer(buffer, size);
+	}
+}
 
 bool
 PSD::loadStream(const ttstr &filename)

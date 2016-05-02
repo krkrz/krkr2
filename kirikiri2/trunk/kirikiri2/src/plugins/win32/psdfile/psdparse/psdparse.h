@@ -12,6 +12,23 @@
 #include "psddata.h"
 
 namespace psd {
+
+	// 汎用版バッファコピー
+	template <typename Iterator>
+	inline void copyToBuffer(char *buffer, Iterator start, int size) {
+		Iterator end = start;
+		std::advance(end, size);
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+// std::copy の security warning 抑止
+#pragma warning(push) 
+#pragma warning(disable:4996) 
+#endif 
+		std::copy(start, end, (char*)buffer);
+#if defined(_MSC_VER) && _MSC_VER >= 1400 
+#pragma warning(pop) 
+#endif 
+	}
+
 	// 汎用イテレータ参照
 	template <typename Iterator>
 	class IteratorData : public IteratorBase {
@@ -118,22 +135,10 @@ namespace psd {
 			if (size > remain) {
 				size = remain;
 			}
-			Iterator end = cur;
-      std::advance(end, size);
 
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-// std::copy の security warning 抑止
-#pragma warning(push) 
-#pragma warning(disable:4996) 
-#endif 
+			copyToBuffer((char*)buffer, cur, size);
 
-      std::copy(cur, end, (char*)buffer);
-
-#if defined(_MSC_VER) && _MSC_VER >= 1400 
-#pragma warning(pop) 
-#endif 
-
-      cur = end;
+			std::advance(cur, size);
 			return size;
 		}
 		virtual bool eoi() {
