@@ -56,6 +56,7 @@ namespace psd {
 	class IteratorBase {
 	public:
 		IteratorBase() {};
+		virtual ~IteratorBase() {};
 		virtual IteratorBase *clone() = 0;
     virtual IteratorBase *cloneOffset(int offset) = 0;
 		virtual void init() = 0;

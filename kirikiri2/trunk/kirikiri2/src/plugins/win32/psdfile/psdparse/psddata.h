@@ -370,7 +370,7 @@ namespace psd {
 	};
 
 	// レイヤ情報
-  struct Data;
+  class Data;
 	struct LayerInfo {
     // レイヤの所属するpsd::Dataインスタンス
     Data *owner;
@@ -416,8 +416,8 @@ namespace psd {
 	/**
 	 * PSD Infomation class
 	 */
-	struct Data {
-
+	class Data {
+	public:
 		// コンストラクタ
 		Data()
 			 : colorModeSize(0), colorModeIterator(0),
@@ -427,7 +427,7 @@ namespace psd {
 		}
 
 		// デストラクタ
-		~Data() {
+		virtual ~Data() {
 			delete colorModeIterator;
 			delete channelImageData;
 			delete imageData;
