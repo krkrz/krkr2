@@ -101,6 +101,7 @@ PSD::PSD(iTJSDispatch2 *objthis) : objthis(objthis)
  * デストラクタ
  */
 PSD::~PSD() {
+	clearData(); // ここで呼ばないと delete 時には親のほうでは仮想関数がよばれない
 };
 
 /**
