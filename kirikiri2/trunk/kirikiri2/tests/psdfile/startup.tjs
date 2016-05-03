@@ -55,6 +55,7 @@ class MyWindow extends Window
 	function open(filename, mode) {
 		clear();
 		psd = new PSD();
+		var start = System.getTickCount();
 		psd.load(filename);
 		var basename = Storages.extractStorageName(filename);
 		var count = psd.layer_count;
@@ -84,6 +85,7 @@ class MyWindow extends Window
 				layers.add(layer);
 			}
 		}
+		dm(@"${filename}:ì«Ç›çûÇ› ${System.getTickCount() - start}ms");
 	}
 	
 	function openDialog() {
