@@ -90,8 +90,7 @@ PSD::PSD(iTJSDispatch2 *objthis) : objthis(objthis)
 #else
 , pStream(0)
 , mStreamSize(0)
-, mBuffer(0)
-, mBufferPos(-1)
+, mBufferPos(0)
 , mBufferSize(0)
 #endif
 , storageStarted(false)
@@ -136,19 +135,19 @@ PSD::load(ttstr filename)
 		// 見つからなかったのでローカルパスとみなして読み込む
 		psd::PSDFile::load(NarrowString(filename));
 	} else {
-		if (false && !wcschr(file.c_str(), '>')) {
+#ifdef LOAD_MEMORY
+		if (!wcschr(file.c_str(), '>')) {
 			// ローカルファイルなので直接読み込む
 			TVPGetLocalName(file);
 			psd::PSDFile::load(NarrowString(file));
 		} else {
-#ifdef LOAD_MEMORY
 			// メモリに読み込んでロード
 			loadMemory(file);
-#else
-			// ストリームとしてロード
-			loadStream(file);
-#endif
 		}
+#else
+		// ストリームとしてロード
+		loadStream(file);
+#endif
 	}
 	if (isLoaded) {
 		addToStorage(filename);

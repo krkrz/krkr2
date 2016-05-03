@@ -154,9 +154,10 @@ protected:
 	unsigned char &getStreamValue(const tTVInteger &pos);
 	void copyToBuffer(uint8_t *buf, tTVInteger pos, int size);
 
-	unsigned char *mBuffer;
+	//< PSDファイル読み込みキャッシュ用バッファ
 	tTVInteger mBufferPos;
 	ULONG mBufferSize;
+	unsigned char mBuffer[4*1024];
 #endif
 	
 	/**
