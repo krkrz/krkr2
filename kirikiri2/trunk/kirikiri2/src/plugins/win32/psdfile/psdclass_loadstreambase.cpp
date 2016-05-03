@@ -42,10 +42,10 @@ PSD::getStreamValue(const tTVInteger &pos)
 }
 
 void
-PSD::copyToBuffer(char *buf, tTVInteger pos, int size)
+PSD::copyToBuffer(uint8_t *buf, tTVInteger pos, int size)
 {
 	if (pos >=0 && pos < mStreamSize) {
-		if (size < 32) {
+		if (size <= 16) {
 			if (mBuffer) {
 				if (pos >= mBufferPos && pos+size < mBufferPos + mBufferSize) {
 					memcpy(buf, &mBuffer[pos - mBufferPos], size);

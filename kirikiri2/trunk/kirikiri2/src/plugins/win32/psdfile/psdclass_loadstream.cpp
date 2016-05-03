@@ -104,8 +104,9 @@ public:
 		return _psd->getStreamValue(_pos);
 	}
 
-	void copyToBuffer(char *buf, int size) {
-		return _psd->copyToBuffer(buf, _pos, size);
+	void copyToBuffer(uint8_t *buf, int size) {
+		_psd->copyToBuffer(buf, _pos, size);
+		_pos += size;
 	}
 	
 	// ç∑ï™
@@ -145,8 +146,20 @@ private:
 
 namespace psd {
 
-	inline void copyToBuffer(char *buffer, PSDIterator start, int size) {
-		start.copyToBuffer(buffer, size);
+	inline void copyToBuffer(uint8_t *buffer, PSDIterator &cur, int size) {
+		cur.copyToBuffer(buffer, size);
+	}
+
+	inline void getShortLE(uint8_t *buffer, PSDIterator &cur) {
+		cur.copyToBuffer(buffer, 2);
+	}
+	
+	inline void getLongLE(uint8_t *buffer, PSDIterator &cur) {
+		cur.copyToBuffer(buffer, 4);
+	}
+
+	inline void getLongLongLE(uint8_t *buffer, PSDIterator &cur) {
+		cur.copyToBuffer(buffer, 8);
 	}
 }
 

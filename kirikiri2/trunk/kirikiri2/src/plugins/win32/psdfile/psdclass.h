@@ -152,7 +152,7 @@ protected:
 	bool loadStream(const ttstr &filename);
 	void clearStream();
 	unsigned char &getStreamValue(const tTVInteger &pos);
-	void copyToBuffer(char *buf, tTVInteger pos, int size);
+	void copyToBuffer(uint8_t *buf, tTVInteger pos, int size);
 
 	unsigned char *mBuffer;
 	tTVInteger mBufferPos;

@@ -15,7 +15,7 @@ namespace psd {
 
 	// 汎用版バッファコピー
 	template <typename Iterator>
-	inline void copyToBuffer(char *buffer, Iterator start, int size) {
+	inline void copyToBuffer(uint8_t *buffer, Iterator &start, int size) {
 		Iterator end = start;
 		std::advance(end, size);
 #if defined(_MSC_VER) && _MSC_VER >= 1400
@@ -23,12 +23,57 @@ namespace psd {
 #pragma warning(push) 
 #pragma warning(disable:4996) 
 #endif 
-		std::copy(start, end, (char*)buffer);
+		std::copy(start, end, buffer);
 #if defined(_MSC_VER) && _MSC_VER >= 1400 
 #pragma warning(pop) 
 #endif 
+		start = end;
 	}
 
+	template <typename Iterator>
+	inline void getShortBE(uint8_t *var8, Iterator &cur) {
+		var8[1] = *cur++;
+		var8[0] = *cur++;
+	}
+
+	template <typename Iterator>
+	inline void getShortLE(uint8_t *var8, Iterator &cur) {
+		var8[0] = *cur++;
+		var8[1] = *cur++;
+	}
+
+	template <typename Iterator>
+	inline void getLongBE(uint8_t *var8, Iterator &cur) {
+		var8[3] = *cur++;
+		var8[2] = *cur++;
+		var8[1] = *cur++;
+		var8[0] = *cur++;
+	}
+
+	template <typename Iterator>
+	inline void getLongLE(uint8_t *var8, Iterator &cur) {
+		var8[0] = *cur++;
+		var8[1] = *cur++;
+		var8[2] = *cur++;
+		var8[3] = *cur++;
+	}
+
+	template <typename Iterator>
+	inline void getLongLongBE(uint8_t *var8, Iterator &cur) {
+		var8[7] = *cur++;		var8[6] = *cur++;
+		var8[5] = *cur++;		var8[4] = *cur++;
+		var8[3] = *cur++;		var8[2] = *cur++;
+		var8[1] = *cur++;		var8[0] = *cur++;
+	}
+
+	template <typename Iterator>
+	inline void getLongLongLE(uint8_t *var8, Iterator &cur) {
+		var8[0] = *cur++;		var8[1] = *cur++;
+		var8[2] = *cur++;		var8[3] = *cur++;
+		var8[4] = *cur++;		var8[5] = *cur++;
+		var8[6] = *cur++;		var8[7] = *cur++;
+	}
+	
 	// 汎用イテレータ参照
 	template <typename Iterator>
 	class IteratorData : public IteratorBase {
@@ -71,11 +116,9 @@ namespace psd {
       bool swap = !convToNative;
 #endif
       if (swap) {
-        ret.var8[1] = *cur++;
-        ret.var8[0] = *cur++;
+				getShortBE(ret.var8, cur);
       } else {
-        ret.var8[0] = *cur++;
-        ret.var8[1] = *cur++;
+				getShortLE(ret.var8, cur);
       }
       return ret.var16;
 		}
@@ -93,11 +136,9 @@ namespace psd {
       bool swap = !convToNative;
 #endif
       if (swap) {
-        ret.var8[3] = *cur++; ret.var8[2] = *cur++;
-        ret.var8[1] = *cur++; ret.var8[0] = *cur++;
+				getLongBE(ret.var8, cur);
       } else {
-        ret.var8[0] = *cur++; ret.var8[1] = *cur++;
-        ret.var8[2] = *cur++; ret.var8[3] = *cur++;
+				getLongLE(ret.var8, cur);
       }
       return ret.var32;
 		}
@@ -115,15 +156,9 @@ namespace psd {
       bool swap = !convToNative;
 #endif
       if (swap) {
-        ret.var8[7] = *cur++; ret.var8[6] = *cur++;
-        ret.var8[5] = *cur++; ret.var8[4] = *cur++;
-        ret.var8[3] = *cur++; ret.var8[2] = *cur++;
-        ret.var8[1] = *cur++; ret.var8[0] = *cur++;
+				getLongLongBE(ret.var8, cur);
       } else {
-        ret.var8[0] = *cur++; ret.var8[1] = *cur++;
-        ret.var8[2] = *cur++; ret.var8[3] = *cur++;
-        ret.var8[4] = *cur++; ret.var8[5] = *cur++;
-        ret.var8[6] = *cur++; ret.var8[7] = *cur++;
+				getLongLongLE(ret.var8, cur);
       }
       return ret.var64;
 		}
@@ -135,10 +170,9 @@ namespace psd {
 			if (size > remain) {
 				size = remain;
 			}
-
-			copyToBuffer((char*)buffer, cur, size);
-
-			std::advance(cur, size);
+			
+			copyToBuffer((uint8_t*)buffer, cur, size);
+			
 			return size;
 		}
 		virtual bool eoi() {
