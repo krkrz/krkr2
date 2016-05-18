@@ -25,6 +25,7 @@ public:
 	 * デストラクタ
 	 */
 	virtual ~PSDStorage() {
+			clearCache();
 	}
 
 	/*
