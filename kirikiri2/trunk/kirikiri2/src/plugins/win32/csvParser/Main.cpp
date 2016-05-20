@@ -183,6 +183,89 @@ public:
 	}
 };
 
+class IFileText : public IFile {
+
+	/// 入力バッファ
+	ttstr buf;
+	/// 入力ストリーム
+	iTJSTextReadStream *stream;
+	
+	ULONG pos;
+	bool eofFlag;
+	
+public:
+	IFileText(tTJSVariantString *filename, const ttstr &modestr) {
+		stream = TVPCreateTextStreamForRead(filename, modestr);
+		pos = 0;
+		eofFlag = false;
+	}
+
+	void close() {
+		if (stream) {
+			stream->Destruct();
+			stream = NULL;
+		}
+	}
+	
+	~IFileText() {
+		close();
+	}
+
+	
+	int getc() {
+		if (pos < buf.length()) {
+			return buf.c_str()[pos++];
+		} else {
+			if (!stream || eofFlag) {
+				return EOF;
+			} else {
+				pos = 0;
+				buf.Clear();
+				eofFlag = stream->Read(buf, 1024) < 1024;
+				return getc();
+			}
+		}
+	}
+
+	void ungetc() {
+		if (pos > 0) {
+			pos--;
+		}
+	}
+
+	bool eof() {
+		return pos >= buf.length() && eofFlag;
+	}
+
+	/**
+	 * 改行チェック
+	 */
+	bool endOfLine(int c) {
+		bool eol = (c =='\r' || c == '\n');
+		if (c == '\r'){
+			c = getc();
+			if (!eof() && c != '\n') {
+				ungetc();
+			}
+		}
+		return eol;
+	}
+
+	bool addNextLine(ttstr &str) {
+		int l = 0;
+		int c;
+		while ((c = getc()) != EOF && !endOfLine(c)) {
+			str += c;
+			l++;
+		}
+		if (l > 0 || c != EOF) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+};
+
 // -----------------------------------------------------------------
 
 static void
@@ -394,7 +477,11 @@ public:
 	 */
 	void initStorage(tTJSVariantString *filename, bool utf8=false) {
 		clear();
-		file = new IFileStorage(filename, utf8 ? CP_UTF8 : CP_ACP);
+		if (utf8) {
+			file = new IFileStorage(filename, CP_UTF8);
+		} else {
+			file = new IFileText(filename, ttstr());
+		}
 		lineNo = 0;
 	}
 
