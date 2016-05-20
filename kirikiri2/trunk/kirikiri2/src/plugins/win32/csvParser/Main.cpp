@@ -3,6 +3,24 @@
 #include <stdio.h>
 #include <string>
 
+// initStorage/parseStorageの読み込みデフォルトを吉里吉里組み込みのTextStreamにする場合は1
+// 
+#ifndef CSVPARSER_DEFAULT_TEXTSTREAM
+#define CSVPARSER_DEFAULT_TEXTSTREAM 0
+#endif
+
+
+#ifdef  CSVPARSER_DEFAULT_MODESTR
+#undef  CSVPARSER_DEFAULT_MODESTR
+#endif
+#if     CSVPARSER_DEFAULT_TEXTSTREAM
+#define CSVPARSER_DEFAULT_MODESTR TJS_W("")
+#else
+#define CSVPARSER_DEFAULT_MODESTR NULL
+#endif
+
+
+
 using namespace std;
 
 /**
@@ -139,6 +157,14 @@ public:
 		dat = *str;
 		pos = 0;
 	}
+	IFileStr(tTJSVariantString *filename, const ttstr &modestr) {
+		iTJSTextReadStream *stream = TVPCreateTextStreamForRead(filename, modestr);
+		if (stream) {
+			stream->Read(dat, 0);
+			stream->Destruct();
+		}
+		pos = 0;
+	}
 
 	int getc() {
 		return pos < (ULONG)dat.length() ? dat[pos++] : EOF;
@@ -183,6 +209,7 @@ public:
 	}
 };
 
+#if 0 // TVPCreateTextStreamForReadで生成されるストリームはバグがあり逐次読み込みができないケースがあるためカット
 class IFileText : public IFile {
 
 	/// 入力バッファ
@@ -265,6 +292,7 @@ public:
 		}
 	}
 };
+#endif
 
 // -----------------------------------------------------------------
 
@@ -475,12 +503,13 @@ public:
 	/**
 	 * 初期化処理
 	 */
-	void initStorage(tTJSVariantString *filename, bool utf8=false) {
+	void initStorage(tTJSVariantString *filename, bool utf8=false, const tjs_char *modestr=NULL) {
 		clear();
-		if (utf8) {
-			file = new IFileStorage(filename, CP_UTF8);
+		if (modestr) {
+			//file = new IFileText(filename, ttstr());
+			file = new IFileStr(filename, ttstr(modestr));
 		} else {
-			file = new IFileText(filename, ttstr());
+			file = new IFileStorage(filename, utf8 ? CP_UTF8 : CP_ACP);
 		}
 		lineNo = 0;
 	}
@@ -572,7 +601,13 @@ static iTJSDispatch2 * Create_NC_CSVParser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_CSVParser);
 			if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-			_this->initStorage(param[0]->AsStringNoAddRef(), numparams > 1 && (tjs_int)*param[1] != 0);
+			if (!TJS_PARAM_EXIST(1)) {
+				_this->initStorage(param[0]->AsStringNoAddRef(), false, CSVPARSER_DEFAULT_MODESTR);
+			} else if (param[1]->Type() == tvtString) {
+				_this->initStorage(param[0]->AsStringNoAddRef(), false, param[1]->GetString());
+			} else {
+				_this->initStorage(param[0]->AsStringNoAddRef(), (tjs_int)*param[1] != 0);
+			}
 			return TJS_S_OK;
 		}
 		TJS_END_NATIVE_METHOD_DECL(/*func. name*/initStorage)
@@ -600,7 +635,13 @@ static iTJSDispatch2 * Create_NC_CSVParser()
 		{
 			TJS_GET_NATIVE_INSTANCE(/*var. name*/_this, /*var. type*/NI_CSVParser);
 			if (numparams > 0) {
-				_this->initStorage(param[0]->AsStringNoAddRef(), numparams > 1 && (tjs_int)*param[1] != 0);
+				if (!TJS_PARAM_EXIST(1)) {
+					_this->initStorage(param[0]->AsStringNoAddRef(), false, CSVPARSER_DEFAULT_MODESTR);
+				} else if (param[1]->Type() == tvtString) {
+					_this->initStorage(param[0]->AsStringNoAddRef(), false, param[1]->GetString());
+				} else {
+					_this->initStorage(param[0]->AsStringNoAddRef(), (tjs_int)*param[1] != 0);
+				}
 			}
 			_this->parse(objthis);
 			return TJS_S_OK;

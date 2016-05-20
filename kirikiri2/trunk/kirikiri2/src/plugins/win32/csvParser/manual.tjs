@@ -23,9 +23,12 @@ class CSVParser {
     /**
      * 処理対象テキストの初期化
      * @param filename テキストのファイル名
-     * @param utf8 UTF-8 のファイルを使う場合は true
+	 * @param readmode 読み込みモード
+	 *        typeof readmode == "String"  : Array.load相当のテキスト読み込み処理として動作
+	 *        typeof readmode == "Integer" : trueの場合はUTF-8読み込みモードとして動作，それ以外はCP_ACPテキスト読み込み
+	 * ※プラグインコンパイル時に /D:CSVPARSER_DEFAULT_TEXTSTREAM=1 とすると，readmode='' の省略時デフォルトになります
      */
-    function initStorage(filename,utf8=false);
+    function initStorage(filename,readmode=false);
 
     /**
      * 次の行の情報を配列として取得する
@@ -48,9 +51,9 @@ class CSVParser {
     /**
      * テキストに対するパース処理を実行する。
      * @param filename テキストのファイル名
-     * @param utf8 UTF-8 のファイルを使う場合は true
+	 * @param readmode 読み込みモード（詳細説明はinitStorageの項目を参照）
      */
-    function parseStorage(filename,utf8=false);
+	function parseStorage(filename,readmode);
 
     // ----------------------------------
 
