@@ -237,8 +237,10 @@ class FuncCall
     this.args = args;
   }
 
-  function call {
-    return func(args*);
+  function call(callArgs*) {
+    for (var i = 0; i < args.count; i++)
+      callArgs.insert(i, args[i]);
+    return func(callArgs*);
   }
 };
 
