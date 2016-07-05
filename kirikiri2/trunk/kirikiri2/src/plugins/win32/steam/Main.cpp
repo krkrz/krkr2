@@ -225,7 +225,32 @@ public:
 		}
 		return ret;
 	}
-	
+
+	static bool copyCloudFile(ttstr src, ttstr dest) {
+		bool ret = false;
+		ISteamRemoteStorage *storage = SteamRemoteStorage();
+		if (storage) {
+			ttstr n = src;
+			n.ToLowerCase();
+			std::string srcfile = convertTtstrToUtf8String(n);
+			n = dest;
+			n.ToLowerCase();
+			std::string destfile = convertTtstrToUtf8String(n);
+			if (storage->FileExists(srcfile.c_str())) {
+				int size = storage->GetFileSize(srcfile.c_str());
+				unsigned char *buffer = new unsigned char[size];
+				if (buffer) {
+					if (storage->FileRead(srcfile.c_str(), buffer, size) == size) {
+						if (storage->FileWrite(destfile.c_str(), buffer, size)) {
+							ret = true;
+						}
+					}
+					delete[] buffer;
+				}
+			}
+		}
+		return ret;
+	}
 	// ---------------------------------------------------------
 	// スクリーンショット制御
 	// ---------------------------------------------------------
