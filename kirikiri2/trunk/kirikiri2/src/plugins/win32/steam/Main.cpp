@@ -584,6 +584,7 @@ NCB_REGISTER_CLASS(Steam) {
 	NCB_PROPERTY_RO(cloudFileCount, getCloudFileCount);
 	NCB_METHOD(getCloudFileInfo);
 	NCB_METHOD(deleteCloudFile);
+	NCB_METHOD(copyCloudFile);
 
 	NCB_METHOD(triggerScreenshot);
 	NCB_METHOD(hookScreenshots);
