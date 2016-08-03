@@ -53,11 +53,13 @@ namespace psd {
   };
 
   inline void indent_print(int indent, const char *fmt, ...) {
+#ifdef _DEBUG
     dprint("%*s", indent, "");
     va_list args;
     va_start(args, fmt);
     vprintf(fmt, args);
     va_end(args);
+#endif
   }
 
   // --------------------------------------------------------------------------
