@@ -128,4 +128,9 @@ class Layer {
 	 * @param fillColor 塗りつぶし色(0x00RRGGBB)
 	 */
 	function clearAlpha(threthold=0, fillColor=0);
+
+	/**
+	 * レイヤの指定領域の平均色を返します
+	 */
+	function getAverageColor(left, top, width, height)
 };

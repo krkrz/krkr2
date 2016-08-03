@@ -451,21 +451,26 @@ isBlank(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatc
 	tjs_int top    = *param[1];
 	tjs_int width  = *param[2];
 	tjs_int height = *param[3];
-	
-	// 範囲チェック
-	if (left < 0 || top < 0 || width < 0 || top < 0 ||
-		left + width > sw || top + height > sh)
-		TVPThrowExceptionMessage(L"invalid layer range");
 
-	// 判定処理
-	for (tjs_int y = top; y < top + height; y++) {
-		BufRefT buffer = sbuf + left * 4 + spitch * y;
-		for (tjs_int x = left; x < left + width; x++, buffer += 4) {
-			if (*buffer) {
-				if (result) {
-					*result = 0;
+	// ソース範囲でクリッピング
+	if (left < 0) { width += left; left = 0; }
+	if (top  < 0) { height += top; top  = 0; }
+	tjs_int cut;
+	if ((cut = left + width  - sw) > 0) width  -= cut;
+	if ((cut = top  + height - sh) > 0) height -= cut;
+
+	// 範囲チェック
+	if (width >= 0 && height >= 0) {
+		// 判定処理
+		for (tjs_int y = top; y < top + height; y++) {
+			BufRefT buffer = sbuf + left * 4 + spitch * y;
+			for (tjs_int x = left; x < left + width; x++, buffer += 4) {
+				if (*buffer) {
+					if (result) {
+						*result = 0;
+					}
+					return TJS_S_OK;
 				}
-				return TJS_S_OK;
 			}
 		}
 	}
@@ -510,3 +515,70 @@ clearAlpha(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDisp
 }
 
 NCB_ATTACH_FUNCTION(clearAlpha, Layer, clearAlpha);
+
+/**
+ * Layer.getAverageColor = function(x,y,w,h);
+ * 指定領域の平均色を返す
+ */
+static tjs_error TJS_INTF_METHOD
+getAverageColor(tTJSVariant *result, tjs_int numparams, tTJSVariant **param, iTJSDispatch2 *objthis)
+{
+	if (numparams < 4) {
+		return TJS_E_BADPARAMCOUNT;
+	}
+
+	// 読み込みもと
+	BufRefT sbuf = 0;
+	long sw, sh, spitch;
+	if (!GetLayerBufferAndSize(objthis, sw, sh, sbuf, spitch)) {
+		TVPThrowExceptionMessage(TJS_W("src must be Layer."));
+	}
+
+	tjs_int left   = *param[0];
+	tjs_int top    = *param[1];
+	tjs_int width  = *param[2];
+	tjs_int height = *param[3];
+
+	// ソース範囲でクリッピング
+	if (left < 0) { width += left; left = 0; }
+	if (top  < 0) { height += top; top  = 0; }
+	tjs_int cut;
+	if ((cut = left + width  - sw) > 0) width  -= cut;
+	if ((cut = top  + height - sh) > 0) height -= cut;
+
+	// 範囲チェック
+	if (width <= 0 || height <= 0) 
+		TVPThrowExceptionMessage(L"invalid layer range");
+
+	double a = 0;
+	double r = 0;
+	double g = 0;
+	double b = 0;
+	double size = width * height;
+	
+	// 値取得
+	for (tjs_int y = top; y < top + height; y++) {
+		BufRefT buffer = sbuf + left * 4 + spitch * y;
+		for (tjs_int x = left; x < left + width; x++, buffer += 4) {
+			a += buffer[0];
+			r += buffer[1];
+			g += buffer[2];
+			b += buffer[3];
+		}
+	}
+	a /= size;
+	r /= size;
+	g /= size;
+	b /= size;
+	DWORD color = (((DWORD)a & 0xff) << 24 |
+								 ((DWORD)r & 0xff) << 16 |
+								 ((DWORD)g & 0xff) << 8 |
+								 ((DWORD)b & 0xff) << 0);
+  if (result) {
+	  *result = (tjs_int)color;
+	}
+	return TJS_S_OK;
+}
+
+NCB_ATTACH_FUNCTION(getAverageColor, Layer, getAverageColor);
+
