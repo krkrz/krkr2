@@ -8,24 +8,17 @@
  */
 class XMLParser {
 
-	/**
-	 * テキストに対するパース処理を実行する。
-	 * @param text テキスト。省略時は現在設定中のテキストに対して処理を行なう
-	 * @param target 処理対象(省略時は自分)
-	 * 以下のメソッドが呼ばれる
-	 * startElement(name, attribute);
-	 * endElement(name)
-	 * characterData(data);
-	 * comment(data);
-	 */
-    function parse(text, target=void);
+    /**
+     * テキストに対するパース処理を実行する。
+     * @param text テキスト。省略時は現在設定中のテキストに対して処理を行なう
+     */
+    function parse(text);
 
     /**
      * テキストに対するパース処理を実行する。
      * @param filename テキストのファイル名
-	 * @param target 処理対象(省略時は自分)
      */
-    function parseStorage(filename, target=void);
+    function parseStorage(filename);
 
 	/**
 	 * エラーコード数値

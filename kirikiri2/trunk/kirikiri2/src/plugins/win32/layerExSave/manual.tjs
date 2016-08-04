@@ -67,9 +67,9 @@ class Layer {
 
 	/**
 	 * PNG 形式画像をoctetで返す。注意点:データの保存が終わるまで処理が帰りません。
-	 * @param compression_level 圧縮率(0-9:zlibのdeflate処理, 省略時:LodePNGの組み込みdeflate処理)
+	 * @param compression_level 圧縮率(省略時1)
 	 */
-	function saveLayerImagePngOctet(compression_level);
+	function saveLayerImagePngOctet(compression_level = 1);
 
 	/**
 	 * レイヤイメージをクロップ（上下左右の余白透明部分を切り取る）したときの
@@ -98,7 +98,7 @@ class Layer {
 	 * @param base 差分元となるベース用の画像
 	 * @param samecol 同じ場合に塗りつぶす色(0xAARRGGBB)（voidまたは省略なら塗りつぶさない）
 	 * @param diffcol 違う場合に塗りつぶす色(0xAARRGGBB)（voidまたは省略なら塗りつぶさない）
-	 *（baseはインスタンス自身と同じサイズでないと例外を投げます）
+	 * @description（baseはインスタンス自身と同じサイズでないと例外を投げます）
 	 */
 	function getDiffPixel(base, samecol, diffcol);
 
