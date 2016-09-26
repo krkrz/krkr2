@@ -1392,16 +1392,20 @@ class KList extends KVirtualWidget
   function onKeyPress(key) {
     switch (key) {
     case '+': {
-      focusedItem.opened = true;
+      if (focusedItem !== void)
+        focusedItem.opened = true;
       break;
     }
     case '-': {
-      focusedItem.opened = false;
+      if (focusedItem !== void)
+        focusedItem.opened = false;
       break;
     }
     case "*": {
-      focusedItem.openDescendants();
-      focusedItem.opened = true;
+      if (focusedItem !== void) {
+        focusedItem.openDescendants();
+        focusedItem.opened = true;
+      }
       break;
     }
     }
