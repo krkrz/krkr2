@@ -110,4 +110,16 @@ class Scripts {
 	var pfIgnoreProp      = 0x00000800; //TJS_IGNOREPROP
 	var pfHiddenMember    = 0x00001000; //TJS_HIDDENMEMBER
 	var pfStaticMember    = 0x00010000; //TJS_STATICMEMBER
+
+	/**
+	 * (const)つき辞書／配列を安全に評価する
+	 * @param storage 評価するストレージ（バイトコードバイナリは不可／saveStructで(const)つきで保存された辞書／配列が対象）
+	 * @param mode モード文字列
+	 * @param context 実行コンテキスト
+	 * @return 評価されたデータ
+	 */
+	function safeEvalStorage(storage, mode, context) {
+		// 概要コード
+		return Scripts.eval("(const)["+ ([].load(storage, mode)).join("") + "]", Storages.extractStorageName(storage),, context)[0];
+	}
 }

@@ -71,6 +71,14 @@ public:
 											 tjs_int numparams,
 											 tTJSVariant **param,
 											 iTJSDispatch2 *objthis);
+
+	//----------------------------------------------------------------------
+	// (const)‚Â‚««‘^”z—ñ‚ğˆÀ‘S‚É•]‰¿
+	static tjs_error TJS_INTF_METHOD safeEvalStorage(tTJSVariant *result,
+													 tjs_int numparams,
+													 tTJSVariant **param,
+													 iTJSDispatch2 *objthis);
+
 private:
 		/**
 	 * ƒƒ“ƒo–¼ˆê——‚Ìæ“¾
@@ -676,6 +684,55 @@ ScriptsAdd::propGet(tTJSVariant *result,
 }
 
 //----------------------------------------------------------------------
+// (const)‚Â‚««‘^”z—ñ‚ğˆÀ‘S‚É•]‰¿
+tjs_error TJS_INTF_METHOD
+ScriptsAdd::safeEvalStorage(tTJSVariant *result,
+							tjs_int numparams,
+							tTJSVariant **param,
+							iTJSDispatch2 *objthis)
+{
+	if(numparams < 1) return TJS_E_BADPARAMCOUNT;
+
+	ttstr name = *param[0];
+
+	ttstr modestr;
+	if(numparams >=2 && param[1]->Type() != tvtVoid)
+		modestr = *param[1];
+
+	iTJSDispatch2 *context = numparams >= 3 && param[2]->Type() != tvtVoid ? param[2]->AsObjectNoAddRef() : NULL;
+
+	ttstr shortname(TVPExtractStorageName(name));
+
+	iTJSTextReadStream * stream = TVPCreateTextStreamForRead(name, modestr);
+	ttstr buffer;
+	try
+	{
+		stream->Read(buffer, 0);
+	}
+	catch(...)
+	{
+		stream->Destruct();
+		throw;
+	}
+	stream->Destruct();
+
+	ttstr content(TJS_W("(const)["));
+	content += buffer;
+	content += TJS_W("]");
+
+	tTJSVariant temp;
+	TVPExecuteExpression(content, shortname, 0, context, &temp);
+	if (result) {
+		tTJSVariantClosure clo;
+		clo = temp.AsObjectClosureNoAddRef();
+		if (clo.Object) {
+			clo.PropGetByNum(TJS_IGNOREPROP, 0, result, NULL);
+		}
+	}
+
+	return TJS_S_OK;
+}
+//----------------------------------------------------------------------
 NCB_ATTACH_CLASS(ScriptsAdd, Scripts) {
 	RawCallback(TJS_W("getObjectKeys"), &ScriptsAdd::getKeys, TJS_STATICMEMBER);
 	RawCallback(TJS_W("getObjectCount"), &ScriptsAdd::getCount, TJS_STATICMEMBER);
@@ -694,6 +751,9 @@ NCB_ATTACH_CLASS(ScriptsAdd, Scripts) {
 	Variant(TJS_W("pfIgnoreProp"),      TJS_IGNOREPROP);
 	Variant(TJS_W("pfHiddenMember"),    TJS_HIDDENMEMBER);
 	Variant(TJS_W("pfStaticMember"),    TJS_STATICMEMBER);
+
+	RawCallback(TJS_W("safeEvalStorage"), &ScriptsAdd::safeEvalStorage, TJS_STATICMEMBER);
+
 };
 
 NCB_ATTACH_FUNCTION(rehash, Scripts, TJSDoRehash);
