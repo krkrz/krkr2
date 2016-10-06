@@ -6,6 +6,7 @@ using namespace std;
 
 // 吉里吉里のウインドウクラス
 #define KRWINDOWCLASS _T("TTVPWindowForm")
+#define KZWINDOWCLASS _T("TVPMainWindow")
 #define KEYSIZE 256
 
 // -------------------------------------------------------------------
@@ -276,7 +277,7 @@ public:
 		int mode         = (tjs_int)*param[0];
 		unsigned int msg;
 		if (param[1]->Type() == tvtString) {
-			msg = RegisterWindowMessage(param[1]->GetString());
+			msg = RegisterWindowMessageW(param[1]->GetString());
 		} else {
 			msg = (unsigned int)(tTVInteger)*param[1];
 		}
@@ -310,7 +311,8 @@ public:
 		UserMsgInfo *info = (UserMsgInfo*)parent;
 		TCHAR buf[100];
 		GetClassName(hWnd, buf, sizeof buf);
-		if (info->hWnd != hWnd && _tcscmp(buf, KRWINDOWCLASS) == 0) {
+		if (info->hWnd != hWnd && (_tcscmp(buf, KRWINDOWCLASS) == 0 ||
+								   _tcscmp(buf, KZWINDOWCLASS) == 0)) {
 			SendMessage(hWnd, info->msg, info->wparam, info->lparam);
 		}
 		return TRUE;
@@ -352,7 +354,8 @@ public:
 		MsgInfo *info = (MsgInfo*)parent;
 		TCHAR buf[100];
 		GetClassName(hWnd, buf, sizeof buf);
-		if (info->hWnd != hWnd && _tcscmp(buf, KRWINDOWCLASS) == 0) {
+		if (info->hWnd != hWnd && (_tcscmp(buf, KRWINDOWCLASS) == 0 ||
+								   _tcscmp(buf, KZWINDOWCLASS) == 0)) {
 			SendMessage(hWnd, WM_COPYDATA, (WPARAM)info->hWnd, (LPARAM)&info->copyData);
 		}
 		return TRUE;
