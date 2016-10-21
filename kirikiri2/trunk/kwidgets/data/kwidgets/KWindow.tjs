@@ -50,6 +50,8 @@ class KWindow extends Window
   var isMain = false;
   // 新規ウィンドウを全て直系の子にするか？
   var _createNewWindowAsChild = true;
+  // 初期表示？
+  var firstVisible = true;
 
   /**------------------------------
    * コンストラクタ
@@ -570,6 +572,40 @@ class KWindow extends Window
            Math.max(monitorInfo.monitor.y, Math.min(monitorInfo.monitor.y + monitorInfo.monitor.h - height, top)));
     setSize(Math.min(monitorInfo.monitor.w, width),
             Math.min(monitorInfo.monitor.h, height));
+  }
+
+  property visible {
+    getter {
+      return super.visible;
+    }
+    setter(v) {
+      if (typeof(System.getMonitorInfo) == "undefined"
+          || ! firstVisible) {
+        super.visible = v;
+        return;
+      }
+
+      firstVisible = false;
+
+      var region = new KRegion();
+      var displays = System.getDisplayMonitors();
+      for (var i = 0; i < displays.count; i++) {
+        var display = displays[i];
+        region.include(new KRect(display.monitor.x,
+                                 display.monitor.y,
+                                 display.monitor.w,
+                                 display.monitor.h));
+      }
+      region.intersectWith(new KRect(left, top, width, height));
+      var activeArea = 0;
+      for (var i = 0; i < region.rectCount; i++) {
+        var rect = region.rectAt(i);
+        activeArea += rect.width * rect.height;
+      }
+      if (activeArea / (width * height) < 1)
+        inscribeIntoDisplay();
+      super.visible = v;
+    }
   }
 };
 
