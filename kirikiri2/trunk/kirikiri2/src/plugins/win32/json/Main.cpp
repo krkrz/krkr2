@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#define UNICODE_BOM (0xfeff)
+
 /**
  * ログ出力用
  */
@@ -233,7 +235,7 @@ public:
                     ungetc();
                     return '/';
                 }
-			} else if (c == EOF || c > ' ') {
+			} else if (c != UNICODE_BOM && (c == EOF || c > ' ')) {
 				return c;
 			}
 		}
@@ -526,7 +528,6 @@ public:
 				}
 			} else {
 				ttstr msg = L"不明な文字です:";
-				msg += ch;
 				error(msg.c_str());
 			}
 		}
