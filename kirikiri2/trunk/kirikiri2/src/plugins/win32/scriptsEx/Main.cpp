@@ -716,12 +716,22 @@ ScriptsAdd::safeEvalStorage(tTJSVariant *result,
 	}
 	stream->Destruct();
 
+	/*
 	ttstr content(TJS_W("(const)["));
 	content += buffer;
 	content += TJS_W("]");
+	buffer = content;
+	 */
+	tjs_int length = buffer.length();
+	tjs_char *top = buffer.AppendBuffer(8+1); // [MEMO] "(const)[]".length == 9
+	memmove(top + 8,         top,               sizeof(tjs_char)*length); // xxxxxxxx<buffer>x
+	memcpy (top,             TJS_W("(const)["), sizeof(tjs_char)*8);      // (const)[<buffer>x
+	memcpy (top + 8 +length, TJS_W("]"),        sizeof(tjs_char)*1);      // (const)[<buffer>]
+	buffer.FixLen();
+	//TVPAddLog(buffer);
 
 	tTJSVariant temp;
-	TVPExecuteExpression(content, shortname, 0, context, &temp);
+	TVPExecuteExpression(buffer, shortname, 0, context, &temp);
 	if (result) {
 		tTJSVariantClosure clo;
 		clo = temp.AsObjectClosureNoAddRef();
