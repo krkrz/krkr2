@@ -78,7 +78,7 @@ public:
 	/**
 	 * 個別の展開用ファイルを開く
 	 */
-	unzData open(const ttstr &srcname, ULONG *size) {
+	bool open(const ttstr &srcname, ULONG *size) {
 		if (uf) {
 			lock();
 			if (unzLocateFile(uf, NarrowString(srcname, utf8), CASESENSITIVITY) == UNZ_OK) {
@@ -88,23 +88,22 @@ public:
 						*size = file_info.uncompressed_size;
 					}
 				}
-				unzData data = NULL;
-				if (unzOpenData(uf, &data, NULL, NULL, 0, NULL) == UNZ_OK) {
-					return data;
+				if (unzOpenCurrentFile(uf) == UNZ_OK) {
+					return true;
 				}
 			}
 			unlock();
 		}
-		return NULL;
+		return false;
 	}
 
 	/**
 	 * 個別の展開用ファイルからデータを読み込む
 	 */
-	HRESULT read(unzData data, void *pv, ULONG cb, ULONG *pcbRead) {
-		if (uf && data) {
+	HRESULT read(void *pv, ULONG cb, ULONG *pcbRead) {
+		if (uf) {
 			lock();
-			DWORD size = unzReadData(data,pv,cb);
+			DWORD size = unzReadCurrentFile(uf, pv,cb);
 			if (pcbRead) {
 				*pcbRead = size;
 			}
@@ -114,13 +113,34 @@ public:
 		return STG_E_ACCESSDENIED;
 	}
 
+	HRESULT seek(ZPOS64_T pos) {
+		if (uf) {
+			HRESULT ret;
+			lock();
+			ret = unzSetOffset64(uf, pos) == UNZ_OK ? S_OK : S_FALSE;
+			unlock();
+			return ret;
+		}
+		return STG_E_ACCESSDENIED;
+	}
+	
+	ZPOS64_T tell() {
+		ZPOS64_T ret = 0;
+		if (uf) {
+			lock();
+			ret = unztell64(uf);
+			unlock();
+		}
+		return ret;
+	}
+
 	/**
 	 * 個別の展開用ファイルを閉じる
 	 */
-	void close(unzData data) {
-		if (uf && data) {
+	void close() {
+		if (uf) {
 			lock();
-			unzCloseData(data);
+			unzCloseCurrentFile(uf);
 			unlock();
 		}
 	}
@@ -210,7 +230,7 @@ public:
 	/**
 	 * コンストラクタ
 	 */
-	UnzipStream(UnzipBase *unzip) : refCount(1), unzip(unzip), data(NULL) {
+	UnzipStream(UnzipBase *unzip) : refCount(1), unzip(unzip) {
 		unzip->AddRef();
 	};
 
@@ -244,10 +264,7 @@ public:
 
 	// ISequentialStream
 	HRESULT STDMETHODCALLTYPE Read(void *pv, ULONG cb, ULONG *pcbRead) {
-		if (data) {
-			return unzip->read(data, pv, cb, pcbRead);
-		}
-		return STG_E_ACCESSDENIED;
+		return unzip->read(pv, cb, pcbRead);
 	}
 
 	HRESULT STDMETHODCALLTYPE Write(const void *pv, ULONG cb, ULONG *pcbWritten) {
@@ -257,13 +274,25 @@ public:
 	// IStream
 	HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER dlibMove,	DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) {
 		// 先頭にだけ戻せる
-		if (dwOrigin == STREAM_SEEK_SET && dlibMove.QuadPart == 0) {
-			rewind();
-			if (plibNewPosition) {
-				plibNewPosition->QuadPart = 0;
-			}
+		ZPOS64_T cur;
+		switch (dwOrigin) {
+		case STREAM_SEEK_CUR:
+			cur = unzip->tell();
+			cur += dlibMove.QuadPart;
+			break;
+		case STREAM_SEEK_SET:
+			cur = dlibMove.QuadPart;
+			break;
+		case STREAM_SEEK_END:
+			cur = this->size;
+			cur += dlibMove.QuadPart;
+			break;
 		}
-		return STG_E_INVALIDFUNCTION;
+		unzip->seek(cur);
+		if (plibNewPosition) {
+			plibNewPosition->QuadPart = cur;
+		}
+		return S_OK;
 	}
 	
 	HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER libNewSize) {
@@ -331,7 +360,7 @@ public:
 
 	bool init(const ttstr filename) {
 		bool ret = false;
-		if ((ret = (data = unzip->open(filename, &size)) != NULL)) {
+		if ((ret = unzip->open(filename, &size))) {
 			this->filename = filename;
 		}
 		return ret;
@@ -347,22 +376,14 @@ protected:
 	}
 
 	void close() {
-		if (data) {
-			unzip->close(data);
-			data = NULL;
-		}
+		unzip->close();
 	}
 	
-	void rewind() {
-		close();
-		data = unzip->open(filename, &size);
-	}
 	
 private:
 	int refCount;
 	ttstr filename;
 	UnzipBase *unzip;
-	unzData data;
 	ULONG size;
 };
 
