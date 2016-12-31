@@ -7,6 +7,10 @@
 #define OPTION_KEYSORT (1<<2)
 #define OPTION_HIDDEN  (1<<3)
 
+// TJS非公開オプション
+#define OPTION_NOPREFIX      (1<<10) // int/real プレフィックスをつけない（非(const)指定時限定）
+#define OPTION_NOARRAYINDENT (1<<11) // Arrayはインデント指定を無視
+
 #define TJS_CONST TJS_W("(const)")
 
 static void getVariantString(const tTJSVariant &var, IWriter *writer, tjs_uint32 option=0);
@@ -158,7 +162,7 @@ static void getArrayString(iTJSDispatch2 *array, IWriter *writer, tjs_uint32 opt
 
 	writer->write((tjs_char)'[');
 	tjs_int count = getArrayCount(array);
-	bool indent = (count > 0) && (option & OPTION_INDENT); // インデント処理フラグ
+	bool indent = (count > 0) && (option & OPTION_INDENT) && !(option & OPTION_NOARRAYINDENT); // インデント処理フラグ
 	if (indent) writer->addIndent();
 	for (tjs_int i=0; i<count; i++) {
 		if (i != 0) {
@@ -192,7 +196,7 @@ getVariantString(const tTJSVariant &var, IWriter *writer, tjs_uint32 option)
 	}
 	else
 	{
-		if (!(option & OPTION_CONST)) { // (const)時はエラーになるのでつけない
+		if (!(option & (OPTION_CONST|OPTION_NOPREFIX))) { // (const)時はエラーになるのでつけない
 			if      (type == tvtInteger) writer->write(L"int ");
 			else if (type == tvtReal)    writer->write(L"real ");
 		}
