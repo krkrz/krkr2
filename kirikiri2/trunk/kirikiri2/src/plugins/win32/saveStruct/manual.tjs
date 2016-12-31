@@ -15,14 +15,16 @@ class Array {
 	 * @param filename 格納先ファイル
 	 * @param utf8 出力エンコーディング指定。true なら UTF-8、falseなら現在のコードページ
 	 * @param newline 改行コード 0:CRLF 1:LF
+	 * @param option 整形オプション sso* の組み合わせ（後述）もしくは直接数値指定
 	 */
-	function saveStruct2(filename, utf8=false, newline=0);
+	function saveStruct2(filename, utf8=false, newline=0, option=0);
 
 	/**
 	 * @param 改行コード newline 0:CRLF 1:LF
+	 * @param option 整形オプション sso* の組み合わせ（後述）もしくは直接数値指定
 	 * @return saveStruct に準じた形の文字列を返す
 	 */
-	function toStructString(newline=0);
+	function toStructString(newline=1, option=0);
 };
 
 class Dictionary {
@@ -31,13 +33,47 @@ class Dictionary {
 	 * @param filename 格納先ファイル
 	 * @param utf8 出力エンコーディング指定。true なら UTF-8、falseなら現在のコードページ
 	 * @param newline 改行コード 0:CRLF 1:LF
+	 * @param option 整形オプション sso* の組み合わせ（後述）もしくは直接数値指定
 	 */
-	function saveStruct2(filename, utf8=false, newline=0);
+	function saveStruct2(filename, utf8=false, newline=0, option=0);
 
 	/**
 	 * @param newline 改行コード 0:CRLF 1:LF
+	 * @param option 整形オプション sso* の組み合わせ（後述）もしくは直接数値指定
 	 * @return saveStruct に準じた形の文字列を返す
 	 */
-	function toStructString(newline=0);
+	function toStructString(newline=1, option=0);
 }
 
+
+class Scripts {
+	/**
+	 * @param target 文字列化する対象（辞書・配列以外の int/real/string/octet/null/void も可能）
+	 * @param newline 改行コード 0:CRLF 1:LF
+	 * @param option 整形オプション sso* の組み合わせ（後述）もしくは直接数値指定
+	 * @return saveStruct に準じた形の文字列を返す
+	 * @description optionのデフォルト値がArray/Dictionaryと違うので注意（デバッグ用途を想定）
+	 */
+	function toStructString(target, newline=1, option=ssoIndent|ssoSort);
+}
+
+
+/**
+ * @description 階層インデント整形指定
+ */
+const ssoIndent = (1<<0);
+
+/**
+ * @description (const)つき辞書・配列指定
+ */
+const ssoConst  = (1<<1);
+
+/**
+ * @description 辞書メンバを名前順ソート指定（ソートのため２パス処理になります）
+ */
+const ssoSort   = (1<<2);
+
+/**
+ * @description Hiddenメンバーも強制的に取得する指定
+ */
+const ssoHidden = (1<<3);
