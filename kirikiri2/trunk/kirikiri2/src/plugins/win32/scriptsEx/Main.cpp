@@ -281,7 +281,7 @@ ScriptsAdd::_getKeys(tTJSVariant *result, tTJSVariant &obj)
 		iTJSDispatch2 *array = TJSCreateArrayObject();
 		DictMemberGetCaller *caller = new DictMemberGetCaller(array);
 		tTJSVariantClosure closure(caller);
-		obj.AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP, &closure, NULL);
+		obj.AsObjectClosureNoAddRef().EnumMembers(TJS_IGNOREPROP|TJS_ENUM_NO_VALUE, &closure, NULL);
 		caller->Release();
 		static tjs_uint sortHint = NULL;
 		// 返すキーはソートする
