@@ -1,7 +1,7 @@
 /*
-LodePNG version 20151208
+LodePNG version 20161127
 
-Copyright (c) 2005-2015 Lode Vandevenne
+Copyright (c) 2005-2016 Lode Vandevenne
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
@@ -27,11 +27,6 @@ freely, subject to the following restrictions:
 #define LODEPNG_H
 
 #include <string.h> /*for size_t*/
-
-#ifdef __cplusplus
-#include <vector>
-#include <string>
-#endif /*__cplusplus*/
 
 extern const char* LODEPNG_VERSION_STRING;
 
@@ -85,6 +80,11 @@ source files with custom allocators.*/
 #define LODEPNG_COMPILE_CPP
 #endif
 #endif
+
+#ifdef LODEPNG_COMPILE_CPP
+#include <vector>
+#include <string>
+#endif /*LODEPNG_COMPILE_CPP*/
 
 #ifdef LODEPNG_COMPILE_PNG
 /*The PNG color types (also used for raw).*/
@@ -559,11 +559,11 @@ Used internally by default if "auto_convert" is enabled. Public because it's use
 typedef struct LodePNGColorProfile
 {
   unsigned colored; /*not greyscale*/
-  unsigned key; /*if true, image is not opaque. Only if true and alpha is false, color key is possible.*/
-  unsigned short key_r; /*these values are always in 16-bit bitdepth in the profile*/
+  unsigned key; /*image is not opaque and color key is possible instead of full alpha*/
+  unsigned short key_r; /*key values, always as 16-bit, in 8-bit case the byte is duplicated, e.g. 65535 means 255*/
   unsigned short key_g;
   unsigned short key_b;
-  unsigned alpha; /*alpha channel or alpha palette required*/
+  unsigned alpha; /*image is not opaque and alpha channel or alpha palette required*/
   unsigned numcolors; /*amount of colors, up to 257. Not valid if bits == 16.*/
   unsigned char palette[1024]; /*Remembers up to the first 256 RGBA colors, in no particular order*/
   unsigned bits; /*bits per channel (not for palette). 1,2 or 4 for greyscale only. 16 if 16-bit per channel required.*/
@@ -896,8 +896,10 @@ TODO:
 [X] let the "isFullyOpaque" function check color keys and transparent palettes too
 [X] better name for the variables "codes", "codesD", "codelengthcodes", "clcl" and "lldl"
 [ ] don't stop decoding on errors like 69, 57, 58 (make warnings)
+[ ] make warnings like: oob palette, checksum fail, data after iend, wrong/unknown crit chunk, no null terminator in text, ...
 [ ] let the C++ wrapper catch exceptions coming from the standard library and return LodePNG error codes
 [ ] allow user to provide custom color conversion functions, e.g. for premultiplied alpha, padding bits or not, ...
+[ ] allow user to give data (void*) to custom allocator
 */
 
 #endif /*LODEPNG_H inclusion guard*/
@@ -927,8 +929,9 @@ LodePNG Documentation
   10. examples
    10.1. decoder C++ example
    10.2. decoder C example
-  11. changes
-  12. contact information
+  11. state settings reference
+  12. changes
+  13. contact information
 
 
 1. about
@@ -1554,8 +1557,49 @@ int main(int argc, char *argv[])
   return 0;
 }
 
+11. state settings reference
+----------------------------
 
-11. changes
+A quick reference of some settings to set on the LodePNGState
+
+For decoding:
+
+state.decoder.zlibsettings.ignore_adler32: ignore ADLER32 checksums
+state.decoder.zlibsettings.custom_...: use custom inflate function
+state.decoder.ignore_crc: ignore CRC checksums
+state.decoder.color_convert: convert internal PNG color to chosen one
+state.decoder.read_text_chunks: whether to read in text metadata chunks
+state.decoder.remember_unknown_chunks: whether to read in unknown chunks
+state.info_raw.colortype: desired color type for decoded image
+state.info_raw.bitdepth: desired bit depth for decoded image
+state.info_raw....: more color settings, see struct LodePNGColorMode
+state.info_png....: no settings for decoder but ouput, see struct LodePNGInfo
+
+For encoding:
+
+state.encoder.zlibsettings.btype: disable compression by setting it to 0
+state.encoder.zlibsettings.use_lz77: use LZ77 in compression
+state.encoder.zlibsettings.windowsize: tweak LZ77 windowsize
+state.encoder.zlibsettings.minmatch: tweak min LZ77 length to match
+state.encoder.zlibsettings.nicematch: tweak LZ77 match where to stop searching
+state.encoder.zlibsettings.lazymatching: try one more LZ77 matching
+state.encoder.zlibsettings.custom_...: use custom deflate function
+state.encoder.auto_convert: choose optimal PNG color type, if 0 uses info_png
+state.encoder.filter_palette_zero: PNG filter strategy for palette
+state.encoder.filter_strategy: PNG filter strategy to encode with
+state.encoder.force_palette: add palette even if not encoding to one
+state.encoder.add_id: add LodePNG identifier and version as a text chunk
+state.encoder.text_compression: use compressed text chunks for metadata
+state.info_raw.colortype: color type of raw input image you provide
+state.info_raw.bitdepth: bit depth of raw input image you provide
+state.info_raw: more color settings, see struct LodePNGColorMode
+state.info_png.color.colortype: desired color type if auto_convert is false
+state.info_png.color.bitdepth: desired bit depth if auto_convert is false
+state.info_png.color....: more color settings, see struct LodePNGColorMode
+state.info_png....: more PNG related settings, see struct LodePNGInfo
+
+
+12. changes
 -----------
 
 The version number of LodePNG is the date of the change given in the format
@@ -1564,6 +1608,10 @@ yyyymmdd.
 Some changes aren't backwards compatible. Those are indicated with a (!)
 symbol.
 
+*) 27 nov 2016: grey+alpha auto color model detection bugfix
+*) 18 apr 2016: Changed qsort to custom stable sort (for platforms w/o qsort).
+*) 09 apr 2016: Fixed colorkey usage detection, and better file loading (within
+   the limits of pure C90).
 *) 08 dec 2015: Made load_file function return error if file can't be opened.
 *) 24 okt 2015: Bugfix with decoding to palette output.
 *) 18 apr 2015: Boundary PM instead of just package-merge for faster encoding.
@@ -1697,7 +1745,7 @@ symbol.
 *) 12 aug 2005: Initial release (C++, decoder only)
 
 
-12. contact information
+13. contact information
 -----------------------
 
 Feel free to contact me with suggestions, problems, comments, ... concerning
@@ -1709,5 +1757,5 @@ Domain: gmail dot com.
 Account: lode dot vandevenne.
 
 
-Copyright (c) 2005-2015 Lode Vandevenne
+Copyright (c) 2005-2016 Lode Vandevenne
 */

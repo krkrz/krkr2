@@ -280,12 +280,13 @@ void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, tTJSVariant *vclv, tTJSVar
 
 #include "lodepng.h"
 
-static bool MakeVectorImage(iTJSDispatch2 *layer, std::vector<unsigned char> &image, long &width, long &height)
+static bool MakeVectorImage(iTJSDispatch2 *layer, std::vector<unsigned char> &image, long &width, long &height, bool &alpha)
 {
 	BufRefT buffer;
 	long pitch;
 	if (!GetLayerBufferAndSize(layer, width, height, buffer, pitch)) return false;
 
+	alpha = false;
 	size_t len = width * 4;
 	image.resize(len * height);
 	for(long y=0, ofs=0; y < height; y++, ofs+=len, buffer+=pitch) {
@@ -295,7 +296,7 @@ static bool MakeVectorImage(iTJSDispatch2 *layer, std::vector<unsigned char> &im
 			*w++ = p[2];
 			*w++ = p[1];
 			*w++ = p[0];
-			*w++ = p[3];
+			if ((*w++ = p[3]) != 255) alpha = true;
 		}
 	}
 	return true;
@@ -322,6 +323,14 @@ static unsigned CustomDeflate(unsigned char** out, size_t* outsize,
 	return 13; /*problem while processing dynamic deflate block*/
 }
 
+static void SetInitialState(lodepng::State &state, bool alpha)
+{
+	state.encoder.auto_convert = 0; // Ž©“®ƒJƒ‰[”»’èˆ—‚ð–³Œø‰»
+	state.info_png.color.colortype = alpha ? LCT_RGBA : LCT_RGB;
+	state.info_png.color.bitdepth  = 8;
+	state.info_png.color.key_defined = 0;
+}
+
 static bool SetCustomChunk(lodepng::State &state, const PngChunk &chunk, const char *tag, int chunkpos = 0)
 {
 	if (tag) {
@@ -337,10 +346,12 @@ static bool SetCustomChunk(lodepng::State &state, const PngChunk &chunk, const c
 void CompressPNG::encodeToFile(iTJSDispatch2 *layer, const tjs_char *filename, iTJSDispatch2 *info)
 {
 	long width, height;
+	bool alpha;
 
-	if (MakeVectorImage(layer, data, width, height)) {
+	if (MakeVectorImage(layer, data, width, height, alpha)) {
 		DATA png;
 		lodepng::State state;
+		SetInitialState(state, alpha);
 
 		if (info) {
 			PngChunk chunk;
@@ -380,11 +391,13 @@ void CompressPNG::encodeToFile(iTJSDispatch2 *layer, const tjs_char *filename, i
 void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, tTJSVariant *vclv, tTJSVariant &ret)
 {
 	long width, height;
+	bool alpha;
 
 	ret = TJS_W("");
-	if (MakeVectorImage(layer, data, width, height)) {
+	if (MakeVectorImage(layer, data, width, height, alpha)) {
 		DATA png;
 		lodepng::State state;
+		SetInitialState(state, alpha);
 		if (vclv) {
 			int comp_lv = (int)vclv->AsInteger();
 			state.encoder.zlibsettings.custom_zlib = &CustomDeflate;
