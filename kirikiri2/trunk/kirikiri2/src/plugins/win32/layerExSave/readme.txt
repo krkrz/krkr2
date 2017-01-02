@@ -5,6 +5,10 @@ Author: わたなべごう
 
 Layer/Window クラスにTGL5/PNG 形式での保存メソッドを追加するプラグインです。
 
+※吉里吉里Zでは標準でTLG5/TLG6/PNG/JPEGの保存機能があるので
+　このプラグインではなく、そちらを利用することを推奨します。
+＞詳細はLayer.saveLayerImage/Bitmap.saveのマニュアルを参照してください
+
 ●PNG保存の制限
 
 PNG保存はlibpngを使用せず，下記メソッドごとに保存の実装が異なります。
@@ -23,7 +27,7 @@ PNG保存はlibpngを使用せず，下記メソッドごとに保存の実装が異なります。
 ※圧縮率が重要になるような画像は、LodePNGでの保存を推奨します。
 
 LodePNG ( http://lodev.org/lodepng/ )はポータブルなPNGのロード/セーブの実装です。
-./LodePNG/* の2ファイルが該当します。(version 20151208を使用)
+./LodePNG/* の2ファイルが該当します。(version 20161127を使用)
 
 
 タグ情報（offs_*, reso_*, vpag_*）もサポートされますが動作確認が不十分です。

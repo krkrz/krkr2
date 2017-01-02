@@ -255,17 +255,20 @@ void CompressPNG::encodeToFile(iTJSDispatch2 *layer, const tjs_char *filename, i
 
 void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, tTJSVariant *vclv, tTJSVariant &ret)
 {
-	int comp_lv = vclv ? (int)vclv->AsInteger() : 1;
-
 	BufRefT buffer;
 	long width, height, pitch;
 
 	ret = TJS_W("");
 	if (GetLayerBufferAndSize(layer, width, height, buffer, pitch)) {
 		PngChunk chunk(this);
-		chunk.setCompressionLevel(comp_lv);
 
 		compress_first (chunk, width, height, PNGTYPE_RGBA8888);
+		if (vclv && vclv->Type() == tvtObject) {
+			compress_second(chunk, vclv->AsObjectNoAddRef());
+		} else {
+			int comp_lv = vclv ? (int)vclv->AsInteger() : 1;
+			chunk.setCompressionLevel(comp_lv);
+		}
 		compress_third (chunk, width, height, buffer, pitch);
 
 		tTJSVariantOctet *oct = TJSAllocVariantOctet(&data[0], size);
@@ -331,17 +334,19 @@ static void SetInitialState(lodepng::State &state, bool alpha)
 	state.info_png.color.key_defined = 0;
 }
 
-static bool SetCustomChunk(lodepng::State &state, const PngChunk &chunk, const char *tag, int chunkpos = 0)
+static bool SetCustomChunk(lodepng::State &state, PngChunk &chunk, const char *tag, int chunkpos = 0)
 {
+	bool r = false;
 	if (tag) {
 		const unsigned char *data = 0;
 		size_t length = 0;
 		chunk.getCurrentData(data, length);
-		return lodepng_chunk_create(&state.info_png.unknown_chunks_data[chunkpos],
-									&state.info_png.unknown_chunks_size[chunkpos],
-									(unsigned)length, tag, data) == 0;
+		r = lodepng_chunk_create(&state.info_png.unknown_chunks_data[chunkpos],
+								 &state.info_png.unknown_chunks_size[chunkpos],
+								 (unsigned)length, tag, data) == 0;
+		chunk.init(); // clear buffer
 	}
-	return false;
+	return r;
 }
 void CompressPNG::encodeToFile(iTJSDispatch2 *layer, const tjs_char *filename, iTJSDispatch2 *info)
 {
@@ -399,10 +404,22 @@ void CompressPNG::encodeToOctet(iTJSDispatch2 *layer, tTJSVariant *vclv, tTJSVar
 		lodepng::State state;
 		SetInitialState(state, alpha);
 		if (vclv) {
-			int comp_lv = (int)vclv->AsInteger();
-			state.encoder.zlibsettings.custom_zlib = &CustomDeflate;
-			state.encoder.zlibsettings.custom_context = (void*)comp_lv;
-			if (!comp_lv) state.encoder.filter_strategy = LFS_ZERO;
+			int comp_lv = -1;
+			if (vclv->Type() == tvtObject) {
+				PngChunk chunk;
+				ncbPropAccessor dic(vclv->AsObjectNoAddRef());
+
+				SetCustomChunk(state, chunk, ChunkSetResoXY(dic, chunk));
+				SetCustomChunk(state, chunk, ChunkSetOffsXY(dic, chunk));
+				SetCustomChunk(state, chunk, ChunkSetVpagWH(dic, chunk));
+			} else {
+				comp_lv = (int)vclv->AsInteger();
+			}
+			if (comp_lv >= 0) {
+				state.encoder.zlibsettings.custom_zlib = &CustomDeflate;
+				state.encoder.zlibsettings.custom_context = (void*)comp_lv;
+				if (!comp_lv) state.encoder.filter_strategy = LFS_ZERO;
+			}
 		}
 		if (lodepng::encode(png, data, width, height, state) == 0) {
 			tTJSVariantOctet *oct = TJSAllocVariantOctet(&png[0], png.size());
