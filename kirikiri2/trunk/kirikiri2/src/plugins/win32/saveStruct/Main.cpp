@@ -231,13 +231,7 @@ public:
 						   numparams > 2 ? (int)*param[2] : 0
 						   );
 		writer.hex = true;
-		tjs_int count = 0;
-		{
-			tTJSVariant result;
-			if (TJS_SUCCEEDED(ArrayCountProp->PropGet(0, NULL, NULL, &result, objthis))) {
-				count = result;
-			}
-		}
+		tjs_int count = getArrayCount(objthis);
 		for (tjs_int i=0; i<count; i++) {
 			tTJSVariant result;
 			if (objthis->PropGetByNum(TJS_IGNOREPROP, i, &result, objthis) == TJS_S_OK) {
