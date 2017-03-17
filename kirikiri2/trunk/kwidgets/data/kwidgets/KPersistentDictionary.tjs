@@ -17,6 +17,8 @@ class KPersistentDictionary
   var virtual;
   // 暗号化する？
   var _crypt = false;
+  // 圧縮する?
+  var _compress = false;
 
   /**------------------------------
    * コンストラクタ
@@ -69,7 +71,7 @@ class KPersistentDictionary
    */
   function store {
     if (! virtual) 
-      (Dictionary.saveStruct incontextof dict)(filePath, crypt ? "c" : "");
+      (Dictionary.saveStruct incontextof dict)(filePath, storeFlag);
   }
 
   /**------------------------------
@@ -127,6 +129,25 @@ class KPersistentDictionary
     }
     setter(v) {
       _crypt = v;
+    }
+  }
+
+  property compress {
+    getter {
+      return _compress;
+    }
+    setter(v) {
+      _compress = v;
+    }
+  }
+
+  property storeFlag {
+    getter {
+      if (crypt)
+        return "c";
+      if (compress)
+        return "z";
+      return "";
     }
   }
 };
